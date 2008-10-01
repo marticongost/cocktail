@@ -20,7 +20,6 @@ class Pager(Element):
     page_size = 15
     hide_when_empty = True
     visible_pages = 10
-    visible_pages_options = (10, 15, 20, 30, 50, 100)
     
     def _build(self):
 
