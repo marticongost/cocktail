@@ -1,6 +1,6 @@
 #-*- coding: utf-8 -*-
 """
-Controllers for the CMS backend and frontend applications.
+Utilities for writing application controllers.
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com

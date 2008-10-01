@@ -1,6 +1,6 @@
 #-*- coding: utf-8 -*-
 """
-Test suite for the Magic Bullet CMS.
+Test suite for the Cocktail web development toolkit.
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com

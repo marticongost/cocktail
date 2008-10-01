@@ -1,8 +1,8 @@
 #-*- coding: utf-8 -*-
 """
-Implements the persistence machinery for CMS objects. It builds on Zope's
-Object Data Base (ZODB), adding support for multi-language content, versioning
-and declarative queries over indices.
+This package provides a set of high level interfaces for object persistence.
+It's built as declarative layer over Zope's Object Data Base (ZODB), adding
+support for multi-language content and declarative queries over indices.
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
