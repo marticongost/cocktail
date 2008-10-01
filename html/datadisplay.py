@@ -258,7 +258,7 @@ class CollectionDisplay(DataDisplay):
     sortable = True
     selection_mode = NO_SELECTION
     selection = None
-
+    
     def __init__(self):
         DataDisplay.__init__(self)
         self.__member_sortable = {}
@@ -285,4 +285,36 @@ class CollectionDisplay(DataDisplay):
                 return item in self.selection
 
         return False
+
+    def _get_user_collection(self):
+        return self.__user_collection
+    
+    def _set_user_collection(self, collection):
+        self.__user_collection = collection
+
+        if collection:
+
+            self.sortable = collection.allow_sorting
+            self.schema = collection.schema
+            self.data = collection.page_subset()
+            self.order = collection.order
+            self.selection = collection.selection
+
+            visible_members = collection.members
+
+            for key in collection.schema.members():
+                self.set_member_displayed(
+                    key,
+                    key in visible_members
+                )
+
+    user_collection = property(
+        _get_user_collection,
+        _set_user_collection, doc = """
+        An object encapsulating a set of user provided view parameters
+        (including order, pagination, visible members, etc). When set, the
+        collection display will update several of its attributes to match those
+        specified by the user collection.
+        @type: L{UserCollection<cocktail.controllers.usercollection.UserCollection>}
+        """)
 
