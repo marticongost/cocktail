@@ -7,3 +7,5 @@ Allows creating presentation components from XML markup.
 @organization:	Whads/Accent SL
 @since:			February 2008
 """
+from cocktail.html.templates.loader import TemplateLoader
+

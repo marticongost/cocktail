@@ -30,7 +30,7 @@ PLACEHOLDER = 3
 
 class TemplateCompiler(object):
 
-    TEMPLATE_NS = "http://hollowhead.org/ns/cocktail/templates"
+    TEMPLATE_NS = "http://www.whads.com/ns/cocktail/templates"
     XHTML_NS = "http://www.w3.org/1999/xhtml"
 
     def __init__(self, xml = None, class_name = "Template"):
@@ -50,10 +50,11 @@ class TemplateCompiler(object):
                 setattr(self.__parser, key, getattr(self, key))
 
         if xml is not None:
-            self.compile(xml)
+            self.compile(xml)            
 
-    def compile(self, xml):
+    def compile(self, xml):        
         self.__parser.Parse(xml, True)
+        self.__source.write("\n")
 
     @getter
     def source(self):
@@ -76,9 +77,6 @@ class TemplateCompiler(object):
 
     @getter
     def template_class(self):
-        print "-------------------------------------------------------"
-        print self.source
-        print "-------------------------------------------------------"
         template_scope = {}
         exec self.source in template_scope
         return template_scope[self.class_name]
@@ -141,12 +139,12 @@ class TemplateCompiler(object):
                 is_placeholder = False
                 chunks = []
 
-                for chunk, expr_type in self._parseData(value):
+                for chunk, expr_type in self._parse_data(value):
                     if expr_type == LITERAL:
                         chunks.append(repr(chunk))
                     else:
                         is_placeholder = (expr_type == PLACEHOLDER)
-                        chunks.append("unicode(" + chunk + ")")
+                        chunks.append(chunk)
                 
                 value_source = " + ".join(chunks)
 
@@ -198,7 +196,7 @@ class TemplateCompiler(object):
     def __add_close_action(self, action):
         self.__closing_stack.append((len(self.__element_stack), action))
 
-    def _parseData(self, data):
+    def _parse_data(self, data):
 
         i = 0
         start = 0
@@ -213,7 +211,7 @@ class TemplateCompiler(object):
 
             if c == "{":
                 if not depth and (prevc == "$" or prevc == "@"):
-                    if i != start:
+                    if i != start and i - 1 > start:
                         yield data[start:i - 1], LITERAL
 
                     expr_type = prevc == "$" and EXPRESSION or PLACEHOLDER
@@ -229,7 +227,8 @@ class TemplateCompiler(object):
                 depth -= 1
                 
                 if not depth:
-                    yield data[start:i], expr_type
+                    if i > start:
+                        yield data[start:i], expr_type
                     expr_type = None
                     start = i + 1
 
@@ -280,6 +279,7 @@ class TemplateCompiler(object):
             base_name = elem_class_name
             self._push_element("self")
             
+            source.write()
             source.write("class %s(%s):" % (self.class_name, base_name))
             source.write()
             source.indent()
@@ -316,6 +316,7 @@ class TemplateCompiler(object):
             self._push_element(id)
                         
             # Instantiation
+            source.write()
             source.write("%s = %s()" % (id, elem_class_name))
 
             # Parent and position
@@ -372,7 +373,7 @@ class TemplateCompiler(object):
             if data:
                 id = self.__element_stack[-1]
 
-                for chunk, expr_type in self._parseData(data):
+                for chunk, expr_type in self._parse_data(data):
 
                     if expr_type == LITERAL:
                         self.__source.write('%s.append(%r)' % (id, chunk))
@@ -390,11 +391,14 @@ class TemplateCompiler(object):
                             '(lambda: %s))' % chunk
                         )
 
-    def ProcessingInstructionHandler(self, target, data):
-
-        if target == "py":
+    def DefaultHandler(self, data):        
+        if data.startswith("<?py") and data[4] in (" \n\r\t"):
+            data = data[5:-2]
             lines = data.split("\n")
-            indent_str = WHITESPACE_EXPR.match(lines[0]).group(0)
+            
+            for line in lines:
+                if line.strip():
+                    indent_str = WHITESPACE_EXPR.match(line).group(0)
             indent_end = len(indent_str)
             write = self.__source.write
 
@@ -404,14 +408,15 @@ class TemplateCompiler(object):
                 write("element = " + self.__element_stack[-1])
                 self.__context_is_current = True
 
-            for line in lines:
-                if not line.startswith(indent_str):
-                    self._raise_parse_error(
-                        "Inconsistent indentation on code block (line %s)"
-                        % line
+            for i, line in enumerate(lines):
+                if not line.startswith(indent_str) and line.strip():
+                    raise ParseError(
+                        "Inconsistent indentation on code block (line %d)"
+                        % (self.__parser.CurrentLineNumber + i)
                     )
                 line = line[indent_end:]
                 write(line)
+
 
 class ParseError(Exception):
     pass

@@ -6,6 +6,7 @@
 @organization:	Whads/Accent SL
 @since:			February 2008
 """
+import os
 from cocktail.cache import Cache
 from cocktail.html.templates.compiler import TemplateCompiler
 
@@ -13,68 +14,78 @@ class TemplateLoader(object):
 
     Compiler = TemplateCompiler
 
+    class Cache(Cache):
+
+        def _is_current(self, entry):
+            return entry.creation >= os.stat(entry.key).st_mtime
+
     def __init__(self):
         
-        self.cache = Cache()
+        self.paths = []
+
+        self.cache = self.Cache()
         self.cache.expiration = None
-        self.cache.load = self.load_template
-      
-        self.ref_cache = Cache()
-        self.ref_cache.expiration = None
-        self.ref_cache.load = self.path_from_ref
+        self.cache.load = self.compile_file
 
-    def get_class(self, ref = None, file = None):
-        '''Obtains a python class from the specified template.
+    def get_class(self, name):
+        """Obtains a python class from the specified template.
         
-        @param ref: The qualified name of the template type to instantiate.
-        @type ref: str
-
-        @param file: The absolute path to the file containing the definition of
-            the template type to instantiate.
-        @type file: str
+        @param name: The name of the template to obtain the class for.
+        @type name: str
 
         @return: An instance of the requested template.
         @rtype: L{cocktail.html.Element}
-        '''
-        if ref is not None:
-            file = self.ref_cache.request(ref)
 
-        return self.cache.request(file)
+        @raise IOError: Raised if the indicated template can't be found on the
+            loader's search path.
+        """
+        template_file = self._find_template(name)
+        return self.cache.request(template_file)
                 
-    def new(self, ref = None, file = None):
-        '''Produces an instance of the specified template.
+    def new(self, name):
+        """Produces an instance of the specified template.
         
-        @param ref: The qualified name of the template type to instantiate.
-        @type ref: str
-
-        @param file: The absolute path to the file containing the definition of
-            the template type to instantiate.
-        @type file: str
+        @param name: The name of the template to instantiate.
+        @type name: str
 
         @return: An instance of the requested template.
         @rtype: L{cocktail.html.Element}
-        '''
-        return self.get_class(ref = ref, file = file)()
+        
+        @raise IOError: Raised if the indicated template can't be found on the
+            loader's search path.
+        """
+        return self.get_class(name)()
 
-    def load_template(self, file):
-        source = open(file).read()
-        return self.Compiler(source).template_class
-    
-    def path_from_ref(self, ref):
-        # TODO: Transform python references into template file paths
-        pass
+    def _find_template(self, name):
+        """Finds the source file for a template, given its name."""
+        for path in self.paths:
+            fname = os.path.join(path, name)
+            if os.path.exists(fname):
+                return fname
+
+        raise IOError("Can't find template " + name)
+
+    def compile_file(self, template_file):
+        
+        try:
+            f = file(template_file, "r")
+            source = f.read()
+        finally:
+            f.close()
+        
+        name = os.path.splitext(os.path.split(template_file)[1])[0]
+        return self.Compiler(source, name).template_class
+   
 
 if __name__ == "__main__":
-    from time import time
-    
+
     loader = TemplateLoader()
-    loader.cache.expiration = 1
+    loader.paths.append("/home/marti/Projectes/sitebasis/src/sitebasis/views")
+    
+    from time import time
 
-    start = time()
-    greeting = loader.new(file = "test.ckt")
-    greeting.children[0].visible = True
-    print time() - start
-
-    greeting.add_class("big")
-    print greeting.render()
+    for i in range(2):
+        t = time()
+        loader.get_class("Installer.xml")
+        print time() - t
 
