@@ -29,7 +29,7 @@ class Cache(DictWrapper):
             oldest_creation_time = time() - self.expiration
 
             for key, entry in self.__entries.items():
-                if entry._creation < oldest_creation_time:
+                if entry.creation < oldest_creation_time:
                     del self.__entries[key]
 
     def request(self, key):
@@ -38,10 +38,10 @@ class Cache(DictWrapper):
 
             if entry is missing or not self._is_current(entry):
                 value = self.load(key)
-                self.__entries[key] = CacheEntry(value)
+                self.__entries[key] = CacheEntry(key, value)
                 return value
             else:
-                return entry._value
+                return entry.value
         else:
             return self.load(key)
     
@@ -59,19 +59,12 @@ class Cache(DictWrapper):
 
     def _is_current(self, entry):
         return self.expiration is None \
-            or time() - entry._creation < self.expiration
+            or time() - entry.creation < self.expiration
 
 class CacheEntry(object):
     
-    def __init__(self, value):
-        self._value = value
-        self._creation = time()
-
-    @getter
-    def creation(self):
-        return self._creation
-
-    @getter
-    def value(self):
-        return self._value
+    def __init__(self, key, value):
+        self.key = key
+        self.value = value
+        self.creation = time()
 
