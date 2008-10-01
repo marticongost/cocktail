@@ -166,6 +166,14 @@ class Element(object):
     def ready(self, observers = None):
         
         if not self.__is_ready:
+            
+            if self.member:
+                self.add_class(self.member.__class__.__name__)
+
+            if self.__ready_handlers:
+                for handler in self.__ready_handlers:
+                    handler()
+
             self._ready()        
             self.__is_ready = True
 
@@ -203,13 +211,7 @@ class Element(object):
             self.__ready_handlers.append(handler)
 
     def _ready(self):
-        
-        if self.member:
-            self.add_class(self.member.__class__.__name__)
-
-        if self.__ready_handlers:
-            for handler in self.__ready_handlers:
-                handler()
+        pass        
 
     def _content_ready(self):
         pass
