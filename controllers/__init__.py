@@ -13,5 +13,6 @@ from cocktail.controllers.viewstate import (
     view_state_form,
     get_persistent_param
 )
+from cocktail.controllers.parameters import read_form
 from cocktail.controllers.usercollection import UserCollection
 
