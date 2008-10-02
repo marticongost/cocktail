@@ -8,6 +8,7 @@
 """
 from threading import local
 from cocktail.modeling import DictWrapper
+from cocktail.pkgutils import get_full_name
 
 _thread_data = local()
 _undefined = object()
@@ -28,7 +29,16 @@ def translate(obj, language = None, **kwargs):
     if translator:
         return translator(language, **kwargs)
     else:
-        return translations(obj, language, **kwargs)
+        try:
+            return translations(obj, language, **kwargs)
+        except KeyError, ex:
+            try:
+                type_key = get_full_name(type(obj)) + "-instance"
+            except TypeError:
+                type_key = type(obj).__name__ + "-instance"
+            
+            kwargs["instance"] = obj
+            return translations(type_key, language, **kwargs)
 
 
 class TranslationsRepository(DictWrapper):
@@ -104,7 +114,7 @@ class Translation(DictWrapper):
         
         # Custom python expression
         if callable(string):
-            string = string(self, obj, **kwargs)
+            string = string(**kwargs)
 
         # String formatting
         elif kwargs:
