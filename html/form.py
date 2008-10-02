@@ -43,6 +43,8 @@ class Form(Element, DataDisplay):
         self.append(self.buttons)
 
         self.submit_button = Element("button")
+        self.submit_button["name"] = "submit"
+        self.submit_button["value"] = "true"
         self.submit_button["type"] = "submit"
         self.submit_button.append(translate("Submit"))
         self.buttons.append(self.submit_button)
@@ -67,7 +69,7 @@ class Form(Element, DataDisplay):
                     for member in members:
                         if group.matches(member):
                             field_entry = self.create_field(member)
-                            fieldset.append(field_entry)
+                            fieldset.append(field_entry)                            
                             has_match = True
                         else:
                             remaining_members.append(member)
@@ -80,6 +82,7 @@ class Form(Element, DataDisplay):
                 for member in self.displayed_members:
                     field_entry = self.create_field(member)
                     self.fields.append(field_entry)
+                    setattr(self, member.name + "_field", field_entry)
     
     def create_fieldset(self, group):
 
