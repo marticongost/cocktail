@@ -27,7 +27,7 @@ class ValidationContext(DictWrapper):
     """
     def __init__(self, member, validable, **kwargs):
         DictWrapper.__init__(self, kwargs)
-        self.__stack = [(member, validable, self._dict)]
+        self.__stack = [(member, validable, self._items)]
 
     def enter(self, member, validable, **kwargs):        
         """Begins a nested validation context, which will be stacked uppon the
@@ -46,25 +46,25 @@ class ValidationContext(DictWrapper):
 
         @param kwargs: Key/value pairs used to initialize the context.
         """
-        self._dict = self.__stack[-1][2].copy()
-        self._dict.update(kwargs)
-        self.__stack.append((member, validable, self._dict))
+        self._items = self.__stack[-1][2].copy()
+        self._items.update(kwargs)
+        self.__stack.append((member, validable, self._items))
 
     def leave(self):
 
         if len(self.__stack) == 1:
             raise ValueError("No context to pop")
 
-        self._member, self._validable, self._dict = self.__stack.pop()
+        self._member, self._validable, self._items = self.__stack.pop()
         
-    def __set__(self, key, value):
-        self._dict[key] = value
+    def __setitem__(self, key, value):
+        self._items[key] = value
 
     def setdefault(self, key, default):
-        self._dict.setdefault(key, default)
+        self._items.setdefault(key, default)
 
     def update(self, items, **kwargs):
-        self._dict.update(items, kwargs)
+        self._items.update(items, kwargs)
 
     @getter
     def member(self):

@@ -17,8 +17,13 @@ from cocktail.schema.schemastrings import String
 from cocktail.schema.schemanumbers import Number, Integer, Decimal, Float
 from cocktail.schema.schemabooleans import Boolean
 from cocktail.schema.schemadates import DateTime, Date, Time
-from cocktail.schema.adapter import (
-    MemberAccessor, AttributeAccessor, DictAccessor,
+from cocktail.schema.accessors import (
+    get_accessor,
+    MemberAccessor,
+    AttributeAccessor,
+    DictAccessor
+)
+from cocktail.schema.adapter import (    
     Adapter, RuleSet,
     Rule, Copy, Exclusion, Split, Join
 )

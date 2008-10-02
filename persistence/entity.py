@@ -22,8 +22,6 @@ from cocktail.persistence.incremental_id import incremental_id
 from cocktail.persistence.index import Index
 from cocktail.persistence import relations
 
-default = object()
-
 # Default collection types
 schema.Collection.default_type = PersistentList
 schema.Mapping.default_type = PersistentMapping
@@ -316,25 +314,9 @@ class Entity(Persistent):
     indexed = True
 
     def __init__(self, **values):
-
         Persistent.__init__(self)
-
         self._v_initializing = True
-
-        # Set the value of all object members, either from a parameter or from
-        # a default value definition
-        for name, member in self.__class__.members().iteritems():
-            value = values.get(name, default)
-
-            if value is default:
-                
-                if member.translated:
-                    continue
-
-                value = member.produce_default()
-
-            setattr(self, name, value)
- 
+        self.__class__.init_instance(self, values, EntityAccessor) 
         self._v_initializing = False
 
     def __repr__(self):

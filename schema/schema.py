@@ -8,10 +8,18 @@ Provides a member that handles compound values.
 @since:			March 2008
 """
 from copy import deepcopy
-from cocktail.modeling import empty_dict, empty_list, \
-                              ListWrapper, DictWrapper
+from cocktail.modeling import (
+    empty_dict,
+    empty_list,
+    ListWrapper,
+    DictWrapper
+)
 from cocktail.schema.member import Member
+from cocktail.schema.accessors import get_accessor
 from cocktail.schema.exceptions import SchemaIntegrityError
+
+default = object()
+
 
 class Schema(Member):
     """A data structure, made up of one or more L{members<member.Member>}.
@@ -49,7 +57,26 @@ class Schema(Member):
 
         if members:
             self.expand(members)
-            
+    
+    def init_instance(self, instance, values = None, accessor = None):
+        
+        if accessor is None:
+            accessor = get_accessor(instance)
+
+        # Set the value of all object members, either from a parameter or from
+        # a default value definition
+        for name, member in self.members().iteritems():
+            value = None if values is None else values.get(name, default)
+
+            if value is default:
+                
+                if member.translated:
+                    continue
+
+                value = member.produce_default()
+
+            accessor.set(instance, name, value)
+
     def inherit(self, *bases):
         """Declare an inheritance relationship towards one or more base
         schemas.
@@ -140,6 +167,11 @@ class Schema(Member):
 
         # From a list
         else:
+            # Use the provided list as an implicit order sequence for the
+            # schema members
+            if not self.members_order:
+                self.members_order = [member.name for member in members]
+
             for member in members:
                 self.add_member(member)
 
@@ -280,7 +312,11 @@ class Schema(Member):
         """Validation rule for schemas. Applies the validation rules defined by
         all members in the schema, propagating their errors."""
 
-        getter = context.get("getter", getattr)
+        accessor = context.get("accessor", None)
+
+        if accessor is None:
+            accessor = get_accessor(validable)
+            context["accessor"] = accessor
 
         if self.__members:
             
@@ -288,7 +324,7 @@ class Schema(Member):
 
             try:
                 for name, member in self.__members.iteritems():
-                    value = getter(validable, name)
+                    value = accessor.get(validable, name)
                     for error in member.get_errors(value, context):
                         yield error
             finally:
