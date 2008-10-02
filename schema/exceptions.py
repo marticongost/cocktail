@@ -134,7 +134,7 @@ class MinLengthError(ValidationError):
 
     def __repr__(self):
         return "%s (should be %d or more characters long)" \
-            % (ValidationError.__repr__(self), self.length)
+            % (ValidationError.__repr__(self), self.min)
 
 
 class MaxLengthError(ValidationError):
