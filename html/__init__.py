@@ -28,6 +28,6 @@ from cocktail.html.selectors import (
 from cocktail.html.pager import Pager
 from cocktail.html.pagingcontrols import PagingControls
 from cocktail.html.textarea import TextArea
-from cocktail.html.textbox import TextBox
+from cocktail.html.textbox import TextBox, PasswordBox
 from cocktail.html.tinymce import TinyMCE
 
