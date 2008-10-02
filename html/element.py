@@ -54,6 +54,7 @@ class Element(object):
         self.__resource_uris = None
         self.__client_params = None
         self.__is_ready = False
+        self.__binding_handlers = None
         self.__ready_handlers = None
         self.__value = None
 
@@ -166,15 +167,20 @@ class Element(object):
     def ready(self, observers = None):
         
         if not self.__is_ready:
+
+            self._binding()
+
+            if self.__binding_handlers:
+                for handler in self.__binding_handlers:
+                    handler()
+
             
-            if self.member:
-                self.add_class(self.member.__class__.__name__)
+            self._ready()
 
             if self.__ready_handlers:
                 for handler in self.__ready_handlers:
                     handler()
 
-            self._ready()        
             self.__is_ready = True
 
         if self.__children:
@@ -204,14 +210,24 @@ class Element(object):
             for observer in observers:
                 observer(self)
     
-    def add_ready_handler(self, handler):
+    def when_binding(self, handler):
+        if self.__binding_handlers is None:
+            self.__binding_handlers = [handler]
+        else:
+            self.__binding_handlers.append(handler)
+
+    def when_ready(self, handler):
         if self.__ready_handlers is None:
             self.__ready_handlers = [handler]
         else:
             self.__ready_handlers.append(handler)
 
+    def _binding(self):
+        pass
+
     def _ready(self):
-        pass        
+        if self.member:
+            self.add_class(self.member.__class__.__name__)
 
     def _content_ready(self):
         pass
