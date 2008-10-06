@@ -287,6 +287,7 @@ class TemplateCompiler(object):
             for line in lines:
                 if line.strip():
                     indent_str = WHITESPACE_EXPR.match(line).group(0)
+                    break
             indent_end = len(indent_str)
             write = self.__source.write
 
