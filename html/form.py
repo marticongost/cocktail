@@ -146,24 +146,29 @@ class Form(Element, DataDisplay):
         label.append(self.get_member_label(member))       
         return label
 
-    def add_group(self, group):
-        self.__groups.append(group)
+    def add_group(self, group_id, members_filter):
+        self.__groups.append(FormGroup(self, group_id, members_filter))
 
 
 class FormGroup(object):
 
-    def __init__(self, id, members_filter):        
+    def __init__(self, form, id, members_filter):
+        self.__form = form
         self.__id = id
         self.__members_filter = members_filter
 
         if callable(members_filter):
             self.__match_expr = members_filter
         else:
-            members = set(self._normalize_member(member)
+            members = set(self.__form._normalize_member(member)
                           for member in members_filter)
 
             self.__match_expr = \
-                lambda member: self._normalize_member(member) in members
+                lambda member: self.__form._normalize_member(member) in members
+
+    @getter
+    def form(self):
+        return self.__form
 
     @getter
     def id(self):
