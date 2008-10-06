@@ -29,7 +29,7 @@ class DataStore(object):
     @getter
     def db(self):
         if self.__db is None:
-            self.__db = DB(self.__storage)
+            self.__db = DB(self.storage)
 
         return self.__db
 
