@@ -88,7 +88,7 @@ class Renderer(object):
             out(self._serialize_attribute_value(value))
 
     def _serialize_attribute_value(self, value):
-        return u'"' + value.replace(u'"', u'\\"') + u'"'
+        return u'"' + unicode(value).replace(u'"', u'\\"') + u'"'
 
 class HTML4Renderer(Renderer):
 
