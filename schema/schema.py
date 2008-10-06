@@ -66,7 +66,7 @@ class Schema(Member):
         # Set the value of all object members, either from a parameter or from
         # a default value definition
         for name, member in self.members().iteritems():
-            value = None if values is None else values.get(name, default)
+            value = default if values is None else values.get(name, default)
 
             if value is default:
                 
