@@ -32,9 +32,13 @@ def translate(obj, language = None, **kwargs):
         try:
             return translations(obj, language, **kwargs)
         except KeyError, ex:
+            
+            if isinstance(obj, basestring):
+                raise
+
             try:
                 type_key = get_full_name(type(obj)) + "-instance"
-            except TypeError:
+            except:
                 type_key = type(obj).__name__ + "-instance"
             
             kwargs["instance"] = obj
