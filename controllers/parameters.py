@@ -14,7 +14,7 @@ from cocktail import schema
 # request values
 schema.Member.parse_request_value = None
 
-def parse_int(value):
+def parse_int(self, value):
     try:
         value = int(value)
     except ValueError:
@@ -24,7 +24,7 @@ def parse_int(value):
 
 schema.Integer.parse_request_value = parse_int
 
-def parse_boolean(value):
+def parse_boolean(self, value):
     
     vl = value.lower()
     
@@ -61,11 +61,13 @@ def read_form(form_schema, target = None, normalization = strip):
             if normalization:
                 value = normalization(value)
 
-            if member.parse_request_value:
+            if value == "":
+                value = None
+
+            if value is not None and member.parse_request_value:
                 value = member.parse_request_value(value)
         
         accessor.set(target, member.name, value)
 
-    print target
     return target
 
