@@ -9,3 +9,16 @@ Allows creating presentation components from XML markup.
 """
 from cocktail.html.templates.loader import TemplateLoader
 
+# Default template loader
+_loader = None
+get_class = None
+new = None
+
+def set_loader(loader):
+    global _loader, get_class, new
+    _loader = loader
+    get_class = loader.get_class
+    new = loader.new
+
+set_loader(TemplateLoader())
+

@@ -7,8 +7,8 @@
 @since:			October 2008
 """
 from cocktail.translations import translate
-from cocktail.html import Element
-from cocktail.html.pager import Pager
+from cocktail.html import Element, templates
+
 
 class PagingControls(Element):
 
@@ -64,7 +64,7 @@ class PagingControls(Element):
             self.visible = False
 
     def create_pager(self):
-        pager = Pager()
+        pager = templates.new("cocktail.html.Pager")
         return pager
 
     def create_page_size_control(self):

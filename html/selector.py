@@ -10,8 +10,7 @@ from cocktail.modeling import ListWrapper, SetWrapper
 from cocktail.translations import translate
 from cocktail.schema import Number
 from cocktail.html import Element
-from cocktail.html.checkbox import CheckBox
-from cocktail.controllers.viewstate import view_state
+
 
 class Selector(Element):
 
@@ -92,77 +91,4 @@ class Selector(Element):
     value = property(_get_value, _set_value, doc = """
         Gets or sets the active selection for the selector.
         """)
-
-class DropdownSelector(Selector):
-
-    tag = "select"
-
-    def create_entry(self, value, label, selected):
-        entry = Element("option")
-        entry["value"] = value
-        entry["selected"] = selected
-        entry.append(label)
-        return entry
-
-    def _get_name(self):
-        return self["name"]
-
-    def _set_name(self, value):
-        self["name"] = value
-
-    name = property(_get_name, _set_name, doc = """
-        Gets or sets the name that the selector will take in HTML forms.
-        @type: str
-        """)
-
-
-class RadioSelector(Selector):
-
-    def create_entry(self, value, label, selected):
-        entry = Element("input")
-        entry["type"] = "radio"
-        entry["value"] = value
-        entry["selected"] = selected        
-        entry["name"] = self.name
-        entry.append(label)
-        return entry
-
-
-class LinkSelector(Selector):
-
-    def create_entry(self, value, label, selected):
-        
-        entry = Element()
-
-        if selected:
-            entry.add_class("selected")
-
-        link = Element("a")
-        link["href"] = "?" + view_state(**{self.name: value})
-        link.append(label)
-        entry.append(link)
-
-        return entry
-
-
-class CheckList(Selector):
-
-    def create_entry(self, value, label, selected):
-
-        entry = Element()
-        entry_id = self.name + "-" + value
-
-        entry.check = CheckBox()
-        entry.check["name"] = self.name
-        entry.check["id"] = entry_id
-        entry.check.value = selected
-        entry.check["value"] = value
-        entry.append(entry.check)
-
-        entry.label = Element("label")
-        entry.label["for"] = entry_id
-        entry.label.append(label)
-        entry.append(entry.label)
-
-        return entry
 

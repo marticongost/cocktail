@@ -10,11 +10,8 @@ from cocktail.language import get_content_language, set_content_language
 from cocktail.modeling import getter, ListWrapper
 from cocktail.translations import translate
 from cocktail.schema import Member, Boolean, Reference
-from cocktail.html.element import Element
+from cocktail.html import Element, templates
 from cocktail.html.datadisplay import DataDisplay
-from cocktail.html.textbox import TextBox
-from cocktail.html.checkbox import CheckBox
-from cocktail.html.selectors import DropdownSelector
 
 
 class Form(Element, DataDisplay):
@@ -25,9 +22,16 @@ class Form(Element, DataDisplay):
 
     def __init__(self, *args, **kwargs):
         DataDisplay.__init__(self)
-        self.set_member_type_display(Member, TextBox)
-        self.set_member_type_display(Boolean, CheckBox)
-        self.set_member_type_display(Reference, DropdownSelector)
+
+        self.set_member_type_display(Member,
+            templates.get_class("cocktail.html.TextBox"))
+
+        self.set_member_type_display(Boolean,
+            templates.get_class("cocktail.html.CheckBox"))
+
+        self.set_member_type_display(Reference,
+            templates.get_class("cocktail.html.DropdownSelector"))
+
         self.__groups = []
         self.groups = ListWrapper(self.__groups)
         Element.__init__(self, *args, **kwargs)

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<?py
+from cocktail.modeling import refine
+?>
+
+<form
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:py="http://www.whads.com/ns/cocktail/templates"
+    method="get">
+
+    <!-- Paging -->
+    <py:cocktail.html.PagingControls
+        py:id="paging_controls"
+        py:user_collection="@{self.user_collection}"/>
+
+    <div py:id="toolbar">
+
+        <!-- Actions -->
+        <div py:id="actions_box" py:collapsible="${True}">
+
+            <button                
+                py:def="toolbar_button"
+                py:args="action"
+                class="toolbar_button ${action}"
+                name="section">
+
+                <img src="/resources/images/${action}.png"/>
+                <label>${translate(action)}</label>
+            </button>
+
+            <py:ready>
+                <py:new
+                    py:element="self.create_toolbar_button(action)"
+                    py:for="action in self.actions"/>
+            </py:ready>
+        </div>
+
+        <!-- Settings -->
+        <div py:id="settings_box">
+
+            <!-- Visible members  -->
+            <div py:id="visible_members" class="toolbar_button selector">
+                <span class="label">${translate("Visible members")}</span>
+                <div class="selector_content">
+
+                    <py:cocktail.html.CheckList
+                        py:id="visible_members_selector"
+                        py:name="members"
+                        py:items="@{self.user_collection.schema.ordered_members()}"
+                        py:value="@{self.user_collection.members}">
+
+                        <?py
+                        @refine(element)
+                        def get_item_value(self, item):
+                            if isinstance(item, basestring):
+                                return item
+                            else:
+                                return item.name
+
+                        @refine(element)
+                        def get_item_label(self, member):
+                            return translate(member)
+                        ?>
+                    </py:cocktail.html.CheckList>
+
+                    <button name="section" value="content">${translate("Submit")}</button>
+                </div>
+            </div>
+
+            <!-- Visible languages -->
+            <div py:id="visible_languages" class="toolbar_button selector">
+                <span class="label">${translate("Visible languages")}</span>
+                <div class="selector_content">
+                    
+                    <py:cocktail.html.CheckList
+                        py:id="visible_languages_selector"
+                        py:name="language"
+                        py:items="@{self.available_languages}"
+                        py:value="@{self.visible_languages}"/>
+
+                    <button name="section" value="content">${translate("Submit")}</button>
+                </div>
+            </div>
+            
+        </div>
+
+    </div>
+
+    <!-- Data -->
+    <py:cocktail.html.Table
+        py:id="collection_display"
+        py:user_collection="@{self.user_collection}"/>
+    
+    <div
+        py:id="no_results"
+        py:visible="@{self.user_collection.page_subset()}">
+        ${translate("No results")}
+    </div>
+
+</form>

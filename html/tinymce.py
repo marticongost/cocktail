@@ -8,8 +8,8 @@
 """
 from simplejson import dumps
 from cocktail.language import get_content_language
-from cocktail.html import Element
-from cocktail.html.textarea import TextArea
+from cocktail.html import Element, templates
+
 
 class TinyMCE(Element):
     
@@ -22,7 +22,7 @@ class TinyMCE(Element):
             "/resources/scripts/tinymce/jscripts/tiny_mce/tiny_mce.js")
 
     def _build(self):
-        self.textarea = TextArea()
+        self.textarea = templates.new("cocktail.html.TextArea")
         self.append(self.textarea)
         
     def _ready(self):

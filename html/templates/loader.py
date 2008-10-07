@@ -8,24 +8,45 @@
 """
 import os
 from cocktail.cache import Cache
+from cocktail.pkgutils import import_object
 from cocktail.html.templates.compiler import TemplateCompiler
+from cocktail.html import __file__ as _html_module_path
+
 
 class TemplateLoader(object):
 
+    extension = ".cml"
     Compiler = TemplateCompiler
 
     class Cache(Cache):
 
         def _is_current(self, entry):
-            return entry.creation >= os.stat(entry.key).st_mtime
+            template = entry.value
+            return template.source_file \
+                and entry.creation >= os.stat(template.source_file).st_mtime
 
     def __init__(self):
         
-        self.paths = []
+        self.__paths = {}
+        self.__dependencies = {}
+        self.__derivatives = {}
 
         self.cache = self.Cache()
         self.cache.expiration = None
-        self.cache.load = self.compile_file
+        self.cache.load = self._load_template
+
+        self.add_path(
+            "cocktail.html", 
+            os.path.abspath(os.path.dirname(_html_module_path))
+        )
+        
+    def add_path(self, pkg, path):
+        pkg_paths = self.__paths.get(pkg)
+
+        if pkg_paths is None:
+            self.__paths[pkg] = pkg_paths = [path]
+        else:
+            pkg_paths.append(path)
 
     def get_class(self, name):
         """Obtains a python class from the specified template.
@@ -36,11 +57,10 @@ class TemplateLoader(object):
         @return: An instance of the requested template.
         @rtype: L{cocktail.html.Element}
 
-        @raise IOError: Raised if the indicated template can't be found on the
-            loader's search path.
-        """
-        template_file = self._find_template(name)
-        return self.cache.request(template_file)
+        @raise TemplateNotFoundError: Raised if the indicated template can't be
+            found on the loader's search path.
+        """        
+        return self.cache.request(name)
                 
     def new(self, name):
         """Produces an instance of the specified template.
@@ -51,41 +71,122 @@ class TemplateLoader(object):
         @return: An instance of the requested template.
         @rtype: L{cocktail.html.Element}
         
-        @raise IOError: Raised if the indicated template can't be found on the
-            loader's search path.
+        @raise TemplateNotFoundError: Raised if the indicated template can't be
+            found on the loader's search path.
         """
-        return self.get_class(name)()
+        return self.cache.request(name)()
 
-    def _find_template(self, name):
-        """Finds the source file for a template, given its name."""
-        for path in self.paths:
-            fname = os.path.join(path, name)
-            if os.path.exists(fname):
-                return fname
-
-        raise IOError("Can't find template " + name)
-
-    def compile_file(self, template_file):
+    def _load_template(self, name):
         
-        try:
-            f = file(template_file, "r")
-            source = f.read()
-        finally:
-            f.close()
+        pkg_name, class_name = self._split_name(name)
+
+        # Drop cached templates that depend on the requested template
+        derivatives = self.__derivatives.get(name)
+
+        if derivatives:
+            for derivative in derivatives:
+                self.cache.pop(derivative, None)
         
-        name = os.path.splitext(os.path.split(template_file)[1])[0]
-        return self.Compiler(source, name).template_class
+        # Discard previous dependencies
+        dependencies = self.__dependencies.get(name)
+
+        if dependencies:
+            for dependency in dependencies:
+                self.__derivatives[dependency].remove(name)
+
+        # Try to obtain the template class from a template file
+        source_file = self._find_template(pkg_name, class_name)
+
+        if source_file is not None:
+
+            try:
+                f = file(source_file, "r")
+                source = f.read()
+            finally:
+                f.close()
+
+            compiler = self.Compiler(pkg_name, class_name, self, source)                           
+
+            deps = compiler.classes.keys()
+            self.__dependencies[name] = deps
+
+            # Update the template dependency graph
+            for dependency in deps:
+                derivatives = self.__derivatives.get(dependency)
+
+                if derivatives is None:
+                    self.__derivatives[dependency] = derivatives = set()
+
+                derivatives.add(name)
+            
+            cls = compiler.get_template_class()
+
+        # If no template file for the requested tempate is found, try to import
+        # the template class from a regular python module
+        else:
+            try:
+                cls = import_object(
+                    pkg_name + "." + class_name.lower() + "." + class_name)
+            except ImportError:
+                raise TemplateNotFoundError(name)
+
+            self.__dependencies[name] = None
+
+        cls.source_file = source_file
+        return cls
    
+    def _split_name(self, name):
+        
+        pos = name.rfind(".")
+
+        if pos == -1:
+            raise ValueError("Unqualified template name: " + name)
+
+        pkg_name = name[:pos]
+        item_name = name[pos + 1:]
+        
+        if not pkg_name or not item_name:
+            raise ValueError("Wrong template name: %s" % name)
+        
+        return pkg_name, item_name
+
+    def _find_template(self, pkg, name):
+        """Finds the source file for a template, given its package and name."""
+        pkg_paths = self.__paths.get(pkg)
+
+        if pkg_paths is not None:
+            for path in pkg_paths:
+                fname = os.path.join(path, name + self.extension)
+                if os.path.exists(fname):
+                    return fname
+
+
+class TemplateNotFoundError(Exception):
+    """An exception raised when a L{template loader<TemplateLoader>} can't find
+    the requested template.
+
+    @ivar name: The qualified name of the template that couldn't be found.
+    @type name: str
+    """
+
+    def __init__(self, name):
+        Exception.__init__(self, "Couldn't find template class '%s'" % name)
+        self.name = name
+
 
 if __name__ == "__main__":
 
     loader = TemplateLoader()
-    loader.paths.append("/home/marti/Projectes/sitebasis/src/sitebasis/views")
-    
+#    loader.add_path(
+#        "sitebasis.views",
+#        "/home/marti/Projectes/sitebasis/views"
+#    )
+   
     from time import time
+    import cocktail
 
-    for i in range(2):
-        t = time()
-        loader.get_class("Installer.xml")
-        print time() - t
+#    t = time()
+    #print loader.get_class("sitebasis.views.Installer")
+    loader.get_class("cocktail.html.CollectionView")
+#    print "%.6f" % (time() - t)
 

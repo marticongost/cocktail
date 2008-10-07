@@ -42,10 +42,3 @@ class TextBox(Element):
         @type: str
         """)
 
-
-class PasswordBox(TextBox):
-    
-    def __init__(self, *args, **kwargs):
-        Element.__init__(self, *args, **kwargs)
-        self["type"] = "password"
-

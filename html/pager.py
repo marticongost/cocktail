@@ -8,7 +8,6 @@
 """
 from cocktail.modeling import getter
 from cocktail.html import Element
-from cocktail.html.selectors import DropdownSelector
 from cocktail.controllers.viewstate import view_state
 
 
