@@ -14,6 +14,9 @@ _loader = None
 get_class = None
 new = None
 
+def get_loader():
+    return _loader
+
 def set_loader(loader):
     global _loader, get_class, new
     _loader = loader

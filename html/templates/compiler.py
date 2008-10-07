@@ -46,9 +46,15 @@ class TemplateCompiler(object):
         self.__stack = []
         self.__root_element_found = False
         self.__context_is_current = False
+        
         self.__source_blocks = []
+        
         self.__global_source_block = SourceCodeWriter()
         self.__source_blocks.append(self.__global_source_block)
+
+        self.__class_source_block = SourceCodeWriter(1)
+        self.__source_blocks.append(self.__class_source_block)
+
         self.__parser = expat.ParserCreate(namespace_separator = ">")
 
         for key in dir(self):
@@ -363,32 +369,43 @@ class TemplateCompiler(object):
                         '(lambda: %s))' % chunk
                     )
 
-    def DefaultHandler(self, data):        
-        if data.startswith("<?py") and data[4] in (" \n\r\t"):
-            data = data[5:-2]
-            lines = data.split("\n")
+    def DefaultHandler(self, data):
+
+        for pi in ("<?py", "<?py-class"):
+            if data.startswith(pi) and data[4] in (" \n\r\t"):                
+                break
+        else:
+            return 
+        
+        data = data[len(pi) + 1:-2]
+        lines = data.split("\n")
             
-            for line in lines:
-                if line.strip():
-                    indent_str = WHITESPACE_EXPR.match(line).group(0)
-                    break
-            indent_end = len(indent_str)
+        for line in lines:
+            if line.strip():
+                indent_str = WHITESPACE_EXPR.match(line).group(0)
+                break
+
+        indent_end = len(indent_str)
+
+        if pi == "<?py":
             source = self.__stack[-1].source_block
+        elif pi == "<?py-class":
+            source = self.__class_source_block
 
-            # Add a consistent reference to the currently processed element
-            if self.__root_element_found \
-            and not self.__context_is_current:
-                source.write("element = " + self._get_current_element())
-                self.__context_is_current = True
+        # Add a consistent reference to the currently processed element
+        if self.__root_element_found \
+        and not self.__context_is_current:
+            source.write("element = " + self._get_current_element())
+            self.__context_is_current = True
 
-            for i, line in enumerate(lines):
-                if not line.startswith(indent_str) and line.strip():
-                    raise ParseError(
-                        "Inconsistent indentation on code block (line %d)"
-                        % (self.__parser.CurrentLineNumber + i)
-                    )
-                line = line[indent_end:]
-                source.write(line)
+        for i, line in enumerate(lines):
+            if not line.startswith(indent_str) and line.strip():
+                raise ParseError(
+                    "Inconsistent indentation on code block (line %d)"
+                    % (self.__parser.CurrentLineNumber + i)
+                )
+            line = line[indent_end:]
+            source.write(line)
 
     def _get_current_element(self):
         for frame in reversed(self.__stack):
