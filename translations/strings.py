@@ -71,6 +71,18 @@ translations.define("No results",
     en = u"The current view has no matching items."
 )
 
+translations.define("Visible members",
+    ca = u"Camps",
+    es = u"Campos",
+    en = u"Fields"
+)
+
+translations.define("Visible languages",
+    ca = u"Idiomes",
+    es = u"Idiomas",
+    en = u"Languages"
+)
+
 # Validation errors
 #------------------------------------------------------------------------------
 translations.define("cocktail.schema.exceptions.ValueRequiredError-instance",

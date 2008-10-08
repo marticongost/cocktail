@@ -176,17 +176,25 @@ class TemplateNotFoundError(Exception):
 
 if __name__ == "__main__":
 
-    loader = TemplateLoader()
-#    loader.add_path(
-#        "sitebasis.views",
-#        "/home/marti/Projectes/sitebasis/views"
-#    )
-   
-    from time import time
-    import cocktail
+    from sys import argv, exit
 
-#    t = time()
-    #print loader.get_class("sitebasis.views.Installer")
-    loader.get_class("cocktail.html.CollectionView")
-#    print "%.6f" % (time() - t)
+    if len(argv) != 2:
+        print "Usage: %s <template file>" % argv[0]
+        exit(1)
+
+    loader = TemplateLoader()
+
+    f = file(argv[1])
+    source = f.read()
+    f.close()
+
+    class_source = TemplateCompiler(
+        "_package_",
+        "Template",
+        loader,
+        source
+    ).get_source()
+
+    for i, line in enumerate(class_source.split("\n")):
+        print str(i + 1).rjust(5) + ": " + line
 

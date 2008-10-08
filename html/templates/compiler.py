@@ -9,7 +9,8 @@
 import re
 from xml.parsers import expat
 from cocktail.modeling import refine, getter, DictWrapper
-from cocktail.html.element import default
+from cocktail.translations import translate, get_language
+from cocktail.html.element import default, PlaceHolder
 from cocktail.html.templates.sourcecodewriter import SourceCodeWriter
 
 WHITESPACE_EXPR = re.compile(r"\s*")
@@ -53,6 +54,9 @@ class TemplateCompiler(object):
         self.__global_source_block = SourceCodeWriter()
         self.__source_blocks.append(self.__global_source_block)
 
+        self.__declaration_source_block = SourceCodeWriter()
+        self.__source_blocks.append(self.__declaration_source_block)
+
         self.__class_source_block = SourceCodeWriter(1)
         self.__source_blocks.append(self.__class_source_block)
 
@@ -87,10 +91,14 @@ class TemplateCompiler(object):
         ) + u"\n"
 
     def get_template_class(self):
-        template_env = self.get_template_env()        
+        template_env = self.get_template_env()
         source = self.get_source()
-        print source
-        exec source in template_env
+        code = compile(
+            source,
+            "<%s.%s>" % (self.pkg_name, self.class_name),
+            "exec"
+        )
+        exec code in template_env
         return template_env[self.class_name]
 
     def get_template_env(self):
@@ -98,6 +106,9 @@ class TemplateCompiler(object):
             "pkg_name": self.pkg_name,
             "class_name": self.class_name,
             "loader": self.loader,
+            "PlaceHolder": PlaceHolder,
+            "translate": translate,
+            "get_language": get_language,
             "refine": refine
         }
 
@@ -162,6 +173,7 @@ class TemplateCompiler(object):
         element_factory = None
         elem_tag = default
         parent_id = self._get_current_element()
+        with_element = None
         with_def = None
 
         if len(name_parts) > 1:
@@ -204,7 +216,7 @@ class TemplateCompiler(object):
                 is_new = False
 
                 if with_element:
-                    frame.element = with_element
+                    frame.element = id = with_element
 
             elif tag == "new":
                 
@@ -235,17 +247,15 @@ class TemplateCompiler(object):
         if not self.__root_element_found:
             
             self.__root_element_found = True
-
-            frame.source_block = source = SourceCodeWriter()
-            self.__source_blocks.append(source)
-
-            self.__base_class_name = base_name = elem_class_name
-            frame.element = "self"
             
-            source.write()
+            self.__base_class_name = base_name = elem_class_name
+            frame.element = id = "self"
+            
+            source = self.__declaration_source_block
             source.write("class %s(%s):" % (self.class_name, base_name))
-            source.write()
-            source.indent()
+
+            frame.source_block = source = SourceCodeWriter(1)
+            self.__source_blocks.append(source)
 
             source.write("def __init__(self, *args, **kwargs):")
             source.indent()
@@ -254,7 +264,7 @@ class TemplateCompiler(object):
             if elem_tag is not default:
                 source.write("self.tag = %r" % elem_tag)
 
-            self._handle_attributes("self", attributes)
+            self._handle_attributes(id, attributes)
             source.unindent()
             source.write()
 
@@ -278,45 +288,45 @@ class TemplateCompiler(object):
             def_identifier = \
                 attributes.pop(self.TEMPLATE_NS + ">def", None)
 
-            if not is_new:
-                id = frame.element
+            if def_identifier:
+                is_new = False
+            
+            # Instantiation
+            if is_new:
                 
-            else:
                 # Generate an identifier for the new element
                 id = "_e" + str(self.__element_id)
                 self.__element_id += 1
                 frame.element = id
 
-                # Instantiation
-                if def_identifier is None:
+                source.write()
+        
+                # If the element is being created through the 'new'
+                # directive, the user will have provided an expression to
+                # produce the new element. Otherwise, determine the
+                # instantiation expression for the element as follows:
+                if element_factory is None:
+                    
+                    # Elements with a user defined name get their own
+                    # factory method, which will be invoked to obtain a new
+                    # instance
+                    if identifier:
+                        element_factory = "self.create_%s()" % identifier
 
-                    source.write()
-            
-                    # If the element is being created through the 'new'
-                    # directive, the user will have provided an expression to
-                    # produce the new element. Otherwise, determine the
-                    # instantiation expression for the element as follows:
-                    if element_factory is None:
-                        
-                        # Elements with a user defined name get their own
-                        # factory method, which will be invoked to obtain a new
-                        # instance
-                        if identifier:
-                            element_factory = "self.create_%s()" % identifier
+                    # In any other case, the element is instantiated by 
+                    # invoking its class without arguments
+                    else:
+                        element_factory = "%s()" % elem_class_name
 
-                        # In any other case, the element is instantiated by 
-                        # invoking its class without arguments
-                        else:
-                            element_factory = "%s()" % elem_class_name
+                source.write("%s = %s" % (id, element_factory))
 
-                    source.write("%s = %s" % (id, element_factory))
+                # Use the user defined name to bind elements to their
+                # parents
+                if identifier is not None and iter_expr is None:
+                    source.write("self.%s = %s" % (identifier, id))
 
-                    # Use the user defined name to bind elements to their
-                    # parents
-                    if identifier is not None and iter_expr is None:
-                        source.write("self.%s = %s" % (identifier, id))
-
-                # Parent and position
+            # Parent and position
+            if is_new or with_element:
                 parent = attributes.pop(self.TEMPLATE_NS + ">parent", None)
                 index = attributes.pop(self.TEMPLATE_NS + ">index", None)
                 after = attributes.pop(self.TEMPLATE_NS + ">after", None)
@@ -332,7 +342,7 @@ class TemplateCompiler(object):
                     source.write("%s.place_after(%s)" % (id, after))
                 elif before:
                     source.write("%s.place_before(%s)" % (id, before))
-                else:
+                elif is_new:
                     source.write("%s.append(%s)" % (parent_id, id))
 
             # Elements with a user defined identifier get their own factory
@@ -346,13 +356,15 @@ class TemplateCompiler(object):
                 
                 # Declaration
                 args = attributes.pop(self.TEMPLATE_NS + ">args", None)
-                args = ", " + args if args else ""
+
+                if not args and with_def:
+                    args = "*args, **kwargs"
                 
                 inline = (with_def and parent_id != "self")
 
                 if inline:
                     source.write(
-                        "base_factory = %s.create_%s"
+                        id + "_factory = %s.create_%s"
                         % (parent_id, factory_id)
                     )
                     source.write("@refine(%s)" % parent_id)
@@ -361,23 +373,31 @@ class TemplateCompiler(object):
                     frame.source_block = source
                     self.__source_blocks.append(source)
 
-                source.write("def create_%s(self%s):" % (factory_id, args))
+                source.write(
+                    "def create_%s(self%s):"
+                    % (factory_id, ", " + args if args else "")
+                )
                 source.indent()
 
                 if with_def:
                     if inline:
-                        element_factory = "base_factory()"
+                        element_factory = id + "_factory(%s)" % args
                     else:
-                        element_factory = "%s.create_%s(self%s)" \
-                            % (self.__base_class_name, factory_id, args)
+                        element_factory = "%s.create_%s(self%s)" % (
+                            self.__base_class_name,
+                            factory_id,
+                            ", " + args if args else ""
+                        )
                 else:
                     element_factory = "%s()" % elem_class_name
 
                 # Instantiation
                 source.write("%s = %s" % (id, element_factory))
-                source.write("%s.add_class(%s)"
-                    % (id, repr(factory_id))
-                )
+
+                if not with_def:
+                    source.write("%s.add_class(%s)"
+                        % (id, repr(factory_id))
+                    )
                 
                 @frame.closing
                 def return_element():
@@ -413,17 +433,14 @@ class TemplateCompiler(object):
                 
                 elif expr_type == PLACEHOLDER:
                     source.write(
-                        '%s.append(' % parent_id,
-                        self.add_class_reference(
-                            "cocktail.html.PlaceHolder"
-                        ),
-                        '(lambda: %s))' % chunk
+                        '%s.append(PlaceHolder(lambda: %s))'
+                        % (parent_id, chunk)
                     )
 
     def DefaultHandler(self, data):
 
         for pi in ("<?py", "<?py-class"):
-            if data.startswith(pi) and data[4] in (" \n\r\t"):                
+            if data.startswith(pi) and data[len(pi)] in (" \n\r\t"):                
                 break
         else:
             return 
@@ -440,14 +457,15 @@ class TemplateCompiler(object):
 
         if pi == "<?py":
             source = self.__stack[-1].source_block
+
+            # Add a consistent reference to the currently processed element
+            if self.__root_element_found \
+            and not self.__context_is_current:
+                source.write("element = " + self._get_current_element())
+                self.__context_is_current = True
+
         elif pi == "<?py-class":
             source = self.__class_source_block
-
-        # Add a consistent reference to the currently processed element
-        if self.__root_element_found \
-        and not self.__context_is_current:
-            source.write("element = " + self._get_current_element())
-            self.__context_is_current = True
 
         for i, line in enumerate(lines):
             if not line.startswith(indent_str) and line.strip():

@@ -30,7 +30,7 @@ class Element(object):
         class_name = None,
         children = None,
         **attributes):
-        
+ 
         self.__parent = None
         self.__children = None
 
@@ -165,7 +165,7 @@ class Element(object):
         pass
 
     def ready(self, observers = None):
-        
+
         if not self.__is_ready:
 
             self._binding()
@@ -173,10 +173,9 @@ class Element(object):
             if self.__binding_handlers:
                 for handler in self.__binding_handlers:
                     handler()
-
             
             self._ready()
-
+            
             if self.__ready_handlers:
                 for handler in self.__ready_handlers:
                     handler()

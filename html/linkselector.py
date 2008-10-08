@@ -21,7 +21,13 @@ class LinkSelector(Selector):
             entry.add_class("selected")
 
         link = Element("a")
-        link["href"] = "?" + view_state(**{self.name: value})
+        
+        if self.name:
+            name = self.name
+            if isinstance(name, unicode):
+                name = str(name)
+            link["href"] = "?" + view_state(**{name: value})
+
         link.append(label)
         entry.append(link)
 

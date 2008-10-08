@@ -88,10 +88,14 @@ from cocktail.modeling import refine
     </div>
 
     <!-- Data -->
-    <py:cocktail.html.Table
-        py:id="collection_display"
-        py:user_collection="@{self.user_collection}"/>
-    
+    <py:cocktail.html.Table py:id="collection_display"/>
+
+    <py:ready>
+        <?py
+        self.collection_display.user_collection = self.user_collection
+        ?>
+    </py:ready>
+
     <div
         py:id="no_results"
         py:visible="@{self.user_collection.page_subset()}">

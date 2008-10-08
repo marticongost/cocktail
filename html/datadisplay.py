@@ -8,7 +8,7 @@ Visual elements for data binding.
 @since:			July 2008
 """
 from operator import getitem
-from cocktail.modeling import getter, ListWrapper
+from cocktail.modeling import getter, ListWrapper, empty_list
 from cocktail.language import require_content_language
 from cocktail.translations import translate
 from cocktail.html import Element
@@ -49,7 +49,10 @@ class DataDisplay(object):
 
     @getter
     def displayed_members(self):
-        return (member
+        if not self.schema:
+            return empty_list
+        else:
+            return (member
                 for member in self.schema.ordered_members(True)
                 if self.get_member_displayed(member))
 
