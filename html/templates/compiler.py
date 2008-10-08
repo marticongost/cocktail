@@ -8,7 +8,7 @@
 """
 import re
 from xml.parsers import expat
-from cocktail.modeling import getter, DictWrapper
+from cocktail.modeling import refine, getter, DictWrapper
 from cocktail.html.element import default
 from cocktail.html.templates.sourcecodewriter import SourceCodeWriter
 
@@ -42,6 +42,7 @@ class TemplateCompiler(object):
         self.__classes = {}
         self.classes = DictWrapper(self.__classes)
         self.__class_names = set()
+        self.__base_class_name = None
         self.__element_id = 0
         self.__stack = []
         self.__root_element_found = False
@@ -68,6 +69,16 @@ class TemplateCompiler(object):
     def compile(self, xml):        
         self.__parser.Parse(xml, True)
 
+    def _parse_error(self, reason):
+        raise ParseError(
+            "Error parsing template %s.%s (line %d): %s" % (
+                self.pkg_name,
+                self.class_name,
+                self.__parser.CurrentLineNumber + 1,
+                reason
+            )
+        )
+
     def get_source(self):
         
         return u"\n\n".join(
@@ -76,17 +87,19 @@ class TemplateCompiler(object):
         ) + u"\n"
 
     def get_template_class(self):
-
-        template_scope = {
-            "pkg_name": self.pkg_name,
-            "class_name": self.class_name,
-            "loader": self.loader
-        }
-
+        template_env = self.get_template_env()        
         source = self.get_source()
         print source
-        exec source in template_scope
-        return template_scope[self.class_name]
+        exec source in template_env
+        return template_env[self.class_name]
+
+    def get_template_env(self):
+        return {
+            "pkg_name": self.pkg_name,
+            "class_name": self.class_name,
+            "loader": self.loader,
+            "refine": refine
+        }
 
     def add_class_reference(self, reference):
         
@@ -149,6 +162,7 @@ class TemplateCompiler(object):
         element_factory = None
         elem_tag = default
         parent_id = self._get_current_element()
+        with_def = None
 
         if len(name_parts) > 1:
             uri, tag = name_parts
@@ -168,22 +182,38 @@ class TemplateCompiler(object):
                 frame.close_actions.append(source.unindent)
 
             elif tag == "with":
-                with_element = attributes.pop(self.TEMPLATE_NS + ">element")
+                with_element = attributes.pop(
+                    self.TEMPLATE_NS + ">element",
+                    None)
+                
+                with_def = attributes.pop(
+                    self.TEMPLATE_NS + ">def",
+                    None)
 
-                if not with_element:
-                    raise ParseError(
-                        "'with' directive without an 'element' attribute"
+                if not with_element and not with_def:
+                    self._parse_error(
+                        "'with' directive without an 'element' or 'def' "
+                        "attribute"
+                    )
+                elif with_element and with_def:
+                    self._parse_error(
+                        "'with' directives can't have both 'element' and "
+                        "'def' attributes"
                     )
 
                 is_new = False
-                frame.element = with_element
+
+                if with_element:
+                    frame.element = with_element
 
             elif tag == "new":
                 
-                element_factory = attributes.pop(self.TEMPLATE_NS + ">element")
+                element_factory = attributes.pop(
+                    self.TEMPLATE_NS + ">element",
+                    None)
 
                 if not element_factory:
-                    raise ParseError(
+                    self._parse_error(
                         "'new' directive without an 'element' attribute"
                     )
 
@@ -209,7 +239,7 @@ class TemplateCompiler(object):
             frame.source_block = source = SourceCodeWriter()
             self.__source_blocks.append(source)
 
-            base_name = elem_class_name
+            self.__base_class_name = base_name = elem_class_name
             frame.element = "self"
             
             source.write()
@@ -248,8 +278,11 @@ class TemplateCompiler(object):
             def_identifier = \
                 attributes.pop(self.TEMPLATE_NS + ">def", None)
 
-            # Get the generated and user defined identifiers for the element
-            if is_new:
+            if not is_new:
+                id = frame.element
+                
+            else:
+                # Generate an identifier for the new element
                 id = "_e" + str(self.__element_id)
                 self.__element_id += 1
                 frame.element = id
@@ -305,27 +338,45 @@ class TemplateCompiler(object):
             # Elements with a user defined identifier get their own factory
             # method, so that subclasses and containers can extend or override
             # it as needed
-            if identifier or def_identifier:
+            factory_id = identifier or def_identifier or with_def
 
-                # Declaration
-                frame.source_block = source = SourceCodeWriter(1)
-                self.__source_blocks.append(source)                
+            if factory_id:
+
+                frame.element = id = factory_id
                 
+                # Declaration
                 args = attributes.pop(self.TEMPLATE_NS + ">args", None)
-                source.write(
-                    "def create_%s(self%s):"
-                    % (
-                        identifier or def_identifier,
-                        ", " + args if args else ""
+                args = ", " + args if args else ""
+                
+                inline = (with_def and parent_id != "self")
+
+                if inline:
+                    source.write(
+                        "base_factory = %s.create_%s"
+                        % (parent_id, factory_id)
                     )
-                )
+                    source.write("@refine(%s)" % parent_id)
+                else:
+                    source = SourceCodeWriter(1)
+                    frame.source_block = source
+                    self.__source_blocks.append(source)
+
+                source.write("def create_%s(self%s):" % (factory_id, args))
                 source.indent()
 
+                if with_def:
+                    if inline:
+                        element_factory = "base_factory()"
+                    else:
+                        element_factory = "%s.create_%s(self%s)" \
+                            % (self.__base_class_name, factory_id, args)
+                else:
+                    element_factory = "%s()" % elem_class_name
+
                 # Instantiation
-                source.write("%s = %s()" % (id, elem_class_name))
-                source.write(
-                    "%s.add_class(%s)"
-                    % (id, repr(identifier or def_identifier))
+                source.write("%s = %s" % (id, element_factory))
+                source.write("%s.add_class(%s)"
+                    % (id, repr(factory_id))
                 )
                 
                 @frame.closing
@@ -400,10 +451,7 @@ class TemplateCompiler(object):
 
         for i, line in enumerate(lines):
             if not line.startswith(indent_str) and line.strip():
-                raise ParseError(
-                    "Inconsistent indentation on code block (line %d)"
-                    % (self.__parser.CurrentLineNumber + i)
-                )
+                self._parse_error("Inconsistent indentation on code block")
             line = line[indent_end:]
             source.write(line)
 
@@ -429,7 +477,7 @@ class TemplateCompiler(object):
 
                 if condition is not None:
                     if condition.strip():
-                        raise ParseError("'else' directive must be empty")
+                        self._parse_error("'else' directive must be empty")
                     condition_statement = "else:"
                 else:
                     condition_statement = None
