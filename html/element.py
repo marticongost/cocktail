@@ -147,7 +147,6 @@ class Element(object):
         if not renderer:
             renderer = self._get_default_renderer()
         
-        self.ready()
         canvas = []
         out = canvas.append
         self._render(renderer, out)
@@ -158,13 +157,14 @@ class Element(object):
         return DEFAULT_RENDERER_TYPE()
 
     def _render(self, renderer, out):
+        self.ready()
         if self.rendered:
             renderer.write_element(self, out)
 
     def _build(self):
         pass
 
-    def ready(self, observers = None):
+    def ready(self):
 
         if not self.__is_ready:
 
@@ -181,33 +181,6 @@ class Element(object):
                     handler()
 
             self.__is_ready = True
-
-        if self.__children:
-
-            descendant_observer = self._descendant_ready
-
-            if descendant_observer is not Element._descendant_ready:
-                
-                observer_added = True
-
-                if observers is None:
-                    observers = [descendant_observer]
-                else:
-                    observers.append(descendant_observer)
-            else:
-                observer_added = False
-
-            for child in self.__children:
-                child.ready(observers)
-
-            if observer_added:
-                observers.pop(-1)
-
-        self._content_ready()
-
-        if observers:
-            for observer in observers:
-                observer(self)
     
     def when_binding(self, handler):
         if self.__binding_handlers is None:
@@ -553,29 +526,35 @@ class Element(object):
         else:
             del self.__client_params[key]
 
+
 class Content(Element):
  
     styled_class = False
     value = None
 
-    def __init__(self, value, *args, **kwargs):
+    def __init__(self, value = None, *args, **kwargs):
         Element.__init__(self, *args, **kwargs)
         self.value = value
         
     def _render(self, render, out):
-        out(self.value)
+        self.ready()
+        if self.value is not None:
+            out(self.value)
+
 
 class PlaceHolder(Content):
 
     def __init__(self, expression):
-        Content.__init__(self, None)
+        Content.__init__(self)
         self.expression = expression
 
     def _ready(self):
         self.value = self.expression()
 
+
 class ElementTreeError(Exception):
     pass
+
 
 if __name__ == "__main__2":
  

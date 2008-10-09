@@ -11,7 +11,7 @@ from operator import getitem
 from cocktail.modeling import getter, ListWrapper, empty_list
 from cocktail.language import require_content_language
 from cocktail.translations import translate
-from cocktail.html import Element
+from cocktail.html import Element, Content
 from cocktail.typemapping import TypeMapping
 from cocktail.schema import Member, AttributeAccessor
 
@@ -246,9 +246,7 @@ class DataDisplay(object):
 
     def default_display(self, obj, member):
         value = self.get_member_value(obj, member)
-        display = Element()
-        display.value = unicode(self.repr_value(obj, member, value))
-        return display
+        return Content(unicode(self.repr_value(obj, member, value)))
 
 
 NO_SELECTION = 0

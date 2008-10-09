@@ -6,8 +6,9 @@
 @organization:	Whads/Accent SL
 @since:			February 2008
 """
-from cocktail.html.element import Element
+from cocktail.html.element import Element, Content
 from cocktail.html.resources import Script, StyleSheet
+
 
 class Page(Element):
 
@@ -39,30 +40,46 @@ class Page(Element):
         self.body = Element("body")
         self.append(self.body)
 
+        self._body_markup = Content()
+        self.append(self._body_markup)
+
     def _render(self, renderer, out):
         
         if self.doctype:
             out(self.doctype)
             out("\n")
 
+        # Render the <body> element first, to gather meta information from all
+        # elements (meta tags, scripts, style sheets, the page title, etc)
+        renderer.when_element_rendered(self._process_descendant)
+        self._body_markup.value = self.body.render(renderer)
+        self._fill_head()
+        
+        # Then proceed with the full page. The <body> element is hidden so that
+        # it won't be rendered a second time
+        self.body.visible = False
         Element._render(self, renderer, out)
+        self.body.visible = True
 
-    def _descendant_ready(self, descendant):
+    def _process_descendant(self, descendant):
 
         page_title = descendant.page_title
         
+        # Page title
         if page_title is not None:
             self.__title = page_title
 
+        # Meta tags
         self.__meta.update(descendant.meta)
 
+        # Resources
         for resource in descendant.resources:
             uri = resource.uri
             if uri not in self.__resource_uris:
                 self.__resource_uris.add(uri)
                 self.__resources.append(resource)
 
-    def _content_ready(self):
+    def _fill_head(self):
 
         head = self.head
 

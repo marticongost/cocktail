@@ -23,11 +23,15 @@ HTML4_TRANSITIONAL = u"""<!DOCTYPE html
 PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">"""
        
+
 class Renderer(object):
     
     doctype = None
     single_tags = "img", "link", "meta", "br", "hr"
     flag_attributes = "selected", "checked"
+
+    def __init__(self):
+        self.__element_rendered_handlers = []
 
     def make_page(self, element):        
         from cocktail.html.page import Page
@@ -36,6 +40,9 @@ class Renderer(object):
         page.body.append(element)
         return page
 
+    def when_element_rendered(self, handler):
+        self.__element_rendered_handlers.append(handler)
+
     def write_element(self, element, out):
         
         tag = element.tag
@@ -43,8 +50,7 @@ class Renderer(object):
 
         if tag:
             # Tag opening
-            out(u"<")
-            out(tag)
+            out(u"<" + tag)
 
             # Attributes
             for key, value in element.attributes.iteritems():
@@ -70,10 +76,13 @@ class Renderer(object):
             for child in element.children:
                 child._render(self, out)
 
+            element._content_ready()
+
             if tag:
-                out(u"</")
-                out(tag)
-                out(u">")
+                out(u"</" + tag + u">")
+
+        for handler in self.__element_rendered_handlers:
+            handler(element)
 
     def _write_attribute(self, key, value, out):
         
@@ -83,12 +92,8 @@ class Renderer(object):
             if value:
                 self._write_flag(key, out)
         else:
-            out(key)
-            out(u"=")
-            out(self._serialize_attribute_value(value))
+            out(key + u'="' + unicode(value).replace(u'"', u'\\"') + u'"')
 
-    def _serialize_attribute_value(self, value):
-        return u'"' + unicode(value).replace(u'"', u'\\"') + u'"'
 
 class HTML4Renderer(Renderer):
 
@@ -98,16 +103,15 @@ class HTML4Renderer(Renderer):
     def _write_flag(self, key, out):
         out(key)
 
+
 class XHTMLRenderer(Renderer):
     
     doctype = XHTML1_STRICT
     single_tag_closure = u"/>"
 
     def _write_flag(self, key, out):
-        out(key)
-        out(u'="')
-        out(key)
-        out(u'"')
+        out(key + u'="' + key + u'"')
+
 
 DEFAULT_RENDERER_TYPE = HTML4Renderer
 
