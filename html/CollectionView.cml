@@ -9,6 +9,10 @@ from cocktail.modeling import refine
     xmlns:py="http://www.whads.com/ns/cocktail/templates"
     method="get">
 
+    <?py-class
+    actions = ()
+    ?>
+
     <!-- Paging -->
     <py:cocktail.html.PagingControls
         py:id="paging_controls"
@@ -98,7 +102,7 @@ from cocktail.modeling import refine
 
     <div
         py:id="no_results"
-        py:visible="@{self.user_collection.page_subset()}">
+        py:visible="@{not self.user_collection.page_subset()}">
         ${translate("No results")}
     </div>
 
