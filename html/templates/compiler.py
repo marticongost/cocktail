@@ -393,12 +393,7 @@ class TemplateCompiler(object):
 
                 # Instantiation
                 source.write("%s = %s" % (id, element_factory))
-
-                if not with_def:
-                    source.write("%s.add_class(%s)"
-                        % (id, repr(factory_id))
-                    )
-                
+                                
                 @frame.closing
                 def return_element():
                     source.write("return %s" % id)
@@ -409,6 +404,14 @@ class TemplateCompiler(object):
                 source.write("%s.tag = %r" % (id, elem_tag))
 
             self._handle_attributes(id, attributes)
+
+            # Automatically add the name of an element as one of its CSS
+            # classes. Note this is done *after* assigning attribute values,
+            # otherwise a 'class' attribute would overwrite this.
+            if identifier or def_identifier:
+                source.write("%s.add_class(%s)"
+                    % (id, repr(factory_id))
+                )
     
     def EndElementHandler(self, name):
         self._pop()
