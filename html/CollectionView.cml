@@ -94,16 +94,17 @@ from cocktail.modeling import refine
     <!-- Data -->
     <py:cocktail.html.Table py:id="collection_display"/>
 
+    <div py:id="no_results">
+        ${translate("No results")}
+    </div>
+
     <py:ready>
         <?py
         self.collection_display.user_collection = self.user_collection
+        results_visible = bool(self.user_collection.page_subset())
+        self.collection_display.visible = results_visible
+        self.no_results.visible = not results_visible
         ?>
     </py:ready>
-
-    <div
-        py:id="no_results"
-        py:visible="@{not self.user_collection.page_subset()}">
-        ${translate("No results")}
-    </div>
 
 </form>
