@@ -98,8 +98,10 @@ class Page(Element):
             head.append(meta_tag)
 
         if self.__title and self.__title is not None:
+            import re
+            html_expr = re.compile(r"</?[^>]+>")
             title_tag = Element("title")
-            title_tag.append(self.__title)
+            title_tag.append(html_expr.sub("", self.__title))
             head.append(title_tag)
         
         for resource in self.__resources:
