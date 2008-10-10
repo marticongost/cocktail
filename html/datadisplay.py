@@ -14,6 +14,7 @@ from cocktail.translations import translate
 from cocktail.html import Element, Content
 from cocktail.typemapping import TypeMapping
 from cocktail.schema import Member, AttributeAccessor
+from cocktail.html import templates
 
 
 class DataDisplay(object):
@@ -225,14 +226,17 @@ class DataDisplay(object):
         if display is None:
             display = self.default_display(obj, member)
  
+        if isinstance(display, basestring):
+            display = templates.get_class(display)
+
         if isinstance(display, type) and issubclass(display, Element):
             display = display()
             display.data = obj
             display.member = member
-            display.value = self.get_member_value(obj, member)
+            display.value = self.get_member_value(obj, member)        
         elif callable(display):
             display = display(self, obj, member)
-        
+
         return display
 
     def set_member_display(self, member, display):
