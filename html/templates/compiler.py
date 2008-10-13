@@ -47,7 +47,6 @@ class TemplateCompiler(object):
         self.__element_id = 0
         self.__stack = []
         self.__root_element_found = False
-        self.__context_is_current = False
         
         self.__source_blocks = []
         
@@ -150,11 +149,9 @@ class TemplateCompiler(object):
             element.source_block = self.__global_source_block
 
         self.__stack.append(element)
-        self.__context_is_current = False
         return element
 
     def _pop(self):
-        self.__context_is_current = False
         frame = self.__stack.pop()
 
         for close_action in frame.close_actions:
@@ -170,7 +167,7 @@ class TemplateCompiler(object):
         is_content = True
         is_new = True
         elem_class_fullname = None
-        element_factory = None
+        element_expr = None
         elem_tag = default
         parent_id = self._get_current_element()
         with_element = None
@@ -216,15 +213,15 @@ class TemplateCompiler(object):
                 is_new = False
 
                 if with_element:
-                    frame.element = id = with_element
+                    element_expr = with_element
 
             elif tag == "new":
                 
-                element_factory = attributes.pop(
+                element_expr = attributes.pop(
                     self.TEMPLATE_NS + ">element",
                     None)
 
-                if not element_factory:
+                if not element_expr:
                     self._parse_error(
                         "'new' directive without an 'element' attribute"
                     )
@@ -292,41 +289,41 @@ class TemplateCompiler(object):
                 is_new = False
             
             # Instantiation
-            if is_new:
-                
-                # Generate an identifier for the new element
+            if is_new or with_element:
+
+                # Generate a name that can be used to uniquely reference the
+                # element
                 id = "_e" + str(self.__element_id)
                 self.__element_id += 1
                 frame.element = id
 
                 source.write()
-        
+                       
                 # If the element is being created through the 'new'
                 # directive, the user will have provided an expression to
                 # produce the new element. Otherwise, determine the
                 # instantiation expression for the element as follows:
-                if element_factory is None:
+                if element_expr is None:
                     
                     # Elements with a user defined name get their own
                     # factory method, which will be invoked to obtain a new
                     # instance
                     if identifier:
-                        element_factory = "self.create_%s()" % identifier
+                        element_expr = "self.create_%s()" % identifier
 
                     # In any other case, the element is instantiated by 
                     # invoking its class without arguments
                     else:
-                        element_factory = "%s()" % elem_class_name
+                        element_expr = "%s()" % elem_class_name
 
-                source.write("%s = %s" % (id, element_factory))
+                source.write("element = %s = %s" % (id, element_expr))
 
                 # Use the user defined name to bind elements to their
                 # parents
                 if identifier is not None and iter_expr is None:
                     source.write("self.%s = %s" % (identifier, id))
 
-            # Parent and position
-            if is_new or with_element:
+                # Parent and position
                 parent = attributes.pop(self.TEMPLATE_NS + ">parent", None)
                 index = attributes.pop(self.TEMPLATE_NS + ">index", None)
                 after = attributes.pop(self.TEMPLATE_NS + ">after", None)
@@ -351,7 +348,7 @@ class TemplateCompiler(object):
             factory_id = identifier or def_identifier or with_def
 
             if factory_id:
-
+                
                 frame.element = id = factory_id
                 
                 # Declaration
@@ -392,8 +389,8 @@ class TemplateCompiler(object):
                     element_factory = "%s()" % elem_class_name
 
                 # Instantiation
-                source.write("%s = %s" % (id, element_factory))
-                                
+                source.write("element = %s = %s" % (id, element_factory))
+                
                 @frame.closing
                 def return_element():
                     source.write("return %s" % id)
@@ -415,6 +412,10 @@ class TemplateCompiler(object):
     
     def EndElementHandler(self, name):
         self._pop()
+        
+        # Persistent name
+        frame = self.__stack[-1]
+        frame.source_block.write("element = %s" % frame.element)
     
     def CharacterDataHandler(self, data):
 
@@ -460,12 +461,6 @@ class TemplateCompiler(object):
 
         if pi == "<?py":
             source = self.__stack[-1].source_block
-
-            # Add a consistent reference to the currently processed element
-            if self.__root_element_found \
-            and not self.__context_is_current:
-                source.write("element = " + self._get_current_element())
-                self.__context_is_current = True
 
         elif pi == "<?py-class":
             source = self.__class_source_block
