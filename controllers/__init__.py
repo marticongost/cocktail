@@ -7,6 +7,7 @@ Utilities for writing application controllers.
 @organization:	Whads/Accent SL
 @since:			July 2008
 """
+from cocktail.controllers.basecontroller import BaseController
 from cocktail.controllers.viewstate import (
     get_state,
     view_state,
