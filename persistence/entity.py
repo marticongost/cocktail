@@ -85,6 +85,9 @@ DEBUG = False
 
 class EntityClass(type, schema.Schema):
 
+    # Avoid creating a duplicate entity class when copying an existing entity
+    _copy_class = schema.Schema
+
     def __init__(cls, name, bases, members):
          
         if DEBUG:
@@ -244,11 +247,24 @@ class EntityClass(type, schema.Schema):
         
     def _unique_validation_rule(cls, member, value, context):
 
-        if (member.indexed and value in member.index) \
-        or any(
-            instance.get(member) == value
-            for instance in member.schema.index.itervalues()
-        ):
+        if member.indexed:
+            if member.translated:
+                value = (context["language"], value)
+            duplicated = value in member.index
+        else:
+            if member.schema.adaptation_source:
+                index = member.schema.adaptation_source.index
+            else:
+                index = member.schema.index
+
+            language = context["language"]
+
+            duplicated = any(
+                instance.get(member, language) == value
+                for instance in index.itervalues()
+            )
+        
+        if duplicated:
             yield UniqueValueError(member, value, context)
 
     def _create_translation_schema(cls):
