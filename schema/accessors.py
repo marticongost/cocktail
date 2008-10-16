@@ -93,6 +93,9 @@ class DictAccessor(MemberAccessor):
             value = obj.get(key, undefined)
 
         if value is undefined:
+            value = default
+
+        if value is undefined:
             raise KeyError(key)
 
         return value
