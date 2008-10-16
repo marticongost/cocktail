@@ -7,7 +7,6 @@ Provides a member that handles compound values.
 @organization:	Whads/Accent SL
 @since:			March 2008
 """
-from copy import deepcopy
 from cocktail.modeling import (
     empty_dict,
     empty_list,
@@ -325,18 +324,23 @@ class Schema(Member):
  
                     if member.translated:
 
-                        for language \
-                        in accessor.languages(validable, member.name):
-                            context["language"] = language
-                            
-                            value = accessor.get(
-                                validable,
-                                name,
-                                language = language,
-                                default = None)
+                        prev_language = context.get("language")
 
-                            for error in member.get_errors(value, context):
-                                yield error
+                        try:
+                            for language \
+                            in accessor.languages(validable, member.name):
+                                context["language"] = language
+                                
+                                value = accessor.get(
+                                    validable,
+                                    name,
+                                    language = language,
+                                    default = None)
+
+                                for error in member.get_errors(value, context):
+                                    yield error
+                        finally:    
+                            context["language"] = prev_language
                     else:
                         value = accessor.get(validable, name, default = None)
 
@@ -397,6 +401,4 @@ class Schema(Member):
             )
 
         return ordered_members
-
-Schema._copy_class = Schema
 
