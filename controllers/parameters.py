@@ -37,7 +37,10 @@ def parse_boolean(self, value):
         
 schema.Boolean.parse_request_value = parse_boolean
 
-def read_form(form_schema, target = None, normalization = strip):
+def read_form(form_schema,
+    target = None,
+    languages = None,
+    normalization = strip):
     
     params = cherrypy.request.params
 
@@ -47,11 +50,14 @@ def read_form(form_schema, target = None, normalization = strip):
     else:
         accessor = schema.get_accessor(target)
 
-    for member in form_schema.members().itervalues():
+    def read_member(member, language):
 
-        # TODO: Translated members
+        key = member.name
 
-        value = params.get(member.name)
+        if language:
+            key += "-" + language
+
+        value = params.get(key)
 
         if value == "":
             value = None
@@ -67,7 +73,14 @@ def read_form(form_schema, target = None, normalization = strip):
             if value is not None and member.parse_request_value:
                 value = member.parse_request_value(value)
         
-        accessor.set(target, member.name, value)
+        accessor.set(target, member.name, value, language)
+
+    for member in form_schema.members().itervalues():
+        if member.translated and languages:
+            for language in languages:
+                read_member(member, language)
+        else:
+            read_member(member, None)
 
     return target
 

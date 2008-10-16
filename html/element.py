@@ -198,7 +198,7 @@ class Element(object):
         pass
 
     def _ready(self):
-        if self.member:
+        if self.member:            
             self.add_class(self.member.__class__.__name__)
 
     def _content_ready(self):
@@ -206,6 +206,17 @@ class Element(object):
 
     def _descendant_ready(self, descendant):
         pass
+
+    def _bind_name(self, member, language):
+
+        if member and member.name:
+
+            name = member.name
+
+            if language:
+                name += "-" + language
+
+            self["name"] = name
 
     # Attributes
     #--------------------------------------------------------------------------
@@ -554,76 +565,4 @@ class PlaceHolder(Content):
 
 class ElementTreeError(Exception):
     pass
-
-
-if __name__ == "__main__2":
- 
-    from time import time
-    from cocktail.modeling import refine
-    
-    start = time()
- 
-    i = 0
-    j = 0
-    
-    table = Element("table")
-    table_content = Element()
-    table.append(table_content)
-    
-    row = Element("tr")
-    row_content = Element()
-    row.append(row_content)
-    alternate_classes = ("even", "odd")
-
-    td = Element("td")
-
-    @refine(table_content)
-    def _render(self, renderer, out):
-        for i in range(15):
-            renderer.write_element(row, out)
-    
-    @refine(row_content)
-    def _render(self, renderer, out):
-        for j in range(10):
-            td.empty()
-            td.append("Cell %d,%d" % (i, j))
-            renderer.write_element(td, out)
-
-#    for i in range(15):
-#        row = Element("tr")
-#        row.add_class(alternate_classes[i % 2])
-
-#        for j in range(10):
-#            td = Element("td")
-#            td.append("Cell %d,%d" % (i, j))
-#            row.append(td)
-
-#        table.append(row)
-    
-    html = table.render()
-    print time() - start
-    print html
-
-if __name__ == "__main__":
-
-    from guppy import hpy
-    h = hpy()
-    h.setrelheap()
-
-    for n in range(10):
-        table = Element("table")     
-        alternate_classes = ("even", "odd")
-
-        for i in range(15):
-            row = Element("tr")
-            row.add_class(alternate_classes[i % 2])
-
-            for j in range(10):
-                td = Element("td")
-                td.append("Cell %d,%d" % (i, j))
-                row.append(td)
-
-            table.append(row)
-        
-        html = table.render()
 

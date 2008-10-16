@@ -17,12 +17,7 @@ class CheckBox(Element):
         self["type"] = "checkbox"
 
     def _ready(self):
-
-        if self.member:
-            
-            # Name binding
-            self["name"] = self.member.name
-    
+        self._bind_name(self.member, self.language)
         Element._ready(self)
 
     def _get_value(self):

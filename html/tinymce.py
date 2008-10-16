@@ -30,7 +30,7 @@ class TinyMCE(Element):
         Element._ready(self)
 
         if self.member:
-            self.textarea["name"] = self.member.name
+            self.textarea._bind_name(self.member, self.language)
 
         if self.textarea["id"] is None:
             id = self.textarea["name"] + "_editor"

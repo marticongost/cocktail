@@ -20,9 +20,7 @@ class TextBox(Element):
     def _ready(self):
 
         if self.member:
-            
-            # Name binding
-            self["name"] = self.member.name
+            self._bind_name(self.member, self.language)
 
             # Limit the length of the control
             if isinstance(self.member, String) \
