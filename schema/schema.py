@@ -312,11 +312,9 @@ class Schema(Member):
         """Validation rule for schemas. Applies the validation rules defined by
         all members in the schema, propagating their errors."""
 
-        accessor = context.get("accessor", None)
-
-        if accessor is None:
-            accessor = get_accessor(validable)
-            context["accessor"] = accessor
+        accessor = self.accessor \
+            or context.get("accessor", None) \
+            or get_accessor(validable)
 
         if self.__members:
             
@@ -324,9 +322,26 @@ class Schema(Member):
 
             try:
                 for name, member in self.__members.iteritems():
-                    value = accessor.get(validable, name)
-                    for error in member.get_errors(value, context):
-                        yield error
+ 
+                    if member.translated:
+
+                        for language \
+                        in accessor.languages(validable, member.name):
+                            context["language"] = language
+                            
+                            value = accessor.get(
+                                validable,
+                                name,
+                                language = language,
+                                default = None)
+
+                            for error in member.get_errors(value, context):
+                                yield error
+                    else:
+                        value = accessor.get(validable, name, default = None)
+
+                        for error in member.get_errors(value, context):
+                            yield error
             finally:
                 context.leave()
 

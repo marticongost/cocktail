@@ -13,11 +13,11 @@ from cocktail.schema.schema import Schema
 from cocktail.schema.rangedmember import RangedMember
 from cocktail.schema.schemanumbers import Integer
 
-def get_max_day(value, context):
+def get_max_day(context):
 
-    date = context["validable"]
+    date = context.validable
 
-    if date.year is not None and 0 < date.month <= 12:
+    if date.year is not None and (0 < date.month <= 12):
         return monthrange(date.year, date.month)[1]
 
     return None
@@ -27,20 +27,52 @@ class BaseDateTime(Schema, RangedMember):
     _is_date = False
     _is_time = False
    
-    def __init__(self, **kwargs):
+    def __init__(self,
+        day_properties = None,
+        month_properties = None,
+        year_properties = None,
+        hour_properties = None,
+        minute_properties = None,
+        second_properties = None,
+        **kwargs):
         
         Schema.__init__(self, **kwargs)
         RangedMember.__init__(self)
 
+        day_kw = {"name": "day", "min": 1, "max": get_max_day}
+        month_kw = {"name": "month", "min": 1, "max": 12}
+        year_kw = {"name": "year"}
+        hour_kw = {"name": "hour", "min": 0, "max": 23}
+        minute_kw = {"name": "minute", "min": 0, "max": 59}
+        second_kw = {"name": "second", "min": 0, "max": 59}
+
+        if day_properties:
+            day_kw.update(day_properties)
+
+        if month_properties:
+            month_kw.update(month_properties)
+
+        if year_properties:
+            year_kw.update(year_properties)
+
+        if hour_properties:
+            hour_kw.update(hour_properties)
+
+        if minute_properties:
+            minute_kw.update(minute_properties)
+
+        if second_properties:
+            second_kw.update(second_properties)
+
         if self._is_date:
-            self.add_member(Integer(name = "day", min = 1, max = get_max_day))
-            self.add_member(Integer(name = "month", min = 1, max = 12))
-            self.add_member(Integer(name = "year"))
+            self.add_member(Integer(**day_kw))
+            self.add_member(Integer(**month_kw))
+            self.add_member(Integer(**year_kw))
         
         if self._is_time:
-            self.add_member(Integer(name = "hour", min = 0, max = 23))
-            self.add_member(Integer(name = "minute", min = 0, max = 59))
-            self.add_member(Integer(name = "second", min = 0, max = 59))
+            self.add_member(Integer(**hour_kw))
+            self.add_member(Integer(**minute_kw))
+            self.add_member(Integer(**second_kw))
 
 
 class DateTime(BaseDateTime):

@@ -58,11 +58,18 @@ class ValidationError(Exception):
     def __init__(self, member, value, context):
         self.member = member
         self.value = value
+        self.language = context.get("language")
         self.path = context.path()
 
     def __repr__(self):
-        return "%s: %s is not a valid value for %s" \
+
+        desc = "%s: %s is not a valid value for %s" \
             % (self.__class__.__name__, self.value, self.member)
+        
+        if self.language:
+            desc = "%s [%s]" % (desc, self.language)
+
+        return desc
 
 
 class ValueRequiredError(ValidationError):

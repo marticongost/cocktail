@@ -64,6 +64,9 @@ class Member(Variable):
     require_none = False
     enumeration = None
 
+    # Instance data layout
+    accessor = None
+
     # Copying and adaptation
     _copy_class = None
     copy_source = None

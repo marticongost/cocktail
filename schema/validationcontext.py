@@ -55,7 +55,8 @@ class ValidationContext(DictWrapper):
         if len(self.__stack) == 1:
             raise ValueError("No context to pop")
 
-        self._member, self._validable, self._items = self.__stack.pop()
+        self.__stack.pop()
+        self._member, self._validable, self._items = self.__stack[-1]
         
     def __setitem__(self, key, value):
         self._items[key] = value
