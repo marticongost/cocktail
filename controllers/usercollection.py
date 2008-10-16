@@ -20,7 +20,8 @@ class UserCollection(object):
 
     name = None
 
-    entity_type = None
+    base_collection = None
+
     allow_paging = True
     allow_sorting = True
     allow_filters = True
@@ -91,7 +92,10 @@ class UserCollection(object):
     
     def subset(self):
         
-        subset = Query(self.entity_type)
+        subset = Query(
+            self.entity_type,
+            base_collection = self.base_collection
+        )
         
         for expression in self.__base_filters:
             subset.add_filter(expression)

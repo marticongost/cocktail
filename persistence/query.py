@@ -38,16 +38,22 @@ class Query(object):
         entity_class,
         filters = None,
         order = None,
-        range = None):
+        range = None,
+        base_collection = None):
 
-        if not isinstance(entity_class, EntityClass) \
-        or not entity_class.indexed:
-            raise TypeError("An indexed entity class is required")
+        if base_collection is None:
+
+            if not isinstance(entity_class, EntityClass) \
+            or not entity_class.indexed:
+                raise TypeError("An indexed entity class is required")
+
+            base_collection = entity_class.index.values()
 
         if filters is not None and not isinstance(filters, list):
             filters = [filters]
 
         self.__entity_class = entity_class
+        self.__base_collection = base_collection
         self.__parent = None
         self.filters = filters
         self.order = order
@@ -74,10 +80,7 @@ class Query(object):
 
     def __apply_filters(self):
 
-        if not self.filters:
-            return self.__entity_class.index.values()
-    
-        dataset = None
+        dataset = self.__base_collection
         single_match = False
 
         for order, filter in self._get_execution_plan(self.filters):
@@ -101,7 +104,7 @@ class Query(object):
                         match = index.get(value)
                         
                         if match:
-                            matches = set([match])
+                            subset = set([match])
                             
                             # Special case: after an 'identity' filter is
                             # resolved (an equality check against a unique
@@ -110,9 +113,9 @@ class Query(object):
                             # instead (should be faster)
                             single_match = True
                         else:
-                            matches = set()
+                            subset = set()
                     else:
-                        matches = index.get(value)
+                        subset = index.get(value)
                 
                 # Different
                 elif isinstance(filter, expressions.NotEqualExpression):
@@ -120,14 +123,14 @@ class Query(object):
                         max = value, excludemax = True)
                     higher = index.values(
                         min = value, excludemin = True)
-                    matches = chain(lower, higher)
+                    subset = chain(lower, higher)
 
                 # Greater
                 elif isinstance(filter, (
                     expressions.GreaterExpression,
                     expressions.GreaterEqualExpression
                 )):
-                    matches = index.values(
+                    subset = index.values(
                         min = value,
                         excludemax = isinstance(filter,
                             expressions.GreaterExpression)
@@ -138,7 +141,7 @@ class Query(object):
                     expressions.LowerExpression,
                     expressions.LowerEqualExpression
                 )):
-                    matches = index.values(
+                    subset = index.values(
                         max = value,
                         excludemax = isinstance(filter,
                             expressions.LowerExpression)
@@ -149,22 +152,16 @@ class Query(object):
                         "Can't match %s against an index" % filter)
 
                 # Add matches together
-                if matches:
-                    if dataset:
-                        if not isinstance(dataset, set):
-                            dataset = set(dataset)
+                if subset:
+                    if not isinstance(dataset, set):
+                        dataset = set(dataset)
 
-                        dataset = dataset.intersection(matches)
-                    else:
-                        dataset = matches
+                    dataset = dataset.intersection(matches)
                 else:
                     dataset = None
 
             # Brute force matching
             else:
-                if dataset is None:
-                    dataset = self.__entity_class.index.itervalues()
-                
                 dataset = [instance
                           for instance in dataset
                           if filter.eval(instance, getattr)]
@@ -292,7 +289,8 @@ class Query(object):
             self.__entity_class,
             self.filters if filters is inherit else filters,
             self.order if order is inherit else order,
-            self.range if range is inherit else range)
+            self.range if range is inherit else range,
+            self.__base_collection)
 
         child_query.__parent = self
         return child_query
