@@ -40,7 +40,8 @@ schema.Boolean.parse_request_value = parse_boolean
 def read_form(form_schema,
     target = None,
     languages = None,
-    normalization = strip):
+    normalization = strip,
+    implicit_booleans = True):
     
     params = cherrypy.request.params
 
@@ -72,7 +73,11 @@ def read_form(form_schema,
 
             if value is not None and member.parse_request_value:
                 value = member.parse_request_value(value)
-        
+
+        if value is None \
+        and implicit_booleans and isinstance(member, schema.Boolean):
+            value = False
+
         accessor.set(target, member.name, value, language)
 
     for member in form_schema.members().itervalues():
