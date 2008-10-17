@@ -190,6 +190,10 @@ class EntityClass(type, schema.Schema):
         # Install a descriptor to mediate access to the member
         descriptor = MemberDescriptor(member)
         setattr(cls, member.name, descriptor)
+
+        # Avoid AttributeError exceptions on entity initialization by setting
+        # class wide attributes
+        setattr(cls, "_" + member.name, None)
          
         # Instrument relations
         if isinstance(member, schema.Collection) \
@@ -248,8 +252,8 @@ class EntityClass(type, schema.Schema):
     def _unique_validation_rule(cls, member, value, context):
 
         duplicate = None
-        validable = context.get("persistent_object", context.validable)
-
+        validable = cls._get_unique_validable(context)
+        
         if isinstance(validable, Entity):           
             if member.indexed:
                 if member.translated:
@@ -270,6 +274,9 @@ class EntityClass(type, schema.Schema):
 
             if duplicate and duplicate is not validable:
                 yield UniqueValueError(member, value, context)
+
+    def _get_unique_validable(cls, context):
+        return context.get("persistent_object", context.validable)
 
     def _create_translation_schema(cls):
         
