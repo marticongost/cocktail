@@ -19,6 +19,7 @@ class Form(Element, DataDisplay):
     tag = "form"
     translations = None
     hide_empty_fieldsets = True
+    errors = None
 
     def __init__(self, *args, **kwargs):
         DataDisplay.__init__(self)
@@ -142,8 +143,15 @@ class Form(Element, DataDisplay):
     def get_member_display(self, obj, member):
         display = DataDisplay.get_member_display(self, obj, member)
         display.add_class("control")
-        return display
 
+        if self.errors and self.errors.in_member(
+            member,
+            member.translated and get_content_language() or None
+        ):
+            display.add_class("error")
+
+        return display
+    
     def create_field_label(self, member):        
         label = Element("label")
         label["for"] = member.name
