@@ -246,7 +246,7 @@ class Member(Variable):
         """
         return self._validations_wrapper
 
-    def validate(self, value, context = None):
+    def validate(self, value, context = None, **context_params):
         """Indicates if the given value fulfills all the validation rules
         imposed by the member.
         
@@ -255,13 +255,16 @@ class Member(Variable):
         @param context: Additional parameters used to fine tune the validation
             process.
         @type context: L{ValidationContext<validationcontext.ValidationContext>}
+
+        @param context_params: Arbitrary keyword parameters to feed the
+            validation context with.
         """
-        for error in self.get_errors(value, context):
+        for error in self.get_errors(value, context, **context_params):
             return False
 
         return True
  
-    def get_errors(self, value, context = None):
+    def get_errors(self, value, context = None, **context_params):
         """Tests the given value with all the validation rules declared by the
         member, iterating over the resulting set of errors.
 
@@ -270,12 +273,15 @@ class Member(Variable):
             process.
         @type context: L{ValidationContext<validationcontext.ValidationContext>}
 
+        @param context_params: Arbitrary keyword parameters to feed the
+            validation context with.
+
         @return: An iterable sequence of validation errors.
         @rtype: L{ValidationError<exceptions.ValidationError>}
             iterable
         """
         if context is None:
-            context = ValidationContext(self, value)
+            context = ValidationContext(self, value, **context_params)
 
         if self._validations:
             for validation in self._validations:
