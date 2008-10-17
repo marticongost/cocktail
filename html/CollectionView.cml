@@ -2,6 +2,7 @@
 
 <?py
 from cocktail.modeling import refine
+from cocktail.controllers.viewstate import view_state_form
 ?>
 
 <form
@@ -12,6 +13,8 @@ from cocktail.modeling import refine
     <?py-class
     actions = ()
     ?>
+
+    ${view_state_form(members = None, language = None, page_size = None)}
 
     <!-- Paging -->
     <py:cocktail.html.PagingControls
