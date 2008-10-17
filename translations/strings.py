@@ -226,3 +226,16 @@ translations.define("cocktail.schema.exceptions.MaxItemsError-instance",
         % (member_identifier(instance, "en"), instance.max)
 )
 
+translations.define("cocktail.persistence.entity.UniqueValueError-instance",
+    ca = lambda instance:
+        u"El valor indicat pel camp <em>%s</em> ja existeix a la base de dades"
+        % member_identifier(instance, "ca"),
+    es = lambda instance:
+        u"El valor indicado para el campo <em>%s</em> ya existe en la base de "
+        u"datos"
+        % member_identifier(instance, "es"),
+    en = lambda instance:
+        u"The value of the <em>%s</em> field is already in use"
+        % member_identifier(instance, "en")
+)
+

@@ -247,25 +247,29 @@ class EntityClass(type, schema.Schema):
         
     def _unique_validation_rule(cls, member, value, context):
 
-        if member.indexed:
-            if member.translated:
-                value = (context["language"], value)
-            duplicated = value in member.index
-        else:
-            if member.schema.adaptation_source:
-                index = member.schema.adaptation_source.index
+        duplicate = None
+        validable = context.get("persistent_object", context.validable)
+
+        if isinstance(validable, Entity):           
+            if member.indexed:
+                if member.translated:
+                    value = (context["language"], value)
+                duplicate = member.index.get(value)
             else:
-                index = member.schema.index
+                if member.schema.adaptation_source:
+                    index = member.schema.adaptation_source.index
+                else:
+                    index = member.schema.index
 
-            language = context["language"]
+                language = context["language"]
 
-            duplicated = any(
-                instance.get(member, language) == value
-                for instance in index.itervalues()
-            )
-        
-        if duplicated:
-            yield UniqueValueError(member, value, context)
+                for instance in index.itervalues():
+                    if instance.get(member, language) == value:
+                        duplicate = instance
+                        break
+
+            if duplicate and duplicate is not validable:
+                yield UniqueValueError(member, value, context)
 
     def _create_translation_schema(cls):
         
