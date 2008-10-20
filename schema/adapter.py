@@ -7,9 +7,11 @@
 @since:			July 2008
 """
 from operator import getitem, setitem
+from copy import copy, deepcopy
 from cocktail.modeling import ListWrapper
 from cocktail.schema.schema import Schema
 from cocktail.schema.schemastrings import String
+from cocktail.schema.schemacollections import Collection
 from cocktail.schema.accessors import (
     MemberAccessor,
     AttributeAccessor,
@@ -17,6 +19,15 @@ from cocktail.schema.accessors import (
     undefined,
     get_accessor
 )
+
+def reference(context, key, value):
+    return value
+
+def shallow(context, key, value):
+    return copy(value)
+
+def deep(context, key, value):
+    return deepcopy(value)
 
 
 class AdaptationContext(object):
@@ -28,7 +39,9 @@ class AdaptationContext(object):
         target_schema = None,
         source_accessor = None,
         target_accessor = None,
-        consume_keys = True):
+        consume_keys = True,
+        copy_mode = None,
+        collection_copy_mode = None):
 
         self.source_object = source_object
         self.target_object = target_object
@@ -42,6 +55,8 @@ class AdaptationContext(object):
             if consume_keys
             else None
         )
+        self.copy_mode = copy_mode
+        self.collection_copy_mode = collection_copy_mode
 
     def get(self, key, default = undefined, language = None):
         """Gets a key from the source object.
@@ -105,20 +120,22 @@ class AdaptationContext(object):
 
 class Adapter(object):
 
-    copy_validations = True
-
     def __init__(self,
-        source_accessor = AttributeAccessor,
-        target_accessor = AttributeAccessor,
+        source_accessor = None,
+        target_accessor = None,
         implicit_copy = True,
-        copy_validations = True):
+        copy_validations = True,
+        copy_mode = None,
+        collection_copy_mode = None):
 
         self.source_accessor = source_accessor
         self.target_accessor = target_accessor
         self.__implicit_copy = implicit_copy
         self.copy_validations = copy_validations
+        self.__copy_mode = copy_mode
+        self.__collection_copy_mode = collection_copy_mode
         self.import_rules = RuleSet()
-        self.export_rules = RuleSet()
+        self.export_rules = RuleSet()        
 
     def import_schema(self, source_schema, target_schema = None):
 
@@ -142,7 +159,9 @@ class Adapter(object):
         source_schema = None,
         target_schema = None,
         source_accessor = None,
-        target_accessor = None):
+        target_accessor = None,
+        copy_mode = None,
+        collection_copy_mode = None):
         
         self.import_rules.adapt_object(
             source_object,
@@ -150,7 +169,9 @@ class Adapter(object):
             source_accessor or self.source_accessor,
             target_accessor or self.target_accessor,
             source_schema,
-            target_schema)
+            target_schema,
+            copy_mode or self.copy_mode,
+            collection_copy_mode or self.collection_copy_mode)
 
     def export_object(self,
         source_object,
@@ -158,7 +179,9 @@ class Adapter(object):
         source_schema = None,
         target_schema = None,
         source_accessor = None,
-        target_accessor = None):
+        target_accessor = None,
+        copy_mode = None,
+        collection_copy_mode = None):
         
         self.export_rules.adapt_object(
             source_object,
@@ -166,7 +189,9 @@ class Adapter(object):
             source_accessor or self.source_accessor,
             target_accessor or self.target_accessor,
             source_schema,
-            target_schema)
+            target_schema,
+            copy_mode or self.copy_mode,
+            collection_copy_mode or self.collection_copy_mode)
 
     def _get_implicit_copy(self):
         return self.__implicit_copy
@@ -177,6 +202,68 @@ class Adapter(object):
         self.export_rules.implicit_copy = value
 
     implicit_copy = property(_get_implicit_copy, _set_implicit_copy)
+
+    def _get_copy_mode(self):
+        return self.__copy_mode
+
+    def _set_copy_mode(self, copy_mode):
+        self.__copy_mode = copy_mode
+        self.import_rules.copy_mode = copy_mode
+        self.export_rules.copy_mode = copy_mode
+    
+    copy_mode = property(_get_copy_mode, _set_copy_mode, doc = """
+        Indicates the way in which values are copied between objects. This
+        should be a function, taking a single parameter (the input value) and
+        returning the resulting copy of the value. For convenience, the module
+        provides the following functions:
+        
+            * L{reference}: This is the default copy mode. It doesn't actually
+                perform a copy of the provided value, but rather returns the
+                same value unmodified.                
+            * L{shallow}: Creates a shallow copy of the provided value.
+            * L{deep}: Creates a deep copy of the provided value.
+
+        Note that setting this property will alter the analogous attribute on
+        both of the adapter's import and export rule sets (but the opposite
+        isn't true; setting X{copy_mode} on either rule set won't affect the
+        adapter).
+
+        @type: function
+        """)
+
+    def _get_collection_copy_mode(self):
+        return self.__collection_copy_mode
+
+    def _set_collection_copy_mode(self, copy_mode):
+        self.__collection_copy_mode = copy_mode
+        self.import_rules.collection_copy_mode = copy_mode
+        self.export_rules.collection_copy_mode = copy_mode
+    
+    collection_copy_mode = property(
+        _get_collection_copy_mode,
+        _set_collection_copy_mode,
+        doc = """ Indicates the way in which collections are copied between
+        objects. This should be a function, taking a single parameter (the
+        input collection) and returning the resulting copy of the collection.
+        For convenience, the module provides the following functions:
+        
+            * L{reference}: This is the default copy mode. It doesn't actually
+                perform a copy of the provided collection, but rather returns
+                a reference to it. Beware that by using this copy mode, an
+                adapted object will share the collection with its source
+                object, which may result in unexpected behavior in some cases.
+            * L{shallow}: Creates a shallow copy of the collection (a copy of
+                the collection itself is made, but its members are copied by
+                reference.
+            * L{deep}: Creates a deep copy of the collection and its members.
+
+        Note that setting this property will alter the analogous attribute on
+        both of the adapter's import and export rule sets (but the opposite
+        isn't true; setting X{collection_copy_mode} on either rule set won't
+        affect the adapter).
+
+        @type: function
+        """)
 
     def copy(self,
         mapping,
@@ -230,6 +317,8 @@ class Adapter(object):
 class RuleSet(object):
 
     implicit_copy = True
+    copy_mode = None
+    collection_copy_mode = None
     target_accessor = None
     source_accessor = None
 
@@ -279,7 +368,9 @@ class RuleSet(object):
         source_accessor = None,
         target_accessor = None,
         source_schema = None,
-        target_schema = None):
+        target_schema = None,
+        copy_mode = None,
+        collection_copy_mode = None):
         
         context = AdaptationContext(
             source_object = source_object,
@@ -292,6 +383,12 @@ class RuleSet(object):
                 or get_accessor(target_object),
             source_schema = source_schema,
             target_schema = target_schema,
+            copy_mode = self.copy_mode
+                or self.copy_mode
+                or reference,
+            collection_copy_mode = collection_copy_mode
+                or self.collection_copy_mode
+                or reference,
             consume_keys = self.implicit_copy
         )
       
@@ -394,9 +491,27 @@ class Copy(Rule):
                 
                 value = context.get(source_name, None, language)
 
+                # Make a copy of the value
+                copy_mode = getattr(context.source_object, "adapt_value", None)
+
+                if copy_mode is None:
+                    if context.collection_copy_mode \
+                    and context.source_schema \
+                    and isinstance(
+                        context.source_schema[source_name],
+                        Collection
+                    ):
+                        copy_mode = context.collection_copy_mode
+                    else:
+                        copy_mode = context.copy_mode
+
+                value = copy_mode(context, source_name, value)
+
+                # Apply any transformation dictated by the rule
                 if self.transform:
                     value = self.transform(value)
 
+                # Set the value on the target
                 context.set(target_name, value, language)
 
 
@@ -506,68 +621,4 @@ class Join(Rule):
             else:
                 value = self.glue.join(unicode(part) for part in parts)
                 context.set(self.target["name"], value)
-
-
-if __name__ == "__main__":
-    
-    import re
-    from cocktail.schema import Schema, Integer, String, Boolean
-   
-    adapter = Adapter()
-    adapter.copy(
-        {"enabled": "disabled"},
-        import_transform = lambda value: not value,
-        export_transform = lambda value: not value
-    )
-
-    product_schema = Schema(members = {
-        "id": Integer(
-            required = True,
-            unique = True,
-            min = 1
-        ),
-        "name": String(
-            required = True,
-            translated = True,
-            min = 4,
-            max = 20
-        ),
-        "enabled": Boolean(
-            required = True,
-            default = True
-        )
-    })    
-       
-    product = {}
-    product["id"] = 3
-    product["name"] = {
-        "en": u"Kurt Russell action figure",
-        "ca": u"Figura d'acció de Kurt Russell"
-    }
-    product["enabled"] = False
-
-    form_schema = adapter.export_schema(product_schema)
-    form = {}
-    
-    adapter.export_object(
-        product,
-        form,
-        product_schema,
-        form_schema,
-        source_accessor = DictAccessor,
-        target_accessor = DictAccessor)
-    
-    print form
-    form["name"]["es"] = "Chuck Norris"
-    form["disabled"] = False
-
-    adapter.import_object(        
-        form,
-        product,
-        form_schema,
-        product_schema,
-        source_accessor = DictAccessor,
-        target_accessor = DictAccessor)
-
-    print product
 

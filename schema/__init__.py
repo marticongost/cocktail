@@ -26,5 +26,6 @@ from cocktail.schema.accessors import (
 )
 from cocktail.schema.adapter import (    
     Adapter, RuleSet,
-    Rule, Copy, Exclusion, Split, Join
+    reference, shallow, deep,
+    Rule, Copy, Exclusion, Split, Join,
 )
