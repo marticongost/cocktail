@@ -159,6 +159,16 @@ class TemplateCompiler(object):
         
         return frame
 
+    def _get_parent_id(self):
+        parent_id = None
+                
+        for frame in reversed(self.__stack):
+            parent_id = frame.element
+            if parent_id:
+                return parent_id
+
+        return None
+
     def StartElementHandler(self, name, attributes):
         
         frame = self._push()
@@ -188,6 +198,11 @@ class TemplateCompiler(object):
                 source.write("@%s.when_%s" % (parent_id, tag))
                 source.write("def _handler():")
                 source.indent()
+
+                parent_id = self._get_parent_id()
+                if parent_id:
+                    source.write("element = " + parent_id)
+
                 frame.close_actions.append(source.unindent)
 
             elif tag == "with":
@@ -551,7 +566,11 @@ class TemplateCompiler(object):
             source.write("@%s.when_binding" % id)
             source.write("def _bindings():")
             source.indent()
-            
+
+            parent_id = self._get_parent_id()
+            if parent_id:
+                source.write("element = " + parent_id)
+                        
             if place_holders:
                 for assignment in place_holders:
                     source.write(assignment)
