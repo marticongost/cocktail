@@ -129,28 +129,28 @@ class Form(Element, DataDisplay):
                 control_container.add_class(language)
                 field_entry.append(control_container)
 
-                control = self.get_member_display(self.data, member)
+                control = self.create_control(self.data, member)                
                 control.language = language
                 control_container.append(control)
 
             set_content_language(current_language)
         else:
-            field_entry.control = self.get_member_display(self.data, member)
+            field_entry.control = self.create_control(self.data, member)
             field_entry.append(field_entry.control)
 
         return field_entry
 
-    def get_member_display(self, obj, member):
-        display = DataDisplay.get_member_display(self, obj, member)
-        display.add_class("control")
+    def create_control(self, obj, member):
+        control = DataDisplay.get_member_display(self, obj, member)
+        control.add_class("control")
 
         if self.errors and self.errors.in_member(
             member,
             member.translated and get_content_language() or None
         ):
-            display.add_class("error")
+            control.add_class("error")
 
-        return display
+        return control
     
     def create_field_label(self, member):        
         label = Element("label")
