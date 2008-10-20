@@ -14,7 +14,8 @@ from cocktail.schema.accessors import (
     MemberAccessor,
     AttributeAccessor,
     DictAccessor,
-    undefined
+    undefined,
+    get_accessor
 )
 
 
@@ -143,29 +144,15 @@ class Adapter(object):
         source_accessor = None,
         target_accessor = None):
         
-        if source_accessor is None:
-            source_accessor = self.source_accessor
-            if source_accessor is None:
-                raise ValueError(
-                    "A source member accessor is required to import the object"
-                )
-
-        if target_accessor is None:
-            target_accessor = self.target_accessor
-            if target_accessor is None:
-                raise ValueError(
-                    "A target member accessor is required to import the object"
-                )
-
         self.import_rules.adapt_object(
             source_object,
             target_object,
-            source_accessor,
-            target_accessor,
+            source_accessor or self.source_accessor,
+            target_accessor or self.target_accessor,
             source_schema,
             target_schema)
 
-    def export_object(self,        
+    def export_object(self,
         source_object,
         target_object,
         source_schema = None,
@@ -173,25 +160,11 @@ class Adapter(object):
         source_accessor = None,
         target_accessor = None):
         
-        if source_accessor is None:
-            source_accessor = self.source_accessor
-            if source_accessor is None:
-                raise ValueError(
-                    "A source member accessor is required to import the object"
-                )
-
-        if target_accessor is None:
-            target_accessor = self.target_accessor
-            if target_accessor is None:
-                raise ValueError(
-                    "A target member accessor is required to import the object"
-                )
-
         self.export_rules.adapt_object(
             source_object,
             target_object,
-            source_accessor,
-            target_accessor,
+            source_accessor or self.source_accessor,
+            target_accessor or self.target_accessor,
             source_schema,
             target_schema)
 
@@ -257,7 +230,9 @@ class Adapter(object):
 class RuleSet(object):
 
     implicit_copy = True
-    
+    target_accessor = None
+    source_accessor = None
+
     def __init__(self, *rules):
         self.__rules = list(rules)
         self.rules = ListWrapper(rules)
@@ -301,26 +276,20 @@ class RuleSet(object):
     def adapt_object(self,
         source_object,
         target_object,
-        source_accessor,
-        target_accessor,
+        source_accessor = None,
+        target_accessor = None,
         source_schema = None,
         target_schema = None):
         
-        if source_accessor is None:
-            raise ValueError(
-                "A source member accessor is required to import the object"
-            )
-
-        if target_accessor is None:
-            raise ValueError(
-                "A target member accessor is required to import the object"
-            )
-
         context = AdaptationContext(
             source_object = source_object,
             target_object = target_object,
-            source_accessor = source_accessor,
-            target_accessor = target_accessor,
+            source_accessor = source_accessor
+                or self.source_accessor
+                or get_accessor(source_object),
+            target_accessor = target_accessor
+                or self.target_accessor
+                or get_accessor(target_object),
             source_schema = source_schema,
             target_schema = target_schema,
             consume_keys = self.implicit_copy
