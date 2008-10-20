@@ -451,19 +451,7 @@ class Entity(Persistent):
 
     def on_member_set(self, member, value, language):
         return value
-
-    def adapt_value(self, context, key, value):
-
-        if key == "translations":
-            return deepcopy(value)
-        else:
-            copier = (
-                isinstance(self.__class__[key], schema.Collection)
-                and context.collection_copy_mode
-                or context.copy_mode
-            )
-            return copier(context, key, value)
-
+ 
 
 class MemberDescriptor(object):
 
