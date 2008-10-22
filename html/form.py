@@ -12,6 +12,7 @@ from cocktail.translations import translate
 from cocktail.schema import Member, Boolean, Reference
 from cocktail.html import Element, templates
 from cocktail.html.datadisplay import DataDisplay
+from cocktail.html.hiddeninput import HiddenInput
 
 
 class Form(Element, DataDisplay):
@@ -20,6 +21,8 @@ class Form(Element, DataDisplay):
     translations = None
     hide_empty_fieldsets = True
     errors = None
+    hidden = False
+    embeded = False
 
     def __init__(self, *args, **kwargs):
         DataDisplay.__init__(self)
@@ -35,6 +38,7 @@ class Form(Element, DataDisplay):
 
         self.__groups = []
         self.groups = ListWrapper(self.__groups)
+        self.__hidden_members = {}
         Element.__init__(self, *args, **kwargs)
 
     def _build(self):
@@ -56,6 +60,10 @@ class Form(Element, DataDisplay):
 
     def _ready(self):
         self._fill_fields()
+
+        if self.embeded:
+            self.tag = "fieldset"
+            self.buttons.visible = False
 
     def _fill_fields(self):
         if self.schema:
@@ -101,44 +109,73 @@ class Form(Element, DataDisplay):
         return fieldset
 
     def create_field(self, member):
-        
+
+        hidden = self.get_member_hidden(member)
+
         # Container
         field_entry = Element()
-        field_entry.add_class("field")
-        field_entry.add_class(member.name + "_field")
+        
+        if hidden:
+            field_entry.tag = None
+        else:
+            field_entry.add_class("field")
+            field_entry.add_class(member.name + "_field")
              
-        if member.required:
-            field_entry.add_class("required")
+            if member.required:
+                field_entry.add_class("required")
 
-        # Label
-        field_entry.label = self.create_field_label(member)
-        field_entry.append(field_entry.label)
+            # Label
+            field_entry.label = self.create_field_label(member)
+            field_entry.append(field_entry.label)
 
-        # Control
+        # Control:
+
+        # Translated member
         if member.translated and self.translations:
             
-            field_entry.add_class("translated")
+            if not hidden:
+                field_entry.add_class("translated")
 
             current_language = get_content_language()
 
             for language in self.translations:
-                set_content_language(language)
                 
-                control_container = Element()
-                control_container.add_class("language")
-                control_container.add_class(language)
-                field_entry.append(control_container)
+                set_content_language(language)
 
-                control = self.create_control(self.data, member)                
+                if hidden:
+                    control_container = field_entry
+                    control = self.create_hidden_input(self.data, member)
+                else:
+                    control_container = Element()
+                    control_container.add_class("language")
+                    control_container.add_class(language)
+                    field_entry.append(control_container)                    
+                    control = self.create_control(self.data, member)
+
                 control.language = language
                 control_container.append(control)
 
             set_content_language(current_language)
+
+        # Regular member
         else:
-            field_entry.control = self.create_control(self.data, member)
+            if hidden:
+                field_entry.control = self.create_hidden_input(
+                    self.data,
+                    member)
+            else:
+                field_entry.control = self.create_control(self.data, member)
+
             field_entry.append(field_entry.control)
 
         return field_entry
+
+    def create_hidden_input(self, obj, member):
+        input = HiddenInput()        
+        input.data = obj
+        input.member = member
+        input.value = self.get_member_value(obj, member)
+        return input
 
     def create_control(self, obj, member):
         control = DataDisplay.get_member_display(self, obj, member)
@@ -160,6 +197,14 @@ class Form(Element, DataDisplay):
 
     def add_group(self, group_id, members_filter):
         self.__groups.append(FormGroup(self, group_id, members_filter))
+
+    def get_member_hidden(self, member):
+        key = self._normalize_member(member)
+        return self.__hidden_members.get(key, self.hidden)
+
+    def set_member_hidden(self, member, hidden):
+        key = self._normalize_member(member)
+        self.__hidden_members[key] = hidden
 
 
 class FormGroup(object):
