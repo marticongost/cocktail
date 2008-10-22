@@ -39,6 +39,7 @@ class TinyMCE(Element):
             self.textarea["id"] = id
 
         params = self.tinymce_params.copy()
+        params.setdefault("entity_encoding", "raw")
         params["mode"] = "exact"
         params["elements"] = self.textarea["id"]
 
