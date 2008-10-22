@@ -13,7 +13,7 @@ from cocktail.language import require_content_language
 from cocktail.translations import translate
 from cocktail.html import Element, Content
 from cocktail.typemapping import TypeMapping
-from cocktail.schema import Member, AttributeAccessor
+from cocktail.schema import Member, get_accessor
 from cocktail.html import templates
 
 
@@ -24,7 +24,7 @@ class DataDisplay(object):
     schema = None
     editable = True
     translations = None
-    accessor = AttributeAccessor
+    accessor = None
 
     def __init__(self):
         self.__member_displayed = {}
@@ -201,7 +201,8 @@ class DataDisplay(object):
             else:
                 return expr(obj)
         else:
-            return self.accessor.get(obj, member.name, None, language)
+            accessor = self.accessor or get_accessor(obj)
+            return accessor.get(obj, member.name, None, language)
 
     def repr_value(self, obj, member, value):
         if value is None:
