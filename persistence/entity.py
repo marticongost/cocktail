@@ -562,6 +562,12 @@ class EntityAccessor(schema.MemberAccessor):
         else:
             return (None,)
 
+    @classmethod
+    def can_handle(cls, obj):
+        return isinstance(obj, Entity)
+
+EntityAccessor.register()
+
 
 class UniqueValueError(ValidationError):
     """A validation error produced when a unique field is given a value that is

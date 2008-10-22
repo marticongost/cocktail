@@ -8,18 +8,34 @@
 """
 
 undefined = object()
+_accessors = []
 
 
 def get_accessor(obj):
-
-    if isinstance(obj, dict):
-        return DictAccessor
-    else:
-        return AttributeAccessor
+    for accessor in _accessors:
+        if accessor.can_handle(obj):
+            return accessor
 
 
 class MemberAccessor(object):
 
+    @classmethod
+    def register(cls):
+        """Registers the accessor, so that it can be taken into account by the
+        L{get_accessor} function.
+        """
+        _accessors.insert(0, cls)
+
+    @classmethod
+    def can_handle(cls, obj):
+        """Indicates if the accessor can handle the provided object.
+        
+        @param obj: The object to evaluate.
+        
+        @return: True if the accessor is able to operate on the object, False
+            otherwise.
+        """
+        
     @classmethod
     def get(cls, obj, key, default = undefined, language = None):
         """Gets a value from the indicated object.
@@ -75,9 +91,43 @@ class MemberAccessor(object):
         @return: A sequence or set of language identifiers.
         @rtype: str iterable
         """
+    
+
+class AttributeAccessor(MemberAccessor):
+
+    @classmethod
+    def can_handle(cls, obj):
+        return True
+
+    @classmethod
+    def get(cls, obj, key, default = undefined, language = None):        
+        if language:
+            raise ValueError(
+                "AttributeAccessor can't operate on translated members")
+        else:
+            if default is undefined:
+                return getattr(obj, key)
+            else:
+                return getattr(obj, key, default)
+
+    @classmethod
+    def set(cls, obj, key, value, language = None):
+        if language:
+            raise ValueError(
+                "AttributeAccessor can't operate on translated members")
+        else:
+            setattr(obj, key, value)
+
+    @classmethod
+    def languages(cls, obj, key):
+        return None,
 
 
 class DictAccessor(MemberAccessor):
+
+    @classmethod
+    def can_handle(cls, obj):
+        return isinstance(obj, dict)
 
     @classmethod
     def get(cls, obj, key, default = undefined, language = None):
@@ -116,28 +166,6 @@ class DictAccessor(MemberAccessor):
         return items.iterkeys() if items else ()
 
 
-class AttributeAccessor(MemberAccessor):
-
-    @classmethod
-    def get(cls, obj, key, default = undefined, language = None):        
-        if language:
-            raise ValueError(
-                "AttributeAccessor can't operate on translated members")
-        else:
-            if default is undefined:
-                return getattr(obj, key)
-            else:
-                return getattr(obj, key, default)
-
-    @classmethod
-    def set(cls, obj, key, value, language = None):
-        if language:
-            raise ValueError(
-                "AttributeAccessor can't operate on translated members")
-        else:
-            setattr(obj, key, value)
-
-    @classmethod
-    def languages(cls, obj, key):
-        return None,
+AttributeAccessor.register()
+DictAccessor.register()
 
