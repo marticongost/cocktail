@@ -7,7 +7,7 @@
 @since:			September 2008
 """
 from simplejson import dumps
-from cocktail.language import get_content_language
+from cocktail.translations import get_language
 from cocktail.html import Element, templates
 
 
@@ -39,7 +39,7 @@ class TinyMCE(Element):
             self.textarea["id"] = id
 
         params = self.tinymce_params.copy()
-        params.setdefault("entity_encoding", "raw")
+        params.setdefault("language", get_language())
         params["mode"] = "exact"
         params["elements"] = self.textarea["id"]
 
