@@ -125,8 +125,10 @@ class Form(Element, DataDisplay):
                 field_entry.add_class("required")
 
             # Label
+            field_entry.label_container = self.create_label_container(member)
+            field_entry.append(field_entry.label_container)
             field_entry.label = self.create_field_label(member)
-            field_entry.append(field_entry.label)
+            field_entry.label_container.append(field_entry.label)
 
         # Control:
 
@@ -146,10 +148,9 @@ class Form(Element, DataDisplay):
                     control_container = field_entry
                     control = self.create_hidden_input(self.data, member)
                 else:
-                    control_container = Element()
-                    control_container.add_class("language")
+                    control_container = self.create_control_container(member)
                     control_container.add_class(language)
-                    field_entry.append(control_container)                    
+                    field_entry.append(control_container)
                     control = self.create_control(self.data, member)
 
                 control.language = language
@@ -160,22 +161,32 @@ class Form(Element, DataDisplay):
         # Regular member
         else:
             if hidden:
+                field_entry.control_container = None
                 field_entry.control = self.create_hidden_input(
                     self.data,
                     member)
             else:
+                field_entry.control_container = \
+                    self.create_control_container(member)
+                field_entry.append(field_entry.control_container)
                 field_entry.control = self.create_control(self.data, member)
 
-            field_entry.append(field_entry.control)
+            field_entry.control_container.append(field_entry.control)
 
         return field_entry
 
     def create_hidden_input(self, obj, member):
-        input = HiddenInput()        
+        input = HiddenInput()    
         input.data = obj
         input.member = member
         input.value = self.get_member_value(obj, member)
         return input
+
+    def create_label_container(self, member):
+        return Element(tag = None)
+
+    def create_control_container(self, member):
+        return Element(tag = None)
 
     def create_control(self, obj, member):
         control = DataDisplay.get_member_display(self, obj, member)
