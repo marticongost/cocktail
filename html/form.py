@@ -6,7 +6,8 @@
 @organization:	Whads/Accent SL
 @since:			September 2008
 """
-from cocktail.language import get_content_language, set_content_language
+from __future__ import with_statement
+from cocktail.language import get_content_language, content_language_context
 from cocktail.modeling import getter, ListWrapper
 from cocktail.translations import translate
 from cocktail.schema import Member, Boolean, Reference
@@ -23,6 +24,8 @@ class Form(Element, DataDisplay):
     errors = None
     hidden = False
     embeded = False
+    required_marks = True
+    table_layout = False
 
     def __init__(self, *args, **kwargs):
         DataDisplay.__init__(self)
@@ -67,6 +70,7 @@ class Form(Element, DataDisplay):
 
     def _fill_fields(self):
         if self.schema:
+
             if self.__groups:
                 members = self.displayed_members
 
@@ -76,13 +80,19 @@ class Form(Element, DataDisplay):
                     self.fields.append(fieldset)
                     setattr(self, group.id + "_fieldset", fieldset)
 
+                    if self.table_layout:
+                        container = Element("table")
+                        fieldset.append(container)
+                    else:
+                        container = fieldset
+
                     has_match = False
                     remaining_members = []
 
                     for member in members:
                         if group.matches(member):
                             field_entry = self.create_field(member)
-                            fieldset.append(field_entry)                            
+                            container.append(field_entry)                            
                             has_match = True
                         else:
                             remaining_members.append(member)
@@ -92,9 +102,12 @@ class Form(Element, DataDisplay):
                     if self.hide_empty_fieldsets and not has_match:
                         fieldset.visible = False
             else:
+                container = Element("table")
+                self.fields.append(container)
+
                 for member in self.displayed_members:
                     field_entry = self.create_field(member)
-                    self.fields.append(field_entry)
+                    container.append(field_entry)
                     setattr(self, member.name + "_field", field_entry)
     
     def create_fieldset(self, group):
@@ -111,82 +124,105 @@ class Form(Element, DataDisplay):
     def create_field(self, member):
 
         hidden = self.get_member_hidden(member)
-
-        # Container
-        field_entry = Element()
         
+        entry = Element("tr" if self.table_layout else "div")
+
         if hidden:
-            field_entry.tag = None
+            entry.tag = None
         else:
-            field_entry.add_class("field")
-            field_entry.add_class(member.name + "_field")
+            entry.add_class("field")
+            entry.add_class(member.name + "_field")
              
             if member.required:
-                field_entry.add_class("required")
+                entry.add_class("required")
 
-            # Label
-            field_entry.label_container = self.create_label_container(member)
-            field_entry.append(field_entry.label_container)
-            field_entry.label = self.create_field_label(member)
-            field_entry.label_container.append(field_entry.label)
-
-        # Control:
-
-        # Translated member
-        if member.translated and self.translations:
-            
-            if not hidden:
-                field_entry.add_class("translated")
-
-            current_language = get_content_language()
-
-            for language in self.translations:
-                
-                set_content_language(language)
-
-                if hidden:
-                    control_container = field_entry
-                    control = self.create_hidden_input(self.data, member)
-                else:
-                    control_container = self.create_control_container(member)
-                    control_container.add_class(language)
-                    field_entry.append(control_container)
-                    control = self.create_control(self.data, member)
-
-                control.language = language
-                control_container.append(control)
-
-            set_content_language(current_language)
-
-        # Regular member
-        else:
+        def create_instance():
             if hidden:
-                field_entry.control_container = None
-                field_entry.control = self.create_hidden_input(
-                    self.data,
-                    member)
+                return self.create_hidden_input(self.data, member)
             else:
-                field_entry.control_container = \
-                    self.create_control_container(member)
-                field_entry.append(field_entry.control_container)
-                field_entry.control = self.create_control(self.data, member)
+                return self.create_field_instance(member)
 
-            field_entry.control_container.append(field_entry.control)
+        if member.translated:
+            entry.add_class("translated")
+            for language in (self.translations or (get_content_language(),)):
+                with content_language_context(language):
+                    entry.append(create_instance())
+        else:
+            entry.append(create_instance())
 
-        return field_entry
+        return entry
+
+    def create_field_instance(self, member):
+
+        field_instance = Element("td" if self.table_layout else "div")
+        field_instance.add_class("field_instance")
+    
+        # Label
+        field_instance.label = self.create_label(member)
+        field_instance.append(field_instance.label)
+        
+        # Control
+        field_instance.control = self.create_control(self.data, member)
+
+        if field_instance.control.class_css:
+            for class_name in field_instance.control.class_css.split(" "):
+                field_instance.add_class("field_instance-" + class_name)
+
+        insert = getattr(field_instance.control, "insert_into_form", None)
+
+        if insert:
+            insert(field_instance)
+        else:
+            field_instance.append(field_instance.control)
+
+        return field_instance
 
     def create_hidden_input(self, obj, member):
-        input = HiddenInput()    
+        input = HiddenInput()
         input.data = obj
         input.member = member
         input.value = self.get_member_value(obj, member)
         return input
 
-    def create_label_container(self, member):
-        return Element(tag = None)
+    def create_label(self, member):
+        
+        label = Element("label")
+        # TODO: Add a 'for' attribute to the field label
+        
+        label.label_title = self.create_label_title(member)
+        label.append(label.label_title)
+        
+        if member.translated:
+            
+            label.label_language = self.create_language_label(
+                member,
+                get_content_language())
 
-    def create_control_container(self, member):
-        return Element(tag = None)
+            label.append(label.label_language)
+
+        if self.required_marks and member.required:
+            label.required_mark = self.create_required_mark(member)
+            label.append(label.required_mark)
+
+        return label
+
+    def create_label_title(self, member):
+        label_title = Element("span")
+        label_title.add_class("label_title")
+        label_title.append(self.get_member_label(member))
+        return label_title
+
+    def create_language_label(self, member, language):
+        label = Element("span")
+        label.add_class("language")
+        label.append("(" + translate(language) + ")")
+        return label
+
+    def create_required_mark(self, member):
+        mark = Element("span")
+        mark.add_class("required_mark")
+        mark.append("*")
+        return mark
 
     def create_control(self, obj, member):
         control = DataDisplay.get_member_display(self, obj, member)
@@ -198,13 +234,10 @@ class Form(Element, DataDisplay):
         ):
             control.add_class("error")
 
-        return control
-    
-    def create_field_label(self, member):        
-        label = Element("label")
-        label["for"] = member.name
-        label.append(self.get_member_label(member))       
-        return label
+        if member.translated:
+            control.language = get_content_language()
+
+        return control   
 
     def add_group(self, group_id, members_filter):
         self.__groups.append(FormGroup(self, group_id, members_filter))

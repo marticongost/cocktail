@@ -11,7 +11,7 @@ from cocktail.html import Element
 class CheckBox(Element):
 
     tag = "input"
-
+    
     def __init__(self, *args, **kwargs):
         Element.__init__(self, *args, **kwargs)
         self["type"] = "checkbox"
@@ -30,4 +30,7 @@ class CheckBox(Element):
         Gets or sets the checkbox's value.
         @type: bool
         """)
+
+    def insert_into_form(self, field_instance):
+        field_instance.insert(0, self)
 
