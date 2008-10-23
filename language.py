@@ -7,6 +7,7 @@
 @since:			July 2008
 """
 from threading import local
+from contextlib import contextmanager
 
 _thread_data = local()
 
@@ -26,7 +27,20 @@ def require_content_language(language = None):
 
     return language
 
+@contextmanager
+def content_language_context(language):
+
+    prev_language = get_content_language()
+
+    try:
+        set_content_language(language)
+        yield prev_language
+    finally:
+        set_content_language(prev_language)
+
 
 class NoActiveLanguageError(Exception):
-    pass
+    """Raised when trying to access a translated member without defining the "
+    "active content language first.
+    """
 
