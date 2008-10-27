@@ -178,10 +178,15 @@ class Form(Element, DataDisplay):
         return field_instance
 
     def create_hidden_input(self, obj, member):
+
         input = HiddenInput()
         input.data = obj
         input.member = member
         input.value = self.get_member_value(obj, member)
+
+        if member.translated:
+            input.language = get_content_language()
+
         return input
 
     def create_label(self, member):
