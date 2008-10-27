@@ -41,6 +41,8 @@ def parse_collection(self, reader, value):
     
     if isinstance(value, basestring):         
         value = reader.split_collection(self, value)
+    elif not value:
+        return self.produce_default()
 
     collection_type = self.default_type or type or list
 
@@ -227,7 +229,8 @@ class FormSchemaReader(object):
         if path is None:
             path = []
 
-        if isinstance(member, schema.Schema):
+        if isinstance(member, schema.Schema) \
+        and not isinstance(member, schema.BaseDateTime):
             return self._read_schema(member, target, languages, path)
 
         elif languages:
@@ -255,7 +258,7 @@ class FormSchemaReader(object):
         target,
         language,
         path):
-            
+ 
         key = self.get_key(member, language, path)
         value = self.form_source.get(key)
         value = self.process_value(member, value)
@@ -285,7 +288,8 @@ class FormSchemaReader(object):
                         member,
                         child_member,
                         target)
-                    get_accessor(target).set(child_member.name, nested_target)
+                    accessor = schema.get_accessor(target)
+                    accessor.set(target, child_member.name, nested_target)
                 else:
                     nested_target = target
 
@@ -306,7 +310,7 @@ class FormSchemaReader(object):
         if language:
             name += "-" + language
 
-        if len(path) > 1:
+        if path and len(path) > 1:
             path_name = ".".join(self.get_key(step) for step in path[1:])
             name = path_name + "-" + name
         
