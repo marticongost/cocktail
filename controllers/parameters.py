@@ -56,8 +56,8 @@ IMPLICIT_BOOLEANS_DEFAULT = True
 
 def get_parameter(
     member,
-    languages = None,
     target = None,
+    languages = None,
     normalization = NORMALIZATION_DEFAULT,
     enable_defaults = ENABLED_DEFAULTS_DEFAULT,
     implicit_booleans = IMPLICIT_BOOLEANS_DEFAULT,
@@ -76,6 +76,9 @@ def get_parameter(
         the raw data supplied by the request into a value of the given type.
     @type member: L{Member<cocktail.schema.member.Member>}
 
+    @param target: If supplied, the read member will be set on the given
+        object.
+
     @param languages: A collection of languages (ISO codes) to read the
         parameter in. If this parameter is set and the read member is not
         translatable a X{ValueError} exception will be raised.
@@ -86,9 +89,6 @@ def get_parameter(
 
     @type languages: str collection
     
-    @param target: If supplied, the read member will be set on the given
-        object.
-
     @param normalization: A function that will be called to normalize data read
         from the request, before handling it to the member's parser. It must
         receive a single parameter (the piece of data to normalize) and return
@@ -131,7 +131,7 @@ def get_parameter(
         implicit_booleans = implicit_booleans,
         form_source = form_source
     )
-    return reader.read(member, languages, target)
+    return reader.read(member, target, languages)
 
 
 class FormSchemaReader(object):
@@ -185,8 +185,8 @@ class FormSchemaReader(object):
 
     def read(self,
         member,
-        languages = None,
         target = None,
+        languages = None,
         path = None):
         """Retrieves and processes a request parameter, or a tree or set of
         parameters, given a schema description. The method either returns the
@@ -224,8 +224,11 @@ class FormSchemaReader(object):
             By default, reading a schema will produce a dictionary with all its
             values.
         """
+        if path is None:
+            path = []
+
         if isinstance(member, schema.Schema):
-            return self._read_schema(member, languages, target, path)
+            return self._read_schema(member, target, languages, path)
 
         elif languages:
 
@@ -240,24 +243,24 @@ class FormSchemaReader(object):
                 target = {}
 
             for language in languages:
-                self._read_value(member, language, target, path)
+                self._read_value(member, target, language, path)
 
             return target
 
         else:
-            return self._read_value(member, None, target, path)
+            return self._read_value(member, target, None, path)
     
     def _read_value(self,
         member,
-        language,
         target,
+        language,
         path):
             
         key = self.get_key(member, language, path)
         value = self.form_source.get(key)
         value = self.process_value(member, value)
         
-        if target:
+        if target is not None:
             accessor = schema.get_accessor(target)
             accessor.set(target, member.name, value, language)
 
@@ -267,7 +270,6 @@ class FormSchemaReader(object):
         member,
         target,
         languages,
-        name,
         path):
         
         if target is None:
@@ -289,9 +291,9 @@ class FormSchemaReader(object):
 
                 value = self.read(
                     child_member,
-                    name + "-" + member.name if name else member.name,
+                    nested_target,
                     languages if child_member.translated else None,
-                    nested_target)
+                    path)
         finally:
             path.pop()
             
@@ -304,8 +306,8 @@ class FormSchemaReader(object):
         if language:
             name += "-" + language
 
-        if path:
-            path_name = ".".join(self.get_key(step) for step in path)
+        if len(path) > 1:
+            path_name = ".".join(self.get_key(step) for step in path[1:])
             name = path_name + "-" + name
         
         return name
