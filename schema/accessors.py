@@ -16,6 +16,14 @@ def get_accessor(obj):
         if accessor.can_handle(obj):
             return accessor
 
+def get(obj, key, default = undefined, language = None):
+    accessor = get_accessor(obj)
+    return accessor.get(obj, key, default, language)
+
+def set(obj, key, value, language = None):
+    accessor = get_accessor(obj)
+    accessor.set(obj, key, value, language)
+
 
 class MemberAccessor(object):
 

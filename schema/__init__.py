@@ -16,10 +16,12 @@ from cocktail.schema.schemareference import Reference
 from cocktail.schema.schemastrings import String
 from cocktail.schema.schemanumbers import Number, Integer, Decimal, Float
 from cocktail.schema.schemabooleans import Boolean
-from cocktail.schema.schemadates import DateTime, Date, Time
+from cocktail.schema.schemadates import BaseDateTime, DateTime, Date, Time
 from cocktail.schema.errorlist import ErrorList
 from cocktail.schema.accessors import (
     get_accessor,
+    get,
+    set,
     MemberAccessor,
     AttributeAccessor,
     DictAccessor
