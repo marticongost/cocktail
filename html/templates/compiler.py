@@ -434,8 +434,6 @@ class TemplateCompiler(object):
     
     def CharacterDataHandler(self, data):
 
-        data = data.strip()
-
         if data:
             parent_id = self._get_current_element()
             
