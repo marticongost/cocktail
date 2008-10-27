@@ -229,8 +229,7 @@ class FormSchemaReader(object):
         if path is None:
             path = []
 
-        if isinstance(member, schema.Schema) \
-        and not isinstance(member, schema.BaseDateTime):
+        if self._is_schema(member):
             return self._read_schema(member, target, languages, path)
 
         elif languages:
@@ -259,22 +258,32 @@ class FormSchemaReader(object):
         language,
         path):
  
+        print "-" * 80
         key = self.get_key(member, language, path)
+        print "PARAM", key
         value = self.form_source.get(key)
+        print value, type(value)
         value = self.process_value(member, value)
+        print value, type(value)
         
         if target is not None:
-            accessor = schema.get_accessor(target)
-            accessor.set(target, member.name, value, language)
+            schema.set(target, member.name, value, language)
+
+        print target
+        print "-" * 80
 
         return value
+
+    def _is_schema(self, member):
+        return isinstance(member, schema.Schema) \
+            and not isinstance(member, schema.BaseDateTime)
 
     def _read_schema(self,
         member,
         target,
         languages,
         path):
-        
+     
         if target is None:
             target = {}
 
@@ -283,13 +292,12 @@ class FormSchemaReader(object):
         try:
             for child_member in member.members().itervalues():
 
-                if isinstance(child_member, schema.Schema):
+                if self._is_schema(child_member):
                     nested_target = self.create_nested_target(
                         member,
                         child_member,
                         target)
-                    accessor = schema.get_accessor(target)
-                    accessor.set(target, child_member.name, nested_target)
+                    schema.set(target, child_member.name, nested_target)
                 else:
                     nested_target = target
 
