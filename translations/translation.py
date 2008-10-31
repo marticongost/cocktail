@@ -7,11 +7,23 @@
 @since:			July 2008
 """
 from threading import local
+from contextlib import contextmanager
 from cocktail.modeling import DictWrapper
 from cocktail.pkgutils import get_full_name
 
 _thread_data = local()
 _undefined = object()
+
+@contextmanager
+def language_context(language):
+
+    prev_language = get_language()
+
+    try:
+        set_language(language)
+        yield prev_language
+    finally:
+        set_language(prev_language)
 
 def get_language():
     return getattr(_thread_data, "language", None)
