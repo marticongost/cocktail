@@ -1,22 +1,16 @@
 #-*- coding: utf-8 -*-
 """
+A set of constructs for modeling classes.
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
 @organization:	Whads/Accent SL
 @since:			November 2007
 """
+from weakref import WeakKeyDictionary
 
 def wrap(function, wrapper):
     wrapper.__doc__ = function.__doc__
-
-def wrapper(function):
-    
-    def decorator(wrapper):
-        wrap(function, wrapper)
-        return wrapper
-
-    return decorator
 
 def getter(function):
     return property(function, doc = function.__doc__)
@@ -35,6 +29,35 @@ class classgetter(object):
             return self
         else:
             return self.func(cls)
+
+class CustomProperty(property):
+    pass
+
+def cached_getter(function):
+    """A method decorator used to define read-only cached properties. The value
+    of the property will be computed the first time it is accessed, using the
+    decorated method, and reused on all further calls.
+
+    Each instance of the method's class will gain its own cached value.
+    """
+ 
+    undefined = object()
+    cached_values = WeakKeyDictionary()
+
+    def wrapper(self):
+        value = cached_values.get(self, undefined)
+
+        if value is undefined:
+            value = function(self)
+            cached_values[self] = value
+
+        return value
+
+    class CachedGetter(property):
+        def __call__(self, instance):
+            return function(instance)
+
+    return CachedGetter(wrapper, doc = function.__doc__)
 
 def refine(element):
     
