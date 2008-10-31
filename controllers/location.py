@@ -1,0 +1,146 @@
+#-*- coding: utf-8 -*-
+"""
+
+@author:		Martí Congost
+@contact:		marti.congost@whads.com
+@organization:	Whads/Accent SL
+@since:			October 2008
+"""
+from __future__ import with_statement
+from urllib import urlencode
+import cherrypy
+from cocktail.modeling import getter
+from cocktail.translations import translate, get_language, language_context
+from cocktail.controllers.viewstate import get_state
+
+
+class Location(object):
+
+    method = "GET"
+    scheme = "http"
+    host = "localhost"
+    port = None
+    path_info = "/"
+    query_string = None
+    form_data = None
+
+    def __init__(self):
+        self.query_string = {}
+        self.form_data = {}
+
+    @classmethod
+    def get_current(cls):
+        
+        request = cherrypy.request
+
+        query_string = get_state()
+
+        location = cls()
+        location.method = request.method
+        location.scheme = request.scheme
+        location.host = request.local.name
+        location.port = request.local.port
+        location.path_info = request.path_info        
+        location.query_string.update(query_string)
+        location.form_data.update(
+            (key, value)
+            for key, value in request.params.iteritems()
+            if key not in query_string
+        )
+
+        return location
+
+    def join_path(self, *args):
+        
+        parts = [self.path_info]
+        parts.extend(args)
+
+        self.path_info = "/" + "/".join(
+            part.strip("/")
+            for part in parts
+        )
+
+    def __str__(self):
+    
+        url = self.scheme + "://" + self.host
+
+        if self.port:
+            url += ":" + str(self.port)
+
+        url += self.path_info
+
+        if self.query_string:
+            url += "?" + urlencode(self.query_string, True)
+
+        return url
+
+    @getter
+    def params(self):
+        if self.method == "GET":
+            return self.query_string
+        else:
+            return self.form_data
+    
+    def go(self):
+        
+        if self.method == "GET":
+            raise cherrypy.HTTPRedirect(str(self))
+
+        elif self.method == "POST":
+            cherrypy.response.status = 200
+            cherrypy.response.body = self.get_form()
+            raise HTTPPostRedirect()
+
+        else:
+            raise ValueError(
+                "Can't redirect using a %s HTTP method"
+                % self.method)
+
+    def get_form(self):
+        with language_context(get_language() or "en"):
+            return """
+    <html>	
+        <head>
+            <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+            <title>%(title)s</title>
+            <script type="text/javascript">
+                <!--
+                onload = function () {
+                    try {
+                        var form = document.getElementById("redirectionForm");
+                        form.submit();
+                    }
+                    catch (ex) {}
+                }
+                //-->
+            </script>
+        </head>
+        
+        <body>
+            <p>
+                %(explanation)s
+            </p>
+            <form id="redirectionForm" method="%(method)s" action="%(action)s">
+                %(data)s
+                <input type="submit" value="%(button)s">
+            </form>
+        </body>
+
+    </html>
+                """ % {
+                    "title": translate("Redirecting"),
+                    "explanation": translate("Redirection explanation"),
+                    "method": self.method,
+                    "action": str(self),
+                    "data": "\n".join(
+                        """<input type="hidden" name="%s" value="%s">"""
+                        % (key, value)
+                        for key, value in self.form_data.iteritems()
+                    ),
+                    "button": translate("Redirection button")
+                }
+
+
+class HTTPPostRedirect(Exception):
+    pass
+
