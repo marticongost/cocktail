@@ -27,14 +27,7 @@ class BaseDateTime(Schema, RangedMember):
     _is_date = False
     _is_time = False
    
-    def __init__(self,
-        day_properties = None,
-        month_properties = None,
-        year_properties = None,
-        hour_properties = None,
-        minute_properties = None,
-        second_properties = None,
-        **kwargs):
+    def __init__(self, *args, **kwargs):
         
         Schema.__init__(self, **kwargs)
         RangedMember.__init__(self)
@@ -45,6 +38,13 @@ class BaseDateTime(Schema, RangedMember):
         hour_kw = {"name": "hour", "min": 0, "max": 23}
         minute_kw = {"name": "minute", "min": 0, "max": 59}
         second_kw = {"name": "second", "min": 0, "max": 59}
+
+        day_properties = kwargs.pop("day_properties", None)
+        month_properties = kwargs.pop("month_properties", None)
+        year_properties = kwargs.pop("year_properties", None)
+        hour_properties = kwargs.pop("hour_properties", None)
+        minute_properties = kwargs.pop("minute_properties", None)
+        second_properties = kwargs.pop("second_properties", None)
 
         if day_properties:
             day_kw.update(day_properties)

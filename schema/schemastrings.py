@@ -34,8 +34,8 @@ class String(Member):
     max = None
     _format = None
 
-    def __init__(self, doc = None, **kwargs):
-        Member.__init__(self, doc, **kwargs)
+    def __init__(self, *args, **kwargs):
+        Member.__init__(self, *args, **kwargs)
         self.add_validation(String.string_validation_rule)
 
     def _get_format(self):

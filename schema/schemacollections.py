@@ -32,9 +32,9 @@ class Collection(Member):
     max = None
     default_type = list
 
-    def __init__(self, doc = None, **kwargs):
+    def __init__(self, *args, **kwargs):
         self.__items = None
-        Member.__init__(self, doc, **kwargs)
+        Member.__init__(self, *args, **kwargs)
         self.add_validation(self.__class__.collection_validation_rule)
         self.add_validation(self.__class__.items_validation_rule)
 

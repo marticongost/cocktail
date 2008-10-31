@@ -80,7 +80,7 @@ class Member(Variable):
         "__class__", "_schema", "_validations_wrapper", "_validations"
     ])
 
-    def __init__(self, doc = None, **kwargs):
+    def __init__(self, name = None, doc = None, **kwargs):
         self._name = None
         self._schema = None
         self._validations = []
@@ -90,8 +90,8 @@ class Member(Variable):
         Variable.__init__(self, None)
         self.__type = None
 
-        if doc is not None:
-            self.__doc__ = doc
+        self.name = name
+        self.__doc__ = doc
 
         for key, value in kwargs.iteritems():
             setattr(self, key, value)

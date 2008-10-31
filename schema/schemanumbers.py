@@ -14,8 +14,8 @@ from cocktail.schema.rangedmember import RangedMember
 class Number(Member, RangedMember):
     """Base class for all members that handle numeric values."""
 
-    def __init__(self, **kwargs):
-        Member.__init__(self, **kwargs)
+    def __init__(self, *args, **kwargs):
+        Member.__init__(self, *args, **kwargs)
         RangedMember.__init__(self)        
 
 

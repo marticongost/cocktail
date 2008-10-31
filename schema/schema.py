@@ -42,10 +42,10 @@ class Schema(Member):
     """
     members_order = None
 
-    def __init__(self, **kwargs):
+    def __init__(self, *args, **kwargs):
 
         members = kwargs.pop("members", None)
-        Member.__init__(self, **kwargs)
+        Member.__init__(self, *args, **kwargs)
         
         self.add_validation(Schema.schema_validation_rule)
 
