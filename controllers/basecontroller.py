@@ -6,53 +6,98 @@
 @organization:	Whads/Accent SL
 @since:			October 2008
 """
-from cherrypy import expose
-from cocktail.modeling import ListWrapper
+import cherrypy
+from cocktail.modeling import ListWrapper, getter, cached_getter
 from cocktail.html import templates
+from cocktail.controllers.parameters import FormSchemaReader
+from cocktail.controllers.location import Location, HTTPPostRedirect
 
 
 class BaseController(object):
-
+    
     view_class = None
+    success_view_class = None
+    success_redirection = None
+    handled_errors = ()
 
     def __init__(self):
-        self.__handled_errors = []
-        self.handled_errors = ListWrapper(self.__handled_errors)
-        
-    def add_handled_error(self, error_type):
-        self.__handled_errors.append(error_type)
+        self.successful = False
+        self.error = None
 
-    @expose
+    @cherrypy.expose
     def index(self, *args, **kwargs):
-        
-        context = {}
-                    
+
         try:
-            self._init(context, *args, **kwargs)
-            self._run(context)
-        except Exception, error:            
-            handled = any(
-                isinstance(error, error_type)
-                for error_type in self.__handled_errors
-            )            
-            if handled:
-                context["error"] = error 
-            else:
+            self.begin()
+
+            if self.is_ready():
+                self.submit(*args, **kwargs)
+                self.successful = True
+                
+                redirection = self.success_redirection
+
+                if redirection is not None:
+                    if isinstance(redirection, Location):
+                        redirection.go()
+                    else:
+                        raise cherrypy.HTTPRedirect(redirection)
+
+        except Exception, error:
+
+            self.error = error
+
+            if isinstance(error, HTTPPostRedirect):
+                return cherrypy.response.body
+            elif not isinstance(error, self.handled_errors):
                 raise
 
-        view = self._create_view(context)
-        self._init_view(view, context)
-        return view.render_page()
+        finally:
+            self.end()
+        
+        return self.view.render_page()
 
-    def _init(self, context):
+    @getter
+    def redirecting(self):
+        return self.error and isinstance(
+            self.error,
+            (cherrypy.HTTPRedirect, HTTPPostRedirect)
+        )
+
+    def begin(self):
         pass
 
-    def _run(self, context):
+    def is_ready(self):
+        return False
+
+    def submit(self):
         pass
 
-    def _create_view(self, context):
-        return templates.new(self.view_class)
+    def end(self):
+        pass
 
-    def _init_view(self, view, context):
-        view.error = context.get("error")
+    @cached_getter
+    def params(self):
+        reader = FormSchemaReader()
+        self._init_form_reader(reader)
+        return reader
+
+    def _init_form_reader(self, reader):
+        pass
+
+    @cached_getter
+    def view(self):
+        view = self._create_view()
+        self._init_view(view)
+        return view
+
+    def _create_view(self):
+
+        view_class = self.successful and self.success_view_class \
+            or self.view_class
+
+        return templates.new(view_class)
+
+    def _init_view(self, view):
+        view.error = self.error
+        view.successful = self.successful
 
