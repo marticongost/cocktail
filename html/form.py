@@ -65,7 +65,8 @@ class Form(Element, DataDisplay):
         self._fill_fields()
 
         if self.embeded:
-            self.tag = "fieldset"
+            if self.tag == "form":
+                self.tag = "fieldset"
             self.buttons.visible = False
 
     def _fill_fields(self):
