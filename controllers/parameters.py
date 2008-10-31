@@ -53,6 +53,7 @@ def parse_collection(self, reader, value):
 schema.Collection.parse_request_value = parse_collection
 
 NORMALIZATION_DEFAULT = strip
+STRICT_DEFAULT = True
 ENABLED_DEFAULTS_DEFAULT = True
 IMPLICIT_BOOLEANS_DEFAULT = True
 
@@ -61,6 +62,7 @@ def get_parameter(
     target = None,
     languages = None,
     normalization = NORMALIZATION_DEFAULT,
+    strict = STRICT_DEFAULT,
     enable_defaults = ENABLED_DEFAULTS_DEFAULT,
     implicit_booleans = IMPLICIT_BOOLEANS_DEFAULT,
     form_source = None):
@@ -99,6 +101,10 @@ def get_parameter(
         characters from the beginning and end of the read value.
     @type normalization: callable(str) => str
 
+    @param strict: Determines if values should be validated against their
+        member's constraints, and discarded if found to be invalid.
+    @type: bool
+
     @param enable_defaults: A flag that indicates if missing values should be
         replaced with the default value for their member (this is the default
         behavior).
@@ -119,17 +125,23 @@ def get_parameter(
     @return: The requested value, or None if the request doesn't provide a
         matching value for the indicated member, or it is empty.
         
-        The function will try to coerce the request data into an instance of an
-        adequate type, through the L{parse_request_value<cocktail.schema.member.Member>}
-        method of the supplied member. If that were not possible, the value
-        will be returned unmodified (except for normalization).
-
+        The function will try to coerce request parameters into an instance of
+        an adequate type, through the L{parse_request_value<cocktail.schema.member.Member>}
+        method of the supplied member. Member constraints (max value, minimum
+        length, etc) will also be tested against the obtained value. If the
+        L{strict} parameter is set to True, values that don't match their
+        member's type or requirements will be discarded, and None will be
+        returned instead. When L{strict} is False, invalid values are returned
+        unmodified.
+        
         By default, reading a schema will produce a dictionary with all its
-        values.
+        values. Reading a translated member will produce a dictionary with
+        language/value pairs.
     """
     reader = FormSchemaReader(
         normalization = normalization,
-        enable_defaults = ENABLED_DEFAULTS_DEFAULT,
+        strict = strict,
+        enable_defaults = enable_defaults,
         implicit_booleans = implicit_booleans,
         form_source = form_source
     )
@@ -172,11 +184,13 @@ class FormSchemaReader(object):
 
     def __init__(self,
         normalization = NORMALIZATION_DEFAULT,
+        strict = STRICT_DEFAULT,
         enable_defaults = ENABLED_DEFAULTS_DEFAULT,
         implicit_booleans = IMPLICIT_BOOLEANS_DEFAULT,
         form_source = None):
 
         self.normalization = normalization
+        self.strict = strict
         self.enable_defaults = enable_defaults
         self.implicit_booleans = implicit_booleans
 
@@ -217,14 +231,18 @@ class FormSchemaReader(object):
         @return: The requested value, or None if the request doesn't provide a
             matching value for the indicated member, or it is empty.
             
-            The function will try to coerce the request data into an instance
-            of an adequate type, through the
-            L{parse_request_value<cocktail.schema.member.Member>} method of the
-            supplied member. If that were not possible, the value will be
-            returned unmodified (except for normalization).
-
+            The function will try to coerce request parameters into an instance
+            of an adequate type, through the L{parse_request_value<cocktail.schema.member.Member>}
+            method of the supplied member. Member constraints (max value,
+            minimum length, etc) will also be tested against the obtained
+            value. If the L{strict} parameter is set to True, values that don't
+            match their member's type or requirements will be discarded, and
+            None will be returned instead. When L{strict} is False, invalid
+            values are returned unmodified.
+            
             By default, reading a schema will produce a dictionary with all its
-            values.
+            values. Reading a translated member will produce a dictionary with
+            language/value pairs.
         """
         if path is None:
             path = []
@@ -258,19 +276,15 @@ class FormSchemaReader(object):
         language,
         path):
  
-        print "-" * 80
         key = self.get_key(member, language, path)
-        print "PARAM", key
         value = self.form_source.get(key)
-        print value, type(value)
         value = self.process_value(member, value)
-        print value, type(value)
         
+        if self.strict and not member.validate(value):
+            value = None
+
         if target is not None:
             schema.set(target, member.name, value, language)
-
-        print target
-        print "-" * 80
 
         return value
 
