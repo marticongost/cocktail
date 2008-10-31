@@ -8,6 +8,7 @@ Utilities for writing application controllers.
 @since:			July 2008
 """
 from cocktail.controllers.basecontroller import BaseController
+from cocktail.controllers.location import Location, HTTPPostRedirect
 from cocktail.controllers.viewstate import (
     get_state,
     view_state,
