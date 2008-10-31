@@ -83,6 +83,27 @@ translations.define("Visible languages",
     en = u"Languages"
 )
 
+translations.define("Redirecting",
+    ca = u"Redirecció",
+    es = u"Redirección",
+    en = u"Redirecting"
+)
+
+translations.define("Redirection explanation",
+    ca = u"S'està redirigint la petició. Si no ets automàticament redirigit, "
+         u"prem el botó per continuar navegant pel web.",
+    es = u"Se está redirigiendo la petición. Si no eres automáticamente "
+         u"redirigido pulsa el botón para proseguir con la navegación.",
+    en = u"Redirection in process. If you aren't redirected automatically "
+         u"press the button to proceed."
+)
+
+translations.define("Redirection button",
+    ca = u"Continuar",
+    es = u"Continuar",
+    en = u"Continue"
+)
+
 # Validation errors
 #------------------------------------------------------------------------------
 def member_identifier(error, language):
