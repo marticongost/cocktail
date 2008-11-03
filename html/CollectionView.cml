@@ -11,7 +11,14 @@ from cocktail.controllers.viewstate import view_state_form
     method="get">
 
     <?py-class
-    actions = ()
+    actions = ()    
+    ?>
+    
+    <?py
+    self.add_resource("/cocktail/scripts/CollectionView.js")
+    self.add_client_translation("CollectionView selection")
+    self.add_client_translation("CollectionView all")
+    self.add_client_translation("CollectionView none")
     ?>
 
     ${view_state_form(members = None, language = None, page_size = None)}
@@ -26,12 +33,16 @@ from cocktail.controllers.viewstate import view_state_form
         <!-- Actions -->
         <div py:id="actions_box" py:collapsible="${True}">
 
-            <button                
+            <button
                 py:def="toolbar_button"
                 py:args="action"
                 class="toolbar_button ${action}"
                 name="section">
-
+                <?py
+                shortcut = translate("CollectionView " + action + " shortcut", default = "")
+                if shortcut:
+                    element.set_client_param("shortcut", shortcut)
+                ?>
                 <img src="/resources/images/${action}.png"/>
                 <label>${translate(action)}</label>
             </button>
@@ -48,7 +59,14 @@ from cocktail.controllers.viewstate import view_state_form
 
             <!-- Visible members  -->
             <div py:id="visible_members" class="toolbar_button selector">
-                <span class="label">${translate("Visible members")}</span>
+                <?py
+                    shortcut = translate("CollectionView visible members shortcut", default = "")
+                    if shortcut:
+                        element.set_client_param("shortcut", shortcut)
+                 ?>
+                <span class="label">
+                    ${translate("Visible members")}
+                </span>
                 <div class="selector_content">
 
                     <py:cocktail.html.CheckList
@@ -77,7 +95,14 @@ from cocktail.controllers.viewstate import view_state_form
 
             <!-- Visible languages -->
             <div py:id="visible_languages" class="toolbar_button selector">
-                <span class="label">${translate("Visible languages")}</span>
+                    <?py
+                    shortcut = translate("CollectionView visible languages shortcut", default = "")
+                    if shortcut:
+                        element.set_client_param("shortcut", shortcut)
+                    ?>                    
+                <span class="label">
+                    ${translate("Visible languages")}
+                </span>
                 <div class="selector_content">
                     
                     <py:cocktail.html.CheckList

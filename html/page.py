@@ -6,8 +6,10 @@
 @organization:	Whads/Accent SL
 @since:			February 2008
 """
+from simplejson import dumps
 from cocktail.html.element import Element, Content
 from cocktail.html.resources import Script, StyleSheet
+from cocktail.translations import get_language, translations
 
 
 class Page(Element):
@@ -17,6 +19,10 @@ class Page(Element):
     charset = "utf-8"
     styled_class = False
     tag = "html"
+    generated_id_format = "_element%d"
+
+    CORE_SCRIPT = "/cocktail/scripts/core.js"
+    JQUERY_SCRIPT = "/cocktail/scripts/jquery.js"
 
     HTTP_EQUIV_KEYS = frozenset((
         "content-type",
@@ -27,10 +33,13 @@ class Page(Element):
 
     def __init__(self, *args, **kwargs):
         Element.__init__(self, *args, **kwargs)
+        self.__element_id = 0
         self.__title = None
         self.__meta = {}
-        self.__resource_uris = set()
+        self.__resource_uris = set()        
         self.__resources = []
+        self.__client_translations = set()
+        self.__elements_with_client_params = []
 
     def _build(self):
       
@@ -51,7 +60,8 @@ class Page(Element):
 
         # Render the <body> element first, to gather meta information from all
         # elements (meta tags, scripts, style sheets, the page title, etc)
-        renderer.when_element_rendered(self._process_descendant)
+        renderer.before_element_rendered(self._before_descendant_rendered)
+        renderer.after_element_rendered(self._after_descendant_rendered)
         self._body_markup.value = self.body.render(renderer)
         self._fill_head()
         
@@ -61,7 +71,21 @@ class Page(Element):
         Element._render(self, renderer, out)
         self.body.visible = True
 
-    def _process_descendant(self, descendant):
+    def _before_descendant_rendered(self, descendant):
+        
+        if descendant.client_params:
+            
+            self.__elements_with_client_params.append(descendant)
+            
+            # Generate an id for those elements that haven't got one
+            id = descendant["id"]
+            
+            if id is None:
+                self.__element_id += 1
+                id = self.generated_id_format % self.__element_id
+                descendant["id"] = id
+
+    def _after_descendant_rendered(self, descendant):
 
         page_title = descendant.page_title
         
@@ -78,6 +102,9 @@ class Page(Element):
             if uri not in self.__resource_uris:
                 self.__resource_uris.add(uri)
                 self.__resources.append(resource)
+        
+        # Client translations
+        self.__client_translations.update(descendant.client_translations)
 
     def _fill_head(self):
 
@@ -103,19 +130,63 @@ class Page(Element):
             title_tag = Element("title")
             title_tag.append(html_expr.sub("", self.__title))
             head.append(title_tag)
+                        
+        if self.__client_translations:
+            self._add_resource_to_head(Script(self.CORE_SCRIPT), True)
+                    
+            language = get_language()
+            
+            script_tag = Element("script")
+            script_tag["type"] = "text/javascript"
+            script_tag.append("cocktail.setLanguage(%s);\n" % dumps(language))  
+            script_tag.append("\n".join(
+                "cocktail.setTranslation(%s, %s);"
+                    % (dumps(key), dumps(translations[language][key]))
+                for key in self.__client_translations
+            ))
+            head.append(script_tag)
+        
+        if self.__elements_with_client_params:
+            
+            self._add_resource_to_head(Script(self.JQUERY_SCRIPT), True)
+            
+            script_tag = Element("script")
+            script_tag["type"] = "text/javascript"            
+            js = ["jQuery(function () {"]
+            
+            for element in self.__elements_with_client_params:
+                js.append("\tjQuery('#%s').each(function () {\n" % element["id"])
+                
+                for key, value in element.client_params.iteritems():
+                    js.append("\t\tthis.%s = %s;" % (key, dumps(value)))
+                
+                js.append("\t});")
+            
+            js.append("});")
+            script_tag.append("\n".join(js))
+            head.append(script_tag)
         
         for resource in self.__resources:
+            self._add_resource_to_head(resource)
+         
+    def _add_resource_to_head(self, resource, always = False):
+        
+        uri = resource.uri
+        
+        if always or uri in self.__resource_uris:
             
+            self.__resource_uris.discard(uri)
+        
             if isinstance(resource, Script):
                 script_tag = Element("script")
                 script_tag["type"] = resource.mime_type
-                script_tag["src"] = resource.uri
-                head.append(script_tag)
-
+                script_tag["src"] = uri
+                self.head.append(script_tag)
+    
             elif isinstance(resource, StyleSheet):
                 link_tag = Element("link")
                 link_tag["rel"] = "Stylesheet"
                 link_tag["type"] = resource.mime_type
-                link_tag["href"] = resource.uri
-                head.append(link_tag)
-
+                link_tag["href"] = uri
+                self.head.append(link_tag)
+       
