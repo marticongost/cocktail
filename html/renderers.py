@@ -31,7 +31,8 @@ class Renderer(object):
     flag_attributes = "selected", "checked"
 
     def __init__(self):
-        self.__element_rendered_handlers = []
+        self.__before_rendering = []
+        self.__after_rendering = []
 
     def make_page(self, element):        
         from cocktail.html.page import Page
@@ -40,10 +41,16 @@ class Renderer(object):
         page.body.append(element)
         return page
 
-    def when_element_rendered(self, handler):
-        self.__element_rendered_handlers.append(handler)
+    def before_element_rendered(self, handler):
+        self.__before_rendering.append(handler)
+
+    def after_element_rendered(self, handler):
+        self.__after_rendering.append(handler)
 
     def write_element(self, element, out):
+        
+        for handler in self.__before_rendering:
+            handler(element)
         
         tag = element.tag
         render_children = True
@@ -81,7 +88,7 @@ class Renderer(object):
             if tag:
                 out(u"</" + tag + u">")
 
-        for handler in self.__element_rendered_handlers:
+        for handler in self.__after_rendering:
             handler(element)
 
     def _write_attribute(self, key, value, out):
