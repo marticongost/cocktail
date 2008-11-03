@@ -88,7 +88,7 @@ class Translation(DictWrapper):
 
     def __init__(self):
         self.__strings = {}
-        DictWrapper(self.__strings)
+        DictWrapper.__init__(self, self.__strings)
 
     def __setitem__(self, obj, string):
         self.__strings[obj] = string

@@ -146,7 +146,9 @@ class Form(Element, DataDisplay):
             entry.add_class("translated")
             for language in (self.translations or (get_content_language(),)):
                 with content_language_context(language):
-                    entry.append(create_instance())
+                    field_instance = create_instance()
+                    field_instance.add_class(language)
+                    entry.append(field_instance)
         else:
             entry.append(create_instance())
 

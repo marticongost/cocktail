@@ -83,6 +83,24 @@ translations.define("Visible languages",
     en = u"Languages"
 )
 
+translations.define("CollectionView selection",
+    ca = u"Seleccionar:",
+    es = u"Seleccionar:",
+    en = u"Select:"
+)
+
+translations.define("CollectionView all",
+    ca = u"Tots",
+    es = u"Todos",
+    en = u"All"
+)
+
+translations.define("CollectionView none",
+    ca = u"Cap",
+    es = u"Ninguno",
+    en = u"None"
+)
+
 # Validation errors
 #------------------------------------------------------------------------------
 def member_identifier(error, language):

@@ -53,6 +53,7 @@ class Element(object):
         self.__resources = None
         self.__resource_uris = None
         self.__client_params = None
+        self.__client_translations = None
         self.__is_ready = False
         self.__binding_handlers = None
         self.__ready_handlers = None
@@ -536,7 +537,22 @@ class Element(object):
                 "client param '%s' on %s" % (key, self))
         else:
             del self.__client_params[key]
-
+    
+    # Client side translations
+    #--------------------------------------------------------------------------
+    
+    @getter
+    def client_translations(self):
+        if self.__client_translations is None:
+            return empty_set
+        else:
+            return self.__client_translations
+    
+    def add_client_translation(self, key):
+        if self.__client_translations is None:
+            self.__client_translations = set()
+        self.__client_translations.add(key)
+        
 
 class Content(Element):
  
