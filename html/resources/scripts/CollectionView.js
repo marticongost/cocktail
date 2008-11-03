@@ -55,14 +55,15 @@ jQuery(function () {
     
     checkboxes
         .each(highlightSelection)
-        .change(highlightSelection);
+        .change(highlightSelection)
         
     function removeSelection() {
         jQuery(".Table .selection input:checked")
-                        .each(function () {                        
+                        .each(function () {                       
                             this.checked = !this.checked;
                             highlightSelection.call(this);                    
-        });    
+        });
+        var lastSelected;    
     }
     
     function selectAll() {
@@ -78,9 +79,9 @@ jQuery(function () {
         .click(function (e) {
             
             var src = e.target || e.srcElement;
-            var srcTag = src.tagName.toLowerCase();            
-
-            if (srcTag != "label" && srcTag != "input" && srcTag != "button" && srcTag != "textarea") {
+            var srcTag = src.tagName.toLowerCase();         
+          
+            if (srcTag != "a" && srcTag != "input" && srcTag != "button" && srcTag != "textarea") {
                 
                 if ( e.shiftKey ) {                    	                   
                     var selIndex = checkboxes.index(jQuery(this).find(".selection input").get(0));
@@ -105,15 +106,17 @@ jQuery(function () {
                    
                 }else{
                     
+                                       
                     if ( !e.ctrlKey ) removeSelection();
 
                                   
-                    lastSelected = jQuery(this).find(".selection input").get(0);
-                    lastSelected.checked = !lastSelected.checked;                               
-                    
+                    lastSelected = jQuery(this).find(".selection input").get(0);                    
+                    lastSelected.checked = !lastSelected.checked;                                                   
                     highlightSelection.call(lastSelected);
-                 
+                                                         
                 }
+                
+                if(srcTag == "label") e.preventDefault();
             }                          
                         
         })
