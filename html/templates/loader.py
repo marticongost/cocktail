@@ -26,28 +26,13 @@ class TemplateLoader(object):
                 and entry.creation >= os.stat(template.source_file).st_mtime
 
     def __init__(self):
-        
-        self.__paths = {}
         self.__dependencies = {}
         self.__derivatives = {}
 
         self.cache = self.Cache()
         self.cache.expiration = None
         self.cache.load = self._load_template
-
-        self.add_path(
-            "cocktail.html", 
-            os.path.abspath(os.path.dirname(_html_module_path))
-        )
         
-    def add_path(self, pkg, path):
-        pkg_paths = self.__paths.get(pkg)
-
-        if pkg_paths is None:
-            self.__paths[pkg] = pkg_paths = [path]
-        else:
-            pkg_paths.append(path)
-
     def get_class(self, name):
         """Obtains a python class from the specified template.
         
@@ -95,7 +80,10 @@ class TemplateLoader(object):
                 self.__derivatives[dependency].remove(name)
 
         # Try to obtain the template class from a template file
-        source_file = self._find_template(pkg_name, class_name)
+        try:
+            source_file = self._find_template(name)
+        except ImportError:
+            raise TemplateNotFoundError(name)
 
         if source_file is not None:
 
@@ -105,7 +93,7 @@ class TemplateLoader(object):
             finally:
                 f.close()
 
-            compiler = self.Compiler(pkg_name, class_name, self, source)                           
+            compiler = self.Compiler(pkg_name, class_name, self, source)
 
             deps = compiler.classes.keys()
             self.__dependencies[name] = deps
@@ -121,8 +109,9 @@ class TemplateLoader(object):
             
             cls = compiler.get_template_class()
 
-        # If no template file for the requested tempate is found, try to import
+        # If no template file for the requested template is found, try to import
         # the template class from a regular python module
+        # Note that by convention, foo.Bar becomes foo.bar.Bar
         else:
             try:
                 cls = import_object(
@@ -150,15 +139,27 @@ class TemplateLoader(object):
         
         return pkg_name, item_name
 
-    def _find_template(self, pkg, name):
-        """Finds the source file for a template, given its package and name."""
-        pkg_paths = self.__paths.get(pkg)
+    def _find_template(self, name):
+        """Finds the source file for a template, given its package and name.
+        
+        @param name: The full name of the template to locate.
+        @type name: str
 
-        if pkg_paths is not None:
-            for path in pkg_paths:
-                fname = os.path.join(path, name + self.extension)
-                if os.path.exists(fname):
-                    return fname
+        @return: The path to the file containing the source code for the
+            specified template, None if no such file exists.
+        @rtype: str
+
+        @raise ImportError: Raised if the template package doesn't exist.        
+        """
+        parts = name.split(".")
+        root_pkg = __import__(parts[0])
+        
+        template_path = (
+            os.path.join(os.path.dirname(root_pkg.__file__), *(parts[1:]))
+            + self.extension
+        )
+
+        return template_path if os.path.exists(template_path) else None
 
 
 class TemplateNotFoundError(Exception):
