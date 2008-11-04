@@ -44,7 +44,7 @@ def parse_collection(self, reader, value):
     elif not value:
         return self.produce_default()
 
-    collection_type = self.default_type or type or list
+    collection_type = self.type or self.default_type or list
 
     return collection_type(
         reader.process_value(self.items, part) for part in value
