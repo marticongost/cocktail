@@ -43,9 +43,12 @@ class Collection(Member):
 
     def _set_items(self, items):
         if not isinstance(items, Member):
-            self.__items = Reference(type = items)
-        else:
-            self.__items = items
+            if isinstance(items, type) and issubclass(items, Member):
+                items = items()
+            else:
+                items = Reference(type = items)
+            
+        self.__items = items
 
     items = property(_get_items, _set_items, doc = """
         The schema that items in the collection must comply with. Specified as
