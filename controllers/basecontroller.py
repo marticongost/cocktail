@@ -31,7 +31,7 @@ class BaseController(object):
             self.begin()
 
             if self.is_ready():
-                self.submit(*args, **kwargs)
+                self.submit()
                 self.successful = True
                 
                 redirection = self.success_redirection
