@@ -99,7 +99,8 @@ class Member(Variable):
     def __repr__(self):
         
         member_desc = self._name \
-            and "member '%s'" % self._name or "anonymous member"
+            and "member '%s'" % self._name \
+            or "anonymous " + self.__class__.__name__.lower()
 
         if self._schema is None:
             return "unbound " + member_desc
