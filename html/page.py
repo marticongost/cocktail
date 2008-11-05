@@ -39,6 +39,7 @@ class Page(Element):
         self.__resource_uris = set()        
         self.__resources = []
         self.__client_translations = set()
+        self.__client_variables = {}
         self.__elements_with_client_params = []
 
     def _build(self):
@@ -103,7 +104,8 @@ class Page(Element):
                 self.__resource_uris.add(uri)
                 self.__resources.append(resource)
         
-        # Client translations
+        # Client variables and translations
+        self.__client_variables.update(descendant.client_variables)
         self.__client_translations.update(descendant.client_translations)
 
     def _fill_head(self):
@@ -146,6 +148,15 @@ class Page(Element):
             ))
             head.append(script_tag)
         
+        if self.__client_variables:
+            script_tag = Element("script")
+            script_tag["type"] = "text/javascript"
+            script_tag.append("\n".join(
+                "%s = %s;" % (key, dumps(value))
+                for key, value in self.__client_variables.iteritems()
+            ))
+            head.append(script_tag)
+
         if self.__elements_with_client_params:
             
             self._add_resource_to_head(Script(self.JQUERY_SCRIPT), True)

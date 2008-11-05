@@ -53,6 +53,7 @@ class Element(object):
         self.__resources = None
         self.__resource_uris = None
         self.__client_params = None
+        self.__client_variables = None
         self.__client_translations = None
         self.__is_ready = False
         self.__binding_handlers = None
@@ -508,7 +509,7 @@ class Element(object):
             else:
                 self.__meta[key] = value
 
-    # Client parameters
+    # Client side element parameters
     #--------------------------------------------------------------------------
     
     @getter
@@ -538,6 +539,36 @@ class Element(object):
         else:
             del self.__client_params[key]
     
+    # Client side variables
+    #--------------------------------------------------------------------------
+
+    @getter
+    def client_variables(self):
+        if self.__client_variables is None:
+            return empty_dict
+        else:
+            return self.__client_variables
+    
+    def get_client_variable(self, key):
+        if self.__client_variables is None:
+            raise KeyError("Trying to read an undefined "
+                "client variable '%s' on %s" % (key, self))
+        else:
+            return self.__client_variables[key]
+
+    def set_client_variable(self, key, value):
+        if self.__client_variables is None:
+            self.__client_variables = {key: value}
+        else:
+            self.__client_variables[key] = value
+
+    def remove_client_variable(self, key):
+        if self.__client_variables is None:
+            raise KeyError("Trying to remove an undefined "
+                "client variable '%s' on %s" % (key, self))
+        else:
+            del self.__client_variables[key]
+
     # Client side translations
     #--------------------------------------------------------------------------
     
