@@ -158,8 +158,9 @@ jQuery(function () {
                     cls: 'row_selector_none'
                 }
         ];
-        
-        
+       
+    if(jQuery(".no_results").length==0){
+    
         var div = document.createElement('div');
         div.className = 'row_selector';
         
@@ -187,7 +188,7 @@ jQuery(function () {
         jQuery(".row_selector_none").click( function () {
             removeSelection();
         });
-        
+    }    
         
     function disableTextSelection () {
         
