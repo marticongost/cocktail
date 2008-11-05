@@ -45,6 +45,18 @@ class Table(Element, CollectionDisplay):
         self.append(self.body)
 
     def _ready(self):
+        
+        self.add_resource("/cocktail/scripts/core.js")
+
+        self.set_client_variable(
+            "cocktail.NO_SELECTION", NO_SELECTION)
+        self.set_client_variable(
+            "cocktail.SINGLE_SELECTION", SINGLE_SELECTION)
+        self.set_client_variable(
+            "cocktail.MULTIPLE_SELECTION", MULTIPLE_SELECTION)
+        
+        self.set_client_param("selectionMode", self.selection_mode)
+
         self._fill_head()
         self._fill_body()
 
@@ -93,7 +105,7 @@ class Table(Element, CollectionDisplay):
         row = Element("tr")
         row.add_class(index % 2 == 0 and "odd" or "even")
         
-        if self.selection_mode != NO_SELECTION:            
+        if self.selection_mode != NO_SELECTION:
             row.append(self.create_selection_cell(item))
             
         for column in self.displayed_members:
