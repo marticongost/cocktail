@@ -24,6 +24,7 @@ class Element(object):
     visible = True
     collapsible = False
     language = None
+    needs_id = False
 
     def __init__(self,
         tag = default,
@@ -527,6 +528,7 @@ class Element(object):
             return self.__client_params[key]
 
     def set_client_param(self, key, value):
+        self.needs_id = True
         if self.__client_params is None:
             self.__client_params = {key: value}
         else:
