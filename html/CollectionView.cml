@@ -3,6 +3,7 @@
 <?py
 from cocktail.modeling import refine
 from cocktail.controllers.viewstate import view_state_form
+from cocktail.html.datadisplay import MULTIPLE_SELECTION
 ?>
 
 <form
@@ -11,7 +12,8 @@ from cocktail.controllers.viewstate import view_state_form
     method="get">
 
     <?py-class
-    actions = ()    
+    actions = ()
+    selection_mode = MULTIPLE_SELECTION
     ?>
     
     <?py
@@ -129,6 +131,7 @@ from cocktail.controllers.viewstate import view_state_form
     <py:ready>
         <?py
         self.collection_display.user_collection = self.user_collection
+        self.collection_display.selection_mode = self.selection_mode
         results_visible = bool(self.user_collection.page_subset())
         self.collection_display.visible = results_visible
         self.no_results.visible = not results_visible
