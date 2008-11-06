@@ -21,7 +21,7 @@ from cocktail.controllers.viewstate import view_state_form
     self.add_client_translation("CollectionView none")
     ?>
 
-    ${view_state_form(members = None, language = None, page_size = None)}
+    ${view_state_form(members = None, language = None, page_size = None, selection = None)}
 
     <!-- Paging -->
     <py:cocktail.html.PagingControls
