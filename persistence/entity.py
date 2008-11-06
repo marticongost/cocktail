@@ -527,7 +527,7 @@ class MemberDescriptor(object):
         and self.member.bidirectional:
 
             if previous_value is not None:
-                relations.unrelate(value, instance, self.member.related_end)
+                relations.unrelate(previous_value, instance, self.member.related_end)
 
             if value is not None:
                 relations.relate(value, instance, self.member.related_end)
