@@ -222,11 +222,8 @@ class Query(object):
             for expr in self.order
         ]
 
-        def compare(a, b):
-            
-            values_a = []
-            values_b = []
-
+        def compare(a, b):            
+ 
             for expr, descending in cmp_sequence:
                 value_a = expr.eval(a, getattr)
                 value_b = expr.eval(b, getattr)
@@ -234,10 +231,19 @@ class Query(object):
                 if descending:
                     value_a, value_b = value_b, value_a
 
-                values_a.append(value_a)
-                values_b.append(value_b)
+                if (value_a is None and value_b is None) \
+                or value_a == value_b:
+                    pass
+                elif value_a is None:
+                    return -1
+                elif value_b is None:
+                    return 1
+                elif value_a < value_b:
+                    return -1
+                elif value_a > value_b:
+                    return 1
 
-            return cmp(values_a, values_b)
+            return 0
 
         subset.sort(cmp = compare)
 

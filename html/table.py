@@ -131,10 +131,10 @@ class Table(Element, CollectionDisplay):
 
         if self.selection_mode == SINGLE_SELECTION:
             selection_control["type"] = "radio"
-            selection_control["selected"] = self.is_selected(item)
         else:
             selection_control["type"] = "checkbox"
-            selection_control["checked"] = self.is_selected(item)
+
+        selection_control["checked"] = self.is_selected(item)
 
         selection_cell = Element("td")
         selection_cell.add_class("selection")
