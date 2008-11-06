@@ -37,8 +37,6 @@ def relate(obj, related_obj, member):
                     collection_type = member.type or member.default_type
 
                     if collection_type:
-                        if member.name == "changes":
-                            print "*" * 80
                         setattr(obj, member.name, collection_type())
                         collection = getattr(obj, member.name)
                     else:
@@ -51,7 +49,7 @@ def relate(obj, related_obj, member):
             _thread_data.relating = False
 
 def unrelate(obj, related_obj, member):
-    
+
     if getattr(_thread_data, "member", None) is not member:
         _thread_data.member = member
 
