@@ -20,22 +20,28 @@ translations.define(False,
     en = u"No"
 )
 
-translations.define("ca",
-    ca = u"Català",
-    es = u"Catalán",
-    en = u"Catalan"
+translations.define(True,
+    ca = u"Sí",
+    es = u"Sí",
+    en = u"Yes"
 )
 
-translations.define("es",
-    ca = u"Castellà",
-    es = u"Español",
-    en = u"Spanish"
+translations.define("Accept",
+    ca = u"Acceptar",
+    es = u"Aceptar",
+    en = u"Accept"
 )
 
-translations.define("en",
-    ca = u"Anglès",
-    es = u"Inglés",
-    en = u"English"
+translations.define("Cancel",
+    ca = u"Cancel·lar",
+    es = u"Cancelar",
+    en = u"Cancel"
+)
+
+translations.define("Select",
+    ca = u"Seleccionar",
+    es = u"Seleccionar",
+    en = u"Select"
 )
 
 translations.define("Submit",
@@ -120,6 +126,26 @@ translations.define("CollectionView none",
     ca = u"Cap",
     es = u"Ninguno",
     en = u"None"
+)
+
+# Languages
+#------------------------------------------------------------------------------
+translations.define("ca",
+    ca = u"Català",
+    es = u"Catalán",
+    en = u"Catalan"
+)
+
+translations.define("es",
+    ca = u"Castellà",
+    es = u"Español",
+    en = u"Spanish"
+)
+
+translations.define("en",
+    ca = u"Anglès",
+    es = u"Inglés",
+    en = u"English"
 )
 
 # Validation errors
