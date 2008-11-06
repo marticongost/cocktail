@@ -13,6 +13,9 @@ from cocktail.schema.expressions import (
     PositiveExpression,
     NegativeExpression
 )
+from cocktail.html.datadisplay import (
+    NO_SELECTION, SINGLE_SELECTION, MULTIPLE_SELECTION
+)
 from cocktail.controllers.viewstate import get_persistent_param
 
 
@@ -26,12 +29,12 @@ class UserCollection(object):
     allow_sorting = True
     allow_filters = True
     allow_member_selection = True
-    allow_selection = True
 
     page = 0
     page_size = 15
 
     selection = None
+    selection_mode = MULTIPLE_SELECTION
     selection_parser = int
 
     persistence_prefix = None
@@ -133,7 +136,7 @@ class UserCollection(object):
         if self.allow_member_selection:
             self._read_member_selection()
 
-        if self.allow_selection:
+        if self.selection_mode != NO_SELECTION:
             self._read_selection()
 
     def _get_param(self, name):
@@ -223,13 +226,16 @@ class UserCollection(object):
 
         if selection_param:
             
-            if isinstance(selection_param, basestring):
-                selection_param = selection_param.split(",")
+            if self.selection_mode == SINGLE_SELECTION:
+                self.selection = self.selection_parser(selection_param)
+            else:
+                if isinstance(selection_param, basestring):
+                    selection_param = selection_param.split(",")
 
-            self.selection = [
-                self.selection_parser(value)
-                for value in selection_param
-            ]
+                self.selection = [
+                    self.selection_parser(value)
+                    for value in selection_param
+                ]
 
     def get_param_name(self, param):
         if self.name:
