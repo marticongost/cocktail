@@ -284,13 +284,12 @@ class CollectionDisplay(DataDisplay):
     
     def is_selected(self, item):
         
-        if self.selection is not None:
-            if self.selection_mode == SINGLE_SELECTION:
-                return item == self.selection
-            elif self.selection_mode == MULTIPLE_SELECTION:
-                return item in self.selection
-
-        return False
+        if self.selection is None:
+            return False
+        elif self.selection_mode == SINGLE_SELECTION:
+            return item == self.selection
+        elif self.selection_mode == MULTIPLE_SELECTION:
+            return item in self.selection
 
     def _get_user_collection(self):
         return self.__user_collection
