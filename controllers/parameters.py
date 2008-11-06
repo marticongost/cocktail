@@ -9,6 +9,7 @@
 import cherrypy
 from string import strip
 from cocktail import schema
+from cocktail.persistence import EntityClass
 
 # Extension property that allows members to define a parser function for
 # request values
@@ -36,6 +37,18 @@ def parse_boolean(self, reader, value):
     return value
         
 schema.Boolean.parse_request_value = parse_boolean
+
+def parse_reference(self, reader, value):
+
+    related_type = self.type
+
+    # TODO: make this extensible to other types?
+    if isinstance(related_type, EntityClass) and related_type.indexed:
+        value = related_type.index.get(int(value))
+    
+    return value
+
+schema.Reference.parse_request_value = parse_reference
 
 def parse_collection(self, reader, value):
     
@@ -346,7 +359,10 @@ class FormSchemaReader(object):
         if value is not None:
 
             if self.normalization:
-                value = self.normalization(value)
+                if isinstance(value, basestring):
+                    value = self.normalization(value)
+                else:
+                    value = [self.normalization(part) for part in value]
 
             if value == "":
                 value = None
