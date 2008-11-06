@@ -74,10 +74,8 @@ class Page(Element):
 
     def _before_descendant_rendered(self, descendant):
         
-        if descendant.client_params:
-            
-            self.__elements_with_client_params.append(descendant)
-            
+        if descendant.needs_id:
+
             # Generate an id for those elements that haven't got one
             id = descendant["id"]
             
@@ -85,6 +83,9 @@ class Page(Element):
                 self.__element_id += 1
                 id = self.generated_id_format % self.__element_id
                 descendant["id"] = id
+
+            if descendant.client_params:            
+                self.__elements_with_client_params.append(descendant)
 
     def _after_descendant_rendered(self, descendant):
 
