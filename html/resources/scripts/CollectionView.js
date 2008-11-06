@@ -5,7 +5,11 @@ cocktail.translate("CollectionView none");
 
 jQuery(function () {
     
-    var checkboxes = jQuery(".Table .selection input");
+    
+    //Switch selection type
+    //TODO: 
+    
+    var checkboxes = jQuery(".Table .selection input");        
     var lastSelected;
     
     jQuery(document).keydown(function (e) {                                        
@@ -76,7 +80,7 @@ jQuery(function () {
     jQuery(".Table tbody tr")
         
         // Togle row selection when clicking a row
-        .click(function (e) {
+        .click(function (e) {                                            
             
             var src = e.target || e.srcElement;
             var srcTag = src.tagName.toLowerCase();         
@@ -117,8 +121,7 @@ jQuery(function () {
                 }
                 
                 if(srcTag == "label") e.preventDefault();
-            }                          
-                        
+            }                                                        
         })
 
         .dblclick(function () {
@@ -192,7 +195,7 @@ jQuery(function () {
         
     function disableTextSelection () {
         
-        var selector = jQuery(".Table");
+        var selector = jQuery(document.body);
         
         if (jQuery.browser.mozilla) {
             return selector.each(function() {
