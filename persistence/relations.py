@@ -10,6 +10,7 @@ from threading import local
 from persistent import Persistent
 from persistent.list import PersistentList
 from persistent.mapping import PersistentMapping
+from cocktail.typemapping import TypeMapping
 from cocktail.modeling import (
     getter,
     InstrumentedList,
@@ -19,6 +20,41 @@ from cocktail.modeling import (
 from cocktail import schema
 
 _thread_data = local()
+
+relation_add_methods = TypeMapping()
+relation_remove_methods = TypeMapping()
+
+def add(collection, item):
+    add_method = relation_add_methods.get(collection.__class__)
+
+    if add_method:
+        add_method(collection, item)
+    else:
+        collection.add(item)
+
+def remove(collection, item):
+    remove_method = relation_remove_methods.get(collection.__class__) \
+        
+    if remove_method:
+        remove_method(collection, item)
+    else:
+        collection.remove(item)
+
+def _list_add(collection, item):
+    collection.append(item)
+
+def _mapping_add(collection, item):
+    collection[item.id] = item
+
+def _mapping_remove(collection, item):
+    del collection[item.id]
+
+relation_add_methods[list] = _list_add
+relation_add_methods[PersistentList] = _list_add
+relation_add_methods[dict] = _mapping_add
+relation_add_methods[PersistentMapping] = _mapping_add
+relation_remove_methods[dict] = _mapping_remove
+relation_remove_methods[PersistentMapping] = _mapping_remove
 
 def relate(obj, related_obj, member):
     
