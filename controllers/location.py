@@ -23,6 +23,7 @@ class Location(object):
     path_info = "/"
     query_string = None
     form_data = None
+    relative = False
 
     def __init__(self):
         self.query_string = {}
@@ -36,6 +37,7 @@ class Location(object):
         query_string = get_state()
 
         location = cls()
+        location.relative = True
         location.method = request.method
         location.scheme = request.scheme
         location.host = request.local.name
@@ -61,11 +63,14 @@ class Location(object):
         )
 
     def __str__(self):
-    
-        url = self.scheme + "://" + self.host
 
-        if self.port:
-            url += ":" + str(self.port)
+        if self.relative:
+            url = ""
+        else:
+            url = self.scheme + "://" + self.host
+
+            if self.port:
+                url += ":" + str(self.port)
 
         url += self.path_info
 
