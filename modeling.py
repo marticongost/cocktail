@@ -7,6 +7,7 @@ A set of constructs for modeling classes.
 @organization:	Whads/Accent SL
 @since:			November 2007
 """
+from copy import copy, deepcopy
 from weakref import WeakKeyDictionary
 
 def wrap(function, wrapper):
@@ -78,6 +79,12 @@ class DictWrapper(object):
         if items is None:
             items = {}
         self._items = items
+
+    def __copy__(self):
+        return copy(self._items)
+
+    def __deepcopy_(self, memo):
+        return deepcopy(self._items, memo)
 
     def __cmp__(self, other):
         return self._items.__cmp__(other)
@@ -164,6 +171,12 @@ class ListWrapper(object):
             items = []
         self._items = items
 
+    def __copy__(self):
+        return copy(self._items)
+
+    def __deepcopy_(self, memo):
+        return deepcopy(self._items, memo)
+
     def __add__(self, other):
         return self._items.__add__(other)
 
@@ -242,6 +255,12 @@ class SetWrapper(object):
         if items is None:
             items = set()
         self._items = items
+
+    def __copy__(self):
+        return copy(self._items)
+
+    def __deepcopy_(self, memo):
+        return deepcopy(self._items, memo)
 
     def __and__(self, other):
         return self._items.__and__(other)
