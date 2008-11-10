@@ -524,7 +524,8 @@ class MemberDescriptor(object):
     def __update_relation(self, instance, value, previous_value):
 
         if isinstance(self.member, schema.Reference) \
-        and self.member.bidirectional:
+        and self.member.bidirectional \
+        and value != previous_value:
 
             if previous_value is not None:
                 relations.unrelate(previous_value, instance, self.member.related_end)
