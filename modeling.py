@@ -83,7 +83,7 @@ class DictWrapper(object):
     def __copy__(self):
         return copy(self._items)
 
-    def __deepcopy_(self, memo):
+    def __deepcopy__(self, memo):
         return deepcopy(self._items, memo)
 
     def __cmp__(self, other):
@@ -174,14 +174,14 @@ class ListWrapper(object):
     def __copy__(self):
         return copy(self._items)
 
-    def __deepcopy_(self, memo):
+    def __deepcopy__(self, memo):
         return deepcopy(self._items, memo)
 
     def __add__(self, other):
         return self._items.__add__(other)
 
     def __cmp__(self, other):
-        return self._items.__cmp__(other)
+        return cmp(self._items, other)
 
     def __contains__(self, item):
         return self._items.__contains__(item)
@@ -259,7 +259,7 @@ class SetWrapper(object):
     def __copy__(self):
         return copy(self._items)
 
-    def __deepcopy_(self, memo):
+    def __deepcopy__(self, memo):
         return deepcopy(self._items, memo)
 
     def __and__(self, other):
