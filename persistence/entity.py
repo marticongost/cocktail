@@ -422,6 +422,36 @@ class Entity(Persistent):
     def on_member_set(self, member, value, language):
         return value
  
+    def delete(self):
+
+        # Remove the item from primary indices
+        if self.__class__.indexed:
+            for cls in self.__class__.ascend_inheritance(True):
+                cls.index.pop(self.id, None)
+
+        # Remove the item from the rest of indices
+        if self.__class__.translated:
+            languages = self.translations.keys()
+
+        for member in self.__class__.members().itervalues():
+
+            if member.indexed and not member.primary:
+                if member.translated:
+                    for language in languages:
+                        value = self.get(member, language)
+                        if value is not None:
+                            if member.unique:
+                                member.index.pop((language, value), None)
+                            else:
+                                member.index.remove((language, value), self)
+                else:
+                    value = self.get(member)
+                    if value is not None:
+                        if member.unique:
+                            member.index.pop(value, None)
+                        else:
+                            member.index.remove(value, self)
+
 
 class MemberDescriptor(object):
 
