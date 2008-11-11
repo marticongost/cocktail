@@ -8,8 +8,7 @@
 """
 from threading import local
 from persistent import Persistent
-from persistent.list import PersistentList
-from persistent.mapping import PersistentMapping
+from difflib import SequenceMatcher
 from cocktail.typemapping import TypeMapping
 from cocktail.modeling import (
     getter,
@@ -17,6 +16,9 @@ from cocktail.modeling import (
     InstrumentedSet,
     InstrumentedDict
 )
+from cocktail.persistence.persistentlist import PersistentList
+from cocktail.persistence.persistentmapping import PersistentMapping
+from cocktail.persistence.persistentset import PersistentSet
 from cocktail import schema
 
 _thread_data = local()
@@ -56,16 +58,41 @@ relation_add_methods[PersistentMapping] = _mapping_add
 relation_remove_methods[dict] = _mapping_remove
 relation_remove_methods[PersistentMapping] = _mapping_remove
 
+def _push(action, obj, related_obj, member):
+    
+    stack = getattr(_thread_data, "stack", None)
+
+    if stack is None:
+        stack = []
+        _thread_data.stack = stack
+
+    entry = (action, obj, related_obj, member)
+
+    if entry not in stack:
+        stack.append(entry)
+        return True
+    else:
+        return False
+
+def _pop():
+
+    stack = getattr(_thread_data, "stack", None)
+
+    if not stack:
+        raise ValueError(
+            "The relation stack is empty, can't pop its last entry")
+
+    return stack.pop()
+
 def relate(obj, related_obj, member):
     
-    if not getattr(_thread_data, "relating", False):
-        try:
-            _thread_data.relating = True
+    if _push("relate", obj, related_obj, member):
 
+        try:
             if isinstance(member, schema.Reference):
                 setattr(obj, member.name, related_obj)
             else:
-                collection = getattr(obj, member.name)                
+                collection = getattr(obj, member.name)
                 
                 if collection is None:
                     
@@ -82,19 +109,47 @@ def relate(obj, related_obj, member):
 
                 collection.add(related_obj)
         finally:
-            _thread_data.relating = False
+            _pop()
 
 def unrelate(obj, related_obj, member):
 
-    if getattr(_thread_data, "member", None) is not member:
-        _thread_data.member = member
+    if _push("unrelate", obj, related_obj, member):
 
-        if isinstance(member, schema.Reference):
-            setattr(obj, member.name, None)
-        else:
-            getattr(obj, member.name).remove(related_obj)
+        try:
+            if isinstance(member, schema.Reference):
+                setattr(obj, member.name, None)
+            else:
+                getattr(obj, member.name).remove(related_obj)
+        finally:
+            _pop()
 
-        _thread_data.member = None
+def instrument_collection(collection, owner, member):
+
+    # Lists
+    if isinstance(collection, list):
+        collection = RelationList(
+            PersistentList(collection), owner, member
+        )
+    elif isinstance(collection, PersistentList):
+        collection = RelationList(collection, owner, member)
+
+    # Sets
+    elif isinstance(collection, set):
+        collection = RelationSet(
+            PersistentSet(collection), owner, member
+        )
+    elif isinstance(collection, PersistentSet):
+        collection = RelationSet(collection, owner, member)
+
+    # Mappings
+    elif isinstance(collection, dict):
+        collection = relations.RelationMapping(
+            PersistentMapping(collection), owner, member
+        )        
+    elif isinstance(collection, PersistentMapping):
+        collection = RelationMapping(collection, owner, member)
+
+    return collection
 
 
 class RelationCollection(Persistent):
@@ -127,33 +182,99 @@ class RelationCollection(Persistent):
         """)
 
     def item_added(self, item):
+        _push("relate", self.owner, item, self.member)
         relate(item, self.owner, self.member.related_end)
         self._p_changed = True
         
     def item_removed(self, item):
+        _push("unrelate", self.owner, item, self.member)
         unrelate(item, self.owner, self.member.related_end)
         self._p_changed = True
 
 
 class RelationList(RelationCollection, InstrumentedList):
     
-    def __init__(self, items = None):
-        InstrumentedList.__init__(self, items)
+    def __init__(self, items = None, owner = None, member = None):
+        self.owner = owner
+        self.member = member
+        InstrumentedList.__init__(self)
+        if items:
+            for item in items:
+                self.append(item)
 
     def add(self, item):
         self.append(item)
 
+    def set_content(self, new_content):
+
+        if not new_content:
+            while self._items:
+                self.pop(0)
+        else:
+            if not hasattr(new_content, "__iter__") \
+            or not hasattr(new_content, "__getitem__"):
+                raise TypeError(
+                    "%s is not a valid collection for a relation list"
+                    % new_content
+                )
+
+            diff = SequenceMatcher(None, self._items, new_content)
+            previous_content = self._items
+            self._items = new_content
+            
+            for tag, alo, ahi, blo, bhi in diff.get_opcodes():
+                if tag == "replace":
+                    for item in previous_content[alo:ahi]:
+                        self.item_removed(item)
+                    for item in new_content[blo:bhi]:
+                        self.item_added(item)
+                elif tag == "delete":
+                    for item in previous_content[alo:ahi]:
+                        self.item_removed(item)
+                elif tag == "insert":
+                    for item in new_content[blo:bhi]:
+                        self.item_added(item)
+                elif tag == "equal":
+                    pass
+
 
 class RelationSet(RelationCollection, InstrumentedSet):
     
-    def __init__(self, items = None):
-        InstrumentedSet.__init__(self, items)
+    def __init__(self, items = None, owner = None, member = None):
+        self.owner = owner
+        self.member = member
+        InstrumentedSet.__init__(self)
+        if items:
+            for item in items:
+                self.add(item)
 
+    def set_content(self, new_content):
 
-class RelationDict(RelationCollection, InstrumentedDict):
+        if new_content is None:
+            self.clear()
+        else:
+            if not isinstance(new_content, set):
+                new_content = set(new_content)
+            
+            previous_content = self._items
+            self._items = new_content
+
+            for item in previous_content - new_content:
+                self.item_removed(item)
+
+            for item in new_content - previous_content:
+                self.item_added(item)
+        
+
+class RelationMapping(RelationCollection, InstrumentedDict):
     
-    def __init__(self, items = None):
-        InstrumentedDict.__init__(self, items)
+    def __init__(self, items = None, owner = None, member = None):
+        self.owner = owner
+        self.member = member
+        InstrumentedDict.__init__(self)
+        if items:
+            for item in items:
+                self.add(item)
 
     def get_item_key(self, item):
         if self.member.get_item_key:
@@ -163,11 +284,36 @@ class RelationDict(RelationCollection, InstrumentedDict):
                 "the collection hasn't overriden its get_item_key() method."
                 % item)
 
+    def item_added(self, item):
+        RelationCollection.item_added(self, item[1])
+
+    def item_removed(self, item):
+        RelationCollection.item_removed(self, item[1])
+
     def add(self, item):
         self[self.get_item_key(item)] = item
 
     def remove(self, item):
         del self[self.get_item_key(item)]
+
+    def set_content(self, new_content):
+
+        if new_content is None:
+            self.clear()
+        else:
+            new_content = set(
+                (self.get_item_key(item), item)
+                for item in new_content
+            )
+            
+            previous_content = set(self._items.iteritems())
+            self._items = dict(new_content)
+
+            for pair in previous_content - new_content:
+                self.item_removed(pair)
+
+            for pair in new_content - previous_content:
+                self.item_added(pair)
 
 
 def _get_related_end(self):

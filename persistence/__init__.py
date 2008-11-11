@@ -9,6 +9,9 @@ support for multi-language content and declarative queries over indices.
 @organization:	Whads/Accent SL
 @since:			July 2008
 """
+from cocktail.persistence.persistentlist import PersistentList
+from cocktail.persistence.persistentmapping import PersistentMapping
+from cocktail.persistence.persistentset import PersistentSet
 from cocktail.persistence.entity import Entity, EntityClass, EntityAccessor
 from cocktail.persistence.datastore import datastore
 from cocktail.persistence.incremental_id import incremental_id
