@@ -20,6 +20,12 @@ class LinkSelector(Selector):
         if selected:
             entry.add_class("selected")
 
+        link = self.create_entry_link(value, label)                
+        entry.append(link)
+        return entry
+
+    def create_entry_link(self, value, label):
+
         link = Element("a")
         
         if self.name:
@@ -29,7 +35,5 @@ class LinkSelector(Selector):
             link["href"] = "?" + view_state(**{name: value})
 
         link.append(label)
-        entry.append(link)
-
-        return entry
+        return link
 
