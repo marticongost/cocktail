@@ -318,6 +318,7 @@ class Schema(Member):
         if self.__members:
             
             context.enter(self, validable)
+            context_languages = context.get("languages")
 
             try:
                 for name, member in self.__members.iteritems():
@@ -327,8 +328,10 @@ class Schema(Member):
                         prev_language = context.get("language")
 
                         try:
-                            for language \
-                            in accessor.languages(validable, member.name):
+                            for language in (
+                                context_languages 
+                                or accessor.languages(validable, member.name)
+                            ):
                                 context["language"] = language
                                 
                                 value = accessor.get(
