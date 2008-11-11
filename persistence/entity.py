@@ -9,8 +9,6 @@
 import sys
 from copy import deepcopy
 from persistent import Persistent
-from persistent.list import PersistentList
-from persistent.mapping import PersistentMapping
 from BTrees.OOBTree import OOBTree
 from BTrees.IOBTree import IOBTree
 from cocktail.pkgutils import get_full_name
@@ -21,6 +19,9 @@ from cocktail.translations import translate
 from cocktail.persistence.datastore import datastore
 from cocktail.persistence.incremental_id import incremental_id
 from cocktail.persistence.index import Index
+from cocktail.persistence.persistentlist import PersistentList
+from cocktail.persistence.persistentmapping import PersistentMapping
+from cocktail.persistence.persistentset import PersistentSet
 from cocktail.persistence import relations
 
 # Default collection types
@@ -194,31 +195,8 @@ class EntityClass(type, schema.Schema):
 
         # Avoid AttributeError exceptions on entity initialization by setting
         # class wide attributes
-        setattr(cls, "_" + member.name, None)
-         
-        # Instrument relations
-        if isinstance(member, schema.Collection) \
-        and getattr(member, "bidirectional", False):
-            
-            def instrument_collection(obj, member, value):
-                if value is not None:
-                    if isinstance(value, (list, PersistentList)):
-                        value = relations.RelationList(value)
-                        value.owner = obj
-                        value.member = member
-                    elif isinstance(value, set):
-                        value = relations.RelationSet(value)
-                        value.owner = obj
-                        value.member = member
-                    elif isinstance(value, (dict, PersistentMapping)):
-                        value = relations.RelationDict(value)
-                        value.owner = obj
-                        value.member = member
-
-                return value
-
-            descriptor.normalization = instrument_collection
-                    
+        setattr(cls, "_" + member.name, None)         
+                   
         # Primary member
         if member.primary:
             cls.primary_member = member
@@ -403,12 +381,8 @@ class Entity(Persistent):
             else:
                 raise TypeError("Expected a string or a member reference")
 
-        getter = member.schema.__dict__[member.name]._getter
-        
-        if member.translated:
-            return getter(self, language)
-        else:
-            return getter(self)
+        getter = member.schema.__dict__[member.name].__get__
+        return getter(self, None, language)        
 
     def set(self, member, value, language = None):
 
@@ -420,12 +394,8 @@ class Entity(Persistent):
             else:
                 raise TypeError("Expected a string or a member reference")
 
-        setter = member.schema.__dict__[member.name]._setter
-
-        if member.translated:
-            setter(self, value, language)
-        else:
-            setter(self, value)
+        setter = member.schema.__dict__[member.name].__set__
+        setter(self, value, language)
 
     def set_translations(self, member, **values):
 
@@ -437,7 +407,7 @@ class Entity(Persistent):
             else:
                 raise TypeError("Expected a string or a member reference")
 
-        setter = member.schema.__dict__[member.name]._setter
+        setter = member.schema.__dict__[member.name].__set__
 
         for language, value in values.iteritems():
             setter(self, value, language)
@@ -459,79 +429,78 @@ class MemberDescriptor(object):
         self.member = member
         self.normalization = lambda obj, member, value: value
         self.__priv_key = "_" + member.name
+        self._bidirectional_reference = \
+            isinstance(member, schema.Reference) and member.bidirectional
+        self._bidirectional_collection = \
+            isinstance(member, schema.Collection) and member.bidirectional
 
-        if member.translated:
-            self._getter = self._get_translated_value
-            self._setter = self._set_translated_value
-        else:
-            self._getter = self._get_value
-            self._setter = self._set_value
-    
-    def __get__(self, instance, type = None):
+    def __get__(self, instance, type = None, language = None):
         if instance is None:
             return self.member
         else:
-            return self._getter(instance)
+            if self.member.translated:
+                language = require_content_language(language)
+                instance = instance._translations.get(language)
+                if instance is None:
+                    return None
 
-    def _get_value(self, instance):
-        return getattr(instance, self.__priv_key)
+            return getattr(instance, self.__priv_key)
 
-    def _get_translated_value(self, instance, language = None):
-        language = require_content_language(language)
-        translation = instance._translations.get(language)
-            
-        if translation is None:
-            return None
-        else:
-            return getattr(translation, self.__priv_key)
-
-    def __set__(self, instance, value):        
-        self._setter(instance, value)
-
-    def _set_value(self, instance, value):
+    def __set__(self, instance, value, language = None):
         
-        previous_value = getattr(instance, self.__priv_key, None)
-        value = self.normalization(instance, self.member, value)
-        value = instance.on_member_set(self.member, value, None)
-        setattr(instance, self.__priv_key, value)
+        member = self.member
 
-        if self.member.indexed:
-            instance._update_index(self.member, None, previous_value, value)
+        # For translated members, make sure the translation for the specified
+        # language exists, and then resolve the assignment against it
+        if member.translated:
+            language = require_content_language(language)
+            target = instance.translations.get(language)
+            if target is None:
+                target = instance._new_translation(language)
+        else:
+            target = instance
 
-        self.__update_relation(instance, value, previous_value)
+        # Value normalization and hooks
+        previous_value = getattr(target, self.__priv_key, None)
+        value = self.normalization(instance, member, value)
+        value = instance.on_member_set(member, value, language)
+        
+        preserve_value = False
 
-    def _set_translated_value(self, instance, value, language = None):
+        # Bidirectional collections require special treatment:
+        if self._bidirectional_collection:
 
-        # Make sure the translation for the specified language exists, and
-        # then resolve the assignment against it
-        language = require_content_language(language)
-        translation = instance.translations.get(language)
+            # When setting the collection for the first time, wrap it with an
+            # instrumented instance of the appropiate type
+            if previous_value is None:
+                value = relations.instrument_collection(value, target, member)
 
-        if translation is None:
-            translation = instance._new_translation(language)
+            # If a collection is already set on the element, update it instead
+            # of just replacing it (this will invoke add/delete hooks on the
+            # collection, and update the opposite end of the relation)
+            else:
+                previous_value.set_content(value)
+                preserve_value = value is not None
+        
+        # Set the value
+        if not preserve_value:
+            setattr(target, self.__priv_key, value)
 
-        previous_value = getattr(translation, self.__priv_key, None)
-        value = self.normalization(instance, self.member, value)
-        value = instance.on_member_set(self.member, value, language)
-        setattr(translation, self.__priv_key, value)
+        # Update the member's index
+        if member.indexed:
+            instance._update_index(member, language, previous_value, value)
 
-        if self.member.indexed:
-            instance._update_index(
-                self.member, language, previous_value, value)
-
-        self.__update_relation(instance, value, previous_value)
-
-    def __update_relation(self, instance, value, previous_value):
-
-        if isinstance(self.member, schema.Reference) \
-        and self.member.bidirectional \
-        and value != previous_value:
+        # Update the opposite end of a bidirectional reference
+        if self._bidirectional_reference and value != previous_value:
+            
+            # TODO: translated bidirectional references
 
             if previous_value is not None:
-                relations.unrelate(previous_value, instance, self.member.related_end)
+                relations.unrelate(previous_value, instance, member.related_end)
 
             if value is not None:
-                relations.relate(value, instance, self.member.related_end)
+                relations.relate(value, instance, member.related_end)
+        
 
 _undefined = object()
 
