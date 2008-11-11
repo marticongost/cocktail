@@ -23,6 +23,12 @@ class Index(Persistent):
      
         group.add(value)
 
+    def remove(self, key, value):
+        group = self.__groups.get(key)
+        
+        if group is not None:
+            group.discard(value)
+
     def __getitem__(self, key):
         
         if isinstance(key, slice):
@@ -40,7 +46,7 @@ class Index(Persistent):
             return self.__groups.get(key, empty_set)
 
     def __delitem__(self, key):
-        self.__groups.__delitem__(self, key)
+        self.__groups.__delitem__(key)
 
     def keys(self):
         return self.__groups.keys()
