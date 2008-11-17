@@ -452,6 +452,13 @@ class Entity(Persistent):
                         else:
                             member.index.remove(value, self)
 
+            # Remove all known references to the item (drop all its
+            # bidirectional relations)
+            if isinstance(member, (schema.Reference, schema.Collection)) \
+            and member.bidirectional \
+            and self.get(member) is not None:
+                self.set(member, None)
+        
 
 class MemberDescriptor(object):
 
