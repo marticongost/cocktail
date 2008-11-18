@@ -61,7 +61,7 @@ class ValidationError(Exception):
         self.language = context.get("language")
         self.path = context.path()
 
-    def __repr__(self):
+    def __str__(self):
 
         desc = "%s: %s is not a valid value for %s" \
             % (self.__class__.__name__, self.value, self.member)
@@ -77,17 +77,17 @@ class ValueRequiredError(ValidationError):
     concrete value.
     """
 
-    def __repr__(self):
+    def __str__(self):
         return "%s (expected a non empty value)" \
-            % ValidationError.__repr__(self)
+            % ValidationError.__str__(self)
 
 
 class NoneRequiredError(ValidationError):
     """A validation error produced when a field that should be empty isn't."""
 
-    def __repr__(self):
+    def __str__(self):
         return "%s (expected an empty value)" \
-            % ValidationError.__repr__(self)
+            % ValidationError.__str__(self)
 
 
 class TypeCheckError(ValidationError):
@@ -101,13 +101,32 @@ class TypeCheckError(ValidationError):
         ValidationError.__init__(self, member, value, context)
         self.type = type
 
-    def __repr__(self):
+    def __str__(self):
         return "%s (expected a value of type %s, got %s instead)" % (
-            ValidationError.__repr__(self),
+            ValidationError.__str__(self),
             self.type,
             type(self.value)
         )
 
+
+class ClassFamilyError(ValidationError):
+    """A validation error produced when a reference is set to a class that
+    doesn't inherit a certain class.
+
+    @ivar class_family: The base type that the class should inherit from, at
+        the time of validation.
+    """
+
+    def __init__(self, member, value, context, class_family):
+        ValidationError.__init__(self, member, value, context)
+        self.class_family = class_family
+
+    def __str__(self):
+        return "%s (expected a subclass of %s, got %s instead)" % (
+            ValidationError.__str__(self),
+            self.class_family,
+            self.value
+        )
 
 class EnumerationError(ValidationError):
     """A validation error produced when a field is set to a value that falls
@@ -121,9 +140,9 @@ class EnumerationError(ValidationError):
         ValidationError.__init__(self, member, value, context)
         self.enumeration = enumeration
 
-    def __repr__(self):
+    def __str__(self):
         return "%s (should be one of %s)" \
-            % (ValidationError.__repr__(self), self.enumeration)
+            % (ValidationError.__str__(self), self.enumeration)
 
 
 class MinLengthError(ValidationError):
@@ -139,9 +158,9 @@ class MinLengthError(ValidationError):
         ValidationError.__init__(self, member, value, context)
         self.min = min
 
-    def __repr__(self):
+    def __str__(self):
         return "%s (should be %d or more characters long)" \
-            % (ValidationError.__repr__(self), self.min)
+            % (ValidationError.__str__(self), self.min)
 
 
 class MaxLengthError(ValidationError):
@@ -157,9 +176,9 @@ class MaxLengthError(ValidationError):
         ValidationError.__init__(self, member, value, context)
         self.max = max
 
-    def __repr__(self):
+    def __str__(self):
         return "%s (can't be more than %d characters long)" \
-            % (ValidationError.__repr__(self), self.max)
+            % (ValidationError.__str__(self), self.max)
 
 
 class FormatError(ValidationError):
@@ -174,9 +193,9 @@ class FormatError(ValidationError):
         ValidationError.__init__(self, member, value, context)
         self.format = format
 
-    def __repr__(self):
+    def __str__(self):
         return "%s (should match format %s)" \
-            % (ValidationError.__repr__(self), self.format)
+            % (ValidationError.__str__(self), self.format)
 
 
 class MinValueError(ValidationError):
@@ -192,9 +211,9 @@ class MinValueError(ValidationError):
         ValidationError.__init__(self, member, value, context)
         self.min = min
 
-    def __repr__(self):
+    def __str__(self):
         return "%s (should be %s or higher)" \
-            % (ValidationError.__repr__(self), self.min)
+            % (ValidationError.__str__(self), self.min)
 
 
 class MaxValueError(ValidationError):
@@ -209,9 +228,9 @@ class MaxValueError(ValidationError):
         ValidationError.__init__(self, member, value, context)
         self.max = max
 
-    def __repr__(self):
+    def __str__(self):
         return "%s (should be %s or lower)" \
-            % (ValidationError.__repr__(self), self.max)
+            % (ValidationError.__str__(self), self.max)
 
 
 class MinItemsError(ValidationError):
@@ -227,9 +246,9 @@ class MinItemsError(ValidationError):
         ValidationError.__init__(self, member, value, context)
         self.min = min
 
-    def __repr__(self):
+    def __str__(self):
         return "%s (can't have less than %d items)" \
-            % (ValidationError.__repr__(self), self.min)
+            % (ValidationError.__str__(self), self.min)
 
 
 class MaxItemsError(ValidationError):
@@ -244,7 +263,7 @@ class MaxItemsError(ValidationError):
         ValidationError.__init__(self, member, value, context)
         self.max = max
 
-    def __repr__(self):
+    def __str__(self):
         return "%s (can't have more than %d items)" \
-            % (ValidationError.__repr__(self), self.max)
+            % (ValidationError.__str__(self), self.max)
 

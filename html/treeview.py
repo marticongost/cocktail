@@ -31,13 +31,14 @@ class TreeView(Element):
         
         entry = Element("li")
     
-        entry.append(self.create_label(item))
+        entry.label = self.create_label(item)
+        entry.append(entry.label)
 
         children = self.get_child_items(item)
 
         if children:
-            container = self.create_children_container(item, children)
-            entry.append(container)
+            entry.container = self.create_children_container(item, children)
+            entry.append(entry.container)
 
         return entry
 

@@ -26,6 +26,12 @@ translations.define(True,
     en = u"Yes"
 )
 
+translations.define("Any",
+    ca = u"Qualsevol",
+    es = u"Cualquiera",
+    en = u"Any"
+)
+
 translations.define("Accept",
     ca = u"Acceptar",
     es = u"Aceptar",

@@ -23,8 +23,11 @@ class Element(object):
     theme = None
     visible = True
     collapsible = False
+
+    # Data binding
+    data = None
+    member = None
     language = None
-    needs_id = False
 
     def __init__(self,
         tag = default,
@@ -59,7 +62,6 @@ class Element(object):
         self.__is_ready = False
         self.__binding_handlers = None
         self.__ready_handlers = None
-        self.__value = None
 
         if tag is not default:
             self.tag = tag
@@ -103,30 +105,6 @@ class Element(object):
 
             desc += ">"
             return desc
-
-    # Data binding
-    #------------------------------------------------------------------------------
-    def _get_value(self):
-        return self.__value.value
-    
-    def _set_value(self, value):
-
-        if value is None:
-            value = ""
-
-        if self.__value is None:
-            self.__value = Content(value)
-            self.append(self.__value)
-        else:
-            self.__value.value = value
-
-    value = property(_get_value, _set_value, doc = """
-        Gets or sets the text content of the element.
-        @type: str
-        """)
-    
-    item = None
-    member = None
 
     # Rendering
     #--------------------------------------------------------------------------
@@ -528,7 +506,10 @@ class Element(object):
             return self.__client_params[key]
 
     def set_client_param(self, key, value):
-        self.needs_id = True
+        
+        if not self["id"]:
+            self["id"] = AutoID()
+
         if self.__client_params is None:
             self.__client_params = {key: value}
         else:
@@ -599,7 +580,7 @@ class Content(Element):
     def _render(self, render, out):
         self.ready()
         if self.value is not None:
-            out(self.value)
+            out(unicode(self.value))
 
 
 class PlaceHolder(Content):
@@ -610,6 +591,13 @@ class PlaceHolder(Content):
 
     def _ready(self):
         self.value = self.expression()
+
+
+class AutoID(object):
+    value = None
+
+    def __str__(self):
+        return self.value
 
 
 class ElementTreeError(Exception):

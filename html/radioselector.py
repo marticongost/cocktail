@@ -16,7 +16,7 @@ class RadioSelector(Selector):
         entry = Element("input")
         entry["type"] = "radio"
         entry["value"] = value
-        entry["selected"] = selected        
+        entry["checked"] = selected        
         entry["name"] = self.name
         entry.append(label)
         return entry
