@@ -47,6 +47,7 @@ class TemplateCompiler(object):
         self.__element_id = 0
         self.__stack = []
         self.__root_element_found = False
+        self.__is_overlay = False
         
         self.__source_blocks = []
         
@@ -58,6 +59,8 @@ class TemplateCompiler(object):
 
         self.__class_source_block = SourceCodeWriter(1)
         self.__source_blocks.append(self.__class_source_block)
+
+        self.__end_source_block = SourceCodeWriter()
 
         self.__parser = expat.ParserCreate(namespace_separator = ">")
 
@@ -84,10 +87,13 @@ class TemplateCompiler(object):
 
     def get_source(self):
         
-        return u"\n\n".join(
+        source = u"\n\n".join(
             unicode(block)
             for block in self.__source_blocks
         ) + u"\n"
+
+        source += unicode(self.__end_source_block)
+        return source
 
     def get_template_class(self):
         template_env = self.get_template_env()
@@ -192,7 +198,25 @@ class TemplateCompiler(object):
         # Template/custom tag
         if uri == self.TEMPLATE_NS:
 
-            if tag in ("ready", "binding"):
+            if tag == "overlay":
+                if self.__root_element_found:
+                    self._parse_error(
+                        "An overlay declaration can only be included at the "
+                        "root of the document"
+                    )
+                self.__is_overlay = True
+
+                overlay_class = attributes.pop(
+                    self.TEMPLATE_NS + ">class",
+                    None)
+                
+                if overlay_class:
+                    self.__end_source_block.write(
+                        "%s.register(%s)"
+                        % (self.class_name, repr(overlay_class))
+                    )
+
+            elif tag in ("ready", "binding"):
                 is_content = False
                 is_new = False
                 source.write("@%s.when_%s" % (parent_id, tag))
@@ -260,7 +284,16 @@ class TemplateCompiler(object):
             
             self.__root_element_found = True
             
-            self.__base_class_name = base_name = elem_class_name
+            if self.__is_overlay:
+                base_name = "Overlay"
+                self.__global_source_block.write(
+                    "from cocktail.modeling import call_base")
+                self.__global_source_block.write(
+                    "from cocktail.html import Overlay")
+            else:
+                base_name = elem_class_name
+
+            self.__base_class_name = base_name 
             frame.element = id = "self"
             
             source = self.__declaration_source_block
@@ -269,20 +302,17 @@ class TemplateCompiler(object):
             frame.source_block = source = SourceCodeWriter(1)
             self.__source_blocks.append(source)
 
-            source.write("def __init__(self, *args, **kwargs):")
-            source.indent()
-            source.write("%s.__init__(self, *args, **kwargs)" % base_name)
-
-            if elem_tag is not default:
-                source.write("self.tag = %r" % elem_tag)
-
-            self._handle_attributes(id, attributes)
-            source.unindent()
-            source.write()
-
             source.write("def _build(self):")
             source.indent()
-            source.write("%s._build(self)" % elem_class_name)
+
+            if self.__is_overlay:
+                source.write("call_base()")
+            else:
+                source.write("%s._build(self)" % elem_class_name)
+                if elem_tag is not default:
+                    source.write("self.tag = %r" % elem_tag)
+
+            self._handle_attributes(id, attributes)
         
         # Content
         elif is_content:
