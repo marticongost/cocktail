@@ -8,15 +8,19 @@
 """
 from cocktail.modeling import ListWrapper, SetWrapper
 from cocktail.translations import translate
-from cocktail.schema import Number
+from cocktail.schema import Number, Reference
 from cocktail.html import Element
 
 
 class Selector(Element):
 
     name = None
-    items = ()
-    value = None
+    items = None
+    __value = None
+    
+    empty_option_displayed = True
+    empty_value = ""
+    empty_label = "---"
    
     def __init__(self, *args, **kwargs):
         Element.__init__(self, *args, **kwargs)
@@ -39,11 +43,25 @@ class Selector(Element):
                 elif isinstance(self.member, Number) \
                 and self.member.min and self.member.max:
                     self.items = range(self.member.min, self.member.max + 1)
+
+                elif isinstance(self.member, Reference):
+                    self.items = self.member.type.index.itervalues()
+
+                else:
+                    self.items = ()
             
         self._fill_entries()
 
     def _fill_entries(self):
         
+        if self.empty_option_displayed:
+            entry = self.create_entry(
+                self.empty_value,
+                self.empty_label,
+                self.value is None
+            )
+            self.append(entry)
+
         if hasattr(self.items, "iteritems"):
             for value, label in self.items.iteritems():
                 value = self.get_item_value(value)
@@ -81,8 +99,8 @@ class Selector(Element):
 
         if value is None:
             self._is_selected = lambda item: False
-        elif isinstance(value, (list, tuple, set, ListWrapper, SetWrapper)):            
-            selection = set(self.get_item_value(item) for item in value)                
+        elif isinstance(value, (list, tuple, set, ListWrapper, SetWrapper)):
+            selection = set(self.get_item_value(item) for item in value)
             self._is_selected = lambda item: item in selection
         else:
             selection = self.get_item_value(value)
