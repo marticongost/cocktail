@@ -211,32 +211,48 @@ class DataDisplay(object):
             return translate(value, default = value)
 
     def get_member_display(self, obj, member):
-
         member = self._resolve_member(member)
+        display = self._resolve_member_display(obj, member)
+        display = self._normalize_member_display(obj, member, display)
+        return display
+
+    def _resolve_member_display(self, obj, member):
+
+        # Explicitly assigned
         display = self.__member_display.get(self._normalize_member(member))
 
+        # Implemented as a method
         if display is None:
             display_method = getattr(self, "display_" + member.name, None)
             
             if display_method:
                 display = display_method(obj, member)
 
+        # Inherited from the member's type
         if display is None:
             display = self.get_member_type_display(member.__class__)
         
+        # Default display
         if display is None:
-            display = self.default_display(obj, member)
- 
+            display = self.default_display
+
+        return display 
+
+    def _normalize_member_display(self, obj, member, display):
+
         if isinstance(display, basestring):
             display = templates.get_class(display)
 
         if isinstance(display, type) and issubclass(display, Element):
             display = display()
-            display.data = obj
-            display.member = member
-            display.value = self.get_member_value(obj, member)        
         elif callable(display):
             display = display(self, obj, member)
+
+        display.data = obj
+        display.member = member
+
+        if hasattr(display, "value"):
+            display.value = self.get_member_value(obj, member)
 
         return display
 
@@ -249,9 +265,7 @@ class DataDisplay(object):
     def set_member_type_display(self, member_type, display):
         self.__member_type_display[member_type] = display
 
-    def default_display(self, obj, member):
-        value = self.get_member_value(obj, member)
-        return Content(unicode(self.repr_value(obj, member, value)))
+    default_display = Content
 
 
 NO_SELECTION = 0

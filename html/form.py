@@ -236,7 +236,7 @@ class Form(Element, DataDisplay):
         return mark
 
     def create_control(self, obj, member):
-        control = DataDisplay.get_member_display(self, obj, member)
+        control = self.get_member_display(obj, member)
         control.add_class("control")
 
         if self.errors and self.errors.in_member(
