@@ -9,4 +9,5 @@ Component-based (X)HTML rendering.
 """
 from cocktail.html.element import Element, Content, PlaceHolder, AutoID
 from cocktail.html.resources import Resource, Script, StyleSheet
+from cocktail.html.overlay import Overlay
 

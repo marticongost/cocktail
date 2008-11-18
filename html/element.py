@@ -10,6 +10,7 @@ from inspect import getmro
 from cocktail.modeling import getter, empty_list, empty_dict, empty_set
 from cocktail.iteration import first
 from cocktail.html.resources import Resource
+from cocktail.html.overlay import apply_overlays
 
 default = object()
 
@@ -23,6 +24,7 @@ class Element(object):
     theme = None
     visible = True
     collapsible = False
+    overlays_enabled = False
 
     # Data binding
     data = None
@@ -66,23 +68,30 @@ class Element(object):
         if tag is not default:
             self.tag = tag
          
+        if self.overlays_enabled:
+            apply_overlays(self)
+
         self._build()
 
     class __metaclass__(type):
 
         def __init__(cls, name, bases, members):
             type.__init__(cls, name, bases, members)
-            
+         
+            if "overlays_enabled" not in members:
+                cls.overlays_enabled = True
+
             # Aggregate CSS classes from base types
-            classes = reversed(getmro(cls))
+            cls._classes = list(getmro(cls))[:-1]
+            cls._classes.reverse()
             css_classes = []
 
             if "styled_class" not in members:
                 cls.styled_class = True
 
-            for c in getmro(cls):
+            for c in cls._classes:
                 if getattr(c, "styled_class", False):                
-                    css_classes.insert(0, c.__name__)
+                    css_classes.append(c.__name__)
 
             cls.class_css = css_classes and " ".join(css_classes) or None
 
@@ -572,6 +581,7 @@ class Content(Element):
  
     styled_class = False
     value = None
+    overlays_enabled = False
 
     def __init__(self, value = None, *args, **kwargs):
         Element.__init__(self, *args, **kwargs)
