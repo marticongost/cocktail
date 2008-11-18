@@ -4,7 +4,15 @@ cocktail.translate("CollectionView none");
 
 
 jQuery(function () {
+     
+     var target = null;      
+     
+     jQuery("*", document.body).each( function() {               
+         //Dbl click target selector
+         if (this.dblclick_target) target = this.dblclick_target;
+      });
     
+    var target = target ? target : ".toolbar_button[value=edit]";
     
     //Switch selection type
     //TODO: 
@@ -43,7 +51,6 @@ jQuery(function () {
       
     function highlightSelection() {
         var row = jQuery(this).parents("tr");
-
         if (this.checked) {
             row.addClass("selected");
         }
@@ -66,8 +73,7 @@ jQuery(function () {
                         .each(function () {                       
                             this.checked = !this.checked;
                             highlightSelection.call(this);                    
-        });
-        var lastSelected;    
+        });   
     }
     
     function selectAll() {
@@ -112,7 +118,6 @@ jQuery(function () {
                     
                                        
                     if ( !e.ctrlKey ) removeSelection();
-
                                   
                     lastSelected = jQuery(this).find(".selection input").get(0);                    
                     lastSelected.checked = !lastSelected.checked;                                                   
@@ -124,7 +129,7 @@ jQuery(function () {
             }                                                        
         })
 
-        .dblclick(function () {
+        .dblclick(function () {           
         
             jQuery(".Table .selection input").each(function () {
                 this.checked = false;
@@ -143,7 +148,7 @@ jQuery(function () {
                 highlightSelection.call(this);
             });
             
-            jQuery(".toolbar_button[value=edit]").click();
+            jQuery(target).click();
         });
         
         
