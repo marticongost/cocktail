@@ -9,6 +9,10 @@ A set of constructs for modeling classes.
 """
 from copy import copy, deepcopy
 from weakref import WeakKeyDictionary
+from threading import local
+
+_thread_data = local()
+
 
 def wrap(function, wrapper):
     wrapper.__doc__ = function.__doc__
@@ -72,6 +76,33 @@ def refine(element):
         return wrapper
 
     return decorator
+
+def call_base(*args, **kwargs):
+    method_stack = getattr(_thread_data, "method_stack", None)
+    if method_stack:
+        return method_stack[-1](*args, **kwargs)
+
+def extend(element):
+    
+    def decorator(function):
+
+        base = getattr(element, function.func_name)
+
+        def wrapper(*args, **kwargs):
+            if not hasattr(_thread_data, "method_stack"):
+                _thread_data.method_stack = []
+            try:
+                _thread_data.method_stack.append(base)
+                return function(element, *args, **kwargs)
+            finally:
+                _thread_data.method_stack.pop()
+
+        wrap(function, wrapper)
+        setattr(element, function.func_name, wrapper)        
+        return wrapper
+
+    return decorator
+
 
 class DictWrapper(object):
 
