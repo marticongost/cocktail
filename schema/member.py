@@ -58,7 +58,6 @@ class Member(Variable):
     """
 
     # Constraints
-    type = None
     default = None
     required = False
     require_none = False
@@ -293,9 +292,9 @@ class Member(Variable):
     def resolve_constraint(cls, expr, context):
         """Resolves a constraint expression for the given context.
         
-        Most constraints can assigned dynamic expressions instead of static
-        values, allowing them to adapt to different validation contexts. For
-        example, a field may state that it should be required if and only if
+        Most constraints can be specified using dynamic expressions instead of
+        static values, allowing them to adapt to different validation contexts.
+        For example, a field may state that it should be required only if
         another field is set to a certain value. This method normalizes any
         constraint (either static or dynamic) to a static value, given a
         certain validation context.
