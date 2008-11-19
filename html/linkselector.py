@@ -27,13 +27,19 @@ class LinkSelector(Selector):
     def create_entry_link(self, value, label):
 
         link = Element("a")
-        
-        if self.name:
-            name = self.name
-            if isinstance(name, unicode):
-                name = str(name)
-            link["href"] = "?" + view_state(**{name: value})
-
+        link["href"] = self.get_entry_url(value)
         link.append(label)
         return link
+
+    def get_entry_url(self, value):
+
+        if self.name:
+            name = self.name
+
+            # Ugly hack: view_state uses urlencode(), which can't take unicode
+            # strings
+            if isinstance(name, unicode):
+                name = str(name)
+        
+            return "?" + view_state(**{name: value})
 
