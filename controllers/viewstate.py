@@ -37,7 +37,10 @@ def view_state_form(**kwargs):
 
     return "\n".join(form)
 
-def get_persistent_param(param_name, cookie_name = None, cookie_duration = -1):
+def get_persistent_param(param_name,
+    cookie_name = None,
+    cookie_duration = -1,
+    cookie_path = "/"):
 
     param_value = cherrypy.request.params.get(param_name)
 
@@ -57,6 +60,7 @@ def get_persistent_param(param_name, cookie_name = None, cookie_duration = -1):
         )
         response_cookie = cherrypy.response.cookie[cookie_name]
         response_cookie["max-age"] = cookie_duration
+        response_cookie["path"] = cookie_path
 
     return param_value
 
