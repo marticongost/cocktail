@@ -60,7 +60,7 @@ def parse_collection(self, reader, value):
     collection_type = self.type or self.default_type or list
 
     return collection_type(
-        reader.process_value(self.items, part) for part in value
+        [reader.process_value(self.items, part) for part in value]
     )
     
 schema.Collection.parse_request_value = parse_collection
