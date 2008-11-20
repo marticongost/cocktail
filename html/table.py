@@ -26,6 +26,7 @@ class Table(Element, CollectionDisplay):
     ascending_order_image = "ascending.png"
     descending_order_image = "descending.png"
     base_image_url = None
+    selection_parameter = "selection"
 
     def __init__(self, *args, **kwargs):
         Element.__init__(self, *args, **kwargs)
@@ -122,12 +123,17 @@ class Table(Element, CollectionDisplay):
         
         return row
 
+    def get_item_id(self, item):
+        return item.id
+
     def create_selection_cell(self, item):
 
+        id = self.get_item_id(item)
+
         selection_control = Element("input")
-        selection_control["name"] = "selection"
-        selection_control["id"] = "selection_" + str(item.id)
-        selection_control["value"] = str(item.id)
+        selection_control["name"] = self.selection_parameter
+        selection_control["id"] = "selection_" + str(id)
+        selection_control["value"] = id
 
         if self.selection_mode == SINGLE_SELECTION:
             selection_control["type"] = "radio"
