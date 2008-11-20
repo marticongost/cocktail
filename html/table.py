@@ -126,7 +126,13 @@ class Table(Element, CollectionDisplay):
     def get_item_id(self, item):
         return item.id
 
-    def create_selection_cell(self, item):
+    def create_selection_cell(self, item):        
+        selection_cell = Element("td")
+        selection_cell.add_class("selection")
+        selection_cell.append(self.create_selection_control(item))
+        return selection_cell
+
+    def create_selection_control(self, item):
 
         id = self.get_item_id(item)
 
@@ -142,10 +148,7 @@ class Table(Element, CollectionDisplay):
 
         selection_control["checked"] = self.is_selected(item)
 
-        selection_cell = Element("td")
-        selection_cell.add_class("selection")
-        selection_cell.append(selection_control)
-        return selection_cell
+        return selection_control
 
     def create_header(self, column, language = None):
         
