@@ -61,7 +61,8 @@ class Renderer(object):
 
             # Attributes
             for key, value in element.attributes.iteritems():
-                if value != False and value is not None:
+                if value is not None \
+                and not (isinstance(value, bool) and not value):
                     self._write_attribute(key, value, out)
 
             # Single tag closure
