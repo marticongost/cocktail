@@ -62,6 +62,12 @@ def cached_getter(function):
         def __call__(self, instance):
             return function(instance)
 
+        def clear(self, instance):
+            try:
+                del cached_values[instance]
+            except KeyError:
+                pass
+
     return CachedGetter(wrapper, doc = function.__doc__)
 
 def refine(element):
