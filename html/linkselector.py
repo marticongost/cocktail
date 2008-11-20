@@ -13,6 +13,8 @@ from cocktail.controllers.viewstate import view_state
 
 class LinkSelector(Selector):
 
+    empty_option_displayed = False
+
     def create_entry(self, value, label, selected):
         
         entry = Element()

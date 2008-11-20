@@ -14,6 +14,8 @@ CheckBox = templates.get_class("cocktail.html.CheckBox")
 
 class CheckList(Selector):
 
+    empty_option_displayed = False
+
     def create_entry(self, value, label, selected):
 
         entry = Element()
