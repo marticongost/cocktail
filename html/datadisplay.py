@@ -7,6 +7,7 @@ Visual elements for data binding.
 @organization:	Whads/Accent SL
 @since:			July 2008
 """
+from types import MethodType
 from operator import getitem
 from cocktail.modeling import getter, ListWrapper, empty_list
 from cocktail.language import require_content_language
@@ -224,7 +225,6 @@ class DataDisplay(object):
         # Implemented as a method
         if display is None:
             display_method = getattr(self, "display_" + member.name, None)
-            
             if display_method:
                 display = display_method(obj, member)
 
@@ -246,7 +246,10 @@ class DataDisplay(object):
         if isinstance(display, type) and issubclass(display, Element):
             display = display()
         elif callable(display):
-            display = display(self, obj, member)
+            if isinstance(display, MethodType) and display.im_self is self:
+                display = display(obj, member)
+            else:
+                display = display(self, obj, member)
 
         display.data = obj
         display.member = member
