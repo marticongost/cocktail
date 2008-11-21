@@ -40,7 +40,7 @@ class DatePicker(TextBox):
             params = self.date_picker_params.copy()
             params.setdefault("ShowAnim", "slideDown")
             params.setdefault("changeFirstDay", False)
-            params.setdefault("buttonImage", "/cocktail/images/calendar.gif")
+            params.setdefault("buttonImage", "/cocktail/images/calendar.png")
             params.setdefault("buttonImageOnly", True)
             params.setdefault("showOn", "both")
             
