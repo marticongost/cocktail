@@ -6,6 +6,7 @@
 @organization:	Whads/Accent SL
 @since:			October 2007
 """
+from cocktail.html import templates
 from cocktail.html.element import Element
 from cocktail.html.datadisplay import (
     CollectionDisplay,
@@ -13,12 +14,14 @@ from cocktail.html.datadisplay import (
 )
 from cocktail.translations import translate
 from cocktail.language import get_content_language, set_content_language
+from cocktail.schema import Collection
 from cocktail.schema.expressions import (
     TranslationExpression,
     PositiveExpression,
     NegativeExpression
 )
 from cocktail.controllers.viewstate import view_state
+
 
 class Table(Element, CollectionDisplay):
     
@@ -27,12 +30,14 @@ class Table(Element, CollectionDisplay):
     descending_order_image = "descending.png"
     base_image_url = None
     selection_parameter = "selection"
+    nested_list_max_length = 5
 
     def __init__(self, *args, **kwargs):
         Element.__init__(self, *args, **kwargs)
         CollectionDisplay.__init__(self)
         self.__column_display = {}
         self.__column_labels = {}
+        self.set_member_type_display(Collection, self.display_collection)
 
     def _build(self):
 
@@ -216,4 +221,10 @@ class Table(Element, CollectionDisplay):
 
         if language:
             cell.add_class(language)
+
+    def display_collection(self, obj, member):
+        list = templates.new("cocktail.html.List")
+        list.items = self.get_member_value(obj, member)
+        list.max_length = self.nested_list_max_length
+        return list
 
