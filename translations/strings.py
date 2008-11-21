@@ -134,6 +134,12 @@ translations.define("CollectionView none",
     en = u"None"
 )
 
+translations.define("Translations",
+    ca = u"Traduccions",
+    es = u"Traducciones",
+    en = u"Translations"
+)
+
 # Languages
 #------------------------------------------------------------------------------
 translations.define("ca",
