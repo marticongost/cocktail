@@ -54,7 +54,7 @@ class BaseController(object):
         finally:
             self.end()
         
-        return self.view.render_page()
+        return self.render()
 
     @getter
     def redirecting(self):
@@ -100,4 +100,7 @@ class BaseController(object):
     def _init_view(self, view):
         view.error = self.error
         view.successful = self.successful
+
+    def render(self):
+        return self.view.render_page()
 
