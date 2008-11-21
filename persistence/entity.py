@@ -11,6 +11,7 @@ from copy import deepcopy
 from persistent import Persistent
 from BTrees.OOBTree import OOBTree
 from BTrees.IOBTree import IOBTree
+from cocktail.modeling import refine
 from cocktail.pkgutils import get_full_name
 from cocktail import schema
 from cocktail.schema.exceptions import ValidationError
@@ -295,7 +296,7 @@ class EntityClass(type, schema.Schema):
                 required = True
             ))
 
-        cls.add_member(schema.Mapping(
+        translations_member = schema.Mapping(
             name = "translations",
             required = True,
             keys = schema.String(
@@ -303,7 +304,13 @@ class EntityClass(type, schema.Schema):
                 format = "a-z{2}"
             ),
             values = cls.translation
-        ))
+        )
+
+        @refine(translations_member)
+        def __translate__(self, language):
+            return translate("Translations", language)
+
+        cls.add_member(translations_member)
 
     def derived_entities(cls, recursive = True):
         for entity in cls.__derived_entities:
