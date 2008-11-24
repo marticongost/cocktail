@@ -536,14 +536,15 @@ class MemberDescriptor(object):
 
         # Update the opposite end of a bidirectional reference
         if self._bidirectional_reference and value != previous_value:
-            
-            # TODO: translated bidirectional references
 
+            # TODO: translated bidirectional references
             if previous_value is not None:
-                relations.unrelate(previous_value, instance, member.related_end)
+                relations._update_relation(
+                    "unrelate", instance, previous_value, member)
 
             if value is not None:
-                relations.relate(value, instance, member.related_end)
+                relations._update_relation(
+                    "relate", instance, value, member)
         
 
 _undefined = object()
