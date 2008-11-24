@@ -85,9 +85,8 @@ def _pop():
     return stack.pop()
 
 def relate(obj, related_obj, member):
-    
-    if _push("relate", obj, related_obj, member):
 
+    if _push("relate", obj, related_obj, member):
         try:
             if isinstance(member, schema.Reference):
                 setattr(obj, member.name, related_obj)
@@ -114,7 +113,6 @@ def relate(obj, related_obj, member):
 def unrelate(obj, related_obj, member):
 
     if _push("unrelate", obj, related_obj, member):
-
         try:
             if isinstance(member, schema.Reference):
                 setattr(obj, member.name, None)
@@ -182,13 +180,25 @@ class RelationCollection(Persistent):
         """)
 
     def item_added(self, item):
+        
         _push("relate", self.owner, item, self.member)
-        relate(item, self.owner, self.member.related_end)
+        
+        try:
+            relate(item, self.owner, self.member.related_end)
+        finally:
+            _pop()
+        
         self._p_changed = True
         
     def item_removed(self, item):
+        
         _push("unrelate", self.owner, item, self.member)
-        unrelate(item, self.owner, self.member.related_end)
+
+        try:
+            unrelate(item, self.owner, self.member.related_end)
+        finally:
+            _pop()
+
         self._p_changed = True
 
 
