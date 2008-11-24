@@ -41,20 +41,7 @@ def translate(obj, language = None, **kwargs):
     if translator:
         return translator(language, **kwargs)
     else:
-        try:
-            return translations(obj, language, **kwargs)
-        except KeyError, ex:
-            
-            if isinstance(obj, basestring):
-                raise
-
-            try:
-                type_key = get_full_name(type(obj)) + "-instance"
-            except:
-                type_key = type(obj).__name__ + "-instance"
-            
-            kwargs["instance"] = obj
-            return translations(type_key, language, **kwargs)
+        return translations(obj, language, **kwargs)
 
 
 class TranslationsRepository(DictWrapper):
@@ -122,18 +109,32 @@ class Translation(DictWrapper):
         string = self._get_with_fallback(obj)
 
         if string is _undefined:
-            default = kwargs.get("default", _undefined)
-            if default is _undefined:
-                raise KeyError("Can't find a translation for %s" % obj)
-            else:
-                return unicode(default)
+
+            if not isinstance(obj, basestring):
+                try:
+                    type_key = get_full_name(type(obj)) + "-instance"
+                except:
+                    type_key = type(obj).__name__ + "-instance"
+            
+                kwargs["instance"] = obj
+                string = self._get_with_fallback(type_key)
+
+            if string is _undefined:
+                default = kwargs.get("default", _undefined)
+
+                if default is _undefined:
+                    raise KeyError("Can't find a translation for %s" % obj)
+                else:
+                    return unicode(default)
         
         # Custom python expression
         if callable(string):
+            kwargs.pop("default", None)
             string = string(**kwargs)
 
         # String formatting
         elif kwargs:
+            kwargs.pop("default", None)
             string = string % kwargs
 
         return string
