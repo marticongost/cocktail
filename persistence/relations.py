@@ -58,6 +58,23 @@ relation_add_methods[PersistentMapping] = _mapping_add
 relation_remove_methods[dict] = _mapping_remove
 relation_remove_methods[PersistentMapping] = _mapping_remove
 
+def _update_relation(action, obj, related_obj, member):
+
+    if action == "relate":
+        method = relate
+    elif action == "unrelate":
+        method = unrelate
+    else:
+        raise ValueError("Unknown relation action: %s" % action)
+
+    pushed = _push(action, obj, related_obj, member)
+
+    try:
+        method(related_obj, obj, member.related_end)
+    finally:
+        if pushed:
+            _pop()
+
 def _push(action, obj, related_obj, member):
     
     stack = getattr(_thread_data, "stack", None)
@@ -82,7 +99,8 @@ def _pop():
         raise ValueError(
             "The relation stack is empty, can't pop its last entry")
 
-    return stack.pop()
+    entry = stack.pop()
+    return entry
 
 def relate(obj, related_obj, member):
 
@@ -180,25 +198,11 @@ class RelationCollection(Persistent):
         """)
 
     def item_added(self, item):
-        
-        _push("relate", self.owner, item, self.member)
-        
-        try:
-            relate(item, self.owner, self.member.related_end)
-        finally:
-            _pop()
-        
+        _update_relation("relate", self.owner, item, self.member)
         self._p_changed = True
         
     def item_removed(self, item):
-        
-        _push("unrelate", self.owner, item, self.member)
-
-        try:
-            unrelate(item, self.owner, self.member.related_end)
-        finally:
-            _pop()
-
+        _update_relation("unrelate", self.owner, item, self.member)
         self._p_changed = True
 
 
