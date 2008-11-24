@@ -422,13 +422,16 @@ class TemplateCompiler(object):
                 source.indent()
 
                 if with_def:
+                    base_args = attributes.pop(
+                        self.TEMPLATE_NS + ">baseargs", args)
+
                     if inline:
-                        element_factory = id + "_factory(%s)" % args
+                        element_factory = id + "_factory(%s)" % base_args
                     else:
                         element_factory = "%s.create_%s(self%s)" % (
                             self.__base_class_name,
                             factory_id,
-                            ", " + args if args else ""
+                            ", " + base_args if base_args else ""
                         )
                 else:
                     element_factory = "%s()" % elem_class_name
