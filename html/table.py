@@ -31,6 +31,7 @@ class Table(Element, CollectionDisplay):
     base_image_url = None
     selection_parameter = "selection"
     nested_list_max_length = 5
+    translated_values = True
 
     def __init__(self, *args, **kwargs):
         Element.__init__(self, *args, **kwargs)

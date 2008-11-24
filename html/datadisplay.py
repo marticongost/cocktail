@@ -25,6 +25,7 @@ class DataDisplay(object):
     schema = None
     editable = True
     translations = None
+    translated_values = False
     accessor = None
 
     def __init__(self):
@@ -206,10 +207,9 @@ class DataDisplay(object):
             return accessor.get(obj, member.name, None, language)
 
     def repr_value(self, obj, member, value):
-        if value is None:
-            return u""
-        else:
-            return translate(value, default = value)
+        if self.translated_values and not member.translated:
+            value = translate(value, default = value)
+        return value
 
     def get_member_display(self, obj, member):
         member = self._resolve_member(member)
@@ -255,7 +255,8 @@ class DataDisplay(object):
         display.member = member
 
         if hasattr(display, "value"):
-            display.value = self.get_member_value(obj, member)
+            value = self.get_member_value(obj, member)
+            display.value = self.repr_value(obj, member, value)
 
         return display
 
