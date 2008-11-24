@@ -1,0 +1,14 @@
+td.dragHandle {
+}
+
+td.showDragHandle {
+    background-image:url(images/updown2.gif);
+    background-position:center center;
+    background-repeat:no-repeat;
+    cursor:move;
+}
+
+.mydragClass {
+    border: 1px solid #aa0000;
+    border-style: dashed;
+}
