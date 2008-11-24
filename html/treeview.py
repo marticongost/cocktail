@@ -22,10 +22,11 @@ class TreeView(Element):
                 self.root_entry = self.create_entry(self.root)
                 self.append(self.root_entry)
             else:
-                container = self.create_children_container(
+                self._fill_children_container(
+                    self,
                     self.root,
-                    self.get_child_items(self.root))
-                self.append(container)
+                    self.get_child_items(self.root)
+                )                
 
     def create_entry(self, item):
         
@@ -51,16 +52,15 @@ class TreeView(Element):
     def get_item_label(self, item):
         return translate(item)
 
-    def create_children_container(self, item, children):
-        
+    def create_children_container(self, item, children):        
         container = Element("ul")
-        
+        self._fill_children_container(container, item, children)
+        return container
+
+    def _fill_children_container(self, container, item, children):
         for child in children:
             container.append(self.create_entry(child))
 
-        return container
-
     def get_child_items(self, parent):
         return parent.children
-        
 
