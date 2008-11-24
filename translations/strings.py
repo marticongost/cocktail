@@ -140,6 +140,12 @@ translations.define("Translations",
     en = u"Translations"
 )
 
+translations.define("datetime-instance",
+    ca = lambda instance: instance.strftime("%d/%m/%Y %H:%M:%S"),
+    es = lambda instance: instance.strftime("%d/%m/%Y %H:%M:%S"),
+    en = lambda instance: instance.strftime("%Y-%m-%d %H:%M:%S")
+)
+
 # Languages
 #------------------------------------------------------------------------------
 translations.define("ca",
