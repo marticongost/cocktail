@@ -15,6 +15,7 @@ class TreeView(Element):
     tag = "ul"
     root = None
     root_visible = True
+    create_empty_containers = False
 
     def _ready(self):
         if self.root is not None:
@@ -37,7 +38,7 @@ class TreeView(Element):
 
         children = self.get_child_items(item)
 
-        if children:
+        if self.create_empty_containers or children:
             entry.container = self.create_children_container(item, children)
             entry.append(entry.container)
 
@@ -58,8 +59,9 @@ class TreeView(Element):
         return container
 
     def _fill_children_container(self, container, item, children):
-        for child in children:
-            container.append(self.create_entry(child))
+        if children:
+            for child in children:
+                container.append(self.create_entry(child))
 
     def get_child_items(self, parent):
         return parent.children
