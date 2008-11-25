@@ -43,13 +43,12 @@ class BaseController(object):
                         raise cherrypy.HTTPRedirect(redirection)
 
         except Exception, error:
-
             self.error = error
-
+            
             if isinstance(error, HTTPPostRedirect):
                 return cherrypy.response.body
-            elif not isinstance(error, self.handled_errors):
-                raise
+            else:
+                self.handle_error(error)
 
         finally:
             self.end()
@@ -71,6 +70,10 @@ class BaseController(object):
 
     def submit(self):
         pass
+
+    def handle_error(self, error):
+        if not isinstance(error, self.handled_errors):
+            raise
 
     def end(self):
         pass
