@@ -7,20 +7,21 @@
 @since:			September 2008
 """
 from cocktail.html import Element
+from cocktail.html.databoundcontrol import DataBoundControl
 from cocktail.schema import String
 
-class TextBox(Element):
+class TextBox(Element, DataBoundControl):
 
     tag = "input"
 
     def __init__(self, *args, **kwargs):
         Element.__init__(self, *args, **kwargs)
+        DataBoundControl.__init__(self)
         self["type"] = "text"
 
     def _ready(self):
 
         if self.member:
-            self._bind_name(self.member, self.language)
 
             # Limit the length of the control
             if isinstance(self.member, String) \

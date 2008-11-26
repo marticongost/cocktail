@@ -9,10 +9,5 @@
 from cocktail.html import Element
 
 class TextArea(Element):
-
     tag = "textarea"
-
-    def _ready(self):
-        self._bind_name(self.member, self.language)
-        Element._ready(self)
 

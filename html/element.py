@@ -7,10 +7,13 @@
 @since:			October 2007
 """
 from inspect import getmro
+from threading import local
 from cocktail.modeling import getter, empty_list, empty_dict, empty_set
 from cocktail.iteration import first
 from cocktail.html.resources import Resource
 from cocktail.html.overlay import apply_overlays
+
+_thread_data = local()
 
 default = object()
 
@@ -27,10 +30,11 @@ class Element(object):
     overlays_enabled = False
 
     # Data binding
+    data_display = None
     data = None
     member = None
     language = None
-
+    
     def __init__(self,
         tag = default,
         class_name = None,
@@ -158,12 +162,14 @@ class Element(object):
 
         if not self.__is_ready:
 
+            # Binding            
             self._binding()
 
             if self.__binding_handlers:
                 for handler in self.__binding_handlers:
                     handler()
             
+            # Ready
             self._ready()
             
             if self.__ready_handlers:
@@ -188,7 +194,10 @@ class Element(object):
         pass
 
     def _ready(self):
-        if self.member:            
+        if self.__client_params:
+            self.require_id()
+
+        if self.member: 
             self.add_class(self.member.__class__.__name__)
 
     def _content_ready(self):
@@ -196,17 +205,6 @@ class Element(object):
 
     def _descendant_ready(self, descendant):
         pass
-
-    def _bind_name(self, member, language):
-
-        if member and member.name:
-
-            name = member.name
-
-            if language:
-                name += "-" + language
-
-            self["name"] = name
 
     # Attributes
     #--------------------------------------------------------------------------
@@ -237,6 +235,20 @@ class Element(object):
     def __delitem__(self, key):
         if self.__attributes is not None:
             self.__attributes.pop(key, None)
+
+    def require_id(self):
+
+        id = self["id"]
+
+        if not id:
+            try:
+                page = _thread_data.rendered_page
+            except AttributeError:
+                raise IdGenerationError()
+
+            self["id"] = id = page.generate_element_id()
+
+        return id
 
     # Visibility
     #--------------------------------------------------------------------------
@@ -514,11 +526,7 @@ class Element(object):
         else:
             return self.__client_params[key]
 
-    def set_client_param(self, key, value):
-        
-        if not self["id"]:
-            self["id"] = AutoID()
-
+    def set_client_param(self, key, value):        
         if self.__client_params is None:
             self.__client_params = {key: value}
         else:
@@ -603,13 +611,13 @@ class PlaceHolder(Content):
         self.value = self.expression()
 
 
-class AutoID(object):
-    value = None
-
-    def __str__(self):
-        return self.value
-
-
 class ElementTreeError(Exception):
     pass
+
+
+class IdGenerationError(Exception):
+
+    def __str__(self):
+        return "Element identifiers can only be generated "\
+               "during page rendering"
 

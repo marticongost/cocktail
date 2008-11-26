@@ -10,7 +10,7 @@ Visual elements for data binding.
 from types import MethodType
 from operator import getitem
 from cocktail.modeling import getter, ListWrapper, empty_list
-from cocktail.language import require_content_language
+from cocktail.language import require_content_language, get_content_language
 from cocktail.translations import translate
 from cocktail.html import Element, Content
 from cocktail.typemapping import TypeMapping
@@ -26,7 +26,9 @@ class DataDisplay(object):
     editable = True
     translations = None
     translated_values = False
-    accessor = None
+    accessor = None    
+    name_prefix = None
+    name_suffix = None
 
     def __init__(self):
         self.__member_displayed = {}
@@ -58,6 +60,20 @@ class DataDisplay(object):
             return (member
                 for member in self.schema.ordered_members(True)
                 if self.get_member_displayed(member))
+
+    def get_member_name(self, member, language = None):
+        name = member.name
+
+        if member.translated and self.translations and language:
+            name += "-" + language
+
+        if self.name_prefix:
+            name = self.name_prefix + name
+
+        if self.name_suffix:
+            name += self.name_suffix
+
+        return name
 
     def get_member_displayed(self, member):
         """Indicates if the specified member should be displayed. By default,
@@ -251,8 +267,10 @@ class DataDisplay(object):
             else:
                 display = display(self, obj, member)
 
+        display.data_display = self
         display.data = obj
         display.member = member
+        display.language = get_content_language()
 
         if hasattr(display, "value"):
             value = self.get_member_value(obj, member)

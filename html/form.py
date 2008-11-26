@@ -245,9 +245,6 @@ class Form(Element, DataDisplay):
         ):
             control.add_class("error")
 
-        if member.translated:
-            control.language = get_content_language()
-
         return control   
 
     def add_group(self, group_id, members_filter):
