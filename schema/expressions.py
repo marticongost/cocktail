@@ -204,16 +204,17 @@ class MatchExpression(Expression):
         if isinstance(b, basestring):
             b = re.compile(b)
 
-        return b.match(a)
+        return b.search(a)
 
 
 class SearchExpression(Expression):
 
     def op(self, a, b):
-        if isinstance(b, basestring):
-            b = re.compile(b)
 
-        return b.search(a)
+        if isinstance(b, basestring):
+            b = b.split()
+
+        return all((word in a) for word in b)
  
 
 class TranslationExpression(Expression):
