@@ -6,6 +6,7 @@
 @organization:	Whads/Accent SL
 @since:			September 2008
 """
+from copy import copy
 import cherrypy
 from cocktail.modeling import ListWrapper, SetWrapper, getter, empty_set
 from cocktail.persistence.query import Query
@@ -17,6 +18,8 @@ from cocktail.html.datadisplay import (
     NO_SELECTION, SINGLE_SELECTION, MULTIPLE_SELECTION
 )
 from cocktail.controllers.viewstate import get_persistent_param
+from cocktail.controllers.userfilter import get_content_type_filters
+from cocktail.controllers.parameters import get_parameter
 
 
 class UserCollection(object):
@@ -38,6 +41,8 @@ class UserCollection(object):
     selection_parser = int
 
     available_filters = ()
+    include_content_type_filters = True
+    available_languages = ()
 
     persistence_prefix = None
     persistence_duration = -1
@@ -112,7 +117,8 @@ class UserCollection(object):
             subset.add_filter(expression)
 
         for user_filter in self.__user_filters:
-            subset.add_filter(user_filter.expression)
+            if user_filter.schema.validate(user_filter):
+                subset.add_filter(user_filter.expression)
 
         for criteria in self.__order:
             subset.add_order(criteria)
@@ -209,25 +215,33 @@ class UserCollection(object):
                     self.__order.append(sign(member))
 
     def _read_filters(self):
-        
-        filters_param = self._get_param("filters")
+ 
+        if self.include_content_type_filters:
+            self.available_filters = list(self.available_filters) \
+                + get_content_type_filters(self.entity_type)
+
+        filters_param = self._get_param("filter")
         
         if filters_param:
+
             if isinstance(filters_param, basestring):
                 filters_param = [filters_param]
 
-            for i, filter_type_id in enumerate(filters_param):                               
-                for filter_type in self.available_filters:
-                    if filter_type.filter_type_id == filter_type_id:
-                        filter = filter_type()
+            for i, filter_id in enumerate(filters_param):                               
+                for available_filter in self.available_filters:
+                    if available_filter.id == filter_id:
+                        filter = copy(available_filter)
+                        filter.available_languages = self.available_languages
                         get_parameter(
                             filter.schema,
                             target = filter,
+                            prefix = "filter_",
                             suffix = str(i)
                         )
                         self.__user_filters.append(filter)
+                        break
                 else:
-                    raise ValueError("Unknown filter: " + filter_type_id)
+                    raise ValueError("Unknown filter: " + filter_id)
 
     def _read_member_selection(self):
         

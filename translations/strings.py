@@ -95,6 +95,12 @@ translations.define("Visible languages",
     en = u"Languages"
 )
 
+translations.define("Filters",
+    ca = u"Filtres",
+    es = u"Filtros",
+    en = u"Filters"
+)
+
 translations.define("Redirecting",
     ca = u"Redirecció",
     es = u"Redirección",
@@ -160,64 +166,70 @@ translations.define("cocktail.html.FilterBox apply filters",
     en = u"Apply"
 )
 
-translations.define("cocktail.html.FilterBox operator eq",
+translations.define("cocktail.html.UserFilterEntry operator eq",
     ca = u"Igual a",
     es = u"Igual a",
     en = u"Equals"
 )
 
-translations.define("cocktail.html.FilterBox operator ne",
+translations.define("cocktail.html.UserFilterEntry operator ne",
     ca = u"Diferent de",
     es = u"Distinto de",
     en = u"Not equals"
 )
 
-translations.define("cocktail.html.FilterBox operator gt",
+translations.define("cocktail.html.UserFilterEntry operator gt",
     ca = u"Major que",
     es = u"Mayor que",
     en = u"Greater than"
 )
 
-translations.define("cocktail.html.FilterBox operator ge",
+translations.define("cocktail.html.UserFilterEntry operator ge",
     ca = u"Major o igual que",
     es = u"Mayor o igual que",
     en = u"Greater or equal than"
 )
 
-translations.define("cocktail.html.FilterBox operator lt",
+translations.define("cocktail.html.UserFilterEntry operator lt",
     ca = u"Menor que",
     es = u"Menor que",
     en = u"Lower than"
 )
 
-translations.define("cocktail.html.FilterBox operator le",
+translations.define("cocktail.html.UserFilterEntry operator le",
     ca = u"Menor o igual que",
     es = u"Menor o igual que",
     en = u"Lower or equal than"
 )
 
-translations.define("cocktail.html.FilterBox operator sr",
+translations.define("cocktail.html.UserFilterEntry operator sr",
     ca = u"Conté",
     es = u"Contiene",
     en = u"Contains"
 )
 
-translations.define("cocktail.html.FilterBox operator sw",
+translations.define("cocktail.html.UserFilterEntry operator sw",
     ca = u"Comença per",
     es = u"Empieza por",
     en = u"Starts with"
 )
 
-translations.define("cocktail.html.FilterBox operator ew",
+translations.define("cocktail.html.UserFilterEntry operator ew",
     ca = u"Acaba en",
     es = u"Acaba en",
     en = u"Ends with"
 )
 
-translations.define("cocktail.html.FilterBox operator re",
+translations.define("cocktail.html.UserFilterEntry operator re",
     ca = u"Coincideix amb l'expressió regular",
     es = u"Coincide con la expresión regular",
     en = u"Matches regular expression"
+)
+
+translations.define("UserFilter.language",
+    ca = u"en",
+    es = u"en",
+    en = u"in"
 )
 
 # Languages
