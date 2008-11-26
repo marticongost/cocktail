@@ -9,14 +9,16 @@
 from simplejson import dumps
 from cocktail.translations import get_language
 from cocktail.html import Element, templates
+from cocktail.html.databoundcontrol import DataBoundControl
 
 
-class TinyMCE(Element):
+class TinyMCE(Element, DataBoundControl):
     
     tag = None
 
     def __init__(self, *args, **kwargs):
         Element.__init__(self, *args, **kwargs)
+        DataBoundControl.__init__(self)
         self.tinymce_params = {}
         self.add_resource(
             "/resources/scripts/tinymce/jscripts/tiny_mce/tiny_mce.js")
@@ -24,24 +26,16 @@ class TinyMCE(Element):
     def _build(self):
         self.textarea = templates.new("cocktail.html.TextArea")
         self.append(self.textarea)
+        self.binding_delegate = self.textarea
         
     def _ready(self):
 
         Element._ready(self)
 
-        if self.member:
-            self.textarea._bind_name(self.member, self.language)
-
-        if self.textarea["id"] is None:
-            id = self.textarea["name"] + "_editor"
-            if self.language:
-                id += "-" + self.language
-            self.textarea["id"] = id
-
         params = self.tinymce_params.copy()
         params.setdefault("language", get_language())
         params["mode"] = "exact"
-        params["elements"] = self.textarea["id"]
+        params["elements"] = self.textarea.require_id()
 
         init_script = Element("script")
         init_script["type"] = "text/javascript"

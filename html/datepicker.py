@@ -30,27 +30,30 @@ class DatePicker(TextBox):
     
     def _ready(self):
         
-        if self.member:
-            self._bind_name(self.member, self.language)
+        TextBox._ready(self)
+        id = self.require_id()
         
-            if self["id"] is None:
-                id = self["name"]
-                self["id"] = id
-            
-            params = self.date_picker_params.copy()
-            params.setdefault("ShowAnim", "slideDown")
-            params.setdefault("changeFirstDay", False)
-            params.setdefault("buttonImage", "/cocktail/images/calendar.png")
-            params.setdefault("buttonImageOnly", True)
-            params.setdefault("showOn", "both")
-            
-            init_script = Element("script")
-            init_script["type"] = "text/javascript"            
-            init_script.append("jQuery('#%s').datepicker($.extend({},$.datepicker.regional['%s'],%s));" % \
-                (self["id"],get_language(),dumps(params)))
-            self.append(init_script)
+        params = self.date_picker_params.copy()
         
-        TextBox._ready(self)    
+        for key, value in self.get_default_params().iteritems():
+            params.setdefault(key, value)
+       
+        init_script = Element("script", type = "text/javascript")
+        init_script.append(
+            "jQuery('#%s')"
+            ".datepicker($.extend({},$.datepicker.regional['%s'],%s));"
+            %  (id, get_language(), dumps(params))
+        )
+        self.append(init_script)
+        
+    def get_default_params(self):
+        return {
+            "ShowAnim": "slideDown",
+            "changeFirstDay": False,
+            "buttonImage": "/cocktail/images/calendar.png",
+            "buttonImageOnly": True,
+            "showOn": "both"
+        }
 
     def _get_value(self):
         return self["value"]

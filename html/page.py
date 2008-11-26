@@ -7,8 +7,11 @@
 @since:			February 2008
 """
 from simplejson import dumps
-from cocktail.html.element import Element, Content, AutoID
+from cocktail.html.element import (
+    Element, Content, _thread_data, IdGenerationError
+)
 from cocktail.html.resources import Script, StyleSheet
+from cocktail.html.autoid import begin_id_generation, end_id_generation
 from cocktail.translations import get_language, translations
 
 
@@ -19,6 +22,7 @@ class Page(Element):
     charset = "utf-8"
     styled_class = False
     tag = "html"
+    __generated_id = None
     generated_id_format = "_element%d"
 
     CORE_SCRIPT = "/cocktail/scripts/core.js"
@@ -55,31 +59,32 @@ class Page(Element):
 
     def _render(self, renderer, out):
         
-        if self.doctype:
-            out(self.doctype)
-            out("\n")
+        _thread_data.rendered_page = self
+        self.__generated_id = 0
 
-        # Render the <body> element first, to gather meta information from all
-        # elements (meta tags, scripts, style sheets, the page title, etc)
-        renderer.before_element_rendered(self._before_descendant_rendered)
-        renderer.after_element_rendered(self._after_descendant_rendered)
-        self._body_markup.value = self.body.render(renderer)
-        self._fill_head()
-        
-        # Then proceed with the full page. The <body> element is hidden so that
-        # it won't be rendered a second time
-        self.body.visible = False
-        Element._render(self, renderer, out)
-        self.body.visible = True
+        try:
+            if self.doctype:
+                out(self.doctype)
+                out("\n")
 
-    def _before_descendant_rendered(self, descendant):
-        
-        # Generate automatic identifiers
-        id = descendant["id"]
-        
-        if id and isinstance(id, AutoID) and not id.value:
-            self.__element_id += 1
-            id.value = self.generated_id_format % self.__element_id
+            # Render the <body> element first, to gather meta information from all
+            # elements (meta tags, scripts, style sheets, the page title, etc)
+            renderer.before_element_rendered(self._before_descendant_rendered)
+            renderer.after_element_rendered(self._after_descendant_rendered)
+            self._body_markup.value = self.body.render(renderer)
+            self._fill_head()
+            
+            # Then proceed with the full page. The <body> element is hidden so that
+            # it won't be rendered a second time
+            self.body.visible = False
+            Element._render(self, renderer, out)
+            self.body.visible = True
+
+        finally:
+            _thread_data.rendered_page = None
+            self.__generated_id = None
+
+    def _before_descendant_rendered(self, descendant):       
 
         if descendant.client_params:
             self.__elements_with_client_params.append(descendant)
@@ -199,3 +204,12 @@ class Page(Element):
                 link_tag["href"] = uri
                 self.head.append(link_tag)
        
+    def generate_element_id(self):
+
+        if self.__generated_id is None:
+            raise IdGenerationError()
+
+        id = self.generated_id_format % self.__generated_id
+        self.__generated_id += 1
+        return id
+

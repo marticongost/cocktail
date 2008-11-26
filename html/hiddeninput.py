@@ -7,22 +7,17 @@
 @since:			October 2008
 """
 from cocktail.html import Element
+from cocktail.html.databoundcontrol import DataBoundControl
 
 
-class HiddenInput(Element):
+class HiddenInput(Element, DataBoundControl):
 
     tag = "input"
 
     def __init__(self, *args, **kwargs):
         Element.__init__(self, *args, **kwargs)
+        DataBoundControl.__init__(self)
         self["type"] = "hidden"
-
-    def _ready(self):
-
-        if self.member:
-            self._bind_name(self.member, self.language)
-    
-        Element._ready(self)
 
     def _get_value(self):
         return self["value"]
