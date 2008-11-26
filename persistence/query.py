@@ -156,7 +156,7 @@ class Query(object):
                     if not isinstance(dataset, set):
                         dataset = set(dataset)
 
-                    dataset = dataset.intersection(matches)
+                    dataset = dataset.intersection(subset)
                 else:
                     dataset = None
 
