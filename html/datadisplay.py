@@ -256,9 +256,6 @@ class DataDisplay(object):
 
     def _normalize_member_display(self, obj, member, display):
 
-        if isinstance(display, basestring):
-            display = templates.get_class(display)
-
         if isinstance(display, type) and issubclass(display, Element):
             display = display()
         elif callable(display):
@@ -266,6 +263,9 @@ class DataDisplay(object):
                 display = display(obj, member)
             else:
                 display = display(self, obj, member)
+        
+        if isinstance(display, basestring):
+            display = templates.new(display)
 
         display.data_display = self
         display.data = obj
