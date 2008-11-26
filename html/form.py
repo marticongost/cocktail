@@ -11,7 +11,7 @@ from cocktail.language import get_content_language, content_language_context
 from cocktail.modeling import getter, ListWrapper
 from cocktail.translations import translate
 from cocktail.schema import Member, Boolean, Reference, BaseDateTime
-from cocktail.html import Element, templates
+from cocktail.html import Element
 from cocktail.html.datadisplay import DataDisplay
 from cocktail.html.hiddeninput import HiddenInput
 
@@ -30,17 +30,14 @@ class Form(Element, DataDisplay):
     def __init__(self, *args, **kwargs):
         DataDisplay.__init__(self)
 
-        self.set_member_type_display(Member,
-            templates.get_class("cocktail.html.TextBox"))
+        self.set_member_type_display(
+            Boolean, "cocktail.html.CheckBox")
 
-        self.set_member_type_display(Boolean,
-            templates.get_class("cocktail.html.CheckBox"))
-
-        self.set_member_type_display(Reference,
-            templates.get_class("cocktail.html.DropdownSelector"))
+        self.set_member_type_display(
+            Reference, "cocktail.html.DropdownSelector")
             
-        self.set_member_type_display(BaseDateTime,
-            templates.get_class("cocktail.html.DatePicker"))
+        self.set_member_type_display(
+            BaseDateTime, "cocktail.html.DatePicker")
 
         self.__groups = []
         self.groups = ListWrapper(self.__groups)
@@ -181,6 +178,8 @@ class Form(Element, DataDisplay):
         else:
             field_instance.append(field_instance.control)
 
+        field_instance.label["for"] = field_instance.control.require_id()
+
         return field_instance
 
     def create_hidden_input(self, obj, member):
@@ -198,29 +197,32 @@ class Form(Element, DataDisplay):
     def create_label(self, member):
         
         label = Element("label")
-        # TODO: Add a 'for' attribute to the field label
+        text = self.get_member_label(member)
         
-        label.label_title = self.create_label_title(member)
-        label.append(label.label_title)
-        
-        if member.translated:
+        if text:
+            label.label_title = self.create_label_title(member, text)
+            label.append(label.label_title)
             
-            label.label_language = self.create_language_label(
-                member,
-                get_content_language())
+            if member.translated:
+                
+                label.label_language = self.create_language_label(
+                    member,
+                    get_content_language())
 
-            label.append(label.label_language)
+                label.append(label.label_language)
 
-        if self.required_marks and member.required:
-            label.required_mark = self.create_required_mark(member)
-            label.append(label.required_mark)
+            if self.required_marks and member.required:
+                label.required_mark = self.create_required_mark(member)
+                label.append(label.required_mark)
+        else:
+            label.visible = False
 
         return label
 
-    def create_label_title(self, member):
+    def create_label_title(self, member, text):
         label_title = Element("span")
         label_title.add_class("label_title")
-        label_title.append(self.get_member_label(member))
+        label_title.append(text)
         return label_title
 
     def create_language_label(self, member, language):
@@ -234,6 +236,12 @@ class Form(Element, DataDisplay):
         mark.add_class("required_mark")
         mark.append("*")
         return mark
+
+    def default_display(self, obj, member):
+        if member.enumeration is not None:
+            return "cocktail.html.DropdownSelector"
+        else:
+            return "cocktail.html.TextBox"
 
     def create_control(self, obj, member):
         control = self.get_member_display(obj, member)
