@@ -78,6 +78,8 @@ def get_parameter(
     strict = STRICT_DEFAULT,
     enable_defaults = ENABLED_DEFAULTS_DEFAULT,
     implicit_booleans = IMPLICIT_BOOLEANS_DEFAULT,
+    prefix = None,
+    suffix = None,
     form_source = None):
     """Retrieves and processes a request parameter, or a tree or set of
     parameters, given a schema description. The function either returns the
@@ -135,6 +137,14 @@ def get_parameter(
         the specified source of data is that it define a get() method, behaving
         in exactly the same manner as the homonymous dictionary method.
 
+    @param prefix: A string that will be added at the beginning of the
+        parameter name for each retrieved member.
+    @type prefix: str
+
+    @param suffix: A string that will be appended at the end of the parameter
+        name for each retrieved member.
+    @type suffix: str
+
     @return: The requested value, or None if the request doesn't provide a
         matching value for the indicated member, or it is empty.
         
@@ -156,7 +166,9 @@ def get_parameter(
         strict = strict,
         enable_defaults = enable_defaults,
         implicit_booleans = implicit_booleans,
-        form_source = form_source
+        prefix = prefix,
+        suffix = suffix,
+        form_source = form_source,
     )
     return reader.read(member, target, languages)
 
@@ -188,6 +200,14 @@ class FormSchemaReader(object):
         which aren't submitted when not checked.
     @type implicit_booleans: bool
 
+    @param prefix: A string that will be added at the beginning of the
+        parameter name for each retrieved member.
+    @type prefix: str
+
+    @param suffix: A string that will be appended at the end of the parameter
+        name for each retrieved member.
+    @type suffix: str
+
     @ivar form_source: By default, all parameters are read from the current
         cherrypy request (which includes both GET and POST parameters), but
         this can be overriden through this attribute. The only requirement for
@@ -200,12 +220,16 @@ class FormSchemaReader(object):
         strict = STRICT_DEFAULT,
         enable_defaults = ENABLED_DEFAULTS_DEFAULT,
         implicit_booleans = IMPLICIT_BOOLEANS_DEFAULT,
+        prefix = None,
+        suffix = None,
         form_source = None):
 
         self.normalization = normalization
         self.strict = strict
         self.enable_defaults = enable_defaults
         self.implicit_booleans = implicit_booleans
+        self.prefix = prefix
+        self.suffix = suffix
 
         if form_source is None:
             form_source = cherrypy.request.params
@@ -348,7 +372,13 @@ class FormSchemaReader(object):
         if path and len(path) > 1:
             path_name = ".".join(self.get_key(step) for step in path[1:])
             name = path_name + "-" + name
-        
+
+        if self.prefix:
+            name = self.prefix + name
+
+        if self.suffix:
+            name += self.suffix
+
         return name
 
     def process_value(self, member, value):
