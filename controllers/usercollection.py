@@ -37,6 +37,8 @@ class UserCollection(object):
     selection_mode = MULTIPLE_SELECTION
     selection_parser = int
 
+    available_filters = ()
+
     persistence_prefix = None
     persistence_duration = -1
     persistent_params = empty_set
@@ -66,6 +68,9 @@ class UserCollection(object):
         self.__filters = []
         self.filters = ListWrapper(self.__filters)
         
+        self.__user_filters = []
+        self.user_filters = ListWrapper(self.__user_filters)
+
         self.__order = []
         self.order = ListWrapper(self.__order)
     
@@ -105,6 +110,9 @@ class UserCollection(object):
 
         for expression in self.__filters:
             subset.add_filter(expression)
+
+        for user_filter in self.__user_filters:
+            subset.add_filter(user_filter.expression)
 
         for criteria in self.__order:
             subset.add_order(criteria)
@@ -201,8 +209,25 @@ class UserCollection(object):
                     self.__order.append(sign(member))
 
     def _read_filters(self):
-        # TODO
-        pass
+        
+        filters_param = self._get_param("filters")
+        
+        if filters_param:
+            if isinstance(filters_param, basestring):
+                filters_param = [filters_param]
+
+            for i, filter_type_id in enumerate(filters_param):                               
+                for filter_type in self.available_filters:
+                    if filter_type.filter_type_id == filter_type_id:
+                        filter = filter_type()
+                        get_parameter(
+                            filter.schema,
+                            target = filter,
+                            suffix = str(i)
+                        )
+                        self.__user_filters.append(filter)
+                else:
+                    raise ValueError("Unknown filter: " + filter_type_id)
 
     def _read_member_selection(self):
         

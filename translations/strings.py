@@ -146,6 +146,80 @@ translations.define("datetime-instance",
     en = lambda instance: instance.strftime("%Y-%m-%d %H:%M:%S")
 )
 
+# html.FilterBox
+#------------------------------------------------------------------------------
+translations.define("cocktail.html.FilterBox add filter",
+    ca = u"Afegir filtre",
+    es = u"Añadir filtro",
+    en = u"Add filter"
+)
+
+translations.define("cocktail.html.FilterBox apply filters",
+    ca = u"Aplicar",
+    es = u"Aplicar",
+    en = u"Apply"
+)
+
+translations.define("cocktail.html.FilterBox operator eq",
+    ca = u"Igual a",
+    es = u"Igual a",
+    en = u"Equals"
+)
+
+translations.define("cocktail.html.FilterBox operator ne",
+    ca = u"Diferent de",
+    es = u"Distinto de",
+    en = u"Not equals"
+)
+
+translations.define("cocktail.html.FilterBox operator gt",
+    ca = u"Major que",
+    es = u"Mayor que",
+    en = u"Greater than"
+)
+
+translations.define("cocktail.html.FilterBox operator ge",
+    ca = u"Major o igual que",
+    es = u"Mayor o igual que",
+    en = u"Greater or equal than"
+)
+
+translations.define("cocktail.html.FilterBox operator lt",
+    ca = u"Menor que",
+    es = u"Menor que",
+    en = u"Lower than"
+)
+
+translations.define("cocktail.html.FilterBox operator le",
+    ca = u"Menor o igual que",
+    es = u"Menor o igual que",
+    en = u"Lower or equal than"
+)
+
+translations.define("cocktail.html.FilterBox operator sr",
+    ca = u"Conté",
+    es = u"Contiene",
+    en = u"Contains"
+)
+
+translations.define("cocktail.html.FilterBox operator sw",
+    ca = u"Comença per",
+    es = u"Empieza por",
+    en = u"Starts with"
+)
+
+translations.define("cocktail.html.FilterBox operator ew",
+    ca = u"Acaba en",
+    es = u"Acaba en",
+    en = u"Ends with"
+)
+
+translations.define("cocktail.html.FilterBox operator re",
+    ca = u"Coincideix amb l'expressió regular",
+    es = u"Coincide con la expresión regular",
+    en = u"Matches regular expression"
+)
+
 # Languages
 #------------------------------------------------------------------------------
 translations.define("ca",

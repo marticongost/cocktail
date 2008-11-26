@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<form
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:py="http://www.whads.com/ns/cocktail/templates">
+
+    <?py-class
+    self.filters = ()
+    self.available_filters = ()
+    ?>
+
+    <table py:id="filter_list">
+        <py:ready>
+            <py:new
+                py:element="filter.create_ui()"
+                py:for="filter in self.filters"/>
+        </py:ready>
+    </table>
+
+    <div py:id="new_filter_box">
+        <cocktail.html.DropdownSelector
+            py:id="new_filter_list"
+            py:items="@{self.available_filters}"
+            name="new_filter" />
+
+        <button py:id="new_filter_button" type="submit" name="add_filter">
+            ${translate("cocktail.html.FilterBox add filter")}
+        </button>
+    </div>
+
+    <button type="submit">
+        ${translate("cocktail.html.FilterBox apply filters")}
+    </button>
+
+</form>
