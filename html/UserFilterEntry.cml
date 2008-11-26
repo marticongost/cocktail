@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<py:cocktail.html.Form
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:py="http://www.whads.com/ns/cocktail/templates"
+    py:name_prefix="filter_">
+    
+    <?py-class
+    def display_operator(self, obj, member):
+        
+        display = loader.new("cocktail.html.DropdownSelector")
+
+        @refine(display)
+        def get_item_label(self, item):
+            return translate("cocktail.html.UserFilterEntry operator " + item)
+
+        return display
+    ?>
+
+    <?py
+    self.set_member_label("operator", "")
+    self.set_member_label("value", "")
+    ?>
+
+</py:cocktail.html.Form>

@@ -59,13 +59,41 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
         <!-- Settings -->
         <div py:id="settings_box">
 
+            <!-- Filters -->
+            <div
+                py:id="filters"
+                py:visible="@{self.user_collection.allow_filters}"
+                class="toolbar_button selector">
+                <py:ready>
+                    <py:block py:if="self.filters.visible">
+                        <?py
+                        shortcut = translate("CollectionView filters shortcut", default = "")
+                        if shortcut:
+                            self.filters.set_client_param("shortcut", shortcut)
+                        ?>
+                        <span class="label">
+                            ${translate("Filters")}
+                        </span>
+                        <py:cocktail.html.FilterBox
+                            py:id="filters_selector"
+                            py:tag="div"
+                            py:filters="${self.user_collection.user_filters}"
+                            py:available_filters="${self.user_collection.available_filters}">
+                            <?py
+                            element.add_class("selector_content")
+                            ?>
+                        </py:cocktail.html.FilterBox>
+                    </py:block>
+                </py:ready>
+            </div>
+
             <!-- Visible members  -->
             <div py:id="visible_members" class="toolbar_button selector">
                 <?py
-                    shortcut = translate("CollectionView visible members shortcut", default = "")
-                    if shortcut:
-                        element.set_client_param("shortcut", shortcut)
-                 ?>
+                shortcut = translate("CollectionView visible members shortcut", default = "")
+                if shortcut:
+                    element.set_client_param("shortcut", shortcut)
+                ?>
                 <span class="label">
                     ${translate("Visible members")}
                 </span>
@@ -97,11 +125,11 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
 
             <!-- Visible languages -->
             <div py:id="visible_languages" class="toolbar_button selector">
-                    <?py
-                    shortcut = translate("CollectionView visible languages shortcut", default = "")
-                    if shortcut:
-                        element.set_client_param("shortcut", shortcut)
-                    ?>                    
+                <?py
+                shortcut = translate("CollectionView visible languages shortcut", default = "")
+                if shortcut:
+                    element.set_client_param("shortcut", shortcut)
+                ?>                
                 <span class="label">
                     ${translate("Visible languages")}
                 </span>

@@ -6,30 +6,48 @@
 @organization:	Whads/Accent SL
 @since:			November 2008
 """
-from copy import copy
-from cocktail.modeling import getter
+from cocktail.modeling import getter, cached_getter
+from cocktail.schema import (
+    Schema, Member, Number, BaseDateTime, String, Boolean
+)
 from cocktail.html import templates
-from cocktail import schema
+from cocktail.translations import translate
+
+
+def get_content_type_filters(content_type):
+
+    filters = []
+
+    for member in content_type.ordered_members():
+        if member.user_filter and member.visible:
+            filter = member.user_filter()
+            filter.id = "member-" + member.name
+            filter.member = member
+            filters.append(filter)
+    
+    return filters
 
 
 class UserFilter(object):
 
-    filter_type_id = None
+    id = None
     available_languages = ()
-    ui_class = "html.cocktail.Form"
+    ui_class = "cocktail.html.UserFilterEntry"
    
-    @getter
+    @cached_getter
     def schema(self):
-        pass
+        raise TypeError("Trying to access abstract property 'schema' on %s"
+                        % self)
 
     @getter
     def expression(self):
-        pass
+        raise TypeError("Trying to access abstract property 'expression' on %s"
+                % self)
 
     def create_ui(self):
-        ui = templates.get_class(self.ui_class)
+        ui = templates.new(self.ui_class)
         ui.embeded = True
-        ui.schema = self.get_schema()
+        ui.schema = self.schema
         ui.data = self
         return ui
 
@@ -41,14 +59,15 @@ class MemberFilter(UserFilter):
 
     def _add_language_to_schema(self, schema):
         if self.member.translated:
-            language_member = String("language",
-                enumeration = self.available_languages)
-            schema.add(language_member)
+            schema.add_member(String("language",
+                required = True,
+                enumeration = self.available_languages
+            ))
 
     def _add_member_to_schema(self, schema):
-        value_member = copy(self.member)
+        value_member = self.member.copy()
         value_member.name = "value"
-        schema.add(value_member)
+        schema.add_member(value_member)
 
     def _get_member_expression(self):
         if self.language:
@@ -56,20 +75,16 @@ class MemberFilter(UserFilter):
         else:
             return self.member
 
+    def __translate__(self, language, **kwargs):
+        return translate(self.member, language, **kwargs)
+
 
 class BooleanFilter(MemberFilter):
-
-    filter_type_id = "bool"
-
-    @getter
-    def schema(self):
-        schema = Schema()
-        
-        return schema
     
-    @getter
+    @cached_getter
     def schema(self):
         schema = Schema()
+        schema.name = "UserFilter"
         self._add_language_to_schema(schema)
         self._add_member_to_schema(schema)
         return schema
@@ -84,19 +99,21 @@ class BinaryFilter(MemberFilter):
     operator = None
     operators = ()
 
-    @getter
+    @cached_getter
     def schema(self):
-
         schema = Schema()
+        schema.name = "UserFilter"
         self._add_language_to_schema(schema)
-        schema.add(schema.String("operator", enumeration = self.operators))
+        schema.add_member(String("operator",
+            required = True,
+            enumeration = self.operators)
+        )
         self._add_member_to_schema(schema)
         return schema
 
 
 class EqualityFilter(BinaryFilter):
 
-    filter_type_id = "eq"
     operators = ("eq", "ne")
 
     @getter
@@ -109,7 +126,6 @@ class EqualityFilter(BinaryFilter):
 
 class ComparisonFilter(EqualityFilter):
 
-    filter_type_id = "cmp"
     operators = EqualityFilter.operators + ("gt", "ge", "lt", "le")
     
     @getter
@@ -122,13 +138,12 @@ class ComparisonFilter(EqualityFilter):
             return self._get_member_expression() < self.value
         elif self.operator == "le":
             return self._get_member_expression() <= self.value
-        elsE:
+        else:
             return EqualityFilter.expression.__get__(self)
 
 
 class StringFilter(ComparisonFilter):
 
-    filter_type_id = "str"
     operators = ComparisonFilter.operators + ("sr", "sw", "ew", "re")
 
     @getter
@@ -144,8 +159,9 @@ class StringFilter(ComparisonFilter):
 
 
 # An extension property used to associate user filter types with members
-schema.Member.user_filter = EqualityFilter
-schema.String.user_filter = StringFilter
-schema.RangedMember.user_filter = ComparisonFilter
-schema.Boolean.user_filter = BooleanFilter
+Member.user_filter = EqualityFilter
+Number.user_filter = ComparisonFilter
+BaseDateTime.user_filter = ComparisonFilter
+String.user_filter = StringFilter
+Boolean.user_filter = BooleanFilter
 

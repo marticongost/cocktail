@@ -5,31 +5,51 @@
     xmlns:py="http://www.whads.com/ns/cocktail/templates">
 
     <?py-class
-    self.filters = ()
-    self.available_filters = ()
+    filters = ()
+    available_filters = ()
     ?>
-
-    <table py:id="filter_list">
+        
+    <div py:id="filter_list">
         <py:ready>
             <py:new
-                py:element="filter.create_ui()"
-                py:for="filter in self.filters"/>
+                py:element="self.create_filter_entry(index, filter)"            
+                py:for="index, filter in enumerate(self.filters)"/>
         </py:ready>
-    </table>
-
-    <div py:id="new_filter_box">
-        <cocktail.html.DropdownSelector
-            py:id="new_filter_list"
-            py:items="@{self.available_filters}"
-            name="new_filter" />
-
-        <button py:id="new_filter_button" type="submit" name="add_filter">
-            ${translate("cocktail.html.FilterBox add filter")}
-        </button>
     </div>
 
-    <button type="submit">
-        ${translate("cocktail.html.FilterBox apply filters")}
-    </button>
+    <div py:def="filter_entry" py:args="index, filter">
+        <span class="filter_desc">${translate(filter)}</span>
+        <py:new
+            py:element="filter.create_ui()"
+            py:name_suffix="${str(index)}">
+            <?py
+            element.add_class("filter_ui")
+            ?>
+        </py:new>
+    </div>
+
+    <div py:id="buttons">
+        <div py:id="new_filter_box">
+            <py:cocktail.html.DropdownSelector
+                py:id="new_filter_list"
+                py:items="@{self.available_filters}"
+                py:empty_option_displayed="${False}"
+                name="filter">
+                <?py
+                @refine(element)
+                def get_item_value(self, filter):
+                    return filter.id
+                ?>
+            </py:cocktail.html.DropdownSelector>
+
+            <button py:id="new_filter_button" type="submit" name="add_filter">
+                ${translate("cocktail.html.FilterBox add filter")}
+            </button>
+        </div>
+
+        <button type="submit">
+            ${translate("cocktail.html.FilterBox apply filters")}
+        </button>
+    </div>
 
 </form>
