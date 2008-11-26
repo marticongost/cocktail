@@ -10,9 +10,10 @@ from cocktail.modeling import ListWrapper, SetWrapper
 from cocktail.translations import translate
 from cocktail.schema import Number, Reference
 from cocktail.html import Element
+from cocktail.html.databoundcontrol import DataBoundControl
 
 
-class Selector(Element):
+class Selector(Element, DataBoundControl):
 
     name = None
     items = None
@@ -24,6 +25,7 @@ class Selector(Element):
    
     def __init__(self, *args, **kwargs):
         Element.__init__(self, *args, **kwargs)
+        DataBoundControl.__init__(self)
         self._is_selected = lambda item: False
 
     def _ready(self):
@@ -32,9 +34,6 @@ class Selector(Element):
 
         if self.member:
         
-            if self.name is None and self.member.name:
-                self.name = self.member.name
-
             if self.items is None:
             
                 if self.member.enumeration:
