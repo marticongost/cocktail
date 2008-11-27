@@ -82,7 +82,7 @@ class Selector(Element, DataBoundControl):
                 self.append(entry)
     
     def get_item_value(self, item):
-        return str(item)
+        return getattr(item, "id", None) or str(item)
 
     def get_item_label(self, item):
         return translate(item, default = unicode(item))
