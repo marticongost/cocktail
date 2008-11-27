@@ -39,7 +39,14 @@ def translate(obj, language = None, **kwargs):
         language = get_language()
 
     if translator:
-        return translator(language, **kwargs)
+        default = kwargs.pop("default", _undefined)        
+        value = translator(language, **kwargs)
+        if value is None:
+            if default is _undefined:
+                raise KeyError("Can't find a translation for %s" % obj)
+            else:
+                return default
+        return value
     else:
         return translations(obj, language, **kwargs)
 
