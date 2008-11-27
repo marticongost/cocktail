@@ -70,11 +70,10 @@ class Query(object):
     def execute(self, _sorted = True):
         
         subset = self.__apply_filters()
-        
+
         if _sorted:
             subset = self.__apply_order(subset)
-
-        subset = self.__apply_range(subset)
+            subset = self.__apply_range(subset)
         
         return subset
 
@@ -115,7 +114,7 @@ class Query(object):
                         else:
                             subset = set()
                     else:
-                        subset = index.get(value)
+                        subset = index[value]
                 
                 # Different
                 elif isinstance(filter, expressions.NotEqualExpression):
@@ -208,8 +207,13 @@ class Query(object):
         # TODO: Should optimize the usual case where sorting is done on a
         # single, indexed member without any filter in place
 
-        if not self.order:
-            return subset
+        order = self.order
+
+        if not order:
+            if self.range:
+                order = [+self.__entity_class.primary_member]
+            else:
+                return subset
 
         if not isinstance(subset, list):
             subset = list(subset)
@@ -219,7 +223,7 @@ class Query(object):
                 expr.operands[0],
                 isinstance(expr, expressions.NegativeExpression)
             )
-            for expr in self.order
+            for expr in order
         ]
 
         def compare(a, b):            
