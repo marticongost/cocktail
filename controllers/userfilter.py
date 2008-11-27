@@ -67,6 +67,7 @@ class MemberFilter(UserFilter):
     def _add_member_to_schema(self, schema):
         value_member = self.member.copy()
         value_member.name = "value"
+        value_member.translated = False
         schema.add_member(value_member)
 
     def _get_member_expression(self):
@@ -91,7 +92,10 @@ class BooleanFilter(MemberFilter):
 
     @getter
     def expression(self):
-        return self._get_member_expression() == self.value
+        if self.value:
+            return self._get_member_expression()
+        else:
+            return self._get_member_expression().not_()
 
 
 class BinaryFilter(MemberFilter):
