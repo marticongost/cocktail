@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
+<?py
+from cocktail.controllers import get_state, view_state
+?>
 
 <form
     xmlns="http://www.w3.org/1999/xhtml"
@@ -6,9 +9,9 @@
 
     <?py-class
     filters = ()
-    available_filters = ()
+    available_filters = ()    
     ?>
-        
+
     <div py:id="filter_list">
         <py:ready>
             <py:new
@@ -26,26 +29,59 @@
             element.add_class("filter_ui")
             ?>
         </py:new>
+        <a>
+            <?py
+            params = {"page": "0"}
+            filter_param = []
+            params["filter"] = filter_param
+            state = get_state()
+            
+            for i, f in enumerate(self.filters):
+
+                if i != index:
+                    filter_param.append(f.id)
+
+                if i >= index:
+                    for member in f.schema.members().itervalues():
+                        params["filter_" + member.name + str(i)] = None
+                    if i > index:
+                        for member in f.schema.members().itervalues():
+                            params["filter_" + member.name + str(i)] = \
+                                state.get("filter_" + member.name + str(i + 1))
+                
+            element["href"] = "?" + view_state(**params)
+            ?>
+            <img src="/resources/images/delete_small.png"/>
+        </a>
     </div>
 
     <div py:id="buttons">
-        <div py:id="new_filter_box">
-            <py:cocktail.html.DropdownSelector
-                py:id="new_filter_list"
-                py:items="@{self.available_filters}"
-                py:empty_option_displayed="${False}"
-                name="filter">
-                <?py
-                @refine(element)
-                def get_item_value(self, filter):
-                    return filter.id
-                ?>
-            </py:cocktail.html.DropdownSelector>
 
-            <button py:id="new_filter_button" type="submit" name="add_filter">
-                ${translate("cocktail.html.FilterBox add filter")}
-            </button>
+        <div py:id="new_filter_selector" class="selector">
+            <span class="label">${translate("cocktail.html.FilterBox add filter")}</span>
+            <div class="selector_content">
+                <py:ready>
+                    <a py:for="filter in self.available_filters"
+                        href="?${view_state(filter = [f.id for f in self.filters] + [filter.id])}">
+                        ${translate(filter)}
+                    </a>
+                </py:ready>
+            </div>
         </div>
+
+        <a py:id="clear_button">
+            <py:ready>
+                <?py                
+                params = {"filter": None}
+                for i, filter in enumerate(self.filters):
+                    for member in filter.schema.members().itervalues():
+                        params["filter_" + member.name + str(i)] = None
+
+                element["href"] = "?" + view_state(**params)
+                ?>
+            </py:ready>
+            ${translate("cocktail.html.FilterBox clear filters")}
+        </a>
 
         <button type="submit">
             ${translate("cocktail.html.FilterBox apply filters")}

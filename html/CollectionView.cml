@@ -14,16 +14,29 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
     <?py-class
     actions = ()
     selection_mode = MULTIPLE_SELECTION
+    user_collection = None
     ?>
     
     <?py
+    self.add_resource("/cocktail/scripts/jquery.cookie.js")
     self.add_resource("/cocktail/scripts/CollectionView.js")
     self.add_client_translation("CollectionView selection")
     self.add_client_translation("CollectionView all")
     self.add_client_translation("CollectionView none")
     ?>
 
-    ${view_state_form(members = None, language = None, page_size = None, selection = None)}
+    <py:ready>
+        <?py
+        excluded = ["members", "language", "page_size", "selection"]
+
+        for i, filter in enumerate(self.user_collection.user_filters):
+            for member in filter.schema.members().itervalues():
+                excluded.append("filter_" + member.name + str(i))
+        
+        params = dict((key, None) for key in excluded)
+        element.append(view_state_form(**params))
+        ?>
+    </py:ready>
 
     <!-- Paging -->
     <py:cocktail.html.PagingControls
@@ -58,34 +71,6 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
 
         <!-- Settings -->
         <div py:id="settings_box">
-
-            <!-- Filters -->
-            <div
-                py:id="filters"
-                py:visible="@{self.user_collection.allow_filters}"
-                class="toolbar_button selector">
-                <py:ready>
-                    <py:block py:if="self.filters.visible">
-                        <?py
-                        shortcut = translate("CollectionView filters shortcut", default = "")
-                        if shortcut:
-                            self.filters.set_client_param("shortcut", shortcut)
-                        ?>
-                        <span class="label">
-                            ${translate("Filters")}
-                        </span>
-                        <py:cocktail.html.FilterBox
-                            py:id="filters_selector"
-                            py:tag="div"
-                            py:filters="${self.user_collection.user_filters}"
-                            py:available_filters="${self.user_collection.available_filters}">
-                            <?py
-                            element.add_class("selector_content")
-                            ?>
-                        </py:cocktail.html.FilterBox>
-                    </py:block>
-                </py:ready>
-            </div>
 
             <!-- Visible members  -->
             <div py:id="visible_members" class="toolbar_button selector">
@@ -147,6 +132,36 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
             
         </div>
 
+    </div>
+
+    <!-- Filters -->
+    <div
+        py:id="filters"
+        py:visible="@{self.user_collection.allow_filters}">
+        <py:ready>
+            <py:block py:if="self.filters.visible">
+                <?py
+                if not self.user_collection.user_filters:
+                    self.filters.add_class("empty")
+
+                shortcut = translate("CollectionView filters shortcut", default = "")
+                if shortcut:
+                    self.filters.set_client_param("shortcut", shortcut)
+                ?>
+                <div class="label">${translate("Filters")}
+                    <span
+                        py:id="filter_count"
+                        py:visible="${bool(self.user_collection.user_filters)}">
+                        (${len(self.user_collection.user_filters)})
+                    </span>
+                </div>
+                <py:cocktail.html.FilterBox
+                    py:id="filters_selector"
+                    py:tag="div"
+                    py:filters="${self.user_collection.user_filters}"
+                    py:available_filters="${self.user_collection.available_filters}"/>
+            </py:block>
+        </py:ready>
     </div>
 
     <!-- Data -->
