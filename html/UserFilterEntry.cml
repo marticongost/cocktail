@@ -3,12 +3,25 @@
 <py:cocktail.html.Form
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:py="http://www.whads.com/ns/cocktail/templates"
-    py:name_prefix="filter_">
+    py:name_prefix="filter_"
+    py:required_marks="$(False)">
     
     <?py-class
+    def display_language(self, obj, member):
+        
+        display = loader.new("cocktail.html.DropdownSelector")
+        display.empty_option_displayed = False
+
+        @refine(display)
+        def get_item_label(self, language):
+            return translate("translated into", lang = language)
+
+        return display
+
     def display_operator(self, obj, member):
         
         display = loader.new("cocktail.html.DropdownSelector")
+        display.empty_option_displayed = False
 
         @refine(display)
         def get_item_label(self, item):
@@ -18,6 +31,7 @@
     ?>
 
     <?py
+    self.set_member_label("language", "")
     self.set_member_label("operator", "")
     self.set_member_label("value", "")
     ?>

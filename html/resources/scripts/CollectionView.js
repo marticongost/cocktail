@@ -1,8 +1,3 @@
-cocktail.translate("CollectionView selection");
-cocktail.translate("CollectionView all");
-cocktail.translate("CollectionView none");
-
-
 jQuery(function () {
      
      var target = null;      
@@ -186,8 +181,7 @@ jQuery(function () {
             div.appendChild(span);
         }
         
-        jQuery(".toolbar").after(div);
-                        
+        jQuery(".collection_display").before(div);
         
         jQuery(".row_selector_all").click( function () {
             selectAll();
@@ -196,8 +190,8 @@ jQuery(function () {
         jQuery(".row_selector_none").click( function () {
             removeSelection();
         });
-    }    
-        
+    }
+    
     function disableTextSelection () {
         
         var selector = jQuery(document.body);
@@ -223,35 +217,26 @@ jQuery(function () {
         }
     } 
     
-    disableTextSelection(); 
-    
-    /*
-    function enableTextSelection () {
-        
-        var selector = jQuery(".Table");
-        if (jQuery.browser.mozilla) {
-            return selector.each(function() {
-                jQuery(this).css({
-                        'MozUserSelect' : ''
-                });
-            });
-            
-        } else if (jQuery.browser.msie) {
-            return selector.each(function() {
-                return this.each(function() {
-                    jQuery(this).unbind('selectstart.disableTextSelect');
-                });
-            });
-        } else {
-             return selector.each(function() {
-                return this.each(function() {
-                    jQuery(this).unbind('mousedown.disableTextSelect');
-                });
-            });
-        }
-    }
+    disableTextSelection();
 
-    */
-        
-  
+    var EXPANSION_COOKIE = "CollectionView filters expanded";
+
+    // Make the filter box collapsible
+    jQuery(".CollectionView .filters")
+        .addClass("scripted")
+        .children(".label").click(function () {
+            var filters = jQuery(this).parents(".filters");
+            if (filters.hasClass("expanded")) {
+                filters.removeClass("expanded");
+                jQuery.cookie(EXPANSION_COOKIE, "collapsed");                
+            }
+            else {
+                filters.addClass("expanded");
+                jQuery.cookie(EXPANSION_COOKIE, "expanded");
+            }
+        });
+
+    if (jQuery.cookie(EXPANSION_COOKIE) == "expanded") {
+        jQuery(".CollectionView .filters:not(.empty) > .label").click();
+    }
 });

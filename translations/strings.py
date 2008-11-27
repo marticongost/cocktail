@@ -160,6 +160,12 @@ translations.define("cocktail.html.FilterBox add filter",
     en = u"Add filter"
 )
 
+translations.define("cocktail.html.FilterBox clear filters",
+    ca = u"Netejar filtres",
+    es = u"Limpiar filtros",
+    en = u"Clear filters"
+)
+
 translations.define("cocktail.html.FilterBox apply filters",
     ca = u"Aplicar",
     es = u"Aplicar",
@@ -250,6 +256,12 @@ translations.define("en",
     ca = u"Anglès",
     es = u"Inglés",
     en = u"English"
+)
+
+translations.define("translated into",
+    ca = lambda lang: "en " + translate(lang, "ca"),
+    es = lambda lang: "en " + translate(lang, "es"),
+    en = lambda lang: "in " + translate(lang, "en")
 )
 
 # Validation errors
