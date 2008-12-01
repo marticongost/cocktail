@@ -103,7 +103,6 @@ class PersistentClass(SchemaClass):
                     default = schema.DynamicDefault(incremental_id)
                 )
                 cls.add_member(cls.id)
-                print "Added member 'id' to %s" % cls.full_name
 
         cls._sealed = True
 
@@ -233,10 +232,11 @@ class PersistentObject(SchemaObject, Persistent):
 
             if member.primary:
                 for schema in self.__class__.ascend_inheritance(True):
-                    if previous_value is not None:
-                        del schema.index[previous_index_value]
-                    if new_value is not None:
-                        schema.index[new_index_value] = self
+                    if schema.indexed and schema is not PersistentObject:
+                        if previous_value is not None:
+                            del schema.index[previous_index_value]
+                        if new_value is not None:
+                            schema.index[new_index_value] = self
 
             elif member.unique:
                 if previous_value is not None:
