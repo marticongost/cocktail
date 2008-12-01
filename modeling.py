@@ -10,6 +10,7 @@ A set of constructs for modeling classes.
 from copy import copy, deepcopy
 from weakref import WeakKeyDictionary
 from threading import local
+from cocktail.typemapping import TypeMapping
 
 _thread_data = local()
 
@@ -19,6 +20,17 @@ def wrap(function, wrapper):
 
 def getter(function):
     return property(function, doc = function.__doc__)
+
+def abstractmethod(func):
+    
+    def wrapper(self, *args, **kwargs):
+        raise TypeError(
+            "Calling abstract method %s on %s"
+            % func.func_name, self
+        )
+
+    wrap(func, wrapper)
+    return wrapper
 
 class classgetter(object):
 
@@ -110,6 +122,17 @@ def extend(element):
     return decorator
 
 
+class GenericMethod(object):
+
+    def __init__(self, default):
+        self.default = default
+        self.implementations = TypeMapping()
+
+    def __call__(self, *args, **kwargs):
+        impl = self.implementations.get(self.__class__, self.default)
+        return impl(self, *args, **kwargs)
+
+
 class DictWrapper(object):
 
     def __init__(self, items = None):
@@ -162,11 +185,11 @@ class DictWrapper(object):
     def __ne__(self, other):
         return self._items.__ne__(other)
 
-    def __reduce__(self):
-        return self._items.__reduce__()
+#    def __reduce__(self):
+#        return self._items.__reduce__()
 
-    def __reduce_ex__(self, protocol):
-        return self._items.__reduce_ex__(protocol)
+#    def __reduce_ex__(self, protocol):
+#        return self._items.__reduce_ex__(protocol)
 
     def __repr__(self):
         return self._items.__repr__()
@@ -262,11 +285,11 @@ class ListWrapper(object):
     def __ne__(self, other):
         return self._items.__ne__(other)
 
-    def __reduce__(self):
-        return self._items.__reduce__()
+#    def __reduce__(self):
+#        return self._items.__reduce__()
 
-    def __reduce_ex__(self, protocol):
-        return self._items.__reduce_ex__(protocol)
+#    def __reduce_ex__(self, protocol):
+#        return self._items.__reduce_ex__(protocol)
 
     def __repr__(self):
         return self._items.__repr__()
@@ -344,11 +367,11 @@ class SetWrapper(object):
     def __rand__(self, other):
         return self._items.__rand__(other)
 
-    def __reduce__(self):
-        return self._items.__reduce__()
+#    def __reduce__(self):
+#        return self._items.__reduce__()
 
-    def __reduce_ex__(self, protocol):
-        return self._items.__reduce_ex__(protocol)
+#    def __reduce_ex__(self, protocol):
+#        return self._items.__reduce_ex__(protocol)
 
     def __repr__(self):
         return self._items.__repr__()
