@@ -9,7 +9,7 @@ A set of constructs for modeling classes.
 """
 from copy import copy, deepcopy
 from weakref import WeakKeyDictionary
-from threading import local
+from threading import local, Lock, RLock
 from cocktail.typemapping import TypeMapping
 
 _thread_data = local()
@@ -132,6 +132,9 @@ class GenericMethod(object):
         impl = self.implementations.get(self.__class__, self.default)
         return impl(self, *args, **kwargs)
 
+
+# Read-only collection wrappers
+#------------------------------------------------------------------------------ 
 
 class DictWrapper(object):
 
@@ -420,6 +423,9 @@ empty_list = ListWrapper([])
 empty_set = SetWrapper(set())
 
 
+# Instrumented collections
+#------------------------------------------------------------------------------ 
+
 class InstrumentedCollection(object):
     
     def item_added(self, item):
@@ -607,3 +613,130 @@ class InstrumentedDict(DictWrapper, InstrumentedCollection):
             for key, value in kwargs.iteritems():
                 self[key] = value
  
+
+# Thread safe collections
+#------------------------------------------------------------------------------ 
+
+class SynchronizedList(object):
+
+    _list_class = list
+    _lock_class = RLock
+
+    def __init__(self, items = None):
+        
+        if items is None:
+            items = self._list_class()
+        elif not isinstance(items, self._list_class):
+            items = self._list_class(items)
+
+        self._items = items
+        self.lock = self._lock_class()
+
+    def __copy__(self):
+        self.lock.acquire()
+        try:
+            return self._items.__copy__(self)
+        finally:
+            self.lock.release()
+
+    def __deepcopy__(self, memo):
+        self.lock.acquire()
+        try:
+            return self._items.__deepcopy__(memo)
+        finally:
+            self.lock.release()
+
+    def __add__(self, other):
+        return self._items.__add__(other)
+        
+    def __cmp__(self, other):
+        return cmp(self._items, other)
+        
+    def __contains__(self, item):
+        return self._items.__contains__(item)
+            
+    def __eq__(self, other):
+        return self._items.__eq__(other)
+        
+    def __ge__(self, other):
+        return self._items.__ge__(other)
+        
+    def __getitem__(self, index):
+        return self._items.__getitem__(index)
+        
+    def __getslice__(self, i, j):
+        return self._items.__getslice__(i, j)
+        
+    def __gt__(self, other):
+        return self._items.__gt__(other)
+        
+    def __hash__(self):
+        return self._items.__hash__()
+        
+    def __iter__(self):
+        self.lock.acquire()
+        try:
+            return list(self._items).__iter__()
+        finally:
+            self.lock.release()
+
+    def __le__(self, other):
+        return self._items.__le__(other)
+        
+    def __len__(self):
+        return self._items.__len__()
+        
+    def __lt__(self, other):
+        return self._items.__lt__(other)
+        
+    def __mul__(self, other):
+        return self._items.__mul__(other)
+        
+    def __ne__(self, other):
+        return self._items.__ne__(other)
+        
+    def __repr__(self):
+        return self._items.__repr__()
+        
+    def __reversed__(self):
+        self.lock.acquire()
+        try:
+            items = list(self._items)
+            items.reverse()
+            return items
+        finally:
+            self.lock.release()
+
+    def __rmul__(self, other):
+        return self._items.__rmul__(other)
+        
+    def __str__(self):
+        return self._items.__str__()
+        
+    def count(self, item):
+        return self._items.count(item)
+        
+    def index(self, item):
+        return self._items.index(self, item)
+        
+    def append(self, item):
+        self._items.append(item)
+        
+    def insert(self, index, item):
+        self._items.insert(index, item)        
+
+    def extend(self, items):
+        self._items.extend(items)
+        
+    def remove(self, item):
+        self._items.remove(item)
+        
+    def pop(self, index):
+        return self._items.pop(index)
+        
+    def __setitem__(self, index, item):
+        self._items[index] = item
+        
+    def __delitem__(self, index):
+        self._items.__delitem__(index)
+
