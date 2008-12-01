@@ -10,6 +10,7 @@ import sys
 from cocktail.modeling import refine
 from cocktail.pkgutils import get_full_name
 from cocktail.language import require_content_language
+from cocktail.translations import translate
 from cocktail.schema.schema import Schema
 from cocktail.schema.member import Member
 from cocktail.schema.schemareference import Reference
