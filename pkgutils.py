@@ -85,7 +85,7 @@ def get_full_name(obj):
 
 def get_path_name(path):
     """Gets the qualified name of the module or package that maps to the
-    indicatedfile or folder.
+    indicated file or folder.
     
     @param path: The path to the file or folder to evaluate.
     @type path: str
