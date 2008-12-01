@@ -6,7 +6,6 @@
 @organization:	Whads/Accent SL
 @since:			October 2008
 """
-
 undefined = object()
 _accessors = []
 

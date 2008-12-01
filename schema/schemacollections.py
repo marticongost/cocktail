@@ -7,11 +7,21 @@ Provides a class to describe members that handle sets of values.
 @organization:	Whads/Accent SL
 @since:			March 2008
 """
+from difflib import SequenceMatcher
+from cocktail.modeling import (
+    getter,
+    GenericMethod,
+    InstrumentedList,
+    InstrumentedSet
+)
 from cocktail.schema.member import Member
+from cocktail.schema.schemarelations import RelationMember, _update_relation
 from cocktail.schema.schemareference import Reference
+from cocktail.schema.accessors import get_accessor
 from cocktail.schema.exceptions import MinItemsError, MaxItemsError
 
-class Collection(Member):
+
+class Collection(RelationMember):
     """A member that handles a set of values. Such sets are generically called
     X{collections}, while each value they contain is referred to as an X{item}.
     
@@ -34,10 +44,40 @@ class Collection(Member):
 
     def __init__(self, *args, **kwargs):
         self.__items = None
-        Member.__init__(self, *args, **kwargs)
+        RelationMember.__init__(self, *args, **kwargs)
         self.add_validation(self.__class__.collection_validation_rule)
         self.add_validation(self.__class__.items_validation_rule)
 
+    def _add_relation(self, obj, related_obj):
+
+        key = self.name
+        accessor = get_accessor(obj)
+        collection = accessor.get(obj, key)
+        
+        if collection is None:
+            
+            # Try to create a new, empty collection automatically
+            collection_type = self.type or self.default_type
+
+            if collection_type:
+                accessor.set(obj, key, collection_type())
+                collection = accessor.get(obj, key)
+            else:
+                raise ValueError("Error relating %s to %s on %s; "
+                    "the target collection is undefined"
+                    % (obj, related_obj, self))
+
+        collection.add(related_obj)
+
+    def _remove_relation(self, obj, related_obj):
+        get_accessor(obj).get(obj, self.name).remove(related_obj)
+
+    @getter
+    def related_type(self):
+        return self.items.type
+
+    # Validation
+    #--------------------------------------------------------------------------
     def _get_items(self):
         return self.__items
 
@@ -113,4 +153,109 @@ class Collection(Member):
                         yield error
             finally:
                 context.leave()
+
+
+# Generic add/remove methods
+#------------------------------------------------------------------------------
+
+@GenericMethod
+def add(collection, item):
+    return collection.add(item)
+
+@GenericMethod
+def remove(collection, item):
+    collection.remove(item)
+
+def _list_add(collection, item):
+    collection.append(item)
+
+add.implementations[list] = _list_add
+
+
+# Relational data structures
+#------------------------------------------------------------------------------
+class RelationCollection(object):
+
+    owner = None
+    member = None
+
+    def item_added(self, item):
+        _update_relation("relate", self.owner, item, self.member)
+        
+    def item_removed(self, item):
+        _update_relation("unrelate", self.owner, item, self.member)
+
+
+class RelationList(RelationCollection, InstrumentedList):
+    
+    def __init__(self, items = None, owner = None, member = None):
+        self.owner = owner
+        self.member = member
+        InstrumentedList.__init__(self)
+        if items:
+            for item in items:
+                self.append(item)
+
+    def add(self, item):
+        self.append(item)
+
+    def set_content(self, new_content):
+
+        if not new_content:
+            while self._items:
+                self.pop(0)
+        else:
+            if not hasattr(new_content, "__iter__") \
+            or not hasattr(new_content, "__getitem__"):
+                raise TypeError(
+                    "%s is not a valid collection for a relation list"
+                    % new_content
+                )
+
+            diff = SequenceMatcher(None, self._items, new_content)
+            previous_content = self._items
+            self._items = new_content
+            
+            for tag, alo, ahi, blo, bhi in diff.get_opcodes():
+                if tag == "replace":
+                    for item in previous_content[alo:ahi]:
+                        self.item_removed(item)
+                    for item in new_content[blo:bhi]:
+                        self.item_added(item)
+                elif tag == "delete":
+                    for item in previous_content[alo:ahi]:
+                        self.item_removed(item)
+                elif tag == "insert":
+                    for item in new_content[blo:bhi]:
+                        self.item_added(item)
+                elif tag == "equal":
+                    pass
+
+
+class RelationSet(RelationCollection, InstrumentedSet):
+    
+    def __init__(self, items = None, owner = None, member = None):
+        self.owner = owner
+        self.member = member
+        InstrumentedSet.__init__(self)
+        if items:
+            for item in items:
+                self.add(item)
+
+    def set_content(self, new_content):
+
+        if new_content is None:
+            self.clear()
+        else:
+            if not isinstance(new_content, set):
+                new_content = set(new_content)
+            
+            previous_content = self._items
+            self._items = new_content
+
+            for item in previous_content - new_content:
+                self.item_removed(item)
+
+            for item in new_content - previous_content:
+                self.item_added(item)
 

@@ -58,6 +58,7 @@ class Member(Variable):
     """
 
     # Constraints
+    primary = False
     default = None
     required = False
     require_none = False
@@ -73,6 +74,8 @@ class Member(Variable):
 
     # Translation
     translated = False
+    translation = None
+    translation_source = None
 
     # Attributes that deserve special treatment when performing a deep copy
     _special_copy_keys = set([

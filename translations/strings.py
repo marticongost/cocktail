@@ -407,7 +407,8 @@ translations.define("cocktail.schema.exceptions.MaxItemsError-instance",
         % (member_identifier(instance, "en"), instance.max)
 )
 
-translations.define("cocktail.persistence.entity.UniqueValueError-instance",
+translations.define(
+    "cocktail.persistence.persistentobject.UniqueValueError-instance",
     ca = lambda instance:
         u"El valor indicat pel camp <em>%s</em> ja existeix a la base de dades"
         % member_identifier(instance, "ca"),

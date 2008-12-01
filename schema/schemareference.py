@@ -6,19 +6,33 @@
 @organization:	Whads/Accent SL
 @since:			June 2008
 """
+from cocktail.modeling import getter
 from cocktail.pkgutils import import_object
-from cocktail.schema.member import Member
+from cocktail.schema.schemarelations import RelationMember
+from cocktail.schema.accessors import get_accessor
 from cocktail.schema.exceptions import ClassFamilyError
 
 
-class Reference(Member):
+class Reference(RelationMember):
     
     __class_family = None
 
     def __init__(self, *args, **kwargs):
-        Member.__init__(self, *args, **kwargs)
+        RelationMember.__init__(self, *args, **kwargs)
         self.add_validation(self.__class__.reference_validation_rule)
 
+    def _add_relation(self, obj, related_obj):
+        get_accessor(obj).set(obj, self.name, related_obj)                
+
+    def _remove_relation(self, obj, related_obj):
+        get_accessor(obj).set(obj, self.name, None)
+
+    @getter
+    def related_type(self):
+        return self.type
+
+    # Validation
+    #--------------------------------------------------------------------------
     def _get_class_family(self):
 
         # Resolve string references

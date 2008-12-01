@@ -9,7 +9,7 @@
 import cherrypy
 from string import strip
 from cocktail import schema
-from cocktail.persistence import EntityClass
+from cocktail.persistence import PersistentClass
 
 # Extension property that allows members to define a parser function for
 # request values
@@ -43,7 +43,7 @@ def parse_reference(self, reader, value):
     related_type = self.type
 
     # TODO: make this extensible to other types?
-    if isinstance(related_type, EntityClass) and related_type.indexed:
+    if isinstance(related_type, PersistentClass) and related_type.indexed:
         value = related_type.index.get(int(value))
     
     return value
