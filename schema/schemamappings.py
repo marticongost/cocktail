@@ -7,7 +7,11 @@ Provides a class to describe members that handle sets of values.
 @organization:	Whads/Accent SL
 @since:			July 2008
 """
-from cocktail.schema.schemacollections import Collection
+from cocktail.modeling import getter, InstrumentedDict
+from cocktail.schema.schemacollections import (
+    Collection, RelationCollection, add, remove
+)
+
 
 class Mapping(Collection):
     """A collection that handles a set of key and value associations.
@@ -25,7 +29,13 @@ class Mapping(Collection):
     keys = None
     values = None
     default_type = dict
+    
+    @getter
+    def related_type(self):
+        return self.values.type
 
+    # Validation
+    #--------------------------------------------------------------------------
     def items_validation_rule(self, value, context):
 
         if value is not None:
@@ -48,4 +58,69 @@ class Mapping(Collection):
                                 yield error
                 finally:
                     context.leave()
+
+
+# Generic add/remove methods
+#------------------------------------------------------------------------------
+def _mapping_add(collection, item):
+    collection[item.id] = item
+
+def _mapping_remove(collection, item):
+    del collection[item.id]
+
+add.implementations[dict] = _mapping_add
+remove.implementations[dict] = _mapping_remove
+
+
+# Relational data structures
+#------------------------------------------------------------------------------
+
+class RelationMapping(RelationCollection, InstrumentedDict):
+    
+    def __init__(self, items = None, owner = None, member = None):
+        self.owner = owner
+        self.member = member
+        InstrumentedDict.__init__(self)
+        if items:
+            for item in items:
+                self.add(item)
+
+    def get_item_key(self, item):
+        if self.member.get_item_key:
+            return self.member.get_item_key(self, item)
+        else:
+            raise TypeError("Don't know how to obtain a key from %s; "
+                "the collection hasn't overriden its get_item_key() method."
+                % item)
+
+    def item_added(self, item):
+        RelationCollection.item_added(self, item[1])
+
+    def item_removed(self, item):
+        RelationCollection.item_removed(self, item[1])
+
+    def add(self, item):
+        self[self.get_item_key(item)] = item
+
+    def remove(self, item):
+        del self[self.get_item_key(item)]
+
+    def set_content(self, new_content):
+
+        if new_content is None:
+            self.clear()
+        else:
+            new_content = set(
+                (self.get_item_key(item), item)
+                for item in new_content
+            )
+            
+            previous_content = set(self._items.iteritems())
+            self._items = dict(new_content)
+
+            for pair in previous_content - new_content:
+                self.item_removed(pair)
+
+            for pair in new_content - previous_content:
+                self.item_added(pair)
 

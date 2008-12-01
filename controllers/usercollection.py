@@ -49,12 +49,12 @@ class UserCollection(object):
     persistent_params = empty_set
 
     def __init__(self,
-        entity_type,
+        type,
         schema = None,
         public_members = None):
         
-        self.__entity_type = entity_type
-        self.__schema = schema or entity_type
+        self.__type = type
+        self.__schema = schema or type
         
         if public_members is None:
             public_members = set(self.__schema.members().iterkeys())
@@ -80,8 +80,8 @@ class UserCollection(object):
         self.order = ListWrapper(self.__order)
     
     @getter
-    def entity_type(self):
-        return self.__entity_type
+    def type(self):
+        return self.__type
 
     @getter
     def schema(self):
@@ -106,7 +106,7 @@ class UserCollection(object):
     def subset(self):
         
         subset = Query(
-            self.entity_type,
+            self.type,
             base_collection = self.base_collection
         )
         
@@ -208,7 +208,7 @@ class UserCollection(object):
                 member = self._get_member(
                     key,
                     translatable = True,
-                    from_entity = True
+                    from_type = True
                 )
 
                 if member:
@@ -218,7 +218,7 @@ class UserCollection(object):
  
         if self.include_content_type_filters:
             self.available_filters = list(self.available_filters) \
-                + get_content_type_filters(self.entity_type)
+                + get_content_type_filters(self.type)
 
         filters_param = self._get_param("filter")
         
@@ -282,7 +282,7 @@ class UserCollection(object):
         else:
             return param
 
-    def _get_member(self, key, translatable = False, from_entity = False):
+    def _get_member(self, key, translatable = False, from_type = False):
         
         if translatable:
             parts = key.split(".")
@@ -291,7 +291,7 @@ class UserCollection(object):
             name = key
 
         try:
-            schema = self.__entity_type if from_entity else self.__schema
+            schema = self.__type if from_type else self.__schema
             member = schema[name]
         except KeyError:
             member = None

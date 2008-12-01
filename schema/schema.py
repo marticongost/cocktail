@@ -40,6 +40,7 @@ class Schema(Member):
         is a shallow list; to obtain the full inheritance tree, use the
         L{ascend_inheritance} method instead.
     """
+    primary_member = None
     members_order = None
 
     def __init__(self, *args, **kwargs):

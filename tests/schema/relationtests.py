@@ -7,34 +7,19 @@
 @since:			November 2008
 """
 from unittest import TestCase
-from glob import glob
-from os import remove
 
-class RelationTestCase(TestCase):
 
-    DB_FILE = "relationtests.db"
-
-    def setUp(self):
-        from cocktail.persistence import datastore
-        from ZODB.FileStorage import FileStorage
-        datastore.storage = FileStorage(self.DB_FILE)
-        datastore.root.clear()
-
-    def tearDown(self):
-        for name in glob(self.DB_FILE + "*"):
-            remove(name)
-
-class OneToOneTestCase(RelationTestCase):
+class OneToOneTestCase(TestCase):
 
     def get_entities(self):
 
-        from cocktail.persistence import Entity
+        from cocktail.schema import SchemaObject
         from cocktail.schema import Reference
 
-        class Foo(Entity):
+        class Foo(SchemaObject):
             bar = Reference(bidirectional = True)
 
-        class Bar(Entity):
+        class Bar(SchemaObject):
             foo = Reference(bidirectional = True)
 
         Foo.bar.type = Bar
@@ -90,17 +75,16 @@ class OneToOneTestCase(RelationTestCase):
         self.assertTrue(bar2.foo is None)
 
 
-class OneToManyTestCase(RelationTestCase):
+class OneToManyTestCase(TestCase):
 
     def get_entities(self):
 
-        from cocktail.persistence import Entity
-        from cocktail.schema import Reference, Collection
+        from cocktail.schema import SchemaObject, Reference, Collection
 
-        class Foo(Entity):
+        class Foo(SchemaObject):
             bar = Reference(bidirectional = True)
 
-        class Bar(Entity):
+        class Bar(SchemaObject):
             foos = Collection(bidirectional = True)
 
         Foo.bar.type = Bar
@@ -242,4 +226,9 @@ class OneToManyTestCase(RelationTestCase):
         self.assertTrue(foo2.bar is bar2)
         self.assertEqual(bar1.foos, [])
         self.assertEqual(bar2.foos, [foo1, foo2])
+
+
+if __name__ == "__main__":
+    from unittest import main
+    main()
 

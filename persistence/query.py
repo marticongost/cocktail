@@ -8,7 +8,7 @@
 """
 from itertools import chain
 from cocktail.modeling import getter
-from cocktail.persistence import EntityClass
+from cocktail.persistence import PersistentClass
 from cocktail.schema import Member, expressions
 
 inherit = object()
@@ -35,7 +35,7 @@ class Query(object):
     }
 
     def __init__(self,
-        entity_class,
+        type,
         filters = None,
         order = None,
         range = None,
@@ -43,16 +43,16 @@ class Query(object):
 
         if base_collection is None:
 
-            if not isinstance(entity_class, EntityClass) \
-            or not entity_class.indexed:
-                raise TypeError("An indexed entity class is required")
+            if not isinstance(type, PersistentClass) \
+            or not type.indexed:
+                raise TypeError("An indexed persistent class is required")
 
-            base_collection = entity_class.index.values()
+            base_collection = type.index.values()
 
         if filters is not None and not isinstance(filters, list):
             filters = [filters]
 
-        self.__entity_class = entity_class
+        self.__type = type
         self.__base_collection = base_collection
         self.__parent = None
         self.filters = filters
@@ -60,8 +60,8 @@ class Query(object):
         self.range = range
 
     @getter
-    def entity_class(self):
-        return self.__entity_class
+    def type(self):
+        return self.__type
 
     @getter
     def parent(self):
@@ -92,7 +92,7 @@ class Query(object):
                 value = filter.operands[1].value
 
                 if member.primary:
-                    index = self.__entity_class.index
+                    index = self.__type.index
                 else:
                     index = member.index
 
@@ -211,7 +211,7 @@ class Query(object):
 
         if not order:
             if self.range:
-                order = [+self.__entity_class.primary_member]
+                order = [+self.__type.primary_member]
             else:
                 return subset
 
@@ -296,7 +296,7 @@ class Query(object):
         range = inherit):
         
         child_query = self.__class__(
-            self.__entity_class,
+            self.__type,
             self.filters if filters is inherit else filters,
             self.order if order is inherit else order,
             self.range if range is inherit else range,
@@ -307,7 +307,7 @@ class Query(object):
 
     def select_by(self, **kwargs):
         for key, value in kwargs.itervalues():
-            member = getattr(self.__entity_class, key)
+            member = getattr(self.__type, key)
             self.add_filter(key == value)
 
     def add_filter(self, filter):
@@ -319,7 +319,7 @@ class Query(object):
     def add_order(self, criteria):
         
         if isinstance(criteria, basestring):
-            member = self.entity_class[criteria]
+            member = self.type[criteria]
             criteria = expressions.PositiveExpression(member)
         
         elif isinstance(criteria, Member):
