@@ -7,6 +7,7 @@
 @since:			November 2008
 """
 from unittest import TestCase
+from cocktail.tests.utils import EventLog
 
 
 class DeclarationTestCase(TestCase):
@@ -171,6 +172,50 @@ class SealTestCase(TestCase):
 
 class AttributeTestCase(TestCase):
 
+    def test_instantiation(self):
+
+        from cocktail.schema import Schema, SchemaObject, String, Integer
+
+        class Foo(SchemaObject):
+            bar = String(default = "Default bar")
+            spam = Integer()
+
+        members = set([Foo.bar, Foo.spam])
+
+        events = EventLog()
+        events.listen(
+            Foo_instantiated = Foo.instantiated,
+            Foo_changed = Foo.changed,
+            Foo_changing = Foo.changing
+        )
+
+        values = {"bar": "Custom bar", "spam": 3}
+
+        foo = Foo(**values)
+
+        for i in range(len(values)):
+            event = events.pop(0)
+            member = event.member
+            self.assertEqual(event.slot, Foo.changing)
+            self.assertEqual(event.value, values[member.name])
+            self.assertEqual(event.previous_value, None)
+
+            event = events.pop(0)
+            self.assertEqual(event.slot, Foo.changed)
+            self.assertEqual(event.member, member)
+            self.assertEqual(event.value, values[member.name])
+            self.assertEqual(event.previous_value, None)
+            members.remove(member)
+
+        event = events.pop(0)
+        self.assertEqual(event.slot, Foo.instantiated)
+        self.assertEqual(event.instance, foo)
+
+        self.assertFalse(events)
+
+        for key, value in values.iteritems():
+            self.assertEqual(getattr(foo, key), value)
+
     def test_defaults(self):
 
         from cocktail.schema import Schema, SchemaObject, String, Integer
@@ -179,7 +224,28 @@ class AttributeTestCase(TestCase):
             bar = String(default = "Default bar")
             spam = Integer()
 
+        events = EventLog()
+        events.listen(
+            Foo_changed = Foo.changed,
+            Foo_changing = Foo.changing
+        )
+
         foo = Foo()
+
+        event = events.pop(0)
+        self.assertEqual(event.slot, Foo.changing)
+        self.assertEqual(event.member, Foo.bar)
+        self.assertEqual(event.value, "Default bar")
+        self.assertEqual(event.previous_value, None)
+
+        event = events.pop(0)
+        self.assertEqual(event.slot, Foo.changed)
+        self.assertEqual(event.member, Foo.bar)
+        self.assertEqual(event.value, "Default bar")
+        self.assertEqual(event.previous_value, None)
+
+        self.assertFalse(events)
+
         self.assertEqual(foo.bar, "Default bar")
         self.assertEqual(foo.spam, None)
 
@@ -190,11 +256,50 @@ class AttributeTestCase(TestCase):
         class Foo(SchemaObject):
             bar = String()        
       
+        events = EventLog()
+        events.listen(
+            Foo_changed = Foo.changed,
+            Foo_changing = Foo.changing
+        )
+
         foo = Foo()
+        
+        # First assignment
         foo.bar = "Spam!"
+
+        event = events.pop(0)
+        self.assertEqual(event.slot, Foo.changing)
+        self.assertEqual(event.member, Foo.bar)
+        self.assertEqual(event.value, "Spam!")
+        self.assertEqual(event.previous_value, None)
+
+        event = events.pop(0)
+        self.assertEqual(event.slot, Foo.changed)
+        self.assertEqual(event.member, Foo.bar)
+        self.assertEqual(event.value, "Spam!")
+        self.assertEqual(event.previous_value, None)
+
+        self.assertFalse(events)
+
         self.assertEqual(foo.bar, "Spam!")
 
+        # Second assignment
         foo.bar = None
+
+        event = events.pop(0)
+        self.assertEqual(event.slot, Foo.changing)
+        self.assertEqual(event.member, Foo.bar)
+        self.assertEqual(event.value, None)
+        self.assertEqual(event.previous_value, "Spam!")
+
+        event = events.pop(0)
+        self.assertEqual(event.slot, Foo.changed)
+        self.assertEqual(event.member, Foo.bar)
+        self.assertEqual(event.value, None)
+        self.assertEqual(event.previous_value, "Spam!")
+
+        self.assertFalse(events)
+
         self.assertEqual(foo.bar, None)
 
 

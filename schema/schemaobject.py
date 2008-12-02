@@ -8,6 +8,7 @@
 """
 import sys
 from cocktail.modeling import refine
+from cocktail.events import Event
 from cocktail.pkgutils import get_full_name
 from cocktail.language import require_content_language
 from cocktail.translations import translate
@@ -225,8 +226,20 @@ class SchemaClass(type, Schema):
             # Value normalization and hooks
             previous_value = getattr(target, self.__priv_key, None)
             value = self.normalization(instance, member, value)
-            value = instance.on_member_set(
-                member, value, previous_value, language)
+
+            try:
+                changed = (value != previous_value)
+            except TypeError:
+                changed = True
+
+            if changed:
+                event = instance.changing(
+                    member = member,
+                    language = language,
+                    value = value,
+                    previous_value = previous_value
+                )
+                value = event.value
             
             preserve_value = False
 
@@ -251,15 +264,38 @@ class SchemaClass(type, Schema):
 
             # Update the opposite end of a bidirectional reference
             if self._bidirectional_reference and value != previous_value:
-
+                
                 # TODO: translated bidirectional references
-                if previous_value is not None:
+                if previous_value is not None:                    
                     _update_relation(
                         "unrelate", instance, previous_value, member
+                    )
+                    instance.unrelated(
+                        member = member,
+                        related_object = previous_value,
+                        collection = None
                     )
 
                 if value is not None:
                     _update_relation("relate", instance, value, member)
+                    instance.related(
+                        member = member,
+                        related_object = value,
+                        collection = None
+                    )
+
+            try:
+                changed = (value != previous_value)
+            except TypeError:
+                changed = True
+
+            if changed:
+                instance.changed(
+                    member = member,
+                    language = language,
+                    value = value,
+                    previous_value = previous_value
+                )
 
         def instrument_collection(self, collection, owner, member):
 
@@ -282,9 +318,82 @@ class SchemaObject(object):
 
     __metaclass__ = SchemaClass
     
+    instantiated = Event(doc = """
+        An event triggered on the class when a new instance is created.
+
+        @ivar instance: A reference to the new instance.
+        @type instance: L{SchemaObject}
+        """)
+
+    changing = Event(doc = """
+        An event triggered before the value of a member is changed.
+
+        @ivar member: The member that is being changed.
+        @type member: L{Member<cocktail.schema.member.Member>}
+
+        @ivar language: Only for translated members, indicates the language
+            affected by the change.
+        @type language: str
+
+        @ivar value: The new value assigned to the member. Modifying this
+            attribute *will* change the value which is finally assigned to the
+            member.
+
+        @ivar previous_value: The current value for the affected member, before
+            any change takes place.
+        """)
+
+    changed = Event(doc = """
+        An event triggered after the value of a member has changed.
+
+        @ivar member: The member that has been changed.
+        @type member: L{Member<cocktail.schema.member.Member>}
+
+        @ivar language: Only for translated members, indicates the language
+            affected by the change.
+        @type language: str
+
+        @ivar value: The new value assigned to the member.
+
+        @ivar previous_value: The value that the member had before the current
+            change.
+        """)
+
+    related = Event(doc = """
+        An event triggered after establishing a relationship between objects.
+        If both ends of the relation are instances of L{SchemaObject}, this
+        event will be triggered twice.
+
+        @ivar member: The schema member that describes the relationship.
+        @type member: L{Relation<cocktail.schema.schemarelations>}
+
+        @ivar related_object: The object that has been related to the target.
+
+        @ivar collection: A reference to the collection modified by the current
+            change, if any. On
+            L{reference<cocktail.schema.schemareferences.Reference>} members,
+            this will be set to None.
+        """)
+
+    unrelated = Event(doc = """
+        An event triggered after clearing a relationship between objects.
+
+        @ivar member: The schema member that describes the relationship.
+        @type member: L{Relation<cocktail.schema.schemarelations>}
+
+        @ivar related_object: The object that is no longer related to the
+            target.
+
+        @ivar collection: A reference to the collection modified by the current
+            change, if any. On
+            L{reference<cocktail.schema.schemareferences.Reference>} members,
+            this will be set to None.
+        """)
+
     def __init__(self, **values):
         self.__class__.init_instance(self, values, SchemaObjectAccessor)
-
+        self.__class__.instantiated(instance = self)
+        
     def __repr__(self):
         
         if self.__class__.primary_member:
@@ -335,9 +444,6 @@ class SchemaObject(object):
             language = language)
         self.translations[language] = translation
         return translation
-
-    def on_member_set(self, member, value, previous_value, language):
-        return value
 
 
 _undefined = object()
