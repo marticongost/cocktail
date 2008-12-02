@@ -11,6 +11,7 @@ from persistent import Persistent
 from BTrees.OOBTree import OOBTree
 from BTrees.IOBTree import IOBTree
 from cocktail import schema
+from cocktail.events import Event
 from cocktail.schema import SchemaClass, SchemaObject
 from cocktail.schema.exceptions import ValidationError
 from cocktail.persistence.datastore import datastore
@@ -214,6 +215,15 @@ class PersistentObject(SchemaObject, Persistent):
 
     indexed = True
 
+    deleting = Event(doc = """
+        An event triggered before deleting an object from the data store.
+        """)
+
+    deleted = Event(doc = """
+        An event triggered after an object has been removed from the data
+        store.
+        """)
+
     def __init__(self, *args, **kwargs):
         self._v_initializing = True
         SchemaObject.__init__(self, *args, **kwargs)
@@ -253,6 +263,8 @@ class PersistentObject(SchemaObject, Persistent):
  
     def delete(self):
 
+        self.deleting()
+
         # Remove the item from primary indices
         if self.__class__.indexed:
             for cls in self.__class__.ascend_inheritance(True):
@@ -287,6 +299,8 @@ class PersistentObject(SchemaObject, Persistent):
             and member.bidirectional \
             and self.get(member) is not None:
                 self.set(member, None)
+
+        self.deleted()
 
 
 class UniqueValueError(ValidationError):
