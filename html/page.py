@@ -11,7 +11,6 @@ from cocktail.html.element import (
     Element, Content, _thread_data, IdGenerationError
 )
 from cocktail.html.resources import Script, StyleSheet
-from cocktail.html.autoid import begin_id_generation, end_id_generation
 from cocktail.translations import get_language, translations
 
 
