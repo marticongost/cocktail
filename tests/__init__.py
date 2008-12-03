@@ -7,8 +7,10 @@ Test suite for the Cocktail web development toolkit.
 @organization:	Whads/Accent SL
 @since:			November 2007
 """
-from cocktail.tests.html import *
-
 if __name__ == "__main__":
     from unittest import main
+    from cocktail.tests.events import *
+    from cocktail.tests.schema import *
+    from cocktail.tests.html import *
     main()
+
