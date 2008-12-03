@@ -215,10 +215,12 @@ class EventTestCase(TestCase):
 
         def first_instance_callback(event):
             test_instance_event_info(event)
+            event.test_string = "first instance callback"
             event.executed.append(first_instance_callback)
 
         def second_instance_callback(event):
             test_instance_event_info(event)
+            event.test_string = "second instance callback"
             event.executed.append(second_instance_callback)
 
         foo.spammed.append(first_instance_callback)
@@ -240,10 +242,12 @@ class EventTestCase(TestCase):
 
         def first_class_callback(event):
             test_class_event_info(event)
+            event.test_string = "first class callback"
             event.executed.append(first_class_callback)
 
         def second_class_callback(event):
             test_class_event_info(event)
+            event.test_string = "second class callback"
             event.executed.append(second_class_callback)
 
         Foo.spammed.append(first_class_callback)
@@ -282,6 +286,9 @@ class EventTestCase(TestCase):
             self.assertEqual(
                 event_info.executed,
                 [second_instance_callback, second_class_callback]
+            )
+            self.assertEqual(
+                event_info.test_string, "second class callback"
             )
 
     def test_instance_with_inheritance(self):

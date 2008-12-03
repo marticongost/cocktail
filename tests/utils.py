@@ -6,23 +6,21 @@
 @organization:	Whads/Accent SL
 @since:			December 2008
 """
+from copy import copy
 
 class EventLog(list):
-
-    # TODO: Move this to cocktail.tests, so other test cases can benefit from
-    # it
 
     def listen(self, *args, **kwargs):
         for slot in args:
             self._add_listener(slot)
 
         for name, slot in kwargs.iteritems():
-            self._add_listener(slot, name)            
+            self._add_listener(slot, name)
 
     def _add_listener(self, slot, name = None):
 
         def listener(event):
-            self.append(event)
+            self.append(copy(event))
 
         if name:
             listener.func_name = name
