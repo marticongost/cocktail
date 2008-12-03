@@ -26,21 +26,24 @@ from cocktail.schema.accessors import MemberAccessor
 # Class stub
 SchemaObject = None
 
+undefined = object()
+
 
 class SchemaClass(type, Schema):
 
     def __init__(cls, name, bases, members):
         
+        cls._declared = False
+        
         type.__init__(cls, name, bases, members)
         Schema.__init__(cls)
 
         cls.name = name
-        cls.full_name = get_full_name(cls)
+        cls.full_name = members.get("full_name") or get_full_name(cls)
         cls.__derived_schemas = []
-        cls._sealed = False
         cls.members_order = members.get("members_order")
         cls.blueprint = members.get("blueprint", False)
-
+        
         # Inherit base schemas
         for base in bases:
             if SchemaObject \
@@ -52,20 +55,37 @@ class SchemaClass(type, Schema):
                 else:
                     cls.inherit(base)
 
+        # Create a translation schema for the class, to hold its translated
+        # members. Note that for most regular schemas (that is, all of them
+        # except for SchemaObject, PersistentObject, etc) the translation
+        # schema is always created, regardless of wether the source schema
+        # actually contains any translated member at all. This ensures that
+        # adding translated members to a base class won't break its inheritors,
+        # whose translation schemas would be inheriting from the wrong schema.
+        if members.get("_generates_translation_schema", True):
+            cls._create_translation_schema({})
+
         # Fill the schema with members declared as class attributes
         for name, member in members.iteritems():
             if isinstance(member, Member):
                 member.name = name
                 cls.add_member(member)
 
-        # Seal the schema, so that no further modification is possible
-        cls._sealed = True
+        cls._declared = True
 
         if cls.translation:
-            cls.translation._sealed = True
+            cls.translation._declared = True
 
     def inherit(cls, *bases):
-        cls._seal_check()
+        
+        if cls._declared:
+            raise TypeError(
+                "Can't extend the base classes of %s with %s. Dynamic "
+                "modification of the base classes for a schema is not "
+                "supported."
+                % (cls.__name__, ", ".join(base.__name__ for base in bases))
+            )
+
         Schema.inherit(cls, *bases)
         
         for base in bases:
@@ -77,19 +97,6 @@ class SchemaClass(type, Schema):
             member_copy = member.copy()
             target_class.add_member(member_copy)
 
-    def _seal_check(cls):
-        if cls._sealed:
-            raise TypeError("Can't alter a class bound schema after the class "
-                "declaration has ended")
-
-    def _check_member(cls, member):
-
-        # Make sure the schema can't be extended after the class declaration is
-        # over
-        cls._seal_check()
-
-        Schema._check_member(cls, member)
-
     def _add_member(cls, member):
        
         Schema._add_member(cls, member)
@@ -98,24 +105,33 @@ class SchemaClass(type, Schema):
         descriptor = cls.MemberDescriptor(member)
         setattr(cls, member.name, descriptor)
 
-        # Avoid AttributeError exceptions on object initialization by setting
-        # class wide attributes
-        setattr(cls, "_" + member.name, None)         
-                   
         # Primary member
         if member.primary:
             cls.primary_member = member
 
         # Translation
         if member.translated:
-
-            # Create a translation schema for the class, to hold its
-            # translated members
-            if cls.translation is None \
-            or cls.translation.translation_source is not cls:
-                cls._create_translation_schema()
+ 
+            if cls.translated == False:
                 cls.translated = True
-                            
+
+                # Add a mapping to hold the translations defined by items
+                translations_member = Mapping(
+                    name = "translations",
+                    required = True,
+                    keys = String(
+                        required = True,
+                        format = "a-z{2}"
+                    ),
+                    values = cls.translation
+                )
+
+                @refine(translations_member)
+                def __translate__(self, language):
+                    return translate("Translations", language)
+
+                cls.add_member(translations_member)
+
             # Create the translated version of the member, and add it to the
             # translated version of the schema
             member.translation = member.copy()
@@ -123,35 +139,31 @@ class SchemaClass(type, Schema):
             member.translation.translation_source = member
             cls.translation.add_member(member.translation)
 
-    def _create_translation_schema(cls):
+    def _create_translation_schema(cls, members):
         
-        translation_bases = tuple(
+        bases = tuple(
             base.translation
-            for base in cls.bases
-            if base.translation
-        ) or (SchemaObject,)
+            for base in cls.bases if base.translation
+        )
+        
+        if not bases:
+            bases = (cls._translation_schema_base,)
 
-        members = {}
-        # {"indexed": False} # FIXME: move this to PersistentClass
-
-        if not translation_bases:
+            members["_generates_translation_schema"] = False
+            members["full_name"] = cls.full_name + "Translation"
             members["translated_object"] = Reference(
                 type = cls,
                 required = True
             )
             members["language"] = String(required = True)
-
-        cls.translation = SchemaClass(
+            
+        cls.translation = cls._translation_schema_metaclass(
             cls.name + "Translation",
-            translation_bases,
+            bases,
             members
         )
 
         cls.translation.translation_source = cls
-
-        # Leave the translation class unsealed, until the declaration of its
-        # owner class is finished
-        cls.translation._sealed = False
 
         # Make the translation class available at the module level, so that its
         # instances can be pickled
@@ -161,23 +173,6 @@ class SchemaClass(type, Schema):
             cls.translation)
 
         cls.translation.__module__ = cls.__module__
-
-        # Add a mapping to hold the translations defined by items
-        translations_member = Mapping(
-            name = "translations",
-            required = True,
-            keys = String(
-                required = True,
-                format = "a-z{2}"
-            ),
-            values = cls.translation
-        )
-
-        @refine(translations_member)
-        def __translate__(self, language):
-            return translate("Translations", language)
-
-        cls.add_member(translations_member)
 
     def derived_schemas(cls, recursive = True):
         for schema in cls.__derived_schemas:
@@ -203,13 +198,29 @@ class SchemaClass(type, Schema):
             else:
                 if self.member.translated:
                     language = require_content_language(language)
-                    instance = instance._translations.get(language)
-                    if instance is None:
+                    target = instance._translations.get(language)
+                    if target is None:
                         return None
+                else:
+                    target = instance
 
-                return getattr(instance, self.__priv_key)
+                value = getattr(target, self.__priv_key, undefined)
 
-        def __set__(self, instance, value, language = None):
+                if value is undefined:
+                    value = self.member.produce_default()
+                    self.__set__(
+                        instance,
+                        value,
+                        language = language,
+                        previous_value = None
+                    )
+                    return self.__get__(instance, type, language)
+                
+                return value
+
+        def __set__(self, instance, value,
+            language = None,
+            previous_value = undefined):
             
             member = self.member
 
@@ -224,7 +235,9 @@ class SchemaClass(type, Schema):
                 target = instance
 
             # Value normalization and hooks
-            previous_value = getattr(target, self.__priv_key, None)
+            if previous_value is undefined:
+                previous_value = getattr(target, self.__priv_key, None)
+
             value = self.normalization(instance, member, value)
 
             try:
@@ -317,7 +330,9 @@ class SchemaClass(type, Schema):
 class SchemaObject(object):
 
     __metaclass__ = SchemaClass
-    
+    _generates_translation_schema = False
+    _translation_schema_base = None
+
     instantiated = Event(doc = """
         An event triggered on the class when a new instance is created.
 
@@ -445,8 +460,8 @@ class SchemaObject(object):
         self.translations[language] = translation
         return translation
 
-
-_undefined = object()
+SchemaObject._translation_schema_metaclass = SchemaClass
+SchemaObject._translation_schema_base = SchemaObject
 
 
 class SchemaObjectAccessor(MemberAccessor):
@@ -457,12 +472,12 @@ class SchemaObjectAccessor(MemberAccessor):
     """
 
     @classmethod
-    def get(cls, obj, key, default = _undefined, language = None):
+    def get(cls, obj, key, default = undefined, language = None):
         try:
             return obj.get(key, language)
 
         except AttributeError:
-            if default is _undefined:
+            if default is undefined:
                 raise
 
             return default

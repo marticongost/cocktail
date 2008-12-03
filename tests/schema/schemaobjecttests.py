@@ -145,29 +145,47 @@ class DeclarationTestCase(TestCase):
         self.assertTrue(Bar.foo_was_here)
 
 
-class SealTestCase(TestCase):
+class ExtensionTestCase(TestCase):
     
     def test_add_member(self):
         
-        from cocktail.schema import Schema, SchemaObject, String, Integer
+        from cocktail.schema import SchemaObject, String
 
         class Foo(SchemaObject):
             pass
 
-        self.assertTrue(Foo, Foo._sealed)
-        self.assertRaises(TypeError, Foo.add_member, String(name = "bar"))
+        new_member = String("bar")
+        Foo.add_member(new_member)
+        
+        self.assertEqual(new_member.schema, Foo)
+        self.assertEqual(Foo.bar, new_member)
 
     def test_inheritance(self):
         
-        from cocktail.schema import Schema, SchemaObject, String, Integer
+        from cocktail.schema import SchemaObject, String
 
         class Foo(SchemaObject):
             pass
 
-        class Bar(SchemaObject):
+        class Spam(Foo):
             pass
 
-        self.assertRaises(TypeError, Bar.inherit, Foo)
+        new_member = String("bar")
+        Foo.add_member(new_member)
+
+        self.assertEqual(new_member.schema, Foo)
+        self.assertEqual(Spam.bar, new_member)
+
+    def test_retroactive(self):
+
+        from cocktail.schema import SchemaObject, String
+
+        class Foo(SchemaObject):
+            pass
+
+        foo = Foo()
+        Foo.add_member(String("bar", default = "Bar!"))
+        self.assertEqual(foo.bar, "Bar!")
 
 
 class AttributeTestCase(TestCase):
@@ -236,13 +254,11 @@ class AttributeTestCase(TestCase):
         self.assertEqual(event.slot, Foo.changing)
         self.assertEqual(event.member, Foo.bar)
         self.assertEqual(event.value, "Default bar")
-        self.assertEqual(event.previous_value, None)
 
         event = events.pop(0)
         self.assertEqual(event.slot, Foo.changed)
         self.assertEqual(event.member, Foo.bar)
         self.assertEqual(event.value, "Default bar")
-        self.assertEqual(event.previous_value, None)
 
         self.assertFalse(events)
 
