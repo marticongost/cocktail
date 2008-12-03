@@ -128,9 +128,9 @@ class GenericMethod(object):
         self.default = default
         self.implementations = TypeMapping()
 
-    def __call__(self, *args, **kwargs):
-        impl = self.implementations.get(self.__class__, self.default)
-        return impl(*args, **kwargs)
+    def __call__(self, instance, *args, **kwargs):
+        impl = self.implementations.get(instance.__class__, self.default)
+        return impl(instance, *args, **kwargs)
 
 
 # Read-only collection wrappers
