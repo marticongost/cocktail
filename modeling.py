@@ -149,9 +149,6 @@ class DictWrapper(object):
     def __deepcopy__(self, memo):
         return deepcopy(self._items, memo)
 
-    def __cmp__(self, other):
-        return self._items.__cmp__(other)
-
     def __contains__(self, key):
         return self._items.__contains__(key)
 
@@ -243,9 +240,6 @@ class ListWrapper(object):
     def __add__(self, other):
         return self._items.__add__(other)
 
-    def __cmp__(self, other):
-        return cmp(self._items, other)
-
     def __contains__(self, item):
         return self._items.__contains__(item)
     
@@ -327,9 +321,6 @@ class SetWrapper(object):
 
     def __and__(self, other):
         return self._items.__and__(other)
-
-    def __cmp__(self, other):
-        return self._items.__cmp__(other)
 
     def __contains__(self, item):
         return self._items.__contains__(item)
@@ -653,9 +644,6 @@ class SynchronizedList(object):
 
     def __add__(self, other):
         return self._items.__add__(other)
-        
-    def __cmp__(self, other):
-        return cmp(self._items, other)
         
     def __contains__(self, item):
         return self._items.__contains__(item)
