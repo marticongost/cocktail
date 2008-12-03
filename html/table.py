@@ -52,7 +52,9 @@ class Table(Element, CollectionDisplay):
         self.append(self.body)
 
     def _ready(self):
-        
+                
+        Element._ready(self)
+
         self.add_resource("/cocktail/scripts/core.js")
 
         self.set_client_variable(
