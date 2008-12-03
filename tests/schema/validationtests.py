@@ -162,7 +162,7 @@ class CollectionValidationTestCase(ValidationTestCase):
         from cocktail.schema import Collection, exceptions
 
         self._test_validation(
-            Collection(min = 3),
+            Collection(min = 3, required = False),
             [None, [1, 2, 3], ["a", "b", "c", "d"], range(50)],
             [[], ["a"], [1, 2]],
             exceptions.MinItemsError
@@ -173,7 +173,7 @@ class CollectionValidationTestCase(ValidationTestCase):
         from cocktail.schema import Collection, exceptions
 
         self._test_validation(
-            Collection(max = 3),
+            Collection(max = 3, required = False),
             [None, [], ["a"], (1, 2), set([1, 2, 3])],
             [["a", "b", "c", "d"], range(10)],
             exceptions.MaxItemsError
@@ -184,7 +184,7 @@ class CollectionValidationTestCase(ValidationTestCase):
         from cocktail.schema import Collection, Integer, exceptions
 
         self._test_validation(
-            Collection(items = Integer()),
+            Collection(items = Integer(), required = False),
             [None, [], [1], [1, 2], set([1, 2, 3]), tuple(range(10))],
             [["a", "b", "c"], [3.5, 2.7, 1.4]],
             exceptions.TypeCheckError,
