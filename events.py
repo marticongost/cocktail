@@ -60,18 +60,23 @@ class EventSlot(SynchronizedList):
     target = None
     next = ()
 
-    def __call__(self, _source = None, **kwargs):
+    def __call__(self, _event_info = None, **kwargs):
         
         target = self.target()
-        source = _source or target
 
+        # self.target is a weakref, so the object may have expired
         if target is None:
             return
-        
-        event_info = EventInfo(kwargs)
+       
+        if _event_info is None:
+            event_info = EventInfo(kwargs)
+            event_info.source = target
+        else:
+            event_info = _event_info
+
         event_info.slot = self
         event_info.target = target
-        event_info.source = source
+        event_info.consumed = False
         
         for callback in self:
             callback(event_info)
@@ -80,13 +85,15 @@ class EventSlot(SynchronizedList):
                 break
 
         for next_slot in self.next:
-            next_slot(_source = source, **kwargs)
+            next_slot(_event_info = event_info)
 
         return event_info
 
 
 class EventInfo(object):
 
+    target = None
+    source = None
     slot = None
     consumed = False
     

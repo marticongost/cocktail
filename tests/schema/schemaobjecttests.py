@@ -251,8 +251,10 @@ class AttributeTestCase(TestCase):
         foo = Foo()
 
         event = events.pop(0)
+
         self.assertEqual(event.slot, Foo.changing)
         self.assertEqual(event.member, Foo.bar)
+
         self.assertEqual(event.value, "Default bar")
 
         event = events.pop(0)
@@ -317,6 +319,39 @@ class AttributeTestCase(TestCase):
         self.assertFalse(events)
 
         self.assertEqual(foo.bar, None)
+
+    def test_alter_value_with_instance_event(self):
+
+        from cocktail.schema import Schema, SchemaObject, String
+
+        class Foo(SchemaObject):
+            bar = String()
+        
+        foo = Foo()
+
+        def alter_value(event):
+            event.value += "!"
+
+        foo.changing.append(alter_value)
+        
+        foo.bar = "Spam"        
+        self.assertEqual(foo.bar, "Spam!")
+
+    def test_alter_value_with_class_event(self):
+
+        from cocktail.schema import Schema, SchemaObject, String
+
+        class Foo(SchemaObject):
+            bar = String()
+        
+        def alter_value(event):
+            event.value += "!"
+
+        Foo.changing.append(alter_value)
+
+        foo = Foo()
+        foo.bar = "Spam"        
+        self.assertEqual(foo.bar, "Spam!")
 
 
 class TranslationTestCase(TestCase):
