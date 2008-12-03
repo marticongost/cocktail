@@ -7,4 +7,5 @@ Event test cases.
 @organization:	Whads/Accent SL
 @since:			December 2008
 """
+from cocktail.tests.events.eventtests import *
 
