@@ -130,7 +130,7 @@ class GenericMethod(object):
 
     def __call__(self, *args, **kwargs):
         impl = self.implementations.get(self.__class__, self.default)
-        return impl(self, *args, **kwargs)
+        return impl(*args, **kwargs)
 
 
 # Read-only collection wrappers
