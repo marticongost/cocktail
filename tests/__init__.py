@@ -9,6 +9,7 @@ Test suite for the Cocktail web development toolkit.
 """
 if __name__ == "__main__":
     from unittest import main
+    from cocktail.tests.modelingtests import *
     from cocktail.tests.events import *
     from cocktail.tests.schema import *
     from cocktail.tests.html import *
