@@ -176,6 +176,12 @@ class Element(object):
                 for handler in self.__ready_handlers:
                     handler()
 
+            if self.__client_params:
+                self.require_id()
+
+            if self.member: 
+                self.add_class(self.member.__class__.__name__)
+
             self.__is_ready = True
     
     def when_binding(self, handler):
@@ -194,11 +200,7 @@ class Element(object):
         pass
 
     def _ready(self):
-        if self.__client_params:
-            self.require_id()
-
-        if self.member: 
-            self.add_class(self.member.__class__.__name__)
+        pass
 
     def _content_ready(self):
         pass
@@ -526,7 +528,7 @@ class Element(object):
         else:
             return self.__client_params[key]
 
-    def set_client_param(self, key, value):        
+    def set_client_param(self, key, value):
         if self.__client_params is None:
             self.__client_params = {key: value}
         else:
