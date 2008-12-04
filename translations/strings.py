@@ -264,6 +264,15 @@ translations.define("translated into",
     en = lambda lang: "in " + translate(lang, "en")
 )
 
+translations.define("Exception-instance",
+    ca = lambda instance: u"Error inesperat (%s: %s)" %
+        (instance.__class__.__name__, instance),
+    es = lambda instance: u"Error inesperado (%s: %s)" %
+        (instance.__class__.__name__, instance),
+    en = lambda instance: u"Unexpected error (%s: %s)" %
+        (instance.__class__.__name__, instance)
+)
+
 # Validation errors
 #------------------------------------------------------------------------------
 def member_identifier(error, language):
