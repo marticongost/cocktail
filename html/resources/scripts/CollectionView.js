@@ -23,8 +23,47 @@ jQuery(function () {
         
         var key = e.charCode ? e.charCode : e.keyCode ? e.keyCode : 0;            
         var selindex = checkboxes.index(lastSelected);
-        
-		switch(key) {    		   
+         
+		switch(key) {
+		    case 13:
+		         if(jQuery(".Table .selection input:checked").length > 0) jQuery(target).click();
+              break;
+		    case 36:
+		        removeSelection();		        
+                if ( e.shiftKey ){
+                    var lastIndex = checkboxes.index(checkboxes[0]);
+                    var selIndex = checkboxes.index(lastSelected);                  
+                    var end = Math.max(selIndex,lastIndex);
+                    var start = Math.min(selIndex,lastIndex);
+
+                    for(i=start;i<=end;i++) {
+                        checkboxes[i].checked = true;
+                        highlightSelection.call(checkboxes[i]);
+                    }
+                }else{
+                    lastSelected = checkboxes[0];                     			        
+			        lastSelected.checked = true;
+                    highlightSelection.call(checkboxes[0]);
+                }
+              break;
+		    case 35:
+                removeSelection();
+                if ( e.shiftKey ){
+                    var lastIndex = checkboxes.index(checkboxes[checkboxes.length-1]);
+                    var selIndex = checkboxes.index(lastSelected);                  
+                    var end = Math.max(selIndex,lastIndex);
+                    var start = Math.min(selIndex,lastIndex);
+
+                    for(i=start;i<=end;i++) {
+                        checkboxes[i].checked = true;
+                        highlightSelection.call(checkboxes[i]);
+                    }
+                }else{
+    			    lastSelected = checkboxes[checkboxes.length-1];
+    			    lastSelected.checked = true;
+                    highlightSelection.call(checkboxes[checkboxes.length-1]);
+                }
+              break;
 			case 38: 			  
 			  if(selindex > 0){		  
 			    if ( !e.shiftKey ) removeSelection();

@@ -421,3 +421,17 @@ translations.define(
         % member_identifier(instance, "en")
 )
 
+
+translations.define(
+    "cocktail.unexpected_error",
+    ca = lambda error:
+        u"Error inesperat %s" 
+        %(error),
+    es = lambda error:
+        u"Error inesperado %s" 
+        %(error),
+    en = lambda error:
+        u"Unexpedted error %s"
+        %(error)
+)
+
