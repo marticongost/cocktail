@@ -117,14 +117,20 @@ class Translation(DictWrapper):
 
         if string is _undefined:
 
-            if not isinstance(obj, basestring):
-                try:
-                    type_key = get_full_name(type(obj)) + "-instance"
-                except:
-                    type_key = type(obj).__name__ + "-instance"
+            if not isinstance(obj, basestring) \
+            and hasattr(obj.__class__, "mro"):
+
+                for cls in reversed(obj.__class__.mro()):
+                    try:
+                        type_key = get_full_name(cls) + "-instance"
+                    except:
+                        type_key = cls.__name__ + "-instance"
             
-                kwargs["instance"] = obj
-                string = self._get_with_fallback(type_key)
+                    kwargs["instance"] = obj
+                    string = self._get_with_fallback(type_key)
+
+                    if string is not _undefined:
+                        break
 
             if string is _undefined:
                 default = kwargs.get("default", _undefined)
