@@ -18,6 +18,10 @@ jQuery(function () {
         .click( function (e) {        
             e.stopPropagation();
         });
+    
+    jQuery(".selector .label").each( function () {                
+        jQuery(this).replaceWith("<a href=\"javascript:;\" class=\"" + jQuery(this).attr('class') + "\">" + jQuery(this).html() + "</a>");
+    });
        
     jQuery(".selector .label").click(function (e) {
         var content_selector = jQuery(this).next(".selector_content");
