@@ -7,10 +7,10 @@
 @since:			February 2008
 """
 import os
+from pkg_resources import resource_filename
 from cocktail.cache import Cache
 from cocktail.pkgutils import import_object
 from cocktail.html.templates.compiler import TemplateCompiler
-from cocktail.html import __file__ as _html_module_path
 
 
 class TemplateLoader(object):
@@ -61,6 +61,10 @@ class TemplateLoader(object):
         """
         return self.cache.request(name)()
 
+    def compile(self, name, source):
+        pkg_name, class_name = self._split_name(name)
+        return self.Compiler(pkg_name, class_name, self, source)
+
     def _load_template(self, name):
         
         pkg_name, class_name = self._split_name(name)
@@ -81,9 +85,9 @@ class TemplateLoader(object):
 
         # Try to obtain the template class from a template file
         try:
-            source_file = self._find_template(name)
-        except ImportError:
-            raise TemplateNotFoundError(name)
+            source_file = self._find_template(pkg_name, class_name)
+        except TemplateNotFoundError:
+            source_file = None
 
         if source_file is not None:
 
@@ -139,27 +143,32 @@ class TemplateLoader(object):
         
         return pkg_name, item_name
 
-    def _find_template(self, name):
+    def _find_template(self, pkg_name, class_name):
         """Finds the source file for a template, given its package and name.
         
-        @param name: The full name of the template to locate.
+        @param pkg_name: The full name of the package where the template
+            resides.
+        @type name: str
+
+        @param name: The name of the template.
         @type name: str
 
         @return: The path to the file containing the source code for the
             specified template, None if no such file exists.
         @rtype: str
 
-        @raise ImportError: Raised if the template package doesn't exist.        
+        @raise TemplateNotFoundError: Raised if the template package doesn't
+            exist.
         """
-        parts = name.split(".")
-        root_pkg = __import__(parts[0])
+        try:
+            path = resource_filename(pkg_name, class_name + self.extension)
+        except ImportError:
+            path = None
         
-        template_path = (
-            os.path.join(os.path.dirname(root_pkg.__file__), *(parts[1:]))
-            + self.extension
-        )
-
-        return template_path if os.path.exists(template_path) else None
+        if path is None or not os.path.exists(path):
+            raise TemplateNotFoundError(pkg_name + "." + class_name)
+        
+        return path
 
 
 class TemplateNotFoundError(Exception):
