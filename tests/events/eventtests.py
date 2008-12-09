@@ -389,6 +389,29 @@ class EventTestCase(TestCase):
         self.assertEqual(len(Foo.spammed), 1)
         self.assertTrue(Foo.spammed[0] is class_callback)
 
+    def test_event_hub(self):
+
+        from cocktail.events import EventHub, Event
+
+        class Foo(object):
+            __metaclass__ = EventHub
+            
+            spammed = Event()
+
+            @classmethod
+            def handle_spammed(cls):
+                pass
+    
+        self.assertEqual(list(Foo.spammed), [Foo.handle_spammed])
+        
+        class Bar(Foo):
+            
+            @classmethod
+            def handle_spammed(cls):
+                pass
+
+        self.assertEqual(list(Bar.spammed), [Bar.handle_spammed])
+
 
 if __name__ == "__main__":
     from unittest import main
