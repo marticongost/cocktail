@@ -10,77 +10,87 @@ jQuery(function () {
     var target = target ? target : ".toolbar_button[value=edit]";
     
     //Switch selection type
-    //TODO: 
+    //TODO:
+    
+    var currentFocus = null;
+    jQuery('input, textarea').focus( function() {        
+        currentFocus = this;
+    }).blur( function() {
+        currentFocus = null;
+    });  
     
     var checkboxes = jQuery(".Table .selection input");        
     var lastSelected;
     
     jQuery(document).keydown(function (e) {                                        
-           
-        if(!lastSelected){
-            lastSelected = checkboxes[0];    
-        }
         
-        var key = e.charCode ? e.charCode : e.keyCode ? e.keyCode : 0;            
-        var selindex = checkboxes.index(lastSelected);
-         
-		switch(key) {
-		    case 13:
-		         if(jQuery(".Table .selection input:checked").length > 0) jQuery(target).click();
-              break;
-		    case 36:
-		        removeSelection();		        
-                if ( e.shiftKey ){
-                    var lastIndex = checkboxes.index(checkboxes[0]);
-                    var selIndex = checkboxes.index(lastSelected);                  
-                    var end = Math.max(selIndex,lastIndex);
-                    var start = Math.min(selIndex,lastIndex);
-
-                    for(i=start;i<=end;i++) {
-                        checkboxes[i].checked = true;
-                        highlightSelection.call(checkboxes[i]);
+        if(!currentFocus){
+           
+            if(!lastSelected){
+                lastSelected = checkboxes[0];    
+            }
+            
+            var key = e.charCode ? e.charCode : e.keyCode ? e.keyCode : 0;            
+            var selindex = checkboxes.index(lastSelected);        
+             
+    		switch(key) {
+    		    case 13:
+    		         if(jQuery(".Table .selection input:checked").length > 0) jQuery(target).click();
+                  break;
+    		    case 36:
+    		        removeSelection();		        
+                    if ( e.shiftKey ){
+                        var lastIndex = checkboxes.index(checkboxes[0]);
+                        var selIndex = checkboxes.index(lastSelected);                  
+                        var end = Math.max(selIndex,lastIndex);
+                        var start = Math.min(selIndex,lastIndex);
+    
+                        for(i=start;i<=end;i++) {
+                            checkboxes[i].checked = true;
+                            highlightSelection.call(checkboxes[i]);
+                        }
+                    }else{
+                        lastSelected = checkboxes[0];                     			        
+    			        lastSelected.checked = true;
+                        highlightSelection.call(checkboxes[0]);
                     }
-                }else{
-                    lastSelected = checkboxes[0];                     			        
-			        lastSelected.checked = true;
-                    highlightSelection.call(checkboxes[0]);
-                }
-              break;
-		    case 35:
-                removeSelection();
-                if ( e.shiftKey ){
-                    var lastIndex = checkboxes.index(checkboxes[checkboxes.length-1]);
-                    var selIndex = checkboxes.index(lastSelected);                  
-                    var end = Math.max(selIndex,lastIndex);
-                    var start = Math.min(selIndex,lastIndex);
-
-                    for(i=start;i<=end;i++) {
-                        checkboxes[i].checked = true;
-                        highlightSelection.call(checkboxes[i]);
+                  break;
+    		    case 35:
+                    removeSelection();
+                    if ( e.shiftKey ){
+                        var lastIndex = checkboxes.index(checkboxes[checkboxes.length-1]);
+                        var selIndex = checkboxes.index(lastSelected);                  
+                        var end = Math.max(selIndex,lastIndex);
+                        var start = Math.min(selIndex,lastIndex);
+    
+                        for(i=start;i<=end;i++) {
+                            checkboxes[i].checked = true;
+                            highlightSelection.call(checkboxes[i]);
+                        }
+                    }else{
+        			    lastSelected = checkboxes[checkboxes.length-1];
+        			    lastSelected.checked = true;
+                        highlightSelection.call(checkboxes[checkboxes.length-1]);
                     }
-                }else{
-    			    lastSelected = checkboxes[checkboxes.length-1];
+                  break;
+    			case 38: 			  
+    			  if(selindex > 0){		  
+    			    if ( !e.shiftKey ) removeSelection();
+    			    lastSelected = checkboxes[selindex-1];
     			    lastSelected.checked = true;
-                    highlightSelection.call(checkboxes[checkboxes.length-1]);
-                }
-              break;
-			case 38: 			  
-			  if(selindex > 0){		  
-			    if ( !e.shiftKey ) removeSelection();
-			    lastSelected = checkboxes[selindex-1];
-			    lastSelected.checked = true;
-                highlightSelection.call(checkboxes[selindex-1]);			      
-			  };
-			  break;
-			case 40: 
-			  if(checkboxes.length > selindex+1) {
-			    if ( !e.shiftKey ) removeSelection();
-			    lastSelected = checkboxes[selindex+1];
-			    lastSelected.checked = true;
-                highlightSelection.call(checkboxes[selindex+1]);
-			  }
-			  break;			     
-		}
+                    highlightSelection.call(checkboxes[selindex-1]);			      
+    			  };
+    			  break;
+    			case 40: 
+    			  if(checkboxes.length > selindex+1) {
+    			    if ( !e.shiftKey ) removeSelection();
+    			    lastSelected = checkboxes[selindex+1];
+    			    lastSelected.checked = true;
+                    highlightSelection.call(checkboxes[selindex+1]);
+    			  }
+    			  break;			     
+    		}
+    	}
     });
       
     function highlightSelection() {
@@ -233,7 +243,7 @@ jQuery(function () {
     
     function disableTextSelection () {
         
-        var selector = jQuery(document.body);
+        var selector = jQuery(".Table");
         
         if (jQuery.browser.mozilla) {
             return selector.each(function() {
