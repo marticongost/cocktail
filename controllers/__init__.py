@@ -7,6 +7,7 @@ Utilities for writing application controllers.
 @organization:	Whads/Accent SL
 @since:			July 2008
 """
+from cocktail.controllers.dispatcher import Dispatcher
 from cocktail.controllers.basecontroller import BaseController
 from cocktail.controllers.location import Location, HTTPPostRedirect
 from cocktail.controllers.viewstate import (
