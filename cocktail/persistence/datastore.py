@@ -76,7 +76,9 @@ class DataStore(object):
         if hasattr(self._thread_data, "root"):
             self._thread_data.root = None
 
-        if hasattr(self._thread_data, "connection"):
+        connection = getattr(self._thread_data, "connection", None)
+
+        if connection is not None:
             self._thread_data.connection.close()
             self._thread_data.connection = None
 
