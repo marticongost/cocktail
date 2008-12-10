@@ -26,29 +26,43 @@ class request_property(property):
         if instance is None:
             return self
         else:
-            values = getattr(cherrypy.request, "_rp_values", None)
+            properties = getattr(cherrypy.request, "_handler_properties", None)
+            values = properties and properties.get(self)
 
             if values is None:
                 value = _undefined
             else:
-                value = values.get((self, instance), _undefined)
+                value = values.get(instance, _undefined)
 
             if value is _undefined:
-                self.__set__(instance, self(instance))
+                value = self(instance)
+                self.__set__(instance, value)
 
             return value
 
     def __set__(self, instance, value):
-        values = getattr(cherrypy.request, "_rp_values", None)
+        
+        properties = getattr(cherrypy.request, "_handler_properties", None)
+
+        if properties is None:
+            properties = WeakKeyDictionary()
+            cherrypy.request._handler_properties = properties
+        
+        values = properties.get(self)
 
         if values is None:
             values = WeakKeyDictionary()
-            cherrypy.request._rp_values = values
+            properties[self] = values
         
-        values[(self, instance)] = value
+        values[instance] = value
 
     def clear(self, instance):
-        values = getattr(cherrypy.request, "_rp_values", None)
-        if values is not None:
-            values.pop((self, instance), None)
+        
+        properties = getattr(cherrypy.request, "_handler_properties", None)
+
+        if properties:
+            values = properties.get(self)
+
+            if values is not None:
+                values.pop(instance, None)
 
