@@ -1,38 +1,92 @@
 #-*- coding: utf-8 -*-
 """
 
-@author:		MartÃ­ Congost
+@author:		Martí­ Congost
 @contact:		marti.congost@whads.com
 @organization:	Whads/Accent SL
 @since:			December 2008
 """
+from inspect import isfunction
 import cherrypy
 from cocktail.modeling import getter, ListWrapper
 
-BasePageHandler = cherrypy._cpdispatch.LateParamPageHandler
 
+class PageHandler(object):
 
-class PageHandler(BasePageHandler):
-    
-    handler_chain = None
+    def __init__(self, callable, *args, **kwargs):
+        self.callable = callable
+        self.args = args
+        self.kwargs = kwargs
 
     def __call__(self, *args, **kwargs):
+
+        request = cherrypy.request
+        reverse_chain = []
+
         try:
-            return BasePageHandler.__call__(self, *args, **kwargs)
-        except cherrypy.HTTPRedirect:
+            # Trigger the 'before_request' event on those handlers that support
+            # it
+            for handler in request.handler_chain:
+                reverse_chain.insert(0, handler)
+                event_slot = getattr(handler, "before_request", None)
+
+                if event_slot is not None:
+                    event_slot()
+
+            # Execute the response handler
+            try:
+                return self.callable(*self.args, **self.kwargs)
+        
+            except TypeError, x:
+                callable = self.callable
+
+                if not isfunction(callable):
+                    callable = getattr(callable, "__call__", None)
+
+                if callable:
+                    cherrypy._cpdispatch.test_callable_spec(
+                        callable, self.args, self.kwargs)
+
+                raise
+        
+        except cherrypy.HTTPRedirect: 
             raise
+
         except StopRequest:
-            return cherrypy.request.body
-        except Exception, ex:
-            for handler in reversed(self.handler_chain):
+            pass
+
+        # Custom error handlers
+        except Exception, error:
+            for handler in reverse_chain:
                 event_slot = getattr(handler, "exception_raised", None)
 
                 if event_slot is not None:
-                    event_info = event_slot(exception = ex, handled = False)
+                    event_info = event_slot(
+                        exception = error, handled = False)
                     if event_info.handled:
                         break
             else:
-                raise
+                raise       
+
+        # Cleanup
+        finally:
+            for handler in reverse_chain:
+                event_slot = getattr(handler, "after_request", None)
+                if event_slot is not None:
+                    event_slot()
+    
+        return cherrypy.response.body
+
+    def _get_kwargs(self):
+        kwargs = cherrypy.request.params.copy()
+        if self._kwargs:
+            kwargs.update(self._kwargs)
+        return kwargs
+    
+    def _set_kwargs(self, kwargs):
+        self._kwargs = kwargs
+    
+    kwargs = property(_get_kwargs, _set_kwargs)
 
 
 class Dispatcher(object):
@@ -41,71 +95,88 @@ class Dispatcher(object):
 
         request = cherrypy.request
         path = self.__class__.PathProcessor(self.split(path_info))
-        config = {}
-        is_default = False
+        request.config = config = {}
 
         if handler is None:
             handler = request.app.root
 
-        chain = []
-        handler = self.resolve_handler(handler, chain, path, config)
+        request.handler_chain = chain = []
         
-        while handler and path:
+        try:
+            while True:
 
-            child = getattr(handler, path[0], None)
+                # Instantiate classes
+                if isinstance(handler, type):
+                    handler = handler()
+                    handler.parent = chain and chain[-1]
 
-            # Named child
-            if child:
-                path.pop(0)
-                child = self.resolve_handler(child, chain, path, config)
+                # Add the handler to the execution chain
+                chain.append(handler)
 
-            # Dynamic resolver
-            else:
-                resolver = getattr(handler, "resolve", None)
-
-                if resolver:
-                    child = resolver(path)
-
-                    if child:
-                        child = self.resolve_handler(
-                                    child, chain, path, config)
-            
-            # Generic method with positional parameters
-            if child is None:
-                child = getattr(handler, "default", None)
+                # Handler specific configuration
+                handler_config = getattr(handler, "_cp_config", None)
                 
-                if child is not None:
-                    child = self.resolve_handler(child, chain, path, config)
-                    is_default = True
+                if handler_config is not None:
+                    config.update(handler_config)
 
-            handler = child
+                # Path specific configuration (overrides per-handler configuration)
+                path_config = request.app.config.get(path.current_path)
 
-            if is_default:
-                request.is_index = not path
-                break
+                if path_config:
+                    config.update(path_config)
 
-        # Extra path components are only supported on the default method
-        if path and not is_default:
-            handler = None
+                # Trigger the 'traversed' event on those handlers that support it
+                event_slot = getattr(handler, "traversed", None)
 
-        # Resolve 'index' handlers, recursively
-        if handler is not None and not callable(handler):
-            request.is_index = True
-            while handler is not None and not callable(handler):
-                child = getattr(handler, "index", None)
+                if event_slot is not None:
+                    event_slot(path = path, config = config)
+
+                # Descend:                
+                child = None
+
+                # Named child
+                if path:
+                    child = getattr(handler, path[0], None)
+                    if child:
+                        path.pop(0)
+
+                # Dynamic resolver                
                 if child is None:
-                    handler = None
-                else:
-                    handler = \
-                        self.resolve_handler(child, chain, path, config)
-        
-        request.config = config
+                    resolver = getattr(handler, "resolve", None)
+                    if resolver:
+                        child = resolver(path)
+                
+                # Generic method with positional parameters
+                if child is None:
+                    child = getattr(handler, "default", None)
+                    
+                    if child is not None:
+                        request.is_index = not path
 
-        if handler is not None and getattr(handler, "exposed", False):
-            request.handler = cherrypy._cpdispatch.PageHandler(handler, *path)
-            request.handler.handler_chain = chain
-        else:
-            request.handler = cherrypy.NotFound()
+                # Index
+                if child is None:
+                    child = getattr(handler, "index", None)
+                    request.is_index = child is not None
+
+                if child is None:
+                    break
+                else:
+                    handler = child
+            
+            if handler is None or not getattr(handler, "exposed", False):
+                handler = self._error_trigger(cherrypy.NotFound())
+            
+            request.handler = PageHandler(handler, *path)
+
+        except (cherrypy.HTTPRedirect, StopRequest), error:
+            request.handler = self._error_trigger(error)
+    
+    def _error_trigger(self, error):
+        
+        def error_trigger(*args, **kwargs):
+            raise error
+
+        return error_trigger
 
     def split(self, path):
         return [self.normalize_component(component)
@@ -115,45 +186,23 @@ class Dispatcher(object):
     def normalize_component(self, component):
         return component.replace("%2F", "/")
        
-    def resolve_handler(self, handler, chain, path, config):
-        
-        # Add the handler to the execution chain
-        chain.append(handler)
-
-        # Instantiate classes
-        if isinstance(handler, type):
-            handler = handler()
-            handler.parent = parent
-
-        # Handler specific configuration
-        handler_config = getattr(handler, "_cp_config", None)
-        
-        if handler_config is not None:
-            config.update(handler_config)
-
-        # Path specific configuration (overrides per-handler configuration)
-        path_config = cherrypy.request.app.config.get(path.current_path)
-
-        if path_config:
-            config.update(path_config)
-
-        # Trigger the 'traversed' event on those handlers that support it
-        traversed_event = getattr(handler, "traversed", None)
-
-        if traversed_event is not None:
-            traversed_event(chain = chain, path = path, config = config)       
-
-        return handler
-
     class PathProcessor(ListWrapper):
 
         def __init__(self, path):
             ListWrapper.__init__(self, path)
             self.__consumed_components = []
 
-        def pop(self, index):
+        def pop(self, index = -1):
+
+            if index < 0:
+                index = len(self._items) + index
+
             component = self._items.pop(index)
-            self.__consumed_components.append(component)
+            
+            if index == 0:
+                self.__consumed_components.append(component)
+
+            return component
             
         @getter
         def current_path(self):
