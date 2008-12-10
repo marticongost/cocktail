@@ -7,9 +7,9 @@ Utilities for writing application controllers.
 @organization:	Whads/Accent SL
 @since:			July 2008
 """
-from cocktail.controllers.dispatcher import Dispatcher
-from cocktail.controllers.basecontroller import BaseController
-from cocktail.controllers.location import Location, HTTPPostRedirect
+from cocktail.controllers.controller import Controller
+from cocktail.controllers.dispatcher import Dispatcher, StopRequest
+from cocktail.controllers.location import Location
 from cocktail.controllers.viewstate import (
     get_state,
     view_state,
@@ -18,4 +18,5 @@ from cocktail.controllers.viewstate import (
 )
 from cocktail.controllers.parameters import get_parameter, FormSchemaReader
 from cocktail.controllers.usercollection import UserCollection
+from cocktail.controllers.requestproperty import request_property
 

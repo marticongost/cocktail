@@ -14,7 +14,12 @@ setup(
     author = "Whads/Accent SL",
     author_email = "tech@whads.com",
     description = """A tasty mix of python web development utilities.""",
-    install_requires = ["simplejson", "ZODB3==3.8", "cherrypy>=3"],
+    install_requires = [
+        "simplejson",
+        "ZODB3==3.8",
+        "cherrypy>=3",
+        "buffet>=1.0"
+    ],
     include_package_data = True,    
     packages = find_packages(),
 

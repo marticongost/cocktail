@@ -7,18 +7,28 @@
 @since:			October 2008
 """
 import cherrypy
-from cocktail.modeling import ListWrapper, abstract_method
+import buffet
+from cocktail.modeling import ListWrapper
 from cocktail.html import templates
 from cocktail.events import EventHub, Event
 from cocktail.controllers.requestproperty import request_property
 from cocktail.controllers.dispatcher import StopRequest
 from cocktail.controllers.parameters import FormSchemaReader
 
+_rendering_engines = {}
+
 
 class Controller(object):
     
     __metaclass__ = EventHub
     
+    # Default configuration
+    #------------------------------------------------------------------------------    
+    _cp_config = {
+        "rendering.engine": "cocktail",
+        "rendering.format": "html"
+    }
+
     # Execution and lifecycle
     #------------------------------------------------------------------------------    
     exposed = True
@@ -30,12 +40,9 @@ class Controller(object):
                 self.successful = True
         except self.handled_errors, ex:
             self.output["error"] = ex
-        except:
-            raise
-
+        
         return self.render()
     
-    @abstract_method
     def submit(self):
         pass
 
@@ -60,9 +67,6 @@ class Controller(object):
         L{dispatcher<cocktail.controllers.dispatcher.Dispatcher>} passes
         through or reaches the controller while looking for a request handler.
 
-        @ivar chain: The chain of parent handlers for the controller, from the
-            root to the handler itself (both included).
-
         @ivar path: A list-like object containing the remaining path components
             that haven't been consumed by the dispatcher yet.
         @type path: L{PathProcessor
@@ -75,19 +79,21 @@ class Controller(object):
         @type config: dict
         """)
 
-    starting = Event(doc = """
-        An event triggered before invoking the handler logic.
+    before_request = Event(doc = """
+        An event triggered before the controller (or one of its nested
+        handlers) has been executed.
         """)
 
-    ending = Event(doc = """
-        An event triggered after invoking the handler logic.
+    after_request = Event(doc = """
+        An event triggered after the controller (or one of its nested handlers)
+        has been executed. This is guaranteed to run, regardless of errors.
         """)
 
     # Error handling
     #------------------------------------------------------------------------------    
     handled_errors = ()
 
-    exception_raised = Event(doc """
+    exception_raised = Event(doc = """
         An event triggered when an exception is raised by the controller or one
         of its descendants. The event is propagated up through the handler
         chain, until it reaches the top or it is stoped by setting its
@@ -107,75 +113,86 @@ class Controller(object):
     # Input / Output
     #------------------------------------------------------------------------------
     @request_property
-    def reader(self):
+    def params(self):
         return FormSchemaReader()
-
-    @request_property
-    def input_schema(self):
-        return None
-
-    @request_property
-    def input(self):
-        schema = self.input_schema
-        if schema:
-            return self.reader.read(schema)
-        else:
-            return {}
 
     @request_property
     def output(self):
         return {}
     
     # Rendering
-    #------------------------------------------------------------------------------    
-    @request_property
-    def format(self):
-        return cherrypy.params.get("format", self.default_format)
-    
-    @request_property
-    def default_format(self):
-        return "html"
+    #------------------------------------------------------------------------------   
+    rendering_format_param = "format"
+    allowed_rendering_formats = frozenset(["html", "xhtml", "json"])
 
     @request_property
-    @abstract_method
-    def view_class(self):
-        pass
+    def rendering_format(self):
 
-    @request_property
-    def view(self):
-        
-        view = None
-        view_class = self.view_class
+        format = None
 
-        if view_class:
-            if isinstance(view_class, basestring):
-                view = templates.new(view_class)
-            else:
-                view = view_class()
-
-            for key, value in self.output.iteritems():
-                setattr(view, key, value)
+        if self.rendering_format_param:
+            format = cherrypy.request.params.get(self.rendering_format_param)
             
-        return view
+        if format is None:
+            format = cherrypy.request.config["rendering.format"]
+
+        return format
+
+    @request_property
+    def rendering_engine(self):
+        engine_name = cherrypy.request.config["rendering.engine"]
+        return self._get_rendering_engine(engine_name)
+        
+    def _get_rendering_engine(self, engine_name):
+
+        engine = _rendering_engines.get(engine_name)
+
+        if engine is None:
+            engine_type = buffet.available_engines[engine_name]
+            engine = engine_type()
+            _rendering_engines[engine_name] = engine
+
+        return engine
+
+    @request_property
+    def view_class(self):
+        return None
 
     def render(self):
-        format = self.format
-        renderer = getattr(self, "render_" + format, None)
+
+        format = self.rendering_format
+        
+        if format and format in self.allowed_rendering_formats:
+            renderer = getattr(self, "render_" + format, None)
+        else:
+            renderer = None
         
         if renderer is None:
             raise ValueError(
                 "%s can't render its response in '%s' format" % (self, format))
 
         return renderer()
+           
+    def _render_template(self):
+
+        view_class = self.view_class
+
+        if view_class:
+            output = self.output
+            output["submitted"] = self.submitted
+            output["successful"] = self.successful
+            return self.rendering_engine.render(
+                            self.output,
+                            format = self.rendering_format,
+                            template = view_class)
+        else:
+            return ""
 
     def render_html(self):
-        view = self.view
-        
-        view.submitted = self.submitted:
-        view.successful = self.successful
-        
-        if view:
-            return view.render_page()
+        return self._render_template()
+
+    def render_xhtml(self):
+        return self._render_template()
 
     def render_json(self):
         return dumps(self.output)

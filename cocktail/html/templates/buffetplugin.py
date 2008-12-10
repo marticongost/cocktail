@@ -45,8 +45,9 @@ class CocktailBuffetPlugin(object):
 
         element = templates.new(template)
 
-        for key, value in self.extra_vars_func().iteritems():
-            setattr(element, key, value)
+        if self.extra_vars_func:
+            for key, value in self.extra_vars_func().iteritems():
+                setattr(element, key, value)
 
         for key, value in info.iteritems():
             setattr(element, key, value)
