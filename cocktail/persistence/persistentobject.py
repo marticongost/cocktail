@@ -11,7 +11,7 @@ from persistent import Persistent
 from BTrees.OOBTree import OOBTree
 from BTrees.IOBTree import IOBTree
 from cocktail import schema
-from cocktail.events import Event
+from cocktail.events import Event, event_handler
 from cocktail.schema import SchemaClass, SchemaObject
 from cocktail.schema.exceptions import ValidationError
 from cocktail.persistence.datastore import datastore
@@ -211,8 +211,8 @@ class PersistentObject(SchemaObject, Persistent):
         members["indexed"] = False
         SchemaClass._create_translation_schema(cls, members)
 
-    @classmethod
-    def _handle_changing(cls, event):
+    @event_handler
+    def handle_changing(cls, event):
         
         # Transform collections into their persistent versions
         if isinstance(event.value, list):
@@ -222,8 +222,8 @@ class PersistentObject(SchemaObject, Persistent):
         elif isinstance(event.value, dict):
             event.value = PersistentMapping(event.value)
 
-    @classmethod
-    def _handle_changed(cls, event):
+    @event_handler
+    def handle_changed(cls, event):
         
         # Update the index for the member
         event.source._update_index(
@@ -308,8 +308,6 @@ class PersistentObject(SchemaObject, Persistent):
 
 PersistentObject._translation_schema_metaclass = PersistentClass
 PersistentObject._translation_schema_base = PersistentObject
-PersistentObject.changing.append(PersistentObject._handle_changing)
-PersistentObject.changed.append(PersistentObject._handle_changed)
 
 
 class UniqueValueError(ValidationError):

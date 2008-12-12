@@ -8,7 +8,7 @@
 """
 import sys
 from cocktail.modeling import refine
-from cocktail.events import Event
+from cocktail.events import Event, EventHub
 from cocktail.pkgutils import get_full_name
 from cocktail.language import require_content_language
 from cocktail.translations import translate
@@ -29,13 +29,13 @@ SchemaObject = None
 undefined = object()
 
 
-class SchemaClass(type, Schema):
+class SchemaClass(EventHub, Schema):
 
     def __init__(cls, name, bases, members):
         
         cls._declared = False
         
-        type.__init__(cls, name, bases, members)
+        EventHub.__init__(cls, name, bases, members)
         Schema.__init__(cls)
 
         cls.name = name

@@ -8,19 +8,19 @@
 """
 import cherrypy
 import buffet
-from cocktail.modeling import ListWrapper
+from simplejson import dumps
+from cocktail.modeling import ListWrapper, cached_getter
 from cocktail.html import templates
-from cocktail.events import EventHub, Event
-from cocktail.controllers.requestproperty import request_property
-from cocktail.controllers.dispatcher import StopRequest
+from cocktail.controllers.dispatcher import StopRequest, context
 from cocktail.controllers.parameters import FormSchemaReader
+from cocktail.controllers.requesthandler import RequestHandler
 
 _rendering_engines = {}
 
 
-class Controller(object):
-    
-    __metaclass__ = EventHub
+class Controller(RequestHandler):
+ 
+    context = context
     
     # Default configuration
     #------------------------------------------------------------------------------    
@@ -33,90 +33,48 @@ class Controller(object):
     #------------------------------------------------------------------------------    
     exposed = True
 
-    def __call__(self):
+    def __call__(self, **kwargs):
         try:
             if self.ready:
                 self.submit()
                 self.successful = True
-        except self.handled_errors, ex:
-            self.output["error"] = ex
-        
+        except Exception, ex:
+            self.handle_error(ex)                
+                    
         return self.render()
     
     def submit(self):
         pass
 
-    @request_property
+    @cached_getter
     def submitted(self):
         return True
 
-    @request_property
+    @cached_getter
     def valid(self):
         return True
 
-    @request_property
+    @cached_getter
     def ready(self):
         return self.submitted and self.valid
 
-    @request_property
-    def successful(self):
-        pass
-
-    traversed = Event(doc = """
-        An event triggered when the
-        L{dispatcher<cocktail.controllers.dispatcher.Dispatcher>} passes
-        through or reaches the controller while looking for a request handler.
-
-        @ivar path: A list-like object containing the remaining path components
-            that haven't been consumed by the dispatcher yet.
-        @type path: L{PathProcessor
-                      <cocktail.controllers.dispatcher.PathProcessor>}
-
-        @ivar config: The configuration dictionary with all entries that apply
-            to the controller. Note that this dictionary can change as the
-            dispatcher traverses through the handler hierarchy. Event handlers
-            are free to modify it to change configuration as required.
-        @type config: dict
-        """)
-
-    before_request = Event(doc = """
-        An event triggered before the controller (or one of its nested
-        handlers) has been executed.
-        """)
-
-    after_request = Event(doc = """
-        An event triggered after the controller (or one of its nested handlers)
-        has been executed. This is guaranteed to run, regardless of errors.
-        """)
-
-    # Error handling
-    #------------------------------------------------------------------------------    
+    successful = False
+    
     handled_errors = ()
 
-    exception_raised = Event(doc = """
-        An event triggered when an exception is raised by the controller or one
-        of its descendants. The event is propagated up through the handler
-        chain, until it reaches the top or it is stoped by setting its
-        L{handled} attribute to True.
-
-        @param exception: The exception being reported.
-        @type exception: L{Exception}
-
-        @param handled: A boolean indicating if the exception has been dealt
-            with. Setting this to True will stop the propagation of the event
-            up the handler chain, while a False value will cause the exception
-            to continue to be bubbled up towards the application root and,
-            eventually, the user.
-        @type handled: bool
-        """)
+    def handle_error(self, error):
+        if isinstance(error, self.handled_errors):
+            self.output["error"] = error
+        else:
+            raise
 
     # Input / Output
     #------------------------------------------------------------------------------
-    @request_property
+    @cached_getter
     def params(self):
         return FormSchemaReader()
 
-    @request_property
+    @cached_getter
     def output(self):
         return {}
     
@@ -125,7 +83,7 @@ class Controller(object):
     rendering_format_param = "format"
     allowed_rendering_formats = frozenset(["html", "xhtml", "json"])
 
-    @request_property
+    @cached_getter
     def rendering_format(self):
 
         format = None
@@ -138,7 +96,7 @@ class Controller(object):
 
         return format
 
-    @request_property
+    @cached_getter
     def rendering_engine(self):
         engine_name = cherrypy.request.config["rendering.engine"]
         return self._get_rendering_engine(engine_name)
@@ -154,14 +112,14 @@ class Controller(object):
 
         return engine
 
-    @request_property
+    @cached_getter
     def view_class(self):
         return None
 
     def render(self):
 
         format = self.rendering_format
-        
+       
         if format and format in self.allowed_rendering_formats:
             renderer = getattr(self, "render_" + format, None)
         else:
@@ -195,5 +153,6 @@ class Controller(object):
         return self._render_template()
 
     def render_json(self):
+        cherrypy.response.headers["Content-Type"] = "text/plain"
         return dumps(self.output)
 

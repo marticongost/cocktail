@@ -8,10 +8,13 @@
 """
 from inspect import isfunction
 import cherrypy
-from cocktail.modeling import getter, ListWrapper
+from cocktail.modeling import getter, ListWrapper, ContextualDict
+from cocktail.controllers.requesthandler import RequestHandler
+
+context = ContextualDict()
 
 
-class PageHandler(object):
+class HandlerActivator(object):
 
     def __init__(self, callable, *args, **kwargs):
         self.callable = callable
@@ -21,59 +24,78 @@ class PageHandler(object):
     def __call__(self, *args, **kwargs):
 
         request = cherrypy.request
-        reverse_chain = []
+        visited = []
+        context["visited_handlers"] = visited
 
         try:
-            # Trigger the 'before_request' event on those handlers that support
-            # it
-            for handler in request.handler_chain:
-                reverse_chain.insert(0, handler)
-                event_slot = getattr(handler, "before_request", None)
-
-                if event_slot is not None:
-                    event_slot()
-
-            # Execute the response handler
             try:
-                return self.callable(*self.args, **self.kwargs)
-        
-            except TypeError, x:
-                callable = self.callable
+                # Descend from the root to the final handler
+                parent = None
 
-                if not isfunction(callable):
-                    callable = getattr(callable, "__call__", None)
+                for handler in request.handler_chain:
+                    
+                    context["parent_handler"] = parent
+                    visited.append(handler)
 
-                if callable:
-                    cherrypy._cpdispatch.test_callable_spec(
-                        callable, self.args, self.kwargs)
+                    # Trigger the 'before_request' event on those handlers that
+                    # support it
+                    event_slot = getattr(handler, "before_request", None)
+                    if event_slot is not None:
+                        event_slot()
 
+                    parent = handler
+                    
+                # Execute the response handler
+                try:
+                    return self.callable(*self.args, **self.kwargs)
+            
+                except TypeError, x:
+                    callable = self.callable
+
+                    # Fix needed by test_callable_spec, otherwise callable 
+                    # objects which aren't a function raise a TypeError
+                    if not isfunction(callable):
+                        callable = getattr(callable, "__call__", None)
+
+                    if callable:
+                        cherrypy._cpdispatch.test_callable_spec(
+                            callable, self.args, self.kwargs)
+
+                    raise
+            
+            except cherrypy.HTTPRedirect: 
                 raise
-        
-        except cherrypy.HTTPRedirect: 
-            raise
+
+            # Custom error handlers
+            except Exception, error:
+                for handler in reversed(visited):
+                    event_slot = getattr(handler, "exception_raised", None)
+                    if event_slot is not None:
+                        event_info = event_slot(
+                            exception = error, handled = False)
+                        if event_info.handled:
+                            break
+                else:
+                    raise       
+
+            # Cleanup
+            finally:
+                flow_control_errors = (cherrypy.HTTPError, StopRequest)
+                flow_exception = None
+                
+                for handler in reversed(visited):
+                    event_slot = getattr(handler, "after_request", None)
+                    if event_slot is not None:
+                        try:
+                            event_slot()
+                        except flow_control_errors, flow_exception:
+                            pass
+
+                if flow_exception:
+                    raise flow_exception
 
         except StopRequest:
             pass
-
-        # Custom error handlers
-        except Exception, error:
-            for handler in reverse_chain:
-                event_slot = getattr(handler, "exception_raised", None)
-
-                if event_slot is not None:
-                    event_info = event_slot(
-                        exception = error, handled = False)
-                    if event_info.handled:
-                        break
-            else:
-                raise       
-
-        # Cleanup
-        finally:
-            for handler in reverse_chain:
-                event_slot = getattr(handler, "after_request", None)
-                if event_slot is not None:
-                    event_slot()
     
         return cherrypy.response.body
 
@@ -94,21 +116,27 @@ class Dispatcher(object):
     def __call__(self, path_info, handler = None):
 
         request = cherrypy.request
+        request.config = config = cherrypy.config.copy()
+        context.clear()
         path = self.__class__.PathProcessor(self.split(path_info))
-        request.config = config = {}
 
         if handler is None:
             handler = request.app.root
 
+        parent = None
         request.handler_chain = chain = []
-        
+
         try:
+
             while True:
 
                 # Instantiate classes
                 if isinstance(handler, type):
                     handler = handler()
-                    handler.parent = chain and chain[-1]
+                
+                if not getattr(handler, "exposed", False):
+                    handler = None
+                    break
 
                 # Add the handler to the execution chain
                 chain.append(handler)
@@ -125,9 +153,8 @@ class Dispatcher(object):
                 if path_config:
                     config.update(path_config)
 
-                # Trigger the 'traversed' event on those handlers that support it
+                # Trigger the 'traversed' event
                 event_slot = getattr(handler, "traversed", None)
-
                 if event_slot is not None:
                     event_slot(path = path, config = config)
 
@@ -136,40 +163,32 @@ class Dispatcher(object):
 
                 # Named child
                 if path:
-                    child = getattr(handler, path[0], None)
-                    if child:
-                        path.pop(0)
+                    child_name = path[0]
+                    if not child_name[0] == "_":
+                        child = getattr(handler, child_name, None)
+                        if child:
+                            if getattr(child, "exposed", False):
+                                path.pop(0)
+                            else:
+                                child = None
 
-                # Dynamic resolver                
+                # Dynamic resolver
                 if child is None:
                     resolver = getattr(handler, "resolve", None)
                     if resolver:
                         child = resolver(path)
-                
-                # Generic method with positional parameters
-                if child is None:
-                    child = getattr(handler, "default", None)
-                    
-                    if child is not None:
-                        request.is_index = not path
 
-                # Index
-                if child is None:
-                    child = getattr(handler, "index", None)
-                    request.is_index = child is not None
-
-                if child is None:
+                # End of the road: no child could be retrieved, or the handler
+                # resolves to itself
+                if child is None or child is handler: 
                     break
                 else:
                     handler = child
-            
-            if handler is None or not getattr(handler, "exposed", False):
-                handler = self._error_trigger(cherrypy.NotFound())
-            
-            request.handler = PageHandler(handler, *path)
-
+        
         except (cherrypy.HTTPRedirect, StopRequest), error:
-            request.handler = self._error_trigger(error)
+            handler = self._error_trigger(error)
+        
+        request.handler = HandlerActivator(handler, *path)
     
     def _error_trigger(self, error):
         

@@ -391,22 +391,22 @@ class EventTestCase(TestCase):
 
     def test_event_hub(self):
 
-        from cocktail.events import EventHub, Event
+        from cocktail.events import Event, EventHub, event_handler
 
         class Foo(object):
             __metaclass__ = EventHub
             
             spammed = Event()
 
-            @classmethod
+            @event_handler
             def handle_spammed(cls):
                 pass
-    
+ 
         self.assertEqual(list(Foo.spammed), [Foo.handle_spammed])
         
         class Bar(Foo):
             
-            @classmethod
+            @event_handler
             def handle_spammed(cls):
                 pass
 
