@@ -29,21 +29,34 @@ def when(event):
 
 
 class EventHub(type):
-    """A convenience metaclass that automatically registers methods as
-    class-level event-handlers. All methods starting with a 'handle_' prefix
-    will be registered, using the rest of their name to identify the event slot
-    that they should be attached to.
+    """A convenience metaclass that automatically registers methods marked with
+    the L{event_handler} decorator as class-level event-handlers. 
     """
 
     def __init__(cls, name, bases, members):
         type.__init__(cls, name, bases, members)
 
-        for key in members:
-            if key.startswith("handle_"):
-                event_handler = getattr(cls, key)
+        for key, member in members.iteritems():
+            
+            if isinstance(member, event_handler):
+                handler = getattr(cls, key)
                 event_name = key[7:]
-                event_slot = getattr(cls, event_name)
-                event_slot.append(event_handler)
+                event_slot = getattr(cls, event_name, None)
+
+                if event_slot is None or not isinstance(event_slot, EventSlot):
+                    raise TypeError(
+                        "Can't attach %s to the %s event on %s, "
+                        "indicated event doesn't exist"
+                        % (member, event_name, cls)
+                    )
+
+                event_slot.append(handler)
+
+
+class event_handler(classmethod):
+    """A decorator that works hand in hand with L{EventHub} in order to ease
+    the attachment of handlers to events.
+    """
 
 
 class Event(object):
