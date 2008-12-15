@@ -78,6 +78,7 @@ class PersistentClass(SchemaClass):
 
     # Avoid creating a duplicate persistent class when copying the class
     _copy_class = schema.Schema
+    _generated_id = False
 
 
     def __init__(cls, name, bases, members):
@@ -95,13 +96,13 @@ class PersistentClass(SchemaClass):
             # own primary member explicitly. Will be initialized to an
             # incremental integer.
             if not cls.primary_member:
+                cls._generated_id = True
                 cls.id = schema.Integer(
                     name = "id",
                     primary = True,
                     unique = True,
                     required = True,
-                    indexed = True,
-                    default = schema.DynamicDefault(incremental_id)
+                    indexed = True
                 )
                 cls.add_member(cls.id)
 
@@ -202,6 +203,14 @@ class PersistentObject(SchemaObject, Persistent):
         """)
 
     def __init__(self, *args, **kwargs):
+
+        # Generate an incremental ID for the object
+        if self.__class__._generated_id:
+            pk = self.__class__.primary_member.name
+            id = kwargs.get(pk)
+            if id is None:
+                kwargs[pk] = incremental_id()
+
         self._v_initializing = True
         SchemaObject.__init__(self, *args, **kwargs)
         self._v_initializing = False
