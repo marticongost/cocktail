@@ -40,27 +40,52 @@ def view_state_form(**kwargs):
 def get_persistent_param(param_name,
     cookie_name = None,
     cookie_duration = -1,
-    cookie_path = "/"):
+    cookie_path = "/",
+    ignore_new = False,
+    update = True):
 
-    param_value = cherrypy.request.params.get(param_name)
+    if ignore_new:
+        param_value = None
+    else:
+        param_value = cherrypy.request.params.get(param_name)
 
     if cookie_name is None:
         cookie_name = param_name
 
-    request_cookie = cherrypy.request.cookie.get(cookie_name)
-
-    if param_value is None:
-        if request_cookie:
-            param_value = request_cookie.value
+    from styled import styled
+    print styled("%s = %s" % (cookie_name, param_value), "light_gray")
+        
+    # Persist a new value
+    if param_value:
+        if update:
+            cherrypy.response.cookie[cookie_name] = (
+                param_value
+                if isinstance(param_value, basestring)
+                else ",".join(param_value)
+            )
+            response_cookie = cherrypy.response.cookie[cookie_name]
+            response_cookie["max-age"] = cookie_duration
+            response_cookie["path"] = cookie_path
+            print styled("Setting %s to %s" % (cookie_name, param_value), "green")
     else:
-        cherrypy.response.cookie[cookie_name] = (
-            param_value
-            if isinstance(param_value, basestring)
-            else ",".join(param_value)
-        )
-        response_cookie = cherrypy.response.cookie[cookie_name]
-        response_cookie["max-age"] = cookie_duration
-        response_cookie["path"] = cookie_path
+        request_cookie = cherrypy.request.cookie.get(cookie_name)
+
+        if request_cookie:
+
+            # Delete a persisted value
+            if param_value == "":
+                if update:
+                    print styled("Removing " + cookie_name, "red")
+                    del cherrypy.request.cookie[cookie_name]
+                    cherrypy.response.cookie[cookie_name] = ""
+                    response_cookie = cherrypy.response.cookie[cookie_name]
+                    response_cookie["max-age"] = 0
+                    response_cookie["path"] = cookie_path
+
+            # Restore a persisted value
+            else:
+                param_value = request_cookie.value
+                print styled("Restoring " + cookie_name + " " + param_value, "yellow")
 
     return param_value
 
