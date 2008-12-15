@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <?py
-from cocktail.controllers import get_state, view_state
+from cocktail.controllers import get_state, view_state, serialize_parameter
 ?>
 
 <form
@@ -31,10 +31,9 @@ from cocktail.controllers import get_state, view_state
         </py:new>
         <a>
             <?py
-            params = {"page": "0"}
             filter_param = []
+            params = {"page": "0"}
             params["filter"] = filter_param
-            state = get_state()
             
             for i, f in enumerate(self.filters):
 
@@ -43,12 +42,15 @@ from cocktail.controllers import get_state, view_state
 
                 if i >= index:
                     for member in f.schema.members().itervalues():
-                        params["filter_" + member.name + str(i)] = None
+                        params["filter_" + member.name + str(i)] = ""
                     if i > index:
                         for member in f.schema.members().itervalues():
-                            params["filter_" + member.name + str(i)] = \
-                                state.get("filter_" + member.name + str(i + 1))
-                
+                            params["filter_" + member.name + str(i - 1)] = \
+                                serialize_parameter(
+                                    member,
+                                    getattr(f, member.name)
+                                )
+            
             element["href"] = "?" + view_state(**params)
             ?>
             <img src="/resources/images/delete_small.png"/>
@@ -61,8 +63,23 @@ from cocktail.controllers import get_state, view_state
             <span class="label">${translate("cocktail.html.FilterBox add filter")}</span>
             <div class="selector_content">
                 <py:ready>
-                    <a py:for="filter in self.available_filters"
-                        href="?${view_state(filter = [f.id for f in self.filters] + [filter.id])}">
+                    <a py:for="filter in self.available_filters">
+                        <?py
+                        filter_param = []
+                        params = {"page": 0, "filter": filter_param}
+
+                        for i, f in enumerate(self.filters):
+                            filter_param.append(f.id)
+                            for member in f.schema.members().itervalues():
+                                params["filter_" + member.name + str(i)] = \
+                                    serialize_parameter(
+                                        member,
+                                        getattr(f, member.name)
+                                    )                                
+
+                        filter_param.append(filter.id)
+                        element["href"] = "?" + view_state(**params)
+                        ?>
                         ${translate(filter)}
                     </a>
                 </py:ready>
@@ -71,13 +88,8 @@ from cocktail.controllers import get_state, view_state
 
         <a py:id="clear_button">
             <py:ready>
-                <?py                
-                params = {"filter": None}
-                for i, filter in enumerate(self.filters):
-                    for member in filter.schema.members().itervalues():
-                        params["filter_" + member.name + str(i)] = None
-
-                element["href"] = "?" + view_state(**params)
+                <?py
+                element["href"] = "?" + view_state(filter = "", page = 0)
                 ?>
             </py:ready>
             ${translate("cocktail.html.FilterBox clear filters")}
