@@ -245,8 +245,6 @@ class UserCollection(object):
         
         if persistent and new_filters_param:
 
-            from styled import styled
-
             # Discard all persisted filter parameters (restoring filters
             # selectively isn't supported, it's all or nothing)
             if persistent:
@@ -257,7 +255,6 @@ class UserCollection(object):
 
                 for key in cherrypy.request.cookie.keys():
                     if key.startswith(cookie_prefix):
-                        print styled("Discarding filter parameter " + key, "red")
                         del cherrypy.request.cookie[key]
                         cherrypy.response.cookie[key] = ""
                         response_cookie = cherrypy.response.cookie[key]
@@ -266,24 +263,25 @@ class UserCollection(object):
 
         if filters_param:
 
-            if isinstance(filters_param, basestring):
-                filters_param = [filters_param]
+            available_filters = dict(
+                (filter.id, filter)
+                for filter in self.available_filters)
 
-            for i, filter_id in enumerate(filters_param):             
-                for available_filter in self.available_filters:
-                    if available_filter.id == filter_id:
-                        filter = copy(available_filter)
-                        filter.available_languages = self.available_languages
-                        get_parameter(
-                            filter.schema,
-                            target = filter,
-                            source = lambda p: self.get_param(p, persistent),
-                            prefix = "filter_",
-                            suffix = str(i)
-                        )
-                        self.__user_filters.append(filter)
-                        break
-                else:
+            for i, filter_id in enumerate(filters_param):
+                try:
+                    filter_model = available_filters[filter_id]
+                    filter = copy(filter_model)
+                    filter.available_languages = self.available_languages
+                    get_parameter(
+                        filter.schema,
+                        target = filter,
+                        #source = lambda p: self.get_param(p, persistent),
+                        prefix = "filter_",
+                        suffix = str(i)
+                    )
+                    self.__user_filters.append(filter)
+                    break
+                except KeyError:
                     raise ValueError("Unknown filter: " + filter_id)
 
     def _read_member_selection(self):
