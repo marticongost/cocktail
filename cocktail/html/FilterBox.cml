@@ -33,8 +33,7 @@ from cocktail.controllers import get_state, view_state, serialize_parameter
             <?py
             filter_param = []
             params = {"page": "0"}
-            params["filter"] = filter_param
-            
+                       
             for i, f in enumerate(self.filters):
 
                 if i != index:
@@ -50,7 +49,8 @@ from cocktail.controllers import get_state, view_state, serialize_parameter
                                     member,
                                     getattr(f, member.name)
                                 )
-            
+
+            params["filter"] = filter_param or ""
             element["href"] = "?" + view_state(**params)
             ?>
             <img src="/resources/images/delete_small.png"/>
