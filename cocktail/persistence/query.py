@@ -157,7 +157,7 @@ class Query(object):
 
                     dataset = dataset.intersection(subset)
                 else:
-                    dataset = None
+                    dataset = set()
 
             # Brute force matching
             else:
