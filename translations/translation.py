@@ -120,7 +120,7 @@ class Translation(DictWrapper):
             if not isinstance(obj, basestring) \
             and hasattr(obj.__class__, "mro"):
 
-                for cls in reversed(obj.__class__.mro()):
+                for cls in obj.__class__.mro():
                     try:
                         type_key = get_full_name(cls) + "-instance"
                     except:
