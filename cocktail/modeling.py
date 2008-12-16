@@ -733,3 +733,37 @@ class SynchronizedList(object):
     def __delitem__(self, index):
         self._items.__delitem__(index)
 
+
+class ContextualDict(DictWrapper):
+
+    def __init__(self):
+        self.__local = local()
+
+    @getter
+    def _items(self):
+        items = getattr(self.__local, "items", None)
+
+        if items is None:
+            items = {}
+            self.__local.items = items
+
+        return items
+
+    def __setitem__(self, key, value):
+        self._items[key] = value
+
+    def __delitem__(self, key):
+        del self._items[key]
+
+    def clear(self):
+        self._items.clear()
+        
+    def pop(self, *args):
+        return self._items.pop(*args)
+
+    def popitem(self):
+        return self._items.popitem()
+
+    def update(self, *args, **kwargs):
+        return self._items.update(*args, **kwargs)
+

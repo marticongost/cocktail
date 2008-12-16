@@ -12,6 +12,7 @@ import cherrypy
 from cocktail.modeling import getter
 from cocktail.translations import translate, get_language, language_context
 from cocktail.controllers.viewstate import get_state
+from cocktail.controllers.dispatcher import StopRequest
 
 
 class Location(object):
@@ -94,7 +95,7 @@ class Location(object):
         elif self.method == "POST":
             cherrypy.response.status = 200
             cherrypy.response.body = self.get_form()
-            raise HTTPPostRedirect()
+            raise StopRequest()
 
         else:
             raise ValueError(
@@ -144,8 +145,4 @@ class Location(object):
                     ),
                     "button": translate("Redirection button")
                 }
-
-
-class HTTPPostRedirect(Exception):
-    pass
 

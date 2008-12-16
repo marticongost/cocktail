@@ -11,9 +11,19 @@ from string import strip
 from cocktail import schema
 from cocktail.persistence import PersistentClass
 
+def serialize_parameter(member, value):
+    if value is None:
+        return ""
+    else:
+        return member.serialize_request_value(value)
+
 # Extension property that allows members to define a parser function for
 # request values
 schema.Member.parse_request_value = None
+
+# Extension property that allows members to define a serializer function for
+# request values
+schema.Member.serialize_request_value = str
 
 def parse_int(self, reader, value):
     try:
@@ -48,7 +58,19 @@ def parse_reference(self, reader, value):
     
     return value
 
+def serialize_reference(self, value):
+
+    # TODO: make this extensible to other types?
+    if isinstance(self.type, PersistentClass) \
+    and self.type.primary_member:
+        value = str(value.get(self.type.primary_member))
+    else:
+        value = str(value)
+
+    return value
+
 schema.Reference.parse_request_value = parse_reference
+schema.Reference.serialize_request_value = serialize_reference
 
 def parse_collection(self, reader, value):
     
@@ -80,7 +102,7 @@ def get_parameter(
     implicit_booleans = IMPLICIT_BOOLEANS_DEFAULT,
     prefix = None,
     suffix = None,
-    form_source = None):
+    source = None):
     """Retrieves and processes a request parameter, or a tree or set of
     parameters, given a schema description. The function either returns the
     obtained value, or sets it on an indicated object, as established by the
@@ -131,11 +153,12 @@ def get_parameter(
         which aren't submitted when not checked.
     @type implicit_booleans: bool
 
-    @param form_source: By default, all parameters are read from the current
+    @param source: By default, all parameters are read from the current
         cherrypy request (which includes both GET and POST parameters), but
-        this can be overriden through this parameter. The only requirement for
-        the specified source of data is that it define a get() method, behaving
-        in exactly the same manner as the homonymous dictionary method.
+        this can be overriden through this parameter. Should be set to a
+        callable that takes a the name of a parameter and returns its raw
+        value, or None if the parameter can't be retrieved.
+    @type source: callable
 
     @param prefix: A string that will be added at the beginning of the
         parameter name for each retrieved member.
@@ -168,7 +191,7 @@ def get_parameter(
         implicit_booleans = implicit_booleans,
         prefix = prefix,
         suffix = suffix,
-        form_source = form_source,
+        source = source,
     )
     return reader.read(member, target, languages)
 
@@ -207,12 +230,13 @@ class FormSchemaReader(object):
     @param suffix: A string that will be appended at the end of the parameter
         name for each retrieved member.
     @type suffix: str
-
-    @ivar form_source: By default, all parameters are read from the current
+    
+    @ivar source: By default, all parameters are read from the current
         cherrypy request (which includes both GET and POST parameters), but
-        this can be overriden through this attribute. The only requirement for
-        the specified source of data is that it define a get() method, behaving
-        in exactly the same manner as the homonymous dictionary method.
+        this can be overriden through this attribute. Should be set to a
+        callable that takes a the name of a parameter and returns its raw
+        value, or None if the parameter can't be retrieved.
+    @type source: callable
     """
 
     def __init__(self,
@@ -222,7 +246,7 @@ class FormSchemaReader(object):
         implicit_booleans = IMPLICIT_BOOLEANS_DEFAULT,
         prefix = None,
         suffix = None,
-        form_source = None):
+        source = None):
 
         self.normalization = normalization
         self.strict = strict
@@ -231,10 +255,10 @@ class FormSchemaReader(object):
         self.prefix = prefix
         self.suffix = suffix
 
-        if form_source is None:
-            form_source = cherrypy.request.params
+        if source is None:
+            source = cherrypy.request.params.get
 
-        self.form_source = form_source
+        self.source = source
 
     def read(self,
         member,
@@ -314,7 +338,7 @@ class FormSchemaReader(object):
         path):
  
         key = self.get_key(member, language, path)
-        value = self.form_source.get(key)
+        value = self.source(key)
         value = self.process_value(member, value)
         
         if self.strict and not member.validate(value):
