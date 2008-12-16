@@ -21,6 +21,7 @@ from cocktail.controllers import get_state, view_state, serialize_parameter
     </div>
 
     <div py:def="filter_entry" py:args="index, filter">
+        <input type="hidden" name="filter" value="${filter.id}"/>
         <span class="filter_desc">${translate(filter)}</span>
         <py:new
             py:element="filter.create_ui()"

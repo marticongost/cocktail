@@ -27,7 +27,7 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
 
     <py:ready>
         <?py
-        excluded = ["members", "language", "page_size", "selection"]
+        excluded = ["members", "language", "page_size", "selection", "filter"]
 
         for i, filter in enumerate(self.user_collection.user_filters):
             for member in filter.schema.members().itervalues():
