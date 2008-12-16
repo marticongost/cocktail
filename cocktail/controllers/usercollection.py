@@ -262,7 +262,7 @@ class UserCollection(object):
                         response_cookie["path"] = "/"
 
         if filters_param:
-
+            
             available_filters = dict(
                 (filter.id, filter)
                 for filter in self.available_filters)
@@ -275,12 +275,11 @@ class UserCollection(object):
                     get_parameter(
                         filter.schema,
                         target = filter,
-                        #source = lambda p: self.get_param(p, persistent),
+                        source = lambda p: self.get_param(p, persistent),
                         prefix = "filter_",
                         suffix = str(i)
                     )
                     self.__user_filters.append(filter)
-                    break
                 except KeyError:
                     raise ValueError("Unknown filter: " + filter_id)
 
