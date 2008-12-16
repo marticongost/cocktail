@@ -10,6 +10,7 @@ from copy import copy
 import cherrypy
 from cocktail.modeling import ListWrapper, SetWrapper, getter, empty_set
 from cocktail.persistence.query import Query
+from cocktail.schema import Collection, String
 from cocktail.schema.expressions import (
     PositiveExpression,
     NegativeExpression
@@ -20,6 +21,8 @@ from cocktail.html.datadisplay import (
 from cocktail.controllers.viewstate import get_persistent_param
 from cocktail.controllers.userfilter import get_content_type_filters
 from cocktail.controllers.parameters import get_parameter
+
+default = object()
 
 
 class UserCollection(object):
@@ -153,11 +156,14 @@ class UserCollection(object):
         if self.selection_mode != NO_SELECTION:
             self._read_selection()
 
-    def _get_param(self, name):
+    def get_param(self, name, persistent = default, **persistence_kwargs):
 
         full_name = self.get_param_name(name)
-        
-        if name in self.persistent_params:
+
+        if persistent is default:
+            persistent = name in self.persistent_params
+
+        if persistent:
 
             if self.persistence_prefix:
                 cookie_name = self.persistence_prefix + "-" + full_name
@@ -167,26 +173,33 @@ class UserCollection(object):
             return get_persistent_param(
                 full_name,
                 cookie_name = cookie_name,
-                cookie_duration = self.persistence_duration                
+                cookie_duration = self.persistence_duration,
+                **persistence_kwargs
             )
         else:
             return cherrypy.request.params.get(full_name)
 
+    def get_param_name(self, param):
+        if self.name:
+            return self.name + "-" + param
+        else:
+            return param
+    
     def _read_paging(self):
 
-        page_param = self._get_param("page")
+        page_param = self.get_param("page")
         
         if page_param:
             self.page = int(page_param)
 
-        page_size_param = self._get_param("page_size")
+        page_size_param = self.get_param("page_size")
 
         if page_size_param:
             self.page_size = int(page_size_param)
 
     def _read_sorting(self):
 
-        order_param = self._get_param("order")
+        order_param = self.get_param("order")
 
         if order_param:
 
@@ -220,32 +233,59 @@ class UserCollection(object):
             self.available_filters = list(self.available_filters) \
                 + get_content_type_filters(self.type)
 
-        filters_param = self._get_param("filter")
+        persistent = "filter" in self.persistent_params
+
+        if persistent:
+            new_filters_param = self.get_param("filter", False)
         
-        if filters_param:
+        filters_param = get_parameter(
+            Collection("filter", items = String()),
+            source = self.get_param
+        )
+        
+        if persistent and new_filters_param:
 
-            if isinstance(filters_param, basestring):
-                filters_param = [filters_param]
-
-            for i, filter_id in enumerate(filters_param):                               
-                for available_filter in self.available_filters:
-                    if available_filter.id == filter_id:
-                        filter = copy(available_filter)
-                        filter.available_languages = self.available_languages
-                        get_parameter(
-                            filter.schema,
-                            target = filter,
-                            prefix = "filter_",
-                            suffix = str(i)
-                        )
-                        self.__user_filters.append(filter)
-                        break
+            # Discard all persisted filter parameters (restoring filters
+            # selectively isn't supported, it's all or nothing)
+            if persistent:
+                if self.persistence_prefix:
+                    cookie_prefix = self.persistence_prefix + "-filter_"
                 else:
+                    cookie_prefix = "filter_"
+
+                for key in cherrypy.request.cookie.keys():
+                    if key.startswith(cookie_prefix):
+                        del cherrypy.request.cookie[key]
+                        cherrypy.response.cookie[key] = ""
+                        response_cookie = cherrypy.response.cookie[key]
+                        response_cookie["max-age"] = 0
+                        response_cookie["path"] = "/"
+
+        if filters_param:
+            
+            available_filters = dict(
+                (filter.id, filter)
+                for filter in self.available_filters)
+
+            for i, filter_id in enumerate(filters_param):
+                try:
+                    filter_model = available_filters[filter_id]
+                    filter = copy(filter_model)
+                    filter.available_languages = self.available_languages
+                    get_parameter(
+                        filter.schema,
+                        target = filter,
+                        source = lambda p: self.get_param(p, persistent),
+                        prefix = "filter_",
+                        suffix = str(i)
+                    )
+                    self.__user_filters.append(filter)
+                except KeyError:
                     raise ValueError("Unknown filter: " + filter_id)
 
     def _read_member_selection(self):
         
-        members_param = self._get_param("members")
+        members_param = self.get_param("members")
 
         if members_param:
 
@@ -261,7 +301,7 @@ class UserCollection(object):
 
     def _read_selection(self):
 
-        selection_param = self._get_param("selection")
+        selection_param = self.get_param("selection")
 
         if selection_param:
             
@@ -274,13 +314,7 @@ class UserCollection(object):
                 self.selection = [
                     self.selection_parser(value)
                     for value in selection_param
-                ]
-
-    def get_param_name(self, param):
-        if self.name:
-            return self.name + "-" + param
-        else:
-            return param
+                ]      
 
     def _get_member(self, key, translatable = False, from_type = False):
         

@@ -68,13 +68,13 @@ class Query(object):
         return self.__parent
 
     def execute(self, _sorted = True):
-        
+     
         subset = self.__apply_filters()
 
         if _sorted:
             subset = self.__apply_order(subset)
             subset = self.__apply_range(subset)
-        
+
         return subset
 
     def __apply_filters(self):
@@ -157,7 +157,7 @@ class Query(object):
 
                     dataset = dataset.intersection(subset)
                 else:
-                    dataset = None
+                    dataset = set()
 
             # Brute force matching
             else:
@@ -209,7 +209,7 @@ class Query(object):
 
         order = self.order
 
-        if not order:
+        if not order:            
             if self.range:
                 order = [+self.__type.primary_member]
             else:
