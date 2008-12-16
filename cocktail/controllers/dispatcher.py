@@ -116,16 +116,36 @@ class Dispatcher(object):
     def __call__(self, path_info, handler = None):
 
         request = cherrypy.request
-        request.config = config = cherrypy.config.copy()
-        context.clear()
-        path = self.__class__.PathProcessor(self.split(path_info))
 
+        # Configuration
+        config = getattr(request, "config", None)
+
+        if config is None:
+            config = cherrypy.config.copy()
+            request.config = config
+        
+        # Path components
+        if isinstance(path_info, basestring):
+            parts = self.split(path_info)
+        else:
+            parts = list(path_info)
+
+        path = self.__class__.PathProcessor(parts)
+
+        # Handler chain
         if handler is None:
             handler = request.app.root
 
         parent = None
-        request.handler_chain = chain = []
+        
+        chain = getattr(request, "handler_chain", None)
 
+        if chain is None:
+            chain = []
+            request.handler_chain = chain
+            context.clear()
+
+        # Traverse handlers
         try:
 
             while True:
@@ -190,6 +210,10 @@ class Dispatcher(object):
         
         request.handler = HandlerActivator(handler, *path)
     
+    def respond(self, path_info, handler = None):
+        self(path_info, handler)
+        return cherrypy.request.handler()
+
     def _error_trigger(self, error):
         
         def error_trigger(*args, **kwargs):
