@@ -51,7 +51,6 @@ class SchemaClass(EventHub, Schema):
             and isinstance(base, SchemaClass):
                 if base.blueprint:
                     base._apply_blueprint(cls)
-                    cls.inherit
                 else:
                     cls.inherit(base)
 
@@ -419,7 +418,7 @@ class SchemaObject(object):
         return self.__class__.full_name + " instance"
 
     def __translate__(self, language, **kwargs):
-        desc = translate(self.__class__.full_name, language, **kwargs)
+        desc = translate(self.__class__.name, language, **kwargs)
 
         if self.__class__.primary_member:
             desc += " #" \
