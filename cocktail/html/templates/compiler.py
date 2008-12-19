@@ -405,19 +405,21 @@ class TemplateCompiler(object):
                 inline = (with_def and parent_id != "self")
 
                 if inline:
+                    self_var = parent_id
                     source.write(
                         id + "_factory = %s.create_%s"
                         % (parent_id, factory_id)
                     )
                     source.write("@refine(%s)" % parent_id)
                 else:
+                    self_var = "self"
                     source = SourceCodeWriter(1)
                     frame.source_block = source
                     self.__source_blocks.append(source)
 
                 source.write(
-                    "def create_%s(self%s):"
-                    % (factory_id, ", " + args if args else "")
+                    "def create_%s(%s%s):"
+                    % (factory_id, self_var, ", " + args if args else "")
                 )
                 source.indent()
 
