@@ -281,7 +281,8 @@ class PersistentObject(SchemaObject, Persistent):
         # Remove the item from primary indices
         if self.__class__.indexed:
             for cls in self.__class__.ascend_inheritance(True):
-                cls.index.pop(self.id, None)
+                if cls.primary_member:
+                    cls.index.pop(self.id, None)
 
         # Remove the item from the rest of indices
         if self.__class__.translated:
