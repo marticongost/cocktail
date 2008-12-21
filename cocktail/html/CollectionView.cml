@@ -6,7 +6,7 @@ from cocktail.controllers.viewstate import view_state_form
 from cocktail.html.datadisplay import MULTIPLE_SELECTION
 ?>
 
-<form
+<py:cocktail.html.Form
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:py="http://www.whads.com/ns/cocktail/templates"
     method="get">
@@ -179,7 +179,10 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
         results_visible = bool(self.user_collection.page_subset())
         self.collection_display.visible = results_visible
         self.no_results.visible = not results_visible
+        self.fields.visible = False
+        self.buttons.visible = False
+        self.submit_button.visible = False
         ?>
     </py:ready>
 
-</form>
+</py:cocktail.html.Form>
