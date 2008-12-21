@@ -17,6 +17,31 @@ from cocktail.html.hiddeninput import HiddenInput
 
 
 class Form(Element, DataDisplay):
+    """A class that generates HTML forms from a schema description.
+
+    @var errors: A list of validation errors, used to highlight fields with
+        incorrect values.
+    @type errors: L{ErrorList<cocktail.schema.errorlist.ErrorList>}
+
+    @var embeded: When set to True, the form turns into a fieldset, to be
+        nested inside other forms.
+    @type embeded: bool
+
+    @var required_marks: Sets wether a small visual clue should be added next
+        to required fields.
+    @type required_marks: bool
+
+    @var table_layout: Determines if the form should use a table to align its
+        fields.
+    @type table_layout: bool
+
+    @var default_button: A reference to one of the form's buttons. When set,
+        the referenced button is duplicated, hidden and inserted at the start
+        of the form, which makes that button act as the default for the whole
+        form. This can be very useful when dealing with multiple buttons on a
+        single form. Doesn't apply to L{embeded} forms.
+    @type default_button: L{Element<cocktail.html.element.Element>}
+    """
 
     tag = "form"
     translations = None
@@ -26,6 +51,7 @@ class Form(Element, DataDisplay):
     embeded = False
     required_marks = True
     table_layout = False
+    default_button = None
 
     def __init__(self, *args, **kwargs):
         DataDisplay.__init__(self)
@@ -60,6 +86,7 @@ class Form(Element, DataDisplay):
         self.submit_button["type"] = "submit"
         self.submit_button.append(translate("Submit"))
         self.buttons.append(self.submit_button)
+        self.default_button = self.submit_button
 
     def _ready(self):
         self._fill_fields()
@@ -68,6 +95,13 @@ class Form(Element, DataDisplay):
             if self.tag == "form":
                 self.tag = "fieldset"
             self.buttons.visible = False
+
+        elif self.default_button:
+            hidden_button = Element(self.default_button.tag)
+            for key, value in hidden_button.attributes.itervalues():
+                hidden_button[key] = value
+            hidden_button.set_style("display", "none")
+            self.insert(0, hidden_button)
 
     def _fill_fields(self):
         if self.schema:
