@@ -12,9 +12,9 @@ class DataBoundControl(object):
     binding_delegate = None
 
     def __init__(self):
-        self.when_binding(self._bind_name)
+        self.when_binding(self._bind_member)
 
-    def _bind_name(self):
+    def _bind_member(self, control = None):
 
         if self.member and self.member.name:
 
@@ -29,5 +29,5 @@ class DataBoundControl(object):
                 if self.language:
                     name += "-" + self.language
 
-            (self.binding_delegate or self)["name"] = name
+            (control or self.binding_delegate or self)["name"] = name
 
