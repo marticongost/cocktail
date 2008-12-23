@@ -10,6 +10,7 @@ import cherrypy
 import buffet
 from simplejson import dumps
 from cocktail.modeling import ListWrapper, cached_getter
+from cocktail.events import Event
 from cocktail.html import templates
 from cocktail.controllers.dispatcher import StopRequest, context
 from cocktail.controllers.parameters import FormSchemaReader
@@ -38,9 +39,10 @@ class Controller(RequestHandler):
             if self.ready:
                 self.submit()
                 self.successful = True
+            self.processed()
         except Exception, ex:
-            self.handle_error(ex)                
-                    
+            self.handle_error(ex)
+        
         return self.render()
     
     def submit(self):
@@ -67,6 +69,10 @@ class Controller(RequestHandler):
             self.output["error"] = error
         else:
             raise
+
+    processed = Event(doc = """
+        An event triggered after the controller's logic has been invoked.        
+        """)
 
     # Input / Output
     #------------------------------------------------------------------------------
