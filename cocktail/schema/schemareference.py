@@ -46,7 +46,7 @@ class Reference(RelationMember):
 
     class_family = property(_get_class_family, _set_class_family, doc = """
         Imposes a data type constraint on the member. All values assigned to
-        this member must be subclasses of the specified class (a refernece to
+        this member must be subclasses of the specified class (a reference to
         that same class is also acceptable). Breaking this restriction will
         produce a validation error of type
         L{ClassFamilyError<exceptions.ClassFamilyError>}.
@@ -58,7 +58,7 @@ class Reference(RelationMember):
         if value and isinstance(value, type):
 
             class_family = \
-                self.resolve_constraint(self.__class_family, context)
+                self.resolve_constraint(self.class_family, context)
 
             if class_family and not issubclass(value, class_family):
                 yield ClassFamilyError(self, value, context, class_family)
