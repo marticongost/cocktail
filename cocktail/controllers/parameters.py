@@ -6,6 +6,7 @@
 @organization:	Whads/Accent SL
 @since:			October 2008
 """
+from itertools import chain
 import cherrypy
 from string import strip
 from cocktail import schema
@@ -52,8 +53,21 @@ def parse_reference(self, reader, value):
 
     related_type = self.type
 
+    # Class references
+    if self.class_family:
+
+        classes = chain(
+            [self.class_family],
+            self.class_family.derived_schemas()
+        )
+
+        for cls in classes:
+            if cls.name == value:
+                value = cls
+                break
+
     # TODO: make this extensible to other types?
-    if isinstance(related_type, PersistentClass) and related_type.indexed:
+    elif isinstance(related_type, PersistentClass) and related_type.indexed:
         value = related_type.index.get(int(value))
     
     return value
@@ -147,8 +161,8 @@ def get_parameter(
         behavior).
     @type enable_defaults: bool
 
-    @param implicit_booleans: A flag that indicates if a missing boolean
-        parameter should assume a value of 'False'. This is the default
+    @param implicit_booleans: A flag that indicates if missing required boolean
+        parameters should assume a value of 'False'. This is the default
         behavior, and it's useful when dealing with HTML checkbox controls,
         which aren't submitted when not checked.
     @type implicit_booleans: bool
@@ -217,8 +231,8 @@ class FormSchemaReader(object):
         behavior).
     @type enable_defaults: bool
 
-    @ivar implicit_booleans: A flag that indicates if a missing boolean
-        parameter should assume a value of 'False'. This is the default
+    @ivar implicit_booleans: A flag that indicates if missing required boolean
+        parameters should assume a value of 'False'. This is the default
         behavior, and it's useful when dealing with HTML checkbox controls,
         which aren't submitted when not checked.
     @type implicit_booleans: bool
@@ -425,7 +439,9 @@ class FormSchemaReader(object):
                 value = member.parse_request_value(self, value)
             
         if value is None:
-            if self.implicit_booleans and isinstance(member, schema.Boolean):
+            if self.implicit_booleans \
+            and member.required \
+            and isinstance(member, schema.Boolean):
                 value = False
             elif self.enable_defaults:
                 value = member.produce_default()
