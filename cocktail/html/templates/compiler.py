@@ -184,6 +184,7 @@ class TemplateCompiler(object):
         is_new = True
         elem_class_fullname = None
         element_expr = None
+        factory_expr = None
         elem_tag = default
         parent_id = self._get_current_element()
         with_element = None
@@ -343,23 +344,17 @@ class TemplateCompiler(object):
                 frame.element = id
 
                 source.write()
-                       
-                # If the element is being created through the 'new'
-                # directive, the user will have provided an expression to
-                # produce the new element. Otherwise, determine the
-                # instantiation expression for the element as follows:
-                if element_expr is None:
-                    
-                    # Elements with a user defined name get their own
-                    # factory method, which will be invoked to obtain a new
-                    # instance
-                    if identifier:
-                        element_expr = "self.create_%s()" % identifier
 
-                    # In any other case, the element is instantiated by 
-                    # invoking its class without arguments
-                    else:
-                        element_expr = "%s()" % elem_class_name
+                # Elements with a user defined name get their own
+                # factory method, which will be invoked to obtain a new
+                # instance
+                if identifier:
+                    factory_expr = element_expr
+                    element_expr = "self.create_%s()" % identifier
+                
+                # Normal class instantiation
+                elif element_expr is None:
+                    element_expr = "%s()" % elem_class_name
 
                 source.write("element = %s = %s" % (id, element_expr))
 
@@ -436,7 +431,8 @@ class TemplateCompiler(object):
                             ", " + base_args if base_args else ""
                         )
                 else:
-                    element_factory = "%s()" % elem_class_name
+                    element_factory = factory_expr \
+                                      or "%s()" % elem_class_name
 
                 # Instantiation
                 source.write("element = %s = %s" % (id, element_factory))
