@@ -123,9 +123,9 @@ class EqualityFilter(BinaryFilter):
     @getter
     def expression(self):
         if self.operator == "eq":
-            return self._get_member_expression() == self.value
+            return self._get_member_expression().equal(self.value)
         elif self.operator == "ne":
-            return self._get_member_expression() != self.value
+            return self._get_member_expression().not_equal(self.value)
 
 
 class ComparisonFilter(EqualityFilter):
@@ -135,13 +135,13 @@ class ComparisonFilter(EqualityFilter):
     @getter
     def expression(self):
         if self.operator == "gt":
-            return self._get_member_expression() > self.value
+            return self._get_member_expression().greater(self.value)
         elif self.operator == "ge":
-            return self._get_member_expression() >= self.value
+            return self._get_member_expression().greater_equal(self.value)
         elif self.operator == "lt":
-            return self._get_member_expression() < self.value
+            return self._get_member_expression().lower(self.value)
         elif self.operator == "le":
-            return self._get_member_expression() <= self.value
+            return self._get_member_expression().lower_equal(self.value)
         else:
             return EqualityFilter.expression.__get__(self)
 

@@ -211,7 +211,7 @@ class Query(object):
 
         if not order:            
             if self.range:
-                order = [+self.__type.primary_member]
+                order = [self.__type.primary_member.positive()]
             else:
                 return subset
 
@@ -226,7 +226,7 @@ class Query(object):
             for expr in order
         ]
 
-        def compare(a, b):            
+        def compare(a, b):
  
             for expr, descending in cmp_sequence:
                 value_a = expr.eval(a, getattr)
