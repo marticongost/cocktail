@@ -8,7 +8,7 @@
 """
 from cocktail.modeling import ListWrapper, SetWrapper
 from cocktail.translations import translate
-from cocktail.schema import Number, Reference
+from cocktail.schema import Number, Reference, Boolean
 from cocktail.html import Element
 from cocktail.html.databoundcontrol import DataBoundControl
 
@@ -45,6 +45,9 @@ class Selector(Element, DataBoundControl):
 
                 elif isinstance(self.member, Reference):
                     self.items = self.member.type.index.itervalues()
+
+                elif isinstance(self.member, Boolean):
+                    self.items = (True, False)
 
                 else:
                     self.items = ()
