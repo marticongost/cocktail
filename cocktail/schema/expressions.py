@@ -27,34 +27,34 @@ class Expression(object):
         else:
             return Constant(expr)
 
-    def __eq__(self, expr):
+    def equal(self, expr):
         return EqualExpression(self, expr)
 
-    def __ne__(self, expr):
+    def not_equal(self, expr):
         return NotEqualExpression(self, expr)
 
-    def __gt__(self, expr):
+    def greater(self, expr):
         return GreaterExpression(self, expr)
 
-    def __ge__(self, expr):
+    def greater_equal(self, expr):
         return GreaterEqualExpression(self, expr)
 
-    def __lt__(self, expr):
+    def lower_equal(self, expr):
         return LowerExpression(self, expr)
 
-    def __le__(self, expr):
+    def lower_equal(self, expr):
         return LowerEqualExpression(self, expr)
 
-    def __add__(self, expr):
+    def plus(self, expr):
         return AddExpression(self, expr)
 
-    def __sub__(self, expr):
+    def minus(self, expr):
         return SubtractExpression(self, expr)
 
-    def __mul__(self, expr):
+    def multiplied_by(self, expr):
         return ProductExpression(self, expr)
 
-    def __div__(self, expr):
+    def divided_by(self, expr):
         return DivisionExpression(self, expr)
 
     def and_(self, expr):
@@ -66,10 +66,10 @@ class Expression(object):
     def not_(self):
         return NotExpression(self)
 
-    def __neg__(self):
+    def negative(self):
         return NegativeExpression(self)
 
-    def __pos__(self):
+    def positive(self):
         return PositiveExpression(self)
 
     def startswith(self, expr):
@@ -78,7 +78,7 @@ class Expression(object):
     def endswith(self, expr):
         return EndsWithExpression(self, expr)
 
-    def __contains__(self, expr):
+    def contains(self, expr):
         return ContainsExpression(expr, self)
 
     def match(self, expr):
