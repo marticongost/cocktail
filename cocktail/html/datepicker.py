@@ -40,11 +40,13 @@ class DatePicker(TextBox):
        
         init_script = Element("script", type = "text/javascript")
         init_script.append(
-            "jQuery('#%s')"
-            ".datepicker($.extend({},$.datepicker.regional['%s'],%s));"
+            "jQuery(function () {\n"
+            "\tjQuery('#%s')"
+                ".datepicker($.extend({},$.datepicker.regional['%s'],%s));\n"
+            "});"
             %  (id, get_language(), dumps(params))
         )
-        self.append(init_script)
+        self.add_head_element(init_script)
         
     def get_default_params(self):
         return {

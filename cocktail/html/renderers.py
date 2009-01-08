@@ -50,7 +50,7 @@ class Renderer(object):
     def write_element(self, element, out):
         
         for handler in self.__before_rendering:
-            handler(element)
+            handler(element, self)
         
         tag = element.tag
         render_children = True
@@ -90,7 +90,7 @@ class Renderer(object):
                 out(u"</" + tag + u">")
 
         for handler in self.__after_rendering:
-            handler(element)
+            handler(element, self)
 
     def _write_attribute(self, key, value, out):
         
