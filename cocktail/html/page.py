@@ -22,7 +22,7 @@ class Page(Element):
     styled_class = False
     tag = "html"
     __generated_id = None
-    generated_id_format = "_element%d"
+    generated_id_format = "cocktail-element%d"
 
     CORE_SCRIPT = "/cocktail/scripts/core.js"
     JQUERY_SCRIPT = "/cocktail/scripts/jquery.js"
