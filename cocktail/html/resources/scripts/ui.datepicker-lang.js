@@ -19,7 +19,7 @@
 		dayNamesShort: ['Dug','Dln','Dmt','Dmc','Djs','Dvn','Dsb'],
 		dayNamesMin: ['Dg','Dl','Dt','Dc','Dj','Dv','Ds'],
 		dayStatus: 'DD', dateStatus: 'D, M d',
-		dateFormat: 'dd/mm/yy', firstDay: 1, 
+		firstDay: 1, 
 		initStatus: '', isRTL: false};
 	jQuery.datepicker.setDefaults(jQuery.datepicker.regional['ca']);
 
@@ -43,14 +43,14 @@
 		dayNamesShort: ['Dom','Lun','Mar','Mi&eacute;','Juv','Vie','S&aacute;b'],
 		dayNamesMin: ['Do','Lu','Ma','Mi','Ju','Vi','S&aacute;'],
 		dayStatus: 'DD', dateStatus: 'D, M d',
-		dateFormat: 'dd/mm/yy', firstDay: 1, 
+		firstDay: 1, 
 		initStatus: '', isRTL: false};
 	jQuery.datepicker.setDefaults(jQuery.datepicker.regional['es']);	
 
 
 
 	jQuery.datepicker.regional['en'] = {
-		dateFormat: 'mm/dd/yy', firstDay: 0, 
+		firstDay: 0, 
 		initStatus: '', isRTL: false};
     jQuery.datepicker.setDefaults(jQuery.datepicker.regional['en']);		
 
