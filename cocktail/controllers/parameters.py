@@ -44,8 +44,7 @@ schema.Integer.parse_request_value = parse_int
 def parse_date(self, reader, value):
     
     HOUR_FORMAT = "%H:%M:%S"
-    str_format = translate("date format", get_language()) + " " + HOUR_FORMAT
-    
+        
     if isinstance(self, Date):
         str_format = translate("date format", get_language())
         value = value[:10]
@@ -59,13 +58,13 @@ def parse_date(self, reader, value):
             )
         except ValueError:
             pass
-    elif isinstance(self, DateTime):       
-        
+    elif isinstance(self, DateTime):             
+        str_format = translate("date format", get_language()) + " " + HOUR_FORMAT
         try:
             value = datetime.datetime.strptime(
                 value,
                 str_format
-            )
+            )            
         except ValueError:
             pass
                                         

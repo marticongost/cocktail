@@ -90,12 +90,26 @@ class DatePicker(TextBox):
     
     def _set_value(self, value):
         HOUR_FORMAT = "%H:%M:%S"
-        if value: 
-            if isinstance(value, datetime.date):
-                self["value"] = value.strftime(translate("date format", get_language()))
-            elif isinstance(value, datetime.datetime):
-                self["value"] = value.strftime(translate("date format", get_language()) + " " + HOUR_FORMAT)
+        if value:         
+            if isinstance(value, datetime.datetime):
+                self["value"] = value.strftime("%s %s" % \
+                    (
+                        translate(
+                            "date format",
+                            get_language()
+                        ),
+                        HOUR_FORMAT
+                    )
+                )            
+            elif isinstance(value, datetime.date):              
+                self["value"] = value.strftime(
+                    translate(
+                        "date format",
+                        get_language()
+                    )
+                )
             elif isinstance(value, datetime.time):
+                print "hour"
                 self["value"] = value.strftime(HOUR_FORMAT) 
         else:   
             self["value"] = value            
