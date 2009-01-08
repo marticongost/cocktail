@@ -7,10 +7,15 @@
 @since:			October 2008
 """
 from itertools import chain
+import time
+import datetime
 import cherrypy
 from string import strip
 from cocktail import schema
 from cocktail.persistence import PersistentClass
+from cocktail.schema.schemadates import Date, DateTime, Time
+from cocktail.translations import get_language
+from cocktail.translations.translation import translations, translate
 
 def serialize_parameter(member, value):
     if value is None:
@@ -35,6 +40,50 @@ def parse_int(self, reader, value):
     return value
 
 schema.Integer.parse_request_value = parse_int
+
+def parse_date(self, reader, value):
+    
+    HOUR_FORMAT = "%H:%M:%S"
+    str_format = translate("date format", get_language()) + " " + HOUR_FORMAT
+    
+    if isinstance(self, Date):
+        str_format = translate("date format", get_language())
+        value = value[:10]
+            
+        try:
+            value = datetime.date(
+                *time.strptime(
+                    value, 
+                    str_format
+                 )[0:3]
+            )
+        except ValueError:
+            pass
+    elif isinstance(self, DateTime):       
+        
+        try:
+            value = datetime.datetime.strptime(
+                value,
+                str_format
+            )
+        except ValueError:
+            pass
+                                        
+    elif isinstance(self, Time):
+        str_format = HOUR_FORMAT
+        try:
+            value = datetime.time(
+                *time.strptime(
+                    value, 
+                    str_format
+                )[3:6]
+            )
+        except ValueError:
+            pass        
+    
+    return value
+
+schema.BaseDateTime.parse_request_value = parse_date
 
 def parse_boolean(self, reader, value):
     
