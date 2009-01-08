@@ -60,6 +60,7 @@ class Element(object):
             self.add_class(class_name)
 
         self.__meta = None
+        self.__head_elements = None
         self.__resources = None
         self.__resource_uris = None
         self.__client_params = None
@@ -510,6 +511,22 @@ class Element(object):
                 self.__meta.pop(key, None)
             else:
                 self.__meta[key] = value
+
+    # Head elements
+    #--------------------------------------------------------------------------
+    
+    @getter
+    def head_elements(self):
+        if self.__head_elements is None:
+            return empty_list
+        else:
+            return self.__head_elements
+
+    def add_head_element(self, element):
+        if self.__head_elements is None:
+            self.__head_elements = [element]
+        else:
+            self.__head_elements.append(element)
 
     # Client side element parameters
     #--------------------------------------------------------------------------

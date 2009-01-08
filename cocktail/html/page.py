@@ -43,12 +43,16 @@ class Page(Element):
         self.__resources = []
         self.__client_translations = set()
         self.__client_variables = {}
-        self.__elements_with_client_params = []
+        self.__client_params_script = None
 
     def _build(self):
       
         self.head = Element("head")
         self.append(self.head)
+
+        self._generated_head = Element()
+        self._generated_head.tag = None
+        self.head.append(self._generated_head)
 
         self.body = Element("body")
         self.append(self.body)
@@ -64,12 +68,13 @@ class Page(Element):
         try:
             if self.doctype:
                 out(self.doctype)
-                out("\n")
+                out("\n")           
 
             # Render the <body> element first, to gather meta information from all
             # elements (meta tags, scripts, style sheets, the page title, etc)
             renderer.before_element_rendered(self._before_descendant_rendered)
             renderer.after_element_rendered(self._after_descendant_rendered)
+            
             self._body_markup.value = self.body.render(renderer)
             self._fill_head()
             
@@ -83,12 +88,40 @@ class Page(Element):
             _thread_data.rendered_page = None
             self.__generated_id = None
 
-    def _before_descendant_rendered(self, descendant):       
+    def _before_descendant_rendered(self, descendant, renderer):
+
+        for element in descendant.head_elements:
+            self.head.append(Content(element.render(renderer)))
 
         if descendant.client_params:
-            self.__elements_with_client_params.append(descendant)
+            
+            if self.JQUERY_SCRIPT not in self.__resource_uris:
+                self.__resource_uris.add(self.JQUERY_SCRIPT)
+                self.__resources.append(Script(self.JQUERY_SCRIPT))
+ 
+            if self.__client_params_script is None:
+                                
+                script_tag = Element("script")
+                script_tag["type"] = "text/javascript"
+                script_tag.append("jQuery(function () {\n")
+                
+                self.__client_params_script = Content()
+                self.__client_params_script.value = ""
+                script_tag.append(self.__client_params_script)
+                
+                script_tag.append("});\n")
+                self.head.append(script_tag)
+            
+            js = ["\tjQuery('#%s').each(function () {" % descendant["id"]]
+                
+            for key, value in descendant.client_params.iteritems():
+                js.append("\t\tthis.%s = %s;" % (key, dumps(value)))
+                
+            js.append("\t});")
+            
+            self.__client_params_script.value += "\n".join(js)
 
-    def _after_descendant_rendered(self, descendant):
+    def _after_descendant_rendered(self, descendant, renderer):
 
         page_title = descendant.page_title
         
@@ -112,7 +145,7 @@ class Page(Element):
 
     def _fill_head(self):
 
-        head = self.head
+        head = self._generated_head
 
         if self.content_type:
             ctype = self.content_type
@@ -158,30 +191,10 @@ class Page(Element):
                 for key, value in self.__client_variables.iteritems()
             ))
             head.append(script_tag)
-
-        if self.__elements_with_client_params:
-            
-            self._add_resource_to_head(Script(self.JQUERY_SCRIPT), True)
-            
-            script_tag = Element("script")
-            script_tag["type"] = "text/javascript"            
-            js = ["jQuery(function () {"]
-            
-            for element in self.__elements_with_client_params:
-                js.append("\tjQuery('#%s').each(function () {\n" % element["id"])
-                
-                for key, value in element.client_params.iteritems():
-                    js.append("\t\tthis.%s = %s;" % (key, dumps(value)))
-                
-                js.append("\t});")
-            
-            js.append("});")
-            script_tag.append("\n".join(js))
-            head.append(script_tag)
         
         for resource in self.__resources:
             self._add_resource_to_head(resource)
-         
+        
     def _add_resource_to_head(self, resource, always = False):
         
         uri = resource.uri
@@ -194,14 +207,14 @@ class Page(Element):
                 script_tag = Element("script")
                 script_tag["type"] = resource.mime_type
                 script_tag["src"] = uri
-                self.head.append(script_tag)
+                self._generated_head.append(script_tag)
     
             elif isinstance(resource, StyleSheet):
                 link_tag = Element("link")
                 link_tag["rel"] = "Stylesheet"
                 link_tag["type"] = resource.mime_type
                 link_tag["href"] = uri
-                self.head.append(link_tag)
+                self._generated_head.append(link_tag)
        
     def generate_element_id(self):
 
