@@ -9,6 +9,7 @@
 from inspect import getmro
 from types import FunctionType
 from cocktail.modeling import empty_list, extend, call_base
+from cocktail.pkgutils import get_full_name
 
 _overlays = {}
 
@@ -19,11 +20,14 @@ def apply_overlays(element):
     @param element: The element to apply the overlays to.
     @type element: L{Element<cocktail.html.element.Element>}
     """
-    for cls in element.__class__._classes:
-        class_overlays = _overlays.get(cls)
-        if class_overlays:
-            for overlay in class_overlays:
-                overlay.modify(element)
+    if _overlays:
+
+        for cls in element.__class__._classes:
+            class_overlays = _overlays.get(get_full_name(cls))
+            if class_overlays:
+                for overlay in class_overlays:
+                    overlay.modify(element)
+
 
 # Declaration stub, required by the metaclass
 Overlay = None
@@ -59,17 +63,15 @@ class Overlay(object):
         @param target: The class to install the overlay on.
         @type target: Class or str
         """
-        from cocktail.html import templates
-
-        if isinstance(target, basestring):
-            target = templates.get_class(target)
+        if not isinstance(target, basestring):
+            target = get_full_name(target)
         
         class_overlays = _overlays.get(target)
 
         if not class_overlays:
             class_overlays = []
             _overlays[target] = class_overlays
-        
+     
         class_overlays.append(cls)
        
     @classmethod
