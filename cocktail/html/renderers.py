@@ -27,7 +27,7 @@ PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 class Renderer(object):
     
     doctype = None
-    single_tags = "img", "link", "meta", "br", "hr"
+    single_tags = "img", "link", "meta", "br", "hr", "input"
     flag_attributes = "selected", "checked"
 
     def __init__(self):
