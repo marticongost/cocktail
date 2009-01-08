@@ -9,7 +9,7 @@
 import os
 from pkg_resources import resource_filename
 from cocktail.cache import Cache
-from cocktail.pkgutils import import_object
+from cocktail.pkgutils import import_object, set_full_name
 from cocktail.html.templates.compiler import TemplateCompiler
 
 
@@ -32,7 +32,7 @@ class TemplateLoader(object):
         self.cache = self.Cache()
         self.cache.expiration = None
         self.cache.load = self._load_template
-        
+
     def get_class(self, name):
         """Obtains a python class from the specified template.
         
@@ -44,9 +44,9 @@ class TemplateLoader(object):
 
         @raise TemplateNotFoundError: Raised if the indicated template can't be
             found on the loader's search path.
-        """        
+        """
         return self.cache.request(name)
-                
+    
     def new(self, name):
         """Produces an instance of the specified template.
         
@@ -66,7 +66,7 @@ class TemplateLoader(object):
         return self.Compiler(pkg_name, class_name, self, source)
 
     def _load_template(self, name):
-        
+
         pkg_name, class_name = self._split_name(name)
 
         # Drop cached templates that depend on the requested template
@@ -112,6 +112,7 @@ class TemplateLoader(object):
                 derivatives.add(name)
             
             cls = compiler.get_template_class()
+            set_full_name(cls, name)
 
         # If no template file for the requested template is found, try to import
         # the template class from a regular python module
