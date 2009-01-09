@@ -38,6 +38,8 @@ def import_object(name):
 
     return obj
 
+_full_names = {}
+
 def get_full_name(obj):
     """Obtains the canonical, fully qualified name of the provided python
     object.
@@ -50,38 +52,54 @@ def get_full_name(obj):
 
     @raise TypeError: Raised if the provided object is an instance of a type
         that doesn't map its instances to qualified names.
-    """   
-    if isinstance(obj, ModuleType):
-        
-        if obj.__name__ == "__main__":
-            return get_path_name(sys.argv[0])
-        else:
-            return get_path_name(obj.__file__)
-    else:
-        module_name = getattr(obj, "__module__", None)
-        
-        if module_name:
-            base_name = get_full_name(sys.modules[module_name])
+    """
+    
+    name = _full_names.get(obj)
 
-            # Classes
-            if isinstance(obj, type):
-                return base_name + "." + obj.__name__
+    if name is None:
+        
+        if isinstance(obj, ModuleType):
             
-            # Methods
-            im_func = getattr(obj, "im_func", None)
-            im_class = getattr(obj, "im_class", None)
+            if obj.__name__ == "__main__":
+                name = get_path_name(sys.argv[0])                
+            else:
+                name = get_path_name(obj.__file__)
+        else:
+            module_name = getattr(obj, "__module__", None)
+            
+            if module_name:
+                base_name = get_full_name(sys.modules[module_name])
 
-            if im_func and im_class:
-                return "%s.%s.%s" \
-                    % (base_name, im_class.__name__, im_func.func_name)
+                # Classes
+                if isinstance(obj, type):
+                    name = base_name + "." + obj.__name__
 
-            # Functions
-            func_name = getattr(obj, "func_name", None)
+                else:                
+                    # Methods
+                    im_func = getattr(obj, "im_func", None)
+                    im_class = getattr(obj, "im_class", None)
 
-            if func_name:
-                return base_name + "." + func_name
+                    if im_func and im_class:
+                        name = "%s.%s.%s" \
+                            % (base_name, im_class.__name__, im_func.func_name)                    
+                    else:
+                        # Functions
+                        func_name = getattr(obj, "func_name", None)
 
-    raise TypeError("Can't find the path of %r" % obj)
+                        if func_name:
+                            name = base_name + "." + func_name
+            
+        # Store the name for future requests
+        if name:
+            _full_names[obj] = name
+
+    if name is not None:
+        return name
+    else:
+        raise TypeError("Can't find the name of %r" % obj)
+
+def set_full_name(obj, name):
+    _full_names[obj] = name
 
 def get_path_name(path):
     """Gets the qualified name of the module or package that maps to the
