@@ -48,6 +48,7 @@ class TemplateCompiler(object):
         self.__stack = []
         self.__root_element_found = False
         self.__is_overlay = False
+        self.__whitespace_stack = []
         
         self.__source_blocks = []
         
@@ -159,6 +160,9 @@ class TemplateCompiler(object):
 
     def _pop(self):
         frame = self.__stack.pop()
+        
+        if self.__whitespace_stack:
+            self.__whitespace_stack.pop()            
 
         for close_action in frame.close_actions:
             close_action()
@@ -279,7 +283,15 @@ class TemplateCompiler(object):
             elem_class_name = self.add_class_reference(elem_class_fullname)
 
         self._handle_conditions(attributes)
-       
+ 
+        if self.__whitespace_stack:
+            ws = self.__whitespace_stack[-1]
+            if ws:
+                source.write('%s.append(%r)' % (parent_id, ws))
+            self.__whitespace_stack[-1] = ""
+
+        self.__whitespace_stack.append(None)
+
         # Document root
         if not self.__root_element_found:
             
@@ -460,7 +472,7 @@ class TemplateCompiler(object):
     
     def EndElementHandler(self, name):
         self._pop()
-        
+                
         # Persistent name
         frame = self.__stack[-1]
         frame.source_block.write("element = %s" % frame.element)
@@ -468,24 +480,34 @@ class TemplateCompiler(object):
     def CharacterDataHandler(self, data):
 
         if data:
-            parent_id = self._get_current_element()
-            
-            for chunk, expr_type in self._parse_data(data):
 
-                source = self.__stack[-1].source_block
-
-                if expr_type == LITERAL:
-                    source.write('%s.append(%r)' % (parent_id, chunk))
-
-                elif expr_type == EXPRESSION:
-                    source.write('%s.append(unicode(%s))' \
-                        % (parent_id, chunk))
+            # White space
+            if not data.strip():
+                if self.__whitespace_stack \
+                and self.__whitespace_stack[-1] is not None:
+                    self.__whitespace_stack[-1] += data
+            else:
+                parent_id = self._get_current_element()
                 
-                elif expr_type == PLACEHOLDER:
-                    source.write(
-                        '%s.append(PlaceHolder(lambda: %s))'
-                        % (parent_id, chunk)
-                    )
+                if self.__whitespace_stack:
+                    self.__whitespace_stack[-1] = ""
+
+                for chunk, expr_type in self._parse_data(data):
+
+                    source = self.__stack[-1].source_block
+
+                    if expr_type == LITERAL:
+                        source.write('%s.append(%r)' % (parent_id, chunk))
+
+                    elif expr_type == EXPRESSION:
+                        source.write('%s.append(unicode(%s))' \
+                            % (parent_id, chunk))
+                    
+                    elif expr_type == PLACEHOLDER:
+                        source.write(
+                            '%s.append(PlaceHolder(lambda: %s))'
+                            % (parent_id, chunk)
+                        )
 
     def DefaultHandler(self, data):
 
