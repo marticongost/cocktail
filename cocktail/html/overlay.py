@@ -21,7 +21,6 @@ def apply_overlays(element):
     @type element: L{Element<cocktail.html.element.Element>}
     """
     if _overlays:
-
         for cls in element.__class__._classes:
             class_overlays = _overlays.get(get_full_name(cls))
             if class_overlays:
@@ -63,14 +62,17 @@ class Overlay(object):
         @param target: The class to install the overlay on.
         @type target: Class or str
         """
-        if not isinstance(target, basestring):
-            target = get_full_name(target)
+        if isinstance(target, basestring):
+            from cocktail.html import templates
+            target = templates.get_class(target)
         
-        class_overlays = _overlays.get(target)
+        target_full_name = get_full_name(target)
+        
+        class_overlays = _overlays.get(target_full_name)
 
         if not class_overlays:
             class_overlays = []
-            _overlays[target] = class_overlays
+            _overlays[target_full_name] = class_overlays
      
         class_overlays.append(cls)
        
