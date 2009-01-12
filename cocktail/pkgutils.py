@@ -12,6 +12,28 @@ from types import ModuleType
 
 PYTHON_EXTENSIONS = ".py", ".pyc", ".pyo", ".pyd"
 
+def resolve(reference):
+    """Resolves a reference to an object. The refered object can be specified
+    using a fully qualified name, which will be imported, or an object
+    reference, which will be returned as is.
+    
+    @param name: The reference to resolve.
+    @type name: str or object
+
+    @return: The refered object.
+    @rtype: object
+
+    @raise ImportError: Raised if there's no module or package matching the
+        indicated qualified name.
+
+    @raise AttributeError: Raised if the indicated module or package doesn't
+        contain the requested object.
+    """
+    if isinstance(reference, basestring):
+        return import_object(reference)
+    else:
+        return reference
+
 def import_object(name):
     """Obtains a reference to an object, given its fully qualified name.
     
