@@ -89,6 +89,8 @@ class TemplateLoader(object):
         except TemplateNotFoundError:
             source_file = None
 
+        full_name = pkg_name + "." + class_name.lower() + "." + class_name
+
         if source_file is not None:
 
             try:
@@ -112,15 +114,14 @@ class TemplateLoader(object):
                 derivatives.add(name)
             
             cls = compiler.get_template_class()
-            set_full_name(cls, name)
+            set_full_name(cls, full_name)
 
         # If no template file for the requested template is found, try to import
         # the template class from a regular python module
         # Note that by convention, foo.Bar becomes foo.bar.Bar
         else:
             try:
-                cls = import_object(
-                    pkg_name + "." + class_name.lower() + "." + class_name)
+                cls = import_object(full_name)
             except ImportError:
                 raise TemplateNotFoundError(name)
 
