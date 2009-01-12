@@ -32,3 +32,10 @@ class CheckBox(Element, DataBoundControl):
     def insert_into_form(self, field_instance):
         field_instance.insert(0, self)
 
+        # Disable the 'required' mark for this field, as it doesn't make sense
+        # on a checkbox
+        required_mark = getattr(field_instance.label, "required_mark", None)
+
+        if required_mark:
+            required_mark.visible = False
+
