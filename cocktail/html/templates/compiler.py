@@ -424,6 +424,8 @@ class TemplateCompiler(object):
 
                     if inline:
                         element_factory = id + "_factory(%s)" % base_args
+                    elif self.__is_overlay:
+                        element_factory = "call_base(%s)" % (base_args or "")
                     else:
                         element_factory = "%s.create_%s(self%s)" % (
                             self.__base_class_name,
