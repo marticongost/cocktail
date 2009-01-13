@@ -9,7 +9,7 @@ members.
 @since:			June 2008
 """
 from cocktail.modeling import DictWrapper, getter
-from cocktail.schema.accessors import undefined, get
+from cocktail.schema.accessors import get
 
 
 class ValidationContext(DictWrapper):
@@ -31,7 +31,7 @@ class ValidationContext(DictWrapper):
         DictWrapper.__init__(self, kwargs)
         self.__stack = [(member, validable, self._items)]
 
-    def get_value(self, key, default = undefined, language = None):
+    def get_value(self, key, default = None, language = None):
         return get(self.validable, key, default, language)
 
     def enter(self, member, validable, **kwargs):        
