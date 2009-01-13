@@ -51,7 +51,7 @@ def _get_index(self):
     if index is None:
         
         # Primary index
-        if isinstance(self, schema.Schema):
+        if isinstance(self, PersistentClass):
             index = self.primary_member.index_type()
         
         # Unique indices use a "raw" ZODB binary tree
