@@ -9,7 +9,7 @@
 from itertools import chain
 from cocktail.modeling import getter
 from cocktail.persistence import PersistentClass
-from cocktail.schema import Member, expressions
+from cocktail.schema import Member, expressions, SchemaObjectAccessor
 
 inherit = object()
 
@@ -163,7 +163,7 @@ class Query(object):
             else:
                 dataset = [instance
                           for instance in dataset
-                          if filter.eval(instance, getattr)]
+                          if filter.eval(instance, SchemaObjectAccessor)]
 
             # As soon as the matching set is reduced to an empty set
             # there's no point in applying any further filter
