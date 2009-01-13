@@ -7,11 +7,15 @@
 @since:			November 2008
 """
 from cocktail.modeling import getter, cached_getter
+from cocktail.pkgutils import resolve
 from cocktail.schema import (
-    Schema, Member, Number, BaseDateTime, String, Boolean
+    Schema, Member, Number, BaseDateTime, String, Boolean, Collection
 )
 from cocktail.html import templates
 from cocktail.translations import translate
+
+# Add an extension property to allow schemas to define additional user filters
+Schema.custom_user_filters = None
 
 
 def get_content_type_filters(content_type):
@@ -25,6 +29,12 @@ def get_content_type_filters(content_type):
             filter.member = member
             filters.append(filter)
     
+    if content_type.custom_user_filters:
+        filters.extend(
+            resolve(user_filter)()
+            for user_filter in content_type.custom_user_filters
+        )
+
     return filters
 
 
@@ -160,7 +170,8 @@ class StringFilter(ComparisonFilter):
             return self._get_member_expression().endswith(self.value)
         elif self.operator == "re":
             return self._get_member_expression().match(self.value)
-
+        else:
+            return ComparisonFilter.expression.__get__(self)
 
 # An extension property used to associate user filter types with members
 Member.user_filter = EqualityFilter
@@ -168,4 +179,5 @@ Number.user_filter = ComparisonFilter
 BaseDateTime.user_filter = ComparisonFilter
 String.user_filter = StringFilter
 Boolean.user_filter = BooleanFilter
+Collection.user_filter = None
 
