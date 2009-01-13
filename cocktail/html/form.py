@@ -71,6 +71,9 @@ class Form(Element, DataDisplay):
         Element.__init__(self, *args, **kwargs)
 
     def _build(self):
+        
+        self.add_resource(
+            "/cocktail/scripts/buttons_replacement.js")
 
         self.fields = Element()
         self.fields.add_class("fields")
