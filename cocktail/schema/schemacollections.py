@@ -140,16 +140,13 @@ class Collection(RelationMember):
         # standard schema, but also satisfy additional constraints that
         # only apply to members of the collection -- necessary? one can
         # always copy() the schema and modify it
-
-        items = self.resolve_constraint(self.items, context)
-
-        if items is not None and value is not None:
+        if self.items is not None and value is not None:
             
             context.enter(self, value)
 
             try:
                 for item in value:
-                    for error in items.get_errors(item, context):
+                    for error in self.items.get_errors(item, context):
                         yield error
             finally:
                 context.leave()

@@ -213,6 +213,111 @@ class SchemaValidationTestCase(ValidationTestCase):
             exceptions.TypeCheckError
         )
 
+class DynamicConstraintsTestCase(TestCase):
+
+    def test_callable(self):
+
+        from cocktail.schema import Schema, String, Boolean
+        from cocktail.schema.exceptions import ValueRequiredError
+        
+        test_schema = Schema()
+        test_schema.add_member(Boolean("enabled"))
+        test_schema.add_member(
+            String("field", required = lambda ctx: ctx.get_value("enabled"))
+        )
+
+        assert test_schema.validate({"enabled": False, "field": None})
+        assert test_schema.validate({"enabled": True, "field": "foo"})
+        
+        errors = list(test_schema.get_errors({"enabled": True, "field": None}))
+        assert len(errors) == 1
+        error = errors[0]
+        assert isinstance(error, ValueRequiredError)
+
+    def test_expression(self):
+
+        from cocktail.schema import Schema, String, Boolean
+        from cocktail.schema.exceptions import ValueRequiredError
+        
+        test_schema = Schema()
+        test_schema.add_member(Boolean("enabled"))
+        test_schema.add_member(
+            String("field", required = test_schema["enabled"])
+        )
+
+        assert test_schema.validate({"enabled": False, "field": None})
+        assert test_schema.validate({"enabled": True, "field": "foo"})
+        
+        errors = list(test_schema.get_errors({"enabled": True, "field": None}))
+        assert len(errors) == 1
+        error = errors[0]
+        assert isinstance(error, ValueRequiredError)
+
+    def test_exclusive_callable(self):
+
+        from cocktail.schema import Schema, String, Boolean
+        from cocktail.schema.exceptions import (
+            ValueRequiredError,
+            NoneRequiredError
+        )
+        
+        test_schema = Schema()
+        test_schema.add_member(Boolean("enabled"))
+        test_schema.add_member(
+            String("field", exclusive = lambda ctx: ctx.get_value("enabled"))
+        )
+
+        # Valid states
+        assert test_schema.validate({"enabled": False, "field": None})
+        assert test_schema.validate({"enabled": True, "field": "foo"})
+        
+        # None required error
+        errors = list(test_schema.get_errors({
+            "enabled": False, "field": "foo"
+        }))
+        assert len(errors) == 1
+        error = errors[0]
+        assert isinstance(error, NoneRequiredError)
+
+        # Required error
+        errors = list(test_schema.get_errors({"enabled": True, "field": None}))
+        assert len(errors) == 1
+        error = errors[0]
+        assert isinstance(error, ValueRequiredError)
+
+    def test_exclusive_callable(self):
+
+        from cocktail.schema import Schema, String, Boolean
+        from cocktail.schema.exceptions import (
+            ValueRequiredError,
+            NoneRequiredError
+        )
+        
+        test_schema = Schema()
+        test_schema.add_member(Boolean("enabled"))
+        test_schema.add_member(
+            String("field", exclusive = test_schema["enabled"])
+        )
+
+        # Valid states
+        assert test_schema.validate({"enabled": False, "field": None})
+        assert test_schema.validate({"enabled": True, "field": "foo"})
+        
+        # None required error
+        errors = list(test_schema.get_errors({
+            "enabled": False, "field": "foo"
+        }))
+        assert len(errors) == 1
+        error = errors[0]
+        assert isinstance(error, NoneRequiredError)
+
+        # Required error
+        errors = list(test_schema.get_errors({"enabled": True, "field": None}))
+        assert len(errors) == 1
+        error = errors[0]
+        assert isinstance(error, ValueRequiredError)
+
+
 if __name__ == "__main__":
     from unittest import main
     main()

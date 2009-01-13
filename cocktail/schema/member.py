@@ -13,7 +13,7 @@ from cocktail.modeling import ListWrapper
 from cocktail.pkgutils import import_object
 from cocktail.translations import translate
 from cocktail.schema import exceptions
-from cocktail.schema.expressions import Variable
+from cocktail.schema.expressions import Expression, Variable
 from cocktail.schema.validationcontext import ValidationContext
 
 class DynamicDefault(object):
@@ -166,6 +166,21 @@ class Member(Variable):
         @type type: type or str
         """)
 
+    def _set_exclusive(self, expr):
+        self.required = expr
+        
+        if isinstance(expr, Expression):        
+            self.require_none = expr.not_()
+        else:
+            self.require_none = lambda ctx: not expr(ctx)
+
+    exclusive = property(None, _set_exclusive, doc = """
+        A write only property that eases the definition of members that should
+        be required or empty depending on a condition and its negation,
+        respectively.
+        @type: L{Expression<cocktail.schema.expressions.Expression>}
+        """)
+
     def produce_default(self):
         """Generates a default value for the member. Can be overridden (ie. to
         produce dynamic default values).
@@ -302,22 +317,25 @@ class Member(Variable):
         constraint (either static or dynamic) to a static value, given a
         certain validation context.
 
-        Dynamic expressions are formed by assigning a callable object to a
+        Dynamic expressions are formed by assigning a callable object or an
+        L{Expression<cocktail.schema.expressions.Expression>} instance to a
         constraint value.
 
         @param expr: The constraint expression to resolve.
         
         @param context: The validation context that will be made available to
-            dynamic constraint expressions (the same set of additional
-            parameters used to add context to most validation methods).
+            dynamic constraint expressions.
         @type context: L{ValidationContext<validationcontext.ValidationContext>}
 
         @return: The normalized expression value.
         """
-        if callable(expr) and not isinstance(expr, type):
-            return expr(context)
-        else:
-            return expr
+        if not isinstance(expr, type):
+            if isinstance(expr, Expression):
+                return expr.eval(context.validable)
+            elif callable(expr):
+                return expr(context)
+        
+        return expr
 
     def member_validation_rule(self, value, context):
         """
