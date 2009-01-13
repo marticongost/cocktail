@@ -9,6 +9,8 @@ members.
 @since:			June 2008
 """
 from cocktail.modeling import DictWrapper, getter
+from cocktail.schema.accessors import undefined, get
+
 
 class ValidationContext(DictWrapper):
     """A validation context encapsulates the state of a validation process.
@@ -28,6 +30,9 @@ class ValidationContext(DictWrapper):
     def __init__(self, member, validable, **kwargs):
         DictWrapper.__init__(self, kwargs)
         self.__stack = [(member, validable, self._items)]
+
+    def get_value(self, key, default = undefined, language = None):
+        return get(self.validable, key, default, language)
 
     def enter(self, member, validable, **kwargs):        
         """Begins a nested validation context, which will be stacked uppon the
