@@ -12,6 +12,7 @@ from cocktail.modeling import ListWrapper
 from cocktail.schema.schema import Schema
 from cocktail.schema.schemastrings import String
 from cocktail.schema.schemacollections import Collection
+from cocktail.schema.expressions import Expression
 from cocktail.schema.accessors import (
     MemberAccessor,
     AttributeAccessor,
@@ -269,7 +270,9 @@ class Adapter(object):
         mapping,
         export_transform = None,
         import_transform = None,
-        copy_validations = None):
+        copy_validations = None,
+        import_condition = None,
+        export_condition = None):
         
         if copy_validations is None:
             copy_validations = self.copy_validations
@@ -277,13 +280,15 @@ class Adapter(object):
         export_rule = Copy(
                         mapping,
                         copy_validations = copy_validations,
-                        transform = export_transform)
+                        transform = export_transform,
+                        condition = export_condition)
 
         import_rule = Copy(
                         dict((value, key)
                             for key, value in export_rule.mapping.iteritems()),
                         copy_validations = copy_validations,
-                        transform = import_transform)
+                        transform = import_transform,
+                        condition = import_condition)
 
         self.export_rules.add_rule(export_rule)
         self.import_rules.add_rule(import_rule)
@@ -433,11 +438,13 @@ class Copy(Rule):
         mapping,
         properties = None,
         transform = None,
-        copy_validations = True):
+        copy_validations = True,
+        condition = None):
 
         self.mapping = mapping
         self.properties = properties
         self.transform = transform
+        self.condition = condition
 
     def __get_mapping(self):
         return self.__mapping
@@ -482,29 +489,47 @@ class Copy(Rule):
                 context.target_schema.add_member(target_member)
 
     def adapt_object(self, context):
-        
+ 
+        # Determine if the rule fulfills its condition
+        condition_fulfilled = True
+
+        if self.condition is not None:
+            if callable(self.condition):
+                if not self.condition(context):
+                    condition_fulfilled = False
+            elif isinstance(self.condition, Expression):
+                if not self.condition.eval(context.source_object):
+                    condition_fulfilled = False
+            elif not self.condition:
+                condition_fulfilled = False
+
         for source_name, target_name in self.mapping.iteritems():
 
             context.consume(source_name)
+
+            # Rules which don't fulfill their condition consume their members,
+            # but don't execute the copy operation
+            if not condition_fulfilled:
+                continue
+
+            copy_mode = getattr(context.source_object, "adapt_value", None)
+
+            if copy_mode is None:
+                if context.collection_copy_mode \
+                and context.source_schema \
+                and isinstance(
+                    context.source_schema[source_name],
+                    Collection
+                ):
+                    copy_mode = context.collection_copy_mode
+                else:
+                    copy_mode = context.copy_mode
 
             for language in context.iter_languages(source_name):
                 
                 value = context.get(source_name, None, language)
 
                 # Make a copy of the value
-                copy_mode = getattr(context.source_object, "adapt_value", None)
-
-                if copy_mode is None:
-                    if context.collection_copy_mode \
-                    and context.source_schema \
-                    and isinstance(
-                        context.source_schema[source_name],
-                        Collection
-                    ):
-                        copy_mode = context.collection_copy_mode
-                    else:
-                        copy_mode = context.copy_mode
-
                 value = copy_mode(context, source_name, value)
 
                 # Apply any transformation dictated by the rule
