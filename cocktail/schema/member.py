@@ -15,6 +15,7 @@ from cocktail.translations import translate
 from cocktail.schema import exceptions
 from cocktail.schema.expressions import Expression, Variable
 from cocktail.schema.validationcontext import ValidationContext
+from cocktail.schema.accessors import get_accessor
 
 class DynamicDefault(object):
 
@@ -331,7 +332,8 @@ class Member(Variable):
         """
         if not isinstance(expr, type):
             if isinstance(expr, Expression):
-                return expr.eval(context.validable)
+                validable = context.validable
+                return expr.eval(validable, get_accessor(validable))
             elif callable(expr):
                 return expr(context)
         

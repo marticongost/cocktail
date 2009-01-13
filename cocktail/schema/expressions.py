@@ -7,6 +7,8 @@
 @since:			July 2008
 """
 import operator
+from cocktail.schema.accessors import get_accessor
+
 
 class Expression(object):
     
@@ -16,8 +18,8 @@ class Expression(object):
     def __init__(self, *operands):
         self.operands = tuple(self.wrap(operand) for operand in operands)
 
-    def eval(self, context, get_value = operator.getitem):
-        return self.op(*[operand.eval(context, get_value)
+    def eval(self, context, accessor = None):
+        return self.op(*[operand.eval(context, accessor)
                          for operand in self.operands])
 
     @classmethod
@@ -96,7 +98,7 @@ class Constant(Expression):
     def __init__(self, value):
         self.value = value
 
-    def eval(self, context, get_value = operator.getitem):
+    def eval(self, context, accessor = None):
         return self.value
 
 
@@ -105,8 +107,9 @@ class Variable(Expression):
     def __init__(self, name):
         self.name = name
 
-    def eval(self, context, get_value = operator.getitem):
-        return get_value(context, self.name)
+    def eval(self, context, accessor = None):
+        return (accessor or get_accessor(context)) \
+               .get(context, self.name, None)
 
 
 class CustomExpression(Expression):
@@ -114,7 +117,7 @@ class CustomExpression(Expression):
     def __init__(self, expression):
         self.expression = expression
 
-    def eval(self, context, get_value = operator.getitem):
+    def eval(self, context, accessor = None):
         return self.expression(context)
 
 
@@ -219,6 +222,6 @@ class SearchExpression(Expression):
 
 class TranslationExpression(Expression):
 
-    def eval(self, context, get_value = operator.getitem):
+    def eval(self, context, accessor = None):
         return context.get(self.operands[0], self.operands[1].value)
 
