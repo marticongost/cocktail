@@ -6,9 +6,9 @@
 @organization:	Whads/Accent SL
 @since:			July 2008
 """
+import re
 import operator
 from cocktail.schema.accessors import get_accessor
-
 
 class Expression(object):
     
@@ -41,7 +41,7 @@ class Expression(object):
     def greater_equal(self, expr):
         return GreaterEqualExpression(self, expr)
 
-    def lower_equal(self, expr):
+    def lower(self, expr):
         return LowerExpression(self, expr)
 
     def lower_equal(self, expr):
