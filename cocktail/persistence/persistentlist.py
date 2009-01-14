@@ -9,6 +9,7 @@
 from copy import copy, deepcopy
 from persistent import Persistent
 from cocktail.modeling import ListWrapper
+from cocktail.schema.schemacollections import add, _list_add
 
 
 class PersistentList(ListWrapper, Persistent):
@@ -76,4 +77,7 @@ class PersistentList(ListWrapper, Persistent):
     def extend(self, other):
         self._items.extend(other)
         self._p_changed = True
+
+
+add.implementations[PersistentList] = _list_add
 
