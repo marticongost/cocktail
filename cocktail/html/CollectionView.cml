@@ -53,6 +53,7 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
                 py:args="action"
                 class="toolbar_button ${action}"
                 name="action"
+                type="submit"
                 value="${action}">
                 <?py
                 shortcut = translate("CollectionView " + action + " shortcut", default = "")
@@ -105,7 +106,7 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
                         ?>
                     </py:cocktail.html.CheckList>
 
-                    <button>${translate("Submit")}</button>
+                    <button type="submit">${translate("Submit")}</button>
                 </div>
             </div>
 
@@ -127,7 +128,7 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
                         py:items="@{self.available_languages}"
                         py:value="@{self.visible_languages}"/>
 
-                    <button>${translate("Submit")}</button>
+                    <button type="submit">${translate("Submit")}</button>
                 </div>
             </div>
             
