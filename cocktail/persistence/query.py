@@ -229,8 +229,8 @@ class Query(object):
         def compare(a, b):
  
             for expr, descending in cmp_sequence:
-                value_a = expr.eval(a, getattr)
-                value_b = expr.eval(b, getattr)
+                value_a = expr.eval(a, SchemaObjectAccessor)
+                value_b = expr.eval(b, SchemaObjectAccessor)
 
                 if descending:
                     value_a, value_b = value_b, value_a
