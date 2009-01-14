@@ -87,7 +87,9 @@ class Query(object):
             member = self._get_filter_member(filter)
 
             # Apply the filter using an index
-            if member and member.indexed and not single_match:
+            if member and member.indexed \
+            and filter in self._indexable_expressions \
+            and not single_match:
 
                 value = filter.operands[1].value
 
