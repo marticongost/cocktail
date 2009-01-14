@@ -144,9 +144,9 @@ class Controller(RequestHandler):
         if view_class:
             output = self.output
             output["submitted"] = self.submitted
-            output["successful"] = self.successful
+            output["successful"] = self.successful            
             return self.rendering_engine.render(
-                            self.output,
+                            output,
                             format = self.rendering_format,
                             template = view_class)
         else:
