@@ -159,19 +159,26 @@ class ComparisonFilter(EqualityFilter):
 class StringFilter(ComparisonFilter):
 
     operators = ComparisonFilter.operators + ("sr", "sw", "ew", "re")
+    normalized_strings = True
 
     @getter
     def expression(self):
-        if self.operator == "sr":
-            return self._get_member_expression().search(self.value)
-        elif self.operator == "sw":
-            return self._get_member_expression().startswith(self.value)
-        elif self.operator == "ew":
-            return self._get_member_expression().endswith(self.value)
-        elif self.operator == "re":
+        
+        if self.operator == "re":
             return self._get_member_expression().match(self.value)
+
+        # Normalizable expressions
+        if self.operator == "sr":
+            expr = self._get_member_expression().search(self.value)
+        elif self.operator == "sw":
+            expr = self._get_member_expression().startswith(self.value)
+        elif self.operator == "ew":
+            expr = self._get_member_expression().endswith(self.value)
         else:
-            return ComparisonFilter.expression.__get__(self)
+            expr = ComparisonFilter.expression.__get__(self)
+
+        expr.normalized_strings = self.normalized_strings
+        return expr
 
 # An extension property used to associate user filter types with members
 Member.user_filter = EqualityFilter
