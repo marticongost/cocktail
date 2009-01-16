@@ -10,7 +10,7 @@ from simplejson import dumps
 from cocktail.html.element import (
     Element, Content, _thread_data, IdGenerationError
 )
-from cocktail.html.resources import Script, StyleSheet
+from cocktail.html.resources import Resource, Script, StyleSheet
 from cocktail.translations import get_language, translations
 
 
@@ -40,7 +40,6 @@ class Page(Element):
         self.__title = None
         self.__meta = {}
         self.__resource_uris = set()        
-        self.__resources = []
         self.__client_translations = set()
         self.__client_variables = {}
         self.__client_params_script = None
@@ -95,10 +94,8 @@ class Page(Element):
 
         if descendant.client_params:
             
-            if self.JQUERY_SCRIPT not in self.__resource_uris:
-                self.__resource_uris.add(self.JQUERY_SCRIPT)
-                self.__resources.append(Script(self.JQUERY_SCRIPT))
- 
+            self._add_resource_to_head(self.JQUERY_SCRIPT)
+             
             if self.__client_params_script is None:
                                 
                 script_tag = Element("script")
@@ -110,7 +107,7 @@ class Page(Element):
                 script_tag.append(self.__client_params_script)
                 
                 script_tag.append("});\n")
-                self.head.append(script_tag)
+                self._generated_head.append(script_tag)
             
             js = ["\tjQuery('#%s').each(function () {" % descendant["id"]]
                 
@@ -134,10 +131,7 @@ class Page(Element):
 
         # Resources
         for resource in descendant.resources:
-            uri = resource.uri
-            if uri not in self.__resource_uris:
-                self.__resource_uris.add(uri)
-                self.__resources.append(resource)
+            self._add_resource_to_head(resource)
         
         # Client variables and translations
         self.__client_variables.update(descendant.client_variables)
@@ -169,8 +163,8 @@ class Page(Element):
             head.append(title_tag)
                         
         if self.__client_translations:
-            self._add_resource_to_head(Script(self.CORE_SCRIPT), True)
-                    
+            self._add_resource_to_head(self.CORE_SCRIPT)
+            
             language = get_language()
             
             script_tag = Element("script")
@@ -192,17 +186,18 @@ class Page(Element):
             ))
             head.append(script_tag)
         
-        for resource in self.__resources:
-            self._add_resource_to_head(resource)
+    def _add_resource_to_head(self, resource):
         
-    def _add_resource_to_head(self, resource, always = False):
+        is_string = isinstance(resource, basestring)
+
+        uri = resource if is_string else resource.uri
         
-        uri = resource.uri
+        if uri not in self.__resource_uris:
+            self.__resource_uris.add(uri)
         
-        if always or uri in self.__resource_uris:
-            
-            self.__resource_uris.discard(uri)
-        
+            if is_string:
+                resource = Resource.from_uri(uri)
+
             if isinstance(resource, Script):
                 script_tag = Element("script")
                 script_tag["type"] = resource.mime_type
