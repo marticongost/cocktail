@@ -20,7 +20,20 @@
 		dayNamesMin: ['Dg','Dl','Dt','Dc','Dj','Dv','Ds'],
 		dayStatus: 'DD', dateStatus: 'D, M d',
 		firstDay: 1, 
-		initStatus: '', isRTL: false};
+		initStatus: '', isRTL: false,
+		onSelect: function () {
+		    var class_name = 'timepickr' + jQuery(this).attr('id');
+		    if(jQuery('.' + class_name)){
+		        jQuery('.' + class_name).focus();
+		    }
+        },
+        onClose: function () {
+            var class_name = 'timepickr' + jQuery(this).attr('id');
+		    if(jQuery(this).val()==""){
+		        jQuery('.' + class_name).val('');
+		    }
+        }
+    };
 	jQuery.datepicker.setDefaults(jQuery.datepicker.regional['ca']);
 
 
@@ -44,14 +57,40 @@
 		dayNamesMin: ['Do','Lu','Ma','Mi','Ju','Vi','S&aacute;'],
 		dayStatus: 'DD', dateStatus: 'D, M d',
 		firstDay: 1, 
-		initStatus: '', isRTL: false};
+		initStatus: '', isRTL: false,
+		onSelect: function () {
+		    var class_name = 'timepickr' + jQuery(this).attr('id');
+		    if(jQuery('.' + class_name)){
+		        jQuery('.' + class_name).focus();
+		    }
+        },
+        onClose: function () {
+            var class_name = 'timepickr' + jQuery(this).attr('id');
+		    if(jQuery(this).val()==""){
+		        jQuery('.' + class_name).val('');
+		    }
+        }
+    };
 	jQuery.datepicker.setDefaults(jQuery.datepicker.regional['es']);	
 
 
 
 	jQuery.datepicker.regional['en'] = {
 		firstDay: 0, 
-		initStatus: '', isRTL: false};
+		initStatus: '', isRTL: false,
+	    onSelect: function () {
+		    var class_name = 'timepickr' + jQuery(this).attr('id');
+		    if(jQuery('.' + class_name)){
+		        jQuery('.' + class_name).focus();
+		    }
+        },
+        onClose: function () {
+            var class_name = 'timepickr' + jQuery(this).attr('id');
+		    if(jQuery(this).val()==""){
+		        jQuery('.' + class_name).val('');
+		    }
+        }
+    };
     jQuery.datepicker.setDefaults(jQuery.datepicker.regional['en']);		
 
 
