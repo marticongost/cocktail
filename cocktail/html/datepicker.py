@@ -82,7 +82,7 @@ class DatePicker(TextBox):
             "buttonImage": "/cocktail/images/calendar.png",
             "buttonImageOnly": True,
             "defaultValue": self._get_value(),    
-            "showOn": "both"
+            "showOn": "both"            
         }
 
     def _get_value(self):

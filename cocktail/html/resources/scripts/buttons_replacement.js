@@ -1,15 +1,27 @@
 jQuery(document).ready( function () {
     
-    if(!Array.indexOf){
-	    Array.prototype.indexOf = function(obj){
-	        for(var i=0; i<this.length; i++){
-	            if(this[i]==obj){
-	                return i;
-	            }
-	        }
-	        return -1;
-	    }
-	}
+    if (!Array.prototype.indexOf)
+    {
+      Array.prototype.indexOf = function(elt /*, from*/)
+      {
+        var len = this.length;
+    
+        var from = Number(arguments[1]) || 0;
+        from = (from < 0)
+             ? Math.ceil(from)
+             : Math.floor(from);
+        if (from < 0)
+          from += len;
+    
+        for (; from < len; from++)
+        {
+          if (from in this &&
+              this[from] === elt)
+            return from;
+        }
+        return -1;
+      };
+    }
 
     
     var button_names = [];
@@ -39,17 +51,7 @@ jQuery(document).ready( function () {
             jQuery(replaced).insertBefore(jQuery(this));             
             button_names.push(nom);
         }
-        /*            
-        this.setAttribute('type','submit');                              
-        var newInput = document.createElement('input');
-        newInput.type = 'submit'; // that should work even with IE
-        if(this.attributes.getNamedItem("value")){
-            var attr = document.createAttribute("value");
-            newInput.attributes.setNamedItem(attr);
-        }
-        //newInput.innerHTML = this.innerHTML;
-        this.parentNode.replaceChild(newInput, this);
-        */
+
         if(this.attributes.getNamedItem("value")){
             jQuery(this).click( function () {                                
                 jQuery("input[name='" + nom + "']").val(this.attributes.getNamedItem("value").nodeValue);                     
@@ -57,6 +59,10 @@ jQuery(document).ready( function () {
         }
         
     });
+    
+    
+    //Show success message
+    setTimeout("jQuery('.success').hide('slow')", 4000 )
     
     
 });
