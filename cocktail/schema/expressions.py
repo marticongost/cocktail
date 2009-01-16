@@ -10,15 +10,31 @@ import re
 import operator
 from cocktail.schema.accessors import get_accessor
 
+normalization_map = {}
+
+for repl, chars in (
+    (u"a", u"áàäâ"),
+    (u"e", u"éèëê"),
+    (u"i", u"íìïî"),
+    (u"o", u"óòöô"),
+    (u"u", u"úùüû")
+):
+    for c in chars:
+        normalization_map[ord(c)] = ord(repl)
+
+def normalize(string):
+    return string.lower().translate(normalization_map)
+
+
 class Expression(object):
     
     op = None
     operands = ()
-
+    
     def __init__(self, *operands):
         self.operands = tuple(self.wrap(operand) for operand in operands)
 
-    def eval(self, context, accessor = None):
+    def eval(self, context = None, accessor = None):
         return self.op(*[operand.eval(context, accessor)
                          for operand in self.operands])
 
@@ -98,7 +114,7 @@ class Constant(Expression):
     def __init__(self, value):
         self.value = value
 
-    def eval(self, context, accessor = None):
+    def eval(self, context = None, accessor = None):
         return self.value
 
 
@@ -117,32 +133,92 @@ class CustomExpression(Expression):
     def __init__(self, expression):
         self.expression = expression
 
-    def eval(self, context, accessor = None):
+    def eval(self, context = None, accessor = None):
         return self.expression(context)
 
 
-class EqualExpression(Expression):
-    op = operator.eq
+class NormalizableExpression(Expression):
+
+    normalized_strings = False
+    _invariable_normalized = False
+    
+    def normalize_operands(self, a, b):
+
+        if self.normalized_strings:
+            a = normalize(a)
+            if not self._invariable_normalized:
+                b = normalize(b)
+
+        return a, b
+
+    def normalize_invariable(self):
+        self.operands = (
+            self.operands[0],
+            Constant(normalize(self.operands[1].eval()))
+        )
 
 
-class NotEqualExpression(Expression):
-    op = operator.ne
+class EqualExpression(NormalizableExpression):
+    
+    def op(self, a, b):
+        a, b = self.normalize_operands(a, b)
+        return a == b
 
 
-class GreaterExpression(Expression):
-    op = operator.gt
+class NotEqualExpression(NormalizableExpression):
+    
+    def op(self, a, b):
+        a, b = self.normalize_operands(a, b)
+        return a != b
 
 
-class GreaterEqualExpression(Expression):
-    op = operator.ge
+class GreaterExpression(NormalizableExpression):
+    
+    def op(self, a, b):
+        a, b = self.normalize_operands(a, b)
+        return a > b
 
 
-class LowerExpression(Expression):
-    op = operator.lt
+class GreaterEqualExpression(NormalizableExpression):
+    
+    def op(self, a, b):
+        a, b = self.normalize_operands(a, b)
+        return a >= b
 
 
-class LowerEqualExpression(Expression):
-    op = operator.le
+class LowerExpression(NormalizableExpression):
+
+    def op(self, a, b):
+        a, b = self.normalize_operands(a, b)
+        return a < b
+
+
+class LowerEqualExpression(NormalizableExpression):
+
+    def op(self, a, b):
+        a, b = self.normalize_operands(a, b)
+        return a <= b
+
+
+class StartsWithExpression(NormalizableExpression):
+    
+    def op(self, a, b):
+        a, b = self.normalize_operands(a, b)
+        return a.startswith(b)
+
+
+class EndsWithExpression(NormalizableExpression):
+
+    def op(self, a, b):
+        a, b = self.normalize_operands(a, b)
+        return a.endswith(b)
+
+
+class SearchExpression(NormalizableExpression):
+
+    def op(self, a, b):
+        a, b = self.normalize_operands(a, b)
+        return all((word in a) for word in b.split())
 
 
 class AddExpression(Expression):
@@ -185,18 +261,6 @@ class PositiveExpression(Expression):
     op = operator.pos
 
 
-class StartsWithExpression(Expression):
-    
-    def op(self, a, b):
-        return a.startswith(b)
-
-
-class EndsWithExpression(Expression):
-
-    def op(self, a, b):
-        return a.endswith(b)
-
-
 class ContainsExpression(Expression):
     op = operator.contains    
 
@@ -209,16 +273,6 @@ class MatchExpression(Expression):
 
         return b.search(a)
 
-
-class SearchExpression(Expression):
-
-    def op(self, a, b):
-
-        if isinstance(b, basestring):
-            b = b.split()
-
-        return all((word in a) for word in b)
- 
 
 class TranslationExpression(Expression):
 
