@@ -29,7 +29,7 @@ schema.Member.parse_request_value = None
 
 # Extension property that allows members to define a serializer function for
 # request values
-schema.Member.serialize_request_value = str
+schema.Member.serialize_request_value = unicode
 
 def parse_int(self, reader, value):
     try:
