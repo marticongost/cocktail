@@ -55,11 +55,16 @@ def get_persistent_param(param_name,
     # Persist a new value
     if param_value:
         if update:
-            cherrypy.response.cookie[cookie_name] = (
-                param_value
-                if isinstance(param_value, basestring)
-                else ",".join(param_value)
-            )
+            if not isinstance(param_value, basestring):
+                param_value = u",".join(param_value)
+
+            if isinstance(param_value, unicode):
+                cookie_value = param_value.encode("utf-8")
+            else:
+                cookie_value = param_value
+
+            cherrypy.response.cookie[cookie_name] = cookie_value
+
             response_cookie = cherrypy.response.cookie[cookie_name]
             response_cookie["max-age"] = cookie_duration
             response_cookie["path"] = cookie_path
@@ -80,6 +85,9 @@ def get_persistent_param(param_name,
             # Restore a persisted value
             else:
                 param_value = request_cookie.value
+
+                if param_value:
+                    param_value = param_value.decode("utf-8")
 
     return param_value
 
