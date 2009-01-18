@@ -22,7 +22,6 @@ jQuery(document).ready( function () {
         return -1;
       };
     }
-
     
     var button_names = [];
     
@@ -59,10 +58,7 @@ jQuery(document).ready( function () {
         }
         
     });
-    
-    
+        
     //Show success message
-    setTimeout("jQuery('.success').hide('slow')", 4000 )
-    
-    
+    setTimeout("jQuery('.success').hide('slow')", 1500);
 });
