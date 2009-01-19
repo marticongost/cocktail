@@ -657,6 +657,34 @@ class OneToManyTestCase(TestCase):
         self.assertEqual(bar2.foos, [foo1, foo2])
 
 
+class RecursiveRelationTestCase(TestCase):
+
+    def test_recursive_relation(self):
+
+        from cocktail.schema import Schema, Reference, Collection
+
+        schema = Schema()
+        
+        schema.add_member(
+            Reference("parent",
+                type = schema,
+                bidirectional = True
+            )
+        )
+
+        schema.add_member(
+            Collection("children",
+                items = Reference(type = schema),
+                bidirectional = True
+            )
+        )
+
+        self.assertEqual(schema["parent"].related_end, schema["children"])
+        self.assertEqual(schema["children"].related_end, schema["parent"])
+        self.assertEqual(schema["parent"].related_type, schema)
+        self.assertEqual(schema["children"].related_type, schema)
+
+
 if __name__ == "__main__":
     from unittest import main
     main()

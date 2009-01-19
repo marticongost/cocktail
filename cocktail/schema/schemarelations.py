@@ -86,7 +86,8 @@ class RelationMember(Member):
                     if member.related_key:
                         if self.name == member.related_key:
                             break
-                    elif self.schema is member.related_type:
+                    elif self.schema is member.related_type \
+                    and member is not self:
                         break
         
         if member is None:
