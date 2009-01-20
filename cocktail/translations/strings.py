@@ -20,12 +20,6 @@ translations.define(False,
     en = u"No"
 )
 
-translations.define(True,
-    ca = u"Sí",
-    es = u"Sí",
-    en = u"Yes"
-)
-
 translations.define("Any",
     ca = u"Qualsevol",
     es = u"Cualquiera",
