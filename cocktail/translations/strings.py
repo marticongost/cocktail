@@ -244,6 +244,18 @@ translations.define("UserFilter.language",
     en = u"in"
 )
 
+translations.define("cocktail.html.UserFilterEntry any language",
+    ca = u"en qualsevol idioma",
+    es = u"en cualquier idioma",
+    en = u"in any language"
+)
+
+translations.define("cocktail.controllers.userfilter.GlobalSearch-instance",
+    ca = u"Cerca global",
+    es = u"Búsqueda global",
+    en = u"Global search"
+)
+
 # Languages
 #------------------------------------------------------------------------------
 translations.define("ca",
