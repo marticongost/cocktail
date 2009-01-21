@@ -10,7 +10,8 @@
     def display_language(self, obj, member):
         
         display = loader.new("cocktail.html.DropdownSelector")
-        display.empty_option_displayed = False
+        display.empty_option_displayed = not member.required
+        display.empty_label = translate("cocktail.html.UserFilterEntry any language")
 
         @refine(display)
         def get_item_label(self, language):
