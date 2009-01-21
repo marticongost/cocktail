@@ -104,9 +104,7 @@ jQuery(function () {
     }
 
     // Hide checkboxes, but keep them around for form submission purposes
-    jQuery(".Table .selection")
-        .css({width: 0})
-        .find("input").css({position: "absolute", left: "-1000px"});
+    jQuery(".Table .selection").css({display: "none"});
     
     checkboxes
         .each(highlightSelection)
@@ -230,7 +228,7 @@ jQuery(function () {
             div.appendChild(span);
         }
         
-        jQuery(".collection_display").before(div);
+        jQuery(".toolbar").after(div);
         
         jQuery(".row_selector_all").click( function () {
             selectAll();
