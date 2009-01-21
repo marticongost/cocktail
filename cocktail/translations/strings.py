@@ -52,15 +52,15 @@ translations.define("Submit",
 
 translations.define("Item count",
     ca = lambda page_range, item_count: \
-        u"Mostrant resultats <strong>%d-%d</strong> de %d" % (
+        u"<strong>%d-%d</strong> de %d" % (
             page_range[0], page_range[1], item_count
         ),
     es = lambda page_range, item_count: \
-        u"Mostrando resultados <strong>%d-%d</strong> de %d" % (
+        u"<strong>%d-%d</strong> de %d" % (
             page_range[0], page_range[1], item_count
         ),
     en = lambda page_range, item_count: \
-        u"Showing results <strong>%d-%d</strong> of %d" % (
+        u"<strong>%d-%d</strong> of %d" % (
             page_range[0], page_range[1], item_count
         )
 )
