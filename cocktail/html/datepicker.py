@@ -29,9 +29,7 @@ class DatePicker(TextBox):
         self.add_resource(
             "/cocktail/scripts/ui.datepicker-lang.js")
         self.add_resource(
-            "/cocktail/styles/jquery-ui-themeroller.css")
-        self.add_resource(
-                "/resources/scripts/timepicker.js")       
+            "/cocktail/styles/jquery-ui-themeroller.css")     
     
         self.date_picker_params = {}             
     
@@ -42,6 +40,8 @@ class DatePicker(TextBox):
         if isinstance(self.member, (DateTime, Time)):
             self.add_resource(
                 "/cocktail/scripts/jquery.maskedinput.js")
+            self.add_resource(
+                "/resources/scripts/timepicker.js")  
                 
             if isinstance(self.member, Time):
                 self.add_class("time")
