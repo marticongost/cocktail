@@ -6,6 +6,7 @@
 @organization:	Whads/Accent SL
 @since:			November 2008
 """
+from itertools import chain
 from cocktail.modeling import getter, cached_getter
 from cocktail.pkgutils import resolve
 from cocktail.schema import (
@@ -198,8 +199,14 @@ class GlobalSearchFilter(UserFilter):
     def schema(self):
         schema = Schema()
         schema.name = "UserFilter"
-                
-        if self.content_type.translated:       
+        
+        if any(
+            content_type.translated
+            for content_type in chain(
+                [self.content_type], self.content_type.derived_schemas()
+            )
+        ):        
+            schema.members_order = ["value", "language"]
             schema.add_member(String("language",
                 enumeration = self.available_languages
             ))
