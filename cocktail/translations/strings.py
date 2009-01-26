@@ -276,6 +276,18 @@ translations.define("en",
     en = u"English"
 )
 
+translations.define("fr",
+    ca = u"Francès",
+    es = u"Francés",
+    en = u"French"
+)
+
+translations.define("de",
+    ca = u"Alemany",
+    es = u"Alemán",
+    en = u"German"
+)
+
 translations.define("translated into",
     ca = lambda lang: "en " + translate(lang, "ca"),
     es = lambda lang: "en " + translate(lang, "es"),
