@@ -15,6 +15,10 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
     actions = ()
     selection_mode = MULTIPLE_SELECTION
     user_collection = None    
+
+    def fill_toolbar(self):
+        for action in self.actions:
+            self.toolbar.append(self.create_toolbar_button(action))
     ?>
     
     <?py
@@ -52,12 +56,8 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
                 if shortcut:
                     self.filters.set_client_param("shortcut", shortcut)
                 ?>
-                <div class="label">${translate("Filters")}
-                    <span
-                        py:id="filter_count"
-                        py:visible="${bool(self.user_collection.user_filters)}">
-                        (${len(self.user_collection.user_filters)})
-                    </span>
+                <div py:id="filters_label" class="label">
+                    ${translate("cocktail.html.CollectionView search")}
                 </div>
                 <py:cocktail.html.FilterBox
                     py:id="filters_selector"
@@ -70,31 +70,24 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
 
     <div py:id="toolbar">
 
-        <!-- Actions -->
-        <div py:id="actions_box" py:collapsible="${True}">
+        <button
+            py:def="toolbar_button"
+            py:args="action"
+            class="toolbar_button ${action}"
+            name="action"
+            type="submit"
+            value="${action}">
+            <?py
+            shortcut = translate("CollectionView " + action + " shortcut", default = "")
+            if shortcut:
+                element.set_client_param("shortcut", shortcut)
+            ?>
+            ${translate("Action " + action)}
+        </button>
+    </div>
 
-            <button
-                py:def="toolbar_button"
-                py:args="action"
-                class="toolbar_button ${action}"
-                name="action"
-                type="submit"
-                value="${action}">
-                <?py
-                shortcut = translate("CollectionView " + action + " shortcut", default = "")
-                if shortcut:
-                    element.set_client_param("shortcut", shortcut)
-                ?>
-                <img src="/resources/images/${action}.png"/>
-                <label>${translate(action)}</label>
-            </button>
-
-            <py:ready>
-                <py:new
-                    py:element="self.create_toolbar_button(action)"
-                    py:for="action in self.actions"/>
-            </py:ready>
-        </div>
+    <div py:id="search_results_message">
+        ${translate("cocktail.html.ContentView search results")}
     </div>
 
     <!-- Paging -->
@@ -175,20 +168,28 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
         <py:cocktail.html.Table py:id="collection_display"/>
     </div>
 
-    <div py:id="no_results">
-        ${translate("No results")}
-    </div>
+    <div py:id="no_results"/>
 
     <py:ready>
         <?py
+        self.visible_results = bool(self.user_collection.page_subset())
+        self.fill_toolbar()
         self.collection_display.user_collection = self.user_collection
         self.collection_display.selection_mode = self.selection_mode        
-        results_visible = bool(self.user_collection.page_subset())
-        self.collection_display.visible = results_visible
-        self.no_results.visible = not results_visible
+        self.collection_display.visible = self.visible_results
+        self.no_results.visible = not self.visible_results
+        self.settings_box.visible = self.visible_results
         self.fields.visible = False
         self.buttons.visible = False
         self.submit_button.visible = False
+        self.search_results_message.visible = \
+            self.user_collection.user_filters and self.visible_results
+
+        if not self.visible_results:
+            if self.user_collection.user_filters:
+                self.no_results.append(translate("cocktail.html.CollectionView no search results"))
+            else:
+                self.no_results.append(translate("cocktail.html.CollectionView no results"))
         ?>
     </py:ready>
 
