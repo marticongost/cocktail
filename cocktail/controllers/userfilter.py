@@ -11,29 +11,37 @@ from cocktail.pkgutils import resolve
 from cocktail.schema import (
     Schema, Member, Number, BaseDateTime, String, Boolean, Collection
 )
+from cocktail.schema.expressions import CustomExpression, normalize
 from cocktail.html import templates
 from cocktail.translations import translate
 
 # Add an extension property to allow schemas to define additional user filters
 Schema.custom_user_filters = None
 
+# TODO: Search can be used to indirectly access restricted members
 
 def get_content_type_filters(content_type):
 
     filters = []
 
+    filter = GlobalSearchFilter()
+    filter.id = "global_search"
+    filter.content_type = content_type
+    filters.append(filter)
+
     for member in content_type.ordered_members():
-        if member.user_filter and member.visible:
+        if member.searchable and member.user_filter and member.visible:
             filter = member.user_filter()
             filter.id = "member-" + member.name
+            filter.content_type = content_type
             filter.member = member
             filters.append(filter)
-    
+
     if content_type.custom_user_filters:
-        filters.extend(
-            resolve(user_filter)()
-            for user_filter in content_type.custom_user_filters
-        )
+        for filter in content_type.custom_user_filters:        
+            resolve(filter)()
+            filter.content_type = content_type
+            filters.append(filter)
 
     return filters
 
@@ -41,6 +49,7 @@ def get_content_type_filters(content_type):
 class UserFilter(object):
 
     id = None
+    content_type = None
     available_languages = ()
     ui_class = "cocktail.html.UserFilterEntry"
    
@@ -180,6 +189,54 @@ class StringFilter(ComparisonFilter):
         expr.normalized_strings = self.normalized_strings
         return expr
 
+
+class GlobalSearchFilter(UserFilter):    
+    value = None
+    language = None
+
+    @cached_getter
+    def schema(self):
+        schema = Schema()
+        schema.name = "UserFilter"
+                
+        if self.content_type.translated:       
+            schema.add_member(String("language",
+                enumeration = self.available_languages
+            ))
+
+        schema.add_member(String("value", required = True))
+        return schema
+
+    @getter
+    def expression(self):
+
+        search_words = set(normalize(self.value).split())
+        
+        if self.language:
+            languages = self.language,
+        else:
+            languages = self.available_languages
+
+        def search_object(obj):
+
+            # Concatenate all text fields
+            object_text = ""
+
+            for language in languages:
+                for member in obj.__class__.members().itervalues():
+                    if isinstance(member, String) and member.searchable:
+                        member_value = obj.get(member, language)
+                        if member_value:
+                            if object_text:
+                                object_text += " "
+                            object_text += member_value
+            
+            object_text = normalize(object_text)
+            return all((word in object_text) for word in search_words)
+
+        return CustomExpression(search_object)
+
+
 # An extension property used to associate user filter types with members
 Member.user_filter = EqualityFilter
 Number.user_filter = ComparisonFilter
@@ -187,4 +244,7 @@ BaseDateTime.user_filter = ComparisonFilter
 String.user_filter = StringFilter
 Boolean.user_filter = BooleanFilter
 Collection.user_filter = None
+
+# An extension property used to determine which members should be searchable
+Member.searchable = True
 
