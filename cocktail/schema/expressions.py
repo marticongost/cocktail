@@ -23,7 +23,12 @@ for repl, chars in (
         normalization_map[ord(c)] = ord(repl)
 
 def normalize(string):
-    return string.lower().translate(normalization_map)
+    string = string.lower()
+    
+    if isinstance(string, unicode):
+        string = string.translate(normalization_map)
+
+    return string
 
 
 class Expression(object):
