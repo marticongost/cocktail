@@ -23,24 +23,19 @@ Schema.custom_user_filters = None
 def get_content_type_filters(content_type):
 
     filters = []
-    has_string_member = False
+
+    filter = GlobalSearchFilter()
+    filter.id = "global_search"
+    filter.content_type = content_type
+    filters.append(filter)
 
     for member in content_type.ordered_members():
-        if member.user_filter and member.visible:
+        if member.searchable and member.user_filter and member.visible:
             filter = member.user_filter()
             filter.id = "member-" + member.name
             filter.content_type = content_type
             filter.member = member
             filters.append(filter)
-
-            if not has_string_member and isinstance(member, String):
-                has_string_member = True
-
-    if has_string_member:
-        filter = GlobalSearch()
-        filter.id = "global_search"
-        filter.content_type = content_type
-        filters.insert(0, filter)
 
     if content_type.custom_user_filters:
         for filter in content_type.custom_user_filters:        
@@ -195,7 +190,7 @@ class StringFilter(ComparisonFilter):
         return expr
 
 
-class GlobalSearch(UserFilter):    
+class GlobalSearchFilter(UserFilter):    
     value = None
     language = None
 
@@ -208,7 +203,7 @@ class GlobalSearch(UserFilter):
             schema.add_member(String("language",
                 enumeration = self.available_languages
             ))
-            
+
         schema.add_member(String("value", required = True))
         return schema
 
@@ -226,15 +221,17 @@ class GlobalSearch(UserFilter):
 
             # Concatenate all text fields
             object_text = ""
+
             for language in languages:
                 for member in obj.__class__.members().itervalues():
-                    if isinstance(member, String):
+                    if isinstance(member, String) and member.searchable:
                         member_value = obj.get(member, language)
                         if member_value:
                             if object_text:
                                 object_text += " "
                             object_text += member_value
             
+            object_text = normalize(object_text)
             return all((word in object_text) for word in search_words)
 
         return CustomExpression(search_object)
@@ -247,4 +244,7 @@ BaseDateTime.user_filter = ComparisonFilter
 String.user_filter = StringFilter
 Boolean.user_filter = BooleanFilter
 Collection.user_filter = None
+
+# An extension property used to determine which members should be searchable
+Member.searchable = True
 
