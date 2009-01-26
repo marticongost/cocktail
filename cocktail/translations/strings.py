@@ -71,7 +71,13 @@ translations.define("Results per page",
     en = u"Results per page"
 )
 
-translations.define("No results",
+translations.define("cocktail.html.CollectionView no search results",
+    ca = u"La cerca no conté cap element.",
+    es = u"La búsqueda no contiene ningún elemento.",
+    en = u"The search has no matches."
+)
+
+translations.define("cocktail.html.CollectionView no results",
     ca = u"La vista activa no conté cap element.",
     es = u"La vista activa no contiene ningún elemento.",
     en = u"The current view has no matching items."
@@ -114,6 +120,18 @@ translations.define("Redirection button",
     ca = u"Continuar",
     es = u"Continuar",
     en = u"Continue"
+)
+
+translations.define("cocktail.html.CollectionView search",
+    ca = u"Cerca",
+    es = u"Búsqueda",
+    en = u"Search"
+)
+
+translations.define("cocktail.html.ContentView search results",
+    ca = u"Resultats de la cerca:",
+    es = u"Resultados de la búsqueda:",
+    en = u"Search results:"
 )
 
 translations.define("CollectionView selection",
@@ -166,16 +184,22 @@ translations.define("cocktail.html.FilterBox add filter",
     en = u"Add filter"
 )
 
-translations.define("cocktail.html.FilterBox clear filters",
-    ca = u"Netejar filtres",
-    es = u"Limpiar filtros",
-    en = u"Clear filters"
+translations.define("cocktail.html.FilterBox remove filters",
+    ca = u"Treure filtres",
+    es = u"Quitar filtros",
+    en = u"Remove filters"
+)
+
+translations.define("cocktail.html.FilterBox discard filters",
+    ca = u"Descartar",
+    es = u"Descartar",
+    en = u"Discard"
 )
 
 translations.define("cocktail.html.FilterBox apply filters",
-    ca = u"Aplicar",
-    es = u"Aplicar",
-    en = u"Apply"
+    ca = u"Cercar",
+    es = u"Buscar",
+    en = u"Search"
 )
 
 translations.define("cocktail.html.UserFilterEntry operator eq",
@@ -250,10 +274,10 @@ translations.define("cocktail.html.UserFilterEntry any language",
     en = u"in any language"
 )
 
-translations.define("cocktail.controllers.userfilter.GlobalSearch-instance",
-    ca = u"Cerca global",
-    es = u"Búsqueda global",
-    en = u"Global search"
+translations.define("cocktail.controllers.userfilter.GlobalSearchFilter-instance",
+    ca = u"Conté les paraules",
+    es = u"Contiene las palabras",
+    en = u"Has the words"
 )
 
 # Languages

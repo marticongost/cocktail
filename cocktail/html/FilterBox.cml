@@ -9,13 +9,13 @@ from cocktail.controllers import get_state, view_state, serialize_parameter
 
     <?py-class
     filters = ()
-    available_filters = ()    
+    available_filters = ()
     ?>
 
     <div py:id="filter_list">
-        <py:ready>
+        <py:ready>            
             <py:new
-                py:element="self.create_filter_entry(index, filter)"            
+                py:element="self.create_filter_entry(index, filter)"
                 py:for="index, filter in enumerate(self.filters)"/>
         </py:ready>
     </div>
@@ -76,7 +76,7 @@ from cocktail.controllers import get_state, view_state, serialize_parameter
                                     serialize_parameter(
                                         member,
                                         getattr(f, member.name)
-                                    )                                
+                                    )
 
                         filter_param.append(filter.id)
                         element["href"] = "?" + view_state(**params)
@@ -87,16 +87,22 @@ from cocktail.controllers import get_state, view_state, serialize_parameter
             </div>
         </div>
 
-        <a py:id="clear_button">
+        <a py:id="discard_button">
             <py:ready>
                 <?py
-                element["href"] = "?" + view_state(filter = "", page = 0)
+                params = {"page": 0, "filter": ""}
+
+                for i, f in enumerate(self.filters):
+                    for member in f.schema.members().itervalues():
+                        params["filter_" + member.name + str(i)] = None
+
+                element["href"] = "?" + view_state(**params)
                 ?>
             </py:ready>
-            ${translate("cocktail.html.FilterBox clear filters")}
+            ${translate("cocktail.html.FilterBox remove filters")}
         </a>
 
-        <button type="submit">
+        <button py:id="search_button" type="submit">
             ${translate("cocktail.html.FilterBox apply filters")}
         </button>
     </div>
