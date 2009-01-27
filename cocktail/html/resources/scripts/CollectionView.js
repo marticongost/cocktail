@@ -95,6 +95,8 @@ jQuery(function () {
         jQuery(document).keydown(function (e) {
                 
                 if(currentFocus){
+                    
+                    jQuery("body").disableTextSelect();
         
                     var key = e.charCode ? e.charCode : e.keyCode ? e.keyCode : 0;
                     var selindex = checkboxes.index(lastSelected);
@@ -150,6 +152,8 @@ jQuery(function () {
             			  }
             			  break;
             		}
+            	}else{
+            	    jQuery("body").enableTextSelect();    
             	}
         });
         
@@ -185,7 +189,7 @@ jQuery(function () {
     }
 
     function selectAll() {
-        checkboxes.each( function () {
+        jQuery(".Table .selection input").each( function () {
             setChecked(this, true);
         });
     }
@@ -238,31 +242,5 @@ jQuery(function () {
             removeSelection();
         });
     }
-
-    function disableTextSelection () {
-
-        var selector = jQuery("body");
-
-        if (jQuery.browser.mozilla) {
-            return selector.each(function() {
-                jQuery(this).css({
-                    'MozUserSelect' : 'none'
-                });
-            });
-        } else if (jQuery.browser.msie) {
-            return selector.each(function() {
-                jQuery(this).bind('selectstart.disableTextSelect', function() {
-                    return false;
-                });
-            });
-        } else {
-             return selector.each(function() {
-                jQuery(this).bind('mousedown.disableTextSelect', function() {
-                    return false;
-                });
-            });
-        }
-    }
-
-    disableTextSelection();
+    
 });
