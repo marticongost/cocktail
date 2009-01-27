@@ -40,7 +40,7 @@ def get_content_type_filters(content_type):
 
     if content_type.custom_user_filters:
         for filter in content_type.custom_user_filters:        
-            resolve(filter)()
+            filter = resolve(filter)()
             filter.content_type = content_type
             filters.append(filter)
 
