@@ -7,6 +7,7 @@
 @since:			October 2008
 """
 from cocktail.modeling import ListWrapper, empty_list
+from cocktail.schema.exceptions import ValidationError
 
 
 class ErrorList(ListWrapper):
@@ -29,7 +30,8 @@ class ErrorList(ListWrapper):
         
         self._items.append(error)
 
-        if error.member:
+        if isinstance(error, ValidationError) \
+        and error.member:
             key = (self._normalize_member(error.member), error.language)
             member_errors = self.__errors_by_member.get(key)
             
