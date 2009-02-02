@@ -15,16 +15,14 @@ class PagingControls(Element):
     subset = None
     page = None
     page_size = None
-
+    page_size_editable = True
+    
     user_collection = None
 
     def _build(self):
         
         self.pager = self.create_pager()
         self.append(self.pager)
-
-        self.page_size_control = self.create_page_size_control()
-        self.append(self.page_size_control)
 
         self.item_count = self.create_item_count()
         self.append(self.item_count)       
@@ -49,8 +47,12 @@ class PagingControls(Element):
             self.pager.item_count = subset_count
 
             # Page size
-            self.page_size_control.input["value"] = \
-                str(self.page_size)
+            if self.page_size_editable:
+                self.page_size_control = self.create_page_size_control()
+                self.page_size_control.place_after(self.pager)
+
+                self.page_size_control.input["value"] = \
+                    str(self.page_size)
 
             # Item count
             self.item_count.append(translate("Item count",
