@@ -34,6 +34,26 @@ def resolve(reference):
     else:
         return reference
 
+def import_module(name):
+    """Obtains a reference to a module or package, given its fully qualified
+    name.
+    
+    @param name: The fully qualified name of the module to import.
+    @type name: str
+
+    @return: The requested module.
+    @rtype: object
+
+    @raise ImportError: Raised if there's no module or package matching the
+        indicated qualified name.
+    """
+    obj = __import__(name)
+    
+    for component in name.split(".")[1:]:
+        obj = getattr(obj, component)
+    
+    return obj
+
 def import_object(name):
     """Obtains a reference to an object, given its fully qualified name.
     
@@ -53,7 +73,7 @@ def import_object(name):
     obj = __import__(".".join(components[:-1]))
     
     for component in components[1:]:
-        try:            
+        try:
             obj = getattr(obj, component)
         except AttributeError:
             raise ImportError("Can't import name %s" % name)
