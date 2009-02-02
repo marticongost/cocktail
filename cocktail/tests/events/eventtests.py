@@ -412,8 +412,3 @@ class EventTestCase(TestCase):
 
         self.assertEqual(list(Bar.spammed), [Bar.handle_spammed])
 
-
-if __name__ == "__main__":
-    from unittest import main
-    main()
-

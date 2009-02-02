@@ -8,9 +8,4 @@ toolkit.
 @organization:	Whads/Accent SL
 @since:			November 2008
 """
-from cocktail.tests.persistence.relationtests import *
-
-if __name__ == "__main__":
-    from unittest import main
-    main()
 

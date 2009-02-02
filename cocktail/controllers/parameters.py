@@ -7,6 +7,7 @@
 @since:			October 2008
 """
 from itertools import chain
+import decimal
 import time
 import datetime
 import cherrypy
@@ -40,6 +41,19 @@ def parse_int(self, reader, value):
     return value
 
 schema.Integer.parse_request_value = parse_int
+
+def parse_decimal(self, reader, value):
+    
+    parser = translate("Decimal parser")
+
+    try:
+        value = parser(value)
+    except ValueError:
+        pass
+
+    return value
+
+schema.Decimal.parse_request_value = parse_decimal
 
 def parse_date(self, reader, value):
     
