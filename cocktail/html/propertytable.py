@@ -25,14 +25,19 @@ class PropertyTable(Element, DataDisplay):
     def _ready(self):
         Element._ready(self)
 
-        for member in self.displayed_members:
-            entry = self.create_entry(member)
+        for index, member in enumerate(self.displayed_members):
+            entry = self.create_entry(index, member)
             self.append(entry)
 
-    def create_entry(self, member):
+    def create_entry(self, index, member):
 
         entry = Element("tr")
         entry.add_class("%s_entry" % member.name)
+
+        if index % 2 == 0:
+            entry.add_class("odd")
+        else:
+            entry.add_class("even")
 
         label = self.create_label(member)
         entry.append(label)
