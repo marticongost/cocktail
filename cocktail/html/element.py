@@ -64,6 +64,7 @@ class Element(object):
         self.__resources = None
         self.__resource_uris = None
         self.__client_params = None
+        self.__client_code = None
         self.__client_variables = None
         self.__client_translations = None
         self.__is_ready = False
@@ -177,7 +178,7 @@ class Element(object):
                 for handler in self.__ready_handlers:
                     handler()
 
-            if self.__client_params:
+            if self.__client_params or self.__client_code:
                 self.require_id()
 
             if self.member: 
@@ -558,6 +559,22 @@ class Element(object):
         else:
             del self.__client_params[key]
     
+    # Client side element initialization code
+    #--------------------------------------------------------------------------
+    
+    @getter
+    def client_code(self):
+        if self.__client_code is None:
+            return empty_list
+        else:
+            return self.__client_code
+    
+    def add_client_code(self, snippet):
+        if self.__client_code is None:
+            self.__client_code = [snippet]
+        else:
+            self.__client_code.append(snippet)
+
     # Client side variables
     #--------------------------------------------------------------------------
 
