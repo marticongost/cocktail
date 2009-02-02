@@ -1,4 +1,4 @@
-jQuery(function () {
+cocktail.init(function () {
 
      var target = null;
 
@@ -228,11 +228,7 @@ jQuery(function () {
             div.appendChild(span);
         }
 
-        var rowSelectorPrev = jQuery(".search_results_message");
-        if (!rowSelectorPrev.length) {
-            rowSelectorPrev = jQuery(".toolbar");
-        }
-        rowSelectorPrev.after(div);
+        jQuery(".data_controls").prepend(div);
 
         jQuery(".row_selector_all").click( function () {
             selectAll();

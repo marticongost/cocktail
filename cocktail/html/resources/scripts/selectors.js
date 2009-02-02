@@ -7,7 +7,7 @@
 @since:			September 2008
 -----------------------------------------------------------------------------*/
 
-jQuery(function () {
+cocktail.init(function () {
 
     jQuery(document).click(function (e) {
        jQuery(".selector").removeClass("unfolded");
@@ -20,9 +20,13 @@ jQuery(function () {
         });
     
     jQuery(".selector .label").each( function () {                
-        jQuery(this).replaceWith("<a href=\"javascript:;\" class=\"" + jQuery(this).attr('class') + "\">" + jQuery(this).html() + "</a>");
+        jQuery(this).replaceWith(
+            '<a href="javascript:;" class="'
+            + jQuery(this).attr('class') + '">'
+            + jQuery(this).html()
+            + '</a>');
     });
-       
+    
     jQuery(".selector .label").click(function (e) {
         var content_selector = jQuery(this).next(".selector_content");
         var selector = jQuery(this).parent(".selector");

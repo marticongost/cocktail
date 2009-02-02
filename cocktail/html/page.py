@@ -92,9 +92,10 @@ class Page(Element):
         for element in descendant.head_elements:
             self.head.append(Content(element.render(renderer)))
 
-        if descendant.client_params:
+        if descendant.client_params or descendant.client_code:
             
             self._add_resource_to_head(self.JQUERY_SCRIPT)
+            self._add_resource_to_head(self.CORE_SCRIPT)
              
             if self.__client_params_script is None:
                                 
@@ -106,15 +107,18 @@ class Page(Element):
                 self.__client_params_script.value = ""
                 script_tag.append(self.__client_params_script)
                 
+                script_tag.append("\tcocktail.init();\n")
                 script_tag.append("});\n")
-                self._generated_head.append(script_tag)
+                self.head.append(script_tag)
             
             js = ["\tjQuery('#%s').each(function () {" % descendant["id"]]
                 
             for key, value in descendant.client_params.iteritems():
                 js.append("\t\tthis.%s = %s;" % (key, dumps(value)))
-                
-            js.append("\t});")
+            
+            js.extend("\t\t" + snippet for snippet in descendant.client_code)
+
+            js.append("\t});\n")
             
             self.__client_params_script.value += "\n".join(js)
 
