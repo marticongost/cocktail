@@ -1,5 +1,18 @@
 
 var cocktail = {};
+cocktail.__initCallbacks = [];
+
+cocktail.init = function (callback) {
+    if (callback) {
+        cocktail.__initCallbacks.push(callback);
+    }
+    else {
+        var callbacks = cocktail.__initCallbacks;
+        for (var i = 0; i < callbacks.length; i++) {
+            callbacks[i]();
+        }
+    }
+}
 
 cocktail.getLanguage = function () {
     return this.__language;

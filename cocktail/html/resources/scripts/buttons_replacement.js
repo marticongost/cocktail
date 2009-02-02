@@ -1,4 +1,4 @@
-jQuery(document).ready( function () {
+cocktail.init(function () {
     
     if (!Array.prototype.indexOf)
     {
