@@ -4,6 +4,7 @@
 from cocktail.modeling import refine
 from cocktail.controllers.viewstate import view_state_form
 from cocktail.html.datadisplay import MULTIPLE_SELECTION
+from cocktail.html.shortcuts import set_translated_shortcut
 ?>
 
 <py:cocktail.html.Form
@@ -14,11 +15,7 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
     <?py-class
     actions = ()
     selection_mode = MULTIPLE_SELECTION
-    user_collection = None    
-
-    def fill_toolbar(self):
-        for action in self.actions:
-            self.toolbar.append(self.create_toolbar_button(action))
+    user_collection = None
     ?>
     
     <?py
@@ -53,9 +50,7 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
                 if not self.user_collection.user_filters:
                     self.filters.add_class("empty")
 
-                shortcut = translate("CollectionView filters shortcut", default = "")
-                if shortcut:
-                    self.filters.set_client_param("shortcut", shortcut)
+                set_translated_shortcut(self.filters, "CollectionView filters")
                 ?>
                 <div py:id="filters_label" class="label">
                     ${translate("cocktail.html.CollectionView search")}
@@ -69,33 +64,41 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
         </py:ready>
     </div>
 
-    <div py:id="toolbar">
-
-        <button
-            py:def="toolbar_button"
-            py:args="action"
-            class="toolbar_button ${action}"
-            name="action"
-            type="submit"
-            value="${action}">
-            <?py
-            shortcut = translate("CollectionView " + action + " shortcut", default = "")
-            if shortcut:
-                element.set_client_param("shortcut", shortcut)
-            ?>
-            ${translate("Action " + action)}
-        </button>
-    </div>
-
     <div py:id="search_results_message">
         ${translate("cocktail.html.ContentView search results")}
     </div>
 
-    <!-- Paging -->
-    <py:cocktail.html.PagingControls
-        py:id="paging_controls"
-        py:user_collection="@{self.user_collection}"
-        py:page_size_editable="${False}"/>
+    <!-- Data controls -->
+    <div py:id="toolbar_box">
+        <div py:id="toolbar">
+
+            <button
+                py:def="toolbar_button"
+                py:args="action"
+                class="toolbar_button ${action}"
+                name="action"
+                type="submit"
+                value="${action}">
+                <?py
+                set_translated_shortcut(element, "action " + action)
+                ?>
+                ${translate("Action " + action)}
+            </button>
+
+            <py:ready>
+                <py:new py:element="self.create_toolbar_button(action)"
+                    py:for="action in self.actions"/>
+            </py:ready>
+        </div>
+
+        <div py:id="data_controls">
+            <!-- Paging -->
+            <py:cocktail.html.PagingControls
+                py:id="paging_controls"
+                py:user_collection="@{self.user_collection}"
+                py:page_size_editable="${False}"/>
+        </div>
+    </div>
 
     <!-- Data -->
     <div py:id="collection_display_container">
@@ -110,9 +113,7 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
                 <!-- Visible languages -->
                 <div py:id="languages_box">
                     <?py
-                    shortcut = translate("CollectionView visible languages shortcut", default = "")
-                    if shortcut:
-                        element.set_client_param("shortcut", shortcut)
+                    set_translated_shortcut(element, "CollectionView visible languages")
                     ?>                
                     <span class="box_label">
                         ${translate("Visible languages")}
@@ -129,9 +130,7 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
                 <!-- Visible members  -->
                 <div py:id="members_box">
                     <?py
-                    shortcut = translate("CollectionView visible members shortcut", default = "")
-                    if shortcut:
-                        element.set_client_param("shortcut", shortcut)
+                    set_translated_shortcut(element, "CollectionView visible members")    
                     ?>
                     <span class="box_label">
                         ${translate("Visible members")}
@@ -173,8 +172,7 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
 
     <py:ready>
         <?py
-        self.visible_results = bool(self.user_collection.page_subset())
-        self.fill_toolbar()
+        self.visible_results = bool(self.user_collection.page_subset())        
         self.collection_display.user_collection = self.user_collection
         self.collection_display.selection_mode = self.selection_mode        
         self.collection_display.visible = self.visible_results
