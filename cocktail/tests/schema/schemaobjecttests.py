@@ -399,8 +399,3 @@ class TranslationTestCase(TestCase):
     def test_get_set(self):
         pass
 
-
-if __name__ == "__main__":
-    from unittest import main
-    main()
-

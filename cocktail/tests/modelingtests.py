@@ -135,8 +135,3 @@ class GenericMethodTestCase(TestCase):
         self.assertEqual(test_param, {"value": "base"})
         self.assertEqual(rvalue, "base")
 
-
-if __name__ == "__main__":
-    from unittest import main
-    main()
-

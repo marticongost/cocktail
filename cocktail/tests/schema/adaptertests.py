@@ -212,9 +212,4 @@ class ExclusionTestCase(TestCase):
         form_schema = Schema()
         adapter.export_schema(user_schema, form_schema)
         self.assertFalse("fictitious_member" in form_schema.members())
-        
-
-if __name__ == "__main__":
-    from unittest import main
-    main()
 

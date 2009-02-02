@@ -15,8 +15,8 @@ class ValidationTestCase(TestCase):
         self,
         member,
         correct_values,
-        incorrect_values,
-        error_type,
+        incorrect_values = None,
+        error_type = None,
         error_attributes = None,
         error_count = 1):
 
@@ -27,19 +27,21 @@ class ValidationTestCase(TestCase):
                 "%r is a valid value" % value
             assert not list(member.get_errors(value))
 
-        for value in incorrect_values:            
-            assert not member.validate(value), \
-                "%r is not a valid value" % value
-            errors = list(member.get_errors(value))
-            assert len(errors) == error_count
-            error = errors[0]
-            assert isinstance(error, error_type), \
-                "%r is an instance of %r" % (error, error_type)
-            #assert error.member is member
-            
-            if error_attributes:
-                for attrib_key, attrib_value in error_attributes.iteritems():
-                    assert getattr(error, attrib_key) == attrib_value
+        if incorrect_values:
+            for value in incorrect_values:            
+                assert not member.validate(value), \
+                    "%r is not a valid value" % value
+                errors = list(member.get_errors(value))
+                assert len(errors) == error_count
+                error = errors[0]
+                assert isinstance(error, error_type), \
+                    "%r is an instance of %r" % (error, error_type)
+                #assert error.member is member
+                
+                if error_attributes:
+                    for attrib_key, attrib_value \
+                    in error_attributes.iteritems():
+                        assert getattr(error, attrib_key) == attrib_value
 
 class MemberValidationTestCase(ValidationTestCase):
     
@@ -191,6 +193,45 @@ class CollectionValidationTestCase(ValidationTestCase):
             error_count = 3
         )
 
+    def test_cycles_allowed(self):
+
+        from cocktail.schema import Reference, exceptions
+
+        # Valid relations
+        a = {"rel": None}
+        b = {"rel": a}
+        
+        # 'c' contains itself
+        c = {"rel": None}
+        c["rel"] = c
+        
+        # 'd' and 'e' form a cycle
+        d = {"rel": None}
+        e = {"rel": None}
+        d["rel"] = e
+        e["rel"] = d
+
+        # 'f' and 'h' form a cycle
+        f = {"rel": None}
+        g = {"rel": None}
+        h = {"rel": None}
+        f["rel"] = g
+        g["rel"] = h
+        h["rel"] = f
+
+        self._test_validation(
+            Reference("rel", cycles_allowed = False),
+            [a, b],
+            [c, d, e, f, g, h],
+            exceptions.RelationCycleError
+        )
+
+        self._test_validation(
+            Reference("rel", cycles_allowed = True),
+            [a, b, c, d, e, f, g, h]
+        )
+
+
 class SchemaValidationTestCase(ValidationTestCase):
 
     def test_scalar(self):
@@ -316,9 +357,4 @@ class DynamicConstraintsTestCase(TestCase):
         assert len(errors) == 1
         error = errors[0]
         assert isinstance(error, ValueRequiredError)
-
-
-if __name__ == "__main__":
-    from unittest import main
-    main()
 
