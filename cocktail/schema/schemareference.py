@@ -9,13 +9,15 @@
 from cocktail.modeling import getter
 from cocktail.pkgutils import import_object
 from cocktail.schema.schemarelations import RelationMember
-from cocktail.schema.accessors import get_accessor
-from cocktail.schema.exceptions import ClassFamilyError
+from cocktail.schema.accessors import get_accessor, get
+from cocktail.schema.exceptions import ClassFamilyError, RelationCycleError
 
 
 class Reference(RelationMember):
     
     __class_family = None
+
+    cycles_allowed = True
 
     def __init__(self, *args, **kwargs):
         RelationMember.__init__(self, *args, **kwargs)
@@ -55,11 +57,23 @@ class Reference(RelationMember):
 
     def reference_validation_rule(self, value, context):
 
-        if value and isinstance(value, type):
+        if value is not None:
+ 
+            # Apply the 'class_family' constraint
+            if isinstance(value, type):
 
-            class_family = \
-                self.resolve_constraint(self.class_family, context)
+                class_family = \
+                    self.resolve_constraint(self.class_family, context)
 
-            if class_family and not issubclass(value, class_family):
-                yield ClassFamilyError(self, value, context, class_family)
+                if class_family and not issubclass(value, class_family):
+                    yield ClassFamilyError(self, value, context, class_family)
+
+            # Apply the 'cycles_allowed' constraint
+            if not self.cycles_allowed:
+                obj = get(value, self.name, None)
+                while obj:
+                    if obj is value:
+                        yield RelationCycleError(self, value, context)
+                        break
+                    obj = get(obj, self.name, None)
 
