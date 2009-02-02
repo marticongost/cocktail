@@ -22,10 +22,10 @@ PUBLIC "-//W3C//DTD HTML 4.01//EN"
 HTML4_TRANSITIONAL = u"""<!DOCTYPE html
 PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">"""
-       
+
 
 class Renderer(object):
-    
+
     doctype = None
     single_tags = "img", "link", "meta", "br", "hr", "input"
     flag_attributes = "selected", "checked"
@@ -34,7 +34,7 @@ class Renderer(object):
         self.__before_rendering = []
         self.__after_rendering = []
 
-    def make_page(self, element):        
+    def make_page(self, element):
         from cocktail.html.page import Page
         page = Page()
         page.doctype = self.doctype
@@ -48,10 +48,10 @@ class Renderer(object):
         self.__after_rendering.append(handler)
 
     def write_element(self, element, out):
-        
+
         for handler in self.__before_rendering:
             handler(element, self)
-        
+
         tag = element.tag
         render_children = True
 
@@ -80,7 +80,7 @@ class Renderer(object):
                 out(u">")
 
         if render_children:
-            
+
             for child in element.children:
                 child._render(self, out)
 
@@ -93,7 +93,7 @@ class Renderer(object):
             handler(element, self)
 
     def _write_attribute(self, key, value, out):
-        
+
         out(u" ")
 
         if key in self.flag_attributes:
@@ -113,7 +113,7 @@ class HTML4Renderer(Renderer):
 
 
 class XHTMLRenderer(Renderer):
-    
+
     doctype = XHTML1_STRICT
     single_tag_closure = u"/>"
 
