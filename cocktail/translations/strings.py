@@ -83,18 +83,6 @@ translations.define("cocktail.html.CollectionView no results",
     en = u"The current view has no matching items."
 )
 
-translations.define("cocktail.html.shortcuts CollectionView visible members",
-    ca = u"c",
-    es = u"c",
-    en = u"f"
-)
-
-translations.define("cocktail.html.shortcuts CollectionView visible languages",
-    ca = u"i",
-    es = u"i",
-    en = u"l"
-)
-
 translations.define("Visible members",
     ca = u"Camps",
     es = u"Campos",

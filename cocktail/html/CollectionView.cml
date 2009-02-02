@@ -4,7 +4,6 @@
 from cocktail.modeling import refine
 from cocktail.controllers.viewstate import view_state_form
 from cocktail.html.datadisplay import MULTIPLE_SELECTION
-from cocktail.html.shortcuts import set_translated_shortcut
 ?>
 
 <py:cocktail.html.Form
@@ -49,8 +48,6 @@ from cocktail.html.shortcuts import set_translated_shortcut
                 <?py
                 if not self.user_collection.user_filters:
                     self.filters.add_class("empty")
-
-                set_translated_shortcut(self.filters, "CollectionView filters")
                 ?>
                 <div py:id="filters_label" class="label">
                     ${translate("cocktail.html.CollectionView search")}
@@ -112,9 +109,6 @@ from cocktail.html.shortcuts import set_translated_shortcut
                 
                 <!-- Visible languages -->
                 <div py:id="languages_box">
-                    <?py
-                    set_translated_shortcut(element, "CollectionView visible languages")
-                    ?>                
                     <span class="box_label">
                         ${translate("Visible languages")}
                     </span>
@@ -129,9 +123,6 @@ from cocktail.html.shortcuts import set_translated_shortcut
 
                 <!-- Visible members  -->
                 <div py:id="members_box">
-                    <?py
-                    set_translated_shortcut(element, "CollectionView visible members")    
-                    ?>
                     <span class="box_label">
                         ${translate("Visible members")}
                     </span>

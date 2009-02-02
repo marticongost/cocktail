@@ -7,48 +7,48 @@ Highlighting and invocation of keyboard shortcuts.
 @since:			January 2009
 -----------------------------------------------------------------------------*/
 
-cocktail.setShortcut = function (element, key) {
+cocktail.setShortcut = function (element, key, target /* optional */) {
 
-    if (!jQuery(element).is("button")) {
-        element = jQuery(".label", element);
-    }
-    
     var expr = new RegExp(key, "i");
     var lowerCaseKey = key.toLowerCase();
 
-    jQuery("[nodeType=3]", element).each(function () {
-        
-        var text = this.nodeValue;
-            
-        if (text.match(expr)) {
-            
-            var pos = text.toLowerCase().indexOf(lowerCaseKey);
+    for (var i = 0; i < element.childNodes.length; i++) {
 
-            var wrapper = document.createElement('span');
-            wrapper.appendChild(document.createTextNode(text.substring(0, pos)));
-            
-            var shortcutHighlight = document.createElement('span');
-            shortcutHighlight.className = "shortcut";
-            shortcutHighlight.appendChild(document.createTextNode(text.charAt(pos)));
-            wrapper.appendChild(shortcutHighlight);
-            
-            wrapper.appendChild(document.createTextNode(text.substring(pos + 1)));
-            
-            jQuery(this).replaceWith(wrapper);
+        var node = element.childNodes[i];
+        
+        if (node.nodeType == 3) {
+            var text = node.nodeValue;
+
+            if (text.match(expr)) {
+
+                var pos = text.toLowerCase().indexOf(lowerCaseKey);
+
+                var wrapper = document.createElement('span');
+                wrapper.appendChild(document.createTextNode(text.substring(0, pos)));
+
+                var shortcutHighlight = document.createElement('span');
+                shortcutHighlight.className = "shortcut";
+                shortcutHighlight.appendChild(document.createTextNode(text.charAt(pos)));
+                wrapper.appendChild(shortcutHighlight);
+
+                wrapper.appendChild(document.createTextNode(text.substring(pos + 1)));
+
+                jQuery(node).replaceWith(wrapper);
+            }
         }
-    });                                             
+    }
 
     element.title = "Alt+Shift+" + key.toUpperCase();
-    
+
     jQuery(document).bind(
         'keydown',
         {
-            combi:'Alt+Shift+' + lowerCaseKey,
+            combi: 'Alt+Shift+' + lowerCaseKey,
             disableInInput: false
         },
         function (evt) {
-            element.click();
-            return false; 
+            jQuery(target || element).click();
+            return false;
         }
     );
 }
