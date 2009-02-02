@@ -191,19 +191,20 @@ class HTML4RendererTestCase(TestCase):
         tree = self.get_test_tree()
         html = self.get_html(tree)
         self.assertEquals(self.get_html(tree), self.get_test_tree_html())
+    
+#    def test_render_page(self):        
+#        
+#        from cocktail.html.renderers import HTML4Renderer
+#        
+#        tree = self.get_test_tree()
+#        
+#        renderer = HTML4Renderer()
+#        renderer.doctype = None
 
-    def test_render_page(self):        
-        
-        from cocktail.html.renderers import HTML4Renderer
-        
-        tree = self.get_test_tree()
-        
-        renderer = HTML4Renderer()
-        renderer.doctype = None
+#        self.assertEquals(
+#            tree.render_page(renderer),
+#            self.get_test_tree_html(full_page = True))
 
-        self.assertEquals(
-            tree.render_page(renderer),
-            self.get_test_tree_html(full_page = True))
 
 class XHTMLRendererTestCase(TestCase):
 
@@ -373,8 +374,4 @@ class XHTMLRendererTestCase(TestCase):
                 '<p>The best <em>foo</em> in town!</p>'
             '</div>'
         )
-
-if __name__ == "__main__":
-    from unittest import main
-    main()
 

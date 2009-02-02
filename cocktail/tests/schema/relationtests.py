@@ -659,7 +659,7 @@ class OneToManyTestCase(TestCase):
 
 class RecursiveRelationTestCase(TestCase):
 
-    def test_recursive_relation(self):
+    def get_schema(self):
 
         from cocktail.schema import Schema, Reference, Collection
 
@@ -679,13 +679,23 @@ class RecursiveRelationTestCase(TestCase):
             )
         )
 
+        return schema
+
+    def test_recursive_relation(self):
+        
+        schema = self.get_schema()
+
+        # Assert that the 'related_end' and 'related_type' properties on both
+        # ends of a recursive relation are correctly established
         self.assertEqual(schema["parent"].related_end, schema["children"])
         self.assertEqual(schema["children"].related_end, schema["parent"])
         self.assertEqual(schema["parent"].related_type, schema)
         self.assertEqual(schema["children"].related_type, schema)
 
+    def test_cycles_allowed_declaration(self):
 
-if __name__ == "__main__":
-    from unittest import main
-    main()
+        schema = self.get_schema()
+
+        # Check the default value for the 'cycles_allowed' constraint
+        self.assertEqual(schema["parent"].cycles_allowed, True)
 

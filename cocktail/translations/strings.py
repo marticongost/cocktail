@@ -7,17 +7,13 @@
 @since:			July 2008
 """
 from cocktail.translations.translation import translations, translate
+from decimal import Decimal
+import re
 
-translations.define(True,
-    ca = u"Sí",
-    es = u"Sí",
-    en = u"Yes"
-)
-
-translations.define(False,
-    ca = u"No",
-    es = u"No",
-    en = u"No"
+translations.define("bool-instance",
+    ca = lambda instance: u"Sí" if instance else u"No",
+    es = lambda instance: u"Sí" if instance else u"No",
+    en = lambda instance: u"Yes" if instance else u"No"
 )
 
 translations.define("Any",
@@ -496,5 +492,67 @@ translations.define(
     en = lambda error:
         u"Unexpedted error %s"
         %(error)
+)
+
+# Value parsing
+#------------------------------------------------------------------------------
+
+def _thousands_parser(thousands_sep, fraction_sep):
+
+    expr = re.compile(r"^[-+]?\d{1,3}(\%s\d{3})*(\%s\d+)?$"
+                    % (thousands_sep, fraction_sep))
+    
+    def parser(value):
+
+        if not expr.match(value):
+            raise ValueError("Invalid decimal literal: %s" % value)
+        
+        value = value.replace(thousands_sep, "")
+
+        if fraction_sep != ".":
+            value = value.replace(fraction_sep, ".")
+
+        return Decimal(value)
+
+    return parser
+
+def _serialize_thousands(value, thousands_sep, fraction_sep):    
+    
+    sign, num, precision = value.as_tuple()    
+    num = list(num)    
+    pos = len(num) + precision
+    integer = num[:pos]
+    fraction = num[pos:]
+    
+    blocks = []
+
+    while integer:
+        blocks.insert(0, "".join(str(i) for i in integer[-3:]))
+        integer = integer[:-3]
+
+    if blocks:
+        serialized_value = thousands_sep.join(blocks)
+    else:
+        serialized_value = "0"
+
+    if fraction:
+        serialized_value += fraction_sep \
+                          + str("".join(str(i) for i in fraction))
+
+    if sign:
+        serialized_value = "-" + serialized_value
+
+    return serialized_value
+    
+translations.define("Decimal parser",
+    ca = lambda: _thousands_parser(".", ","),
+    es = lambda: _thousands_parser(".", ","),
+    en = lambda: _thousands_parser(",", ".")
+)
+
+translations.define("decimal.Decimal-instance",
+    ca = lambda instance: _serialize_thousands(instance, ".", ","),
+    es = lambda instance: _serialize_thousands(instance, ".", ","),
+    en = lambda instance: _serialize_thousands(instance, ",", ".")
 )
 

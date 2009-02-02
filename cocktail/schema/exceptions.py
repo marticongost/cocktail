@@ -267,3 +267,8 @@ class MaxItemsError(ValidationError):
         return "%s (can't have more than %d items)" \
             % (ValidationError.__str__(self), self.max)
 
+
+class RelationCycleError(ValidationError):
+    """A validation error produced when a recursive relation attempts to form a
+    cycle."""
+

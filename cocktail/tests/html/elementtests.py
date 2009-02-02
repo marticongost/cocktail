@@ -864,7 +864,3 @@ class ElementClientParamsTestCase(TestCase):
         self.assertRaises(KeyError, e.get_client_param, "foo")
         self.assertRaises(KeyError, e.remove_client_param, "foo")
 
-if __name__ == "__main__":
-    from unittest import main
-    main()
-

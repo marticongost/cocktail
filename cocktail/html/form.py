@@ -10,7 +10,7 @@ from __future__ import with_statement
 from cocktail.language import get_content_language, content_language_context
 from cocktail.modeling import getter, ListWrapper
 from cocktail.translations import translate
-from cocktail.schema import Member, Boolean, Reference, BaseDateTime
+from cocktail.schema import Member, Boolean, Reference, BaseDateTime, Decimal
 from cocktail.html import Element
 from cocktail.html.datadisplay import DataDisplay
 from cocktail.html.hiddeninput import HiddenInput
@@ -64,6 +64,9 @@ class Form(Element, DataDisplay):
             
         self.set_member_type_display(
             BaseDateTime, "cocktail.html.DatePicker")
+
+        self.set_member_type_display(
+            Decimal, "cocktail.html.DecimalBox")
 
         self.__groups = []
         self.groups = ListWrapper(self.__groups)
