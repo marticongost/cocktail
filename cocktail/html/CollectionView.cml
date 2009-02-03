@@ -40,10 +40,13 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
     </py:ready>
 
     <!-- Filters -->
-    <div
-        py:id="filters"
-        py:visible="@{self.user_collection.allow_filters}">
+    <div py:id="filters">
         <py:ready>
+            <?py
+            element.visible = self.user_collection.allow_filters and (
+                self.visible_results or self.user_collection.user_filters
+            )
+            ?>
             <py:block py:if="self.filters.visible">
                 <?py
                 if not self.user_collection.user_filters:
