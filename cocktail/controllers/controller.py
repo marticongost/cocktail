@@ -113,7 +113,9 @@ class Controller(RequestHandler):
 
         if engine is None:
             engine_type = buffet.available_engines[engine_name]
-            engine = engine_type()
+            engine_options = \
+                cherrypy.request.config.get("rendering.engine_options")
+            engine = engine_type(options = engine_options)
             _rendering_engines[engine_name] = engine
 
         return engine
