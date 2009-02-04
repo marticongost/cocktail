@@ -7,8 +7,8 @@ cocktail.init(function () {
          if (this.dblclick_target) target = this.dblclick_target;
       });
 
-    var target = target ? target : ".toolbar_button[value=edit]";
-
+    var target = target ? target : ".action_button[value=edit]";
+    
     //Switch selection type
     
     jQuery(".Table").each(function () {
