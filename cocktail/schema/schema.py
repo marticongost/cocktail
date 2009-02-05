@@ -233,6 +233,26 @@ class Schema(Member):
         else:
             return DictWrapper(self.__members or empty_dict)
 
+    def get_member(self, name):
+        """Obtains one of the schema's members given its name.
+        
+        @param name: The name of the member to look for.
+        @type name: str
+
+        @return: The requested member, or None if the schema doesn't contain a
+            member with the indicated name.
+        @rtype: L{Member<member.Member>}
+        """
+        member = self.__members and self.__members.get(name)
+
+        if member is None and self.__bases:
+            for base in self.__bases:
+                member = base.get_member(name)
+                if member:
+                    break
+
+        return member
+
     def __getitem__(self, name):
         """Overrides the indexing operator to retrieve members by name.
 
@@ -244,20 +264,8 @@ class Schema(Member):
 
         @raise KeyError: Raised if neither the schema or its bases possess a
             member with the specified name.
-        """
-        def find_member(schema):
-
-            member = schema.__members and schema.__members.get(name)
-
-            if member is None and schema.__bases:
-                for base in schema.__bases:
-                    member = find_member(base)                    
-                    if member:
-                        break
-
-            return member
-
-        member = find_member(self)
+        """        
+        member = self.get_member(name)
 
         if member is None:
             raise KeyError("%s doesn't define a '%s' member" % (self, name))
@@ -276,6 +284,18 @@ class Schema(Member):
         """
         member.name = name
         self.add_member(member)
+
+    def __contains__(self, name):
+        """Indicates if the schema contains a member with the given name.
+
+        @param name: The name of the member to search for.
+        @type name: str
+
+        @return: True if the schema contains a member by the given name, False
+            otherwise.
+        @rtype: bool
+        """
+        return self.get_member(name) is not None
 
     def validations(self, recursive = True):
         """Iterates over all the validation rules that apply to the schema.
