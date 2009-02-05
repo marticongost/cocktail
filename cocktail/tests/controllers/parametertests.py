@@ -10,7 +10,7 @@ from __future__ import with_statement
 from unittest import TestCase
 
 
-class ParseTest(TestCase):
+class ParseTestCase(TestCase):
     
     def test_decimal(self):
         from decimal import Decimal
