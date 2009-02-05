@@ -11,8 +11,9 @@ from persistent import Persistent
 from BTrees.OOBTree import OOBTree
 from BTrees.IOBTree import IOBTree
 from cocktail import schema
+from cocktail.modeling import getter
 from cocktail.events import Event, event_handler
-from cocktail.schema import SchemaClass, SchemaObject
+from cocktail.schema import SchemaClass, SchemaObject, Reference, Collection
 from cocktail.schema.exceptions import ValidationError
 from cocktail.persistence.datastore import datastore
 from cocktail.persistence.incremental_id import incremental_id
@@ -49,11 +50,11 @@ def _get_index(self):
     index = root.get(self.index_key)
 
     if index is None:
-        
+
         # Primary index
         if isinstance(self, PersistentClass):
             index = self.primary_member.index_type()
-        
+
         # Unique indices use a "raw" ZODB binary tree
         elif self.unique:
             index = self.index_type()
@@ -82,7 +83,7 @@ class PersistentClass(SchemaClass):
 
 
     def __init__(cls, name, bases, members):
-         
+
         SchemaClass.__init__(cls, name, bases, members)
 
         cls._sealed = False
@@ -121,7 +122,7 @@ class PersistentClass(SchemaClass):
                 % (cls.full_name, member.name))
 
     def _add_member(cls, member):
-       
+
         SchemaClass._add_member(cls, member)
 
         # Unique values restriction/index
@@ -129,16 +130,16 @@ class PersistentClass(SchemaClass):
             if cls._unique_validation_rule \
             not in member.validations(recursive = False):
                 member.add_validation(cls._unique_validation_rule)
-        
+
         # Every indexed member gets its own btree
         if member.indexed and member.index_key is None:
             member.index_key = cls.full_name + "." + member.name
-        
+
     def _unique_validation_rule(cls, member, value, context):
 
         duplicate = None
         validable = cls._get_unique_validable(context)
-        
+
         if isinstance(validable, PersistentObject):
             if member.indexed:
                 if member.translated:
@@ -162,11 +163,11 @@ class PersistentClass(SchemaClass):
 
     def _get_unique_validable(cls, context):
         return context.get("persistent_object", context.validable)
-      
+
     class MemberDescriptor(SchemaClass.MemberDescriptor):
 
         def instrument_collection(self, collection, owner, member):
-            
+
             # Lists
             if isinstance(collection, (list, PersistentList)):
                 collection = PersistentRelationList(
@@ -187,9 +188,10 @@ class PersistentClass(SchemaClass):
 
 
 class PersistentObject(SchemaObject, Persistent):
-    
+
     __metaclass__ = PersistentClass
     _generates_translation_schema = False
+    __inserted = False
 
     indexed = True
 
@@ -222,7 +224,7 @@ class PersistentObject(SchemaObject, Persistent):
 
     @event_handler
     def handle_changing(cls, event):
-        
+
         # Transform collections into their persistent versions
         if isinstance(event.value, list):
             event.value = PersistentList(event.value)
@@ -233,19 +235,20 @@ class PersistentObject(SchemaObject, Persistent):
 
     @event_handler
     def handle_changed(cls, event):
-        
+
         # Update the index for the member
-        event.source._update_index(
-            event.member,
-            event.language,
-            event.previous_value,
-            event.value
-        )
+        if event.source.__inserted:
+            event.source._update_index(
+                event.member,
+                event.language,
+                event.previous_value,
+                event.value
+            )
 
     def _update_index(self, member, language, previous_value, new_value):
 
         if member.indexed and previous_value != new_value:
-            
+
             if language:
                 previous_index_value = (language, previous_value)
                 new_index_value = (language, new_value)
@@ -273,8 +276,58 @@ class PersistentObject(SchemaObject, Persistent):
 
                 if new_value is not None:
                     member.index.add(new_index_value, self)
- 
+
+    @getter
+    def inserted(self):
+        """Indicates wether the object has been inserted into the database.
+        @type: bool
+        """
+        return self.__inserted
+
+    def insert(self):
+        """Inserts the object into the database."""
+        
+        if self.__inserted:
+            return False
+
+        self.__inserted = True
+
+        for member in self.__class__.members().itervalues():
+
+            # Indexing
+            if member.indexed:
+
+                if member.translated:
+                    languages = self.translations.iterkeys()
+                else:
+                    languages = (None,)
+
+                for language in languages:
+                    self._update_index(
+                        member,
+                        language,
+                        None,
+                        self.get(member)
+                    )
+
+            # Insert related objects
+            if isinstance(member, Reference):
+                related = self.get(member)
+                if related and not related.__inserted:
+                    related.insert()
+
+            elif isinstance(member, Collection):
+                collection = self.get(member)
+                if collection:
+                    for item in collection:
+                        if isinstance(item, PersistentObject) \
+                        and not item.__inserted:
+                            item.insert()
+
+        return True
+
     def delete(self):
+        """Removes the object from the database."""
 
         self.deleting()
 
