@@ -280,7 +280,8 @@ class SchemaClass(EventHub, Schema):
                 # TODO: translated bidirectional references
                 if previous_value is not None:                    
                     _update_relation(
-                        "unrelate", instance, previous_value, member
+                        "unrelate", instance, previous_value, member,
+                        relocation = value is not None
                     )
                     instance.unrelated(
                         member = member,
