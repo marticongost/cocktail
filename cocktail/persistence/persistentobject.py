@@ -335,7 +335,7 @@ class PersistentObject(SchemaObject, Persistent):
                         member,
                         language,
                         None,
-                        self.get(member)
+                        self.get(member, language)
                     )
 
             # Insert related objects
