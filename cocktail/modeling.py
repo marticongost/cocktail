@@ -7,6 +7,7 @@ A set of constructs for modeling classes.
 @organization:	Whads/Accent SL
 @since:			November 2007
 """
+import types
 from copy import copy, deepcopy
 from weakref import WeakKeyDictionary
 from threading import local, Lock, RLock
@@ -101,7 +102,7 @@ def call_base(*args, **kwargs):
         return method_stack[-1](*args, **kwargs)
 
 def extend(element):
-    
+
     def decorator(function):
 
         base = getattr(element, function.func_name)
@@ -111,7 +112,14 @@ def extend(element):
                 _thread_data.method_stack = []
             try:
                 _thread_data.method_stack.append(base)
-                return function(element, *args, **kwargs)
+                rvalue = function(element, *args, **kwargs)
+
+                if isinstance(rvalue, types.GeneratorType):
+                    raise TypeError(
+                        "extend() doesn't work with generator functions "
+                        "(calling %s on %s)" % (function, element))
+
+                return rvalue
             finally:
                 _thread_data.method_stack.pop()
 
