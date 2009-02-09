@@ -699,3 +699,196 @@ class RecursiveRelationTestCase(TestCase):
         # Check the default value for the 'cycles_allowed' constraint
         self.assertEqual(schema["parent"].cycles_allowed, True)
 
+
+class BidirectionalTestCase(TestCase):
+
+    def test_no_match(self):
+
+        from cocktail.schema import Schema, Reference
+        from cocktail.schema.exceptions import SchemaIntegrityError
+        
+        a = Schema("a")
+        b = Schema("b")
+
+        a.add_member(Reference("rel_b", type = b, bidirectional = True))
+        b.add_member(Reference("rel_a", type = a))
+
+        def resolve_relation():
+            print a["rel_b"].related_end
+
+        self.assertRaises(SchemaIntegrityError, resolve_relation)
+        
+        self.assertTrue(b["rel_a"].related_end is None)
+
+
+class IntegralTestCase(TestCase):
+
+    def test_default(self):
+        from cocktail.schema import Reference
+        self.assertFalse(Reference().integral)
+
+    def test_not_bidirectional(self):
+        from cocktail.schema import Reference
+        from cocktail.schema.exceptions import SchemaIntegrityError
+
+        # Integral relations must be bidirectional too
+        self.assertRaises(SchemaIntegrityError, Reference, integral = True)
+
+    def test_one_to_one(self):
+
+        from cocktail.schema import SchemaObject, Reference
+        from cocktail.schema.exceptions import IntegralPartRelocationError
+
+        class TestModel(SchemaObject):
+            ref = Reference(
+                bidirectional = True,
+                integral = True
+            )
+
+            backref = Reference(
+                bidirectional = True
+            )
+
+        TestModel.ref.type = TestModel
+        TestModel.backref.type = TestModel
+
+        # Changing the owner of an integral component is not allowed
+        a = TestModel()
+        b = TestModel()
+        c = TestModel()
+
+        a.ref = b
+
+        def change_owner():
+            c.ref = b
+       
+        self.assertRaises(IntegralPartRelocationError, change_owner)
+        
+        a = TestModel()
+        b = TestModel()
+        c = TestModel()
+
+        a.ref = b
+
+        def change_owner_reversed():
+            b.backref = c
+
+        self.assertRaises(IntegralPartRelocationError, change_owner_reversed)
+
+        # Freeing the integral component is allowed
+        a = TestModel()
+        b = TestModel()
+        a.ref = b
+        b.backref = None
+
+    def test_one_to_many(self):
+
+        from cocktail.schema import SchemaObject, Reference, Collection
+        from cocktail.schema.exceptions import IntegralPartRelocationError
+
+        class TestModel(SchemaObject):
+            parent = Reference(
+                bidirectional = True
+            )
+
+            children = Collection(
+                bidirectional = True,
+                integral = True
+            )
+
+        TestModel.parent.type = TestModel
+        TestModel.children.items = Reference(type = TestModel)
+
+        # Changing the owner of an integral component is not allowed
+        a = TestModel()
+        b = TestModel()
+        c = TestModel()
+
+        a.children.append(b)
+        
+        def change_owner():
+            c.children.append(b)
+        
+        self.assertRaises(IntegralPartRelocationError, change_owner)
+
+        a = TestModel()
+        b = TestModel()
+        c = TestModel()
+
+        a.children.append(b)
+
+        def change_owner_reversed():
+            b.parent = c
+        
+        self.assertRaises(IntegralPartRelocationError, change_owner_reversed)
+
+        a = TestModel()
+        b = TestModel()
+        c = TestModel()
+
+        a.children.append(b)
+
+        def assign_to_new_collection():
+            c.children = [b]
+        
+        self.assertRaises(
+            IntegralPartRelocationError,
+            assign_to_new_collection)
+
+        # Freeing the integral component is allowed
+        a = TestModel()
+        b = TestModel()
+        a.children.append(b)
+        b.parent = None
+
+    def test_many_to_many(self):
+
+        from cocktail.schema import SchemaObject, Reference, Collection
+        from cocktail.schema.exceptions import SchemaIntegrityError
+
+        class Container(SchemaObject):
+            components = Collection(
+                bidirectional = True,
+                integral = True
+            )
+
+        class Component(SchemaObject):
+            containers = Collection(
+                bidirectional = True
+            )
+    
+        Container.components.items = Reference(type = Component)
+        Component.containers.items = Reference(type = Container)
+
+        # 'integral' can't be set on an n:m relation
+        def resolve_relation():
+            Container.components.related_end
+        
+        self.assertRaises(SchemaIntegrityError, resolve_relation)
+
+    def test_both_ends_integral(self):
+
+        from cocktail.schema import SchemaObject, Reference, Collection
+        from cocktail.schema.exceptions import SchemaIntegrityError
+
+        class Container(SchemaObject):
+            components = Collection(
+                bidirectional = True,
+                integral = True
+            )
+
+        class Component(SchemaObject):
+            container = Reference(
+                type = Container,
+                bidirectional = True,
+                integral = True
+            )
+
+        Container.components.items = Reference(type = Component)
+        
+        # 'integral' can't be set on both ends
+        def resolve_relation():
+            Container.components.related_end
+        
+        self.assertRaises(SchemaIntegrityError, resolve_relation)
+

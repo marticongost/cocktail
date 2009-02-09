@@ -8,16 +8,26 @@
 """
 from threading import local
 from cocktail.modeling import getter, abstractmethod
+from cocktail.schema.accessors import get
 from cocktail.schema.member import Member
+from cocktail.schema.exceptions import (
+    SchemaIntegrityError, IntegralPartRelocationError
+)
 
 _thread_data = local()
 
-def _update_relation(action, obj, related_obj, member):
+def _update_relation(action, obj, related_obj, member, relocation = False):
 
     if action == "relate":
         method = member.related_end.add_relation
     elif action == "unrelate":
         method = member.related_end.remove_relation
+
+        # Don't allow items bound to an integral relation to be relocated to a
+        # new container
+        if relocation and member.bidirectional and member.related_end.integral:
+            if get(obj, member) is not None:
+                raise IntegralPartRelocationError()
     else:
         raise ValueError("Unknown relation action: %s" % action)
 
@@ -60,8 +70,18 @@ def _pop():
 class RelationMember(Member):
 
     bidirectional = False
+    integral = False
     related_key = None
+    _many = False
     __related_end = None
+
+    def __init__(self, *args, **kwargs):
+        Member.__init__(self, *args, **kwargs)
+
+        if self.integral and not self.bidirectional:
+            raise SchemaIntegrityError(
+                "%s can't be declared 'integral' without setting "
+                "'bidirectional' to True" % self)
 
     @getter
     def related_end(self):
@@ -71,30 +91,54 @@ class RelationMember(Member):
         if self.__related_end:
             return self.__related_end
         
-        member = None
+        if not self.bidirectional:
+            return None
+
+        related_end = None
         related_type = self.related_type
 
         if self.related_key:
-            member = related_type[self.related_key]
+            related_end = related_type.get_member(self.related_key)
 
             if not getattr(member, "bidirectional", False) \
-            or (member.related_key and member.related_key != self.name):
-                member = None
+            or (
+                related_end.related_key
+                and related_end.related_key != self.name
+            ):
+                related_end = None
         else:
             for member in related_type.members().itervalues():
                 if getattr(member, "bidirectional", False):
                     if member.related_key:
                         if self.name == member.related_key:
+                            related_end = member
                             break
                     elif self.schema is member.related_type \
                     and member is not self:
+                        related_end = member
                         break
         
-        if member is None:
-            raise TypeError("Couldn't find the related end for %s" % self)
-        
-        self.__related_end = member
-        return member
+        # Related end missing
+        if related_end is None:
+            raise SchemaIntegrityError(
+                "Couldn't find the related end for %s" % self
+            )
+        # Disallow relations were both ends are declared as integral
+        elif self.integral and related_end.integral:
+            raise SchemaIntegrityError(
+                "Can't declare both ends of a relation as integral (%s <-> %s)"
+                % (self, related_end)
+            )
+        # Disallow integral many to many relations
+        elif (self.integral or related_end.integral) \
+        and (self._many and related_end._many):
+            raise SchemaIntegrityError(
+                "Can't declare a many to many relation as integral (%s <-> %s)"
+                % (self, related_end)
+            )
+
+        self.__related_end = related_end 
+        return related_end
 
     @getter
     @abstractmethod
@@ -103,7 +147,7 @@ class RelationMember(Member):
 
     def add_relation(self, obj, related_obj):
         if _push("relate", obj, related_obj, self):
-            try:
+            try:                
                 self._add_relation(obj, related_obj)
             finally:
                 _pop()

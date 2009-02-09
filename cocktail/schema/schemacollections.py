@@ -37,6 +37,8 @@ class Collection(RelationMember):
         L{MinItemsError<exceptions.MinItemsError>} during validation.
     @type max: int
     """
+    _many = True
+
     required = True
     min = None
     max = None
