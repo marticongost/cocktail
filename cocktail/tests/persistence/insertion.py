@@ -7,20 +7,16 @@
 @since:			February 2009
 """
 from unittest import TestCase
+from cocktail.tests.persistence.tempstoragemixin import TempStorageMixin
 
-class InsertionTestCase(TestCase):
+class InsertionTestCase(TempStorageMixin, TestCase):
     
     def setUp(self):
-        
-        from os.path import join        
-        from tempfile import mkdtemp
-        from ZODB.FileStorage import FileStorage
-        from cocktail.persistence import datastore
+
+        TempStorageMixin.setUp(self)
+
         from cocktail.schema import String, Reference, Collection
         from cocktail.persistence import PersistentObject
-
-        self._temp_dir = mkdtemp()
-        datastore.storage = FileStorage(join(self._temp_dir, "testdb.fs"))
 
         class TestObject(PersistentObject):
             test_field = String(
@@ -31,13 +27,6 @@ class InsertionTestCase(TestCase):
             test_collection = Collection()
         
         self.test_type = TestObject
-
-    def tearDown(self):
-        from cocktail.persistence import datastore
-        from shutil import rmtree
-        datastore.abort()
-        datastore.close()
-        rmtree(self._temp_dir)
     
     def test_inserted_property(self):
         

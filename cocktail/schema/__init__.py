@@ -23,6 +23,7 @@ from cocktail.schema.schemamappings import (
     Mapping,
     RelationMapping
 )
+from cocktail.schema.schemarelations import RelationMember
 from cocktail.schema.schemareference import Reference
 from cocktail.schema.schemastrings import String
 from cocktail.schema.schemanumbers import (

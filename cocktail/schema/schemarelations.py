@@ -68,7 +68,13 @@ def _pop():
 
 
 class RelationMember(Member):
-
+    """Base class for all members that describe a single end of a relation
+    between two or more schemas.
+    
+    This is an abstract class; Noteworthy concrete subclasses include
+    L{Reference<cocktail.schema.schemareference.Reference>} and
+    L{Collection<cocktail.schema.schemacollections.Collection>}.
+    """
     bidirectional = False
     integral = False
     related_key = None
