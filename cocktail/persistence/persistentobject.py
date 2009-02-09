@@ -341,7 +341,9 @@ class PersistentObject(SchemaObject, Persistent):
             # Insert related objects
             if isinstance(member, Reference):
                 related = self.get(member)
-                if related and not related.__inserted:
+                if related \
+                and isinstance(related, PersistentObject) \
+                and not related.__inserted:
                     related.insert()
 
             elif isinstance(member, Collection):
