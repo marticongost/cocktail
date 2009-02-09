@@ -75,6 +75,34 @@ schema.Member.index = property(_get_index, _set_index, doc = """
     Gets or sets the index for the members.
     """)
 
+# Cascade delete
+def _get_cascade_delete(self):
+    if self._cascade_delete is None:
+        return self.integral
+    else:
+        return self._cascade_delete
+
+def _set_cascade_delete(self, cascade):
+    self._cascade_delete = cascade
+
+schema.RelationMember._cascade_delete = None
+schema.RelationMember.cascade_delete = property(
+    _get_cascade_delete,
+    _set_cascade_delete,
+    doc = """
+    Enables or disables cascade deletion for the relation. When enabled,
+    deleting the owner of the relation will also delete all its related objects
+    for that relation. This behavior propagates recursively.
+
+    The property is disabled by default.
+    
+    L{Integral<cocktail.schema.schemarelations.Integral>} relations implicitly
+    enable cascade deletion.
+
+    @type: bool
+    """)
+
+
 class PersistentClass(SchemaClass):
 
     # Avoid creating a duplicate persistent class when copying the class
@@ -326,8 +354,16 @@ class PersistentObject(SchemaObject, Persistent):
 
         return True
 
-    def delete(self):
+    def delete(self, _deleted = None):
         """Removes the object from the database."""
+
+        if _deleted is None:
+            _deleted = set()
+        else:
+            if self in _deleted:
+                return
+            else:
+                _deleted.add(self)
 
         self.deleting()
 
@@ -360,12 +396,23 @@ class PersistentObject(SchemaObject, Persistent):
                         else:
                             member.index.remove(value, self)
 
-            # Remove all known references to the item (drop all its
-            # bidirectional relations)
-            if isinstance(member, (schema.Reference, schema.Collection)) \
-            and member.bidirectional \
-            and self.get(member) is not None:
-                self.set(member, None)
+            if isinstance(member, schema.RelationMember):
+
+                # Cascade delete
+                if member.cascade_delete:
+                    value = self.get(member)
+                    if value is not None:
+                        if isinstance(member, schema.Reference):
+                            value.delete(_deleted)
+                        else:
+                            for item in value:
+                                item.delete(_deleted)
+
+                # Remove all known references to the item (drop all its
+                # bidirectional relations)
+                elif member.bidirectional \
+                and self.get(member) is not None:
+                    self.set(member, None)
 
         self.deleted()
 
