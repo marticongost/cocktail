@@ -166,6 +166,12 @@ translations.define("jquery_date format",
     en = "mm/dd/yy"
 )
 
+translations.define("date-instance",
+    ca = "%d/%m/%Y",
+    es = "%d/%m/%Y",
+    en = "%m/%d/%Y"
+)
+
 translations.define("datetime-instance",
     ca = lambda instance: instance.strftime(translate("date format", "ca") + " %H:%M:%S"),
     es = lambda instance: instance.strftime(translate("date format", "es") + " %H:%M:%S"),
