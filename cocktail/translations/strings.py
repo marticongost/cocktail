@@ -167,15 +167,18 @@ translations.define("jquery_date format",
 )
 
 translations.define("date-instance",
-    ca = "%d/%m/%Y",
-    es = "%d/%m/%Y",
-    en = "%m/%d/%Y"
+    ca = lambda instance: instance.strftime(translate("date format", "ca")),
+    es = lambda instance: instance.strftime(translate("date format", "es")),
+    en = lambda instance: instance.strftime(translate("date format", "en"))
 )
 
 translations.define("datetime-instance",
-    ca = lambda instance: instance.strftime(translate("date format", "ca") + " %H:%M:%S"),
-    es = lambda instance: instance.strftime(translate("date format", "es") + " %H:%M:%S"),
-    en = lambda instance: instance.strftime(translate("date format", "en") + " %H:%M:%S")
+    ca = lambda instance:
+        instance.strftime(translate("date format", "ca") + " %H:%M:%S"),
+    es = lambda instance:
+        instance.strftime(translate("date format", "es") + " %H:%M:%S"),
+    en = lambda instance:
+        instance.strftime(translate("date format", "en") + " %H:%M:%S")
 )
 
 # html.FilterBox
