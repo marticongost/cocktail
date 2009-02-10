@@ -11,65 +11,71 @@ import types
 from unittest import TextTestRunner, defaultTestLoader
 from cocktail.pkgutils import import_module
 
-PY_EXTENSIONS = ".py", ".pyc", ".pyo"
+class TestSuiteRunner(object):
 
-runner_params = {
-    "verbosity": 1
-}
+    PY_EXTENSIONS = ".py", ".pyc", ".pyo"
 
-def main():
-    
-    from sys import argv
-    paths = argv[1:]
-    
-    if paths:
-        paths = ["cocktail.tests." + path for path in paths]
-    else:
-        paths = ["cocktail.tests"]
-    
-    test_names = set()
-    
-    def expand_path(path):
+    runner_params = {
+        "verbosity": 1
+    }
 
-        try:
-            obj = import_module(path)
-        except ImportError, ex:
-            raise
-        else:
-            if isinstance(obj, types.ModuleType) \
-            and is_package_file(obj.__file__):
+    def __init__(self, root):
+        self.root = root
 
-                pkg_path = os.path.dirname(obj.__file__)
-                names = set()
-
-                for name in os.listdir(pkg_path):
-                    file_name, file_ext = os.path.splitext(name)
-
-                    if os.path.isdir(os.path.join(pkg_path, name)):
-                        expand_path(path + "." + file_name)
-                    elif file_ext in PY_EXTENSIONS and file_name not in names:
-                        names.add(file_name)
-                        test_names.add(path + "." + file_name)
-
-                return
-
-        test_names.add(path)
+    def main(self):
         
-    for path in paths:
-        expand_path(path)
+        from sys import argv
+        paths = argv[1:]
+        
+        if paths:
+            paths = [self.root + "." + path for path in paths]
+        else:
+            paths = [self.root]
+        
+        test_names = set()
+        
+        def expand_path(path):
 
-    test_suite = defaultTestLoader.loadTestsFromNames(test_names)
-    TextTestRunner(**runner_params).run(test_suite)
+            try:
+                obj = import_module(path)
+            except ImportError, ex:
+                raise
+            else:
+                if isinstance(obj, types.ModuleType) \
+                and self._is_package_file(obj.__file__):
 
-def is_package_file(path):
-    if os.path.isfile(path):
-        file_name, file_ext = os.path.splitext(path)
-        return os.path.split(file_name)[1] == "__init__" \
-            and file_ext in PY_EXTENSIONS
-    
-    return False
+                    pkg_path = os.path.dirname(obj.__file__)
+                    names = set()
+
+                    for name in os.listdir(pkg_path):
+                        file_name, file_ext = os.path.splitext(name)
+
+                        if os.path.isdir(os.path.join(pkg_path, name)):
+                            expand_path(path + "." + file_name)
+                        elif file_ext in self.PY_EXTENSIONS \
+                        and file_name not in names:
+                            names.add(file_name)
+                            test_names.add(path + "." + file_name)
+
+                    return
+
+            test_names.add(path)
+            
+        for path in paths:
+            expand_path(path)
+
+        test_suite = defaultTestLoader.loadTestsFromNames(test_names)
+        TextTestRunner(**self.runner_params).run(test_suite)
+
+    def _is_package_file(self, path):
+        if os.path.isfile(path):
+            file_name, file_ext = os.path.splitext(path)
+            return os.path.split(file_name)[1] == "__init__" \
+                and file_ext in self.PY_EXTENSIONS
+        
+        return False
 
 
 if __name__ == "__main__":
-    main()
+    TestSuiteRunner("cocktail.tests").main()
 
