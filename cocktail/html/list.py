@@ -39,8 +39,11 @@ class List(Element):
 
     def create_entry(self, item):
         entry = Element("li")
-        entry.append(translate(item))
+        entry.append(self.create_entry_content(item))
         return entry
+    
+    def create_entry_content(self, item):
+        return translate(item)
     
     def create_ellipsis(self, ellipsis_size):
         ellipsis = Element("span")
