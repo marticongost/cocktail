@@ -10,7 +10,7 @@ Visual elements for data binding.
 from types import MethodType
 from operator import getitem
 from cocktail.schema import String
-from cocktail.modeling import getter, ListWrapper, empty_list
+from cocktail.modeling import getter, ListWrapper, SetWrapper, empty_list
 from cocktail.language import require_content_language, get_content_language
 from cocktail.translations import translate
 from cocktail.html import Element, Content
@@ -226,11 +226,18 @@ class DataDisplay(object):
     def translate_value(self, obj, member, value):
 
         if value is None:
-            value = "-"
+            value = u"-"
+
+        elif isinstance(value, (list, ListWrapper, set, SetWrapper)):
+            if value:
+                value = u", ".join(translate(item, default = item)
+                                   for item in value)
+            else:
+                value = u"-"
         
         elif not (member.translated and isinstance(member, String)):
             value = translate(value, default = value)
-
+            
         return value
 
     def get_member_display(self, obj, member):
