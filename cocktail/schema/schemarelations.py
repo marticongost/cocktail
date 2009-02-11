@@ -106,7 +106,7 @@ class RelationMember(Member):
         if self.related_key:
             related_end = related_type.get_member(self.related_key)
 
-            if not getattr(member, "bidirectional", False) \
+            if not getattr(related_end, "bidirectional", False) \
             or (
                 related_end.related_key
                 and related_end.related_key != self.name
