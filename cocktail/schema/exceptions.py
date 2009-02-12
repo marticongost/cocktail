@@ -274,6 +274,25 @@ class RelationCycleError(ValidationError):
     """
 
 
+class RelationConstraintError(ValidationError):
+    """A validation error produced when a related object doesn't satisfy one of
+    the constraints specified by the relation on its
+    L{relation_constraints<cocktail.schema.schemarelations.RelationMember>}
+    property.
+
+    @ivar constraint: The constraint that the related object didn't fulfill.
+    @type constraint: callable or L{Expression<cocktail.schema.expressions.Expression>}
+    """
+    
+    def __init__(self, member, value, context, constraint):
+        ValidationError.__init__(self, member, value, context)
+        self.constraint = constraint
+
+    def __str__(self):
+        return "%s (constraint %s not satisfied)" \
+            % (ValidationError.__str__(self), self.constraint)
+
+
 class IntegralPartRelocationError(Exception):
     """An exception raised when trying to remove an integral part of a compound
     element to attach it to another container.
