@@ -14,7 +14,7 @@ class ValidationTestCase(TestCase):
     def _test_validation(
         self,
         member,
-        correct_values,
+        correct_values = None,
         incorrect_values = None,
         error_type = None,
         error_attributes = None,
@@ -22,20 +22,27 @@ class ValidationTestCase(TestCase):
 
         from cocktail.schema import Schema      
 
-        for value in correct_values:
-            assert member.validate(value), \
-                "%r is a valid value" % value
-            assert not list(member.get_errors(value))
+        if correct_values:
+            for value in correct_values:
+                assert member.validate(value), \
+                    "%r should be a valid value. Errors:\n\t%s" % (
+                        value,
+                        "\n\t".join(
+                                str(error)
+                                for error in member.get_errors(value)
+                            )
+                    )
+                assert not list(member.get_errors(value))
 
         if incorrect_values:
             for value in incorrect_values:            
                 assert not member.validate(value), \
-                    "%r is not a valid value" % value
+                    "%r shouldn't be a valid value" % value
                 errors = list(member.get_errors(value))
-                assert len(errors) == error_count
+                self.assertEqual(len(errors), error_count)
                 error = errors[0]
                 assert isinstance(error, error_type), \
-                    "%r is an instance of %r" % (error, error_type)
+                    "%r should be an instance of %r" % (error, error_type)
                 #assert error.member is member
                 
                 if error_attributes:
@@ -157,6 +164,114 @@ class IntegerValidationTestCase(ValidationTestCase):
             exceptions.MaxValueError
         )
 
+
+class RelationValidationTestCase(ValidationTestCase):
+
+    def test_reference_relation_constraints(self):
+
+        from cocktail.schema import Reference, Integer, exceptions, get
+
+        foreign_field = Integer("foo")
+
+        ref = Reference(relation_constraints = [
+            foreign_field.not_equal(None),
+            foreign_field.greater(3),
+            foreign_field.lower(8),
+            lambda owner, related: get(related, "foo", None) is None
+                or get(related, "foo", None) % 5 != 0
+        ])
+
+        self._test_validation(
+            ref,
+            [None, {"foo": 4}, {"foo": 6}, {"foo": 7}]
+        )
+
+        self._test_validation(
+            ref,
+            None,
+            [{}, {"foo": None}],
+            exceptions.RelationConstraintError,
+            error_count = 2 # Note that x > None is always True
+        )
+
+        self._test_validation(
+            ref,
+            None,
+            [{"foo": -6}, {"foo": 1}, {"foo": 3}],
+            exceptions.RelationConstraintError,
+            {"constraint": ref.relation_constraints[1]}
+        )
+
+        self._test_validation(
+            ref,
+            None,
+            [{"foo": 8}, {"foo": 12}, {"foo": 134}],
+            exceptions.RelationConstraintError,
+            {"constraint": ref.relation_constraints[2]}
+        )
+
+        self._test_validation(
+            ref,
+            None,
+            [{"foo": 5}],
+            exceptions.RelationConstraintError,
+            {"constraint": ref.relation_constraints[3]}
+        )
+
+    def test_collection_relation_constraints(self):
+
+        from cocktail.schema import Collection, Integer, exceptions, get
+
+        foreign_field = Integer("foo")
+
+        collection = Collection(relation_constraints = [
+            foreign_field.not_equal(None),
+            foreign_field.greater(3),
+            foreign_field.lower(8),
+            lambda owner, related: get(related, "foo", None) is None
+                or get(related, "foo", None) % 5 != 0
+        ])
+
+        self._test_validation(
+            collection,
+            [[], [None], [{"foo": 4}, {"foo": 6}], [{"foo": 4}, {"foo": 7}]]
+        )
+
+        self._test_validation(
+            collection,
+            None,
+            [[{}], [{"foo": None}], [{"foo": 6}, {}]],
+            exceptions.RelationConstraintError,
+            error_count = 2 # Note that x > None is always True
+        )
+
+        self._test_validation(
+            collection,
+            None,
+            [[{"foo": -6}, {"foo": 1}, {"foo": 3}]],
+            exceptions.RelationConstraintError,
+            {"constraint": collection.relation_constraints[1]},
+            error_count = 3
+        )
+
+        self._test_validation(
+            collection,
+            None,
+            [[{"foo": 8}, {"foo": 12}, {"foo": 134}]],
+            exceptions.RelationConstraintError,
+            {"constraint": collection.relation_constraints[2]},
+            error_count = 3
+        )
+
+        self._test_validation(
+            collection,
+            None,
+            [[{"foo": 5}]],
+            exceptions.RelationConstraintError,
+            {"constraint": collection.relation_constraints[3]}
+        )
+
+        
 class CollectionValidationTestCase(ValidationTestCase):
 
     def test_min(self):

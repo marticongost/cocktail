@@ -10,6 +10,7 @@ from threading import local
 from cocktail.modeling import getter, abstractmethod
 from cocktail.schema.accessors import get
 from cocktail.schema.member import Member
+from cocktail.schema.expressions import Expression
 from cocktail.schema.exceptions import (
     SchemaIntegrityError, IntegralPartRelocationError
 )
@@ -74,10 +75,26 @@ class RelationMember(Member):
     This is an abstract class; Noteworthy concrete subclasses include
     L{Reference<cocktail.schema.schemareference.Reference>} and
     L{Collection<cocktail.schema.schemacollections.Collection>}.
+
+    @ivar relation_constraints: A collection of constraints imposed on related
+        items during validation. Constraints can be specified using schema
+        expressions or a callable. Expressions are evaluated normally using the
+        related object as the context. Callables receive the relation owner and
+        a related object as a parameter. Both types of constraints should
+        evaluate to True if the related object satisfies their requirements, or
+        False otherwise.
+
+        During validation, a failed relation constraint will produce a
+        L{RelationConstraintError<cocktail.schemas.exceptions.RelationConstraintError>}
+        exception.
+
+    @type relation_constraints: collection of callables or
+        L{Expression<cocktail.schema.expressions.Expression>} instances
     """
     bidirectional = False
     integral = False
     related_key = None
+    relation_constraints = None
     _many = False
     __related_end = None
 
@@ -164,4 +181,22 @@ class RelationMember(Member):
                 self._remove_relation(obj, related_obj)
             finally:
                 _pop()
+
+    def validate_relation_constraint(self, constraint, owner, related):
+
+        # Expression-based constraint
+        if isinstance(constraint, Expression):
+            return constraint.eval(related)
+
+        # Callable-based constraint
+        elif callable(constraint):
+            return constraint(owner, related)
+
+        # Unknown constraint type
+        else:
+            raise TypeError(
+                "%s is not a valid relation constraint; "
+                "expected a callable or an Expression instance"
+                % constraint
+            )
 

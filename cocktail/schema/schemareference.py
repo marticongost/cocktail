@@ -10,7 +10,9 @@ from cocktail.modeling import getter
 from cocktail.pkgutils import import_object
 from cocktail.schema.schemarelations import RelationMember
 from cocktail.schema.accessors import get_accessor, get
-from cocktail.schema.exceptions import ClassFamilyError, RelationCycleError
+from cocktail.schema.exceptions import (
+    ClassFamilyError, RelationCycleError, RelationConstraintError
+)
 
 
 class Reference(RelationMember):
@@ -76,4 +78,18 @@ class Reference(RelationMember):
                         yield RelationCycleError(self, value, context)
                         break
                     obj = get(obj, self.name, None)
+
+            # Apply relation constraints
+            relation_constraints = \
+                self.resolve_constraint(self.relation_constraints, context)
+
+            if relation_constraints:
+                for constraint in relation_constraints:
+                    if not self.validate_relation_constraint(
+                        constraint,
+                        context.validable,
+                        value
+                    ):
+                        yield RelationConstraintError(
+                            self, value, context, constraint)
 
