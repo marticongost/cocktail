@@ -28,6 +28,7 @@ class Element(object):
     visible = True
     collapsible = False
     overlays_enabled = False
+    generated_id_format = "cocktail-element%d"
 
     # Data binding
     data_display = None
@@ -139,13 +140,22 @@ class Element(object):
         return self.make_page(renderer).render(renderer)
 
     def render(self, renderer = None):
-        
+
         if not renderer:
             renderer = self._get_default_renderer()
         
         canvas = []
         out = canvas.append
-        self._render(renderer, out)
+        
+        if not hasattr(_thread_data, "generated_id"):
+            _thread_data.generated_id = 0
+            try:
+                self._render(renderer, out)
+            finally:
+                del _thread_data.generated_id
+        else:
+            self._render(renderer, out)
+        
         return u"".join(canvas)
 
     def _get_default_renderer(self):
@@ -246,11 +256,14 @@ class Element(object):
 
         if not id:
             try:
-                page = _thread_data.rendered_page
+                incremental_id = _thread_data.generated_id
             except AttributeError:
                 raise IdGenerationError()
 
-            self["id"] = id = page.generate_element_id()
+            _thread_data.generated_id += 1
+
+            id = self.generated_id_format % incremental_id
+            self["id"] = id
 
         return id
 

@@ -21,8 +21,6 @@ class Page(Element):
     charset = "utf-8"
     styled_class = False
     tag = "html"
-    __generated_id = None
-    generated_id_format = "cocktail-element%d"
 
     CORE_SCRIPT = "/cocktail/scripts/core.js"
     JQUERY_SCRIPT = "/cocktail/scripts/jquery.js"
@@ -61,31 +59,23 @@ class Page(Element):
 
     def _render(self, renderer, out):
         
-        _thread_data.rendered_page = self
-        self.__generated_id = 0
+        if self.doctype:
+            out(self.doctype)
+            out("\n")           
 
-        try:
-            if self.doctype:
-                out(self.doctype)
-                out("\n")           
-
-            # Render the <body> element first, to gather meta information from all
-            # elements (meta tags, scripts, style sheets, the page title, etc)
-            renderer.before_element_rendered(self._before_descendant_rendered)
-            renderer.after_element_rendered(self._after_descendant_rendered)
-            
-            self._body_markup.value = self.body.render(renderer)
-            self._fill_head()
-            
-            # Then proceed with the full page. The <body> element is hidden so that
-            # it won't be rendered a second time
-            self.body.visible = False
-            Element._render(self, renderer, out)
-            self.body.visible = True
-
-        finally:
-            _thread_data.rendered_page = None
-            self.__generated_id = None
+        # Render the <body> element first, to gather meta information from all
+        # elements (meta tags, scripts, style sheets, the page title, etc)
+        renderer.before_element_rendered(self._before_descendant_rendered)
+        renderer.after_element_rendered(self._after_descendant_rendered)
+        
+        self._body_markup.value = self.body.render(renderer)
+        self._fill_head()
+        
+        # Then proceed with the full page. The <body> element is hidden so that
+        # it won't be rendered a second time
+        self.body.visible = False
+        Element._render(self, renderer, out)
+        self.body.visible = True
 
     def _before_descendant_rendered(self, descendant, renderer):
 
@@ -214,13 +204,5 @@ class Page(Element):
                 link_tag["type"] = resource.mime_type
                 link_tag["href"] = uri
                 self._generated_head.append(link_tag)
-       
-    def generate_element_id(self):
-
-        if self.__generated_id is None:
-            raise IdGenerationError()
-
-        id = self.generated_id_format % self.__generated_id
-        self.__generated_id += 1
-        return id
+      
 
