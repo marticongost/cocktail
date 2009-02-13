@@ -80,6 +80,10 @@ class Query(object):
     def __apply_filters(self):
 
         dataset = self.__base_collection
+        
+        if not self.filters:
+            return dataset
+        
         single_match = False
 
         for order, filter in self._get_execution_plan(self.filters):
