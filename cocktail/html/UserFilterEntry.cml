@@ -7,7 +7,7 @@
     py:required_marks="$(False)">
     
     <?py-class
-    def display_language(self, obj, member):
+    def create_language_display(self, obj, member):
         
         display = loader.new("cocktail.html.DropdownSelector")
         display.empty_option_displayed = not member.required
@@ -19,7 +19,7 @@
 
         return display
 
-    def display_operator(self, obj, member):
+    def create_operator_display(self, obj, member):
         
         display = loader.new("cocktail.html.DropdownSelector")
         display.empty_option_displayed = False
