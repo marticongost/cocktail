@@ -253,7 +253,11 @@ class DataDisplay(object):
 
         # Implemented as a method
         if display is None:
-            display_method = getattr(self, "display_" + member.name, None)
+            display_method = getattr(
+                self,
+                "create_%s_display" % member.name,
+                None)
+
             if display_method:
                 display = display_method(obj, member)
 
