@@ -18,7 +18,9 @@ from cocktail.schema.member import Member
 from cocktail.schema.schemarelations import RelationMember, _update_relation
 from cocktail.schema.schemareference import Reference
 from cocktail.schema.accessors import get_accessor
-from cocktail.schema.exceptions import MinItemsError, MaxItemsError
+from cocktail.schema.exceptions import (
+    MinItemsError, MaxItemsError, RelationConstraintError
+)
 
 
 class Collection(RelationMember):
@@ -135,23 +137,37 @@ class Collection(RelationMember):
 
     def items_validation_rule(self, value, context):
         """Validation rule for collection items. Checks the L{items}
-        constraint."""
-
-        # TODO: Prevent cycles
-        # TODO: Nested constraints: all items must not only comply with a
-        # standard schema, but also satisfy additional constraints that
-        # only apply to members of the collection -- necessary? one can
-        # always copy() the schema and modify it
-        if self.items is not None and value is not None:
+        constraint."""    
+        
+        if value is not None:
             
-            context.enter(self, value)
+            item_schema = self.items
+            relation_constraints = self.resolve_constraint(
+                    self.relation_constraints, context)
+            
+            if item_schema is not None or relation_constraints:
+            
+                validable = context.validable
+                context.enter(self, value)
 
-            try:
-                for item in value:
-                    for error in self.items.get_errors(item, context):
-                        yield error
-            finally:
-                context.leave()
+                try:
+                    for item in value:
+
+                        if item_schema:
+                            for error in item_schema.get_errors(item, context):
+                                yield error
+
+                        if relation_constraints and item is not None:
+                            for constraint in relation_constraints:
+                                if not self.validate_relation_constraint(
+                                    constraint,
+                                    context.validable,
+                                    item
+                                ):
+                                    yield RelationConstraintError(
+                                        self, item, context, constraint)
+                finally:
+                    context.leave()
 
 
 # Generic add/remove methods
