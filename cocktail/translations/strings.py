@@ -343,6 +343,18 @@ def member_identifier(error, language):
     else:
         return translate(error.member, language).lower()
 
+translations.define("cocktail.schema.exceptions.ValidationError-instance",
+    ca = lambda instance:
+        u"El camp <em>%s</em> no és vàlid"
+        % member_identifier(instance, "ca"),
+    es = lambda instance:
+        u"El campo <em>%s</em> no es válido"        
+        % member_identifier(instance, "es"),
+    en = lambda instance:
+        u"The <em>%s</em> field is not valid"
+        % member_identifier(instance, "en")
+)
+
 translations.define("cocktail.schema.exceptions.ValueRequiredError-instance",
     ca = lambda instance:
         u"El camp <em>%s</em> no pot estar buit"
@@ -488,7 +500,6 @@ translations.define(
         u"The value of the <em>%s</em> field is already in use"
         % member_identifier(instance, "en")
 )
-
 
 translations.define(
     "cocktail.unexpected_error",
