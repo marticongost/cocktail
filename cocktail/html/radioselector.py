@@ -13,11 +13,16 @@ from cocktail.html.selector import Selector
 class RadioSelector(Selector):
 
     def create_entry(self, value, label, selected):
-        entry = Element("input")
-        entry["type"] = "radio"
-        entry["value"] = value
-        entry["checked"] = selected        
-        entry["name"] = self.name
+        entry = Element()
+        
+        input = Element("input")        
+        input["type"] = "radio"
+        input["value"] = value
+        input["checked"] = selected        
+        input["name"] = self.name
+        entry.append(input)
+        
         entry.append(label)
+
         return entry
 
