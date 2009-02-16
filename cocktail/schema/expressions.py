@@ -95,6 +95,12 @@ class Expression(object):
     def positive(self):
         return PositiveExpression(self)
 
+    def one_of(self, expr):
+        return InclusionExpression(self, expr)
+    
+    def not_one_of(self, expr):
+        return ExclusionExpression(self, expr)
+
     def startswith(self, expr):
         return StartsWithExpression(self, expr)
 
@@ -131,6 +137,14 @@ class Variable(Expression):
     def eval(self, context, accessor = None):
         return (accessor or get_accessor(context)) \
                .get(context, self.name, None)
+
+
+class SelfExpression(Expression):
+
+    def eval(self, context, accessor = None):
+        return context
+
+Self = SelfExpression()
 
 
 class CustomExpression(Expression):
@@ -264,6 +278,18 @@ class NegativeExpression(Expression):
 
 class PositiveExpression(Expression):
     op = operator.pos
+
+
+class InclusionExpression(Expression):
+
+    def op(self, a, b):
+        return a in b
+
+
+class ExclusionExpression(Expression):
+    
+    def op(self, a, b):
+        return a not in b
 
 
 class ContainsExpression(Expression):
