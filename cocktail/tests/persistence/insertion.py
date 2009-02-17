@@ -32,9 +32,9 @@ class InsertionTestCase(TempStorageMixin, TestCase):
         
         instance = self.test_type()
         
-        self.assertFalse(instance.inserted)
+        self.assertFalse(instance.is_inserted)
         instance.insert()
-        self.assertTrue(instance.inserted)
+        self.assertTrue(instance.is_inserted)
     
     def test_insert_twice(self):
 
@@ -78,7 +78,7 @@ class InsertionTestCase(TempStorageMixin, TestCase):
         instances[4].test_collection.append(instances[5])
         
         instances[0].insert()
-        self.assertTrue(all(instance.inserted for instance in instances))
+        self.assertTrue(all(instance.is_inserted for instance in instances))
         self.assertEqual(len(self.test_type.index), len(instances))
         self.assertEqual(set(self.test_type.index.values()), set(instances))
     
@@ -94,5 +94,5 @@ class InsertionTestCase(TempStorageMixin, TestCase):
         b.test_ref = c
         a.insert()
 
-        self.assertFalse(c.inserted)
+        self.assertFalse(c.is_inserted)
 
