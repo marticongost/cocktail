@@ -224,6 +224,14 @@ class PersistentObject(SchemaObject, Persistent):
 
     indexed = True
 
+    inserting = Event(doc = """
+        An event triggered before adding an object to the data store.
+        """)
+
+    inserted = Event(doc = """
+        An event triggered after an object has been inserted to the data store.
+        """)
+
     deleting = Event(doc = """
         An event triggered before deleting an object from the data store.
         """)
@@ -386,7 +394,7 @@ class PersistentObject(SchemaObject, Persistent):
                     member.index.add(new_index_value, self)
 
     @getter
-    def inserted(self):
+    def is_inserted(self):
         """Indicates wether the object has been inserted into the database.
         @type: bool
         """
@@ -397,7 +405,8 @@ class PersistentObject(SchemaObject, Persistent):
         
         if self.__inserted:
             return False
-
+        
+        self.inserting()
         self.__inserted = True
 
         for member in self.__class__.members().itervalues():
@@ -434,18 +443,19 @@ class PersistentObject(SchemaObject, Persistent):
                         and not item.__inserted:
                             item.insert()
 
+        self.inserted()
         return True
 
-    def delete(self, _deleted = None):
+    def delete(self, deleted_objects = None):
         """Removes the object from the database."""
 
-        if _deleted is None:
-            _deleted = set()
+        if deleted_objects is None:
+            deleted_objects = set()
         else:
-            if self in _deleted:
+            if self in deleted_objects:
                 return
             else:
-                _deleted.add(self)
+                deleted_objects.add(self)
 
         self.deleting()
 
@@ -485,10 +495,10 @@ class PersistentObject(SchemaObject, Persistent):
                     value = self.get(member)
                     if value is not None:
                         if isinstance(member, schema.Reference):
-                            value.delete(_deleted)
+                            value.delete(deleted_objects)
                         else:
                             for item in value:
-                                item.delete(_deleted)
+                                item.delete(deleted_objects)
 
                 # Remove all known references to the item (drop all its
                 # relations)
