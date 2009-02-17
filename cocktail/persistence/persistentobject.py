@@ -411,9 +411,23 @@ class PersistentObject(SchemaObject, Persistent):
                                 item.delete(_deleted)
 
                 # Remove all known references to the item (drop all its
-                # bidirectional relations)
-                elif member.bidirectional \
-                and self.get(member) is not None:
+                # relations)
+                if self.get(member) is not None and (
+
+                    # Reference to an object (not a class)
+                    (
+                        isinstance(member, schema.Reference)
+                        and member.class_family is None
+                    )
+                    # Collection of references to objects (not classes or
+                    # literals)
+                    # TODO: Add support for nested collections?
+                    or (
+                        isinstance(member, schema.Collection)
+                        and isinstance(member.items, schema.Reference)
+                        and member.items.class_family is None
+                    )
+                ):                    
                     self.set(member, None)
 
         self.deleted()
