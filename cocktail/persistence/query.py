@@ -42,17 +42,15 @@ class Query(object):
         range = None,
         base_collection = None):
 
-        if base_collection is None and not type.indexed:
-            raise TypeError("An indexed persistent class is required")
-
         self.__type = type
-        self.__base_collection = base_collection
         self.__filters = None
         self.__order = None
+        self.__base_collection = None
 
         self.filters = filters or []
         self.order = order or []
         self.range = range
+        self.base_collection = base_collection
 
     @getter
     def type(self):
@@ -61,6 +59,26 @@ class Query(object):
             subclass
         """
         return self.__type
+
+    def _get_base_collection(self):
+        if self.__base_collection is None:
+            return self.type.index.itervalues()
+        else:
+            return self.__base_collection
+    
+    def _set_base_collection(self, value):
+
+        if value is None and not self.type.indexed:
+            raise TypeError("An indexed persistent class is required")
+
+        self.__base_collection = value
+
+    base_collection = property(_get_base_collection, _set_base_collection,
+        doc = """The base set of persistent objects that the query operates on.
+        When set to None, the query works with the full set of instances for
+        the selected type.
+        @type: L{PersistentObject<cocktail.persistence.PersistentObject>}
+        """)
 
     def _get_filters(self):
         return self.__filters
@@ -200,7 +218,7 @@ class Query(object):
 
     def execute(self, _sorted = True):
     
-        dataset = self.__base_collection or self.type.index.itervalues()
+        dataset = self.base_collection
 
         if self.__filters:
             dataset = self._apply_filters(dataset)
@@ -415,8 +433,14 @@ class Query(object):
             yield instance
 
     def __len__(self):
-        results = self.execute(_sorted = False)
-        return len(results)
+        
+        if self.filters:
+            return len(self.execute(_sorted = False))
+        else:
+            if self.__base_collection is None:
+                return len(self.type.index)
+            else:
+                return len(self.__base_collection)
     
     def __notzero__(self):
         # TODO: Could be optimized to look for just one match on each filter
