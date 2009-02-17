@@ -18,6 +18,7 @@ from cocktail.schema.exceptions import ValidationError
 from cocktail.persistence.datastore import datastore
 from cocktail.persistence.incremental_id import incremental_id
 from cocktail.persistence.index import Index
+from cocktail.persistence.query import Query
 from cocktail.persistence.persistentlist import PersistentList
 from cocktail.persistence.persistentmapping import PersistentMapping
 from cocktail.persistence.persistentset import PersistentSet
@@ -244,6 +245,85 @@ class PersistentObject(SchemaObject, Persistent):
         self._v_initializing = True
         SchemaObject.__init__(self, *args, **kwargs)
         self._v_initializing = False
+
+    @classmethod
+    def get_instance(cls, _id = None, **criteria):
+        """Obtains an instance of the class, using one of its unique indices.
+
+        @param _id: The primary identifier of the object to retrieve.
+
+        @param criteria: A single keyword parameter, indicating the name of a
+            unique member and its value. It is mutually exclusive with L{_id}.
+        
+        @return: The requested object, if found. Otherwise, None.
+        @rtype: L{PersistentObject} or None
+
+        @raise ValueError: Raised when given insufficient, excessive or
+            otherwise wrong parameters.
+        """
+        if _id is not None:
+            
+            if criteria:
+                raise ValueError("Can't call get_instance() using both "
+                    "positional and keyword parameters"
+                )
+            
+            member = cls.primary_member
+
+            if member is None:
+                raise ValueError(
+                    "Can't call get_instance() using a single positional "
+                    "argument on a type without a primary member"
+                )
+                
+            value = _id
+        else:
+            if len(criteria) > 1:
+                raise ValueError(
+                    "Calling get_instance() using more than one keyword is "
+                    "not allowed"
+                )
+
+            try:
+                key, value = criteria.popitem()
+            except KeyError:
+                raise ValueError("No criteria given to get_instance()")
+
+            member = cls[key]
+
+        if not member.unique:
+            raise ValueError(
+                "Can't call get_instance() on a non unique member (%s)"
+                % member
+            )
+        
+        if member.indexed:
+            match = member.index.get(value)
+            if match and not isinstance(match, cls):
+                match = None
+        else:
+            if not cls.indexed:
+                raise ValueError(
+                    "Can't call get_instance() if neither the requested class "
+                    "or member have an index"
+                )
+            for instance in cls.index.itervalues():
+                if instance.get(member) == value:
+                    match = instance
+                    break
+
+        return match
+    
+    @classmethod
+    def select(cls, *args, **kwargs):
+        """Obtains a selection of instances of the class. Accepts the same
+        parameters as the L{Query<cocktail.persistence.query.Query>}
+        constructor.
+
+        @return: The requested collection of instances of the class.
+        @rtype: L{Query<cocktail.persistence.query.Query>}                
+        """
+        return Query(cls, *args, **kwargs)
 
     @classmethod
     def _create_translation_schema(cls, members):
