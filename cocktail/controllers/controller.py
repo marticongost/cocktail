@@ -167,3 +167,10 @@ class Controller(RequestHandler):
         cherrypy.response.headers["Content-Type"] = "text/plain"
         return dumps(self.output)
 
+    @classmethod
+    def copy_config(cls, **kwargs):
+        config = getattr(cls, "_cp_config", None)
+        config = {} if config is None else config.copy
+        config.update(kwargs)
+        return config
+
