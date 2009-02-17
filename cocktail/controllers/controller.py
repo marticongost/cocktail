@@ -11,7 +11,6 @@ import buffet
 from simplejson import dumps
 from cocktail.modeling import ListWrapper, cached_getter
 from cocktail.events import Event
-from cocktail.html import templates
 from cocktail.controllers.dispatcher import StopRequest, context
 from cocktail.controllers.parameters import FormSchemaReader
 from cocktail.controllers.requesthandler import RequestHandler
@@ -25,10 +24,8 @@ class Controller(RequestHandler):
     
     # Default configuration
     #------------------------------------------------------------------------------    
-    _cp_config = {
-        "rendering.engine": "cocktail",
-        "rendering.format": "html"
-    }
+    default_rendering_engine = "cocktail"
+    default_rendering_format = "html"
 
     # Execution and lifecycle
     #------------------------------------------------------------------------------    
@@ -98,13 +95,19 @@ class Controller(RequestHandler):
             format = cherrypy.request.params.get(self.rendering_format_param)
             
         if format is None:
-            format = cherrypy.request.config["rendering.format"]
+            format = cherrypy.request.config.get(
+                "rendering.format",
+                self.default_rendering_format
+            )
 
         return format
 
     @cached_getter
     def rendering_engine(self):
-        engine_name = cherrypy.request.config["rendering.engine"]
+        engine_name = cherrypy.request.config.get(
+            "rendering.engine",
+            self.default_rendering_engine
+        )
         return self._get_rendering_engine(engine_name)
         
     def _get_rendering_engine(self, engine_name):
@@ -146,7 +149,7 @@ class Controller(RequestHandler):
         if view_class:
             output = self.output
             output["submitted"] = self.submitted
-            output["successful"] = self.successful            
+            output["successful"] = self.successful
             return self.rendering_engine.render(
                             output,
                             format = self.rendering_format,
