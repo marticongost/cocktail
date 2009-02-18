@@ -7,37 +7,38 @@
 @since:			July 2008
 """
 from threading import Lock
+from time import sleep
+import transaction
 from cocktail.persistence.datastore import datastore
+from ZODB.POSException import ConflictError
 
-class IncrementalIdGenerator(object):
+RETRY_INTERVAL = 0.1
 
-    def __init__(self, key = "incremental_id", seed = 0, step = 1):
+_lock = Lock()
 
-        self.key = key
-        self.seed = seed
-        self.step = step
-        
-        self._lock = Lock()
-        self._current_id = None
+def incremental_id(key = "incremental_id"):
+    
+    _lock.acquire()
 
-    def generate_id(self, mapping):
-        
-        self._lock.acquire()
-
+    try:
         try:
-            if self._current_id is None:
-                self._current_id = mapping.get(self.key, self.seed)
-
-            self._current_id += self.step
-            mapping[self.key] = self._current_id
+            tm = transaction.TransactionManager()
+            conn = datastore.db.open(transaction_manager = tm)
             
+            while True:
+                conn.sync()
+                root = conn.root()
+                id = root.get(key, 0) + 1
+                root[key] = id
+                try:
+                    tm.commit()
+                except ConflictError:
+                    sleep(RETRY_INTERVAL)
+                    tm.abort()
+                else:
+                    return id
         finally:
-            self._lock.release()
-
-        return self._current_id
-
-_id_generator = IncrementalIdGenerator()
-
-def incremental_id():
-    return _id_generator.generate_id(datastore.root)
+            conn.close()
+    finally:
+        _lock.release()
 
