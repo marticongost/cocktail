@@ -32,7 +32,7 @@ def get_content_type_filters(content_type):
 
     for member in content_type.ordered_members():
         if member.searchable and member.user_filter and member.visible:
-            filter = member.user_filter()
+            filter = resolve(member.user_filter)()
             filter.id = "member-" + member.name
             filter.content_type = content_type
             filter.member = member
