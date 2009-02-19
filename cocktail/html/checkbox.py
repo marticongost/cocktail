@@ -29,7 +29,7 @@ class CheckBox(Element, DataBoundControl):
         @type: bool
         """)
 
-    def insert_into_form(self, field_instance):
+    def insert_into_form(self, form, field_instance):
         field_instance.insert(0, self)
 
         # Disable the 'required' mark for this field, as it doesn't make sense
