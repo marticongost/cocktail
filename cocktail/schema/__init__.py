@@ -63,4 +63,5 @@ from cocktail.schema.adapter import (
     Split,
     Join
 )
+from cocktail.schema.differences import diff
 
