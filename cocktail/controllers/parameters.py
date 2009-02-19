@@ -17,6 +17,7 @@ from cocktail.persistence import PersistentClass
 from cocktail.schema.schemadates import Date, DateTime, Time
 from cocktail.translations import get_language
 from cocktail.translations.translation import translations, translate
+from cocktail.controllers.fileupload import FileUpload
 
 def serialize_parameter(member, value):
     if value is None:
@@ -427,7 +428,8 @@ class FormSchemaReader(object):
 
     def _is_schema(self, member):
         return isinstance(member, schema.Schema) \
-            and not isinstance(member, schema.BaseDateTime)
+            and not isinstance(member, schema.BaseDateTime) \
+            and not isinstance(member, FileUpload)
 
     def _read_schema(self,
         member,
@@ -488,7 +490,7 @@ class FormSchemaReader(object):
 
         if value is not None:
 
-            if self.normalization:
+            if self.normalization and not isinstance(member, FileUpload):
                 if isinstance(value, basestring):
                     value = self.normalization(value)
                 else:

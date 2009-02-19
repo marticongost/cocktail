@@ -10,7 +10,10 @@ from __future__ import with_statement
 from cocktail.language import get_content_language, content_language_context
 from cocktail.modeling import getter, ListWrapper
 from cocktail.translations import translate
-from cocktail.schema import Member, Boolean, Reference, BaseDateTime, Decimal
+from cocktail.schema import (
+    Member, Boolean, Reference, BaseDateTime, Decimal
+)
+from cocktail.controllers.fileupload import FileUpload
 from cocktail.html import Element
 from cocktail.html.datadisplay import DataDisplay
 from cocktail.html.hiddeninput import HiddenInput
@@ -67,6 +70,9 @@ class Form(Element, DataDisplay):
 
         self.set_member_type_display(
             Decimal, "cocktail.html.DecimalBox")
+
+        self.set_member_type_display(
+            FileUpload, "cocktail.html.FileUploadBox")
 
         self.__groups = []
         self.groups = ListWrapper(self.__groups)
@@ -214,7 +220,7 @@ class Form(Element, DataDisplay):
         insert = getattr(field_instance.control, "insert_into_form", None)
 
         if insert:
-            insert(field_instance)
+            insert(self, field_instance)
         else:
             field_instance.append(field_instance.control)
 
