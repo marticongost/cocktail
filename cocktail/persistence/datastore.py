@@ -10,6 +10,7 @@ from threading import local
 from ZODB import DB
 import transaction
 from cocktail.modeling import getter
+from cocktail.events import Event
 
 
 class DataStore(object):
@@ -20,12 +21,19 @@ class DataStore(object):
     L{storage<ZODB.BaseStorage.BaseStorage>} instance pointing to the physical
     location of the database (see the ZODB documentation for more details).
     """
-
     def __init__(self, storage = None):
         self._thread_data = local()
         self.storage = storage
         self.__db = None
-        
+    
+    connection_opened = Event("""
+        An event triggered when the datastore spawns a new thread-bound
+        connection.
+
+        @ivar connection: The new connection.
+        @type connection: L{Connection<>}
+        """)
+
     @getter
     def db(self):
         if self.__db is None:
@@ -62,6 +70,7 @@ class DataStore(object):
         if connection is None:
             connection = self.db.open()
             self._thread_data.connection = connection
+            self.connection_opened(connection = connection)
 
         return connection
 
