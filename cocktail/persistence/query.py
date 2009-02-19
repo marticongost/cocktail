@@ -243,8 +243,10 @@ class Query(object):
             and filter in self._indexable_expressions \
             and not single_match:
 
-                value = filter.operands[1].value
-
+                value = member.get_index_value(
+                            filter.operands[1].value
+                )
+                
                 if member.primary:
                     index = self.__type.index
                 else:
