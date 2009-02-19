@@ -6,6 +6,7 @@
 @organization:	Whads/Accent SL
 @since:			February 2009
 """
+import hashlib
 from cocktail import schema
 
 
@@ -13,6 +14,7 @@ class FileUpload(schema.Schema):
     
     chunk_size = 8192
     normalization = None
+    hash_algorithm = None
 
     def __init__(self, *args, **kwargs):
 
@@ -42,42 +44,43 @@ class FileUpload(schema.Schema):
         
         upload = {            
             "file_name": value.filename,
-            "mime_type": value.type
+            "mime_type": value.type,
+            "file_size": None,
+            "file_hash": None
         }
         
         dest = self.get_file_destination(upload)
+        dest_file = None
         chunk_size = self.chunk_size
         
-        # Measure size & write
-        if dest:
-            size = 0
+        hash = None \
+            if self.hash_algorithm is None \
+            else hashlib.new(self.hash_algorithm)
+        size = 0
 
-            # Read a first chunk of the uploaded file
-            chunk = value.file.read(chunk_size)
-            
-            # Don't write to the destination if no file has been uploaded
-            if chunk:
-                dest_file = open(dest, "wb")
-
-                # Write the first chunk and the rest of the file to the
-                # destination
-                try:
-                    while chunk:
-                        dest_file.write(chunk)
-                        size += len(chunk)
-                        chunk = value.file.read(chunk_size)
-                finally:
-                    dest_file.close()
+        # Read a first chunk of the uploaded file
+        chunk = value.file.read(chunk_size)
         
-        # Measure size
-        else:
-            size = 0
-            while True:
-                chunk = value.file.read(chunk_size)
-                if not chunk:
-                    break
+        # Don't write to the destination if no file has been uploaded
+        if chunk and dest:
+            dest_file = open(dest, "wb")
+
+        # Read the complete file, in chunks
+        try:
+            while chunk:
+                if dest:
+                    dest_file.write(chunk)
+
+                if hash is not None:
+                    hash.update(chunk)
+
                 size += len(chunk)
-        
+                chunk = value.file.read(chunk_size)
+        finally:
+            if dest_file:
+                dest_file.close()
+
+        if not dest:
             value.file.seek(0)
             upload["file"] = value.file
 
@@ -85,6 +88,9 @@ class FileUpload(schema.Schema):
             upload = None
         else:
             upload["file_size"] = size
+
+            if hash is not None:
+                upload["file_hash"] = hash.digest()
 
         return upload
 
