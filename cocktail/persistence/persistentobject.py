@@ -76,6 +76,18 @@ schema.Member.index = property(_get_index, _set_index, doc = """
     Gets or sets the index for the members.
     """)
 
+def _member_get_index_value(self, value):
+    return value
+
+schema.Member.get_index_value = _member_get_index_value
+
+def _reference_get_index_value(self, value):
+    if value is not None:
+        value = value.id
+    return value
+
+schema.Reference.get_index_value = _reference_get_index_value
+
 # Cascade delete
 def _get_cascade_delete(self):
     if self._cascade_delete is None:
@@ -305,6 +317,8 @@ class PersistentObject(SchemaObject, Persistent):
                 % member
             )
         
+        value = member.get_index_value(value)
+
         if member.indexed:
             match = member.index.get(value)
             if match and not isinstance(match, cls):
@@ -365,12 +379,12 @@ class PersistentObject(SchemaObject, Persistent):
 
         if member.indexed and previous_value != new_value:
 
+            previous_index_value = member.get_index_value(previous_value)
+            new_index_value = member.get_index_value(new_value)
+            
             if language:
-                previous_index_value = (language, previous_value)
-                new_index_value = (language, new_value)
-            else:
-                previous_index_value = previous_value
-                new_index_value = new_value
+                previous_index_value = (language, previous_index_value)
+                new_index_value = (language, new_index_value)
 
             if member.primary:
                 for schema in self.__class__.ascend_inheritance(True):
