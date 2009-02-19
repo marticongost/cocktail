@@ -50,17 +50,24 @@ class FileUpload(schema.Schema):
         
         # Measure size & write
         if dest:
-            dest_file = open(dest, "wb")
-            try:
-                size = 0
-                while True:
-                    chunk = value.file.read(chunk_size)
-                    if not chunk:
-                        break
-                    dest_file.write(chunk)
-                    size += len(chunk)
-            finally:
-                dest_file.close()
+            size = 0
+
+            # Read a first chunk of the uploaded file
+            chunk = value.file.read(chunk_size)
+            
+            # Don't write to the destination if no file has been uploaded
+            if chunk:
+                dest_file = open(dest, "wb")
+
+                # Write the first chunk and the rest of the file to the
+                # destination
+                try:
+                    while chunk:
+                        dest_file.write(chunk)
+                        size += len(chunk)
+                        chunk = value.file.read(chunk_size)
+                finally:
+                    dest_file.close()
         
         # Measure size
         else:
@@ -79,8 +86,6 @@ class FileUpload(schema.Schema):
         else:
             upload["file_size"] = size
 
-        from styled import styled
-        print styled(upload, "magenta")
         return upload
 
     def get_file_destination(self, upload):
