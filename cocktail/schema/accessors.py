@@ -16,10 +16,18 @@ def get_accessor(obj):
             return accessor
 
 def get(obj, key, default = undefined, language = None):
+    
+    if not isinstance(key, basestring):
+        key = key.name
+    
     accessor = get_accessor(obj)
     return accessor.get(obj, key, default, language)
 
 def set(obj, key, value, language = None):
+    
+    if not isinstance(key, basestring):
+        key = key.name
+    
     accessor = get_accessor(obj)
     accessor.set(obj, key, value, language)
 
