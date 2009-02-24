@@ -462,6 +462,9 @@ class PersistentObject(SchemaObject, Persistent):
 
     def delete(self, deleted_objects = None):
         """Removes the object from the database."""
+        
+        if not self.__inserted:
+            raise NewObjectDeletedError(self)
 
         if deleted_objects is None:
             deleted_objects = set()
@@ -534,6 +537,7 @@ class PersistentObject(SchemaObject, Persistent):
                 ):                    
                     self.set(member, None)
 
+        self.__inserted = False
         self.deleted()
 
 PersistentObject._translation_schema_metaclass = PersistentClass
@@ -548,4 +552,20 @@ class UniqueValueError(ValidationError):
     def __repr__(self):
         return "%s (value already present in the database)" \
             % ValidationError.__repr__(self)
+
+
+class NewObjectDeletedError(Exception):
+    """An error produced when trying to delete an object that hasn't been
+    inserted to the data store yet.
+
+    @ivar persistent_object: The object that couldn't be deleted.
+    @type persistent_object: L{PersistentObject}
+    """
+
+    def __init__(self, persistent_object):
+        Exception.__init__(self,
+            "%s is not inserted and can't be deleted"
+            % persistent_object
+        )
+        self.persistent_object = persistent_object
 
