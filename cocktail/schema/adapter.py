@@ -255,7 +255,7 @@ class Adapter(object):
                 object, which may result in unexpected behavior in some cases.
             * L{shallow}: Creates a shallow copy of the collection (a copy of
                 the collection itself is made, but its members are copied by
-                reference.
+                reference).
             * L{deep}: Creates a deep copy of the collection and its members.
 
         Note that setting this property will alter the analogous attribute on
