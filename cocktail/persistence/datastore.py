@@ -34,6 +34,18 @@ class DataStore(object):
         @type connection: L{Connection<>}
         """)
 
+    def _get_storage(self):
+        return self.__storage
+
+    def _set_storage(self, storage):
+        self.__storage = storage
+        self.__db = None
+
+    storage = property(_get_storage, _set_storage, doc = """
+        Gets or sets the underlying ZODB storage for the data store.
+        @type: L{ZODB.Storage}
+        """)
+
     @getter
     def db(self):
         if self.__db is None:
