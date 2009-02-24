@@ -17,6 +17,7 @@ class PropertyTable(Element, DataDisplay):
 
     tag = "table"
     translations = None
+    group_by_type = True
 
     def __init__(self, *args, **kwargs):
         DataDisplay.__init__(self)
@@ -25,14 +26,60 @@ class PropertyTable(Element, DataDisplay):
     def _ready(self):
         Element._ready(self)
 
+        container = self
+        prev_schema = None
+
+        if self.group_by_type:
+
+            self.add_resource("/cocktail/scripts/jquery.js")
+            self.add_resource("/cocktail/scripts/jquery.cookie.js")
+            self.add_resource("/cocktail/scripts/PropertyTable.js")
+
+            if self.tag == "table":
+                self.tag = "div"
+
         for index, member in enumerate(self.displayed_members):
+            
+            current_schema = member.adaptation_source.schema \
+                if member.adaptation_source else member.schema
+
+            if self.group_by_type and current_schema is not prev_schema:                
+                type_table = Element("table")
+                type_table.add_class("type_group")
+                type_table.set_client_param("groupSchema", current_schema.name)
+                self.append(type_table)
+                         
+                type_header = self.create_type_header(current_schema)
+                type_table.append(type_header)
+
+                container = self.create_type_container(current_schema)
+                type_table.append(container)
+                
             entry = self.create_entry(index, member)
-            self.append(entry)
+            container.append(entry)
+
+            prev_schema = current_schema
+
+    def create_type_header(self, schema):        
+        header = Element("thead")
+        header.add_class("type_header")
+        cell = Element("th")
+        cell["colspan"] = "2"
+        cell.append(self.get_type_header_label(schema))
+        header.append(cell)
+        return header
+
+    def get_type_header_label(self, schema):
+        return translate(schema.name)
+
+    def create_type_container(self, schema):
+        return Element("tbody")
 
     def create_entry(self, index, member):
 
         entry = Element("tr")
-        entry.add_class("%s_entry" % member.name)
+        entry.add_class("member_entry")
+        entry.add_class("member_%s_entry" % member.name)
 
         if index % 2 == 0:
             entry.add_class("odd")
