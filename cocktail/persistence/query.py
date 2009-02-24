@@ -9,6 +9,7 @@
 from itertools import chain
 from cocktail.modeling import getter
 from cocktail.schema import Member, expressions, SchemaObjectAccessor
+from cocktail.persistence.index import Index
 
 inherit = object()
 
@@ -233,29 +234,19 @@ class Query(object):
         
         single_match = False
         dataset = set(dataset)
-
-        for order, filter in self._get_execution_plan(self.__filters):
+        
+        for order, filter, member, index, is_unique \
+        in self._get_execution_plan(self.__filters):
             
-            member = self._get_filter_member(filter)
-
             # Apply the filter using an index
-            if member and member.indexed \
-            and filter in self._indexable_expressions \
-            and not single_match:
+            if index is not None and not single_match:
 
-                value = member.get_index_value(
-                            filter.operands[1].value
-                )
+                value = member.get_index_value(filter.operands[1].value)
                 
-                if member.primary:
-                    index = self.__type.index
-                else:
-                    index = member.index
-
                 # Equal
                 if isinstance(filter, expressions.EqualExpression):
 
-                    if member.unique:
+                    if is_unique:
                         match = index.get(value)
                         
                         if match:
@@ -270,21 +261,19 @@ class Query(object):
                         else:
                             dataset = set()
                     else:
-                        subset = index.get(value)
-                        if subset:
-                            dataset.intersection_update(subset)
+                        subset = index[value]
+                        dataset.intersection_update(subset)
                 
                 # Different
                 elif isinstance(filter, expressions.NotEqualExpression):
                     
-                    if member.unique:
+                    if is_unique:
                         index_value = index.get(value)
                         if index_value is not None:
                             dataset.discard(index_value)
                     else:
-                        subset = index.get(value)
-                        if subset:
-                            dataset.difference_update(subset)                                        
+                        subset = index[value]
+                        dataset.difference_update(subset) 
 
                 # Greater
                 elif isinstance(filter, (
@@ -293,11 +282,10 @@ class Query(object):
                 )):
                     subset = index.values(
                         min = value,
-                        excludemax = isinstance(filter,
+                        excludemin = isinstance(filter,
                             expressions.GreaterExpression)
                     )
-                    if subset:
-                        dataset.intersection_update(subset)
+                    dataset.intersection_update(subset)
             
                 # Lower
                 elif isinstance(filter, (
@@ -309,8 +297,7 @@ class Query(object):
                         excludemax = isinstance(filter,
                             expressions.LowerExpression)
                     )
-                    if subset:
-                        dataset.intersection_update(subset)
+                    dataset.intersection_update(subset)
                 else:
                     raise TypeError(
                         "Can't match %s against an index" % filter)
@@ -355,21 +342,44 @@ class Query(object):
             
             member = self._get_filter_member(filter)
             expr_speed = self._expression_speed.get(filter.__class__, 0)
-
-            if member and member.indexed \
-            and filter.__class__ in self._indexable_expressions:
-                if member.unique:
-                    indexing = 0
-                else:
-                    indexing = 1
-            else:
-                indexing = 2
+            index = None
+            index_speed = 2
+            is_unique = None
             
-            order = (indexing, expr_speed)
-            execution_plan.append((order, filter))
+            if member:
+                if filter.__class__ in self._indexable_expressions:
+                    index = self._get_expression_index(filter, member)
+                
+                if index is not None:
+                    is_unique = self._index_is_unique(index)
+                
+                    if is_unique:
+                        index_speed = 0
+                    else:
+                        index_speed = 1
+                            
+            order = (index_speed, expr_speed)
+            execution_plan.append((order, filter, member, index, is_unique))
 
         execution_plan.sort()
         return execution_plan
+
+    def _get_expression_index(self, filter, member):
+
+        # Expressions can override normal indices and supply their own
+        index = filter.index
+
+        # Otherwise, just use the one provided by the evaluated member
+        if index is None and member.indexed:
+            if member.primary:
+                index = self.__type.index
+            else:
+                index = member.index
+
+        return index
+    
+    def _index_is_unique(self, index):
+        return not isinstance(index, Index)
 
     def _apply_order(self, dataset):
  

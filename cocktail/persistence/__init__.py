@@ -18,7 +18,7 @@ from cocktail.persistence.persistentrelations import (
     PersistentRelationMapping
 )
 from cocktail.persistence.persistentobject import (
-    PersistentClass, PersistentObject
+    PersistentClass, PersistentObject, UniqueValueError, NewObjectDeletedError
 )
 from cocktail.persistence.datastore import datastore
 from cocktail.persistence.incremental_id import incremental_id
