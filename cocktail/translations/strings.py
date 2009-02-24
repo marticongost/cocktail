@@ -267,6 +267,18 @@ translations.define("cocktail.html.UserFilterEntry operator re",
     en = u"Matches regular expression"
 )
 
+translations.define("cocktail.html.UserFilterEntry operator cn",
+    ca = u"Conté",
+    es = u"Contiene",
+    en = u"Contains"
+)
+
+translations.define("cocktail.html.UserFilterEntry operator nc",
+    ca = u"No conté",
+    es = u"No contiene",
+    en = u"Doesn't contain"
+)
+
 translations.define("UserFilter.language",
     ca = u"en",
     es = u"en",
