@@ -12,7 +12,9 @@ from cocktail.pkgutils import resolve
 from cocktail.schema import (
     Schema, Member, Number, BaseDateTime, String, Boolean, Collection
 )
-from cocktail.schema.expressions import CustomExpression, normalize
+from cocktail.schema.expressions import (
+    CustomExpression, Self, InclusionExpression, ExclusionExpression, normalize
+)
 from cocktail.html import templates
 from cocktail.translations import translate
 
@@ -85,7 +87,13 @@ class MemberFilter(UserFilter):
             ))
 
     def _add_member_to_schema(self, schema):
-        value_member = self.member.copy()
+        
+        source_member = self.member
+
+        if isinstance(source_member, Collection):
+            source_member = source_member.items
+        
+        value_member = source_member.copy()
         value_member.name = "value"
         value_member.translated = False
         schema.add_member(value_member)
@@ -244,13 +252,38 @@ class GlobalSearchFilter(UserFilter):
         return CustomExpression(search_object)
 
 
+class CollectionFilter(BinaryFilter):
+
+    operators = ("cn", "nc")
+
+    @getter
+    def expression(self):
+
+        if self.member.bidirectional:
+            collection = self.value.get(self.member.related_end) or set()
+
+            if self.operator == "cn":
+                return InclusionExpression(Self, collection)
+            elif self.operator == "nc":
+                return ExclusionExpression(Self, collection)
+        else:
+            if self.operator == "cn":
+                return CustomExpression(lambda item:
+                    self.value in (item.get(self.member) or set())
+                )
+            elif self.operator == "nc":
+                return CustomExpression(lambda item:
+                    self.value not in (item.get(self.member) or set())
+                )
+
+
 # An extension property used to associate user filter types with members
 Member.user_filter = EqualityFilter
 Number.user_filter = ComparisonFilter
 BaseDateTime.user_filter = ComparisonFilter
 String.user_filter = StringFilter
 Boolean.user_filter = BooleanFilter
-Collection.user_filter = None
+Collection.user_filter = CollectionFilter
 
 # An extension property used to determine which members should be searchable
 Member.searchable = True
