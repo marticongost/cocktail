@@ -35,9 +35,12 @@ class Selector(Element, DataBoundControl):
         if self.member:
         
             if self.items is None:
-            
-                if self.member.enumeration:
-                    self.items = self.member.enumeration
+                
+                enumeration = self.member.resolve_constraint(
+                    self.member.enumeration, None)
+                
+                if enumeration:
+                    self.items = enumeration
 
                 elif isinstance(self.member, Number) \
                 and self.member.min and self.member.max:
