@@ -9,7 +9,6 @@ A set of constructs for modeling classes.
 """
 import types
 from copy import copy, deepcopy
-from weakref import WeakKeyDictionary
 from threading import local, Lock, RLock
 from cocktail.typemapping import TypeMapping
 
@@ -57,17 +56,16 @@ def cached_getter(function):
     decorated method, and reused on all further calls.
 
     Each instance of the method's class will gain its own cached value.
-    """
- 
+    """ 
     undefined = object()
-    cached_values = WeakKeyDictionary()
-
+    key = "_" + function.func_name
+    
     def wrapper(self):
-        value = cached_values.get(self, undefined)
+        value = getattr(self, key, undefined)
 
         if value is undefined:
             value = function(self)
-            cached_values[self] = value
+            setattr(self, key, value)
 
         return value
 
@@ -77,7 +75,7 @@ def cached_getter(function):
 
         def clear(self, instance):
             try:
-                del cached_values[instance]
+                delattr(instance, key)
             except KeyError:
                 pass
 
