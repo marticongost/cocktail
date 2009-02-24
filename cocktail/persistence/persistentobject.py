@@ -32,6 +32,7 @@ from cocktail.persistence.persistentrelations import (
 PersistentObject = None
 
 # Indexing
+schema.expressions.Expression.index = None
 schema.Member.indexed = False
 schema.Member.index_key = None
 schema.Member.index_type = OOBTree
