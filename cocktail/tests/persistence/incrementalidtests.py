@@ -9,13 +9,15 @@
 from unittest import TestCase
 from cocktail.tests.persistence.tempstoragemixin import TempStorageMixin
 
+# TODO: Test threaded
+# TODO: Test multiprocess
 
 class IncrementalIdTestCase(TempStorageMixin, TestCase):
 
     def test_acquisition(self):
 
         from cocktail.persistence import incremental_id
-            
+       
         n = 100
         ids = set(incremental_id() for i in range(n))
 
@@ -24,7 +26,7 @@ class IncrementalIdTestCase(TempStorageMixin, TestCase):
         for id in ids:
             self.assertTrue(id)
             self.assertTrue(isinstance(id, int))
-        
+    
     def test_conflict_resolution(self):
         
         from cocktail.persistence import datastore, incremental_id
