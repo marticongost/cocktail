@@ -520,26 +520,31 @@ class PersistentObject(SchemaObject, Persistent):
 
                 # Remove all known references to the item (drop all its
                 # relations)
-                if self.get(member) is not None and (
-
-                    # Reference to an object (not a class)
-                    (
-                        isinstance(member, schema.Reference)
-                        and member.class_family is None
-                    )
-                    # Collection of references to objects (not classes or
-                    # literals)
-                    # TODO: Add support for nested collections?
-                    or (
-                        isinstance(member, schema.Collection)
-                        and isinstance(member.items, schema.Reference)
-                        and member.items.class_family is None
-                    )
-                ):                    
+                if self._should_erase_member(member):
                     self.set(member, None)
 
         self.__inserted = False
         self.deleted()
+
+    def _should_erase_member(self, member):
+
+        return self.get(member) is not None and (
+
+            # Reference to an object (not a class)
+            (
+                isinstance(member, schema.Reference)
+                and member.class_family is None
+            )
+            # Collection of references to objects (not classes or
+            # literals)
+            # TODO: Add support for nested collections?
+            or (
+                isinstance(member, schema.Collection)
+                and isinstance(member.items, schema.Reference)
+                and member.items.class_family is None
+            )
+        )
+
 
 PersistentObject._translation_schema_metaclass = PersistentClass
 PersistentObject._translation_schema_base = PersistentObject
