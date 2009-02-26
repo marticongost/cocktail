@@ -26,6 +26,11 @@ class DataStore(object):
         self.storage = storage
         self.__db = None
     
+    storage_changed = Event("""
+        An event triggered when changing which storage is used by the
+        datastore.
+        """)
+
     connection_opened = Event("""
         An event triggered when the datastore spawns a new thread-bound
         connection.
@@ -40,6 +45,7 @@ class DataStore(object):
     def _set_storage(self, storage):
         self.__storage = storage
         self.__db = None
+        self.storage_changed()
 
     storage = property(_get_storage, _set_storage, doc = """
         Gets or sets the underlying ZODB storage for the data store.
