@@ -7,7 +7,7 @@
 @since:			July 2008
 """
 from itertools import chain
-from cocktail.modeling import getter
+from cocktail.modeling import getter, ListWrapper
 from cocktail.schema import Member, expressions, SchemaObjectAccessor
 from cocktail.persistence.index import Index
 
@@ -219,13 +219,19 @@ class Query(object):
 
     def execute(self, _sorted = True):
     
-        dataset = self.base_collection
+        base_collection = self.base_collection
+        ordered = isinstance(base_collection, (list, tuple, ListWrapper))
+        dataset = base_collection
 
         if self.__filters:
             dataset = self._apply_filters(dataset)
 
         if _sorted:
-            dataset = self._apply_order(dataset)
+            if self.__order:
+                dataset = self._apply_order(dataset)
+            elif ordered:
+                dataset = [item for item in base_collection if item in dataset]
+
             dataset = self._apply_range(dataset)
 
         return dataset
