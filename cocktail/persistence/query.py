@@ -226,11 +226,11 @@ class Query(object):
         if self.__filters:
             dataset = self._apply_filters(dataset)
 
-        if _sorted:
-            if self.__order:
-                dataset = self._apply_order(dataset)
-            elif ordered:
+        if _sorted:            
+            if ordered and not self.__order:
                 dataset = [item for item in base_collection if item in dataset]
+            else:
+                dataset = self._apply_order(dataset)
 
             dataset = self._apply_range(dataset)
 
