@@ -27,6 +27,15 @@ def create_container(event):
         root[ID_CONTAINER_KEY] = PersistentMapping()
         datastore.commit()
 
+@datastore.storage_changed.append
+def discard_acquired_ids(event):
+    global _acquired_ids
+    _lock.acquire()
+    try:
+        _acquired_ids = []
+    finally:
+        _lock.release()
+
 def incremental_id(key = "default"):
     
     global _acquired_ids
@@ -58,6 +67,7 @@ def incremental_id(key = "default"):
                         tm.abort()
                     except:
                         tm.abort()
+                        raise
                     else:
                         _acquired_ids = range(base_id + 1, top_id + 1)
                         break
