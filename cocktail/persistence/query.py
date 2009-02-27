@@ -402,21 +402,36 @@ class Query(object):
         if not isinstance(dataset, list):
             dataset = list(dataset)
 
-        cmp_sequence = [
+        order_expressions = []
+        descending = []
+        
+        for expr in order:
+            order_expressions.append(expr.operands[0])
+            descending.append(isinstance(expr, expressions.NegativeExpression))
+
+        entries = [
             (
-                expr.operands[0],
-                isinstance(expr, expressions.NegativeExpression)
+                item,
+                tuple(
+                    expr.eval(item, SchemaObjectAccessor)
+                    for expr in order_expressions
+                )
             )
-            for expr in order
+            for item in dataset
         ]
 
-        def compare(a, b):
- 
-            for expr, descending in cmp_sequence:
-                value_a = expr.eval(a, SchemaObjectAccessor)
-                value_b = expr.eval(b, SchemaObjectAccessor)
+        def compare(entry_a, entry_b):
+            
+            values_a = entry_a[1]
+            values_b = entry_b[1]
 
-                if descending:
+            for expr, desc, value_a, value_b in zip(
+                order_expressions,
+                descending,
+                values_a,
+                values_b
+            ):            
+                if desc:
                     value_a, value_b = value_b, value_a
 
                 if (value_a is None and value_b is None) \
@@ -433,9 +448,8 @@ class Query(object):
 
             return 0
 
-        dataset.sort(cmp = compare)
-
-        return dataset
+        entries.sort(cmp = compare)
+        return [entry[0] for entry in entries]
 
     def _apply_range(self, dataset):
 
