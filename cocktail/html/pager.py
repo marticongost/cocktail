@@ -88,6 +88,8 @@ class Pager(Element):
 
         for page in range(start_page, end_page + 1):
             page_link = self.create_page_link(page)
+            if page == end_page:
+                page_link.add_class("last")
             self.page_links.append(page_link)
 
     def create_button(self, name):
