@@ -142,6 +142,9 @@ class Schema(Member):
         if self.__members is None:
             self.__members = {}
 
+        if member.primary:
+            self.primary_member = member
+        
         self.__members[member.name] = member
         member._schema = self
 
