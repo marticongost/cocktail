@@ -362,7 +362,7 @@ class RuleSet(object):
             for target_member in target_members.itervalues():
                 if target_member.adaptation_source is source_member \
                 and target_member not in ordered_members:
-                    target_order.append(target_member)
+                    target_order.append(target_member.name)
                     ordered_members.add(target_member)
 
         target_schema.members_order = target_order
