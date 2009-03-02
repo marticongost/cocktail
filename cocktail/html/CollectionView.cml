@@ -69,22 +69,21 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
     </div>
 
     <!-- Data controls -->
+    <button
+        py:def="toolbar_button"
+        py:args="action"
+        class="toolbar_button ${action}"
+        name="action"
+        type="submit"
+        value="${action}">
+        <?py
+        set_translated_shortcut(element, "action " + action)
+        ?>
+        ${translate("Action " + action)}
+    </button>
+
     <div py:id="toolbar_box">
-        <div py:id="toolbar">
-
-            <button
-                py:def="toolbar_button"
-                py:args="action"
-                class="toolbar_button ${action}"
-                name="action"
-                type="submit"
-                value="${action}">
-                <?py
-                set_translated_shortcut(element, "action " + action)
-                ?>
-                ${translate("Action " + action)}
-            </button>
-
+        <div py:id="toolbar">            
             <py:ready>
                 <py:new py:element="self.create_toolbar_button(action)"
                     py:for="action in self.actions"/>

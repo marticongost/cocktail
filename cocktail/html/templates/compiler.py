@@ -8,7 +8,7 @@
 """
 import re
 from xml.parsers import expat
-from cocktail.modeling import refine, getter, DictWrapper
+from cocktail.modeling import refine, extend, call_base, getter, DictWrapper
 from cocktail.translations import translate, get_language
 from cocktail.html.element import default, PlaceHolder
 from cocktail.html.templates.sourcecodewriter import SourceCodeWriter
@@ -115,7 +115,9 @@ class TemplateCompiler(object):
             "PlaceHolder": PlaceHolder,
             "translate": translate,
             "get_language": get_language,
-            "refine": refine
+            "refine": refine, # obsolete; use extend/call_base instead
+            "extend": extend,
+            "call_base": call_base
         }
 
     def add_class_reference(self, reference):
@@ -406,18 +408,14 @@ class TemplateCompiler(object):
                 # Declaration
                 args = attributes.pop(self.TEMPLATE_NS + ">args", None)
 
-                if not args and with_def:
+                if not args:
                     args = "*args, **kwargs"
                 
-                inline = (with_def and parent_id != "self")
+                inline = ((with_def or def_identifier) and parent_id != "self")
 
                 if inline:
                     self_var = parent_id
-                    source.write(
-                        id + "_factory = %s.create_%s"
-                        % (parent_id, factory_id)
-                    )
-                    source.write("@refine(%s)" % parent_id)
+                    source.write("@extend(%s)" % parent_id)
                 else:
                     self_var = "self"
                     source = SourceCodeWriter(1)
@@ -434,9 +432,7 @@ class TemplateCompiler(object):
                     base_args = attributes.pop(
                         self.TEMPLATE_NS + ">baseargs", args)
 
-                    if inline:
-                        element_factory = id + "_factory(%s)" % base_args
-                    elif self.__is_overlay:
+                    if inline or self.__is_overlay:
                         element_factory = "call_base(%s)" % (base_args or "")
                     else:
                         element_factory = "%s.create_%s(self%s)" % (
