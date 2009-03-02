@@ -7,6 +7,7 @@ cocktail.init = function (callback) {
         cocktail.__initCallbacks.push(callback);
     }
     else {
+        jQuery(document.body).addClass("scripted");
         var callbacks = cocktail.__initCallbacks;
         for (var i = 0; i < callbacks.length; i++) {
             callbacks[i]();
