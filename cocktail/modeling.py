@@ -103,25 +103,30 @@ def extend(element):
 
     def decorator(function):
 
-        base = getattr(element, function.func_name)
+        base = getattr(element, function.func_name, None)
 
-        def wrapper(*args, **kwargs):
-            if not hasattr(_thread_data, "method_stack"):
-                _thread_data.method_stack = []
-            try:
-                _thread_data.method_stack.append(base)
-                rvalue = function(element, *args, **kwargs)
+        if base:
+            def wrapper(*args, **kwargs):
+                if not hasattr(_thread_data, "method_stack"):
+                    _thread_data.method_stack = []
+                try:
+                    _thread_data.method_stack.append(base)
+                    rvalue = function(element, *args, **kwargs)
 
-                if isinstance(rvalue, types.GeneratorType):
-                    raise TypeError(
-                        "extend() doesn't work with generator functions "
-                        "(calling %s on %s)" % (function, element))
+                    if isinstance(rvalue, types.GeneratorType):
+                        raise TypeError(
+                            "extend() doesn't work with generator functions "
+                            "(calling %s on %s)" % (function, element))
 
-                return rvalue
-            finally:
-                _thread_data.method_stack.pop()
+                    return rvalue
+                finally:
+                    _thread_data.method_stack.pop()
 
-        wrap(function, wrapper)
+            wrap(function, wrapper)
+            setattr(element, function.func_name, wrapper)        
+        else:
+            wrapper = function
+            
         setattr(element, function.func_name, wrapper)        
         return wrapper
 
