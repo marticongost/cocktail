@@ -130,19 +130,19 @@ translations.define("cocktail.html.ContentView search results",
     en = u"Search results:"
 )
 
-translations.define("CollectionView selection",
+translations.define("cocktail.html.CollectionView selection options",
     ca = u"Seleccionar:",
     es = u"Seleccionar:",
     en = u"Select:"
 )
 
-translations.define("CollectionView all",
+translations.define("cocktail.html.CollectionView select all",
     ca = u"Tots",
     es = u"Todos",
     en = u"All"
 )
 
-translations.define("CollectionView none",
+translations.define("cocktail.html.CollectionView clear selection",
     ca = u"Cap",
     es = u"Ninguno",
     en = u"None"
