@@ -37,9 +37,7 @@ schema.Member.indexed = False
 schema.Member.index_key = None
 schema.Member.index_type = OOBTree
 schema.Integer.index_type = IOBTree
-schema.Member.primary = False
 schema.Member.unique = False
-schema.Schema.primary_member = None
 
 def _get_index(self):
 

@@ -104,10 +104,6 @@ class SchemaClass(EventHub, Schema):
         descriptor = cls.MemberDescriptor(member)
         setattr(cls, member.name, descriptor)
 
-        # Primary member
-        if member.primary:
-            cls.primary_member = member
-
         # Translation
         if member.translated:
  
