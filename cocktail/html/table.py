@@ -14,7 +14,7 @@ from cocktail.html.datadisplay import (
 )
 from cocktail.translations import translate
 from cocktail.language import get_content_language, set_content_language
-from cocktail.schema import Collection
+from cocktail.schema import Collection, get
 from cocktail.schema.expressions import (
     TranslationExpression,
     PositiveExpression,
@@ -26,6 +26,7 @@ from cocktail.controllers.viewstate import view_state
 class Table(Element, CollectionDisplay):
     
     tag = "table"
+    sortable = False
     ascending_order_image = "ascending.png"
     descending_order_image = "descending.png"
     base_image_url = None
@@ -55,7 +56,10 @@ class Table(Element, CollectionDisplay):
                 
         Element._ready(self)
 
-        self.add_resource("/cocktail/scripts/core.js")
+        self.add_resource(
+            "/cocktail/scripts/jquery.disable.text.select.pack.js")
+
+        self.add_resource("/cocktail/scripts/Table.js")
 
         self.set_client_variable(
             "cocktail.NO_SELECTION", NO_SELECTION)
@@ -63,7 +67,7 @@ class Table(Element, CollectionDisplay):
             "cocktail.SINGLE_SELECTION", SINGLE_SELECTION)
         self.set_client_variable(
             "cocktail.MULTIPLE_SELECTION", MULTIPLE_SELECTION)
-        
+
         self.set_client_param("selectionMode", self.selection_mode)
 
         self._fill_head()
@@ -132,7 +136,13 @@ class Table(Element, CollectionDisplay):
         return row
 
     def get_item_id(self, item):
-        return item.id
+        pm = self.schema.primary_member
+        if pm is None:
+            raise ValueError(
+                "Selectable tables must have a schema with a primary member "
+                "defined or override their get_item_id() method"
+            )
+        return get(item, pm)
 
     def create_selection_cell(self, item):        
         selection_cell = Element("td")

@@ -15,15 +15,15 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
     actions = ()
     selection_mode = MULTIPLE_SELECTION
     user_collection = None
+    activation_control = None
     ?>
     
     <?py
     self.add_resource("/cocktail/scripts/jquery.cookie.js")
-    self.add_resource("/cocktail/scripts/jquery.disable.text.select.pack.js")
     self.add_resource("/cocktail/scripts/CollectionView.js")
-    self.add_client_translation("CollectionView selection")
-    self.add_client_translation("CollectionView all")
-    self.add_client_translation("CollectionView none")
+    self.add_client_translation("cocktail.html.CollectionView selection options")
+    self.add_client_translation("cocktail.html.CollectionView select all")
+    self.add_client_translation("cocktail.html.CollectionView clear selection")
     ?>
 
     <py:ready>
@@ -178,7 +178,11 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
         self.search_results_message.visible = \
             self.user_collection.user_filters and self.visible_results
 
-        if not self.visible_results:
+        self.set_client_param("activationControl", self.activation_control)
+
+        self.set_client_param("hasResults", self.visible_results)
+
+        if not self.visible_results:        
             if self.user_collection.user_filters:
                 self.no_results.append(translate("cocktail.html.CollectionView no search results"))
             else:
