@@ -274,12 +274,17 @@ class Element(object):
     def rendered(self):
         return self.visible \
             and (not self.collapsible or self.has_rendered_children())
+        
+    @getter
+    def substantial(self):
+        return self.rendered
 
     def has_rendered_children(self):
 
-        for child in self.children:
-            if child.rendered:
-                return True
+        if self.__children:
+            for child in self.__children:
+                if child.substantial:                
+                    return True
 
         return False
 
@@ -643,7 +648,15 @@ class Content(Element):
     def __init__(self, value = None, *args, **kwargs):
         Element.__init__(self, *args, **kwargs)
         self.value = value
-        
+ 
+    @getter
+    def rendered(self):
+        return self.visible
+    
+    @getter
+    def substantial(self):
+        return self.visible and unicode(self.value).strip()
+
     def _render(self, render, out):
         self.ready()
         if self.value is not None:
