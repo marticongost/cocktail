@@ -11,7 +11,7 @@ from cocktail.language import get_content_language, content_language_context
 from cocktail.modeling import getter, ListWrapper
 from cocktail.translations import translate
 from cocktail.schema import (
-    Member, Boolean, Reference, BaseDateTime, Decimal
+    Member, Boolean, Reference, BaseDateTime, Decimal, Collection
 )
 from cocktail.controllers.fileupload import FileUpload
 from cocktail.html import Element
@@ -73,6 +73,9 @@ class Form(Element, DataDisplay):
 
         self.set_member_type_display(
             FileUpload, "cocktail.html.FileUploadBox")
+
+        self.set_member_type_display(
+            Collection, "cocktail.html.CheckList")
 
         self.__groups = []
         self.groups = ListWrapper(self.__groups)
