@@ -16,10 +16,20 @@ class CheckList(Selector):
 
     empty_option_displayed = False
 
+    def _ready(self):
+
+        if not self.name and self.data_display:
+            self.name = self.data_display.get_member_name(
+                self.member,
+                self.language
+            )
+
+        Selector._ready(self)
+    
     def create_entry(self, value, label, selected):
 
         entry = Element()
-        entry_id = self.name + "-" + value
+        entry_id = entry.require_id()
 
         entry.check = CheckBox()
         entry.check["name"] = self.name
