@@ -6,6 +6,7 @@
 @organization:	Whads/Accent SL
 @since:			November 2007
 """
+from itertools import groupby
 
 def filter_by(collection, **kwargs):
     
@@ -53,4 +54,12 @@ def is_empty(collection):
         return True
     else:
         return False
+
+def grouped(collection, key):
+
+    if isinstance(key, basestring):
+        attrib = key
+        key = lambda item: getattr(item, attrib, None)
+
+    return groupby(sorted(collection, key = key), key = key)
 
