@@ -29,7 +29,7 @@ class BaseDateTime(Schema, RangedMember):
    
     def __init__(self, *args, **kwargs):
         
-        Schema.__init__(self, **kwargs)
+        Schema.__init__(self, *args, **kwargs)
         RangedMember.__init__(self)
 
         day_kw = {"name": "day", "min": 1, "max": get_max_day}
