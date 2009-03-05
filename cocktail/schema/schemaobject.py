@@ -42,17 +42,13 @@ class SchemaClass(EventHub, Schema):
         cls.full_name = members.get("full_name") or get_full_name(cls)
         cls.__derived_schemas = []
         cls.members_order = members.get("members_order")
-        cls.blueprint = members.get("blueprint", False)
         
         # Inherit base schemas
         for base in bases:
             if SchemaObject \
             and base is not SchemaObject \
             and isinstance(base, SchemaClass):
-                if base.blueprint:
-                    base._apply_blueprint(cls)
-                else:
-                    cls.inherit(base)
+                cls.inherit(base)
 
         # Create a translation schema for the class, to hold its translated
         # members. Note that for most regular schemas (that is, all of them
@@ -90,11 +86,20 @@ class SchemaClass(EventHub, Schema):
         for base in bases:
             base.__derived_schemas.append(cls)
 
-    def _apply_blueprint(cls, target_class):
+    def _check_member(cls, member):
+
+        Schema._check_member(cls, member)
         
-        for member in cls.members().itervalues():
-            member_copy = member.copy()
-            target_class.add_member(member_copy)
+        if hasattr(cls, member.name) \
+        and (
+            getattr(cls, member.name) is not member
+            or any(hasattr(base, member.name) for base in cls.__bases__)
+        ):
+            raise AttributeError(
+                "Can't declare a member called %s on %s; the schema "
+                "already has an attribute with that name"
+                % (member.name, cls)
+            )
 
     def _add_member(cls, member):
        
