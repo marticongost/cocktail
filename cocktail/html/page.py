@@ -188,11 +188,15 @@ class Page(Element):
         
         if uri not in self.__resource_uris:
             self.__resource_uris.add(uri)
-        
+            
             if is_string:
                 resource = Resource.from_uri(uri)
 
             if isinstance(resource, Script):
+                
+                if uri != self.CORE_SCRIPT:
+                    self._add_resource_to_head(self.CORE_SCRIPT)
+
                 script_tag = Element("script")
                 script_tag["type"] = resource.mime_type
                 script_tag["src"] = uri

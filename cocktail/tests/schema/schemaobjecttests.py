@@ -27,6 +27,30 @@ class DeclarationTestCase(TestCase):
         self.assertTrue(Foo.spam is Foo["spam"])
         self.assertEqual(Foo.members(), {"bar": Foo.bar, "spam": Foo.spam})
 
+    def test_name_clash(self):
+
+        from cocktail.schema import SchemaObject, String
+
+        class Foo(SchemaObject):
+            spam = None
+
+        self.assertRaises(AttributeError, Foo.add_member, String("spam"))
+
+        class Bar(Foo):
+            pass
+
+        self.assertRaises(AttributeError, Foo.add_member, String("spam"))
+
+        for name in (
+            "name", "schema", "adaptation_source", "translated", "translation",
+            "required", "require_none", "enumeration", "type"
+        ):
+            self.assertRaises(AttributeError, Foo.add_member, String(name))
+            self.assertRaises(AttributeError, Bar.add_member, String(name))
+            self.assertRaises(AttributeError,
+                type, "Test", (SchemaObject,), {name: String()}
+            )
+
     def test_inheritance(self):
         
         from cocktail.schema import Schema, SchemaObject, String, Integer
@@ -79,70 +103,6 @@ class DeclarationTestCase(TestCase):
         # should refer the derived class as their schema
         self.assertTrue(Bar.bar_a.schema is Bar)
         self.assertTrue(Bar.bar_b.schema is Bar)
-
-    def test_blueprint(self):
-
-        from cocktail.schema import (
-            Schema, SchemaClass, SchemaObject, String, Integer
-        )
-
-        class Foo(SchemaObject):
-            blueprint = True
-            foo_a = String()
-            foo_b = Integer()
-
-            @classmethod
-            def _apply_blueprint(cls, target_class):
-                SchemaClass._apply_blueprint(cls, target_class)
-                target_class.foo_was_here = True
-
-        class Bar(Foo):
-            bar_a = String()
-            bar_b = Integer()
-
-        # Make sure the blueprint class remains unchanged
-        self.assertTrue(isinstance(Foo.foo_a, String))
-        self.assertTrue(isinstance(Foo.foo_b, Integer))
-        self.assertTrue(Foo.foo_a is Foo["foo_a"])
-        self.assertTrue(Foo.foo_b is Foo["foo_b"])
-        self.assertEqual(Foo.members(), {
-            "foo_a": Foo.foo_a,
-            "foo_b": Foo.foo_b
-        })
-        self.assertTrue(Foo.foo_a.schema is Foo)
-        self.assertTrue(Foo.foo_b.schema is Foo)
-        self.assertRaises(AttributeError, getattr, Foo, "bar_a")
-        self.assertRaises(AttributeError, getattr, Foo, "bar_b")
-                
-        # Check that the derived class correctly defines its members
-        self.assertTrue(isinstance(Bar.bar_a, String))
-        self.assertTrue(isinstance(Bar.bar_b, Integer))
-        self.assertTrue(Bar.foo_a is Bar["foo_a"])
-        self.assertTrue(Bar.foo_b is Bar["foo_b"])
-        self.assertTrue(Bar.bar_a is Bar["bar_a"])
-        self.assertTrue(Bar.bar_b is Bar["bar_b"])
-        self.assertTrue(Bar.foo_a is not Foo.foo_a)
-        self.assertTrue(Bar.foo_b is not Foo.foo_b)
-        self.assertEqual(Bar.members(), {
-            "foo_a": Bar.foo_a,
-            "foo_b": Bar.foo_b,
-            "bar_a": Bar.bar_a,
-            "bar_b": Bar.bar_b
-        })
-
-        self.assertEqual(
-            dict(Bar.members()),
-            dict(Bar.members(recursive = False))
-        )
-        
-        self.assertTrue(Bar.foo_a.schema is Bar)
-        self.assertTrue(Bar.foo_b.schema is Bar)
-        self.assertTrue(Bar.bar_a.schema is Bar)
-        self.assertTrue(Bar.bar_b.schema is Bar)
-
-        # Make sure the custom class initialization in '_apply_blueprint' was
-        # executed
-        self.assertTrue(Bar.foo_was_here)
 
 
 class ExtensionTestCase(TestCase):
