@@ -224,3 +224,20 @@ class OrderTestCase(TempStorageMixin, TestCase):
                        order = ("-color", "-price"))]
         self.assertEqual([e, a, d, b, f, c], results)
 
+    def test_normalized_index(self):
+        
+        self.Product.product_name.normalized_index = True
+
+        a = self.Product()
+        a.product_name = u"Àbac"
+        a.insert()
+
+        b = self.Product()
+        b.product_name = u"alfombra"
+        b.insert()
+
+        results = [product
+                for product in self.Product.select(order = "product_name")]
+        
+        self.assertEqual([a, b], results)
+
