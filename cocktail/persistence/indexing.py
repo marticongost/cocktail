@@ -1,0 +1,290 @@
+#-*- coding: utf-8 -*-
+"""
+
+@author:		Martí Congost
+@contact:		marti.congost@whads.com
+@organization:	Whads/Accent SL
+@since:			March 2009
+"""
+
+from BTrees.IOBTree import IOBTree
+from BTrees.OOBTree import OOBTree
+from cocktail.events import when
+from cocktail import schema
+from cocktail.persistence.datastore import datastore
+from cocktail.persistence.index import Index
+from cocktail.persistence.persistentobject import (
+    PersistentObject, PersistentClass
+)
+
+# Index properties
+#------------------------------------------------------------------------------
+
+schema.expressions.Expression.index = None
+schema.Member.indexed = False
+schema.Member.index_type = OOBTree
+schema.Member.unique = False
+
+PersistentObject.indexed = True
+
+def _get_index(self):
+
+    if not self.indexed:
+        return None
+    elif self.primary:
+        return self.schema.index
+
+    index = datastore.root.get(self.index_key)
+
+    if index is None:
+        return self.create_index()
+
+    return index
+
+def _set_index(self, index):
+    datastore.root[self.index_key] = index
+
+schema.Member.index = property(_get_index, _set_index, doc = """
+    Gets or sets the index for the members.
+    """)
+
+def _get_index_key(self):
+    return self._index_key or (
+        self.schema
+        and self.name
+        and self.schema.full_name + "." + self.name
+    ) or None
+
+def _set_index_key(self, index_key):
+    self._index_key = index_key
+
+schema.Member._index_key = None
+schema.Member.index_key = property(_get_index_key, _set_index_key)
+
+def _get_integer_index_type(self):
+    return self._index_type \
+        or (IOBTree if self.required else OOBTree)
+
+def _set_integer_index_type(self, index_type):
+    self._index_type = index_type
+
+schema.Integer._index_type = None
+schema.Integer.index_type = property(
+    _get_integer_index_type,
+    _set_integer_index_type
+)
+
+# Indexing functions
+#------------------------------------------------------------------------------
+
+def _create_index(self):
+
+    if not self.indexed:
+        raise ValueError("Can't create an index for a non indexed member")
+
+    # Primary index
+    if isinstance(self, PersistentClass):
+        index = self.primary_member.index_type()
+
+    # Unique indexes use a "raw" ZODB binary tree
+    elif self.unique:
+        index = self.index_type()
+
+    # Multi-value indexes are wrapped inside an Index instance,
+    # which organizes colliding keys into sets of values
+    else:
+        index = Index(self.index_type())
+
+    datastore.root[self.index_key] = index
+    return index
+
+schema.Member.create_index = _create_index
+
+def _rebuild_index(self):
+
+    self.create_index()
+
+    for obj in self.schema.select():
+        if obj.indexed:
+            if self.translated:
+                for language in obj.translations:
+                    value = obj.get(self, language)
+                    add_index_entry(obj, self, value, language)
+            else:            
+                add_index_entry(obj, self, obj.get(self))
+
+schema.Member.rebuild_index = _rebuild_index
+
+def _rebuild_indexes(cls, recursive = False, verbose = True):
+    
+    for member in cls.members(False).itervalues():
+        if member.indexed:
+            if verbose:
+                print "Rebuilding index for %s" % member
+            member.rebuild_index()
+
+    if recursive:
+        for subclass in cls.derived_schemas():
+            subclass.rebuild_indexes(True)
+
+PersistentClass.rebuild_indexes = _rebuild_indexes
+
+@when(PersistentObject.inherited)
+def _handle_inherited(event):
+
+    cls = event.schema
+
+    # Instance index
+    if cls.indexed:
+
+        cls.index_key = cls.full_name
+
+        # Add an 'id' field to all indexed schemas that don't define their
+        # own primary member explicitly. Will be initialized to an
+        # incremental integer.
+        if not cls.primary_member:
+            cls._generated_id = True
+            cls.id = schema.Integer(
+                name = "id",
+                primary = True,
+                unique = True,
+                required = True,
+                indexed = True
+            )
+            cls.add_member(cls.id)
+
+@when(PersistentObject.changed)
+def _handle_changed(event):
+    if event.member.indexed \
+    and event.source.indexed \
+    and event.source.is_inserted \
+    and event.previous_value != event.value:
+        remove_index_entry(
+            event.source,
+            event.member,
+            event.previous_value,
+            event.language
+        )
+        add_index_entry(
+            event.source,
+            event.member,
+            event.value,
+            event.language
+        )
+
+@when(PersistentObject.inserting)
+def _handle_inserting(event):
+
+    obj = event.source
+
+    for member in obj.__class__.members().itervalues():
+
+        # Indexing
+        if member.indexed and obj.indexed:
+
+            if member.translated:
+                for language in obj.translations:
+                    value = obj.get(member, language)
+                    add_index_entry(obj, member, value, language)
+            else:            
+                add_index_entry(obj, member, obj.get(member))
+
+@when(PersistentObject.deleting)
+def _handle_deleting(event):
+
+    obj = event.source
+
+    # Remove the item from primary indexes
+    if obj.__class__.indexed and obj.indexed:
+        for cls in obj.__class__.ascend_inheritance(True):
+            if cls.primary_member:
+                cls.index.pop(obj.id, None)
+
+    # Remove the item from the rest of indexes
+    if obj.__class__.translated:
+        languages = obj.translations.keys()
+
+    for member in obj.__class__.members().itervalues():
+
+        if member.indexed and not member.primary:
+            if member.translated:
+                for language in languages:
+                    value = obj.get(member, language)
+                    if value is not None:
+                        if member.unique:
+                            member.index.pop((language, value), None)
+                        else:
+                            member.index.remove((language, value), obj)
+            else:
+                value = obj.get(member)
+                if value is not None:
+                    if member.unique:
+                        member.index.pop(value, None)
+                    else:
+                        member.index.remove(value, obj)
+
+def add_index_entry(obj, member, value, language = None):
+            
+    value = member.get_index_value(value)
+        
+    if language:
+        value = (language, value)
+
+    if member.primary:
+        for schema in obj.__class__.ascend_inheritance(True):
+            if schema.indexed and schema is not PersistentObject:
+                schema.index[value] = obj
+    elif member.unique:
+        member.index[value] = obj
+    else:
+        member.index.add(value, obj)
+
+def remove_index_entry(obj, member, value, language = None):
+    
+    value = member.get_index_value(value)
+        
+    if language:
+        value = (language, value)
+
+    if member.primary:
+        for schema in obj.__class__.ascend_inheritance(True):
+            if schema.indexed and schema is not PersistentObject:
+                try:
+                    del schema.index[value]
+                except TypeError:
+                    if value is not None:
+                        raise
+                except KeyError:
+                    pass
+    elif member.unique:
+        try:
+            del member.index[value]
+        except TypeError:
+            if value is not None:
+                raise        
+        except KeyError:
+            pass
+    else:
+        member.index.remove(value, obj)
+
+def _member_get_index_value(self, value):
+    return value
+
+schema.Member.get_index_value = _member_get_index_value
+
+def _string_get_index_value(self, value):
+    if value is not None and self.normalized_index:
+        return schema.expressions.normalize(value)
+    else:
+        return value
+
+schema.String.get_index_value = _string_get_index_value
+schema.String.normalized_index = False
+
+def _reference_get_index_value(self, value):
+    if value is not None:
+        value = value.id
+    return value
+
+schema.Reference.get_index_value = _reference_get_index_value
+

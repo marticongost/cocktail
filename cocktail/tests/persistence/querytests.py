@@ -4,348 +4,223 @@
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
 @organization:	Whads/Accent SL
-@since:			February 2009
+@since:			March 2009
 """
 from unittest import TestCase
 from cocktail.tests.persistence.tempstoragemixin import TempStorageMixin
 
 
-class BaseTestCase(TestCase):
+class OrderTestCase(TempStorageMixin, TestCase):
 
     def setUp(self):
 
-        from cocktail.schema import String
+        TempStorageMixin.setUp(self)
+
+        from cocktail.schema import String, Integer, Boolean
         from cocktail.persistence import PersistentObject
 
-        class TestModel(PersistentObject):
-            
-            unique_field = String(
+        class Product(PersistentObject):
+            product_name = String(
                 unique = True,
-                indexed = True
+                indexed = True,
+                required = True
             )
-
-            unique_field_2 = String(
-                unique = True,
-                indexed = True
-            )
-
-            indexed_field = String(
-                indexed = True
-            )
-
-            regular_field = String()
-
-        self.TestModel = TestModel
-
-
-class PersistentObjectGetInstanceTestCase(TempStorageMixin, BaseTestCase):
-
-    def setUp(self):                
-        TempStorageMixin.setUp(self)
-        BaseTestCase.setUp(self)
-
-    def test_get_by_id(self):
+            price = Integer(indexed = True)
+            category = String(indexed = True)
+            color = String()
+            available = Boolean()
         
-        a = self.TestModel()
+        self.Product = Product
+
+    def match(self, results, *group):        
+        results_group = set(results.pop(0) for i in range(len(group)))
+        self.assertEqual(results_group, set(group))
+
+    def test_id(self):
+
+        products = [self.Product() for i in range(10)]
+        for product in products:
+            product.insert()
+
+        results = [product for product in self.Product.select(order = "id")]
+        self.assertEqual(products, results)
+
+        results = [product for product in self.Product.select(order = "-id")]
+        results.reverse()
+        self.assertEqual(products, results)
+
+    def test_single_indexed_unique_member(self):
+        
+        a = self.Product()
+        a.product_name = u"Wine"
         a.insert()
-        
-        b = self.TestModel()
+
+        b = self.Product()
+        b.product_name = u"Cheese"
         b.insert()
 
-        c = self.TestModel()
+        c = self.Product()
+        c.product_name = u"Ham"
         c.insert()
 
-        # Explicit field
-        self.assertTrue(self.TestModel.get_instance(id = a.id) is a)
-        self.assertTrue(self.TestModel.get_instance(id = b.id) is b)
-        self.assertTrue(self.TestModel.get_instance(id = c.id) is c)
-        self.assertTrue(self.TestModel.get_instance(id = c.id + 1) is None)
+        d = self.Product()
+        d.product_name = u"Eggs"
+        d.insert()
 
-        # Implicit field
-        self.assertTrue(self.TestModel.get_instance(a.id) is a)
-        self.assertTrue(self.TestModel.get_instance(b.id) is b)
-        self.assertTrue(self.TestModel.get_instance(c.id) is c)
-        self.assertTrue(self.TestModel.get_instance(c.id + 1) is None)
+        e = self.Product()
+        e.insert()
 
-    def test_get_by_unique_field(self):
+        results = [product
+                   for product in self.Product.select(order = "product_name")]
+        self.assertEqual([e, b, d, c, a], results)
 
-        a = self.TestModel()
-        a.unique_field = "A"
+        results = [product
+                   for product in self.Product.select(order = "-product_name")]
+        results.reverse()
+        self.assertEqual([e, b, d, c, a], results)
+
+    def test_multiple_indexed_members(self):
+
+        a = self.Product()
+        a.price = 3
+        a.category = "sports"
         a.insert()
 
-        b = self.TestModel()
-        b.unique_field = "B"
+        b = self.Product()
+        b.price = 5
+        b.category = "food"
         b.insert()
-        
-        c = self.TestModel()
-        c.unique_field = "C"
+
+        c = self.Product()
+        c.price = 4
+        c.category = "music"
         c.insert()
 
-        self.assertTrue(
-            self.TestModel.get_instance(unique_field = a.unique_field) is a)
+        d = self.Product()
+        d.price = 3
+        d.category = "music"
+        d.insert()
+
+        e = self.Product()
+        e.price = 10
+        e.category = "sports"
+        e.insert()
+
+        f = self.Product()
+        f.price = None
+        f.category = "food"
+        f.insert()
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("category", "price"))]
         
-        self.assertTrue(
-            self.TestModel.get_instance(unique_field = b.unique_field) is b)
-        
-        self.assertTrue(
-            self.TestModel.get_instance(unique_field = c.unique_field) is c)
+        self.assertEqual([f, b, d, c, a, e], results)
 
-        self.assertTrue(
-            self.TestModel.get_instance(unique_field = "Z") is None)
+        results = [product
+                   for product in self.Product.select(
+                       order = ("category", "-price"))]
 
-        # Mixing positional and keyword arguments is not allowed
-        self.assertRaises(
-            ValueError,
-            self.TestModel.get_instance,
-            1,
-            unique_field = "A"
-        )
+        self.assertEqual([b, f, c, d, e, a], results)
 
-        # Querying by more than one field is not allowed
-        self.assertRaises(
-            ValueError,
-            self.TestModel.get_instance,
-            unique_field = "A",
-            unique_field_2 = "C"
-        )
+        results = [product
+                   for product in self.Product.select(
+                       order = ("-category", "price"))]
 
-    def test_get_by_non_unique_field(self):
+        self.assertEqual([a, e, d, c, f, b], results)
 
-        a = self.TestModel()
-        a.indexed_field = "A"
+        results = [product
+                   for product in self.Product.select(
+                       order = ("-category", "-price"))]
+
+        self.assertEqual([e, a, c, d, b, f], results)
+
+    def test_single_not_indexed_member(self):
+
+        a = self.Product()
+        a.color = "red"
         a.insert()
 
-        b = self.TestModel()
-        b.regular_field = "B"
+        b = self.Product()
+        b.color = "green"
         b.insert()
-        
-        self.assertRaises(ValueError, a.get_instance, indexed_field = "A")
-        self.assertRaises(ValueError, a.get_instance, indexed_field = "Z")
-        self.assertRaises(ValueError, b.get_instance, regular_field = "B")
-        self.assertRaises(ValueError, b.get_instance, regular_field = "Z")
 
+        c = self.Product()
+        c.color = "blue"
+        c.insert()
 
-class PersistentObjectSelectTestCase(BaseTestCase):
+        d = self.Product()
+        d.color = "green"
+        d.insert()
 
-    def test_select_empty(self):
+        e = self.Product()
+        e.color = "red"
+        e.insert()
 
-        from cocktail.persistence.query import Query
-        
-        query = self.TestModel.select()
-        self.assertTrue(isinstance(query, Query))
-        self.assertEqual(query.type, self.TestModel)
-        self.assertFalse(query.filters)
-        self.assertFalse(query.order)
-        self.assertFalse(query.range)
+        f = self.Product()
+        f.color = "blue"
+        f.insert()
 
-    def test_select_expression(self):
+        results = [product for product in self.Product.select(order = "color")]
+        self.match(results, c, f)
+        self.match(results, b, d)
+        self.match(results, a, e)
 
-        from cocktail.persistence.query import Query
+        results = [product
+                   for product in self.Product.select(order = "-color")]
+        self.match(results, a, e)
+        self.match(results, b, d)
+        self.match(results, c, f)
 
-        expr = self.TestModel.unique_field.equal("A")
-        query = self.TestModel.select(expr)
-        self.assertTrue(isinstance(query, Query))
-        self.assertEqual(query.type, self.TestModel)
-        self.assertEqual(list(query.filters), [expr])
+    def test_indexed_and_not_indexed_members(self):
 
-    def test_select_expression_list(self):
+        a = self.Product()
+        a.color = "red"
+        a.price = 10
+        a.insert()
 
-        from cocktail.persistence.query import Query
+        b = self.Product()
+        b.color = "green"
+        b.price = 3
+        b.insert()
 
-        expr1 = self.TestModel.indexed_field.equal("A")
-        expr2 = self.TestModel.regular_field.equal("B")
-        query = self.TestModel.select([expr1, expr2])
-        self.assertTrue(isinstance(query, Query))
-        self.assertEqual(query.type, self.TestModel)
-        self.assertEqual(list(query.filters), [expr1, expr2])
+        c = self.Product()
+        c.color = "blue"
+        c.price = 7
+        c.insert()
 
-    def test_select_map(self):
+        d = self.Product()
+        d.color = "green"
+        d.price = 5
+        d.insert()
 
-        from cocktail.schema import Member
-        from cocktail.schema.expressions import EqualExpression
-        from cocktail.persistence.query import Query
+        e = self.Product()
+        e.color = "red"
+        e.price = 15
+        e.insert()
 
-        params = {
-            "unique_field": "A",
-            "indexed_field": "spam"
-        }
+        f = self.Product()
+        f.color = "blue"
+        f.price = 12
+        f.insert()
 
-        query = self.TestModel.select(params)
-        
-        self.assertTrue(isinstance(query, Query))
-        self.assertEqual(query.type, self.TestModel)
-        self.assertEqual(len(query.filters), 2)
+        results = [product
+                  for product in self.Product.select(
+                      order = ("color", "price"))]
+        self.assertEqual([c, f, b, d, a, e], results)
 
-        for expr in query.filters:
-            self.assertTrue(expr, EqualExpression)
-            member = expr.operands[0]
-            self.assertTrue(isinstance(member, Member))
-            self.assertEqual(params[member.name], expr.operands[1].value)
-            del params[member.name]
+        results = [product
+                   for product in self.Product.select(
+                       order = ("color", "-price"))]
+        self.assertEqual([f, c, d, b, e, a], results)
 
-    def test_select_order_string(self):
+        results = [product
+                   for product in self.Product.select(
+                       order = ("-color", "price"))]
+        self.assertEqual([a, e, b, d, c, f], results)
 
-        from cocktail.schema.expressions import (
-            PositiveExpression, NegativeExpression
-        )
-
-        query = self.TestModel.select(order = "unique_field")
-        self.assertEqual(len(query.order), 1)
-        self.assertTrue(isinstance(query.order[0], PositiveExpression))
-        self.assertTrue(
-            query.order[0].operands[0] is self.TestModel.unique_field)
-
-        query = self.TestModel.select(order = "+unique_field")
-        self.assertEqual(len(query.order), 1)
-        self.assertTrue(isinstance(query.order[0], PositiveExpression))
-        self.assertTrue(
-            query.order[0].operands[0] is self.TestModel.unique_field)
-
-        query = self.TestModel.select(order = "-unique_field")
-        self.assertEqual(len(query.order), 1)
-        self.assertTrue(isinstance(query.order[0], NegativeExpression))
-        self.assertTrue(
-            query.order[0].operands[0] is self.TestModel.unique_field)
-
-    def test_select_order_reference(self):
-
-        from cocktail.schema.expressions import (
-            PositiveExpression, NegativeExpression
-        )
-
-        query = self.TestModel.select(order = self.TestModel.unique_field)
-        self.assertEqual(len(query.order), 1)
-        self.assertTrue(isinstance(query.order[0], PositiveExpression))
-        self.assertTrue(
-            query.order[0].operands[0] is self.TestModel.unique_field)
-
-        query = self.TestModel.select(
-            order = self.TestModel.unique_field.positive())
-        self.assertEqual(len(query.order), 1)
-        self.assertTrue(isinstance(query.order[0], PositiveExpression))
-        self.assertTrue(
-            query.order[0].operands[0] is self.TestModel.unique_field)
-
-        query = self.TestModel.select(
-            order = self.TestModel.unique_field.negative())
-        self.assertEqual(len(query.order), 1)
-        self.assertTrue(isinstance(query.order[0], NegativeExpression))
-        self.assertTrue(
-            query.order[0].operands[0] is self.TestModel.unique_field)
-
-    def test_select_order_string_collection(self):
-
-        from cocktail.schema.expressions import (
-            PositiveExpression, NegativeExpression
-        )
-
-        query = self.TestModel.select(
-            order = ("+unique_field", "-unique_field_2", "regular_field"))
-        self.assertEqual(len(query.order), 3)        
-        
-        self.assertTrue(isinstance(query.order[0], PositiveExpression))
-        self.assertTrue(
-            query.order[0].operands[0] is self.TestModel.unique_field)
-        
-        self.assertTrue(isinstance(query.order[1], NegativeExpression))
-        self.assertTrue(
-            query.order[1].operands[0] is self.TestModel.unique_field_2)
-
-        self.assertTrue(isinstance(query.order[2], PositiveExpression))
-        self.assertTrue(
-            query.order[2].operands[0] is self.TestModel.regular_field)
-
-    def test_select_range(self):
-        self.assertEqual(
-            self.TestModel.select(range = (0, 10)).range, (0, 10)
-        )
-
-        self.assertRaises(TypeError, self.TestModel.select, range = "foo")
-        self.assertRaises(TypeError, self.TestModel.select, range = (None, 5))
-        self.assertRaises(TypeError, self.TestModel.select, range = (1, "foo"))
-        self.assertRaises(ValueError, self.TestModel.select, range = (-5,10))
-
-
-class QueryOrderTestCase(TempStorageMixin, BaseTestCase):
-
-    def setUp(self):
-
-        from cocktail.persistence import Query
-
-        TempStorageMixin.setUp(self)
-        BaseTestCase.setUp(self)
-       
-        self.Query = Query
-
-    def test_add_order(self):
-
-        expr1 = self.TestModel.indexed_field.equal("A").positive()
-        expr2 = self.TestModel.regular_field.greater("B").negative()
-        expr3 = self.TestModel.unique_field.not_equal("C").positive()
-        
-        query = self.Query(self.TestModel, order = expr1)
-        
-        query.add_order(expr2)
-        self.assertEqual(list(query.order), [expr1, expr2])
-
-        query.add_order(expr3)
-        self.assertEqual(list(query.order), [expr1, expr2, expr3])
-
-    def test_order_single_criteria(self):
-
-        instances = [self.TestModel(indexed_field = unicode(i))
-                    for i in range(10)]
-
-        for inst in instances:
-            inst.insert()
-
-        self.assertEqual(
-            list(
-                self.Query(
-                    self.TestModel,
-                    order = "indexed_field"
-                )
-            ),
-            instances
-        )
-
-        self.assertEqual(
-            list(
-                self.Query(
-                    self.TestModel,
-                    order = "-indexed_field"
-                )
-            ),
-            list(reversed(instances))
-        )
-
-        self.assertEqual(
-            list(
-                self.Query(
-                    self.TestModel,
-                    order = self.TestModel.indexed_field
-                )
-            ),
-            instances
-        )
-
-        self.assertEqual(
-            list(
-                self.Query(
-                    self.TestModel,
-                    order = self.TestModel.indexed_field.positive()
-                )
-            ),
-            instances
-        )
-
-        self.assertEqual(
-            list(
-                self.Query(
-                    self.TestModel,
-                    order = self.TestModel.indexed_field.negative()
-                )
-            ),
-            list(reversed(instances))
-        )
+        results = [product
+                   for product in self.Product.select(
+                       order = ("-color", "-price"))]
+        self.assertEqual([e, a, d, b, f, c], results)
 
