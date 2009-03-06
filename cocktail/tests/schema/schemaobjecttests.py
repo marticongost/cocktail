@@ -351,7 +351,7 @@ class TranslationTestCase(TestCase):
 
         self.assertTrue(Bar.translation is not Foo.translation)
         self.assertTrue(issubclass(Bar.translation, Foo.translation))
-        self.assertEqual(Bar.translation.bases, (Foo.translation,))
+        self.assertEqual(list(Bar.translation.bases), [Foo.translation])
 
         self.assertTrue(Bar.translation.translation_source is Bar)
         self.assertTrue(Foo.translation.foo_a.translation_source is Foo.foo_a)

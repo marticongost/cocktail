@@ -13,6 +13,7 @@ from cocktail.modeling import (
     ListWrapper,
     DictWrapper
 )
+from cocktail.events import Event
 from cocktail.schema.member import Member
 from cocktail.schema.accessors import get_accessor
 from cocktail.schema.exceptions import SchemaIntegrityError
@@ -42,6 +43,20 @@ class Schema(Member):
     """
     primary_member = None
     members_order = None
+
+    member_added = Event("""
+        An event triggered when a member is added to the schema.
+
+        @ivar member: The added member.
+        @type member: L{Member<cocktail.schema.Member>}
+        """)
+    
+    inherited = Event("""
+        An event triggered when the schema is extended by another schema.
+
+        @ivar schema: The derived schema that extends this schema.
+        @type schema: L{Schema}
+        """)
 
     def __init__(self, *args, **kwargs):
 
@@ -95,10 +110,14 @@ class Schema(Member):
         prevent_cycle(bases)
 
         if self.__bases is None:
-            self.__bases = bases
-            self.bases = ListWrapper(bases)
-        else:
-            self.__bases.extend(bases)        
+            self.__bases = []
+            self.bases = ListWrapper(self.__bases)
+        
+        for base in bases:
+            self.__bases.append(base)
+
+            for ancestor in reversed(list(base.ascend_inheritance(True))):
+                ancestor.inherited(schema = self)
 
     def ascend_inheritance(self, include_self = False):
         
@@ -131,6 +150,7 @@ class Schema(Member):
         """
         self._check_member(member)
         self._add_member(member)
+        self.member_added(member = member)
 
     def _check_member(self, member):
         if member.name is None:
