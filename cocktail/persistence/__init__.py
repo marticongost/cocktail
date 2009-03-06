@@ -1,7 +1,7 @@
 #-*- coding: utf-8 -*-
 """
 This package provides a set of high level interfaces for object persistence.
-It's built as declarative layer over Zope's Object Data Base (ZODB), adding
+It's built as a declarative layer over Zope's Object Data Base (ZODB), adding
 support for multi-language content and declarative queries over indexes.
 
 @author:		Martí Congost
