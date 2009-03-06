@@ -204,7 +204,7 @@ class Query(object):
             
             if value[0] < 0 or value[1] < 0:
                 raise ValueError(
-                    "Negative indices not supported on query ranges: %d, %d"
+                    "Negative indexes not supported on query ranges: %d, %d"
                     % value
                 )
             
@@ -212,7 +212,7 @@ class Query(object):
 
     range = property(_get_range, _set_range, doc = """        
         Limits the set of matching instances to the given integer range. Ranges
-        start counting from zero. Negative indices or None values are not
+        start counting from zero. Negative indexes or None values are not
         allowed.
         @type: (int, int) tuple
         """)
@@ -261,7 +261,7 @@ class Query(object):
                             # Special case: after an 'identity' filter is
                             # resolved (an equality check against a unique
                             # index), all further filters will ignore
-                            # indices and use direct logical matching
+                            # indexes and use direct logical matching
                             # instead (should be faster)
                             single_match = True
                         else:
@@ -372,7 +372,7 @@ class Query(object):
 
     def _get_expression_index(self, expr, member = None):
 
-        # Expressions can override normal indices and supply their own
+        # Expressions can override normal indexes and supply their own
         if isinstance(expr, Member):
             index = self._get_member_index(expr)
         else:
@@ -430,15 +430,15 @@ class Query(object):
 
             return dataset
 
-        # Optimized case: indices available for all involved criteria
-        indices = []
+        # Optimized case: indexes available for all involved criteria
+        indexes = []
         
         for criteria in order:            
             index = self._get_expression_index(criteria.operands[0])            
             if index is None:
                 break            
             reversed = isinstance(criteria, expressions.NegativeExpression)
-            indices.append((index, reversed))            
+            indexes.append((index, reversed))            
         else:
             ranks = {}
             
@@ -452,7 +452,7 @@ class Query(object):
             if not isinstance(dataset, set):
                 dataset = set(dataset)
 
-            for index, reversed in indices:
+            for index, reversed in indexes:
                 
                 if isinstance(index, Index):
                     for i, key in enumerate(index):

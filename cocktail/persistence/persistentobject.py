@@ -166,7 +166,7 @@ class PersistentObject(SchemaObject, Persistent):
 
     @classmethod
     def get_instance(cls, _id = None, **criteria):
-        """Obtains an instance of the class, using one of its unique indices.
+        """Obtains an instance of the class, using one of its unique indexes.
 
         @param _id: The primary identifier of the object to retrieve.
 

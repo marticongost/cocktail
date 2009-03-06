@@ -2,7 +2,7 @@
 """
 This package provides a set of high level interfaces for object persistence.
 It's built as declarative layer over Zope's Object Data Base (ZODB), adding
-support for multi-language content and declarative queries over indices.
+support for multi-language content and declarative queries over indexes.
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
