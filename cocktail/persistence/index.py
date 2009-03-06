@@ -9,7 +9,12 @@
 from persistent import Persistent
 from cocktail.modeling import empty_set
 
+# Index class
+#------------------------------------------------------------------------------
 class Index(Persistent):
+    """A persistent index that supports multiple entries per key. Used to
+    maintain an index for a non unique field.
+    """
 
     def __init__(self, mapping):
         self.__groups = mapping
@@ -90,30 +95,4 @@ class Index(Persistent):
 
     def has_key(self, key):
         return self.__groups.has_key(key)
-
-if __name__ == "__main__":
- 
-    from time import time
-
-    from BTrees.IOBTree import IOBTree
-    index = Index(IOBTree())
-    
-    from random import randint, choice
-    from string import letters
-
-    randstring = lambda l: "".join(choice(letters) for l in xrange(l))
-    items = [(randint(1, 1000000), randstring(10)) for i in xrange(1000000)]
-
-    t = time()
-    
-    for key, value in items:
-        index.add(key, value)
-
-    print "Index:", time() - t
-
-    while True:
-        key = raw_input("Key: ")
-        t = time()
-        print index[int(key)]
-        print "Search:", time() - t
 

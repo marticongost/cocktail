@@ -370,35 +370,107 @@ class Query(object):
         execution_plan.sort()
         return execution_plan
 
-    def _get_expression_index(self, filter, member):
+    def _get_expression_index(self, expr, member = None):
 
         # Expressions can override normal indices and supply their own
-        index = filter.index
-
+        if isinstance(expr, Member):
+            index = self._get_member_index(expr)
+        else:
+            index = expr.index
+                
         # Otherwise, just use the one provided by the evaluated member
-        if index is None and member.indexed:
-            if member.primary:
-                index = self.__type.index
-            else:
-                index = member.index
+        if index is None and member is not None:
+            index = self._get_member_index(member)
 
         return index
+
+    def _get_member_index(self, member):
+
+        if member.indexed:
+            if member.primary:
+                return self.__type.index
+            else:
+                return member.index
+
+        return None
     
     def _index_is_unique(self, index):
         return not isinstance(index, Index)
 
     def _apply_order(self, dataset):
  
-        # TODO: Use indices!
-
         order = self.__order
 
+        # Force a default order on queries that don't specify one, but request
+        # a dataset range
         if not order:
             if self.range:
                 order = [self.__type.primary_member.positive()]
             else:
                 return dataset 
+        
+        # Optimized case: single indexed member, or a member that is both
+        # required and unique followed by other members
+        expr = order[0].operands[0]
+        index = self._get_expression_index(expr)
+        
+        if index is not None and (
+            len(order) == 1
+            or (isinstance(expr, Member) and expr.unique and expr.required)
+        ):            
+            if not isinstance(dataset, set):
+                dataset = set(dataset)
 
+            dataset = [item
+                       for item in index.itervalues()
+                       if item in dataset]
+
+            if isinstance(order[0], expressions.NegativeExpression):
+                dataset.reverse()
+
+            return dataset
+
+        # Optimized case: indices available for all involved criteria
+        indices = []
+        
+        for criteria in order:            
+            index = self._get_expression_index(criteria.operands[0])            
+            if index is None:
+                break            
+            reversed = isinstance(criteria, expressions.NegativeExpression)
+            indices.append((index, reversed))            
+        else:
+            ranks = {}
+            
+            def add_rank(item, rank):
+                item_ranks = ranks.get(item)
+                if item_ranks is None:
+                    item_ranks = []
+                    ranks[item] = item_ranks
+                item_ranks.append(rank)
+
+            if not isinstance(dataset, set):
+                dataset = set(dataset)
+
+            for index, reversed in indices:
+                
+                if isinstance(index, Index):
+                    for i, key in enumerate(index):
+                        if reversed:
+                            i = -i
+                        for item in index[key]:
+                            if item in dataset:
+                                add_rank(item, i)
+                else:
+                    for i, item in enumerate(index.itervalues()):
+                        if item in dataset:
+                            if reversed:
+                                i = -i                        
+                            add_rank(item, i)
+
+            return sorted(dataset, key = ranks.__getitem__)
+
+        # Proceed with the brute force approach
         if not isinstance(dataset, list):
             dataset = list(dataset)
 
