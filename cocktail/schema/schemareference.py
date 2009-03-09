@@ -10,6 +10,7 @@ from cocktail.modeling import getter
 from cocktail.pkgutils import import_object
 from cocktail.schema.schemarelations import RelationMember
 from cocktail.schema.accessors import get_accessor, get
+from cocktail.schema.expressions import HasExpression
 from cocktail.schema.exceptions import (
     ClassFamilyError, RelationCycleError, RelationConstraintError
 )
@@ -34,6 +35,15 @@ class Reference(RelationMember):
     @getter
     def related_type(self):
         return self.type
+
+    def has(self, *args, **kwargs):
+
+        filters = list(args)
+
+        for key, value in kwargs.iteritems():
+            filters.append(self.related_type[key].equal(value))
+
+        return HasExpression(self, filters)
 
     # Validation
     #--------------------------------------------------------------------------

@@ -310,3 +310,60 @@ class TranslationExpression(Expression):
     def eval(self, context, accessor = None):
         return context.get(self.operands[0], self.operands[1].value)
 
+
+class AnyExpression(Expression):
+
+    def __init__(self, relation, filters = None):
+        self.relation = relation
+        self.filters = filters
+
+    def eval(self, context, accessor = None):
+        
+        value = (accessor or get_accessor(context)).get(context, self.relation)
+
+        if value:
+            if self.filters:
+                value = set(value)
+                for item in self.relation.related_type.select(self.filters):
+                    if item in value:
+                        return True
+            else:
+                return True
+
+        return False
+
+
+class AllExpression(Expression):
+
+    def __init__(self, relation, filters):
+        self.relation = relation
+        self.filters = filters
+
+    def eval(self, context, accessor = None):
+        
+        value = (accessor or get_accessor(context)).get(context, self.relation)
+
+        if value:
+            matches = set(self.relation.related_type.select(self.filters))
+            for item in value:
+                if item not in matches:
+                    return False
+
+        return True
+
+
+class HasExpression(Expression):
+
+    def __init__(self, relation, filters = None):
+        self.relation = relation
+        self.filters = filters
+
+    def eval(self, context, accessor = None):
+        
+        value = (accessor or get_accessor(context)).get(context, self.relation)
+
+        if value:
+            return all(filter.eval(value, accessor) for filter in self.filters)
+
+        return False
+
