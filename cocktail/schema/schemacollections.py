@@ -14,6 +14,7 @@ from cocktail.modeling import (
     InstrumentedList,
     InstrumentedSet
 )
+from cocktail.schema.expressions import AnyExpression, AllExpression
 from cocktail.schema.member import Member
 from cocktail.schema.schemarelations import RelationMember, _update_relation
 from cocktail.schema.schemareference import Reference
@@ -79,6 +80,32 @@ class Collection(RelationMember):
     @getter
     def related_type(self):
         return self.items.type
+    
+    # Relational operators
+    #--------------------------------------------------------------------------
+    def any(self, *args, **kwargs):
+
+        filters = list(args)
+
+        for key, value in kwargs.iteritems():
+            filters.append(self.related_type[key].equal(value))
+
+        return AnyExpression(self, filters)
+
+    def none(self, *args, **kwargs):
+        return self.any(*args, **kwargs).not_()
+
+    def all(self, *args, **kwargs):
+        
+        filters = list(args)
+
+        for key, value in kwargs.iteritems():
+            filters.append(self.related_type[key].equal(value))
+
+        if not filters:
+            raise ValueError("Collection.all() requires one ore more filters")
+
+        return AllExpression(self, filters)
 
     # Validation
     #--------------------------------------------------------------------------
