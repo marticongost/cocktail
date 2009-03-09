@@ -7,6 +7,8 @@ Declares exception classes specific to the package.
 @organization:	Whads/Accent SL
 @since:			March 2008
 """
+from cocktail.modeling import getter
+
 
 class SchemaIntegrityError(Exception):
     """Base class for all exceptions that are raised to prevent breaking the
@@ -70,6 +72,17 @@ class ValidationError(Exception):
             desc = "%s [%s]" % (desc, self.language)
 
         return desc
+
+    @getter
+    def invalid_members(self):
+        """The set of members with invalid values that caused the error. This
+        usually returns a list with a reference to the exception's L{member}
+        attribute, but subclasses can override this property (ie. to propagate
+        errors from a schema to several members that together make up a single
+        concept).
+        @type: L{Member<cocktail.schema.Member>} collection
+        """
+        return [self.member]
 
 
 class ValueRequiredError(ValidationError):

@@ -29,16 +29,17 @@ class ErrorList(ListWrapper):
     def add(self, error):
         
         self._items.append(error)
+        members = getattr(error, "invalid_members", None)
 
-        if isinstance(error, ValidationError) \
-        and error.member:
-            key = (self._normalize_member(error.member), error.language)
-            member_errors = self.__errors_by_member.get(key)
-            
-            if member_errors is None:
-                self.__errors_by_member[key] = [error]
-            else:
-                member_errors.append(error)
+        if members:
+            for member in members:
+                key = (self._normalize_member(member), error.language)
+                member_errors = self.__errors_by_member.get(key)
+                
+                if member_errors is None:
+                    self.__errors_by_member[key] = [error]
+                else:
+                    member_errors.append(error)
 
     def in_member(self, member, language = None):
         return self.__errors_by_member.get(
