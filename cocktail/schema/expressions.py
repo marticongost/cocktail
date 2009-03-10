@@ -323,9 +323,11 @@ class AnyExpression(Expression):
 
         if value:
             if self.filters:
-                value = set(value)
-                for item in self.relation.related_type.select(self.filters):
-                    if item in value:
+                for item in value:
+                    for filter in self.filters:
+                        if not filter.eval(item, accessor):
+                            break
+                    else:
                         return True
             else:
                 return True
@@ -343,11 +345,11 @@ class AllExpression(Expression):
         
         value = (accessor or get_accessor(context)).get(context, self.relation)
 
-        if value:
-            matches = set(self.relation.related_type.select(self.filters))
+        if value:            
             for item in value:
-                if item not in matches:
-                    return False
+                for filter in self.filters:
+                    if not filter.eval(item, accessor):
+                        return False
 
         return True
 
