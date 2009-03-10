@@ -13,28 +13,8 @@ from cocktail.persistence.index import Index
 
 inherit = object()
 
-
 class Query(object):
     """A query over a set of persistent objects."""
-
-    _indexable_expressions = set([
-        expressions.EqualExpression,
-        expressions.NotEqualExpression,
-        expressions.GreaterExpression,
-        expressions.GreaterEqualExpression,
-        expressions.LowerExpression,
-        expressions.LowerEqualExpression
-    ])
-
-    _expression_speed = {
-        expressions.EqualExpression: -1,
-        expressions.StartsWithExpression: 1,
-        expressions.EndsWithExpression: 1,
-        expressions.ContainsExpression: 1,
-        expressions.MatchExpression: 2,
-        expressions.SearchExpression: 2,
-        expressions.CustomExpression: 2
-    }
 
     def __init__(self,
         type,
@@ -217,6 +197,8 @@ class Query(object):
         @type: (int, int) tuple
         """)
 
+    # Execution
+    #--------------------------------------------------------------------------    
     def execute(self, _sorted = True):
     
         base_collection = self.base_collection
@@ -237,139 +219,41 @@ class Query(object):
         return dataset
 
     def _apply_filters(self, dataset):
-        
-        single_match = False
-        dataset = set(dataset)
-        
-        for order, filter, member, index, is_unique \
-        in self._get_execution_plan(self.__filters):
-            
-            # Apply the filter using an index
-            if index is not None and not single_match:
-
-                value = member.get_index_value(filter.operands[1].value)
                 
-                # Equal
-                if isinstance(filter, expressions.EqualExpression):
+        for expr, custom_impl in self._get_execution_plan(self.__filters):
 
-                    if is_unique:
-                        match = index.get(value)
-                        
-                        if match:
-                            dataset = set([match])
-                            
-                            # Special case: after an 'identity' filter is
-                            # resolved (an equality check against a unique
-                            # index), all further filters will ignore
-                            # indexes and use direct logical matching
-                            # instead (should be faster)
-                            single_match = True
-                        else:
-                            dataset = set()
-                    else:
-                        subset = index[value]
-                        dataset.intersection_update(subset)
-                
-                # Different
-                elif isinstance(filter, expressions.NotEqualExpression):
-                    
-                    if is_unique:
-                        index_value = index.get(value)
-                        if index_value is not None:
-                            dataset.discard(index_value)
-                    else:
-                        subset = index[value]
-                        dataset.difference_update(subset) 
-
-                # Greater
-                elif isinstance(filter, (
-                    expressions.GreaterExpression,
-                    expressions.GreaterEqualExpression
-                )):
-                    subset = index.values(
-                        min = value,
-                        excludemin = isinstance(filter,
-                            expressions.GreaterExpression)
-                    )
-                    dataset.intersection_update(subset)
-            
-                # Lower
-                elif isinstance(filter, (
-                    expressions.LowerExpression,
-                    expressions.LowerEqualExpression
-                )):
-                    subset = index.values(
-                        max = value,
-                        excludemax = isinstance(filter,
-                            expressions.LowerExpression)
-                    )
-                    dataset.intersection_update(subset)
-                else:
-                    raise TypeError(
-                        "Can't match %s against an index" % filter)
-            else:
-                # Intersection
-                if isinstance(filter, expressions.InclusionExpression) \
-                and filter.operands[0] is expressions.Self:
-                    subset = filter.operands[1].eval(None)
-                    dataset.intersection_update(subset)
-                    
-                # Exclusion
-                elif isinstance(filter, expressions.ExclusionExpression) \
-                and filter.operands[0] is expressions.Self:
-                    subset = filter.operands[1].eval(None)
-                    dataset.difference_update(subset)
-                
-                # Brute force matching
-                else:
-                    dataset.intersection_update(
-                        instance
-                        for instance in dataset
-                        if filter.eval(instance, SchemaObjectAccessor))
+            if not isinstance(dataset, set):
+                dataset = set(dataset)
 
             # As soon as the matching set is reduced to an empty set
             # there's no point in applying any further filter
             if not dataset:
                 break
+ 
+            # Default filter implementation. Used when no custom transformation
+            # function is provided, or if the dataset has been reduced to a
+            # single item (to spare the intersection between the results for
+            # all remaining filters)
+            if custom_impl is None or len(dataset) == 1:
+                 dataset.intersection_update(
+                    instance
+                    for instance in dataset
+                    if expr.eval(instance, SchemaObjectAccessor)
+                )
+            # Custom filter implementation
+            else:
+                dataset = custom_impl(dataset)
 
         return dataset
 
-    def _get_filter_member(self, filter):
-        return filter.operands[0] \
-            if filter.operands and isinstance(filter.operands[0], Member) \
-            else None
-
     def _get_execution_plan(self, filters):
-
-        # Create an optimized execution plan
-        execution_plan = []
-
-        for filter in filters:
-            
-            member = self._get_filter_member(filter)
-            expr_speed = self._expression_speed.get(filter.__class__, 0)
-            index = None
-            index_speed = 2
-            is_unique = None
-            
-            if member:
-                if filter.__class__ in self._indexable_expressions:
-                    index = self._get_expression_index(filter, member)
-                
-                if index is not None:
-                    is_unique = self._index_is_unique(index)
-                
-                    if is_unique:
-                        index_speed = 0
-                    else:
-                        index_speed = 1
-                            
-            order = (index_speed, expr_speed)
-            execution_plan.append((order, filter, member, index, is_unique))
-
-        execution_plan.sort()
-        return execution_plan
-
+        """Create an optimized execution plan for the given set of filters."""
+        return [
+            (filter, resolution[1])
+            for resolution, filter
+            in sorted((expr.resolve_filter(), expr) for expr in filters)
+        ]
+    
     def _get_expression_index(self, expr, member = None):
 
         # Expressions can override normal indexes and supply their own
@@ -394,9 +278,6 @@ class Query(object):
 
         return None
     
-    def _index_is_unique(self, index):
-        return not isinstance(index, Index)
-
     def _apply_order(self, dataset):
  
         order = self.__order
@@ -580,4 +461,170 @@ class Query(object):
             self.__base_collection)
 
         return child_query
+
+# Custom expression resolution
+#------------------------------------------------------------------------------
+def _get_filter_info(filter):
+
+    if isinstance(filter, schema.Member):
+        member = filter
+        index = member.index
+    else:
+        member = filter.operands[0] \
+            if filter.operands and isinstance(filter.operands[0], Member) \
+            else None
+    
+        index = member.index if member is not None else None
+
+        if index is None:
+            index = filter.index
+
+    unique = isinstance(index, Index)
+    return member, index, unique
+
+def _expression_resolution(self):
+    return ((0, 0), None)
+    
+expressions.Expression.resolve_filter = _expression_resolution
+
+def _equal_resolution(self):
+
+    member, index, unique = _get_filter_info(self)     
+
+    if index is None:
+        return ((0, -1), None)
+
+    elif unique:
+        order = (-2, -1)
+        def impl(dataset):
+            value = member.get_index_value(self.operands[1].value)
+            match = index.get(value)
+                        
+            if match is None:
+                return set()
+            else:
+                return set([match])
+    else:
+        order = (-1, -1)
+        def impl(dataset):
+            value = member.get_index_value(self.operands[1].value)
+            subset = index[value]
+            dataset.intersection_update(subset)
+            return dataset
+    
+    return (order, impl)
+
+expressions.EqualExpression.resolve_filter = _equal_resolution
+
+def _not_equal_resolution(self):
+
+    member, index, unique = _get_filter_info(self)     
+
+    if index is None:
+        return ((0, 0), None)
+    elif unique:
+        order = (-2, 0)
+        def impl(dataset):
+            value = member.get_index_value(self.operands[1].value)
+            index_value = index.get(value)
+            if index_value is not None:
+                dataset.discard(index_value)
+            return dataset
+    else:
+        order = (-1, -1)
+        def impl(dataset):
+            subset = index[value]
+            dataset.difference_update(subset)
+            return dataset
+    
+    return (order, impl)
+
+expressions.NotEqualExpression.resolve_filter = _not_equal_resolution
+
+def _greater_resolution(self):
+
+    member, index, unique = _get_filter_info(self)
+
+    if index is None:
+        return ((0, 0), None)
+    else:
+        exclude_end = isinstance(self, expressions.GreaterExpression)
+        def impl(dataset):
+            value = member.get_index_value(self.operands[1].value)
+            subset = index.values(
+                min = value,
+                excludemin = exclude_end
+            )
+            dataset.intersection_update(subset)
+
+        return ((-2 if unique else -1, 0), impl)
+
+expressions.GreaterExpression.resolve_filter = _greater_resolution
+expressions.GreaterEqualExpression.resolve_filter = _greater_resolution
+
+def _lower_resolution(self):
+
+    member, index, unique = _get_filter_info(self)
+
+    if index is None:
+        return ((0, 0), None)
+    else:
+        exclude_end = isinstance(self, expressions.LowerExpression)
+        def impl(dataset):
+            value = member.get_index_value(self.operands[1].value)
+            subset = index.values(
+                max = value,
+                excludemax = exclude_end
+            )
+            dataset.intersection_update(subset)
+
+        return ((-2 if unique else -1, 0), impl)
+
+expressions.LowerExpression.resolve_filter = _lower_resolution
+expressions.LowerEqualExpression.resolve_filter = _lower_resolution
+
+def _inclusion_resolution(self):
+
+    if self.operands and isinstance(self.operands[0] is expressions.Self):
+        
+        subset = self.operands[1].eval(None)
+
+        if not isinstance(subset, (set, frozenset)):
+            subset = set(subset)
+
+        def impl(dataset):
+            dataset.intersection_update(subset)
+            return dataset
+        
+        return ((-3, 0), impl)
+    else:
+        return ((0, 0), None)
+
+expressions.InclusionExpression.resolve_filter = _inclusion_resolution
+
+def _exclusion_resolution(self):
+
+    if self.operands and isinstance(self.operands[0] is expressions.Self):
+        
+        subset = self.operands[1].eval(None)
+
+        if not isinstance(subset, (set, frozenset)):
+            subset = set(subset)
+
+        def impl(dataset):
+            dataset.difference_update(subset)
+            return dataset
+        
+        return ((-3, 0), impl)
+    else:
+        return ((0, 0), None)
+
+expressions.ExclusionExpression.resolve_filter = _exclusion_resolution
+
+# TODO: Provide an index aware custom implementation for StartsWithExpression
+expressions.StartsWithExpression.resolve_filter = lambda self: ((0, -1), None)
+expressions.EndsWithExpression.resolve_filter = lambda self: ((0, -1), None)
+expressions.ContainsExpression.resolve_filter = lambda self: ((0, -2), None)
+expressions.MatchExpression.resolve_filter = lambda self: ((0, -3), None)
+expressions.SearchExpression.resolve_filter = lambda self: ((0, -4), None)
 
