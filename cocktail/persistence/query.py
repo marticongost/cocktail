@@ -466,7 +466,7 @@ class Query(object):
 #------------------------------------------------------------------------------
 def _get_filter_info(filter):
 
-    if isinstance(filter, schema.Member):
+    if isinstance(filter, Member):
         member = filter
         index = member.index
     else:
@@ -479,7 +479,7 @@ def _get_filter_info(filter):
         if index is None:
             index = filter.index
 
-    unique = isinstance(index, Index)
+    unique = not isinstance(index, Index)
     return member, index, unique
 
 def _expression_resolution(self):
@@ -627,4 +627,41 @@ expressions.EndsWithExpression.resolve_filter = lambda self: ((0, -1), None)
 expressions.ContainsExpression.resolve_filter = lambda self: ((0, -2), None)
 expressions.MatchExpression.resolve_filter = lambda self: ((0, -3), None)
 expressions.SearchExpression.resolve_filter = lambda self: ((0, -4), None)
+
+def _has_resolution(self):
+
+    index = self.relation.index
+    unique = not isinstance(index, Index)
+
+    if index is None:
+        return ((1, 0), None)
+    else:
+        def impl(dataset):
+
+            related_subset = self.relation.related_type.select(self.filters)
+            
+            if related_subset:
+                
+                subset = set()
+
+                if unique:
+                    for item in related_subset:
+                        referer = index.get(item.id)
+                        if referer is not None:
+                            subset.add(referer)
+                else:
+                    for item in related_subset:
+                        referers = index[item.id]
+                        if referers:
+                            subset.update(referers)
+
+                dataset.intersection_update(subset)
+                return dataset
+            else:
+                return set()
+                
+        return ((0, -1), impl)
+
+expressions.HasExpression.resolve_filter = _has_resolution
+
 
