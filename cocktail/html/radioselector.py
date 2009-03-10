@@ -32,7 +32,7 @@ class RadioSelector(Selector):
         entry.input["value"] = value
         entry.input["checked"] = selected
         entry.input["name"] = self.name
-        entry.append(input)
+        entry.append(entry.input)
         
         entry.label = Element("label")
         entry.label["for"] = entry_id
