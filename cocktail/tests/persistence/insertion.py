@@ -58,13 +58,13 @@ class InsertionTestCase(TempStorageMixin, TestCase):
         instance.insert()
         self.assertEquals(
             list(self.test_type.test_field.index.items()),
-            [("foo", instance)]
+            [("foo", instance.id)]
         )
         
         instance.test_field = "bar"
         self.assertEquals(
             list(self.test_type.test_field.index.items()),
-            [("bar", instance)]
+            [("bar", instance.id)]
         )
 
     def test_insert_related(self):

@@ -145,11 +145,12 @@ class SchemaClass(EventHub, Schema):
             base.translation
             for base in cls.bases if base.translation
         )
+
+        members["_generates_translation_schema"] = False
         
         if not bases:
             bases = (cls._translation_schema_base,)
 
-            members["_generates_translation_schema"] = False
             members["full_name"] = cls.full_name + "Translation"
             members["translated_object"] = Reference(
                 type = cls,
