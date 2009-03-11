@@ -7,8 +7,9 @@
 @since:			March 2009
 """
 
-from BTrees.IOBTree import IOBTree
-from BTrees.OOBTree import OOBTree
+from BTrees.IOBTree import IOBTree, IOTreeSet
+from BTrees.OOBTree import OOBTree, OOTreeSet
+from cocktail.modeling import getter
 from cocktail.events import when
 from cocktail import schema
 from cocktail.persistence.datastore import datastore
@@ -31,9 +32,10 @@ def _get_index(self):
 
     if not self.indexed:
         return None
-    elif self.primary:
-        return self.schema.index
 
+    if isinstance(self, PersistentClass):
+        return self.primary_member.index
+    
     index = datastore.root.get(self.index_key)
 
     if index is None:
@@ -73,6 +75,24 @@ schema.Integer.index_type = property(
     _get_integer_index_type,
     _set_integer_index_type
 )
+
+def _get_persistent_class_keys(cls):
+
+    index_key = cls.index_key + "-keys"
+    keys = datastore.root.get(index_key)
+
+    if keys is None:
+
+        if isinstance(cls.primary_member, schema.Integer):
+            keys = IOTreeSet()
+        else:
+            keys = OOTreeSet()
+
+        datastore.root[index_key] = keys
+
+    return keys
+
+PersistentClass.keys = getter(_get_persistent_class_keys)
 
 # Indexing functions
 #------------------------------------------------------------------------------
@@ -177,6 +197,12 @@ def _handle_inserting(event):
 
     obj = event.source
 
+    # ID indexes
+    for cls in obj.__class__.ascend_inheritance(True):
+        if cls.indexed and cls is not PersistentObject:
+            cls.keys.insert(obj.id)
+
+    # Regular indexes
     for member in obj.__class__.members().itervalues():
 
         # Indexing
@@ -194,78 +220,69 @@ def _handle_deleting(event):
 
     obj = event.source
 
-    # Remove the item from primary indexes
-    if obj.__class__.indexed and obj.indexed:
+    # Remove the item from ID indexes
+    if obj.indexed:
         for cls in obj.__class__.ascend_inheritance(True):
-            if cls.primary_member:
-                cls.index.pop(obj.id, None)
+            if cls.indexed and cls is not PersistentObject:
+                try:
+                    cls.keys.remove(obj.id)
+                except KeyError:
+                    pass
 
-    # Remove the item from the rest of indexes
-    if obj.__class__.translated:
-        languages = obj.translations.keys()
+        # Remove the item from the rest of indexes
+        if obj.__class__.translated:
+            languages = obj.translations.keys()
 
-    for member in obj.__class__.members().itervalues():
+        for member in obj.__class__.members().itervalues():
 
-        if member.indexed and not member.primary:
-            if member.translated:
-                for language in languages:
-                    value = obj.get(member, language)
+            if member.indexed:
+                if member.translated:
+                    for language in languages:
+                        value = obj.get(member, language)
+                        if value is not None:
+                            if member.unique:
+                                member.index.pop((language, value), None)
+                            else:
+                                member.index.remove((language, value), obj)
+                else:
+                    value = obj.get(member)
                     if value is not None:
                         if member.unique:
-                            member.index.pop((language, value), None)
+                            member.index.pop(value, None)
                         else:
-                            member.index.remove((language, value), obj)
-            else:
-                value = obj.get(member)
-                if value is not None:
-                    if member.unique:
-                        member.index.pop(value, None)
-                    else:
-                        member.index.remove(value, obj)
+                            member.index.remove(value, obj)
 
 def add_index_entry(obj, member, value, language = None):
             
-    value = member.get_index_value(value)
+    k = member.get_index_value(value)
         
     if language:
-        value = (language, value)
+        k = (language, k)
+    
+    v = obj if member.primary else obj.id
 
-    if member.primary:
-        for schema in obj.__class__.ascend_inheritance(True):
-            if schema.indexed and schema is not PersistentObject:
-                schema.index[value] = obj
-    elif member.unique:
-        member.index[value] = obj
+    if member.unique:
+        member.index[k] = v
     else:
-        member.index.add(value, obj)
+        member.index.add(k, v)
 
 def remove_index_entry(obj, member, value, language = None):
     
-    value = member.get_index_value(value)
+    k = member.get_index_value(value)
         
     if language:
-        value = (language, value)
+        k = (language, k)
 
-    if member.primary:
-        for schema in obj.__class__.ascend_inheritance(True):
-            if schema.indexed and schema is not PersistentObject:
-                try:
-                    del schema.index[value]
-                except TypeError:
-                    if value is not None:
-                        raise
-                except KeyError:
-                    pass
-    elif member.unique:
+    if member.unique:
         try:
-            del member.index[value]
+            del member.index[k]
         except TypeError:
             if value is not None:
                 raise        
         except KeyError:
             pass
     else:
-        member.index.remove(value, obj)
+        member.index.remove(k, obj.id)
 
 def _member_get_index_value(self, value):
     return value

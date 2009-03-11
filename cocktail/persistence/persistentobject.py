@@ -63,7 +63,7 @@ class PersistentClass(SchemaClass):
     # Avoid creating a duplicate persistent class when copying the class
     _copy_class = schema.Schema
     _generated_id = False
-
+    
     @event_handler
     def handle_member_added(metacls, event):
         
@@ -215,12 +215,16 @@ class PersistentObject(SchemaObject, Persistent):
                 % member
             )
         
+        match = None
         value = member.get_index_value(value)
 
-        if member.indexed:
+        if member.primary:
             match = member.index.get(value)
-            if match and not isinstance(match, cls):
-                match = None
+
+        elif member.indexed:
+            id = member.index.get(value)
+            if id is not None:
+                match = cls.index.get(id)
         else:
             if not cls.indexed:
                 raise ValueError(
@@ -231,6 +235,9 @@ class PersistentObject(SchemaObject, Persistent):
                 if instance.get(member) == value:
                     match = instance
                     break
+
+        if match and not isinstance(match, cls):
+            match = None
 
         return match
     
