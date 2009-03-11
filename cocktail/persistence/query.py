@@ -200,26 +200,35 @@ class Query(object):
     # Execution
     #--------------------------------------------------------------------------    
     def execute(self, _sorted = True):
-    
-        base_collection = self.base_collection
-        ordered = isinstance(base_collection, (list, tuple, ListWrapper))
-        dataset = base_collection
+
+        if self.__base_collection is None:
+            from cocktail.persistence import datastore
+            dataset = self.type.keys
+        else:
+            dataset = (obj.id for obj in self.__base_collection)
+
+        ordered = isinstance(self.__base_collection,
+                            (list, tuple, ListWrapper))
 
         if self.__filters:
             dataset = self._apply_filters(dataset)
 
-        if _sorted:            
+        if _sorted:
             if ordered and not self.__order:
-                dataset = [item for item in base_collection if item in dataset]
+                dataset = [obj.id
+                           for obj in self.__base_collection
+                           if obj.id in dataset]
             else:
                 dataset = self._apply_order(dataset)
 
             dataset = self._apply_range(dataset)
-
+        
         return dataset
 
     def _apply_filters(self, dataset):
-                
+ 
+        type_index = self.type.index
+
         for expr, custom_impl in self._get_execution_plan(self.__filters):
 
             if not isinstance(dataset, set):
@@ -235,10 +244,10 @@ class Query(object):
             # single item (to spare the intersection between the results for
             # all remaining filters)
             if custom_impl is None or len(dataset) == 1:
-                 dataset.intersection_update(
-                    instance
-                    for instance in dataset
-                    if expr.eval(instance, SchemaObjectAccessor)
+                dataset.intersection_update(
+                    id
+                    for id in dataset
+                    if expr.eval(type_index[id], SchemaObjectAccessor)
                 )
             # Custom filter implementation
             else:
@@ -302,9 +311,14 @@ class Query(object):
             if not isinstance(dataset, set):
                 dataset = set(dataset)
 
-            dataset = [item
-                       for item in index.itervalues()
-                       if item in dataset]
+            if isinstance(expr, Member) and expr.primary:
+                sequence = index.iterkeys()
+            else:
+                sequence = index.itervalues()
+
+            dataset = [id
+                       for id in sequence
+                       if id in dataset]
 
             if isinstance(order[0], expressions.NegativeExpression):
                 dataset.reverse()
@@ -315,39 +329,45 @@ class Query(object):
         indexes = []
         
         for criteria in order:            
-            index = self._get_expression_index(criteria.operands[0])            
+            expr = criteria.operands[0]
+            index = self._get_expression_index(expr)
             if index is None:
                 break            
             reversed = isinstance(criteria, expressions.NegativeExpression)
-            indexes.append((index, reversed))            
+            indexes.append((expr, index, reversed))
         else:
             ranks = {}
             
-            def add_rank(item, rank):
-                item_ranks = ranks.get(item)
+            def add_rank(id, rank):
+                item_ranks = ranks.get(id)
                 if item_ranks is None:
                     item_ranks = []
-                    ranks[item] = item_ranks
+                    ranks[id] = item_ranks
                 item_ranks.append(rank)
 
             if not isinstance(dataset, set):
                 dataset = set(dataset)
 
-            for index, reversed in indexes:
-                
+            for expr, index, reversed in indexes:
+             
                 if isinstance(index, Index):
                     for i, key in enumerate(index):
                         if reversed:
                             i = -i
-                        for item in index[key]:
-                            if item in dataset:
-                                add_rank(item, i)
-                else:
-                    for i, item in enumerate(index.itervalues()):
-                        if item in dataset:
+                        for id in index[key]:
+                            if id in dataset:
+                                add_rank(id, i)
+                else:                    
+                    if isinstance(expr, Member) and expr.primary:
+                        sequence = index.iterkeys()
+                    else:
+                        sequence = index.itervalues()
+
+                    for i, id in enumerate(sequence):
+                        if id in dataset:
                             if reversed:
                                 i = -i                        
-                            add_rank(item, i)
+                            add_rank(id, i)
 
             return sorted(dataset, key = ranks.__getitem__)
 
@@ -362,15 +382,17 @@ class Query(object):
             order_expressions.append(expr.operands[0])
             descending.append(isinstance(expr, expressions.NegativeExpression))
 
+        type_index = self.type.index
+
         entries = [
             (
-                item,
+                id,
                 tuple(
-                    expr.eval(item, SchemaObjectAccessor)
+                    expr.eval(type_index[id], SchemaObjectAccessor)
                     for expr in order_expressions
                 )
             )
-            for item in dataset
+            for id in dataset
         ]
 
         def compare(entry_a, entry_b):
@@ -414,9 +436,10 @@ class Query(object):
         return dataset
 
     def __iter__(self):
-        for instance in self.execute():
-            yield instance
-
+        type_index = self.type.index
+        for id in self.execute():
+            yield type_index[id]
+        
     def __len__(self):
         
         if self.filters:
@@ -433,7 +456,7 @@ class Query(object):
 
     def __contains__(self, item):
         # TODO: This too could be optimized
-        return bool(self.select(item.__class__.primary_member.equal(item.id)))
+        return item.id in self.execute()
 
     def __getitem__(self, index):
         
@@ -446,7 +469,8 @@ class Query(object):
 
         # Retrieve a single item
         else:
-            return self.execute()[index]
+            results = self.execute()
+            return self.type.index[results[index]]
 
     def select(self,
         filters = inherit,
@@ -461,6 +485,7 @@ class Query(object):
             self.__base_collection)
 
         return child_query
+   
 
 # Custom expression resolution
 #------------------------------------------------------------------------------
@@ -533,6 +558,7 @@ def _not_equal_resolution(self):
     else:
         order = (-1, -1)
         def impl(dataset):
+            value = member.get_index_value(self.operands[1].value)
             subset = index[value]
             dataset.difference_update(subset)
             return dataset
@@ -638,20 +664,21 @@ def _has_resolution(self):
     else:
         def impl(dataset):
 
-            related_subset = self.relation.related_type.select(self.filters)
+            related_subset = \
+                self.relation.related_type.select(self.filters).execute()
             
             if related_subset:
                 
                 subset = set()
 
                 if unique:
-                    for item in related_subset:
-                        referer = index.get(item.id)
-                        if referer is not None:
-                            subset.add(referer)
+                    for related_id in related_subset:
+                        referer_id = index.get(related_id)
+                        if referer_id is not None:
+                            subset.add(referer_id)
                 else:
-                    for item in related_subset:
-                        referers = index[item.id]
+                    for related_id in related_subset:
+                        referers = index[related_id]
                         if referers:
                             subset.update(referers)
 
@@ -663,5 +690,4 @@ def _has_resolution(self):
         return ((0, -1), impl)
 
 expressions.HasExpression.resolve_filter = _has_resolution
-
 
