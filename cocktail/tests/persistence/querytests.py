@@ -41,7 +41,7 @@ class OrderTestCase(TempStorageMixin, TestCase):
         products = [self.Product() for i in range(10)]
         for product in products:
             product.insert()
-
+        
         results = [product for product in self.Product.select(order = "id")]
         self.assertEqual(products, results)
 
@@ -49,8 +49,58 @@ class OrderTestCase(TempStorageMixin, TestCase):
         results.reverse()
         self.assertEqual(products, results)
 
-    def test_single_indexed_unique_member(self):
+    def test_indexed_member_and_id(self):
+
+        a = self.Product()
+        a.price = 3
+        a.insert()
+
+        b = self.Product()
+        b.price = 5
+        b.insert()
+
+        c = self.Product()
+        c.price = 4
+        c.insert()
+
+        d = self.Product()
+        d.price = 3
+        d.insert()
+
+        e = self.Product()
+        e.price = 4
+        e.insert()
+
+        f = self.Product()
+        f.price = None
+        f.insert()
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("price", "id"))]
         
+        self.assertEqual([f, a, d, c, e, b], results)
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("price", "-id"))]
+
+        self.assertEqual([f, d, a, e, c, b], results)
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("-price", "id"))]
+
+        self.assertEqual([b, c, e, a, d, f], results)
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("-price", "-id"))]
+
+        self.assertEqual([b, e, c, d, a, f], results)
+
+    def test_single_indexed_unique_member(self):
+ 
         a = self.Product()
         a.product_name = u"Wine"
         a.insert()
