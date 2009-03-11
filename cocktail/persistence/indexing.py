@@ -51,11 +51,16 @@ schema.Member.index = property(_get_index, _set_index, doc = """
     """)
 
 def _get_index_key(self):
-    return self._index_key or (
-        self.schema
-        and self.name
-        and self.schema.full_name + "." + self.name
-    ) or None
+    if self._index_key is not None:
+        return self._index_key
+    elif isinstance(self, PersistentClass):
+        return self.primary_member.index_key
+    else:
+        return (
+            self.schema
+            and self.name
+            and self.schema.full_name + "." + self.name
+        ) or None
 
 def _set_index_key(self, index_key):
     self._index_key = index_key
@@ -156,8 +161,6 @@ def _handle_inherited(event):
 
     # Instance index
     if cls.indexed:
-
-        cls.index_key = cls.full_name
 
         # Add an 'id' field to all indexed schemas that don't define their
         # own primary member explicitly. Will be initialized to an
