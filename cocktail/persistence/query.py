@@ -585,7 +585,7 @@ expressions.LowerEqualExpression.resolve_filter = _lower_resolution
 
 def _inclusion_resolution(self):
 
-    if self.operands and isinstance(self.operands[0] is expressions.Self):
+    if self.operands and self.operands[0] is expressions.Self:
         
         subset = self.operands[1].eval(None)
 
@@ -604,7 +604,7 @@ expressions.InclusionExpression.resolve_filter = _inclusion_resolution
 
 def _exclusion_resolution(self):
 
-    if self.operands and isinstance(self.operands[0] is expressions.Self):
+    if self.operands and self.operands[0] is expressions.Self:
         
         subset = self.operands[1].eval(None)
 
