@@ -7,8 +7,8 @@
 @since:			September 2008
 """
 import cherrypy
-from cgi import parse_qs
-from urllib import urlencode, quote
+from cgi import parse_qs, escape
+from urllib import urlencode
 
 def get_state(**kwargs):
     state = parse_qs(cherrypy.request.query_string)
@@ -32,7 +32,7 @@ def view_state_form(**kwargs):
             for value in values:
                 form.append(
                     "<input type='hidden' name='%s' value='%s'>"
-                    % (key, quote(value))
+                    % (key, escape(value))
                 )
 
     return "\n".join(form)
