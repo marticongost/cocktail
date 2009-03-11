@@ -330,6 +330,7 @@ class TranslationTestCase(TestCase):
         self.assertTrue(Foo.translation.translation_source is Foo)
         self.assertTrue(isinstance(Foo.translation.bar, String))
         self.assertTrue(Foo.translation.bar.translation_source is Foo.bar)
+        self.assertTrue(Foo.translation.translation is None)
         self.assertRaises(AttributeError, getattr, Foo.translation, "spam")
 
     def test_inheritance(self):
