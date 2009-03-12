@@ -12,6 +12,16 @@ from cocktail.tests.persistence.tempstoragemixin import TempStorageMixin
 
 class PrimaryMemberTestCase(TempStorageMixin, TestCase):
 
+    def test_custom_primary_member(self):
+
+        from cocktail.schema import String
+        from cocktail.persistence import PersistentObject
+
+        class Foo(PersistentObject):
+            foo_name = String(primary = True)
+
+        self.assertTrue(Foo.id is Foo.foo_name)
+
     def test_declaration(self):
 
         from cocktail.schema import Member
@@ -41,4 +51,3 @@ class PrimaryMemberTestCase(TempStorageMixin, TestCase):
         foo.insert()
         foo.id = foo.id
         self.assertRaises(PrimaryKeyChangedError, foo.set, "id", foo.id + 1)
-
