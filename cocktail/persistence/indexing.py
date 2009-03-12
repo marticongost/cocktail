@@ -175,27 +175,30 @@ def _rebuild_indexes(cls, recursive = False, verbose = True):
 
 PersistentClass.rebuild_indexes = _rebuild_indexes
 
-@when(PersistentObject.inherited)
-def _handle_inherited(event):
+@when(PersistentObject.declared)
+def _handle_declared(event):
 
-    cls = event.schema
+    cls = event.source
 
-    # Instance index
-    if cls.indexed:
+    # Add 'id' as an alias for custom primary members
+    if cls.primary_member:
+        if cls.primary_member.schema is cls \
+        and cls.primary_member.name != "id":
+            cls.id = cls.__dict__[cls.primary_member.name]
 
-        # Add an 'id' field to all indexed schemas that don't define their
-        # own primary member explicitly. Will be initialized to an
-        # incremental integer.
-        if not cls.primary_member:
-            cls._generated_id = True
-            cls.id = schema.Integer(
-                name = "id",
-                primary = True,
-                unique = True,
-                required = True,
-                indexed = True
-            )
-            cls.add_member(cls.id)
+    # Add an 'id' field to all indexed schemas that don't define their
+    # own primary member explicitly. Will be initialized to an
+    # incremental integer.
+    elif cls.indexed:
+        cls._generated_id = True
+        cls.id = schema.Integer(
+            name = "id",
+            primary = True,
+            unique = True,
+            required = True,
+            indexed = True
+        )
+        cls.add_member(cls.id)
 
 @when(PersistentObject.changed)
 def _handle_changed(event):
