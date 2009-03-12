@@ -582,6 +582,7 @@ def _greater_resolution(self):
                 excludemin = exclude_end
             )
             dataset.intersection_update(subset)
+            return dataset
 
         return ((-2 if unique else -1, 0), impl)
 
@@ -603,6 +604,7 @@ def _lower_resolution(self):
                 excludemax = exclude_end
             )
             dataset.intersection_update(subset)
+            return dataset
 
         return ((-2 if unique else -1, 0), impl)
 
