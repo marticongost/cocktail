@@ -71,6 +71,8 @@ class SchemaClass(EventHub, Schema):
         if cls.translation:
             cls.translation._declared = True
 
+        cls.declared()
+
     def inherit(cls, *bases):
         
         if cls._declared:
@@ -334,6 +336,11 @@ class SchemaObject(object):
     __metaclass__ = SchemaClass
     _generates_translation_schema = False
     _translation_schema_base = None
+
+    declared = Event(doc = """
+        An event triggered on the class after the declaration of its schema has
+        finished.
+        """)
 
     instantiated = Event(doc = """
         An event triggered on the class when a new instance is created.
