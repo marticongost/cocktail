@@ -10,6 +10,282 @@ from unittest import TestCase
 from cocktail.tests.persistence.tempstoragemixin import TempStorageMixin
 
 
+class MemberQueryTestCase(TempStorageMixin, TestCase):
+
+    def assert_queries(self, member, values, *tests):
+        
+        from cocktail.persistence import PersistentObject, datastore
+
+        datastore.root.clear()
+
+        if member.schema is None:
+            class T(PersistentObject):
+                i = None
+
+                def __repr__(self):
+                    return "%d:%s" % (self.i, self.m.encode("utf-8"))
+            
+            member.name = "m"
+            T.add_member(member)
+        else:
+            T = member.schema
+
+        instances = []
+
+        for i, value in enumerate(values):
+            instance = T()
+            instance.i = i
+            instance.m = value
+            instance.insert()
+            instances.append(instance)
+
+        for expr, expected_results in tests:
+            query = T.select(expr)
+            self.assertEqual(
+                set(query),
+                set(instances[i] for i in expected_results)
+            )
+            self.assertEqual(len(query), len(expected_results))
+    
+    def test_equal(self):        
+        
+        from cocktail.schema import String
+
+        # Search without duplicates
+        m = String(unique = True, indexed = True, required = True)
+
+        self.assert_queries(
+            m,
+            [u"foo", u"bar", u"scrum", u"sprunge"],
+            (m.equal(u"zing"), []),
+            (m.equal(u"FOO"), []),
+            (m.equal(u"foo"), [0]),
+            (m.equal(u"scrum"), [2])
+        )
+        
+        # Search with duplicates (both with and without an index)
+        for indexed in (True, False):
+            m = String(indexed = indexed)
+            
+            self.assert_queries(
+                m,
+                [u"foo", u"foo", u"bar", u"scrum", u"sprunge", u"sprunge"],
+                (m.equal(u"zing"), []),
+                (m.equal(u"FOO"), []),
+                (m.equal(u"foo"), [0, 1]),
+                (m.equal(u"sprunge"), [-2, -1]),
+                (m.equal(u"scrum"), [3])
+            )
+
+        # Normalized string index
+        m = String(indexed = True, normalized_index = True)
+
+        self.assert_queries(
+            m,
+            [u"foo", u"Foo", u"Foó"],
+            (m.equal(u"FOO"), [0, 1, 2])
+        )
+
+    def test_not_equal(self):  
+        
+        from cocktail.schema import String
+        
+        # Search without duplicates
+        m = String(unique = True, indexed = True, required = True)
+
+        self.assert_queries(
+            m,
+            [u"foo"],
+            (m.not_equal(u"foo"), [])
+        )
+
+        self.assert_queries(
+            m,
+            [u"foo", u"bar", u"scrum", u"sprunge"],
+            (m.not_equal(u"zing"), [0, 1, 2, 3]),
+            (m.not_equal(u"foo"), [1, 2, 3]),
+            (m.not_equal(u"scrum"), [0, 1, 3])
+        )
+        
+        # Search with duplicates (both with and without an index)
+        for indexed in (True, False):
+            m = String(indexed = indexed)
+            
+            self.assert_queries(
+                m,
+                [u"foo", u"foo", u"bar", u"scrum", u"sprunge", u"sprunge"],
+                (m.not_equal(u"zing"), [0, 1, 2, 3, 4, 5]),
+                (m.not_equal(u"foo"), [2, 3, 4, 5]),
+                (m.not_equal(u"sprunge"), [0, 1, 2, 3]),
+                (m.not_equal(u"scrum"), [0, 1, 2, 4, 5])
+            )
+        
+        # Normalized string index
+        m = String(indexed = True, normalized_index = True)
+
+        self.assert_queries(
+            m,
+            [u"foo", u"Foo", u"Foó"],
+            (m.not_equal(u"FOO"), []),
+            (m.not_equal(u"bar"), [0, 1, 2])
+        )
+
+    def test_greater(self):
+
+        from cocktail.schema import String
+
+        # Search without duplicates
+        m = String(unique = True, indexed = True, required = True)
+
+        self.assert_queries(
+            m,
+            [u"foo", u"bar", u"scrum", u"SCRUM"],
+            (m.greater(u"zing"), []),
+            (m.greater(u"foo"), [2]),
+            (m.greater(u"A"), [0, 1, 2, 3])
+        )
+        
+        # Search with duplicates (both with and without an index)
+        for indexed in (True, False):
+            m = String(indexed = indexed)
+            
+            self.assert_queries(
+                m,
+                [u"foo", u"FOO", u"bar", u"scrum", u"sprunge", u"sprunge"],
+                (m.greater(u"zing"), []),
+                (m.greater(u"foo"), [3, 4, 5]),
+                (m.greater(u"scrum"), [4, 5]),
+                (m.greater(u"A"), [0, 1, 2, 3, 4, 5])
+            )
+
+        # Normalized string index
+        m = String(indexed = True, normalized_index = True)
+        
+        self.assert_queries(
+            m,
+            [u"foo", u"Foo", u"Foó", u"bàr", u"BaR", u"bÄr"],
+            (m.greater(u"A"), [0, 1, 2, 3, 4, 5]),
+            (m.greater(u"a"), [0, 1, 2, 3, 4, 5]),
+            (m.greater(u"f"), [0, 1, 2])
+        )
+
+    def test_greater_equal(self):
+
+        from cocktail.schema import String
+
+        # Search without duplicates
+        m = String(unique = True, indexed = True, required = True)
+
+        self.assert_queries(
+            m,
+            [u"foo", u"bar", u"scrum", u"SCRUM"],
+            (m.greater_equal(u"zing"), []),
+            (m.greater_equal(u"foo"), [0, 2]),
+            (m.greater_equal(u"A"), [0, 1, 2, 3])
+        )
+        
+        # Search with duplicates (both with and without an index)
+        for indexed in (True, False):
+            m = String(indexed = indexed)
+            
+            self.assert_queries(
+                m,
+                [u"foo", u"FOO", u"bar", u"scrum", u"sprunge", u"sprunge"],
+                (m.greater_equal(u"zing"), []),
+                (m.greater_equal(u"foo"), [0, 3, 4, 5]),
+                (m.greater_equal(u"scrum"), [3, 4, 5]),
+                (m.greater_equal(u"A"), [0, 1, 2, 3, 4, 5])
+            )
+
+        # Normalized string index
+        m = String(indexed = True, normalized_index = True)
+        
+        self.assert_queries(
+            m,
+            [u"foo", u"Foo", u"Foó", u"bàr", u"BaR", u"bÄr"],
+            (m.greater_equal(u"bar"), [0, 1, 2, 3, 4, 5]),
+            (m.greater_equal(u"BAR"), [0, 1, 2, 3, 4, 5]),
+            (m.greater_equal(u"foo"), [0, 1, 2]),
+            (m.greater_equal(u"FOO"), [0, 1, 2])
+        )
+
+    def test_lower(self):
+
+        from cocktail.schema import String
+
+        # Search without duplicates
+        m = String(unique = True, indexed = True, required = True)
+
+        self.assert_queries(
+            m,
+            [u"foo", u"bar", u"scrum", u"SCRUM"],
+            (m.lower(u"zing"), [0, 1, 2, 3]),
+            (m.lower(u"scrum"), [0, 1, 3]),
+            (m.lower(u"A"), [])
+        )
+        
+        # Search with duplicates (both with and without an index)
+        for indexed in (True, False):
+            m = String(indexed = indexed)
+            
+            self.assert_queries(
+                m,
+                [u"foo", u"FOO", u"bar", u"scrum", u"sprunge", u"sprunge"],
+                (m.lower(u"zing"), [0, 1, 2, 3, 4, 5]),
+                (m.lower(u"foo"), [1, 2]),
+                (m.lower(u"A"), [])
+            )
+
+        # Normalized string index
+        m = String(indexed = True, normalized_index = True)
+        
+        self.assert_queries(
+            m,
+            [u"foo", u"Foo", u"Foó", u"bàr", u"BaR", u"bÄr"],
+            (m.lower(u"Z"), [0, 1, 2, 3, 4, 5]),
+            (m.lower(u"z"), [0, 1, 2, 3, 4, 5]),
+            (m.lower(u"f"), [3, 4, 5])
+        )
+
+    def test_lower_equal(self):
+
+        from cocktail.schema import String
+
+        # Search without duplicates
+        m = String(unique = True, indexed = True, required = True)
+
+        self.assert_queries(
+            m,
+            [u"foo", u"bar", u"scrum", u"SCRUM"],
+            (m.lower_equal(u"zing"), [0, 1, 2, 3]),
+            (m.lower_equal(u"foo"), [0, 1, 3]),
+            (m.lower_equal(u"A"), [])
+        )
+        
+        # Search with duplicates (both with and without an index)
+        for indexed in (True, False):
+            m = String(indexed = indexed)
+            
+            self.assert_queries(
+                m,
+                [u"foo", u"FOO", u"bar", u"scrum", u"sprunge", u"sprunge"],
+                (m.lower_equal(u"zing"), [0, 1, 2, 3, 4, 5]),
+                (m.lower_equal(u"foo"), [0, 1, 2]),
+                (m.lower_equal(u"A"), [])
+            )
+
+        # Normalized string index
+        m = String(indexed = True, normalized_index = True)
+        
+        self.assert_queries(
+            m,
+            [u"foo", u"Foo", u"Foó", u"bàr", u"BaR", u"bÄr"],
+            (m.lower_equal(u"bar"), [3, 4, 5]),
+            (m.lower_equal(u"BÀR"), [3, 4, 5]),
+            (m.lower_equal(u"foo"), [0, 1, 2, 3, 4, 5]),
+            (m.lower_equal(u"FOO"), [0, 1, 2, 3, 4, 5])
+        )
+
 class OrderTestCase(TempStorageMixin, TestCase):
 
     def setUp(self):
