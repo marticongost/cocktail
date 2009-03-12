@@ -83,7 +83,7 @@ schema.Integer.index_type = property(
 
 def _get_persistent_class_keys(cls):
 
-    index_key = cls.index_key + "-keys"
+    index_key = cls.full_name + "-keys"
     keys = datastore.root.get(index_key)
 
     if keys is None:
