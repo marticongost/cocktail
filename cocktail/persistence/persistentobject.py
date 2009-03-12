@@ -260,6 +260,10 @@ class PersistentObject(SchemaObject, Persistent):
     @event_handler
     def handle_changing(cls, event):
 
+        # Disallow changing the primary key of an inserted member
+        if event.member.primary and event.source.is_inserted:
+            raise PrimaryKeyChangedError()
+
         # Transform collections into their persistent versions
         if isinstance(event.value, list):
             event.value = PersistentList(event.value)
@@ -365,6 +369,14 @@ class PersistentObject(SchemaObject, Persistent):
 
 PersistentObject._translation_schema_metaclass = PersistentClass
 PersistentObject._translation_schema_base = PersistentObject
+
+
+class PrimaryKeyChangedError(Exception):
+    """An error raised when changing the value for a persistent object's
+    primary member."""
+
+    def __repr__(self):
+        return "Can't change the primary member of an inserted object"
 
 
 class UniqueValueError(ValidationError):
