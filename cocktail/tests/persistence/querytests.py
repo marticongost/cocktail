@@ -20,13 +20,11 @@ class MemberQueryTestCase(TempStorageMixin, TestCase):
 
         if member.schema is None:
             class T(PersistentObject):
+                m = member
                 i = None
 
                 def __repr__(self):
                     return "%d:%s" % (self.i, self.m.encode("utf-8"))
-            
-            member.name = "m"
-            T.add_member(member)
         else:
             T = member.schema
 
@@ -51,17 +49,23 @@ class MemberQueryTestCase(TempStorageMixin, TestCase):
         
         from cocktail.schema import String
 
-        # Search without duplicates
-        m = String(unique = True, indexed = True, required = True)
+        # Search without duplicates (both on primary and unique fields)
+        for primary in (True, False):
+            m = String(
+                primary = primary,
+                unique = True,
+                indexed = True,
+                required = True
+            )
 
-        self.assert_queries(
-            m,
-            [u"foo", u"bar", u"scrum", u"sprunge"],
-            (m.equal(u"zing"), []),
-            (m.equal(u"FOO"), []),
-            (m.equal(u"foo"), [0]),
-            (m.equal(u"scrum"), [2])
-        )
+            self.assert_queries(
+                m,
+                [u"foo", u"bar", u"scrum", u"sprunge"],
+                (m.equal(u"zing"), []),
+                (m.equal(u"FOO"), []),
+                (m.equal(u"foo"), [0]),
+                (m.equal(u"scrum"), [2])
+            )
         
         # Search with duplicates (both with and without an index)
         for indexed in (True, False):
@@ -90,14 +94,20 @@ class MemberQueryTestCase(TempStorageMixin, TestCase):
         
         from cocktail.schema import String
         
-        # Search without duplicates
-        m = String(unique = True, indexed = True, required = True)
-
-        self.assert_queries(
-            m,
-            [u"foo"],
-            (m.not_equal(u"foo"), [])
-        )
+        # Search without duplicates (both on primary and unique fields)
+        for primary in (True, False):
+            m = String(
+                primary = primary,
+                unique = True,
+                indexed = True,
+                required = True
+            )
+        
+            self.assert_queries(
+                m,
+                [u"foo"],
+                (m.not_equal(u"foo"), [])
+            )
 
         self.assert_queries(
             m,
@@ -134,16 +144,22 @@ class MemberQueryTestCase(TempStorageMixin, TestCase):
 
         from cocktail.schema import String
 
-        # Search without duplicates
-        m = String(unique = True, indexed = True, required = True)
+        # Search without duplicates (both on primary and unique fields)
+        for primary in (True, False):
+            m = String(
+                primary = primary,
+                unique = True,
+                indexed = True,
+                required = True
+            )
 
-        self.assert_queries(
-            m,
-            [u"foo", u"bar", u"scrum", u"SCRUM"],
-            (m.greater(u"zing"), []),
-            (m.greater(u"foo"), [2]),
-            (m.greater(u"A"), [0, 1, 2, 3])
-        )
+            self.assert_queries(
+                m,
+                [u"foo", u"bar", u"scrum", u"SCRUM"],
+                (m.greater(u"zing"), []),
+                (m.greater(u"foo"), [2]),
+                (m.greater(u"A"), [0, 1, 2, 3])
+            )
         
         # Search with duplicates (both with and without an index)
         for indexed in (True, False):
@@ -173,16 +189,22 @@ class MemberQueryTestCase(TempStorageMixin, TestCase):
 
         from cocktail.schema import String
 
-        # Search without duplicates
-        m = String(unique = True, indexed = True, required = True)
+        # Search without duplicates (both on primary and unique fields)
+        for primary in (True, False):
+            m = String(
+                primary = primary,
+                unique = True,
+                indexed = True,
+                required = True
+            )
 
-        self.assert_queries(
-            m,
-            [u"foo", u"bar", u"scrum", u"SCRUM"],
-            (m.greater_equal(u"zing"), []),
-            (m.greater_equal(u"foo"), [0, 2]),
-            (m.greater_equal(u"A"), [0, 1, 2, 3])
-        )
+            self.assert_queries(
+                m,
+                [u"foo", u"bar", u"scrum", u"SCRUM"],
+                (m.greater_equal(u"zing"), []),
+                (m.greater_equal(u"foo"), [0, 2]),
+                (m.greater_equal(u"A"), [0, 1, 2, 3])
+            )
         
         # Search with duplicates (both with and without an index)
         for indexed in (True, False):
@@ -213,16 +235,22 @@ class MemberQueryTestCase(TempStorageMixin, TestCase):
 
         from cocktail.schema import String
 
-        # Search without duplicates
-        m = String(unique = True, indexed = True, required = True)
+        # Search without duplicates (both on primary and unique fields)
+        for primary in (True, False):
+            m = String(
+                primary = primary,
+                unique = True,
+                indexed = True,
+                required = True
+            )
 
-        self.assert_queries(
-            m,
-            [u"foo", u"bar", u"scrum", u"SCRUM"],
-            (m.lower(u"zing"), [0, 1, 2, 3]),
-            (m.lower(u"scrum"), [0, 1, 3]),
-            (m.lower(u"A"), [])
-        )
+            self.assert_queries(
+                m,
+                [u"foo", u"bar", u"scrum", u"SCRUM"],
+                (m.lower(u"zing"), [0, 1, 2, 3]),
+                (m.lower(u"scrum"), [0, 1, 3]),
+                (m.lower(u"A"), [])
+            )
         
         # Search with duplicates (both with and without an index)
         for indexed in (True, False):
@@ -251,16 +279,22 @@ class MemberQueryTestCase(TempStorageMixin, TestCase):
 
         from cocktail.schema import String
 
-        # Search without duplicates
-        m = String(unique = True, indexed = True, required = True)
+        # Search without duplicates (both on primary and unique fields)
+        for primary in (True, False):
+            m = String(
+                primary = primary,
+                unique = True,
+                indexed = True,
+                required = True
+            )
 
-        self.assert_queries(
-            m,
-            [u"foo", u"bar", u"scrum", u"SCRUM"],
-            (m.lower_equal(u"zing"), [0, 1, 2, 3]),
-            (m.lower_equal(u"foo"), [0, 1, 3]),
-            (m.lower_equal(u"A"), [])
-        )
+            self.assert_queries(
+                m,
+                [u"foo", u"bar", u"scrum", u"SCRUM"],
+                (m.lower_equal(u"zing"), [0, 1, 2, 3]),
+                (m.lower_equal(u"foo"), [0, 1, 3]),
+                (m.lower_equal(u"A"), [])
+            )
         
         # Search with duplicates (both with and without an index)
         for indexed in (True, False):

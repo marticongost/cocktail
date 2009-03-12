@@ -521,14 +521,20 @@ def _equal_resolution(self):
 
     elif unique:
         order = (-2, -1)
-        def impl(dataset):
-            value = member.get_index_value(self.operands[1].value)
-            match = index.get(value)
-                        
-            if match is None:
-                return set()
-            else:
-                return set([match])
+
+        if member and member.primary:
+            def impl(dataset):
+                id = member.get_index_value(self.operands[1].value)
+                return set([id]) if id in dataset else set()
+        else:
+            def impl(dataset):
+                value = member.get_index_value(self.operands[1].value)
+                match = index.get(value)
+                            
+                if match is None:
+                    return set()
+                else:
+                    return set([match])
     else:
         order = (-1, -1)
         def impl(dataset):
@@ -549,12 +555,19 @@ def _not_equal_resolution(self):
         return ((0, 0), None)
     elif unique:
         order = (-2, 0)
-        def impl(dataset):
-            value = member.get_index_value(self.operands[1].value)
-            index_value = index.get(value)
-            if index_value is not None:
-                dataset.discard(index_value)
-            return dataset
+        
+        if member and member.primary:
+            def impl(dataset):
+                id = member.get_index_value(self.operands[1].value)
+                dataset.discard(id)
+                return dataset
+        else:
+            def impl(dataset):
+                value = member.get_index_value(self.operands[1].value)
+                index_value = index.get(value)
+                if index_value is not None:
+                    dataset.discard(index_value)
+                return dataset
     else:
         order = (-1, -1)
         def impl(dataset):
@@ -575,12 +588,11 @@ def _greater_resolution(self):
         return ((0, 0), None)
     else:
         exclude_end = isinstance(self, expressions.GreaterExpression)
+        
         def impl(dataset):
             value = member.get_index_value(self.operands[1].value)
-            subset = index.values(
-                min = value,
-                excludemin = exclude_end
-            )
+            method = index.keys if member and member.primary else index.values
+            subset = method(min = value, excludemin = exclude_end)
             dataset.intersection_update(subset)
             return dataset
 
@@ -599,10 +611,8 @@ def _lower_resolution(self):
         exclude_end = isinstance(self, expressions.LowerExpression)
         def impl(dataset):
             value = member.get_index_value(self.operands[1].value)
-            subset = index.values(
-                max = value,
-                excludemax = exclude_end
-            )
+            method = index.keys if member and member.primary else index.values
+            subset = method(max = value, excludemax = exclude_end)
             dataset.intersection_update(subset)
             return dataset
 
