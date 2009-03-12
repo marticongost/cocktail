@@ -24,7 +24,6 @@ from cocktail.persistence.persistentobject import (
 schema.expressions.Expression.index = None
 schema.Member.indexed = False
 schema.Member.index_type = OOBTree
-schema.Member.unique = False
 
 PersistentObject.indexed = True
 
@@ -98,6 +97,28 @@ def _get_persistent_class_keys(cls):
     return keys
 
 PersistentClass.keys = getter(_get_persistent_class_keys)
+
+def _get_unique(self):
+    return self.primary or self._unique
+
+def _set_unique(self, unique):
+    if self.primary and not unique:
+        raise TypeError("Primary members can't be declared to be non unique")
+    self._unique = unique
+
+schema.Member._unique = False
+schema.Member.unique = property(_get_unique, _set_unique)
+
+def _get_required(self):
+    return self.primary or self._required
+
+def _set_required(self, required):
+    if self.primary and not required:
+        raise TypeError("Primary members can't be declared to be optional")
+    self._required = required
+
+schema.Member._required = False
+schema.Member.required = property(_get_required, _set_required)
 
 # Indexing functions
 #------------------------------------------------------------------------------
