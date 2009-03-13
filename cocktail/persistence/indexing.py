@@ -163,15 +163,16 @@ schema.Member.rebuild_index = _rebuild_index
 
 def _rebuild_indexes(cls, recursive = False, verbose = True):
     
-    for member in cls.members(False).itervalues():
-        if member.indexed:
-            if verbose:
-                print "Rebuilding index for %s" % member
-            member.rebuild_index()
+    if cls.indexed:
+        for member in cls.members(False).itervalues():
+            if member.indexed and not member.primary:
+                if verbose:
+                    print "Rebuilding index for %s" % member
+                member.rebuild_index()
 
-    if recursive:
-        for subclass in cls.derived_schemas():
-            subclass.rebuild_indexes(True)
+        if recursive:
+            for subclass in cls.derived_schemas():
+                subclass.rebuild_indexes(True)
 
 PersistentClass.rebuild_indexes = _rebuild_indexes
 
