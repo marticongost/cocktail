@@ -702,6 +702,72 @@ class RecursiveRelationTestCase(TestCase):
 
 class BidirectionalTestCase(TestCase):
 
+    def test_match_one_to_one(self):
+
+        from cocktail.schema import Schema, Reference
+        from cocktail.schema.exceptions import SchemaIntegrityError
+        
+        a = Schema("a")
+        b = Schema("b")
+
+        a.add_member(Reference("rel_b", type = b, bidirectional = True))
+        b.add_member(Reference("rel_a", type = a, bidirectional = True))
+
+        self.assertTrue(a["rel_b"].related_end is b["rel_a"])
+        self.assertTrue(a["rel_b"].related_type is b)
+        self.assertTrue(b["rel_a"].related_end is a["rel_b"])
+        self.assertTrue(b["rel_a"].related_type is a)
+
+    def test_match_one_to_many(self):
+
+        from cocktail.schema import Schema, Reference, Collection
+        from cocktail.schema.exceptions import SchemaIntegrityError
+        
+        a = Schema("a")
+        b = Schema("b")
+
+        a.add_member(Reference("rel_b", type = b, bidirectional = True))
+        b.add_member(
+            Collection(
+                "rel_a",
+                items = Reference(type = a),
+                bidirectional = True
+            )
+        )
+
+        self.assertTrue(a["rel_b"].related_end is b["rel_a"])
+        self.assertTrue(a["rel_b"].related_type is b)
+        self.assertTrue(b["rel_a"].related_end is a["rel_b"])
+        self.assertTrue(b["rel_a"].related_type is a)
+
+    def test_match_many_to_many(self):
+
+        from cocktail.schema import Schema, Reference, Collection
+        from cocktail.schema.exceptions import SchemaIntegrityError
+        
+        a = Schema("a")
+        b = Schema("b")
+
+        a.add_member(
+            Collection(
+                "rel_b",
+                items = Reference(type = b),
+                bidirectional = True
+            )
+        )
+        b.add_member(
+            Collection(
+                "rel_a",
+                items = Reference(type = a),
+                bidirectional = True
+            )
+        )
+
+        self.assertTrue(a["rel_b"].related_end is b["rel_a"])
+        self.assertTrue(a["rel_b"].related_type is b)
+        self.assertTrue(b["rel_a"].related_end is a["rel_b"])
+        self.assertTrue(b["rel_a"].related_type is a)
+
     def test_no_match(self):
 
         from cocktail.schema import Schema, Reference
