@@ -226,9 +226,14 @@ def _handle_inserting(event):
     obj = event.source
 
     # ID indexes
+    id = obj.id
+
     for cls in obj.__class__.ascend_inheritance(True):
         if cls.indexed and cls is not PersistentObject:
-            cls.keys.insert(obj.id)
+            keys = cls.keys
+            if id in keys:
+                raise IdCollisionError()
+            keys.insert(id)
 
     # Regular indexes
     for member in obj.__class__.members().itervalues():
@@ -332,4 +337,9 @@ def _reference_get_index_value(self, value):
     return value
 
 schema.Reference.get_index_value = _reference_get_index_value
+
+
+class IdCollisionError(Exception):
+    """An exception raised when trying to insert an object into the datastore
+    using an ID that already exists."""
 
