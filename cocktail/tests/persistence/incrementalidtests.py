@@ -26,7 +26,30 @@ class IncrementalIdTestCase(TempStorageMixin, TestCase):
         for id in ids:
             self.assertTrue(id)
             self.assertTrue(isinstance(id, int))
-    
+ 
+    def test_multithreaded_acquisition(self):
+ 
+        from cocktail.tests.utils import run_concurrently
+        from cocktail.persistence import incremental_id
+        
+        thread_count = 100
+        ids_per_thread = 50
+        ids = set()
+
+        def acquisition_thread():
+            for i in range(ids_per_thread):
+                ids.add(incremental_id())
+
+        run_concurrently(thread_count, acquisition_thread)
+
+        self.assertEqual(len(ids), thread_count * ids_per_thread)
+
+        for id in ids:
+            self.assertTrue(id)
+            self.assertTrue(isinstance(id, int))
+
+    # TODO: def test_multiprocess_acquisition(self):
+
     def test_conflict_resolution(self):
         
         from cocktail.persistence import datastore, incremental_id
