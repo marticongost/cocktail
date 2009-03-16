@@ -39,6 +39,12 @@ class Expression(object):
     def __init__(self, *operands):
         self.operands = tuple(self.wrap(operand) for operand in operands)
 
+    def __repr__(self):
+        return "%s(%s)" % (
+            self.__class__.__name__,
+            ", ".join(repr(operand) for operand in self.operands)
+        )
+
     def eval(self, context = None, accessor = None):
         return self.op(*[operand.eval(context, accessor)
                          for operand in self.operands])
@@ -125,6 +131,9 @@ class Constant(Expression):
     def __init__(self, value):
         self.value = value
 
+    def __repr__(self):
+        return "Constant(%r)" % self.value
+
     def eval(self, context = None, accessor = None):
         return self.value
 
@@ -133,6 +142,9 @@ class Variable(Expression):
 
     def __init__(self, name):
         self.name = name
+
+    def __repr__(self):
+        return "Variable(%r)" % self.value
 
     def eval(self, context, accessor = None):
         return (accessor or get_accessor(context)) \
