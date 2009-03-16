@@ -446,7 +446,7 @@ class Query(object):
             return len(self.execute(_sorted = False))
         else:
             if self.__base_collection is None:
-                return len(self.type.index)
+                return len(self.type.keys)
             else:
                 return len(self.__base_collection)
     
