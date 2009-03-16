@@ -114,53 +114,54 @@ class RelationMember(Member):
         if self.__related_end:
             return self.__related_end
         
-        if not self.bidirectional:
-            return None
-
         related_end = None
         related_type = self.related_type
 
-        if self.related_key:
-            related_end = related_type.get_member(self.related_key)
+        if self.bidirectional and related_type is not None:
 
-            if not getattr(related_end, "bidirectional", False) \
-            or (
-                related_end.related_key
-                and related_end.related_key != self.name
-            ):
-                related_end = None
-        else:
-            for member in related_type.members().itervalues():
-                if getattr(member, "bidirectional", False):
-                    if member.related_key:
-                        if self.name == member.related_key:
+            if self.related_key:
+                related_end = related_type.get_member(self.related_key)
+
+                if not getattr(related_end, "bidirectional", False) \
+                or (
+                    related_end.related_key
+                    and related_end.related_key != self.name
+                ):
+                    related_end = None
+            else:
+                for member in related_type.members().itervalues():
+                    if getattr(member, "bidirectional", False):
+                        if member.related_key:
+                            if self.name == member.related_key:
+                                related_end = member
+                                break
+                        elif self.schema is member.related_type \
+                        and member is not self:
                             related_end = member
                             break
-                    elif self.schema is member.related_type \
-                    and member is not self:
-                        related_end = member
-                        break
-        
-        # Related end missing
-        if related_end is None:
-            raise SchemaIntegrityError(
-                "Couldn't find the related end for %s" % self
-            )
-        # Disallow relations were both ends are declared as integral
-        elif self.integral and related_end.integral:
-            raise SchemaIntegrityError(
-                "Can't declare both ends of a relation as integral (%s <-> %s)"
-                % (self, related_end)
-            )
-        # Disallow integral many to many relations
-        elif (self.integral or related_end.integral) \
-        and (self._many and related_end._many):
-            raise SchemaIntegrityError(
-                "Can't declare a many to many relation as integral (%s <-> %s)"
-                % (self, related_end)
-            )
+            
+            # Related end missing
+            if related_end is None:
+                raise SchemaIntegrityError(
+                    "Couldn't find the related end for %s" % self
+                )
+            # Disallow relations were both ends are declared as integral
+            elif self.integral and related_end.integral:
+                raise SchemaIntegrityError(
+                    "Can't declare both ends of a relation as integral (%s <-> %s)"
+                    % (self, related_end)
+                )
+            # Disallow integral many to many relations
+            elif (self.integral or related_end.integral) \
+            and (self._many and related_end._many):
+                raise SchemaIntegrityError(
+                    "Can't declare a many to many relation as integral (%s <-> %s)"
+                    % (self, related_end)
+                )
 
-        self.__related_end = related_end 
+            self.__related_end = related_end
+            related_end.__related_end = self
+
         return related_end
 
     @getter
