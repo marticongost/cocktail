@@ -51,3 +51,19 @@ class PrimaryMemberTestCase(TempStorageMixin, TestCase):
         foo.insert()
         foo.id = foo.id
         self.assertRaises(PrimaryKeyChangedError, foo.set, "id", foo.id + 1)
+
+    def test_collision(self):
+        
+        from cocktail.persistence import PersistentObject, indexing
+        
+        class Foo(PersistentObject):
+            pass
+
+        bar = Foo()
+        bar.insert()
+
+        spam = Foo()
+        spam.id = bar.id
+        
+        self.assertRaises(indexing.IdCollisionError, spam.insert)
+
