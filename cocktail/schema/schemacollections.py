@@ -79,7 +79,7 @@ class Collection(RelationMember):
 
     @getter
     def related_type(self):
-        return self.items.type
+        return self.items and self.items.type
     
     # Relational operators
     #--------------------------------------------------------------------------
