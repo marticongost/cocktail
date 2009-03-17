@@ -239,11 +239,13 @@ class GlobalSearchFilter(UserFilter):
 
             for language in languages:
                 for member in obj.__class__.members().itervalues():
-                    if isinstance(member, String) and member.searchable:
+                    if isinstance(member, String) and member.searchable \
+                    and member.text_search:
                         member_value = obj.get(member, language)
                         if member_value:
                             if object_text:
                                 object_text += " "
+                            
                             object_text += member_value
             
             object_text = normalize(object_text)
@@ -287,4 +289,8 @@ Collection.user_filter = CollectionFilter
 
 # An extension property used to determine which members should be searchable
 Member.searchable = True
+
+# An extension property used to determine which members should be looked at
+# when doing a freeform text search
+String.text_search = True
 
