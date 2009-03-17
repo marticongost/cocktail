@@ -47,7 +47,7 @@ class Selector(Element, DataBoundControl):
                     self.items = range(self.member.min, self.member.max + 1)
 
                 elif isinstance(self.member, Reference):
-                    self.items = self.member.type.index.itervalues()
+                    self.items = self.member.type.select()
 
                 elif isinstance(self.member, Collection):
                     self.items = self.member.items.type.index.itervalues()
