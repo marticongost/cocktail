@@ -627,8 +627,8 @@ def _inclusion_resolution(self):
         
         subset = self.operands[1].eval(None)
 
-        if not isinstance(subset, (set, frozenset)):
-            subset = set(subset)
+        if not self.by_key:
+            subset = set(item.id for item in subset)
 
         def impl(dataset):
             dataset.intersection_update(subset)
@@ -646,8 +646,8 @@ def _exclusion_resolution(self):
         
         subset = self.operands[1].eval(None)
 
-        if not isinstance(subset, (set, frozenset)):
-            subset = set(subset)
+        if not self.by_key:
+            subset = set(item.id for item in subset)
 
         def impl(dataset):
             dataset.difference_update(subset)
