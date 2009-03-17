@@ -27,12 +27,18 @@ class Index(Persistent):
             self.__groups[key] = group = set()
      
         group.add(value)
+        
+        self._p_changed = True
+        self.__groups._p_changed = True
 
     def remove(self, key, value):
         group = self.__groups.get(key)
         
         if group is not None:
             group.discard(value)
+
+            self._p_changed = True
+            self.__groups._p_changed = True
 
     def __getitem__(self, key):
         
@@ -52,6 +58,8 @@ class Index(Persistent):
 
     def __delitem__(self, key):
         self.__groups.__delitem__(key)
+        self._p_changed = True
+        self.__groups._p_changed = True
 
     def keys(self):
         return self.__groups.keys()
