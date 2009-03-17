@@ -320,7 +320,8 @@ translations.define("en",
 translations.define("fr",
     ca = u"Francès",
     es = u"Francés",
-    en = u"French"
+    en = u"French",
+    fr = u"Français"
 )
 
 translations.define("de",
