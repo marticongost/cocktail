@@ -294,12 +294,16 @@ class PositiveExpression(Expression):
 
 class InclusionExpression(Expression):
 
+    by_key = False
+    
     def op(self, a, b):
         return a in b
 
 
 class ExclusionExpression(Expression):
-    
+ 
+    by_key = False
+
     def op(self, a, b):
         return a not in b
 
