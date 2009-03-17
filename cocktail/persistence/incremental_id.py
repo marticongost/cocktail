@@ -43,10 +43,10 @@ def incremental_id(key = "default"):
 
     try:
         if not _acquired_ids:            
+            tm = transaction.TransactionManager()
+            conn = datastore.db.open(transaction_manager = tm)
+
             try:
-                tm = transaction.TransactionManager()
-                conn = datastore.db.open(transaction_manager = tm)
-                
                 while True:
                     conn.sync()
                     root = conn.root()
