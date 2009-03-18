@@ -8,7 +8,7 @@
 """
 from cocktail.modeling import ListWrapper, SetWrapper
 from cocktail.translations import translate
-from cocktail.schema import Number, Reference, Collection, Boolean
+from cocktail.schema import Number, RelationMember, Boolean
 from cocktail.html import Element
 from cocktail.html.databoundcontrol import DataBoundControl
 
@@ -46,11 +46,14 @@ class Selector(Element, DataBoundControl):
                 and self.member.min and self.member.max:
                     self.items = range(self.member.min, self.member.max + 1)
 
-                elif isinstance(self.member, Reference):
-                    self.items = self.member.type.select()
+                elif isinstance(self.member, RelationMember):
+                    
+                    query = self.member.related_type.select()
+    
+                    for expr in self.member.get_constraint_filters(self.data):
+                        query.add_filter(expr)
 
-                elif isinstance(self.member, Collection):
-                    self.items = self.member.items.type.index.itervalues()
+                    self.items = query
 
                 elif isinstance(self.member, Boolean):
                     self.items = (True, False)
