@@ -366,9 +366,22 @@ class PersistentObject(SchemaObject, Persistent):
             )
         )
 
-
 PersistentObject._translation_schema_metaclass = PersistentClass
 PersistentObject._translation_schema_base = PersistentObject
+
+
+def _get_constraint_filters(self, parent):
+    
+    context = schema.ValidationContext(self, parent)
+    constraints = self.resolve_constraint(self.relation_constraints, context)
+    
+    if constraints:
+        for constraint in constraints:
+            if not isinstance(constraint, schema.expressions.Expression):
+                constraint = schema.expressions.CustomExpression(constraint)
+            yield constraint
+
+schema.RelationMember.get_constraint_filters = _get_constraint_filters
 
 
 class PrimaryKeyChangedError(Exception):
