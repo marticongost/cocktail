@@ -63,5 +63,6 @@ from cocktail.schema.adapter import (
     Split,
     Join
 )
+from cocktail.schema.validationcontext import ValidationContext
 from cocktail.schema.differences import diff
 
