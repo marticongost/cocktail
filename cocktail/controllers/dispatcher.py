@@ -58,9 +58,16 @@ class HandlerActivator(object):
                         callable = getattr(callable, "__call__", None)
 
                     if callable:
-                        cherrypy._cpdispatch.test_callable_spec(
-                            callable, self.args, self.kwargs)
-
+                        test_callable_spect = getattr(
+                            cherrypy._cpdispatch,
+                            "test_callable_spec"
+                        )
+                        if test_callable_spec:
+                            test_callable_spec(
+                                callable,
+                                self.args,
+                                self.kwargs
+                            )
                     raise
             
             except cherrypy.HTTPRedirect: 
