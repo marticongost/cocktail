@@ -25,4 +25,5 @@ from cocktail.controllers.parameters import (
     serialize_parameter, get_parameter, FormSchemaReader
 )
 from cocktail.controllers.usercollection import UserCollection
+import cocktail.controllers.erroremail
 
