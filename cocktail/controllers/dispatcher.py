@@ -58,7 +58,7 @@ class HandlerActivator(object):
                         callable = getattr(callable, "__call__", None)
 
                     if callable:
-                        test_callable_spect = getattr(
+                        test_callable_spec = getattr(
                             cherrypy._cpdispatch,
                             "test_callable_spec",
                             None
