@@ -64,7 +64,10 @@ def error_email(
     header_template = HEADER_TEMPLATE,
     param_template = PARAM_TEMPLATE):
     
-    host_name = cherrypy.request.local.name
+    host_name = cherrypy.request.headers.get(
+        "X-FORWARDED-HOST",
+        cherrypy.request.local.name
+    )
 
     if subject is None:
         subject = "%s %s" % (host_name, sys.exc_type.__name__)
