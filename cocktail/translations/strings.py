@@ -532,7 +532,7 @@ translations.define(
 
 def _thousands_parser(thousands_sep, fraction_sep):
 
-    expr = re.compile(r"^[-+]?\d{1,3}(\%s\d{3})*(\%s\d+)?$"
+    expr = re.compile(r"^[-+]?((\d{1,3}(\%s\d{3})*)|\d+)(\%s\d+)?$"
                     % (thousands_sep, fraction_sep))
     
     def parser(value):
