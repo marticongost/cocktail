@@ -21,17 +21,42 @@ class Query(object):
         filters = None,
         order = None,
         range = None,
-        base_collection = None):
+        base_collection = None,
+        cached = True):
 
         self.__type = type
         self.__filters = None
         self.__order = None
         self.__base_collection = None
 
+        self.__cached_results = None
+        self.__cached_results_sorted = False
+
         self.filters = filters or []
         self.order = order or []
         self.range = range
         self.base_collection = base_collection
+        self.cached = cached
+
+    def __repr__(self):
+        return (
+            "Query("
+            "type = %s, "
+            "filters = %r, "
+            "order = %r, "
+            "range = %r, "
+            "cached = %r)" % (
+                self.__type.full_name,
+                self.__filters,
+                self.__order,
+                self.__range,
+                self.cached
+            )
+        )
+
+    def discard_results(self):
+        self.__cached_results = None
+        self.__cached_results_sorted = False
 
     @getter
     def type(self):
@@ -52,6 +77,7 @@ class Query(object):
         if value is None and not self.type.indexed:
             raise TypeError("An indexed persistent class is required")
 
+        self.discard_results()
         self.__base_collection = value
 
     base_collection = property(_get_base_collection, _set_base_collection,
@@ -66,6 +92,8 @@ class Query(object):
     
     def _set_filters(self, value):
         
+        self.discard_results()
+
         if value is None:
             self.__filters = []
         else:
@@ -87,6 +115,9 @@ class Query(object):
         """)
     
     def add_filter(self, filter):
+        
+        self.discard_results()
+
         if self.filters is None:
             self.filters = [filter]
         else:
@@ -96,6 +127,8 @@ class Query(object):
         return self.__order or []
 
     def _set_order(self, value):
+
+        self.discard_results()
 
         if value is None:
             self.__order = []
@@ -130,6 +163,7 @@ class Query(object):
         """)
 
     def add_order(self, criteria):
+        self.discard_results()
         self.__order.append(self._normalize_order_criteria(criteria))
 
     def _normalize_order_criteria(self, criteria):
@@ -201,28 +235,46 @@ class Query(object):
     #--------------------------------------------------------------------------    
     def execute(self, _sorted = True):
 
-        if self.__base_collection is None:
-            from cocktail.persistence import datastore
-            dataset = self.type.keys
+        # Try to make use of cached results
+        if self.cached and self.__cached_results is not None:
+            dataset = self.__cached_results
+
+        # New data set
         else:
-            dataset = (obj.id for obj in self.__base_collection)
+            # Object universe
+            if self.__base_collection is None:
+                dataset = self.type.keys
+            else:
+                dataset = (obj.id for obj in self.__base_collection)
 
-        ordered = isinstance(self.__base_collection,
-                            (list, tuple, ListWrapper))
+            # Apply filters
+            if self.__filters:
+                dataset = self._apply_filters(dataset)
 
-        if self.__filters:
-            dataset = self._apply_filters(dataset)
+        # Apply order
+        if _sorted and not (self.cached and self.__cached_results_sorted):
 
-        if _sorted:
-            if ordered and not self.__order:
+            # Preserve ordering when selecting items from a custom ordered
+            # collection
+            if not self.__order and isinstance(
+                self.__base_collection,
+                (list, tuple, ListWrapper)
+            ):
                 dataset = [obj.id
                            for obj in self.__base_collection
                            if obj.id in dataset]
             else:
                 dataset = self._apply_order(dataset)
 
-            dataset = self._apply_range(dataset)
+        # Store results for further requests
+        if self.cached:
+            self.__cached_results = dataset
+            self.__cached_results_sorted = _sorted
         
+        # Apply ranges
+        if _sorted:
+            dataset = self._apply_range(dataset)
+
         return dataset
 
     def _apply_filters(self, dataset):
@@ -465,6 +517,7 @@ class Query(object):
             if index.step is not None and index.step != 1:
                 raise ValueError("Can't retrieve a query slice using a step "
                         "different than 1")
+            
             return self.select(range = (index.start, index.stop))
 
         # Retrieve a single item
@@ -484,8 +537,13 @@ class Query(object):
             self.range if range is inherit else range,
             self.__base_collection)
 
+        if filters is None:
+            child_query.__cached_results = self.__cached_results
+            child_query.__cached_results_sorted = order is None \
+                and self.__cached_results_sorted
+
         return child_query
-   
+
 
 # Custom expression resolution
 #------------------------------------------------------------------------------

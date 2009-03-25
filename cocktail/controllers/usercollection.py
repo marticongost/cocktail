@@ -58,6 +58,8 @@ class UserCollection(object):
         
         self.__type = type
         self.__schema = schema or type
+        self.__subset = None
+        self.__page_subset = None
         
         if public_members is None:
             public_members = set(self.__schema.members().iterkeys())
@@ -103,41 +105,55 @@ class UserCollection(object):
         
         return self.__members_wrapper
 
-    def add_base_filter(self, expression):
+    def add_base_filter(self, expression):    
         self.__base_filters.append(expression)
     
+    def discard_results(self):
+        self.__subset = None
+        self.__page_subset = None
+
     def subset(self):
         
-        subset = Query(
-            self.type,
-            base_collection = self.base_collection
-        )
-        
-        for expression in self.__base_filters:
-            subset.add_filter(expression)
+        subset = self.__subset
 
-        for expression in self.__filters:
-            subset.add_filter(expression)
+        if subset is None:
 
-        for user_filter in self.__user_filters:
-            if user_filter.schema.validate(user_filter):
-                subset.add_filter(user_filter.expression)
+            self.__subset = subset = Query(
+                self.type,
+                base_collection = self.base_collection
+            )
+            
+            for expression in self.__base_filters:
+                subset.add_filter(expression)
 
-        for criteria in self.__order:
-            subset.add_order(criteria)
+            for expression in self.__filters:
+                subset.add_filter(expression)
+
+            for user_filter in self.__user_filters:
+                if user_filter.schema.validate(user_filter):
+                    subset.add_filter(user_filter.expression)
+
+            for criteria in self.__order:
+                subset.add_order(criteria)
 
         return subset
     
     def page_subset(self):
-        
-        subset = self.subset()
 
-        if self.page_size is not None:
-            start = self.page * self.page_size
-            end = (self.page + 1) * self.page_size
-            subset = subset[start:end]
+        page_subset = self.__page_subset
+
+        if page_subset is None:
+
+            page_subset = self.subset()
+
+            if self.page_size is not None:
+                start = self.page * self.page_size
+                end = (self.page + 1) * self.page_size
+                page_subset = page_subset[start:end]
         
-        return subset
+            self.__page_subset = page_subset
+
+        return page_subset
 
     def read(self):
         
