@@ -18,7 +18,7 @@ from cocktail.schema.schemareference import Reference
 from cocktail.schema.schemastrings import String
 from cocktail.schema.schemarelations import _update_relation
 from cocktail.schema.schemacollections import (
-    Collection, RelationList, RelationSet
+    Collection, RelationCollection, RelationList, RelationSet
 )
 from cocktail.schema.schemamappings import Mapping, RelationMapping
 from cocktail.schema.accessors import MemberAccessor
@@ -264,7 +264,8 @@ class SchemaClass(EventHub, Schema):
 
                 # When setting the collection for the first time, wrap it with an
                 # instrumented instance of the appropiate type
-                if previous_value is None:
+                if previous_value is None \
+                or not isinstance(previous_value, RelationCollection):
                     value = self.instrument_collection(value, target, member)
 
                 # If a collection is already set on the element, update it instead
