@@ -34,23 +34,26 @@ schema.Member.parse_request_value = None
 schema.Member.serialize_request_value = unicode
 
 def parse_int(self, reader, value):
-    try:
-        value = int(value)
-    except ValueError:
-        pass
+
+    if value is not None:
+        try:
+            value = int(value)
+        except ValueError:
+            pass
 
     return value
 
 schema.Integer.parse_request_value = parse_int
 
 def parse_decimal(self, reader, value):
-    
-    parser = translate("Decimal parser")
 
-    try:
-        value = parser(value)
-    except ValueError:
-        pass
+    if value is not None:
+        parser = translate("Decimal parser")
+
+        try:
+            value = parser(value)
+        except ValueError:
+            pass
 
     return value
 
@@ -58,6 +61,9 @@ schema.Decimal.parse_request_value = parse_decimal
 
 def parse_date(self, reader, value):
     
+    if value is None:
+        return None
+
     HOUR_FORMAT = "%H:%M:%S"
         
     if isinstance(self, Date):
@@ -101,12 +107,14 @@ schema.BaseDateTime.parse_request_value = parse_date
 
 def parse_boolean(self, reader, value):
     
-    vl = value.lower()
-    
-    if vl in ("true", "1", "on"):
-        value = True
-    elif vl in ("false", "0", "off"):
-        value = False
+    if value is not None:
+
+        vl = value.lower()
+        
+        if vl in ("true", "1", "on"):
+            value = True
+        elif vl in ("false", "0", "off"):
+            value = False
 
     return value
         
@@ -114,24 +122,26 @@ schema.Boolean.parse_request_value = parse_boolean
 
 def parse_reference(self, reader, value):
 
-    related_type = self.type
+    if value is not None:
+        related_type = self.type
 
-    # Class references
-    if self.class_family:
+        # Class references
+        if self.class_family:
 
-        classes = chain(
-            [self.class_family],
-            self.class_family.derived_schemas()
-        )
+            classes = chain(
+                [self.class_family],
+                self.class_family.derived_schemas()
+            )
 
-        for cls in classes:
-            if cls.name == value:
-                value = cls
-                break
+            for cls in classes:
+                if cls.name == value:
+                    value = cls
+                    break
 
-    # TODO: make this extensible to other types?
-    elif isinstance(related_type, PersistentClass) and related_type.indexed:
-        value = related_type.index.get(int(value))
+        # TODO: make this extensible to other types?
+        elif isinstance(related_type, PersistentClass) \
+        and related_type.indexed:
+            value = related_type.index.get(int(value))
     
     return value
 
@@ -151,10 +161,11 @@ schema.Reference.serialize_request_value = serialize_reference
 
 def parse_collection(self, reader, value):
     
-    if isinstance(value, basestring):         
-        value = reader.split_collection(self, value)
-    elif not value:
+    if not value:
         return self.produce_default()
+
+    elif isinstance(value, basestring):         
+        value = reader.split_collection(self, value)
 
     collection_type = self.type or self.default_type or list
 
@@ -499,8 +510,8 @@ class FormSchemaReader(object):
             if value == "":
                 value = None
 
-            if value is not None and member.parse_request_value:
-                value = member.parse_request_value(self, value)
+        if member.parse_request_value:
+            value = member.parse_request_value(self, value)
             
         if value is None:
             if self.implicit_booleans \
