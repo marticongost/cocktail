@@ -46,14 +46,10 @@ class Selector(Element, DataBoundControl):
                 and self.member.min and self.member.max:
                     self.items = range(self.member.min, self.member.max + 1)
 
-                elif isinstance(self.member, RelationMember):
-                    
-                    query = self.member.related_type.select()
-    
-                    for expr in self.member.get_constraint_filters(self.data):
-                        query.add_filter(expr)
-
-                    self.items = query
+                elif isinstance(self.member, RelationMember):                    
+                    self.items = self.member.select_constraint_instances(
+                        parent = self.data
+                    )
 
                 elif isinstance(self.member, Boolean):
                     self.items = (True, False)
