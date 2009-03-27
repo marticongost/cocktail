@@ -45,3 +45,14 @@ class CheckList(Selector):
 
         return entry
 
+    def insert_into_form(self, form, field_instance):
+        
+        field_instance.append(self)
+
+        # Disable the 'required' mark for this field, as it doesn't make sense
+        # on a checklist
+        required_mark = getattr(field_instance.label, "required_mark", None)
+
+        if required_mark:
+            required_mark.visible = False
+
