@@ -27,5 +27,4 @@ from cocktail.controllers.parameters import (
 from cocktail.controllers.usercollection import UserCollection
 import cocktail.controllers.erroremail
 import cocktail.controllers.handlerprofiler
-import cocktail.controllers.testcallablespec
 
