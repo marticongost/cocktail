@@ -6,7 +6,7 @@
 @organization:	Whads/Accent SL
 @since:			December 2008
 """
-from inspect import isfunction
+from inspect import isfunction, getargspec
 import cherrypy
 from cocktail.modeling import getter, ListWrapper, ContextualDict
 from cocktail.controllers.requesthandler import RequestHandler
@@ -51,15 +51,19 @@ class HandlerActivator(object):
             
                 except TypeError, x:
                     callable = self.callable
-
-                    # Fix needed by test_callable_spec, otherwise callable 
-                    # objects which aren't a function raise a TypeError
+                    
                     if not isfunction(callable):
                         callable = getattr(callable, "__call__", None)
+                    
+                    if callable:                        
+                        (args, varargs, varkw, defaults) = getargspec(callable)
 
-                    if callable:
-                        cherrypy._cpdispatch.test_callable_spec(
-                            callable, self.args, self.kwargs)
+                        if args and args[0] == "self":
+                            args = args[1:]
+                        
+                        if len(self.args) < len(args) \
+                        or (len(self.args) > len(args) and not varargs):
+                            raise cherrypy.NotFound()
 
                     raise
             
