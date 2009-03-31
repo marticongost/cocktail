@@ -61,49 +61,56 @@ schema.Decimal.parse_request_value = parse_decimal
 
 def parse_date(self, reader, value):
     
-    if value is None:
-        return None
-
-    HOUR_FORMAT = "%H:%M:%S"
-        
-    if isinstance(self, Date):
-        str_format = translate("date format", get_language())
-        value = value[:10]
+    if value is not None:
+        format = translate("date format")
             
         try:
-            value = datetime.date(
-                *time.strptime(
-                    value, 
-                    str_format
-                 )[0:3]
-            )
+            value = datetime.date(*time.strptime(value[:10], format)[0:3])
         except ValueError:
             pass
-    elif isinstance(self, DateTime):             
-        str_format = translate("date format", get_language()) + " " + HOUR_FORMAT
+
+    return value
+
+def serialize_date(self, value):
+    format = translate("date format")    
+    return value.strftime(format)
+
+Date.parse_request_value = parse_date
+Date.serialize_request_value = serialize_date
+
+def parse_datetime(self, reader, value):
+    
+    if value is not None:
+        format = translate("date format") + " %H:%M:%S"
         try:
-            value = datetime.datetime.strptime(
-                value,
-                str_format
-            )            
+            value = datetime.datetime.strptime(value, format)
         except ValueError:
             pass
-                                        
-    elif isinstance(self, Time):
-        str_format = HOUR_FORMAT
+
+    return value
+
+def serialize_datetime(self, value):
+    format = translate("date format") + " %H:%M:%S"
+    return value.strftime(format)
+
+DateTime.parse_request_value = parse_datetime
+DateTime.serialize_request_value = serialize_datetime
+
+def parse_time(self, reader, value):
+
+    if value is not None:
         try:
-            value = datetime.time(
-                *time.strptime(
-                    value, 
-                    str_format
-                )[3:6]
-            )
+            value = datetime.time(*time.strptime(value, "%H:%M:%S")[3:6])
         except ValueError:
-            pass        
+            pass
     
     return value
 
-schema.BaseDateTime.parse_request_value = parse_date
+def serialize_time(self, value):
+    return value.strftime("%H:%M:%S")
+
+schema.Time.parse_request_value = parse_time
+schema.Time.serialize_request_value = serialize_time
 
 def parse_boolean(self, reader, value):
     
