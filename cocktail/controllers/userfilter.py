@@ -258,6 +258,10 @@ class CollectionFilter(BinaryFilter):
 
     operators = ("cn", "nc")
 
+    def _add_member_to_schema(self, schema):
+        BinaryFilter._add_member_to_schema(self, schema)
+        schema["value"].required = True
+
     @getter
     def expression(self):
 
