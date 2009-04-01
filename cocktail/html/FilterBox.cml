@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <?py
+from cocktail.schema.expressions import normalize
 from cocktail.controllers import get_state, view_state, serialize_parameter
 ?>
 
@@ -64,7 +65,13 @@ from cocktail.controllers import get_state, view_state, serialize_parameter
             <span class="label">${translate("cocktail.html.FilterBox add filter")}</span>
             <div class="selector_content">
                 <py:ready>
-                    <a py:for="filter in self.available_filters">
+                    <?py
+                    filter_items = [(translate(filter), filter)
+                                    for filter in self.available_filters]
+
+                    filter_items.sort(key = lambda item: normalize(item[0]))
+                    ?>
+                    <a py:for="desc, filter in filter_items">
                         <?py
                         filter_param = []
                         params = {"page": 0, "filter": filter_param}
@@ -81,7 +88,7 @@ from cocktail.controllers import get_state, view_state, serialize_parameter
                         filter_param.append(filter.id)
                         element["href"] = "?" + view_state(**params)
                         ?>
-                        ${translate(filter)}
+                        ${desc}
                     </a>
                 </py:ready>
             </div>
