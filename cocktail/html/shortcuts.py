@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-"""
+u"""
 Utilities to set shortcut keys on elements.
 
 @author:		Martí Congost

@@ -1,9 +1,9 @@
 #-*- coding: utf-8 -*-
-"""
+u"""
 Provides a class that tracks the state of a validation process across schema
 members.
 
-@author:		Martí Congost
+@author:		MartÃ­ Congost
 @contact:		marti.congost@whads.com
 @organization:	Whads/Accent SL
 @since:			June 2008

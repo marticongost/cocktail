@@ -1,7 +1,7 @@
 #-*- coding: utf-8 -*-
-"""
+u"""
 
-@author:		Martí Congost
+@author:		MartÃ­ Congost
 @contact:		marti.congost@whads.com
 @organization:	Whads/Accent SL
 @since:			October 2008

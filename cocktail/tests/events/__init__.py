@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-"""
+u"""
 Event test cases.
 
 @author:		Martí Congost

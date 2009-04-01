@@ -1,8 +1,8 @@
 #-*- coding: utf-8 -*-
-"""
+u"""
 Declares exception classes specific to the package.
 
-@author:		Martí Congost
+@author:		MartÃ­ Congost
 @contact:		marti.congost@whads.com
 @organization:	Whads/Accent SL
 @since:			March 2008

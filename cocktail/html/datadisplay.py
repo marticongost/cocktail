@@ -1,8 +1,8 @@
 #-*- coding: utf-8 -*-
-"""
+u"""
 Visual elements for data binding.
 
-@author:		Martí Congost
+@author:		MartÃ­ Congost
 @contact:		marti.congost@whads.com
 @organization:	Whads/Accent SL
 @since:			July 2008

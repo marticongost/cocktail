@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-"""
+u"""
 Provides the base class for all schema members.
 
 @author:		Martí Congost

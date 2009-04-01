@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-"""
+u"""
 A set of constructs for modeling classes.
 
 @author:		Martí Congost
