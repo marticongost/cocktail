@@ -1,9 +1,9 @@
 #-*- coding: utf-8 -*-
-"""
+u"""
 Provides a base class for all schema members that can restrict their values to
 certain ranges.
 
-@author:		Martí Congost
+@author:		MartÃ­ Congost
 @contact:		marti.congost@whads.com
 @organization:	Whads/Accent SL
 @since:			April 2008

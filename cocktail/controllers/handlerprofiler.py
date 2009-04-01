@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-"""
+u"""
 Profiler tool for CherryPy request handlers.
 
 @author:		Martí Congost

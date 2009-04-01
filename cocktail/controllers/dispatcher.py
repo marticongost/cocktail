@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-"""
+u"""
 
 @author:		Martí­ Congost
 @contact:		marti.congost@whads.com

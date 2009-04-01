@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-"""
+u"""
 Provides a class to describe members that handle sets of values.
 
 @author:		Martí Congost

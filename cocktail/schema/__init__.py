@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-"""
+u"""
 Declarative definition of data models and validation rules.
 
 @author:		Martí Congost

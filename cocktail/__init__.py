@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-"""
+u"""
 A tasty mix of python web development utilities.
 
 @author:		Martí Congost

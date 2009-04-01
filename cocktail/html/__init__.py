@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-"""
+u"""
 Component-based (X)HTML rendering.
 
 @author:		Martí Congost

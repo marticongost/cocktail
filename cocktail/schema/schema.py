@@ -1,8 +1,8 @@
 #-*- coding: utf-8 -*-
-"""
+u"""
 Provides a member that handles compound values.
 
-@author:		Martí Congost
+@author:		MartÃ­ Congost
 @contact:		marti.congost@whads.com
 @organization:	Whads/Accent SL
 @since:			March 2008
