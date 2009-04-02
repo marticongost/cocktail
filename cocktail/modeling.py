@@ -123,11 +123,12 @@ def extend(element):
                     _thread_data.method_stack.pop()
 
             wrap(function, wrapper)
-            setattr(element, function.func_name, wrapper)        
+            setattr(element, function.func_name, wrapper)
         else:
-            wrapper = function
-            
-        setattr(element, function.func_name, wrapper)        
+            def wrapper(*args, **kwargs):
+                return function(element, *args, **kwargs)
+        
+        setattr(element, function.func_name, wrapper)
         return wrapper
 
     return decorator
