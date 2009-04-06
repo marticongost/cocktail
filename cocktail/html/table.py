@@ -78,7 +78,7 @@ class Table(Element, CollectionDisplay):
         # Cache sorted columns
         if self.order:
             
-            self.__sorted_columns = sorted_columns = {}
+            self._sorted_columns = sorted_columns = {}
             
             for criteria in self.order:
                 sign = criteria.__class__
@@ -173,18 +173,34 @@ class Table(Element, CollectionDisplay):
         header = Element("th")
         self._init_cell(header, column, language)
         
+        header.label = Element("span")
+        header.label.add_class("label")
+        header.label.append(self.get_member_label(column))
+        header.append(header.label)
+        
+        # Translation label
+        if language:
+            header.translation_label = self.create_translation_label(language)
+            header.append(header.translation_label)
+        
+        self.add_header_ui(header, column, language)
+        return header       
+
+    def create_translation_label(self, language):
         label = Element("span")
-        label.add_class("label")
-        label.append(self.get_member_label(column))
-        header.append(label)
+        label.add_class("translation")
+        label.append(u"(" + translate(language) + u")")
+        return label
+
+    def add_header_ui(self, header, column, language):
 
         # Sorting
         if self.get_member_sortable(column):
-            label.tag = "a"
+            header.label.tag = "a"
             sign = ""
 
             if self.order:
-                current_direction = self.__sorted_columns.get(
+                current_direction = self._sorted_columns.get(
                     (column.name, language)
                 )
 
@@ -202,26 +218,13 @@ class Table(Element, CollectionDisplay):
             if language:
                 order_param += "." + language
 
-            label["href"] = "?" + view_state(order = order_param)
-
-        # Translation label
-        if language:
-            translation_label = self.create_translation_label(language)
-            header.append(translation_label)
-                        
-        return header
-    
-    def create_translation_label(self, language):
-        label = Element("span")
-        label.add_class("translation")
-        label.append(u"(" + translate(language) + u")")
-        return label
+            header.label["href"] = "?" + view_state(order = order_param)
 
     def create_cell(self, item, column, language = None):
         cell = Element("td")
 
         if self.order \
-        and (column.name, language) in self.__sorted_columns:
+        and (column.name, language) in self._sorted_columns:
             cell.add_class("sorted")
 
         self._init_cell(cell, column, language)
