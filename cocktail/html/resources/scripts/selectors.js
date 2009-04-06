@@ -19,7 +19,7 @@ jQuery(function () {
             e.stopPropagation();
         });
     
-    jQuery(".selector .label").each( function () {                
+    jQuery(".selector > .label").each( function () {                
         jQuery(this).replaceWith(
             '<a href="javascript:;"'
             + ' id="' + jQuery(this).attr('id') + '"'
@@ -29,7 +29,7 @@ jQuery(function () {
             + '</a>');
     });
     
-    jQuery(".selector .label").click(function (e) {
+    jQuery(".selector > .label").click(function (e) {
         var content_selector = jQuery(this).next(".selector_content");
         var selector = jQuery(this).parent(".selector");
         jQuery(".selector").not(selector).removeClass("unfolded");
