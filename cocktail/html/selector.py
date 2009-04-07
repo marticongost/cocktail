@@ -8,7 +8,7 @@ u"""
 """
 from cocktail.modeling import ListWrapper, SetWrapper
 from cocktail.translations import translate
-from cocktail.schema import Number, RelationMember, Boolean
+from cocktail.schema import Boolean, Number, RelationMember, Collection
 from cocktail.html import Element
 from cocktail.html.databoundcontrol import DataBoundControl
 
@@ -35,29 +35,37 @@ class Selector(Element, DataBoundControl):
         if self.member:
         
             if self.items is None:
-                
-                enumeration = self.member.resolve_constraint(
-                    self.member.enumeration, None)
-                
-                if enumeration:
-                    self.items = enumeration
-
-                elif isinstance(self.member, Number) \
-                and self.member.min and self.member.max:
-                    self.items = range(self.member.min, self.member.max + 1)
-
-                elif isinstance(self.member, RelationMember):                    
-                    self.items = self.member.select_constraint_instances(
-                        parent = self.data
-                    )
-
-                elif isinstance(self.member, Boolean):
-                    self.items = (True, False)
-
-                else:
-                    self.items = ()
+                self.items = self._get_items_from_member(self.member)
             
         self._fill_entries()
+
+    def _get_items_from_member(self, member):
+
+        enumeration = member.resolve_constraint(
+            member.enumeration,
+            None
+        )
+        
+        if enumeration:
+            return enumeration
+
+        if isinstance(self.member, Boolean):
+            return (True, False)
+
+        elif isinstance(member, Number):
+            if member.min is not None and member.max is not None:
+                return range(member.min, member.max + 1)
+
+        elif isinstance(self.member, RelationMember):
+            if getattr(self.member, "is_persistent_relation", False):
+                self.items = self.member.select_constraint_instances(
+                    parent = self.data
+                )
+            elif isinstance(self.member, Collection):
+                if member.items:
+                    return self._get_items_from_member(member.items)
+        
+        return ()
 
     def _fill_entries(self):
         
