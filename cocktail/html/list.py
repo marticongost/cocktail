@@ -43,7 +43,7 @@ class List(Element):
         return entry
     
     def create_entry_content(self, item):
-        return translate(item)
+        return translate(item, default = unicode(item))
     
     def create_ellipsis(self, ellipsis_size):
         ellipsis = Element("span")
