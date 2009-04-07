@@ -57,6 +57,20 @@ schema.RelationMember.cascade_delete = property(
     @type: bool
     """)
 
+def _get_reference_is_persistent_relation(self):
+    return self.type and issubclass(self.type, PersistentObject)
+
+schema.Reference.is_persistent_relation = \
+    getter(_get_reference_is_persistent_relation)
+
+def _get_collection_is_persistent_relation(self):
+    items = self.items
+    return items \
+        and isinstance(items, Reference) \
+        and items.is_persistent_relation
+
+schema.Collection.is_persistent_relation = \
+    getter(_get_collection_is_persistent_relation)
 
 class PersistentClass(SchemaClass):
 
