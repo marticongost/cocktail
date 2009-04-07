@@ -58,7 +58,7 @@ class Selector(Element, DataBoundControl):
 
         elif isinstance(self.member, RelationMember):
             if getattr(self.member, "is_persistent_relation", False):
-                self.items = self.member.select_constraint_instances(
+                return self.member.select_constraint_instances(
                     parent = self.data
                 )
             elif isinstance(self.member, Collection):
