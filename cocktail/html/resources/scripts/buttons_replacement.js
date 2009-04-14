@@ -58,7 +58,4 @@ cocktail.init(function () {
         }
         
     });
-        
-    //Show success message
-    setTimeout("jQuery('.success').hide('slow')", 1500);
 });
