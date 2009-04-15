@@ -24,6 +24,7 @@ class HandlerActivator(object):
     def __call__(self, *args, **kwargs):
 
         request = cherrypy.request
+        request_error = None
         visited = []
         context["visited_handlers"] = visited
 
@@ -33,7 +34,7 @@ class HandlerActivator(object):
                 parent = None
 
                 for handler in request.handler_chain:
-                    
+
                     context["parent_handler"] = parent
                     visited.append(handler)
 
@@ -71,12 +72,14 @@ class HandlerActivator(object):
                 raise
 
             # Custom error handlers
-            except Exception, error:
+            except Exception, request_error:
                 for handler in reversed(visited):
                     event_slot = getattr(handler, "exception_raised", None)
                     if event_slot is not None:
                         event_info = event_slot(
-                            exception = error, handled = False)
+                            exception = request_error,
+                            handled = False
+                        )
                         if event_info.handled:
                             break
                 else:
@@ -84,16 +87,24 @@ class HandlerActivator(object):
 
             # Cleanup
             finally:
-                flow_control_errors = (cherrypy.HTTPError, StopRequest)
+                flow_control_errors = (
+                    cherrypy.HTTPError,
+                    cherrypy.HTTPRedirect,
+                    StopRequest
+                )
                 flow_exception = None
                 
                 for handler in reversed(visited):
                     event_slot = getattr(handler, "after_request", None)
                     if event_slot is not None:
                         try:
-                            event_slot()
-                        except flow_control_errors, flow_exception:
-                            pass
+                            event_slot(
+                                flow_exception = flow_exception,
+                                error = request_error
+                            )
+                        except flow_control_errors, exception:
+                            if exception is not None:
+                                flow_exception = exception
 
                 if flow_exception:
                     raise flow_exception
@@ -209,21 +220,16 @@ class Dispatcher(object):
                 else:
                     handler = child
         
-        except (cherrypy.HTTPRedirect, StopRequest), error:
-            handler = self._error_trigger(error)
+        except Exception, error:
+            def handler(*args, **kwargs):
+                raise error
+            chain.append(handler)
         
         request.handler = HandlerActivator(handler, *path)
     
     def respond(self, path_info, handler = None):
         self(path_info, handler)
         return cherrypy.request.handler()
-
-    def _error_trigger(self, error):
-        
-        def error_trigger(*args, **kwargs):
-            raise error
-
-        return error_trigger
 
     def split(self, path):
         return [self.normalize_component(component)
