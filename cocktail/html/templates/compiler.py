@@ -9,7 +9,7 @@ u"""
 import re
 from xml.parsers import expat
 from cocktail.modeling import refine, extend, call_base, getter, DictWrapper
-from cocktail.translations import translate, get_language
+from cocktail.translations import translate, translations, get_language
 from cocktail.html.element import default, PlaceHolder
 from cocktail.html.templates.sourcecodewriter import SourceCodeWriter
 
@@ -114,6 +114,7 @@ class TemplateCompiler(object):
             "loader": self.loader,
             "PlaceHolder": PlaceHolder,
             "translate": translate,
+            "translations": translations,
             "get_language": get_language,
             "refine": refine, # obsolete; use extend/call_base instead
             "extend": extend,

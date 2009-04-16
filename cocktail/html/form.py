@@ -9,7 +9,7 @@ u"""
 from __future__ import with_statement
 from cocktail.language import get_content_language, content_language_context
 from cocktail.modeling import getter, ListWrapper
-from cocktail.translations import translate
+from cocktail.translations import translations
 from cocktail.schema import (
     Member, Boolean, Reference, BaseDateTime, Decimal, Collection
 )
@@ -99,7 +99,7 @@ class Form(Element, DataDisplay):
         self.submit_button["name"] = "submit"
         self.submit_button["value"] = "true"
         self.submit_button["type"] = "submit"
-        self.submit_button.append(translate("Submit"))
+        self.submit_button.append(translations("Submit"))
         self.buttons.append(self.submit_button)
         self.default_button = self.submit_button
 
@@ -166,7 +166,7 @@ class Form(Element, DataDisplay):
         fieldset.add_class(group.id)
         
         fieldset.legend = Element("legend")
-        fieldset.legend.append(translate(self.schema.name + "." + group.id))
+        fieldset.legend.append(translations(self.schema.name + "." + group.id))
         fieldset.append(fieldset.legend)
 
         return fieldset
@@ -277,7 +277,7 @@ class Form(Element, DataDisplay):
     def create_language_label(self, member, language):
         label = Element("span")
         label.add_class("language")
-        label.append("(" + translate(language) + ")")
+        label.append("(" + translations(language) + ")")
         return label
 
     def create_required_mark(self, member):

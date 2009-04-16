@@ -10,7 +10,7 @@ from __future__ import with_statement
 from urllib import urlencode
 import cherrypy
 from cocktail.modeling import getter
-from cocktail.translations import translate, get_language, language_context
+from cocktail.translations import translations, get_language, language_context
 from cocktail.controllers.viewstate import get_state
 from cocktail.controllers.dispatcher import StopRequest
 
@@ -134,8 +134,8 @@ class Location(object):
 
     </html>
                 """ % {
-                    "title": translate("Redirecting"),
-                    "explanation": translate("Redirection explanation"),
+                    "title": translations("Redirecting"),
+                    "explanation": translations("Redirection explanation"),
                     "method": self.method,
                     "action": str(self),
                     "data": "\n".join(
@@ -143,6 +143,6 @@ class Location(object):
                         % (key, value)
                         for key, value in self.form_data.iteritems()
                     ),
-                    "button": translate("Redirection button")
+                    "button": translations("Redirection button")
                 }
 

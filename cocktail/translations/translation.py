@@ -8,11 +8,23 @@ u"""
 """
 from threading import local
 from contextlib import contextmanager
+from warnings import warn
 from cocktail.modeling import DictWrapper
 from cocktail.pkgutils import get_full_name
 
 _thread_data = local()
-_undefined = object()
+
+
+class UndefinedTranslation(object):
+
+    def __nonzero__(self):
+        return False
+
+    def __str__(self):
+        return "Undefined translation"
+
+undefined = UndefinedTranslation()
+
 
 @contextmanager
 def language_context(language):
@@ -30,25 +42,6 @@ def get_language():
 
 def set_language(language):
     setattr(_thread_data, "language", language)
-
-def translate(obj, language = None, **kwargs):
-
-    translator = getattr(obj, "__translate__", None)
-
-    if language is None:
-        language = get_language()
-
-    if translator:
-        default = kwargs.pop("default", _undefined)        
-        value = translator(language, **kwargs)
-        if value is None:
-            if default is _undefined:
-                raise KeyError("Can't find a translation for %s" % obj)
-            else:
-                return default
-        return value
-    else:
-        return translations(obj, language, **kwargs)
 
 
 class TranslationsRepository(DictWrapper):
@@ -72,25 +65,75 @@ class TranslationsRepository(DictWrapper):
             
             translation[obj] = string
 
-    def __call__(self, obj, language, **kwargs):
+    def __call__(self, obj,
+        language = None,
+        default = undefined,
+        chain = undefined,
+        **kwargs):
         
-        translation = self.__translations.get(language, _undefined)
+        value = undefined
 
-        if translation is _undefined:
-            default = kwargs.get("default", _undefined)
-            if default is _undefined:
-                raise KeyError("Can't find a translation for %r in language %s"
-                            % (obj, language))
-            else:
-                return unicode(default)
+        if language is None:
+            language = get_language()
+
+        # Translation method
+        translation_method = getattr(obj, "__translate__", None)
+
+        if translation_method:
+            value = translation_method(language, **kwargs)
         
-        return translation(obj, **kwargs)
+        # Translation key
+        if value is undefined:
+            translation = self.__translations.get(language, None)
+            if translation is not None:
+                value = translation(obj, **kwargs)
+
+        # Per-type translation
+        if value is undefined \
+        and not isinstance(obj, basestring) \
+        and hasattr(obj.__class__, "mro"):
+
+            for cls in obj.__class__.mro():
+                try:
+                    type_key = get_full_name(cls) + "-instance"
+                except:
+                    type_key = cls.__name__ + "-instance"
+                        
+                value = self(type_key, language, instance = obj, **kwargs)
+                
+                if value is not undefined:
+                    break
+        
+        # Custom translation chain
+        if value is undefined and chain is not undefined:
+            value = self(chain, language, default, **kwargs)
+
+        # Object specific translation chain
+        if value is undefined:
+            object_chain = getattr(obj, "translation_chain", undefined)
+            if object_chain is not undefined:
+                value = self(object_chain, language, default, **kwargs)
+
+        # Explicit default
+        if value is undefined and default is not undefined:
+            value = unicode(default)
+
+        return value
+
+translations = TranslationsRepository()
+
+def translate(*args, **kwargs):
+    warn(
+        "translate() is deprecated, use translations() instead",
+        DeprecationWarning,
+        stacklevel = 2,
+    )
+    return translations(*args, **kwargs)
 
 
 class Translation(DictWrapper):
 
     language = None
-    fallback = None
 
     def __init__(self):
         self.__strings = {}
@@ -99,59 +142,19 @@ class Translation(DictWrapper):
     def __setitem__(self, obj, string):
         self.__strings[obj] = string
 
-    def _get_with_fallback(self, obj):
-        
-        string = self.__strings.get(obj, _undefined)
-
-        if string is _undefined and self.fallback:
-            for fallback in self.fallback:
-                string = fallback._get_with_fallback(obj)
-                if string is not _undefined:
-                    break
-
-        return string
-
     def __call__(self, obj, **kwargs):
         
-        string = self._get_with_fallback(obj)
+        value = self.__strings.get(obj, undefined)
+    
+        if value is not undefined:
 
-        if string is _undefined:
+            # Custom python expression
+            if callable(value):
+                value = value(**kwargs)
 
-            if not isinstance(obj, basestring) \
-            and hasattr(obj.__class__, "mro"):
+            # String formatting
+            elif kwargs:
+                value = value % kwargs
 
-                for cls in obj.__class__.mro():
-                    try:
-                        type_key = get_full_name(cls) + "-instance"
-                    except:
-                        type_key = cls.__name__ + "-instance"
-            
-                    kwargs["instance"] = obj
-                    string = self._get_with_fallback(type_key)
-
-                    if string is not _undefined:
-                        break
-
-            if string is _undefined:
-                default = kwargs.get("default", _undefined)
-
-                if default is _undefined:
-                    raise KeyError("Can't find a translation for %s" % obj)
-                else:
-                    return unicode(default)
-        
-        # Custom python expression
-        if callable(string):
-            kwargs.pop("default", None)
-            string = string(**kwargs)
-
-        # String formatting
-        elif kwargs:
-            kwargs.pop("default", None)
-            string = string % kwargs
-
-        return string
-
-
-translations = TranslationsRepository()
+        return value
 

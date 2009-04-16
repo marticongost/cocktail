@@ -6,7 +6,7 @@ u"""
 @organization:	Whads/Accent SL
 @since:			July 2008
 """
-from cocktail.translations.translation import translations, translate
+from cocktail.translations.translation import translations
 from decimal import Decimal
 import re
 
@@ -167,18 +167,18 @@ translations.define("jquery_date format",
 )
 
 translations.define("date-instance",
-    ca = lambda instance: instance.strftime(translate("date format", "ca")),
-    es = lambda instance: instance.strftime(translate("date format", "es")),
-    en = lambda instance: instance.strftime(translate("date format", "en"))
+    ca = lambda instance: instance.strftime(translations("date format", "ca")),
+    es = lambda instance: instance.strftime(translations("date format", "es")),
+    en = lambda instance: instance.strftime(translationsn("date format", "en"))
 )
 
 translations.define("datetime-instance",
     ca = lambda instance:
-        instance.strftime(translate("date format", "ca") + " %H:%M:%S"),
+        instance.strftime(translations("date format", "ca") + " %H:%M:%S"),
     es = lambda instance:
-        instance.strftime(translate("date format", "es") + " %H:%M:%S"),
+        instance.strftime(translations("date format", "es") + " %H:%M:%S"),
     en = lambda instance:
-        instance.strftime(translate("date format", "en") + " %H:%M:%S")
+        instance.strftime(translations("date format", "en") + " %H:%M:%S")
 )
 
 # html.FilterBox
@@ -331,9 +331,9 @@ translations.define("de",
 )
 
 translations.define("translated into",
-    ca = lambda lang: "en " + translate(lang, "ca"),
-    es = lambda lang: "en " + translate(lang, "es"),
-    en = lambda lang: "in " + translate(lang, "en")
+    ca = lambda lang: "en " + translations(lang, "ca"),
+    es = lambda lang: "en " + translations(lang, "es"),
+    en = lambda lang: "in " + translations(lang, "en")
 )
 
 translations.define("Exception-instance",
@@ -350,11 +350,11 @@ translations.define("Exception-instance",
 def member_identifier(error, language):
     if error.language:
         return "%s (%s)" % (
-            translate(error.member, language).lower(),
-            translate(error.language, language)
+            translations(error.member, language).lower(),
+            translations(error.language, language)
         )
     else:
-        return translate(error.member, language).lower()
+        return translations(error.member, language).lower()
 
 translations.define("cocktail.schema.exceptions.ValidationError-instance",
     ca = lambda instance:

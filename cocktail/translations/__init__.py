@@ -7,14 +7,16 @@ Definition of multi-language string catalogs.
 @organization:	Whads/Accent SL
 @since:			July 2008
 """
-from cocktail.translations.translation import (    
+from cocktail.translations.translation import (
     TranslationsRepository,
     Translation,
+    undefined,
     language_context,
     get_language,
     set_language,
+    translations,
     translate
 )
 
-from cocktail.translations.strings import translations
+from cocktail.translations import strings
 

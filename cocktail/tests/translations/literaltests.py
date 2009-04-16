@@ -9,7 +9,7 @@ u"""
 from __future__ import with_statement
 from decimal import Decimal
 from unittest import TestCase
-from cocktail.translations import translate, language_context
+from cocktail.translations import translations, language_context
 
 
 class DecimalTranslationTestCase(TestCase):
@@ -80,5 +80,5 @@ class DecimalTranslationTestCase(TestCase):
         for language, language_values in values:
             with language_context(language):
                 for raw, expected in language_values:
-                    self.assertEqual(translate(raw), expected)
+                    self.assertEqual(translations(raw), expected)
 

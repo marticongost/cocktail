@@ -9,7 +9,7 @@ u"""
 from __future__ import with_statement
 from cocktail.html.element import Element
 from cocktail.html.datadisplay import DataDisplay
-from cocktail.translations import translate
+from cocktail.translations import translations
 from cocktail.language import get_content_language, content_language_context
 
 
@@ -43,7 +43,7 @@ class PropertyTable(Element, DataDisplay):
             current_schema = member.adaptation_source.schema \
                 if member.adaptation_source else member.schema
 
-            if self.group_by_type and current_schema is not prev_schema:                
+            if self.group_by_type and current_schema is not prev_schema:
                 type_table = Element("table")
                 type_table.add_class("type_group")
                 type_table.set_client_param("groupSchema", current_schema.name)
@@ -60,7 +60,7 @@ class PropertyTable(Element, DataDisplay):
 
             prev_schema = current_schema
 
-    def create_type_header(self, schema):        
+    def create_type_header(self, schema):
         header = Element("thead")
         header.add_class("type_header")
         cell = Element("th")
@@ -70,7 +70,7 @@ class PropertyTable(Element, DataDisplay):
         return header
 
     def get_type_header_label(self, schema):
-        return translate(schema.name)
+        return translations(schema.name)
 
     def create_type_container(self, schema):
         return Element("tbody")
@@ -121,7 +121,7 @@ class PropertyTable(Element, DataDisplay):
             table.append(language_row)
 
             language_label = Element("th")
-            language_label.append(translate(language))
+            language_label.append(translations(language))
             language_row.append(language_label)
             
             with content_language_context(language):

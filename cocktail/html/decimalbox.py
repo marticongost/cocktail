@@ -8,7 +8,7 @@ u"""
 """
 from decimal import Decimal
 from cocktail.html.textbox import TextBox
-from cocktail.translations import translate
+from cocktail.translations import translations
 
 
 class DecimalBox(TextBox):
@@ -21,7 +21,7 @@ class DecimalBox(TextBox):
         if value is not None:
 
             if isinstance(value, Decimal):
-                value = translate(value)
+                value = translations(value)
 
         self["value"] = value
 

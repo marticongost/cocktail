@@ -12,7 +12,7 @@ from operator import getitem
 from cocktail.schema import String
 from cocktail.modeling import getter, ListWrapper, SetWrapper, empty_list
 from cocktail.language import require_content_language, get_content_language
-from cocktail.translations import translate
+from cocktail.translations import translations
 from cocktail.html import Element, Content
 from cocktail.typemapping import TypeMapping
 from cocktail.schema import Member, get_accessor
@@ -128,7 +128,7 @@ class DataDisplay(object):
         label = self.__member_labels.get(self._normalize_member(member), None)
 
         if label is None:
-            label = translate(self._resolve_member(member))
+            label = translations(self._resolve_member(member))
 
         return label
 
@@ -230,13 +230,13 @@ class DataDisplay(object):
 
         elif isinstance(value, (list, ListWrapper, set, SetWrapper)):
             if value:
-                value = u", ".join(translate(item, default = item)
+                value = u", ".join(translations(item, default = item)
                                    for item in value)
             else:
                 value = u"-"
         
         elif not (member.translated and isinstance(member, String)):
-            value = translate(value, default = value)
+            value = translations(value, default = value)
             
         return value
 

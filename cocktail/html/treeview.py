@@ -6,7 +6,7 @@ u"""
 @organization:	Whads/Accent SL
 @since:			July 2008
 """
-from cocktail.translations import translate
+from cocktail.translations import translations
 from cocktail.html import Element
 
 NOT_ACCESSIBLE = 0
@@ -95,7 +95,7 @@ class TreeView(Element):
         return label
 
     def get_item_label(self, item):
-        return translate(item)
+        return translations(item)
 
     def create_children_container(self, item, children):        
         container = Element("ul")

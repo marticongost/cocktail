@@ -11,11 +11,11 @@
         
         display = loader.new("cocktail.html.DropdownSelector")
         display.empty_option_displayed = not member.required
-        display.empty_label = translate("cocktail.html.UserFilterEntry any language")
+        display.empty_label = translations("cocktail.html.UserFilterEntry any language")
 
         @refine(display)
         def get_item_label(self, language):
-            return translate("translated into", lang = language)
+            return translations("translated into", lang = language)
 
         return display
 
@@ -26,7 +26,7 @@
 
         @refine(display)
         def get_item_label(self, item):
-            return translate("cocktail.html.UserFilterEntry operator " + item)
+            return translations("cocktail.html.UserFilterEntry operator " + item)
 
         return display
     ?>
