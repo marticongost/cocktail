@@ -11,7 +11,7 @@ from itertools import chain
 from copy import deepcopy
 from cocktail.modeling import ListWrapper
 from cocktail.pkgutils import import_object
-from cocktail.translations import translate
+from cocktail.translations import translations, undefined
 from cocktail.schema import exceptions
 from cocktail.schema.expressions import Expression, Variable
 from cocktail.schema.validationcontext import ValidationContext
@@ -368,17 +368,12 @@ class Member(Variable):
                 yield exceptions.TypeCheckError(self, value, context, type)
 
     def __translate__(self, language, **kwargs):        
-        try:
-            return translate(
-                self.schema.name + "." + self.name,
-                language,
-                **kwargs
-            )
-        except KeyError:
-            copy_source = getattr(self, "copy_source", None)
-
-            if copy_source:
-                return translate(copy_source, language, **kwargs)
-            else:
-                raise
+        return translations(
+            self.schema.name + "." + self.name,
+            language,
+            chain = self.copy_source
+                if self.copy_source is not None
+                else undefined,
+            **kwargs
+        )
 

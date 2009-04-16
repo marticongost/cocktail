@@ -16,7 +16,7 @@ from cocktail import schema
 from cocktail.persistence import PersistentClass
 from cocktail.schema.schemadates import Date, DateTime, Time
 from cocktail.translations import get_language
-from cocktail.translations.translation import translations, translate
+from cocktail.translations.translation import translations
 from cocktail.controllers.fileupload import FileUpload
 
 def serialize_parameter(member, value):
@@ -48,7 +48,7 @@ schema.Integer.parse_request_value = parse_int
 def parse_decimal(self, reader, value):
 
     if value is not None:
-        parser = translate("Decimal parser")
+        parser = translations("Decimal parser")
 
         try:
             value = parser(value)
@@ -62,7 +62,7 @@ schema.Decimal.parse_request_value = parse_decimal
 def parse_date(self, reader, value):
     
     if value is not None:
-        format = translate("date format")
+        format = translations("date format")
             
         try:
             value = datetime.date(*time.strptime(value[:10], format)[0:3])
@@ -72,7 +72,7 @@ def parse_date(self, reader, value):
     return value
 
 def serialize_date(self, value):
-    format = translate("date format")    
+    format = translations("date format")    
     return value.strftime(format)
 
 Date.parse_request_value = parse_date
@@ -81,7 +81,7 @@ Date.serialize_request_value = serialize_date
 def parse_datetime(self, reader, value):
     
     if value is not None:
-        format = translate("date format") + " %H:%M:%S"
+        format = translations("date format") + " %H:%M:%S"
         try:
             value = datetime.datetime.strptime(value, format)
         except ValueError:
@@ -90,7 +90,7 @@ def parse_datetime(self, reader, value):
     return value
 
 def serialize_datetime(self, value):
-    format = translate("date format") + " %H:%M:%S"
+    format = translations("date format") + " %H:%M:%S"
     return value.strftime(format)
 
 DateTime.parse_request_value = parse_datetime

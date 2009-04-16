@@ -7,7 +7,7 @@ u"""
 @since:			September 2008
 """
 from cocktail.modeling import ListWrapper, SetWrapper
-from cocktail.translations import translate
+from cocktail.translations import translations
 from cocktail.schema import Boolean, Number, RelationMember, Collection
 from cocktail.html import Element
 from cocktail.html.databoundcontrol import DataBoundControl
@@ -101,7 +101,7 @@ class Selector(Element, DataBoundControl):
         return getattr(item, "id", None) or str(item)
 
     def get_item_label(self, item):
-        return translate(item, default = unicode(item))
+        return translations(item, default = item)
     
     def create_entry(self, value, label, selected):
         pass

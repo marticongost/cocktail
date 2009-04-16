@@ -6,7 +6,7 @@ u"""
 @organization:	Whads/Accent SL
 @since:			October 2008
 """
-from cocktail.translations import translate
+from cocktail.translations import translations
 from cocktail.html import Element, templates
 
 
@@ -55,7 +55,7 @@ class PagingControls(Element):
                     str(self.page_size)
 
             # Item count
-            self.item_count.append(translate("Item count",
+            self.item_count.append(translations("Item count",
                 page_range = (                    
                     1 + self.page * self.page_size,
                     min(subset_count, (self.page + 1) * self.page_size)
@@ -73,7 +73,7 @@ class PagingControls(Element):
         
         control = Element()
         control.add_class("page_size")
-        control.append(translate("Results per page"))
+        control.append(translations("Results per page"))
         
         control.input = Element("input", type = "text")
         control.input["name"] = "page_size"

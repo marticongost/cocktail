@@ -12,7 +12,7 @@ from cocktail.html.datadisplay import (
     CollectionDisplay,
     NO_SELECTION, SINGLE_SELECTION, MULTIPLE_SELECTION
 )
-from cocktail.translations import translate
+from cocktail.translations import translations
 from cocktail.language import get_content_language, set_content_language
 from cocktail.schema import Collection, get
 from cocktail.schema.expressions import (
@@ -189,7 +189,7 @@ class Table(Element, CollectionDisplay):
     def create_translation_label(self, language):
         label = Element("span")
         label.add_class("translation")
-        label.append(u"(" + translate(language) + u")")
+        label.append(u"(" + translations(language) + u")")
         return label
 
     def add_header_ui(self, header, column, language):

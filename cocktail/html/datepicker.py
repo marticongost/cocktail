@@ -10,7 +10,7 @@ import datetime
 from simplejson import dumps
 from cocktail.schema import String
 from cocktail.translations import get_language
-from cocktail.translations.translation import translations, translate
+from cocktail.translations.translation import translations
 from cocktail.html import templates
 from cocktail.html.element import Element
 from cocktail.html.textbox import TextBox
@@ -72,7 +72,7 @@ class DatePicker(TextBox):
         TextBox._ready(self)
        
     def get_jformat(self):
-        return translate("jquery_date format", get_language())    
+        return translations("jquery_date format", get_language())    
         
     def get_default_params(self):
         return {
@@ -94,7 +94,7 @@ class DatePicker(TextBox):
             if isinstance(value, datetime.datetime):
                 self["value"] = value.strftime("%s %s" % \
                     (
-                        translate(
+                        translations(
                             "date format",
                             get_language()
                         ),
@@ -103,7 +103,7 @@ class DatePicker(TextBox):
                 )            
             elif isinstance(value, datetime.date):              
                 self["value"] = value.strftime(
-                    translate(
+                    translations(
                         "date format",
                         get_language()
                     )

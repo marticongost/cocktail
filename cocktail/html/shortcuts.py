@@ -7,12 +7,12 @@ Utilities to set shortcut keys on elements.
 @organization:	Whads/Accent SL
 @since:			January 2009
 """
-from cocktail.translations import translate
+from cocktail.translations import translations
 
 TRANSLATION_PREFIX = "cocktail.html.shortcuts "
 
 def set_translated_shortcut(element, translation_key, target = None):
-    key = translate(TRANSLATION_PREFIX + translation_key, default = "")
+    key = translations(TRANSLATION_PREFIX + translation_key)
     if key:
         set_shortcut(element, key, target)
 

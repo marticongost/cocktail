@@ -58,7 +58,7 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
                     self.filters.add_class("empty")
                 ?>
                 <div py:id="filters_label" class="label">
-                    ${translate("cocktail.html.CollectionView search")}
+                    ${translations("cocktail.html.CollectionView search")}
                 </div>
                 <py:cocktail.html.FilterBox
                     py:id="filters_selector"
@@ -70,7 +70,7 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
     </div>
 
     <div py:id="search_results_message">
-        ${translate("cocktail.html.ContentView search results")}
+        ${translations("cocktail.html.ContentView search results")}
     </div>
 
     <!-- Data controls -->
@@ -84,7 +84,7 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
         <?py
         set_translated_shortcut(element, "action " + action)
         ?>
-        ${translate("Action " + action)}
+        ${translations("Action " + action)}
     </button>
 
     <div py:id="toolbar_box">
@@ -117,7 +117,7 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
                 <!-- Visible languages -->
                 <div py:id="languages_box">
                     <span class="box_label">
-                        ${translate("Visible languages")}
+                        ${translations("Visible languages")}
                     </span>
                     <div class="box_items">
                         <py:cocktail.html.CheckList
@@ -131,7 +131,7 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
                 <!-- Visible members  -->
                 <div py:id="members_box">
                     <span class="box_label">
-                        ${translate("Visible members")}
+                        ${translations("Visible members")}
                     </span>
                     <div class="box_items">
                         <py:cocktail.html.CheckList
@@ -150,14 +150,14 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
 
                             @refine(element)
                             def get_item_label(self, member):
-                                return translate(member)
+                                return translations(member)
                             ?>
                         </py:cocktail.html.CheckList>
                     </div>
                 </div>
 
                 <div class="box_buttons">
-                    <button type="submit">${translate("Submit")}</button>
+                    <button type="submit">${translations("Submit")}</button>
                 </div>
             </div>        
         </div>
@@ -188,9 +188,9 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
 
         if not self.visible_results:        
             if self.user_collection.user_filters:
-                self.no_results.append(translate("cocktail.html.CollectionView no search results"))
+                self.no_results.append(translations("cocktail.html.CollectionView no search results"))
             else:
-                self.no_results.append(translate("cocktail.html.CollectionView no results"))
+                self.no_results.append(translations("cocktail.html.CollectionView no results"))
         ?>
     </py:ready>
 

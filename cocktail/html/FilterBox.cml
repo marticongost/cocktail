@@ -23,7 +23,7 @@ from cocktail.controllers import get_state, view_state, serialize_parameter
 
     <div py:def="filter_entry" py:args="index, filter">
         <input type="hidden" name="filter" value="${filter.id}"/>
-        <span class="filter_desc">${translate(filter)}</span>
+        <span class="filter_desc">${translations(filter)}</span>
         <py:new
             py:element="filter.create_ui()"
             py:name_suffix="${str(index)}">
@@ -62,11 +62,11 @@ from cocktail.controllers import get_state, view_state, serialize_parameter
     <div py:id="buttons">
 
         <div py:id="new_filter_selector" class="selector">
-            <span class="label">${translate("cocktail.html.FilterBox add filter")}</span>
+            <span class="label">${translations("cocktail.html.FilterBox add filter")}</span>
             <div class="selector_content">
                 <py:ready>
                     <?py
-                    filter_items = [(translate(filter), filter)
+                    filter_items = [(translations(filter), filter)
                                     for filter in self.available_filters]
 
                     filter_items.sort(key = lambda item: normalize(item[0]))
@@ -106,11 +106,11 @@ from cocktail.controllers import get_state, view_state, serialize_parameter
                 element["href"] = "?" + view_state(**params)
                 ?>
             </py:ready>
-            ${translate("cocktail.html.FilterBox remove filters")}
+            ${translations("cocktail.html.FilterBox remove filters")}
         </a>
 
         <button py:id="search_button" type="submit">
-            ${translate("cocktail.html.FilterBox apply filters")}
+            ${translations("cocktail.html.FilterBox apply filters")}
         </button>
     </div>
 

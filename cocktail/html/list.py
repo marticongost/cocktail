@@ -8,7 +8,7 @@ u"""
 """
 from itertools import islice
 from cocktail.html import Element
-from cocktail.translations import translate
+from cocktail.translations import translations
 
 
 class List(Element):
@@ -43,10 +43,10 @@ class List(Element):
         return entry
     
     def create_entry_content(self, item):
-        return translate(item, default = unicode(item))
+        return translations(item, default = item)
     
     def create_ellipsis(self, ellipsis_size):
         ellipsis = Element("span")
-        ellipsis.append(translate("List ellipsis", size = ellipsis_size))
+        ellipsis.append(translations("List ellipsis", size = ellipsis_size))
         return ellipsis
 

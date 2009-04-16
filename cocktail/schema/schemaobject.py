@@ -11,7 +11,7 @@ from cocktail.modeling import refine
 from cocktail.events import Event, EventHub
 from cocktail.pkgutils import get_full_name
 from cocktail.language import require_content_language
-from cocktail.translations import translate
+from cocktail.translations import translations
 from cocktail.schema.schema import Schema
 from cocktail.schema.member import Member
 from cocktail.schema.schemareference import Reference
@@ -130,7 +130,7 @@ class SchemaClass(EventHub, Schema):
 
                 @refine(translations_member)
                 def __translate__(self, language):
-                    return translate("Translations", language)
+                    return translations("Translations", language)
 
                 cls.add_member(translations_member)
 
@@ -429,7 +429,7 @@ class SchemaObject(object):
         return self.__class__.full_name + " instance"
 
     def __translate__(self, language, **kwargs):
-        desc = translate(self.__class__.name, language, **kwargs)
+        desc = translations(self.__class__.name, language, **kwargs)
 
         if self.__class__.primary_member:
             desc += " #" \

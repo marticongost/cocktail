@@ -16,7 +16,7 @@ from cocktail.schema.expressions import (
     CustomExpression, Self, InclusionExpression, ExclusionExpression, normalize
 )
 from cocktail.html import templates
-from cocktail.translations import translate
+from cocktail.translations import translations
 
 # Add an extension property to allow schemas to define additional user filters
 Schema.custom_user_filters = None
@@ -105,7 +105,7 @@ class MemberFilter(UserFilter):
             return self.member
 
     def __translate__(self, language, **kwargs):
-        return translate(self.member, language, **kwargs)
+        return translations(self.member, language, **kwargs)
 
 
 class BooleanFilter(MemberFilter):
