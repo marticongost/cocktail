@@ -67,11 +67,11 @@ class TranslationsRepository(DictWrapper):
 
     def __call__(self, obj,
         language = None,
-        default = undefined,
-        chain = undefined,
+        default = "",
+        chain = None,
         **kwargs):
         
-        value = undefined
+        value = ""
 
         if language is None:
             language = get_language()
@@ -83,13 +83,13 @@ class TranslationsRepository(DictWrapper):
             value = translation_method(language, **kwargs)
         
         # Translation key
-        if value is undefined:
+        if not value:
             translation = self.__translations.get(language, None)
             if translation is not None:
                 value = translation(obj, **kwargs)
 
         # Per-type translation
-        if value is undefined \
+        if not value \
         and not isinstance(obj, basestring) \
         and hasattr(obj.__class__, "mro"):
 
@@ -101,21 +101,21 @@ class TranslationsRepository(DictWrapper):
                         
                 value = self(type_key, language, instance = obj, **kwargs)
                 
-                if value is not undefined:
+                if value:
                     break
         
         # Custom translation chain
-        if value is undefined and chain is not undefined:
+        if not value and chain is not None:
             value = self(chain, language, default, **kwargs)
 
         # Object specific translation chain
-        if value is undefined:
-            object_chain = getattr(obj, "translation_chain", undefined)
-            if object_chain is not undefined:
+        if not value:
+            object_chain = getattr(obj, "translation_chain", None)
+            if object_chain is not None:
                 value = self(object_chain, language, default, **kwargs)
 
         # Explicit default
-        if value is undefined and default is not undefined:
+        if not value and default != "":
             value = unicode(default)
 
         return value
@@ -144,9 +144,9 @@ class Translation(DictWrapper):
 
     def __call__(self, obj, **kwargs):
         
-        value = self.__strings.get(obj, undefined)
+        value = self.__strings.get(obj, "")
     
-        if value is not undefined:
+        if value:
 
             # Custom python expression
             if callable(value):

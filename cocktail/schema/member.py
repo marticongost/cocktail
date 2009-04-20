@@ -11,7 +11,7 @@ from itertools import chain
 from copy import deepcopy
 from cocktail.modeling import ListWrapper
 from cocktail.pkgutils import import_object
-from cocktail.translations import translations, undefined
+from cocktail.translations import translations
 from cocktail.schema import exceptions
 from cocktail.schema.expressions import Expression, Variable
 from cocktail.schema.validationcontext import ValidationContext
@@ -371,9 +371,7 @@ class Member(Variable):
         return translations(
             self.schema.name + "." + self.name,
             language,
-            chain = self.copy_source
-                if self.copy_source is not None
-                else undefined,
+            chain = self.copy_source,
             **kwargs
         )
 
