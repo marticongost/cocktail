@@ -10,7 +10,8 @@ from itertools import chain
 from cocktail.modeling import getter, cached_getter
 from cocktail.pkgutils import resolve
 from cocktail.schema import (
-    Schema, Member, Number, BaseDateTime, String, Boolean, Collection
+    Schema, Member, Number, BaseDateTime, String, Boolean, Collection,
+    Reference
 )
 from cocktail.schema.expressions import (
     CustomExpression, Self, InclusionExpression, ExclusionExpression, normalize
@@ -96,6 +97,12 @@ class MemberFilter(UserFilter):
         value_member = source_member.copy()
         value_member.name = "value"
         value_member.translated = False
+
+        # Restricting relation cycles doesn't serve any purpose when collecting
+        # the value of a user filter
+        if isinstance(value_member, Reference):
+            value_member.cycles_allowed = True
+
         schema.add_member(value_member)
 
     def _get_member_expression(self):
