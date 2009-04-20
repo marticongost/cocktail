@@ -10,7 +10,6 @@ Definition of multi-language string catalogs.
 from cocktail.translations.translation import (
     TranslationsRepository,
     Translation,
-    undefined,
     language_context,
     get_language,
     set_language,
