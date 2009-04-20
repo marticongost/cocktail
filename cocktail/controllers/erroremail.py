@@ -8,6 +8,7 @@ u"""
 """
 import sys
 import smtplib
+from cgi import FieldStorage
 from email.mime.text import MIMEText
 from email.Utils import formatdate
 import cherrypy
@@ -83,26 +84,27 @@ def error_email(
         "query_string": cherrypy.request.query_string,
         "headers": u"".join(header_template % (k, v)
                             for k, v in cherrypy.request.header_list),
-        "params": u"".join(param_template % (k, v)
-                            for k, v in cherrypy.request.params.iteritems()),
+        "params": u"".join(
+            param_template % (
+                k,
+                # Don't include the whole datastream of FieldStorage instances
+                # on error emails
+                v if not isinstance(v, FieldStorage) else "FieldStorage"
+            )
+            for k, v in cherrypy.request.params.iteritems()
+        ),
         "traceback": _cperror.format_exc()
     }
-    
+ 
     message = MIMEText(html, mime_type)
     message["Subject"] = subject
     message["From"] = sender or "errors@" + host_name
     message["To"] = receivers
     message["Date"] = formatdate()
 
-    try:
-        smtp = smtplib.SMTP(smtp_host, smtp_port)
-        smtp.sendmail(sender, receivers, message.as_string())
-        smtp.quit()
-
-    except (KeyboardInterrupt, SystemExit):
-        raise
-    except:
-        self.handleError(record)
+    smtp = smtplib.SMTP(smtp_host, smtp_port)
+    smtp.sendmail(sender, receivers, message.as_string())
+    smtp.quit()
 
 cherrypy.tools.error_email = cherrypy.Tool(
     'before_error_response',
