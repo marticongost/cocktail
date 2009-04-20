@@ -285,7 +285,10 @@ class UserCollection(object):
 
             for i, filter_id in enumerate(filters_param):
                 try:
-                    filter_model = available_filters[filter_id]
+                    filter_model = available_filters[filter_id]                    
+                except KeyError:
+                    raise ValueError("Unknown filter: " + filter_id)
+                else:
                     filter = copy(filter_model)
                     filter.available_languages = self.available_languages
                     get_parameter(
@@ -296,8 +299,6 @@ class UserCollection(object):
                         suffix = str(i)
                     )
                     self.__user_filters.append(filter)
-                except KeyError:
-                    raise ValueError("Unknown filter: " + filter_id)
 
     def _read_member_selection(self):
         
