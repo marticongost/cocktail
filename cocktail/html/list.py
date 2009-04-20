@@ -29,7 +29,7 @@ class List(Element):
         if self.max_length:
             ellipsis = len(items) - self.max_length
             if ellipsis > 0:
-                items = islice(items, 0, max_length)
+                items = islice(items, 0, self.max_length)
 
         for item in items:
             self.append(self.create_entry(item))
