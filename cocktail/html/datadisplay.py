@@ -319,12 +319,14 @@ class CollectionDisplay(DataDisplay):
 
     order = None
     sortable = True
+    searchable = True
     selection_mode = NO_SELECTION
     selection = None
     
     def __init__(self):
         DataDisplay.__init__(self)
         self.__member_sortable = {}
+        self.__member_searchable = {}
         self.__filters = []
         self.filters = ListWrapper(self.__filters)
 
@@ -335,6 +337,17 @@ class CollectionDisplay(DataDisplay):
 
     def set_member_sortable(self, member, sortable):
         self.__member_sortable[self._normalize_member(member)] = sortable
+
+    def get_member_searchable(self, member):
+        return member.searchable \
+            and member.user_filter \
+            and self.__member_searchable.get(
+                self._normalize_member,
+                self.searchable
+            )
+
+    def set_member_searchable(self, member, searchable):
+        self.__member_searchable[self._normalize_member(member)] = searchable
 
     def add_filter(self, filter):
         self.__filters.append(filter)
@@ -357,6 +370,7 @@ class CollectionDisplay(DataDisplay):
         if collection:
 
             self.sortable = collection.allow_sorting
+            self.searchable = collection.allow_filters
             self.schema = collection.schema
             self.data = collection.page_subset()
             self.order = collection.order
