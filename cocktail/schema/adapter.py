@@ -40,7 +40,6 @@ class AdaptationContext(object):
         target_schema = None,
         source_accessor = None,
         target_accessor = None,
-        consume_keys = True,
         copy_mode = None,
         collection_copy_mode = None):
 
@@ -50,12 +49,7 @@ class AdaptationContext(object):
         self.target_accessor = target_accessor
         self.source_schema = source_schema
         self.target_schema = target_schema
-        self.consume_keys = consume_keys
-        self.remaining_keys = (
-            set(source_schema.members())
-            if consume_keys
-            else None
-        )
+        self._consumed_keys = set()            
         self.copy_mode = copy_mode
         self.collection_copy_mode = collection_copy_mode
 
@@ -108,15 +102,22 @@ class AdaptationContext(object):
             return (None,)
 
     def consume(self, key):
-        """Marks the given key as processed, which will exclude it from the
-        implicit copy process. It is the responsibility of each L{Rule}
-        subclass to call this method on every key it handles.
+        """Marks the given key as processed, making it unavailable to other
+        adaptation rules. It is the responsibility of each L{Rule} subclass to
+        call this method on every key it handles.
         
         @param key: The key to consume.
         @type key: str
+
+        @return: True if the key has been consumed by the caller, False if it
+            had already been consumed by a previous rules.
+        @rtype: bool
         """
-        if self.consume_keys:
-            self.remaining_keys.discard(key)
+        if key in self._consumed_keys:
+            return False
+        else:
+            self._consumed_keys.add(key)
+            return True
 
 
 class Adapter(object):
@@ -341,16 +342,16 @@ class RuleSet(object):
 
         context = AdaptationContext(
             source_schema = source_schema,
-            target_schema = target_schema,
-            consume_keys = self.implicit_copy
+            target_schema = target_schema
         )
         
         for rule in self.__rules:
             rule.adapt_schema(context)
 
         if self.implicit_copy:
-            copy_rule = Copy(context.remaining_keys)
-            context.consume_keys = False
+            copy_rule = Copy(
+                set(source_schema.members()) - context._consumed_keys
+            )
             copy_rule.adapt_schema(context)
 
         # Preserve member order
@@ -393,16 +394,16 @@ class RuleSet(object):
                 or reference,
             collection_copy_mode = collection_copy_mode
                 or self.collection_copy_mode
-                or reference,
-            consume_keys = self.implicit_copy
+                or reference
         )
       
         for rule in self.__rules:
             rule.adapt_object(context)
 
         if self.implicit_copy:
-            copy_rule = Copy(context.remaining_keys)
-            context.consume_keys = False
+            copy_rule = Copy(
+                set(source_schema.members()) - context._consumed_keys
+            )            
             copy_rule.adapt_object(context)
 
 
@@ -470,23 +471,23 @@ class Copy(Rule):
 
         for source_name, target_name in self.mapping.iteritems():
             
-            context.consume(source_name)
-            source_member = context.source_schema[source_name]
+            if context.consume(source_name):
+                source_member = context.source_schema[source_name]
 
-            try:
-                target_member = context.target_schema[target_name]
-            except KeyError:
-                target_member = source_member.copy()
-                target_member.name = target_name
-            
-            target_member.adaptation_source = source_member
+                try:
+                    target_member = context.target_schema[target_name]
+                except KeyError:
+                    target_member = source_member.copy()
+                    target_member.name = target_name
+                
+                target_member.adaptation_source = source_member
 
-            if self.properties:
-                for prop_name, prop_value in self.properties.iteritems():
-                    setattr(target_member, prop_name, prop_value)
+                if self.properties:
+                    for prop_name, prop_value in self.properties.iteritems():
+                        setattr(target_member, prop_name, prop_value)
 
-            if not target_member.schema:
-                context.target_schema.add_member(target_member)
+                if not target_member.schema:
+                    context.target_schema.add_member(target_member)
 
     def adapt_object(self, context):
  
@@ -505,39 +506,39 @@ class Copy(Rule):
 
         for source_name, target_name in self.mapping.iteritems():
 
-            context.consume(source_name)
+            if context.consume(source_name):
 
-            # Rules which don't fulfill their condition consume their members,
-            # but don't execute the copy operation
-            if not condition_fulfilled:
-                continue
+                # Rules which don't fulfill their condition consume their members,
+                # but don't execute the copy operation
+                if not condition_fulfilled:
+                    continue
 
-            copy_mode = getattr(context.source_object, "adapt_value", None)
+                copy_mode = getattr(context.source_object, "adapt_value", None)
 
-            if copy_mode is None:
-                if context.collection_copy_mode \
-                and context.source_schema \
-                and isinstance(
-                    context.source_schema[source_name],
-                    Collection
-                ):
-                    copy_mode = context.collection_copy_mode
-                else:
-                    copy_mode = context.copy_mode
+                if copy_mode is None:
+                    if context.collection_copy_mode \
+                    and context.source_schema \
+                    and isinstance(
+                        context.source_schema[source_name],
+                        Collection
+                    ):
+                        copy_mode = context.collection_copy_mode
+                    else:
+                        copy_mode = context.copy_mode
 
-            for language in context.iter_languages(source_name):
-                
-                value = context.get(source_name, None, language)
+                for language in context.iter_languages(source_name):
+                    
+                    value = context.get(source_name, None, language)
 
-                # Make a copy of the value
-                value = copy_mode(context, source_name, value)
+                    # Make a copy of the value
+                    value = copy_mode(context, source_name, value)
 
-                # Apply any transformation dictated by the rule
-                if self.transform:
-                    value = self.transform(value)
+                    # Apply any transformation dictated by the rule
+                    if self.transform:
+                        value = self.transform(value)
 
-                # Set the value on the target
-                context.set(target_name, value, language)
+                    # Set the value on the target
+                    context.set(target_name, value, language)
 
 
 class Exclusion(Rule):
@@ -576,27 +577,27 @@ class Split(Rule):
         self.targets = norm_targets
     
     def adapt_schema(self, context):
-
-        context.consume(self.source)
-        
-        for target in self.targets:
-            target_member = self._adapt_member(context.target_schema, target)
-            target_member.adaptation_source = \
-                context.source_schema[self.source]
+        if context.consume(self.source):        
+            for target in self.targets:
+                target_member = self._adapt_member(
+                    context.target_schema,
+                    target
+                )
+                target_member.adaptation_source = \
+                    context.source_schema[self.source]
 
     def adapt_object(self, context):
 
-        context.consume(self.source)
+        if context.consume(self.source):
+            for language in context.languages(source_name):
+                
+                value = context.get(self.source, None, language)
 
-        for language in context.languages(source_name):
-            
-            value = context.get(self.source, None, language)
+                if value is not None:
+                    parts = value.split(self.separator)
 
-            if value is not None:
-                parts = value.split(self.separator)
-
-                for target, part in zip(self.targets, parts):
-                    context.set(target["name"], part, language)
+                    for target, part in zip(self.targets, parts):
+                        context.set(target["name"], part, language)
 
 
 class Join(Rule):
@@ -612,12 +613,13 @@ class Join(Rule):
 
     def adapt_schema(self, context):
 
-        for source in self.sources:
-            context.consume(source)
-        
-        target_member = self._adapt_member(context.target_schema, self.target)
-        target_member.adaptation_source = \
-            context.source_schema[self.sources[0]]
+        if all(context.consume(source) for source in self.sources):        
+            target_member = self._adapt_member(
+                context.target_schema,
+                self.target
+            )
+            target_member.adaptation_source = \
+                context.source_schema[self.sources[0]]
 
     def adapt_object(self, context):
 
@@ -626,7 +628,8 @@ class Join(Rule):
         languages = set()
 
         for source in self.sources:
-            consume_key(source)
+            if not consume_key(source):
+                return
             languages.update(context.languages(source))
         
         # For each of those languages, try to join all source members into a
