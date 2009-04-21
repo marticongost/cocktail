@@ -329,7 +329,7 @@ class RuleSet(object):
 
     def __init__(self, *rules):
         self.__rules = list(rules)
-        self.rules = ListWrapper(rules)
+        self.rules = ListWrapper(self.__rules)
 
     def add_rule(self, rule):
         self.__rules.append(rule)
