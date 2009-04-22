@@ -11,6 +11,13 @@ from cocktail.controllers import get_state, view_state, serialize_parameter
     <?py-class
     filters = ()
     available_filters = ()
+
+    def create_filter_ui(self, filter):
+        ui = filter.create_ui()
+        ui.embeded = True
+        ui.table_layout = False
+        ui.add_class("filter_ui")
+        return ui
     ?>
 
     <div py:id="filter_list">
@@ -25,32 +32,23 @@ from cocktail.controllers import get_state, view_state, serialize_parameter
         <input type="hidden" name="filter" value="${filter.id}"/>
         <span class="filter_desc">${translations(filter)}</span>
         <py:new
-            py:element="filter.create_ui()"
-            py:name_suffix="${str(index)}">
-            <?py
-            element.add_class("filter_ui")
-            ?>
-        </py:new>
+            py:element="self.create_filter_ui(filter)"
+            py:name_suffix="${str(index)}"/>
         <a>
             <?py
             filter_param = []
             params = {"page": "0"}
                        
             for i, f in enumerate(self.filters):
-
                 if i != index:
                     filter_param.append(f.id)
-
-                if i >= index:
-                    for member in f.schema.members().itervalues():
-                        params["filter_" + member.name + str(i)] = ""
-                    if i > index:
-                        for member in f.schema.members().itervalues():
-                            params["filter_" + member.name + str(i - 1)] = \
-                                serialize_parameter(
-                                    member,
-                                    getattr(f, member.name)
-                                )
+                for member in f.schema.members().itervalues():
+                    key = "filter_" + member.name + str(i if i <= index else i - 1)
+                    value = "" if i == index else serialize_parameter(
+                        member,
+                        getattr(f, member.name)
+                    )
+                    params[key] = value
 
             params["filter"] = filter_param or ""
             element["href"] = "?" + view_state(**params)

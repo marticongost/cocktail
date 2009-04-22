@@ -145,8 +145,9 @@ class BinaryFilter(MemberFilter):
         self._add_language_to_schema(schema)
         schema.add_member(String("operator",
             required = True,
-            enumeration = self.operators)
-        )
+            enumeration = self.operators,
+            default = self.operators[0] if self.operators else None
+        ))
         self._add_member_to_schema(schema)
         return schema
 
