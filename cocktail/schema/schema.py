@@ -133,7 +133,7 @@ class Schema(Member):
 
         if self.__bases:
             for base in self.__bases:
-                for ascendant in base.ascend_inheritance(True):
+                for ascendant in base.descend_inheritance(True):
                     yield ascendant
 
         if include_self:
