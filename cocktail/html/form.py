@@ -152,12 +152,12 @@ class Form(Element, DataDisplay):
                     if self.hide_empty_fieldsets and not has_match:
                         fieldset.visible = False
             else:
-                container = Element("table")
-                self.fields.append(container)
+                if self.table_layout:
+                    self.fields.tag = "table"
 
                 for member in self.displayed_members:
                     field_entry = self.create_field(member)
-                    container.append(field_entry)
+                    self.fields.append(field_entry)
                     setattr(self, member.name + "_field", field_entry)
     
     def create_fieldset(self, group):
