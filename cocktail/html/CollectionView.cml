@@ -16,14 +16,17 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
     selection_mode = MULTIPLE_SELECTION
     user_collection = None
     activation_control = None
+    excluded_view_state_params = frozenset([
+        "members", "language", "page_size", "selection", "filter"
+    ])
 
     def _get_view_state_form_params(self):
         
-        excluded = ["members", "language", "page_size", "selection", "filter"]
+        excluded = set(self.excluded_view_state_params)
 
         for i, filter in enumerate(self.user_collection.user_filters):
             for member in filter.schema.members().itervalues():
-                excluded.append("filter_" + member.name + str(i))
+                excluded.add("filter_" + member.name + str(i))
         
         return dict((key, None) for key in excluded)
     ?>
