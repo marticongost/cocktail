@@ -51,8 +51,8 @@ schema.RelationMember.cascade_delete = property(
 
     The property is disabled by default.
     
-    L{Integral<cocktail.schema.schemarelations.Integral>} relations implicitly
-    enable cascade deletion.
+    L{Integral<cocktail.schema.schemarelations.RelationMember.integral>}
+    relations implicitly enable cascade deletion.
 
     @type: bool
     """)
