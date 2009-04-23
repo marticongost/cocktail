@@ -43,6 +43,7 @@ class Schema(Member):
     """
     primary_member = None
     members_order = None
+    integral = False
 
     member_added = Event("""
         An event triggered when a member is added to the schema.

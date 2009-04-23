@@ -92,9 +92,9 @@ class RelationMember(Member):
         L{Expression<cocktail.schema.expressions.Expression>} instances
     """
     bidirectional = False
-    integral = False
     related_key = None
     relation_constraints = None
+    _integral = False
     _many = False
     __related_end = None
 
@@ -168,6 +168,27 @@ class RelationMember(Member):
     @abstractmethod
     def related_type(self):
         pass
+
+    def _get_integral(self):
+        integral = self._integral
+
+        if integral is None:
+            related_type = self.related_type
+            integral = related_type and related_type.integral or False
+
+        return integral
+
+    def _set_integral(self, value):
+        self._integral = value
+
+    integral = property(_get_integral, _set_integral, doc =
+        """Gets or sets wether the member defines an integral relation.
+
+        Items related through an integral relation belong exclusively to its
+        parent.
+        @type: bool
+        """
+    )
 
     def add_relation(self, obj, related_obj):
         if _push("relate", obj, related_obj, self):
