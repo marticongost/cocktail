@@ -26,16 +26,17 @@ class List(Element):
         ellipsis = 0
         items = self.items
 
-        if self.max_length:
-            ellipsis = len(items) - self.max_length
+        if items:
+            if self.max_length:
+                ellipsis = len(items) - self.max_length
+                if ellipsis > 0:
+                    items = islice(items, 0, self.max_length)
+
+            for item in items:
+                self.append(self.create_entry(item))
+
             if ellipsis > 0:
-                items = islice(items, 0, self.max_length)
-
-        for item in items:
-            self.append(self.create_entry(item))
-
-        if ellipsis > 0:
-            self.append(self.create_ellipsis(ellipsis))
+                self.append(self.create_ellipsis(ellipsis))
 
     def create_entry(self, item):
         entry = Element("li")
