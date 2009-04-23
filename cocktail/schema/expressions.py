@@ -176,8 +176,9 @@ class NormalizableExpression(Expression):
     def normalize_operands(self, a, b):
 
         if self.normalized_strings:
-            a = normalize(a)
-            if not self._invariable_normalized:
+            if a is not None:
+                a = normalize(a)
+            if not self._invariable_normalized and b is not None:
                 b = normalize(b)
 
         return a, b
