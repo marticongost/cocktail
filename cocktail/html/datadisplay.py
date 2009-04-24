@@ -261,11 +261,16 @@ class DataDisplay(object):
             if display_method:
                 display = display_method(obj, member)
 
-        # Inherited from the member's type
-        if display is None:
-            display = self.get_member_type_display(member.__class__)
-        
         # Default display
+        if display is None:
+            display = self.get_default_member_display(obj, member)
+
+        return display
+
+    def get_default_member_display(self, obj, member):
+
+        display = self.get_member_type_display(member.__class__)
+        
         if display is None:
             display = self.default_display
 
