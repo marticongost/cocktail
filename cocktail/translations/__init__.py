@@ -14,7 +14,9 @@ from cocktail.translations.translation import (
     get_language,
     set_language,
     translations,
-    translate
+    translate,
+    ca_apostrophe,
+    ca_possessive
 )
 
 from cocktail.translations import strings
