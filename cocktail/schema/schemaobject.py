@@ -337,6 +337,7 @@ class SchemaObject(object):
     __metaclass__ = SchemaClass
     _generates_translation_schema = False
     _translation_schema_base = None
+    bidirectional = True
 
     declared = Event(doc = """
         An event triggered on the class after the declaration of its schema has
