@@ -19,6 +19,9 @@ _thread_data = local()
 
 def _update_relation(action, obj, related_obj, member, relocation = False):
 
+    if not obj.bidirectional:
+        return
+    
     if action == "relate":
         method = member.related_end.add_relation
     elif action == "unrelate":

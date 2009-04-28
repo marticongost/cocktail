@@ -787,6 +787,81 @@ class BidirectionalTestCase(TestCase):
         self.assertTrue(b["rel_a"].related_end is None)
 
 
+class DisabledBidirectionalityTestCase(TestCase):
+
+    def test_one_to_one(self):
+        
+        from cocktail.schema import SchemaObject, Reference
+        from cocktail.schema.exceptions import SchemaIntegrityError
+        
+        class Foo(SchemaObject):
+            pass
+
+        class Bar(SchemaObject):
+            pass
+
+        Foo.add_member(Reference("bar", type = Bar, bidirectional = True))
+        Bar.add_member(Reference("foo", type = Foo, bidirectional = True))       
+
+        foo = Foo()
+        bar = Bar()
+        foo.bidirectional = False
+        foo.bar = bar
+
+        self.assertTrue(foo.bar is bar)
+        self.assertTrue(bar.foo is None)
+
+        bar.foo = foo
+        self.assertTrue(bar.foo is foo)
+        self.assertTrue(foo.bar is bar)
+
+        foo.bidirectional = True
+        foo.bar = None
+        self.assertTrue(foo.bar is None)
+        self.assertTrue(bar.foo is None)
+
+    def test_one_to_many(self):
+        
+        from cocktail.schema import SchemaObject, Reference, Collection
+        from cocktail.schema.exceptions import SchemaIntegrityError
+        
+        class Foo(SchemaObject):
+            pass
+
+        class Bar(SchemaObject):
+            pass
+
+        Foo.add_member(Reference("bar", type = Bar, bidirectional = True))
+        Bar.add_member(
+            Collection("foos",
+                items = Reference(type = Foo),
+                bidirectional = True
+            )
+        )
+
+        foo = Foo()
+        bar = Bar()
+        foo.bidirectional = False
+        foo.bar = bar
+
+        self.assertTrue(foo.bar is bar)
+        self.assertFalse(bar.foos)
+
+        bar.foos = [foo]
+        self.assertEqual(bar.foos, [foo])
+        self.assertTrue(foo.bar is bar)
+
+        foo.bidirectional = True
+        foo.bar = None
+        self.assertTrue(foo.bar is None)
+        self.assertFalse(bar.foos)
+
+        bar.bidirectional = False
+        bar.foos = [foo]
+        self.assertEqual(bar.foos, [foo])
+        self.assertTrue(foo.bar is None)
+
+
 class IntegralTestCase(TestCase):
 
     def test_default(self):
