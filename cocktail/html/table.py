@@ -55,9 +55,12 @@ class Table(Element, CollectionDisplay):
     def _ready(self):
                 
         Element._ready(self)
+        
+        self.add_resource(
+            "/cocktail/scripts/resizable-tables.js")
 
         self.add_resource(
-            "/cocktail/scripts/jquery.disable.text.select.pack.js")
+            "/cocktail/scripts/jquery.disable.text.select.pack.js")        
 
         self.add_resource("/cocktail/scripts/Table.js")
 
@@ -69,6 +72,7 @@ class Table(Element, CollectionDisplay):
             "cocktail.MULTIPLE_SELECTION", MULTIPLE_SELECTION)
 
         self.set_client_param("selectionMode", self.selection_mode)
+        self.set_client_param("persistencePrefix", self.persistence_prefix)
 
         self._fill_head()
         self._fill_body()
