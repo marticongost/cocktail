@@ -8,6 +8,7 @@ u"""
 """
 from cocktail.html import templates
 from cocktail.html.element import Element
+from cocktail.html.selectable import selectable
 from cocktail.html.datadisplay import (
     CollectionDisplay,
     NO_SELECTION, SINGLE_SELECTION, MULTIPLE_SELECTION
@@ -40,7 +41,6 @@ class Table(Element, CollectionDisplay):
         self.__column_display = {}
         self.__column_labels = {}
         self.set_member_type_display(Collection, self.display_collection)
-        self.add_class("selectable")
         self.add_class("resizable")
 
     def _build(self):
@@ -58,25 +58,16 @@ class Table(Element, CollectionDisplay):
                 
         Element._ready(self)
         
-        self.add_resource(
-            "/cocktail/scripts/jquery.disable.text.select.pack.js")        
         self.add_resource("/cocktail/scripts/resizable-tables.js")
-        self.add_resource("/cocktail/scripts/selectable.js")
 
-        self.set_client_variable(
-            "cocktail.NO_SELECTION", NO_SELECTION)
-        self.set_client_variable(
-            "cocktail.SINGLE_SELECTION", SINGLE_SELECTION)
-        self.set_client_variable(
-            "cocktail.MULTIPLE_SELECTION", MULTIPLE_SELECTION)
+        selectable(
+            self,
+            mode = self.selection_mode,
+            entry_selector = "tbody tr",
+            checkbox_selector = "input[type=checkbox]"
+        )
 
         self.set_client_param("persistencePrefix", self.persistence_prefix)
-
-        self.set_client_param("selectableParams", {
-            "mode": self.selection_mode,
-            "entrySelector": "tbody tr",
-            "checkboxSelector": "input[type=checkbox]"
-        })
 
         self._fill_head()
         self._fill_body()
