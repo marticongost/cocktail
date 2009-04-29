@@ -43,6 +43,7 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
         <?py
         params = self._get_view_state_form_params()
         element.append(view_state_form(**params))
+        self.set_client_param("persistencePrefix", self.user_collection.persistence_prefix)
         ?>
     </py:ready>
 
