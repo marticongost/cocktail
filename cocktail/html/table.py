@@ -40,6 +40,8 @@ class Table(Element, CollectionDisplay):
         self.__column_display = {}
         self.__column_labels = {}
         self.set_member_type_display(Collection, self.display_collection)
+        self.add_class("selectable")
+        self.add_class("resizable")
 
     def _build(self):
 
@@ -57,12 +59,9 @@ class Table(Element, CollectionDisplay):
         Element._ready(self)
         
         self.add_resource(
-            "/cocktail/scripts/resizable-tables.js")
-
-        self.add_resource(
             "/cocktail/scripts/jquery.disable.text.select.pack.js")        
-
-        self.add_resource("/cocktail/scripts/Table.js")
+        self.add_resource("/cocktail/scripts/resizable-tables.js")
+        self.add_resource("/cocktail/scripts/selectable.js")
 
         self.set_client_variable(
             "cocktail.NO_SELECTION", NO_SELECTION)
@@ -71,8 +70,13 @@ class Table(Element, CollectionDisplay):
         self.set_client_variable(
             "cocktail.MULTIPLE_SELECTION", MULTIPLE_SELECTION)
 
-        self.set_client_param("selectionMode", self.selection_mode)
         self.set_client_param("persistencePrefix", self.persistence_prefix)
+
+        self.set_client_param("selectableParams", {
+            "mode": self.selection_mode,
+            "entrySelector": "tbody tr",
+            "checkboxSelector": "input[type=checkbox]"
+        })
 
         self._fill_head()
         self._fill_body()
