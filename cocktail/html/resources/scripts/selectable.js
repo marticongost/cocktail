@@ -15,20 +15,20 @@
 
         function getParam(key, defaultValue) {
             var value = params[key];
-            return value !== undefined ? value : defaultValue;
+            return value !== undefined && value !== null ? value : defaultValue;
         }
 
-        var selectionMode = getParam("mode");
+        var selectionMode = getParam("mode", cocktail.SINGLE_SELECTION);
 
         if (selectionMode == cocktail.NO_SELECTION) {
             return;
         }
 
-        var elementSelector = getParam("element");        
-        var entrySelector = getParam("entrySelector", "entry");
+        var elementSelector = getParam("element");
+        var entrySelector = getParam("entrySelector", ".entry");
         var checkboxSelector = getParam("checkboxSelector", "input[type=checkbox]");
         var entryCheckboxSelector = entrySelector + " " + checkboxSelector;
-      
+
         jQuery(elementSelector).each(function () {
 
             var selectable = this;
@@ -37,7 +37,7 @@
             selectable._selectionStart = null;
             selectable._selectionEnd = null;            
             selectable.selectionMode = selectionMode;
-            
+                        
             // Create a dummy link element to fake focus for the element
             focusTarget = document.createElement('a');
             focusTarget.href = "javascript:;";
@@ -78,6 +78,10 @@
         
             selectable.entryIsSelected = function (entry) {
                 return jQuery(entry).hasClass("selected");
+            }
+
+            selectable.getSelection = function () {
+                return selectable._entries.filter(":has(" + checkboxSelector + ":checked)");
             }
 
             selectable.setEntrySelected = function (entry, selected) {
