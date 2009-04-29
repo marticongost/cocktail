@@ -170,12 +170,11 @@ function ColumnResize(table) {
 	for (var i=0; i<dragColumns.length; i++) {
 		dragColumns[i].innerHTML = "<div style='position:relative;height:100%;width:100%'>"+
 			"<div style='"+
-			"position:absolute;height:100%;width:5px;margin-right:-5px;"+
+			"position:absolute;height:100%;width:12px;margin-right:-6px;"+
 			"left:100%;top:0px;cursor:w-resize;z-index:10;'>"+
 			"</div>"+
 			dragColumns[i].innerHTML+
 			"</div>";
-			// BUGBUG: calculate real border width instead of 5px!!!
 			dragColumns[i].firstChild.firstChild.onmousedown = this.startColumnDrag;
 		}
 }
