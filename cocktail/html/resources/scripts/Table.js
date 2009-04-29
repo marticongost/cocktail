@@ -13,7 +13,9 @@ cocktail.init(function () {
     var focusedTable = null;
 
     jQuery(".Table").each(function () {
-    
+        
+        jQuery(this).addClass("resizable");
+
         if (this.selectionMode == cocktail.NO_SELECTION) {
             return;
         }
@@ -226,4 +228,7 @@ cocktail.init(function () {
             }
         }
     });
+
+    ResizableColumns();    
+
 });

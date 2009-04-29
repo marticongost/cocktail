@@ -380,6 +380,7 @@ class CollectionDisplay(DataDisplay):
             self.data = collection.page_subset()
             self.order = collection.order
             self.selection = collection.selection
+            self.persistence_prefix = collection.persistence_prefix
 
             visible_members = collection.members
 
