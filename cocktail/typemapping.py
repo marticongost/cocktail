@@ -17,7 +17,7 @@ class TypeMapping(dict):
         value = self.get(cls, _undefined)
 
         if value is _undefined:
-            raise KeyError(key)
+            raise KeyError(cls)
         
         return value
 
