@@ -179,7 +179,10 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
         self.collection_display.selection_mode = self.selection_mode        
         self.collection_display.visible = self.visible_results
         self.no_results.visible = not self.visible_results
-        self.settings_box.visible = self.visible_results
+
+        if not self.visible_results:
+            self.settings_box.visible = False
+
         self.fields.visible = False
         self.buttons.visible = False
         self.submit_button.visible = False
