@@ -17,10 +17,13 @@ class Cache(DictWrapper):
     entries = None
     enabled = True
 
-    def __init__(self):
+    def __init__(self, load = None):
         entries = {}
         DictWrapper.__init__(self, entries)
         self.__entries = entries
+
+        if load is not None:
+            self.load = load
         
     def _drop_expired(self):
         
