@@ -187,7 +187,7 @@
 
             if (multipleSelection && e.shiftKey) {
                 focusedSelectable.setRangeSelected(
-                    selectable._selectionStart,
+                    focusedSelectable._selectionStart,
                     firstEntry,
                     true);
             }
