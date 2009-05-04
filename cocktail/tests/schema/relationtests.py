@@ -786,6 +786,73 @@ class BidirectionalTestCase(TestCase):
         
         self.assertTrue(b["rel_a"].related_end is None)
 
+    def test_new_related_end(self):
+
+        from cocktail.schema import SchemaObject, Reference
+
+        class Foo(SchemaObject):
+            pass
+
+        backref = Reference()
+
+        class Bar(SchemaObject):
+            foo = Reference(
+                type = Foo,
+                related_end = backref
+            )
+
+        self.assertTrue(backref.schema is Foo)
+        self.assertTrue(backref.name)
+        self.assertTrue(getattr(Foo, backref.name) is backref)
+        self.assertTrue(Bar.foo.bidirectional)
+        self.assertTrue(backref.bidirectional)
+        self.assertTrue(Bar.foo.related_end is backref)
+
+    def test_new_related_end_assignment(self):
+
+        from cocktail.schema import SchemaObject, Reference
+
+        class Foo(SchemaObject):
+            pass
+
+        backref = Reference()
+
+        class Bar(SchemaObject):
+            foo = Reference(type = Foo)
+
+        Bar.foo.related_end = backref
+
+        self.assertTrue(backref.schema is Foo)
+        self.assertTrue(backref.name)
+        self.assertTrue(getattr(Foo, backref.name) is backref)
+        self.assertTrue(Bar.foo.bidirectional)
+        self.assertTrue(backref.bidirectional)
+        self.assertTrue(Bar.foo.related_end is backref)
+
+    def test_new_related_collection(self):
+
+        from cocktail.schema import SchemaObject, Reference, Collection
+
+        class Foo(SchemaObject):
+            pass
+
+        backref = Collection()
+
+        class Bar(SchemaObject):
+            foo = Reference(
+                type = Foo,
+                related_end = backref
+            )
+
+        self.assertTrue(backref.schema is Foo)
+        self.assertTrue(backref.name)
+        self.assertTrue(getattr(Foo, backref.name) is backref)
+        self.assertTrue(Bar.foo.bidirectional)
+        self.assertTrue(backref.bidirectional)
+        self.assertTrue(isinstance(backref.items, Reference))
+        self.assertTrue(backref.items.type is Bar)
+        self.assertTrue(Bar.foo.related_end is backref)
+
 
 class DisabledBidirectionalityTestCase(TestCase):
 

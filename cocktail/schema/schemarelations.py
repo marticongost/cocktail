@@ -8,6 +8,7 @@ u"""
 """
 from threading import local
 from cocktail.modeling import getter, abstractmethod
+from cocktail.events import event_handler
 from cocktail.schema.accessors import get
 from cocktail.schema.member import Member
 from cocktail.schema.expressions import Expression
@@ -108,9 +109,8 @@ class RelationMember(Member):
             raise SchemaIntegrityError(
                 "%s can't be declared 'integral' without setting "
                 "'bidirectional' to True" % self)
-
-    @getter
-    def related_end(self):
+    
+    def _get_related_end(self):
         """Gets the opposite end of a bidirectional relation.
         @type: L{Member<member.Member>}
         """    
@@ -166,6 +166,35 @@ class RelationMember(Member):
             related_end.__related_end = self
 
         return related_end
+
+    def _set_related_end(self, related_end):        
+        self.__related_end = related_end
+        self._bind_orphan_related_end()
+
+    related_end = property(_get_related_end, _set_related_end, doc =
+        """The member at the other end of the relation.
+        @type: L{RelationMember}
+        """)
+
+    @event_handler
+    def handle_attached(cls, event):
+        event.source._bind_orphan_related_end()
+
+    def _bind_orphan_related_end(self):
+        related_end = self.__related_end
+        if related_end:
+            if related_end.schema is None and self.schema is not None:
+                if related_end.name is None and self.schema.name:
+                    related_end.name = self.schema.name + "_" + self.name
+                if related_end.name:
+                    related_end._attach_as_orphan_related_end(self)
+
+    def _attach_as_orphan_related_end(self, related_end):
+        self.bidirectional = True
+        related_end.bidirectional = True
+        self.__related_end = related_end
+        related_end.__related_end = self
+        related_end.related_type.add_member(self)
 
     @getter
     @abstractmethod
