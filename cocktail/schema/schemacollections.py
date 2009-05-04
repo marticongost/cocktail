@@ -81,6 +81,12 @@ class Collection(RelationMember):
     def related_type(self):
         return self.items and self.items.type
     
+    def _attach_as_orphan_related_end(self, related_end):
+        if self.items is None:
+            self.items = Reference(type = related_end.schema)
+        
+        RelationMember._attach_as_orphan_related_end(self, related_end)
+
     # Relational operators
     #--------------------------------------------------------------------------
     def any(self, *args, **kwargs):
