@@ -9,6 +9,7 @@ Provides the base class for all schema members.
 """
 from itertools import chain
 from copy import deepcopy
+from cocktail.events import Event, EventHub
 from cocktail.modeling import ListWrapper
 from cocktail.pkgutils import import_object
 from cocktail.translations import translations
@@ -57,6 +58,11 @@ class Member(Variable):
         error will be triggered.
     @type enumeration: any container
     """
+    __metaclass__ = EventHub
+
+    attached = Event(
+        doc = """An event triggered when the member is added to a schema."""
+    )
 
     # Constraints
     primary = False
