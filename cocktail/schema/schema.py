@@ -151,6 +151,7 @@ class Schema(Member):
         """
         self._check_member(member)
         self._add_member(member)
+        member.attached()
         self.member_added(member = member)
 
     def _check_member(self, member):
