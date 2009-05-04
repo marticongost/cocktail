@@ -8,7 +8,7 @@ u"""
 """
 from threading import local
 from cocktail.modeling import getter, abstractmethod
-from cocktail.events import event_handler
+from cocktail.events import Event, event_handler
 from cocktail.schema.accessors import get
 from cocktail.schema.member import Member
 from cocktail.schema.expressions import Expression
@@ -102,6 +102,16 @@ class RelationMember(Member):
     _many = False
     __related_end = None
 
+    attached_as_orphan = Event(
+        doc = """An event triggered when the relation end is attached to a
+        schema after being declared using a self-contained bidirectional
+        relation.
+        
+        @ivar anonymous: Indicates if the relation end had no name of its own.
+        @type anonymous: bool
+        """
+    )
+
     def __init__(self, *args, **kwargs):
         Member.__init__(self, *args, **kwargs)
 
@@ -184,17 +194,20 @@ class RelationMember(Member):
         related_end = self.__related_end
         if related_end:
             if related_end.schema is None and self.schema is not None:
-                if related_end.name is None and self.schema.name:
-                    related_end.name = self.schema.name + "_" + self.name
-                if related_end.name:
-                    related_end._attach_as_orphan_related_end(self)
+                if related_end.name is None:
+                    if self.schema.name:
+                        related_end.name = self.schema.name + "_" + self.name
+                        anonymous = True
+                else:
+                    anonymous = False
 
-    def _attach_as_orphan_related_end(self, related_end):
-        self.bidirectional = True
-        related_end.bidirectional = True
-        self.__related_end = related_end
-        related_end.__related_end = self
-        related_end.related_type.add_member(self)
+                if related_end.name:
+                    self.bidirectional = True
+                    related_end.bidirectional = True
+                    self.__related_end = related_end
+                    related_end.__related_end = self
+                    related_end.attached_as_orphan(anonymous = anonymous)
+                    self.related_type.add_member(related_end)
 
     @getter
     @abstractmethod

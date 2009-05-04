@@ -14,6 +14,7 @@ from cocktail.modeling import (
     InstrumentedList,
     InstrumentedSet
 )
+from cocktail.events import event_handler
 from cocktail.schema.expressions import AnyExpression, AllExpression
 from cocktail.schema.member import Member
 from cocktail.schema.schemarelations import RelationMember, _update_relation
@@ -81,11 +82,13 @@ class Collection(RelationMember):
     def related_type(self):
         return self.items and self.items.type
     
-    def _attach_as_orphan_related_end(self, related_end):
-        if self.items is None:
-            self.items = Reference(type = related_end.schema)
+    @event_handler
+    def handle_attached_as_orphan(cls, event):
         
-        RelationMember._attach_as_orphan_related_end(self, related_end)
+        member = event.source
+
+        if member.items is None:
+            member.items = Reference(type = member.related_end.schema)
 
     # Relational operators
     #--------------------------------------------------------------------------
