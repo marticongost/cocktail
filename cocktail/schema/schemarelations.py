@@ -191,23 +191,28 @@ class RelationMember(Member):
         event.source._bind_orphan_related_end()
 
     def _bind_orphan_related_end(self):
+        
         related_end = self.__related_end
-        if related_end:
-            if related_end.schema is None and self.schema is not None:
-                if related_end.name is None:
-                    if self.schema.name:
-                        related_end.name = self.schema.name + "_" + self.name
-                        anonymous = True
-                else:
-                    anonymous = False
 
-                if related_end.name:
-                    self.bidirectional = True
-                    related_end.bidirectional = True
-                    self.__related_end = related_end
-                    related_end.__related_end = self
-                    related_end.attached_as_orphan(anonymous = anonymous)
-                    self.related_type.add_member(related_end)
+        if related_end \
+        and related_end.schema is None \
+        and self.schema is not None \
+        and self.adaptation_source is None:
+
+            if related_end.name is None:
+                if self.schema.name:
+                    related_end.name = self.schema.name + "_" + self.name
+                    anonymous = True
+            else:
+                anonymous = False
+
+            if related_end.name:
+                self.bidirectional = True
+                related_end.bidirectional = True
+                self.__related_end = related_end
+                related_end.__related_end = self
+                related_end.attached_as_orphan(anonymous = anonymous)
+                self.related_type.add_member(related_end)
 
     @getter
     @abstractmethod
