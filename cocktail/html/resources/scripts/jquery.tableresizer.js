@@ -136,7 +136,7 @@ $.fn.tableresizer = function(options)
                 && $(this).css("cursor") ==  "col-resize")
             {
                 header = $(e.target);                    
-                resize = true;
+                resize = true;				
                 // Stop ie selecting text
                 document.onselectstart=new Function ("return false");
             }    
@@ -156,7 +156,7 @@ $.fn.tableresizer = function(options)
     var resize_rows = function(root)
     {            
         var tbl = root.find("table");
-        var row,newheight;
+        var row,newheight,saveclickevent;
         var rows = root.find("tr").children("td:nth-child(" + opts.row_start + ")");
         var resize = false;
         
@@ -164,7 +164,7 @@ $.fn.tableresizer = function(options)
 
         rows.css("border-bottom",opts.row_border);
 
-		 saveCookies = function()
+		saveCookies = function()
         {
 			var rowHeight = [];
 			rows.each(function() {
@@ -176,7 +176,7 @@ $.fn.tableresizer = function(options)
 				expires: expire.toGMTString(),
 				path:"/"
 			});
-        };
+        }
 
         rows.mousemove(function(e)
         {
@@ -186,7 +186,7 @@ $.fn.tableresizer = function(options)
             {
                 var height = x - (row.offset().top - top);
                 row.height(height);
-                newheight = height;
+                //newheight = height;
             }
     
             else
@@ -201,8 +201,10 @@ $.fn.tableresizer = function(options)
         {
             if(tbl.css("cursor") ==  "row-resize")
             {
-                row = $(e.target);    
-                resize = true;
+                row = $(e.target);
+				saveclickevent = row.click();
+				row.click(function(){return false;});
+                resize = true;				
                 // Stop ie selecting text
                 document.onselectstart=new Function ("return false");
             }
@@ -212,9 +214,10 @@ $.fn.tableresizer = function(options)
         tbl.mouseup(function(e) 
         {
             document.onselectstart=new Function ("return true");
+			row.click = saveclickevent;
             row = null;
             resize = false;
-            tbl.css("cursor","");
+            tbl.css("cursor","");			
 			saveCookies();
         });
     };
@@ -230,7 +233,7 @@ $.fn.tableresizer = function(options)
 			rows = data.split("+");
 			for (var i=0; i<rows.length; i++) {
 				row_data = rows[i].split("=");
-				jQuery("#" + table + " tr#" + row_data[0]).height(parseInt(row_data[1]));
+				jQuery("#" + table + " tr#" + row_data[0]).children("td:nth-child(" + opts.row_start + ")").height(parseInt(row_data[1]));
 			}
 		}
 	};
@@ -239,9 +242,7 @@ $.fn.tableresizer = function(options)
      * Entry point
      */   
     return this.each(function(index) 
-    {
-        var root = $(this).wrap("<div class='roottbl' />").parent();
-		
+    {        		
 		if (!this.persistencePrefix){ 
             this.id = 'table-' + (index + 1);
         }else{
@@ -255,7 +256,8 @@ $.fn.tableresizer = function(options)
 		if(jQuery.cookie(this.id + "-height")){
 			parseCookie(jQuery.cookie(this.id + "-height"), this.id, "height");
 		}
-        
+
+    	var root = $(this).wrap("<div class='roottbl' />").parent();   
 		resize_columns(root);
         resize_rows(root);    
     });
@@ -265,8 +267,8 @@ $.fn.tableresizer = function(options)
 
 cocktail.init(function () {
     var opts = {
-        row_border:"2px solid #CCC",
-        col_border:"2px solid #000",
+        row_border:"1px solid #E1E1E1",
+        col_border:"1px solid #E1E1E1",
         row_start: "2"
     }
     jQuery(".resizable").tableresizer(opts);          
