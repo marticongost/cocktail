@@ -57,14 +57,14 @@ class Table(Element, CollectionDisplay):
     def _ready(self):
                 
         Element._ready(self)
-        
-        self.add_resource("/cocktail/scripts/resizable-tables.js")
+        self.add_resource("/cocktail/scripts/jquery.cookie.js")
+        self.add_resource("/cocktail/scripts/jquery.tableresizer.js")
 
         selectable(
             self,
             mode = self.selection_mode,
             entry_selector = "tbody tr",
-            checkbox_selector = "input[type=checkbox]"
+            checkbox_selector = "td.selection input"
         )
 
         self.set_client_param("persistencePrefix", self.persistence_prefix)
@@ -119,7 +119,10 @@ class Table(Element, CollectionDisplay):
         
         if self.selection_mode != NO_SELECTION:
             row.append(self.create_selection_cell(item))
-            
+
+        if self.schema.primary_member:
+            row["id"] = item.id
+                    
         for column in self.displayed_members:
             if self.translations and column.translated:
                 current_content_language = get_content_language()
