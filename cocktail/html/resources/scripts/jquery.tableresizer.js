@@ -202,7 +202,7 @@ $.fn.tableresizer = function(options)
             if(tbl.css("cursor") ==  "row-resize")
             {
                 row = $(e.target);
-				saveclickevent = row.click();
+				saveclickevent = row.get(0).onclick;
 				row.click(function(){return false;});
                 resize = true;				
                 // Stop ie selecting text
@@ -214,11 +214,13 @@ $.fn.tableresizer = function(options)
         tbl.mouseup(function(e) 
         {
             document.onselectstart=new Function ("return true");
-			row.click = saveclickevent;
-            row = null;
-            resize = false;
-            tbl.css("cursor","");			
-			saveCookies();
+			if(row) {
+				row.click(saveclickevent);
+				row = null;
+				resize = false;
+				tbl.css("cursor","");			
+				saveCookies();
+			}
         });
     };
 
