@@ -58,7 +58,7 @@ $.fn.tableresizer = function(options)
         {			
             if(resize == true && header != null)
             {
-                document.onselectstart=new Function ("return true");
+                //document.onselectstart=new Function ("return true");
                 resize = false;
                 tbl.css("cursor","");
 				saveCookies();
@@ -138,7 +138,7 @@ $.fn.tableresizer = function(options)
                 header = $(e.target);                    
                 resize = true;				
                 // Stop ie selecting text
-                document.onselectstart=new Function ("return false");
+                //document.onselectstart=new Function ("return false");
             }    
             return false;
         });
@@ -159,8 +159,8 @@ $.fn.tableresizer = function(options)
         var row,newheight,saveclickevent;
         var rows = root.find("tr").children("td:nth-child(" + opts.row_start + ")");
         var resize = false;
-        
         var top = root.offset().top;
+		
 
         rows.css("border-bottom",opts.row_border);
 
@@ -184,7 +184,7 @@ $.fn.tableresizer = function(options)
     
             if(resize)
             {
-                var height = x - (row.offset().top - top);
+                var height = x - (row.offset().top - top);                
                 row.height(height);
                 //newheight = height;
             }
@@ -192,35 +192,41 @@ $.fn.tableresizer = function(options)
             else
             {
                 var cursor = (x - ($(this).offset().top - top) 
-                    > $(this).height() - 2) ? "row-resize" : "";
+                    > $(this).height() - 4) ? "row-resize" : "";
                 tbl.css("cursor",cursor);				
             }
-        });
-        
+        });         
+
         rows.mousedown(function(e) 
         {
             if(tbl.css("cursor") ==  "row-resize")
             {
                 row = $(e.target);
-				saveclickevent = row.get(0).onclick;
-				row.click(function(){return false;});
-                resize = true;				
+                row.parent("tr").unbind("click");
+                resize = true;                
                 // Stop ie selecting text
-                document.onselectstart=new Function ("return false");
+                //document.onselectstart=new Function ("return false");
             }
             return false;
         });
-        
+
+        tbl.click(function(e){            
+            if(tbl.get(0).clickEntryEvent){
+                $(e.target).parent("tr").bind("click", tbl.get(0).clickEntryEvent);
+            }
+        });
+
         tbl.mouseup(function(e) 
         {
-            document.onselectstart=new Function ("return true");
-			if(row) {
-				row.click(saveclickevent);
-				row = null;
+            if(resize){
+                e.stopPropagation();
+				//document.onselectstart=new Function ("return true");				
 				resize = false;
 				tbl.css("cursor","");			
-				saveCookies();
+                row = null;
+                saveCookies();
 			}
+            return false;
         });
     };
 
