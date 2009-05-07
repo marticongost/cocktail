@@ -70,11 +70,14 @@
 
             // Double clicking selectable._entries (change the selection and trigger an 'activated'
             // event on the table)
-            selectable._entries.dblclick(function () {
+
+            selectable.dblClickEntryEvent = function () {
                 selectable.clearSelection();
                 selectable.setEntrySelected(this, true);
                 selectableJQ.trigger("activated");
-            });
+            }
+
+            selectable._entries.bind("dblclick", selectable.dblClickEntryEvent);
         
             selectable.entryIsSelected = function (entry) {
                 return jQuery(entry).hasClass("selected");
@@ -128,8 +131,7 @@
                 selectable._selectionEnd = lastEntry;
             }
 
-            // Togle entry selection when clicking an entry
-            selectable._entries.click(function (e) {
+            selectable.clickEntryEvent = function (e) {
 
                 var src = (e.target || e.srcElement);
                 var srcTag = src.tagName.toLowerCase();
@@ -159,7 +161,11 @@
                         e.preventDefault();
                     }
                 }
-            });
+                return false;
+            }
+
+            // Togle entry selection when clicking an entry
+            selectable._entries.bind("click", selectable.clickEntryEvent);
         });
     }
 
