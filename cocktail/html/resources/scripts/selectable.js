@@ -33,6 +33,7 @@
 
             var selectable = this;
             var selectableJQ = jQuery(selectable);
+            selectable.entrySelector = entrySelector;
             selectable._entries = selectableJQ.find(entrySelector);
             selectable._selectionStart = null;
             selectable._selectionEnd = null;            
