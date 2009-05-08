@@ -44,7 +44,7 @@ def diff(
     if target_accessor is None:
         target_accessor = get_accessor(target)
 
-    # Try to infer the schema for SchemaObejct instances
+    # Try to infer the schema for SchemaObject instances
     if schema is None:
         if type(source) is type(target) \
         and isinstance(source, SchemaObject) \
@@ -89,7 +89,6 @@ def diff(
         else:
             source_value = source_accessor.get(source, key, default = None)
             target_value = target_accessor.get(target, key, default = None)
-
             if source_value != target_value:
                 yield (member, None)
 
