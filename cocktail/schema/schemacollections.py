@@ -11,12 +11,15 @@ from difflib import SequenceMatcher
 from cocktail.modeling import (
     getter,
     GenericMethod,
+    OrderedSet,
     InstrumentedList,
-    InstrumentedSet
+    InstrumentedSet,
+    InstrumentedOrderedSet
 )
 from cocktail.events import event_handler
 from cocktail.schema.expressions import AnyExpression, AllExpression
 from cocktail.schema.member import Member
+from cocktail.schema.schema import Schema
 from cocktail.schema.schemarelations import RelationMember, _update_relation
 from cocktail.schema.schemareference import Reference
 from cocktail.schema.accessors import get_accessor
@@ -42,11 +45,11 @@ class Collection(RelationMember):
     @type max: int
     """
     _many = True
+    _default_type = None
 
     required = True
     min = None
     max = None
-    default_type = list
 
     def __init__(self, *args, **kwargs):
         self.__items = None
@@ -150,10 +153,29 @@ class Collection(RelationMember):
         if self.default is None and self.required:
             if self.type is not None:
                 return self.type()
-            elif self.default_type is not None:
-                return self.default_type()
+            else:
+                default_type = self.default_type
+                if default_type is not None:
+                    return default_type()
         
         return Member.produce_default(self)
+
+    def _get_default_type(self):
+        if self._default_type is None:
+            rel_type = self.related_type
+            return OrderedSet \
+                if rel_type and isinstance(rel_type, Schema) \
+                else list
+
+        return self._default_type
+
+    def _set_default_type(self, default_type):
+        self._default_type = default_type
+    
+    default_type = property(_get_default_type, _set_default_type,
+        doc = """Gets or sets the default type for the collection.
+        @type: collection class
+        """)
 
     def collection_validation_rule(self, value, context):
         """Validation rule for collections. Checks the L{min}, L{max} and
@@ -221,7 +243,7 @@ def _list_add(collection, item):
     collection.append(item)
 
 add.implementations[list] = _list_add
-
+add.implementations[OrderedSet] = _list_add
 
 # Relational data structures
 #------------------------------------------------------------------------------
@@ -328,5 +350,39 @@ class RelationSet(RelationCollection, InstrumentedSet):
                 self.item_removed(item)
 
             for item in new_content - previous_content:
+                self.item_added(item)
+
+
+class RelationOrderedSet(RelationCollection, InstrumentedOrderedSet):
+    
+    def __init__(self, items = None, owner = None, member = None):
+        self.owner = owner
+        self.member = member
+        InstrumentedOrderedSet.__init__(self)
+        if items:
+            for item in items:
+                self.append(item)
+
+    def add(self, item):
+        self.append(item)
+
+    def set_content(self, new_content):
+
+        if new_content is None:
+            while self._items:
+                self._items.pop(0)
+        else:
+            previous_set = set(self._items)
+            new_set = set(new_content)
+            
+            if not isinstance(new_content, OrderedSet):
+                new_content = OrderedSet(new_content)
+
+            self._items = new_content
+
+            for item in previous_set - new_set:
+                self.item_removed(item)
+
+            for item in new_set - previous_set:
                 self.item_added(item)
 

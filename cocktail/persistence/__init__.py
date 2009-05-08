@@ -12,9 +12,11 @@ support for multi-language content and declarative queries over indexes.
 from cocktail.persistence.persistentlist import PersistentList
 from cocktail.persistence.persistentmapping import PersistentMapping
 from cocktail.persistence.persistentset import PersistentSet
+from cocktail.persistence.persistentorderedset import PersistentOrderedSet
 from cocktail.persistence.persistentrelations import (
     PersistentRelationList,
     PersistentRelationSet,
+    PersistentRelationOrderedSet,
     PersistentRelationMapping
 )
 from cocktail.persistence.persistentobject import (

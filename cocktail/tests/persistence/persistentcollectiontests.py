@@ -41,7 +41,7 @@ class PersistentCollectionTestCase(TempStorageMixin, TestCase):
 
         from cocktail.schema import Collection, Reference
         from cocktail.persistence import (
-            PersistentObject, PersistentRelationList
+            PersistentObject, PersistentRelationOrderedSet
         )
 
         class Foo(PersistentObject):
@@ -54,7 +54,7 @@ class PersistentCollectionTestCase(TempStorageMixin, TestCase):
         Bar.type = Foo
 
         foo = Foo()
-        self.assertTrue(isinstance(foo.bar, PersistentRelationList))
+        self.assertTrue(isinstance(foo.bar, PersistentRelationOrderedSet))
         self.assertTrue(foo.bar.owner is foo)
         self.assertTrue(foo.bar.member is Foo.bar)
 
@@ -62,7 +62,7 @@ class PersistentCollectionTestCase(TempStorageMixin, TestCase):
 
         from cocktail.schema import Collection, Reference
         from cocktail.persistence import (
-            PersistentObject, PersistentRelationList
+            PersistentObject, PersistentRelationOrderedSet
         )
 
         class Foo(PersistentObject):
@@ -79,7 +79,7 @@ class PersistentCollectionTestCase(TempStorageMixin, TestCase):
         value = [Bar(), Bar()]
         foo.bar = value
         self.assertTrue(foo.bar is bar)
-        self.assertTrue(isinstance(foo.bar, PersistentRelationList))
+        self.assertTrue(isinstance(foo.bar, PersistentRelationOrderedSet))
         self.assertTrue(foo.bar.owner is foo)
         self.assertTrue(foo.bar.member is Foo.bar)
         self.assertEqual(list(foo.bar), value)
