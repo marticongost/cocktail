@@ -165,16 +165,22 @@ class DictWrapper(object):
         return self._items.__contains__(key)
 
     def __eq__(self, other):
-        return self._items.__eq__(other)
+        if isinstance(other, DictWrapper):
+            other = other._items        
+        return self._items == other
 
     def __ge__(self, other):
-        return self._items.__ge__(other)
+        if isinstance(other, DictWrapper):
+            other = other._items
+        return self._items >= other
 
     def __getitem__(self, key):
         return self._items.__getitem__(key)
 
     def __gt__(self, other):
-        return self._items.__gt__(other)
+        if isinstance(other, DictWrapper):
+            other = other._items
+        return self._items > other
 
     def __hash__(self, other):
         return self._items.__hash__(other)
@@ -186,22 +192,22 @@ class DictWrapper(object):
             return (item for item in self._items)
 
     def __le__(self, other):
-        return self._items.__le__(other)
+        if isinstance(other, DictWrapper):
+            other = other._items
+        return self._items < other
 
     def __len__(self):
         return self._items.__len__()
 
     def __lt__(self, other):
+        if isinstance(other, DictWrapper):
+            other = other._items
         return self._items.__lt__(other)
 
     def __ne__(self, other):
-        return self._items.__ne__(other)
-
-#    def __reduce__(self):
-#        return self._items.__reduce__()
-
-#    def __reduce_ex__(self, protocol):
-#        return self._items.__reduce_ex__(protocol)
+        if isinstance(other, DictWrapper):
+            other = other._items
+        return self._items != other
 
     def __repr__(self):
         return self._items.__repr__()
@@ -256,10 +262,14 @@ class ListWrapper(object):
         return self._items.__contains__(item)
     
     def __eq__(self, other):
-        return self._items.__eq__(other)
+        if isinstance(other, ListWrapper):
+            other = other._items
+        return self._items == other
 
     def __ge__(self, other):
-        return self._items.__ge__(other)
+        if isinstance(other, ListWrapper):
+            other = other._items        
+        return self._items >= other
 
     def __getitem__(self, index):
         return self._items.__getitem__(index)
@@ -267,8 +277,10 @@ class ListWrapper(object):
     def __getslice__(self, i, j):
         return self._items.__getslice__(i, j)
 
-    def __gt__(self, other):
-        return self._items.__gt__(other)
+    def __gt__(self, other):        
+        if isinstance(other, ListWrapper):
+            other = other._items        
+        return self._items > other
 
     def __hash__(self):
         return self._items.__hash__()
@@ -280,19 +292,25 @@ class ListWrapper(object):
             return (item for item in self._items)
 
     def __le__(self, other):
-        return self._items.__le__(other)
+        if isinstance(other, ListWrapper):
+            other = other._items        
+        return self._items <= other
 
     def __len__(self):
         return self._items.__len__()
 
     def __lt__(self, other):
-        return self._items.__lt__(other)
+        if isinstance(other, ListWrapper):
+            other = other._items
+        return self._items < other
 
     def __mul__(self, other):
         return self._items.__mul__(other)
 
     def __ne__(self, other):
-        return self._items.__ne__(other)
+        if isinstance(other, ListWrapper):
+            other = other._items
+        return self._items != other
 
 #    def __reduce__(self):
 #        return self._items.__reduce__()
@@ -338,13 +356,19 @@ class SetWrapper(object):
         return self._items.__contains__(item)
 
     def __eq__(self, other):
-        return self._items.__eq__(other)
+        if isinstance(other, SetWrapper):
+            other = other._items
+        return self._items == other
 
     def __ge__(self, other):
-        return self._items.__ge__(other)
+        if isinstance(other, SetWrapper):
+            other = other._items
+        return self._items >= other
 
     def __gt__(self, other):
-        return self._items.__gt__(other)
+        if isinstance(other, SetWrapper):
+            other = other._items
+        return self._items > other
 
     def __hash__(self):
         return self._items.__hash__()
@@ -356,16 +380,22 @@ class SetWrapper(object):
             return (item for item in self._items)
 
     def __le__(self, other):
-        return self._items.__le__(other)
+        if isinstance(other, SetWrapper):
+            other = other._items
+        return self._items <= other
 
     def __len__(self):
         return self._items.__len__()
 
     def __lt__(self, other):
-        return self._items.__lt__(other)
+        if isinstance(other, SetWrapper):
+            other = other._items
+        return self._items < other
 
     def __ne__(self, other):
-        return self._items.__ne__(other)
+        if isinstance(other, SetWrapper):
+            other = other._items
+        return self._items != other
 
     def __or__(self, other):
         return self._items.__or__(other)
