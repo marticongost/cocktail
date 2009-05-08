@@ -125,15 +125,16 @@ jQuery.tableDnD = {
 			// We only need to add the event to the specified cells
 			var cells = jQuery("td."+table.tableDnDConfig.dragHandle, table);
 			cells.each(function() {
-				// The cell is bound to "this"
-                jQuery(this).mousedown(function(ev) {
+				// The cell is bound to "this"                
+                jQuery(this).mousedown(function(ev) {                    
                     jQuery.tableDnD.dragObject = this.parentNode;
                     jQuery.tableDnD.currentTable = table;
                     jQuery.tableDnD.mouseOffset = jQuery.tableDnD.getMouseOffset(this, ev);
                     if (config.onDragStart) {
                         // Call the onDrop method if there is one
                         config.onDragStart(table, this);
-                    }
+                    }                    
+                    jQuery(this).parent("tr").unbind("click");
                     return false;
                 });
 			})
@@ -152,7 +153,7 @@ jQuery.tableDnD = {
 	                        if (config.onDragStart) {
 	                            // Call the onDrop method if there is one
 	                            config.onDragStart(table, this);
-	                        }
+	                        }                        
 	                        return false;
 	                    }
 	                }).css("cursor", "move"); // Store the tableDnD object
