@@ -95,6 +95,7 @@ class Event(object):
 
         if slot is None:
             slot = EventSlot()
+            slot.event = self
             slot.target = ref(target)
             self.__slots[target] = slot
 
@@ -113,6 +114,9 @@ class EventSlot(SynchronizedList):
     callbacks are executed in order, receiving any extra parameters through an
     L{EventInfo} instance. The return value of executed callbacks is ignored.
 
+    @ivar event: The event that the slot stores responses for.
+    @type event: L{Event}
+
     @ivar target: The object that the slot is bound to.
     
     @ivar next: A list of other event slots that will be chained up to the
@@ -121,6 +125,7 @@ class EventSlot(SynchronizedList):
         example, this is used to trigger class-wide events after activating an
         instance slot.
     """
+    event = None
     target = None
     next = ()
 
