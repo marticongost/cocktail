@@ -7,7 +7,7 @@ u"""
 @since:			November 2008
 """
 import sys
-from cocktail.modeling import refine
+from cocktail.modeling import refine, OrderedSet
 from cocktail.events import Event, EventHub
 from cocktail.pkgutils import get_full_name
 from cocktail.language import require_content_language
@@ -18,7 +18,11 @@ from cocktail.schema.schemareference import Reference
 from cocktail.schema.schemastrings import String
 from cocktail.schema.schemarelations import _update_relation
 from cocktail.schema.schemacollections import (
-    Collection, RelationCollection, RelationList, RelationSet
+    Collection,
+    RelationCollection,
+    RelationList,
+    RelationSet,
+    RelationOrderedSet
 )
 from cocktail.schema.schemamappings import Mapping, RelationMapping
 from cocktail.schema.accessors import MemberAccessor
@@ -272,6 +276,7 @@ class SchemaClass(EventHub, Schema):
                 # of just replacing it (this will invoke add/delete hooks on the
                 # collection, and update the opposite end of the relation)
                 else:
+                    changed = value != previous_value
                     previous_value.set_content(value)
                     preserve_value = value is not None
             
@@ -302,10 +307,11 @@ class SchemaClass(EventHub, Schema):
                         collection = None
                     )
 
-            try:
-                changed = (value != previous_value)
-            except TypeError:
-                changed = True
+            if not preserve_value:
+                try:
+                    changed = (value != previous_value)
+                except TypeError:
+                    changed = True
 
             if changed:
                 instance.changed(
@@ -324,6 +330,10 @@ class SchemaClass(EventHub, Schema):
             # Sets
             elif isinstance(collection, set):
                 collection = RelationSet(collection, owner, member)
+
+            # Ordered sets
+            elif isinstance(collection, OrderedSet):
+                collection = RelationOrderedSet(collection, owner, member)
 
             # Mappings
             elif isinstance(collection, dict):

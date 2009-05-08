@@ -456,6 +456,95 @@ empty_list = ListWrapper([])
 empty_set = SetWrapper(set())
 
 
+# Ordered set
+#------------------------------------------------------------------------------
+
+class OrderedSet(ListWrapper):
+    """An ordered set of items.
+    
+    Ordered sets behave mostly as lists without repetitions, and the API for
+    both types is roughly the same.
+    """
+    
+    def __init__(self, items = None):
+        ListWrapper.__init__(self, [])
+        if items:
+            self.extend(items)
+
+    def append(self, item, relocate = False):
+        
+        try:
+            pos = self._items.index(item)
+        except ValueError:
+            self._items.append(item)
+            return True            
+        else:        
+            if relocate:
+                self._items.pop(pos)
+                self._items.append(item)
+
+            return False
+
+    def insert(self, pos, item, relocate = False):
+
+        try:
+            prev_pos = self._items.index(item)
+        except ValueError:
+            self._items.insert(pos, item)
+            return True
+        else:
+            if relocate:
+                self._items.pop(prev_pos)
+                self._items.insert(pos, item)
+            
+            return False
+
+    def extend(self, items, relocate = False):
+        for item in items:
+            self.append(item, relocate)
+
+    def pop(self, pos):
+        self._items.pop(pos)
+
+    def remove(self, item):
+        self._items.remove(item)
+ 
+    def reverse(self):
+        self._items.reverse()
+
+    def sort(self, *args):
+        self._items.sort(*args)
+
+    def __copy__(self):
+        return self.__class__(copy(self._items))
+
+    def __deepcopy__(self, memo):
+        return self.__class__(deepcopy(self._items))
+
+    def __setitem__(self, i, item):
+        if item not in self._items:
+            self._items[i] = item
+
+    def __delitem__(self, i):
+        self._items.__delitem__(i)
+
+    def __setslice__(self, i, j, other):
+        head = self._items[:i]
+        tail = self._items[j:]
+        self._items = \
+            head + [x for x in other if x not in head and x not in tail] + tail
+    
+    def __delslice__(self, i, j):
+        self._items.__delslice__(i, j)
+
+    def __iadd__(self, other):
+        self.extend(other)
+        return self
+
+    def __imul__(self, n):
+        raise TypeError("Operation not permitted")
+
+
 # Instrumented collections
 #------------------------------------------------------------------------------ 
 
@@ -500,6 +589,57 @@ class InstrumentedList(ListWrapper, InstrumentedCollection):
         prev_item = self._items[index]
 
         if item != prev_item:
+            self._items[index] = item
+            self.item_removed(prev_item)
+            self.item_added(item)
+
+    def __delitem__(self, index):
+        
+        if isinstance(index, slice):
+            items = self._items[index]
+            self._items.__delitem__(index)
+            for item in items:
+                self.item_removed(item)
+        else:
+            item = self._items.pop(index)
+            self.item_removed(item)
+
+
+class InstrumentedOrderedSet(ListWrapper, InstrumentedCollection):
+
+    def __init__(self, items = None):
+        if items and not isinstance(items):
+            raise TypeError(
+                "Ordered set expected, got %s instead" %
+                items.__class__.__name__
+            )
+        ListWrapper.__init__(self, items or OrderedSet())
+
+    def append(self, item, relocate = False):
+        if self._items.append(item, relocate):
+            self.item_added(item)
+
+    def insert(self, index, item, relocate = False):
+        if self._items.insert(index, item, relocate):
+            self.item_added(item)
+
+    def extend(self, items, relocate = False):
+        for item in items:
+            self.append(item, relocate)
+
+    def remove(self, item):
+        self._items.remove(item)
+        self.item_removed(item)
+    
+    def pop(self, index):
+        item = self._items.pop(index)
+        self.item_removed(item)
+        return item
+
+    def __setitem__(self, index, item):
+        
+        if item not in self._items:
+            prev_item = self._items[index]
             self._items[index] = item
             self.item_removed(prev_item)
             self.item_added(item)

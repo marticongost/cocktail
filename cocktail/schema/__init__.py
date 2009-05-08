@@ -17,7 +17,8 @@ from cocktail.schema.schemacollections import (
     Collection, add, remove,
     RelationCollection,
     RelationList,
-    RelationSet
+    RelationSet,
+    RelationOrderedSet
 )
 from cocktail.schema.schemamappings import (
     Mapping,

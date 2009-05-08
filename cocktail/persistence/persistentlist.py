@@ -40,14 +40,14 @@ class PersistentList(ListWrapper, Persistent):
         self._p_changed = True
 
     def __iadd__(self, other):
-        L = self._items.__iadd__(other)
+        self._items.__iadd__(other)
         self._p_changed = True
-        return L
+        return self
 
     def __imul__(self, n):
-        L = self._items.__imul__(n)
+        self._items.__imul__(n)
         self._p_changed = True
-        return L
+        return self
 
     def append(self, item):
         self._items.append(item)
@@ -57,10 +57,10 @@ class PersistentList(ListWrapper, Persistent):
         self._items.insert(i, item)
         self._p_changed = True
 
-    def pop(self, i=-True):
-        rtn = self._items.pop(i)
+    def pop(self, i = -1):
+        item = self._items.pop(i)
         self._p_changed = True
-        return rtn
+        return item
 
     def remove(self, item):
         self._items.remove(item)

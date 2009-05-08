@@ -7,9 +7,15 @@ u"""
 @since:			November 2008
 """
 from persistent import Persistent
-from cocktail.schema import RelationList, RelationSet, RelationMapping
+from cocktail.schema import (
+    RelationList,
+    RelationSet,
+    RelationOrderedSet,
+    RelationMapping
+)
 from cocktail.persistence.persistentlist import PersistentList
 from cocktail.persistence.persistentset import PersistentSet
+from cocktail.persistence.persistentorderedset import PersistentOrderedSet
 from cocktail.persistence.persistentmapping import PersistentMapping
 
 class PersistentRelationCollection(Persistent):
@@ -67,6 +73,14 @@ class PersistentRelationList(PersistentRelationCollection, RelationList):
 class PersistentRelationSet(PersistentRelationCollection, RelationSet):
     _base_collection_class = RelationSet
     _inner_collection_class = PersistentSet
+
+
+class PersistentRelationOrderedSet(
+    PersistentRelationCollection,
+    RelationOrderedSet
+):
+    _base_collection_class = RelationOrderedSet
+    _inner_collection_class = PersistentOrderedSet
 
 
 class PersistentRelationMapping(PersistentRelationCollection, RelationMapping):

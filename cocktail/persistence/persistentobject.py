@@ -11,7 +11,7 @@ from persistent import Persistent
 from BTrees.OOBTree import OOBTree
 from BTrees.IOBTree import IOBTree
 from cocktail import schema
-from cocktail.modeling import getter
+from cocktail.modeling import getter, OrderedSet
 from cocktail.events import Event, event_handler
 from cocktail.schema import SchemaClass, SchemaObject, Reference, Collection
 from cocktail.schema.exceptions import ValidationError
@@ -21,9 +21,11 @@ from cocktail.persistence.query import Query
 from cocktail.persistence.persistentlist import PersistentList
 from cocktail.persistence.persistentmapping import PersistentMapping
 from cocktail.persistence.persistentset import PersistentSet
+from cocktail.persistence.persistentorderedset import PersistentOrderedSet
 from cocktail.persistence.persistentrelations import (
     PersistentRelationList,
     PersistentRelationSet,
+    PersistentRelationOrderedSet,
     PersistentRelationMapping
 )
 
@@ -131,6 +133,11 @@ class PersistentClass(SchemaClass):
             # Sets
             elif isinstance(collection, (set, PersistentSet)):
                 collection = PersistentRelationSet(
+                    collection, owner, member
+                )
+            # Ordered sets
+            elif isinstance(collection, (OrderedSet, PersistentOrderedSet)):
+                collection = PersistentRelationOrderedSet(
                     collection, owner, member
                 )
             # Mappings
@@ -283,6 +290,8 @@ class PersistentObject(SchemaObject, Persistent):
             event.value = PersistentList(event.value)
         elif isinstance(event.value, set):
             event.value = PersistentSet(event.value)
+        elif isinstance(event.value, OrderedSet):
+            event.value = PersistentOrderedSet(event.value)
         elif isinstance(event.value, dict):
             event.value = PersistentMapping(event.value)
 
