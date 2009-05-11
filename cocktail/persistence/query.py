@@ -544,6 +544,11 @@ class Query(object):
 
         return child_query
 
+    def delete_items(self):
+        """Delete all items matched by the query."""
+        for item in list(self):
+            item.delete()
+
 
 # Custom expression resolution
 #------------------------------------------------------------------------------
