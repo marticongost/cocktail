@@ -1,7 +1,5 @@
 /**
  * jQuery TableResizer
- * Version 0.1 - 23/04/2008
- * @author Dale Harvey <harveyd@gmail.com>
  *
  * A lightweight plugin that creates resizable tables
  *
@@ -155,8 +153,8 @@ $.fn.tableresizer = function(options)
     var resize_rows = function(root)
     {            
         var tbl = root.find("table");
-        var row,newheight,saveclickevent;
-        var rows = root.find("tr").children("td:nth-child(" + opts.row_start + ")");
+        var row,newheight;
+        var rows = root.find("tr").children("td:visible");
         var resize = false;
         var top = root.offset().top;
 		
@@ -191,7 +189,7 @@ $.fn.tableresizer = function(options)
             else
             {
                 var cursor = (x - ($(this).offset().top - top) 
-                    > $(this).height() - 4) ? "row-resize" : "";
+                    > $(this).height() - 1) ? "row-resize" : "";
                 tbl.css("cursor",cursor);				
             }
         });         
