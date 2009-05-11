@@ -127,7 +127,7 @@ class SchemaClass(EventHub, Schema):
                     required = True,
                     keys = String(
                         required = True,
-                        format = "a-z{2}"
+                        format = "[a-z]{2}"
                     ),
                     values = cls.translation
                 )
