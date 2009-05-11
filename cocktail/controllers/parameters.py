@@ -141,7 +141,7 @@ def parse_reference(self, reader, value):
             )
 
             for cls in classes:
-                if cls.name == value:
+                if cls.full_name == value:
                     value = cls
                     break
 
