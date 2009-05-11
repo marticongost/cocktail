@@ -22,11 +22,12 @@ class PersistentRelationCollection(Persistent):
 
     _base_collection_class = None
     _inner_collection_class = None
+    __items = None
     __member_name = None
     _v_member = None
 
     def __init__(self, items = None, owner = None, member = None):
-        
+
         if items is None:
             items = self._inner_collection_class()
         elif not isinstance(items, self._inner_collection_class):
@@ -55,6 +56,18 @@ class PersistentRelationCollection(Persistent):
         Gets or sets the schema member that the collection represents.
         @type: L{Collection<cocktail.schema.schemacollections.Collection>}
         """)
+
+    # Make sure the inner data structure is always an instance of the
+    # persistent collection for the class
+    def _get_items(self):
+        return self.__items
+
+    def _set_items(self, items):
+        if not isinstance(items, self._inner_collection_class):
+            items = self._inner_collection_class(items)
+        self.__items = items
+
+    _items = property(_get_items, _set_items)
 
     def item_added(self, item):
         self._base_collection_class.item_added(self, item)
