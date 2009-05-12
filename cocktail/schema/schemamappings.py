@@ -41,8 +41,8 @@ class Mapping(Collection):
         if value is not None:
 
             # Item validation
-            keys = self.resolve_constraint(self.keys, context)
-            values = self.resolve_constraint(self.values, context)
+            keys = self.keys
+            values = self.values
 
             if keys is not None or values is not None:
                 
