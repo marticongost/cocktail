@@ -51,10 +51,14 @@ class HandlerActivator(object):
                     return self.callable(*self.args, **self.kwargs)
             
                 except TypeError, x:
+                    raise
                     callable = self.callable
                     
                     if not isfunction(callable):
-                        callable = getattr(callable, "__call__", None)
+                        callable = getattr(callable, "im_func", callable)
+                        if not isfunction(callable) \
+                        and hasattr(callable, "__call__"):
+                            callable = callable.__call__.im_func
                     
                     if callable:                        
                         (args, varargs, varkw, defaults) = getargspec(callable)
