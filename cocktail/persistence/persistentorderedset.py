@@ -40,12 +40,22 @@ class PersistentOrderedSet(OrderedSet, Persistent):
         self._p_changed = True
 
     def append(self, item, relocate = False):
-        if OrderedSet.append(self, item, relocate):
+
+        added = OrderedSet.append(self, item, relocate)
+
+        if added or relocate:
             self._p_changed = True
+            
+        return added
 
     def insert(self, i, item, relocate = False):
-        if OrderedSet.insert(self, i, item, relocate):
+        
+        added = OrderedSet.insert(self, i, item, relocate)
+        
+        if added or relocate:            
             self._p_changed = True
+
+        return added
 
     def pop(self, i = -1):
         item = self._items.pop(i)

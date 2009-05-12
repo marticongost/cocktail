@@ -284,10 +284,7 @@ class RelationList(RelationCollection, InstrumentedList):
     def __init__(self, items = None, owner = None, member = None):
         self.owner = owner
         self.member = member
-        InstrumentedList.__init__(self)
-        if items:
-            for item in items:
-                self.append(item)
+        InstrumentedList.__init__(self, items)
 
     def add(self, item):
         self.append(item)
@@ -330,10 +327,7 @@ class RelationSet(RelationCollection, InstrumentedSet):
     def __init__(self, items = None, owner = None, member = None):
         self.owner = owner
         self.member = member
-        InstrumentedSet.__init__(self)
-        if items:
-            for item in items:
-                self.add(item)
+        InstrumentedSet.__init__(self, items)
 
     def set_content(self, new_content):
 
@@ -358,11 +352,8 @@ class RelationOrderedSet(RelationCollection, InstrumentedOrderedSet):
     def __init__(self, items = None, owner = None, member = None):
         self.owner = owner
         self.member = member
-        InstrumentedOrderedSet.__init__(self)
-        if items:
-            for item in items:
-                self.append(item)
-
+        InstrumentedOrderedSet.__init__(self, items)
+        
     def add(self, item):
         self.append(item)
 
