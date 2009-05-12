@@ -110,7 +110,7 @@ $.fn.tableresizer = function(options)
                     // the border to a header
                     var tgt = $(e.target);
                     var dosize = (left-(tgt.offset().left-left_pos) 
-                        > tgt.width()-4);
+                        > tgt.width() + 10);
                     $(this).css("cursor",dosize?"col-resize":"");
                 }
             }                   
@@ -136,8 +136,7 @@ $.fn.tableresizer = function(options)
                 resize = true;				
                 // Stop ie selecting text
                 //document.onselectstart=new Function ("return false");
-            }    
-            return false;
+            }            
         });
         
         tr.bind('mouseleave',function(e)
@@ -189,7 +188,7 @@ $.fn.tableresizer = function(options)
             else
             {
                 var cursor = (x - ($(this).offset().top - top) 
-                    > $(this).height() - 1) ? "row-resize" : "";
+                    > $(this).height() + 10) ? "row-resize" : "";
                 tbl.css("cursor",cursor);				
             }
         });         
@@ -216,7 +215,6 @@ $.fn.tableresizer = function(options)
         tbl.mouseup(function(e) 
         {
             if(resize){
-                e.stopPropagation();
 				//document.onselectstart=new Function ("return true");				
 				resize = false;
 				tbl.css("cursor","");			

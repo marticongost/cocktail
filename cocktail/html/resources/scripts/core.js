@@ -23,6 +23,14 @@ cocktail.setLanguage = function (language) {
     this.__language = language;
 }
 
+cocktail.setLanguages = function (languages) {
+    this.__languages = languages
+}
+
+cocktail.getLanguages = function () {
+    return this.__languages;
+}
+
 cocktail.__text = {};
 
 cocktail.setTranslation = function (key, value) {

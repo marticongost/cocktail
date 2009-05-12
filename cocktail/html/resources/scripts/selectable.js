@@ -140,8 +140,8 @@
 
                 handleFocus(false);
 
-                if (srcTag != "a" && srcTag != "button" && srcTag != "textarea"
-                    && (srcTag != "input" || jQuery(src).is(entryCheckboxSelector))) {
+                if (srcTag != "a" && srcTag != "button" && srcTag != "textarea" && srcTag != "img" &&
+                    (srcTag != "input" || jQuery(src).is(entryCheckboxSelector))) {
                     
                     // Range selection (shift + click)
                     if (multipleSelection && e.shiftKey) {
@@ -162,7 +162,6 @@
                         e.preventDefault();
                     }
                 }
-                return false;
             }
 
             // Togle entry selection when clicking an entry
