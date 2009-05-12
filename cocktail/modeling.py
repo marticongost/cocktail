@@ -608,7 +608,7 @@ class InstrumentedList(ListWrapper, InstrumentedCollection):
 class InstrumentedOrderedSet(ListWrapper, InstrumentedCollection):
 
     def __init__(self, items = None):
-        if items and not isinstance(items):
+        if items and not isinstance(items, OrderedSet):
             raise TypeError(
                 "Ordered set expected, got %s instead" %
                 items.__class__.__name__
