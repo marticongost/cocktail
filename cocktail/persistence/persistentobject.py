@@ -94,29 +94,24 @@ class PersistentClass(SchemaClass):
 
     def _unique_validation_rule(cls, member, value, context):
 
-        duplicate = None
-        validable = cls._get_unique_validable(context)
+        if value is not None:
 
-        if isinstance(validable, PersistentObject):
-            if member.indexed:
+            validable = cls._get_unique_validable(context)
+            
+            if isinstance(validable, PersistentObject):
                 if member.translated:
-                    value = (context["language"], value)
-                duplicate = member.index.get(value)
-            else:
-                if member.schema.adaptation_source:
-                    index = member.schema.adaptation_source.index
+                    duplicates = list(validable.__class__.select(
+                        member
+                        .translated_into(context["language"])
+                        .equal(value)
+                    ))
+                    duplicate = duplicates[0] if duplicates else None
                 else:
-                    index = member.schema.index
+                    params = {member.name: value}
+                    duplicate = validable.__class__.get_instance(**params)
 
-                language = context["language"]
-
-                for instance in index.itervalues():
-                    if instance.get(member, language) == value:
-                        duplicate = instance
-                        break
-
-            if duplicate and duplicate is not validable:
-                yield UniqueValueError(member, value, context)
+                if duplicate and duplicate is not validable:
+                    yield UniqueValueError(member, value, context)
 
     def _get_unique_validable(cls, context):
         return context.get("persistent_object", context.validable)
