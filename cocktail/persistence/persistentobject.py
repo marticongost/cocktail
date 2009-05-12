@@ -101,7 +101,7 @@ class PersistentClass(SchemaClass):
             if isinstance(validable, PersistentObject):
                 if member.translated:
                     duplicates = list(validable.__class__.select(
-                        member
+                        validable.__class__.get_member(member.name)
                         .translated_into(context["language"])
                         .equal(value)
                     ))
