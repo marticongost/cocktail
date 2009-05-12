@@ -141,7 +141,7 @@ def parse_reference(self, reader, value):
             )
 
             for cls in classes:
-                if cls.name == value:
+                if cls.full_name == value:
                     value = cls
                     break
 
@@ -184,6 +184,7 @@ schema.Collection.parse_request_value = parse_collection
 
 NORMALIZATION_DEFAULT = strip
 STRICT_DEFAULT = True
+SKIP_UNDEFINED_DEFAULT = False
 ENABLED_DEFAULTS_DEFAULT = True
 IMPLICIT_BOOLEANS_DEFAULT = True
 
@@ -193,6 +194,7 @@ def get_parameter(
     languages = None,
     normalization = NORMALIZATION_DEFAULT,
     strict = STRICT_DEFAULT,
+    skip_undefined = SKIP_UNDEFINED_DEFAULT,
     enable_defaults = ENABLED_DEFAULTS_DEFAULT,
     implicit_booleans = IMPLICIT_BOOLEANS_DEFAULT,
     prefix = None,
@@ -236,6 +238,14 @@ def get_parameter(
     @param strict: Determines if values should be validated against their
         member's constraints, and discarded if found to be invalid.
     @type: bool
+
+    @param skip_undefined: Determines the treatment received by members defined
+        by the retrieved schema that aren't given an explicit value by the
+        request. The default value, False, sets those members to either None or
+        its default value, depending on the value of L{enable_defaults}. When
+        set to True, members with no value specified will be ignored. This
+        allows updating objects selectively.
+    @type skip_undefined: bool
 
     @param enable_defaults: A flag that indicates if missing values should be
         replaced with the default value for their member (this is the default
@@ -282,11 +292,12 @@ def get_parameter(
     reader = FormSchemaReader(
         normalization = normalization,
         strict = strict,
+        skip_undefined = skip_undefined,
         enable_defaults = enable_defaults,
         implicit_booleans = implicit_booleans,
         prefix = prefix,
         suffix = suffix,
-        source = source,
+        source = source
     )
     return reader.read(member, target, languages)
 
@@ -337,6 +348,7 @@ class FormSchemaReader(object):
     def __init__(self,
         normalization = NORMALIZATION_DEFAULT,
         strict = STRICT_DEFAULT,
+        skip_undefined = SKIP_UNDEFINED_DEFAULT,
         enable_defaults = ENABLED_DEFAULTS_DEFAULT,
         implicit_booleans = IMPLICIT_BOOLEANS_DEFAULT,
         prefix = None,
@@ -345,6 +357,7 @@ class FormSchemaReader(object):
 
         self.normalization = normalization
         self.strict = strict
+        self.skip_undefined = skip_undefined
         self.enable_defaults = enable_defaults
         self.implicit_booleans = implicit_booleans
         self.prefix = prefix
@@ -434,13 +447,15 @@ class FormSchemaReader(object):
  
         key = self.get_key(member, language, path)
         value = self.source(key)
-        value = self.process_value(member, value)
-        
-        if self.strict and not member.validate(value):
-            value = None
 
-        if target is not None:
-            schema.set(target, member.name, value, language)
+        if not (value is None and self.skip_undefined):
+            value = self.process_value(member, value)
+            
+            if self.strict and not member.validate(value):
+                value = None
+
+            if target is not None:
+                schema.set(target, member.name, value, language)
 
         return value
 
