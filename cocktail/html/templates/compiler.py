@@ -597,7 +597,7 @@ class TemplateCompiler(object):
                     is_placeholder = (expr_type == PLACEHOLDER)
                     chunks.append(chunk)
             
-            value_source = " + ".join(chunks)
+            value_source = " + ".join(chunks) or '""'
 
             if is_template_attrib:
                 assignment = '%s.%s = %s' % (id, name, value_source)
