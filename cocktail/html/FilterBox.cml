@@ -18,6 +18,15 @@ from cocktail.controllers import get_state, view_state, serialize_parameter
         ui.table_layout = False
         ui.add_class("filter_ui")
         return ui
+        
+    def get_discard_filters_state(self):
+        state = {"page": 0, "filter": ""}
+
+        for i, f in enumerate(self.filters):
+            for member in f.schema.members().itervalues():
+                state["filter_" + member.name + str(i)] = None
+        
+        return state
     ?>
 
     <div py:id="filter_list">
@@ -92,18 +101,7 @@ from cocktail.controllers import get_state, view_state, serialize_parameter
             </div>
         </div>
 
-        <a py:id="discard_button">
-            <py:ready>
-                <?py
-                params = {"page": 0, "filter": ""}
-
-                for i, f in enumerate(self.filters):
-                    for member in f.schema.members().itervalues():
-                        params["filter_" + member.name + str(i)] = None
-
-                element["href"] = "?" + view_state(**params)
-                ?>
-            </py:ready>
+        <a py:id="discard_button" href="@{'?' + view_state(**self.get_discard_filters_state())}">
             ${translations("cocktail.html.FilterBox remove filters")}
         </a>
 
