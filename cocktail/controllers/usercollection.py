@@ -78,8 +78,7 @@ class UserCollection(object):
         self.__filters = []
         self.filters = ListWrapper(self.__filters)
         
-        self.__user_filters = []
-        self.user_filters = ListWrapper(self.__user_filters)
+        self.user_filters = []
 
         self.__order = []
         self.order = ListWrapper(self.__order)
@@ -129,7 +128,7 @@ class UserCollection(object):
             for expression in self.__filters:
                 subset.add_filter(expression)
 
-            for user_filter in self.__user_filters:
+            for user_filter in self.user_filters:
                 if user_filter.schema.validate(user_filter):
                     subset.add_filter(user_filter.expression)
 
@@ -298,7 +297,7 @@ class UserCollection(object):
                         prefix = "filter_",
                         suffix = str(i)
                     )
-                    self.__user_filters.append(filter)
+                    self.user_filters.append(filter)
 
     def _read_member_selection(self):
         
