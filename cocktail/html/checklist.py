@@ -52,6 +52,11 @@ class CheckList(Selector):
         # Disable the 'required' mark for this field, as it doesn't make sense
         # on a checklist
         required_mark = getattr(field_instance.label, "required_mark", None)
-        if required_mark and not self.member.edit_inline and self.member.min>0:
+
+        if required_mark and \
+        not (self.member and \
+        self.member.min and \
+        isinstance(self.member.min, int) and \
+        self.member.min > 0):
             required_mark.visible = False
 

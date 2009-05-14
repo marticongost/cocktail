@@ -35,7 +35,7 @@ $.fn.tableresizer = function(options)
         tr.children("th").css("border-right",opts.col_border);
         var left_pos = root.offset().left;
 
-        saveCookies = function()
+        saveCookiesWidth = function()
         {
 			var colWidth = [];
 			tr.children("th").each(function(index) {
@@ -59,7 +59,7 @@ $.fn.tableresizer = function(options)
                 //document.onselectstart=new Function ("return true");
                 resize = false;
                 tbl.css("cursor","");
-				saveCookies();
+				saveCookiesWidth();
             }
         };
         
@@ -160,7 +160,7 @@ $.fn.tableresizer = function(options)
 
         rows.css("border-bottom",opts.row_border);
 
-		saveCookies = function()
+		saveCookiesHeight = function()
         {
 			var rowHeight = [];
 			rows.each(function() {
@@ -207,7 +207,7 @@ $.fn.tableresizer = function(options)
         });
 
         tbl.click(function(e){            
-            if(tbl.get(0).clickEntryEvent){
+            if(tbl.get(0).clickEntryEvent && e.target.nodeName == "TD"){
                 $(e.target).parent("tr").bind("click", tbl.get(0).clickEntryEvent);
             }
         });
@@ -219,7 +219,7 @@ $.fn.tableresizer = function(options)
 				resize = false;
 				tbl.css("cursor","");			
                 row = null;
-                saveCookies();
+                saveCookiesHeight();
 			}
         });
     };
