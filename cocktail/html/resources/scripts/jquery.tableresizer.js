@@ -25,16 +25,22 @@ $.fn.tableresizer = function(options)
      * Make table columns resizable
      */  
     var resize_columns = function(root)
-    {                   
+    {           
         var tbl = root.children("table");
+        tbl.find("td").width(0);
         var tr  = tbl.find("tr:first");
         var header;
         var resize = false;
         
-        root.width(tbl.width());
+        if(tbl.get(0).total_width>tbl.get(0).min_width){
+            root.width(tbl.get(0).total_width);
+        }else{
+            root.width(tbl.get(0).min_width);
+        }
+        
         tr.children("th").css("border-right",opts.col_border);
         var left_pos = root.offset().left;
-
+        
         saveCookiesWidth = function()
         {
 			var colWidth = [];
@@ -56,7 +62,7 @@ $.fn.tableresizer = function(options)
         {			
             if(resize == true && header != null)
             {
-                //document.onselectstart=new Function ("return true");
+                document.onselectstart=new Function ("return true");
                 resize = false;
                 tbl.css("cursor","");
 				saveCookiesWidth();
@@ -70,37 +76,33 @@ $.fn.tableresizer = function(options)
             if(resize)
             {
                 // when jquery includes dimensions into core, use that
-                // to get implicit with instead of subtracting padding
-                var width = left - (header.offset().left - left_pos)
+                // to get implicit with instead of subtracting padding                
+                var width = left - (header.offset().left - left_pos - jQuery(document).scrollLeft())
                     - parseInt(header.css("padding-left"))
-                    - parseInt(header.css("padding-right"));
+                    - parseInt(header.css("padding-right"));                
     
                 if(width > 1)
                 {
-                    /*
+                    
 					var current_width = header.width();
                     // If expanding, resize container first, else resize
                     // column then container. otherwise the adjacent 
                     // cells resize
                     if(width > current_width)
                     {
-                        //var total = root.width() + ((width - header.width()));
-                        //root.width(total);
+                        var total = root.width() + ((width - header.width()));
+                        root.width(total);                        
                         header.width(width);
                     }
                     else
-                    {
+                    {                        
                         header.width(width);
                         // check the header resize (might have
-                        // a min width
-                        if(header.width() == width)
-                        {
-                            var total = root.width() + ((width - current_width));
-                            root.width(total);
-                        }
-                    }*/
-					header.width(width);                    
-                }			
+                        // a min width                        
+                        var total = root.width() + ((width - current_width));
+                        if(tbl.get(0).min_width<total) root.width(total);
+                    }					                    
+                }
             }
             else
             {
@@ -109,7 +111,7 @@ $.fn.tableresizer = function(options)
                     // nasty calculation to check the mouse is on / around
                     // the border to a header
                     var tgt = $(e.target);
-                    var dosize = (left-(tgt.offset().left-left_pos) 
+                    var dosize = (left-(tgt.offset().left-left_pos-jQuery(document).scrollLeft()) 
                         > tgt.width() + 10);
                     $(this).css("cursor",dosize?"col-resize":"");
                 }
@@ -132,10 +134,10 @@ $.fn.tableresizer = function(options)
             if(e.target.nodeName == "TH" 
                 && $(this).css("cursor") ==  "col-resize")
             {
-                header = $(e.target);                    
+                header = $(e.target);                
                 resize = true;				
                 // Stop ie selecting text
-                //document.onselectstart=new Function ("return false");
+                document.onselectstart=new Function ("return false");
             }            
         });
         
@@ -201,7 +203,7 @@ $.fn.tableresizer = function(options)
                 row.parent("tr").unbind("click");
                 resize = true;                
                 // Stop ie selecting text
-                //document.onselectstart=new Function ("return false");
+                document.onselectstart=new Function ("return false");
             }
             return false;
         });
@@ -215,7 +217,7 @@ $.fn.tableresizer = function(options)
         tbl.mouseup(function(e) 
         {
             if(resize){
-				//document.onselectstart=new Function ("return true");				
+				document.onselectstart=new Function ("return true");				
 				resize = false;
 				tbl.css("cursor","");			
                 row = null;
@@ -227,10 +229,14 @@ $.fn.tableresizer = function(options)
 	var parseCookie = function(data, table, direction) {
 		if(direction == "width"){
 			columns = data.split("+");
+            var total = 0;
+            document.getElementById(table).min_width = jQuery("#" + table).width();
 			for (var i=0; i<columns.length; i++) {
 				column_data = columns[i].split("=");
 				jQuery("#" + table + " ." + column_data[0].replace(/ /, ".")).width(parseInt(column_data[1]));
+                total += parseInt(column_data[1]);
 			}
+        document.getElementById(table).total_width = total;
 		}else if(direction == "height"){
 			rows = data.split("+");
 			for (var i=0; i<rows.length; i++) {
@@ -251,7 +257,7 @@ $.fn.tableresizer = function(options)
             this.id = 'table-' + this.persistencePrefix;			
         }
 		
-		if(jQuery.cookie(this.id + "-width")){
+		if(jQuery.cookie(this.id + "-width")){            
 			parseCookie(jQuery.cookie(this.id + "-width"), this.id, "width");
 		}
 
