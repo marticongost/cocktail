@@ -99,6 +99,7 @@ class TreeView(Element):
 
     def create_children_container(self, item, children):        
         container = Element("ul")
+        container.collapsible = True
         self._fill_children_container(container, item, children)
         return container
 
