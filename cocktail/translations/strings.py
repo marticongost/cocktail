@@ -166,19 +166,93 @@ translations.define("jquery_date format",
     en = "mm/dd/yy"
 )
 
+# -------- ABBREVIATED TRANSLATIONS OF MONTHS
+translations.define("1 ABBR", ca = u"Gen", es = u"Ene", en = u"Jan")
+translations.define("2 ABBR", ca = u"Feb", es = u"Feb", en = u"Feb")
+translations.define("3 ABBR", ca = u"Mar", es = u"Mar", en = u"Mar")
+translations.define("4 ABBR", ca = u"Abr", es = u"Abr", en = u"Apr")
+translations.define("5 ABBR", ca = u"Mai", es = u"May", en = u"May")
+translations.define("6 ABBR", ca = u"Jun", es = u"Jun", en = u"Jun")
+translations.define("7 ABBR", ca = u"Jul", es = u"Jul", en = u"Jul")
+translations.define("8 ABBR", ca = u"Ago", es = u"Ago", en = u"Aug")
+translations.define("9 ABBR", ca = u"Set", es = u"Sep", en = u"Sep")
+translations.define("10 ABBR", ca = u"Oct", es = u"Oct", en = u"Oct")
+translations.define("11 ABBR", ca = u"Nov", es = u"Nov", en = u"Nov")
+translations.define("12 ABBR", ca = u"Des", es = u"Dic", en = u"Dec")
+
+# -------- FULLTEXT TRANSLATIONS OF MONTHS
+translations.define("1 TEXT", ca = u"Gener", es = u"Enero", en = u"January")
+translations.define("2 TEXT", ca = u"Febrer", es = u"Febrero", en = u"February")
+translations.define("3 TEXT", ca = u"Març", es = u"Marzo", en = u"March")
+translations.define("4 TEXT", ca = u"Abril", es = u"Abril", en = u"April")
+translations.define("5 TEXT", ca = u"Mai", es = u"Mayo", en = u"May")
+translations.define("6 TEXT", ca = u"Juny", es = u"Junio", en = u"June")
+translations.define("7 TEXT", ca = u"Julio", es = u"Julio", en = u"July")
+translations.define("8 TEXT", ca = u"Agost", es = u"Agosto", en = u"August")
+translations.define("9 TEXT", ca = u"Setembre", es = u"Septiembre", en = u"September")
+translations.define("10 TEXT", ca = u"Octubre", es = u"Octubre", en = u"October")
+translations.define("11 TEXT", ca = u"Novembre", es = u"Noviembre", en = u"November")
+translations.define("12 TEXT", ca = u"Decembre", es = u"Diciembre", en = u"December")
+
+DATE_STYLE_NUMBERS = 1
+DATE_STYLE_ABBR = 2
+DATE_STYLE_TEXT = 3
+
+def _date_instance_ca(instance, style = DATE_STYLE_NUMBERS):
+    if style == DATE_STYLE_NUMBERS :
+        return instance.strftime(translations("date format", "ca"))
+    if style == DATE_STYLE_ABBR :
+        return u"%s %s %s" % \
+            (instance.day,
+            translations(u"%s %s" % (instance.month,"ABBR"), "ca"),
+            instance.year)
+    if style == DATE_STYLE_TEXT :
+        return u"%s %s %s" % \
+            (instance.day,
+            translations(u"%s %s" % (instance.month,"TEXT"), "ca"),
+            instance.year)
+
+def _date_instance_es(instance, style = DATE_STYLE_NUMBERS):
+    if style == DATE_STYLE_NUMBERS :
+        return instance.strftime(translations("date format", "es"))
+    if style == DATE_STYLE_ABBR :
+        return u"%s %s %s" % \
+            (instance.day,
+            translations(u"%s %s" % (instance.month,"ABBR"), "es"),
+            instance.year)
+    if style == DATE_STYLE_TEXT :
+        return u"%s %s %s" % \
+            (instance.day,
+            translations(u"%s %s" % (instance.month,"TEXT"), "es"),
+            instance.year)
+
+def _date_instance_en(instance, style = DATE_STYLE_NUMBERS):
+    if style == DATE_STYLE_NUMBERS :
+        return instance.strftime(translations("date format", "en"))
+    if style == DATE_STYLE_ABBR :
+        return u"%s %s %s" % \
+            (instance.year,
+            translations(u"%s %s" % (instance.month,"ABBR"), "en"),
+            instance.day)
+    if style == DATE_STYLE_TEXT :
+        return u"%s %s %s" % \
+            (instance.year,
+            translations(u"%s %s" % (instance.month,"TEXT"), "en"),
+            instance.day)
+
 translations.define("date-instance",
-    ca = lambda instance: instance.strftime(translations("date format", "ca")),
-    es = lambda instance: instance.strftime(translations("date format", "es")),
-    en = lambda instance: instance.strftime(translationsn("date format", "en"))
+    ca = _date_instance_ca,
+    es = _date_instance_es,
+    en = _date_instance_en
 )
 
 translations.define("datetime-instance",
-    ca = lambda instance:
-        instance.strftime(translations("date format", "ca") + " %H:%M:%S"),
-    es = lambda instance:
-        instance.strftime(translations("date format", "es") + " %H:%M:%S"),
-    en = lambda instance:
-        instance.strftime(translations("date format", "en") + " %H:%M:%S")
+    ca = lambda instance, style = DATE_STYLE_NUMBERS:
+        _date_instance_ca(instance, style) + instance.strftime(" %H:%M:%S"),
+    es = lambda instance, style = DATE_STYLE_NUMBERS:
+        _date_instance_es(instance, style) + instance.strftime(" %H:%M:%S"),
+    en = lambda instance, style = DATE_STYLE_NUMBERS:
+        _date_instance_en(instance, style) + instance.strftime(" %H:%M:%S")
 )
 
 # html.FilterBox
