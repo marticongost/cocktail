@@ -27,6 +27,23 @@ from cocktail.controllers import get_state, view_state, serialize_parameter
                 state["filter_" + member.name + str(i)] = None
         
         return state
+
+    def get_add_filter_state(self, filter):
+    
+        filter_param = []
+        state = {"page": 0, "filter": filter_param}
+
+        for i, f in enumerate(self.filters):
+            filter_param.append(f.id)
+            for member in f.schema.members().itervalues():
+                state["filter_" + member.name + str(i)] = \
+                    serialize_parameter(
+                        member,
+                        getattr(f, member.name)
+                    )
+
+        filter_param.append(filter.id)
+        return state
     ?>
 
     <div py:id="filter_list">
@@ -78,23 +95,8 @@ from cocktail.controllers import get_state, view_state, serialize_parameter
 
                     filter_items.sort(key = lambda item: normalize(item[0]))
                     ?>
-                    <a py:for="desc, filter in filter_items">
-                        <?py
-                        filter_param = []
-                        params = {"page": 0, "filter": filter_param}
-
-                        for i, f in enumerate(self.filters):
-                            filter_param.append(f.id)
-                            for member in f.schema.members().itervalues():
-                                params["filter_" + member.name + str(i)] = \
-                                    serialize_parameter(
-                                        member,
-                                        getattr(f, member.name)
-                                    )
-
-                        filter_param.append(filter.id)
-                        element["href"] = "?" + view_state(**params)
-                        ?>
+                    <a py:for="desc, filter in filter_items"
+                        href="${'?' + view_state(**self.get_add_filter_state(filter))}">
                         ${desc}
                     </a>
                 </py:ready>
