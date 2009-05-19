@@ -361,7 +361,7 @@ class RelationOrderedSet(RelationCollection, InstrumentedOrderedSet):
 
         if new_content is None:
             while self._items:
-                self._items.pop(0)
+                self.pop(0)
         else:
             previous_set = set(self._items)
             new_set = set(new_content)
