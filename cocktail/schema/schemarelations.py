@@ -206,7 +206,8 @@ class RelationMember(Member):
             else:
                 anonymous = False
 
-            if related_end.name:
+            if related_end.name \
+            and self.related_type.get_member(related_end.name) is None:
                 self.bidirectional = True
                 related_end.bidirectional = True
                 self.__related_end = related_end
