@@ -24,7 +24,11 @@ class DeleteTestCase(TempStorageMixin, TestCase):
                 unique = True,
                 indexed = True
             )
-        
+            parent = Reference(bidirectional = True)
+            children = Collection(bidirectional = True)
+
+        TestObject.parent.type = TestObject
+        TestObject.children.items = Reference(type = TestObject)
         self.test_type = TestObject
 
     def test_delete_not_inserted(self):
@@ -40,6 +44,32 @@ class DeleteTestCase(TempStorageMixin, TestCase):
         foo.insert()
         foo.delete()
         self.assertFalse(foo.is_inserted)
+    
+    def test_delete_updates_foreign_reference(self):
+
+        parent = self.test_type()
+        parent.insert()
+
+        child = self.test_type()
+        child.insert()
+
+        child.parent = parent
+        parent.delete()
+
+        self.assertTrue(child.parent is None)
+
+    def test_delete_updates_foreign_collection(self):
+
+        parent = self.test_type()
+        parent.insert()
+
+        child = self.test_type()
+        child.insert()
+
+        parent.children.append(child)
+        child.delete()
+
+        self.assertFalse(parent.children)
 
     def test_delete_events(self):
 
