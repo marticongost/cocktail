@@ -32,11 +32,15 @@ $.fn.tableresizer = function(options)
         var header;
         var resize = false;
         
+        /*
         if(tbl.get(0).total_width>tbl.get(0).min_width){
             root.width(tbl.get(0).total_width);
         }else{
             root.width(tbl.get(0).min_width);
         }
+        */
+        root.width(tbl.get(0).min_width);
+        tbl.width(tbl.get(0).min_width)
         
         tr.children("th").css("border-right",opts.col_border);
         var left_pos = root.offset().left;
@@ -83,26 +87,30 @@ $.fn.tableresizer = function(options)
     
                 if(width > 1)
                 {
-                    
-					var current_width = header.width();
+                    var current_width = header.width();
                     // If expanding, resize container first, else resize
                     // column then container. otherwise the adjacent 
                     // cells resize
                     if(width > current_width)
                     {
                         var total = root.width() + ((width - header.width()));
-                        root.width(total);                        
+                        root.width(total);
                         header.width(width);
                     }
                     else
-                    {                        
+                    {
                         header.width(width);
                         // check the header resize (might have
-                        // a min width                        
-                        var total = root.width() + ((width - current_width));
-                        if(tbl.get(0).min_width<total) root.width(total);
-                    }					                    
+                        // a min width
+                        if(header.width() == width)
+                        {
+                            var total = root.width() + ((width - current_width));
+                            root.width(total);
+                        }
+                    }
+                    newwidth = width;
                 }
+               
             }
             else
             {
@@ -230,7 +238,7 @@ $.fn.tableresizer = function(options)
 		if(direction == "width"){
 			columns = data.split("+");
             var total = 0;
-            document.getElementById(table).min_width = jQuery("#" + table).width();
+            document.getElementById(table).min_width = jQuery("#" + table).innerWidth();
 			for (var i=0; i<columns.length; i++) {
 				column_data = columns[i].split("=");
 				jQuery("#" + table + " ." + column_data[0].replace(/ /, ".")).width(parseInt(column_data[1]));
@@ -254,19 +262,19 @@ $.fn.tableresizer = function(options)
 		if (!this.persistencePrefix){ 
             this.id = 'table-' + (index + 1);
         }else{
-            this.id = 'table-' + this.persistencePrefix;			
+            this.id = 'table-' + this.persistencePrefix.substr(this.persistencePrefix.lastIndexOf(".") + 1, this.persistencePrefix.length);			
         }
-		
-		if(jQuery.cookie(this.id + "-width")){            
+	    /*	
+		if(jQuery.cookie(this.id + "-width")){
 			parseCookie(jQuery.cookie(this.id + "-width"), this.id, "width");
 		}
-
+        */
 		if(jQuery.cookie(this.id + "-height")){
 			parseCookie(jQuery.cookie(this.id + "-height"), this.id, "height");
 		}
 
     	var root = $(this).wrap("<div class='roottbl' />").parent();   
-		resize_columns(root);
+		//resize_columns(root);
         resize_rows(root);    
     });
 };
