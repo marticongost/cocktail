@@ -33,9 +33,9 @@ cocktail.init(function () {
             nom = "joker_" + index;
         }else{
             nom = jQuery(this).attr('name');
-            jQuery(this).removeAttr('name');
+            jQuery(this).removeAttr('name');            
         }
-        
+
         if(button_names.indexOf(nom) < 0) {
             //TODO: Retirar con el control que carga el script solo en IE.
             if(jQuery.browser.msie){                
@@ -52,8 +52,12 @@ cocktail.init(function () {
         }
 
         if(this.attributes.getNamedItem("value")){
-            jQuery(this).click( function () {                                
-                jQuery("input[name='" + nom + "']").val(this.attributes.getNamedItem("value").nodeValue);                     
+            jQuery(this).click( function () {                
+                jQuery("input[name='" + nom + "']").val(this.attributes.getNamedItem("value").nodeValue);
+                if(jQuery.browser.msie){
+                    this.disabled=true
+                    jQuery(this).parents("form").submit();
+                }
             });
         }
         
