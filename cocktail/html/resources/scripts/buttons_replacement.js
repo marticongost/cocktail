@@ -63,12 +63,10 @@ cocktail.init(function () {
         jQuery(".body form").submit( function () {
 
             jQuery(this).find("button[type='submit']:visible").each(function () {
-                //alert(jQuery(this).html());
                 var clases = jQuery(this).attr('class');                
                 var boto = document.createElement('button');
                 boto.innerHTML = jQuery(this).html();
                 if(jQuery(this).attr('class') != "")  boto.className = jQuery(this).attr('class');
-                //var button = document.createElement("<button class='" + clases + "' type='button'>" + jQuery(this).html() + "</button>");
                 jQuery(this).after(boto).remove();
             });
 
