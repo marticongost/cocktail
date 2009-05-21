@@ -384,6 +384,9 @@ class PersistentObject(SchemaObject, Persistent):
             )
         )
 
+    def _should_index_member(self, member):
+        return self.indexed and member.indexed
+
 PersistentObject._translation_schema_metaclass = PersistentClass
 PersistentObject._translation_schema_base = PersistentObject
 
