@@ -54,12 +54,25 @@ cocktail.init(function () {
         if(this.attributes.getNamedItem("value")){
             jQuery(this).click( function () {                
                 jQuery("input[name='" + nom + "']").val(this.attributes.getNamedItem("value").nodeValue);
-                if(jQuery.browser.msie){
-                    this.disabled=true
-                    jQuery(this).parents("form").submit();
-                }
             });
         }
         
     });
+        
+    if(jQuery.browser.msie){                    
+        jQuery(".body form").submit( function () {
+
+            jQuery(this).find("button[type='submit']:visible").each(function () {
+                //alert(jQuery(this).html());
+                var clases = jQuery(this).attr('class');                
+                var boto = document.createElement('button');
+                boto.innerHTML = jQuery(this).html();
+                if(jQuery(this).attr('class') != "")  boto.className = jQuery(this).attr('class');
+                //var button = document.createElement("<button class='" + clases + "' type='button'>" + jQuery(this).html() + "</button>");
+                jQuery(this).after(boto).remove();
+            });
+
+            return true;
+        });
+    }
 });
