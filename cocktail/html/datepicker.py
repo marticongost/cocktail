@@ -108,8 +108,7 @@ class DatePicker(TextBox):
                         get_language()
                     )
                 )
-            elif isinstance(value, datetime.time):
-                print "hour"
+            elif isinstance(value, datetime.time):                
                 self["value"] = value.strftime(HOUR_FORMAT) 
         else:   
             self["value"] = value            
