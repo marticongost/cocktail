@@ -203,8 +203,7 @@ def _handle_declared(event):
 
 @when(PersistentObject.changed)
 def _handle_changed(event):
-    if event.member.indexed \
-    and event.source.indexed \
+    if event.source._should_index_member(event.member) \
     and event.source.is_inserted \
     and event.previous_value != event.value:
         remove_index_entry(
@@ -239,7 +238,7 @@ def _handle_inserting(event):
     for member in obj.__class__.members().itervalues():
 
         # Indexing
-        if member.indexed and obj.indexed:
+        if obj._should_index_member(member):
 
             if member.translated:
                 for language in obj.translations:
