@@ -18,9 +18,11 @@ setup(
         "simplejson",
         "ZODB3==3.8",
         "cherrypy>=3",
-        "buffet>=1.0"
+        "buffet>=1.0",
+        "nose",
+        "selenium"
     ],
-    include_package_data = True,    
+    include_package_data = True,
     packages = find_packages(),
 
     # Cocktail can't yet access view resources (images, style sheets, client
@@ -31,7 +33,9 @@ setup(
     # Make CML templates available to Buffet
     entry_points = {
         "python.templating.engines":
-        ["cocktail=cocktail.html.templates.buffetplugin:CocktailBuffetPlugin"]
+        ["cocktail=cocktail.html.templates.buffetplugin:CocktailBuffetPlugin"],
+        "nose.plugins.0.10":
+        ["selenium_tester=cocktail.tests.seleniumtester:SeleniumTester"]
     }
 )
 
