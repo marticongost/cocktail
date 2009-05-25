@@ -17,6 +17,7 @@ _thread_data = local()
 
 def wrap(function, wrapper):
     wrapper.__doc__ = function.__doc__
+    wrapper.func_name = function.func_name
 
 def getter(function):
     return property(function, doc = function.__doc__)
