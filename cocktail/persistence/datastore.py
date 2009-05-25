@@ -6,7 +6,8 @@ u"""
 @organization:	Whads/Accent SL
 @since:			July 2008
 """
-from threading import local
+from types import FunctionType
+from threading import local, Lock
 from ZODB import DB
 import transaction
 from cocktail.modeling import getter
@@ -23,8 +24,10 @@ class DataStore(object):
     """
     def __init__(self, storage = None):
         self._thread_data = local()
-        self.storage = storage
+        self.__storage_lock = Lock()
         self.__db = None
+        self.__storage = None
+        self.storage = storage
     
     storage_changed = Event("""
         An event triggered when changing which storage is used by the
@@ -40,12 +43,23 @@ class DataStore(object):
         """)
 
     def _get_storage(self):
+        if isinstance(self.__storage, FunctionType):            
+            self.__storage_lock.acquire()
+            try:
+                if isinstance(self.__storage, FunctionType):
+                    self.__storage = self.__storage()
+            finally:
+                self.__storage_lock.release()
         return self.__storage
 
     def _set_storage(self, storage):
-        self.__storage = storage
-        self.__db = None
-        self.storage_changed()
+        self.__storage_lock.acquire()
+        try:
+            self.__storage = storage
+            self.__db = None
+            self.storage_changed()
+        finally:
+            self.__storage_lock.release()
 
     storage = property(_get_storage, _set_storage, doc = """
         Gets or sets the underlying ZODB storage for the data store.
