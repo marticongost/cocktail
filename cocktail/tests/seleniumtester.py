@@ -54,8 +54,16 @@ def _selenium_test_factory(test_func, session):
 class SeleniumSessionProxy(object):
 
     def __getattribute__(self, key):
-        return getattr(_current_selenium_session, key)
+        if key == "jquery_count":
+            return object.__getattribute__(self, key)
+        else:
+            return getattr(_current_selenium_session, key)
 
+    def jquery_count(self, selector):
+        return int(
+            _current_selenium_session
+            .get_eval("window.jQuery('%s').length" % selector)
+        )
 
 browser = SeleniumSessionProxy()
 
