@@ -67,7 +67,7 @@ class SeleniumTester(Plugin):
         Plugin.options(self, parser, env)
 
         parser.add_option("--selenium-host",
-            default = "localhost",
+            default = "127.0.0.1",
             help = "The host of the Selenium RC server."
         )
 
