@@ -6,9 +6,9 @@ u"""
 @organization:	Whads/Accent SL
 @since:			February 2009
 """
+import cherrypy
 import hashlib
 from cocktail import schema
-
 
 class FileUpload(schema.Schema):
     
@@ -40,10 +40,9 @@ class FileUpload(schema.Schema):
         self.add_member(schema.Integer("file_size", **file_size_kw))
         self.add_member(schema.String("mime_type", **mime_type_kw))
 
-    def parse_request_value(self, reader, value):
-        
+    def parse_request_value(self, reader, value):       
         upload = {            
-            "file_name": value.filename,
+            "file_name": unicode(value.filename, 'utf-8'),
             "mime_type": value.type,
             "file_size": None,
             "file_hash": None
