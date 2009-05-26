@@ -270,7 +270,6 @@ class CollectionFilter(BinaryFilter):
         BinaryFilter._add_member_to_schema(self, schema)
         value_member = schema["value"]
         value_member.required = True
-        value_member.enumeration = self.member.enumeration
 
     @getter
     def expression(self):
