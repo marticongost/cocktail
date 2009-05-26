@@ -41,27 +41,29 @@ class Selector(Element, DataBoundControl):
 
     def _get_items_from_member(self, member):
 
-        enumeration = member.resolve_constraint(
-            member.enumeration,
-            None
-        )
+        if isinstance(member, Collection):
+            enumeration = member.items.enumeration if member.items else None
+        else:
+            enumeration = member.enumeration
         
-        if enumeration:
-            return enumeration
+        if enumeration is not None:
+            enumeration = member.resolve_constraint(enumeration, None)
+            if enumeration is not None:
+                return enumeration
 
-        if isinstance(self.member, Boolean):
+        if isinstance(member, Boolean):
             return (True, False)
 
         elif isinstance(member, Number):
             if member.min is not None and member.max is not None:
                 return range(member.min, member.max + 1)
 
-        elif isinstance(self.member, RelationMember):
-            if getattr(self.member, "is_persistent_relation", False):
-                return self.member.select_constraint_instances(
+        elif isinstance(member, RelationMember):
+            if getattr(member, "is_persistent_relation", False):
+                return member.select_constraint_instances(
                     parent = self.data
                 )
-            elif isinstance(self.member, Collection):
+            elif isinstance(member, Collection):
                 if member.items:
                     return self._get_items_from_member(member.items)
         
