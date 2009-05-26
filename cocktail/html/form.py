@@ -44,6 +44,12 @@ class Form(Element, DataDisplay):
         form. This can be very useful when dealing with multiple buttons on a
         single form. Doesn't apply to L{embeded} forms.
     @type default_button: L{Element<cocktail.html.element.Element>}
+    
+    @var generate_fields: Indicates if the form should automatically create
+        entries for all fields defined by its assigned schema. This is the
+        default behavior; When set to False, filling the form will be left to
+        the client code.
+    @type generate_fields: bool
     """
 
     tag = "form"
@@ -55,6 +61,7 @@ class Form(Element, DataDisplay):
     required_marks = True
     table_layout = False
     default_button = None
+    generate_fields = True
 
     def __init__(self, *args, **kwargs):
         DataDisplay.__init__(self)
@@ -119,7 +126,7 @@ class Form(Element, DataDisplay):
             self.insert(0, hidden_button)
 
     def _fill_fields(self):
-        if self.schema:
+        if self.schema and self.generate_fields:
 
             if self.__groups:
                 members = self.displayed_members
@@ -142,7 +149,7 @@ class Form(Element, DataDisplay):
                     for member in members:
                         if group.matches(member):
                             field_entry = self.create_field(member)
-                            container.append(field_entry)                            
+                            container.append(field_entry)
                             has_match = True
                         else:
                             remaining_members.append(member)
