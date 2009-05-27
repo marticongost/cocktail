@@ -441,7 +441,7 @@ class DynamicConstraintsTestCase(TestCase):
         error = errors[0]
         assert isinstance(error, ValueRequiredError)
 
-    def test_exclusive_callable(self):
+    def test_exclusive_expression(self):
 
         from cocktail.schema import Schema, String, Boolean
         from cocktail.schema.exceptions import (
