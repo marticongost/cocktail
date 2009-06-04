@@ -98,7 +98,7 @@ class RelationMember(Member):
     bidirectional = False
     related_key = None
     relation_constraints = None
-    _integral = False
+    _integral = None
     _many = False
     __related_end = None
 
@@ -115,7 +115,7 @@ class RelationMember(Member):
     def __init__(self, *args, **kwargs):
         Member.__init__(self, *args, **kwargs)
 
-        if self.integral and not self.bidirectional:
+        if kwargs.get("integral", False) and not self.bidirectional:
             raise SchemaIntegrityError(
                 "%s can't be declared 'integral' without setting "
                 "'bidirectional' to True" % self)
