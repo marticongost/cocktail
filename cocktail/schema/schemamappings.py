@@ -32,7 +32,7 @@ class Mapping(Collection):
     
     @getter
     def related_type(self):
-        return self.values.type
+        return self.values and self.values.type
 
     # Validation
     #--------------------------------------------------------------------------
