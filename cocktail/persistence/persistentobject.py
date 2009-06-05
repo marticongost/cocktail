@@ -303,8 +303,8 @@ class PersistentObject(SchemaObject, Persistent):
         if self.__inserted:
             return False
         
-        self.inserting()
         self.__inserted = True
+        self.inserting()
 
         for member in self.__class__.members().itervalues():
 
