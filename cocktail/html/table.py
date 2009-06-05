@@ -34,6 +34,7 @@ class Table(Element, CollectionDisplay):
     selection_parameter = "selection"
     nested_list_max_length = 5
     translated_values = True
+    persistence_prefix = None
 
     def __init__(self, *args, **kwargs):
         Element.__init__(self, *args, **kwargs)
