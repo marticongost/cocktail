@@ -330,16 +330,17 @@ class PersistentObject(SchemaObject, Persistent):
     def delete(self, deleted_objects = None):
         """Removes the object from the database."""
         
-        if not self.__inserted:
-            raise NewObjectDeletedError(self)
-
         if deleted_objects is None:
             deleted_objects = set()
+            deleted_objects.add(self)
         else:
             if self in deleted_objects:
                 return
             else:
                 deleted_objects.add(self)
+
+        if not self.__inserted:
+            raise NewObjectDeletedError(self)
 
         self.deleting()
         self.__inserted = False
