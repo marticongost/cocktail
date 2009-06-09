@@ -253,30 +253,10 @@ class RelationCollection(object):
     member = None
 
     def item_added(self, item):
-
         _update_relation("relate", self.owner, item, self.member)
-
-        event_slot = getattr(self.owner, "related", None)
-
-        if event_slot is not None:
-            event_slot(
-                member = self.member,
-                collection = self,
-                related_object = item
-            )
         
     def item_removed(self, item):
-        
         _update_relation("unrelate", self.owner, item, self.member)
-
-        event_slot = getattr(self.owner, "unrelated", None)
-
-        if event_slot is not None:
-            event_slot(
-                member = self.member,
-                collection = self,
-                related_object = item
-            )
 
 
 class RelationList(RelationCollection, InstrumentedList):
