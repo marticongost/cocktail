@@ -44,6 +44,17 @@ def _update_relation(action, obj, related_obj, member, relocation = False):
         if pushed:
             _pop()
 
+    if action == "relate":
+        event_slot = getattr(obj, "related", None)
+    elif action == "unrelate":
+        event_slot = getattr(obj, "unrelated", None)
+
+    if event_slot is not None:
+        event_slot(
+            member = member,
+            related_object = related_obj
+        )
+
 def _push(action, obj, related_obj, member):
     
     stack = getattr(_thread_data, "stack", None)
