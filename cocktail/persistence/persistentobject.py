@@ -342,6 +342,7 @@ class PersistentObject(SchemaObject, Persistent):
                 deleted_objects.add(self)
 
         self.deleting()
+        self.__inserted = False
 
         for member in self.__class__.members().itervalues():
 
@@ -362,7 +363,6 @@ class PersistentObject(SchemaObject, Persistent):
                 if self._should_erase_member(member):
                     self.set(member, None)
 
-        self.__inserted = False
         self.deleted()
 
     def _should_erase_member(self, member):
