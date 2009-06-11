@@ -297,13 +297,22 @@ class PersistentObject(SchemaObject, Persistent):
         """
         return self.__inserted
 
-    def insert(self):
+    def insert(self, inserted_objects = None):
         """Inserts the object into the database."""
         
         if self.__inserted:
             return False
         
-        self.inserting()
+        if inserted_objects is None:
+            inserted_objects = set()
+            inserted_objects.add(self)
+        else:
+            if self in inserted_objects:
+                return False
+            else:
+                inserted_objects.add(self)
+
+        self.inserting(inserted_objects = inserted_objects)
         self.__inserted = True
 
         for member in self.__class__.members().itervalues():
@@ -314,7 +323,7 @@ class PersistentObject(SchemaObject, Persistent):
                 if related \
                 and isinstance(related, PersistentObject) \
                 and not related.__inserted:
-                    related.insert()
+                    related.insert(inserted_objects)
 
             elif isinstance(member, Collection):
                 collection = self.get(member)
@@ -322,7 +331,7 @@ class PersistentObject(SchemaObject, Persistent):
                     for item in collection:
                         if isinstance(item, PersistentObject) \
                         and not item.__inserted:
-                            item.insert()
+                            item.insert(inserted_objects)
 
         self.inserted()
         return True
@@ -330,18 +339,20 @@ class PersistentObject(SchemaObject, Persistent):
     def delete(self, deleted_objects = None):
         """Removes the object from the database."""
         
-        if not self.__inserted:
-            raise NewObjectDeletedError(self)
-
         if deleted_objects is None:
             deleted_objects = set()
+            deleted_objects.add(self)
         else:
             if self in deleted_objects:
                 return
             else:
                 deleted_objects.add(self)
 
+        if not self.__inserted:
+            raise NewObjectDeletedError(self)
+
         self.deleting()
+        self.__inserted = False
 
         for member in self.__class__.members().itervalues():
 
@@ -362,7 +373,6 @@ class PersistentObject(SchemaObject, Persistent):
                 if self._should_erase_member(member):
                     self.set(member, None)
 
-        self.__inserted = False
         self.deleted()
 
     def _should_erase_member(self, member):
