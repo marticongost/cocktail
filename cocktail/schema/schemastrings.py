@@ -60,7 +60,7 @@ class String(Member):
 
     def _set_length(self, value):
         self.min = value
-        self.max = max
+        self.max = value
 
     length = property(None, _set_length, doc = """
         A convenience write-only property that sets both L{min} and L{max} at
