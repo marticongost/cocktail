@@ -273,19 +273,14 @@ def _handle_deleting(event):
             if member.indexed:
                 if member.translated:
                     for language in languages:
-                        value = obj.get(member, language)
-                        if value is not None:
-                            if member.unique:
-                                member.index.pop((language, value), None)
-                            else:
-                                member.index.remove((language, value), id)
+                        remove_index_entry(
+                            obj,
+                            member,
+                            obj.get(member, language),
+                            language
+                        )
                 else:
-                    value = obj.get(member)
-                    if value is not None:
-                        if member.unique:
-                            member.index.pop(value, None)
-                        else:
-                            member.index.remove(value, id)
+                    remove_index_entry(obj, member, obj.get(member))
 
 def add_index_entry(obj, member, value, language = None):
             

@@ -44,24 +44,6 @@ class DeleteTestCase(TempStorageMixin, TestCase):
         foo.insert()
         foo.delete()
         self.assertFalse(foo.is_inserted)
-    
-    def test_delete_updates_indexes(self):
-
-        from cocktail.schema import String, Integer
-        from cocktail.persistence import PersistentObject
-        
-        class TestObject(PersistentObject):
-            test_string = String(indexed = True)
-            test_integer = Integer(indexed = True, unique = True)
-
-        test_object = TestObject()
-        test_object.test_string = "test string"
-        test_object.test_integer = 3
-        test_object.insert()
-        test_object.delete()
-
-        assert len(TestObject.test_string.index) == 0
-        assert len(TestObject.test_integer.index) == 0
 
     def test_delete_updates_foreign_reference(self):
 
@@ -108,4 +90,91 @@ class DeleteTestCase(TempStorageMixin, TestCase):
         foo.delete()
         
         self.assertEqual(events, ["deleting", "deleted"])
+
+
+class IndexingDeleteTestCase(TempStorageMixin, TestCase):
+
+    def setUp(self):
+        TempStorageMixin.setUp(self)
+
+    def test_delete_clears_regular_member(self):
+
+        from cocktail.schema import String
+        from cocktail.persistence import PersistentObject
+        
+        class TestObject(PersistentObject):
+            test_member = String(indexed = True)
+
+        test_object = TestObject()
+        test_object.test_member = "test string"
+        test_object.insert()
+        test_object.delete()
+
+        assert not TestObject.test_member.index
+
+    def test_delete_clears_unique_member(self):
+
+        from cocktail.schema import String
+        from cocktail.persistence import PersistentObject
+        
+        class TestObject(PersistentObject):
+            test_member = String(indexed = True, unique = True)
+
+        test_object = TestObject()
+        test_object.test_member = "test string"
+        test_object.insert()
+        test_object.delete()
+
+        assert not TestObject.test_member.index
+
+    def test_delete_clears_translated_member(self):
+
+        from cocktail.schema import String
+        from cocktail.persistence import PersistentObject
+        
+        class TestObject(PersistentObject):
+            test_member = String(indexed = True, translated = True)
+
+        test_object = TestObject()
+        test_object.set("test_member", "test string", "en")
+        test_object.set("test_member", "cadena de prueba", "es")
+        test_object.insert()
+        test_object.delete()
+
+        assert not TestObject.test_member.index
+
+    def test_delete_clears_unique_translated_member(self):
+
+        from cocktail.schema import String
+        from cocktail.persistence import PersistentObject
+        
+        class TestObject(PersistentObject):
+            test_member = String(
+                indexed = True,
+                unique = True,
+                translated = True
+            )
+
+        test_object = TestObject()
+        test_object.set("test_member", "test string", "en")
+        test_object.set("test_member", "cadena de prueba", "es")
+        test_object.insert()
+        test_object.delete()
+
+        assert not TestObject.test_member.index
+
+    def test_delete_clears_normalized_member(self):
+
+        from cocktail.schema import String
+        from cocktail.persistence import PersistentObject
+        
+        class TestObject(PersistentObject):
+            test_member = String(indexed = True, normalized_index = True)
+
+        test_object = TestObject()
+        test_object.test_member = "Test String"
+        test_object.insert()
+        test_object.delete()
+
+        assert not TestObject.test_member.index
 
