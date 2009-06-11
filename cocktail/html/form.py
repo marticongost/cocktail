@@ -267,7 +267,9 @@ class Form(Element, DataDisplay):
 
                 label.append(label.label_language)
 
-            if self.required_marks and member.required:
+            if self.required_marks \
+            and member.required \
+            and not isinstance(member, Collection):
                 label.required_mark = self.create_required_mark(member)
                 label.append(label.required_mark)
         else:
