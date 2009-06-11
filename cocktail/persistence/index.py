@@ -43,11 +43,13 @@ class Index(Persistent):
             self.__none_entries.discard(value)
             self._p_changed = True
         else:
-
             group = self.__groups.get(key)
             
             if group is not None:
                 group.discard(value)
+
+                if not group:
+                    del self.__groups[key]
 
                 self._p_changed = True
                 self.__groups._p_changed = True
