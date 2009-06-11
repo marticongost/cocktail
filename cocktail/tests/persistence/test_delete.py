@@ -45,6 +45,24 @@ class DeleteTestCase(TempStorageMixin, TestCase):
         foo.delete()
         self.assertFalse(foo.is_inserted)
     
+    def test_delete_updates_indexes(self):
+
+        from cocktail.schema import String, Integer
+        from cocktail.persistence import PersistentObject
+        
+        class TestObject(PersistentObject):
+            test_string = String(indexed = True)
+            test_integer = Integer(indexed = True, unique = True)
+
+        test_object = TestObject()
+        test_object.test_string = "test string"
+        test_object.test_integer = 3
+        test_object.insert()
+        test_object.delete()
+
+        assert len(TestObject.test_string.index) == 0
+        assert len(TestObject.test_integer.index) == 0
+
     def test_delete_updates_foreign_reference(self):
 
         parent = self.test_type()
