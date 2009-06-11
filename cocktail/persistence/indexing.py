@@ -252,12 +252,15 @@ def _handle_deleting(event):
 
     obj = event.source
 
-    # Remove the item from ID indexes
     if obj.indexed:
+        
+        id = obj.id
+
+        # Remove the item from ID indexes
         for cls in obj.__class__.ascend_inheritance(True):
             if cls.indexed and cls is not PersistentObject:
                 try:
-                    cls.keys.remove(obj.id)
+                    cls.keys.remove(id)
                 except KeyError:
                     pass
 
@@ -266,7 +269,7 @@ def _handle_deleting(event):
             languages = obj.translations.keys()
 
         for member in obj.__class__.members().itervalues():
-
+            
             if member.indexed:
                 if member.translated:
                     for language in languages:
@@ -275,14 +278,14 @@ def _handle_deleting(event):
                             if member.unique:
                                 member.index.pop((language, value), None)
                             else:
-                                member.index.remove((language, value), obj)
+                                member.index.remove((language, value), id)
                 else:
                     value = obj.get(member)
                     if value is not None:
                         if member.unique:
                             member.index.pop(value, None)
                         else:
-                            member.index.remove(value, obj)
+                            member.index.remove(value, id)
 
 def add_index_entry(obj, member, value, language = None):
             
