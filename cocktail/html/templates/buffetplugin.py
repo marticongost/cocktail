@@ -43,7 +43,10 @@ class CocktailBuffetPlugin(object):
     def render(self, info, format="html", fragment=False, template=None):
         "Renders the template to a string using the provided info."
 
-        element = templates.new(template)
+        if isinstance(template, basestring):
+            element = templates.new(template)
+        else:
+            element = template()
 
         if self.extra_vars_func:
             for key, value in self.extra_vars_func().iteritems():
