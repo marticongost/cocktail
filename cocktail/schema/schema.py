@@ -72,6 +72,9 @@ class Schema(Member):
         self.__members = None
 
         if members:
+            if isinstance(members, (list, tuple)) and not self.members_order:
+                self.members_order = [member.name for member in members]
+
             self.expand(members)
     
     def init_instance(self, instance, values = None, accessor = None):
