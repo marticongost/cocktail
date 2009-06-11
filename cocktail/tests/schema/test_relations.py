@@ -28,6 +28,15 @@ class OneToOneTestCase(TestCase):
 
         return Foo, Bar
 
+    def test_set_from_constructor(self):
+        
+        Foo, Bar = self.get_entities()
+        foo = Foo()
+        bar = Bar(foo = foo)
+
+        self.assertTrue(foo.bar is bar)
+        self.assertTrue(bar.foo is foo)
+
     def test_set(self):
 
         Foo, Bar = self.get_entities()
@@ -48,13 +57,11 @@ class OneToOneTestCase(TestCase):
         self.assertEqual(event.slot, bar.related)
         self.assertEqual(event.related_object, foo)
         self.assertEqual(event.member, Bar.foo)
-        self.assertEqual(event.collection, None)
 
         event = events.pop(0)
         self.assertEqual(event.slot, foo.related)
         self.assertEqual(event.related_object, bar)
         self.assertEqual(event.member, Foo.bar)
-        self.assertEqual(event.collection, None)
 
         self.assertFalse(events)
 
@@ -87,13 +94,11 @@ class OneToOneTestCase(TestCase):
         self.assertEqual(event.slot, bar.unrelated)
         self.assertEqual(event.related_object, foo)
         self.assertEqual(event.member, Bar.foo)
-        self.assertEqual(event.collection, None)
 
         event = events.pop(0)
         self.assertEqual(event.slot, foo.unrelated)
         self.assertEqual(event.related_object, bar)
         self.assertEqual(event.member, Foo.bar)
-        self.assertEqual(event.collection, None)
 
         self.assertFalse(events)
 
@@ -110,13 +115,11 @@ class OneToOneTestCase(TestCase):
         self.assertEqual(event.slot, foo.unrelated)
         self.assertEqual(event.related_object, bar)
         self.assertEqual(event.member, Foo.bar)
-        self.assertEqual(event.collection, None)
 
         event = events.pop(0)
         self.assertEqual(event.slot, bar.unrelated)
         self.assertEqual(event.related_object, foo)
         self.assertEqual(event.member, Bar.foo)
-        self.assertEqual(event.collection, None)
 
         self.assertFalse(events)
 
@@ -151,25 +154,21 @@ class OneToOneTestCase(TestCase):
         self.assertEqual(event.slot, bar1.unrelated)
         self.assertEqual(event.related_object, foo)
         self.assertEqual(event.member, Bar.foo)
-        self.assertEqual(event.collection, None)
 
         event = events.pop(0)
         self.assertEqual(event.slot, foo.unrelated)
         self.assertEqual(event.related_object, bar1)
         self.assertEqual(event.member, Foo.bar)
-        self.assertEqual(event.collection, None)
 
         event = events.pop(0)
         self.assertEqual(event.slot, bar2.related)
         self.assertEqual(event.related_object, foo)
         self.assertEqual(event.member, Bar.foo)
-        self.assertEqual(event.collection, None)
 
         event = events.pop(0)
         self.assertEqual(event.slot, foo.related)
         self.assertEqual(event.related_object, bar2)
         self.assertEqual(event.member, Foo.bar)
-        self.assertEqual(event.collection, None)
 
         self.assertFalse(events)
 
@@ -184,25 +183,21 @@ class OneToOneTestCase(TestCase):
         self.assertEqual(event.slot, bar2.unrelated)
         self.assertEqual(event.related_object, foo)
         self.assertEqual(event.member, Bar.foo)
-        self.assertEqual(event.collection, None)
 
         event = events.pop(0)
         self.assertEqual(event.slot, foo.unrelated)
         self.assertEqual(event.related_object, bar2)
         self.assertEqual(event.member, Foo.bar)
-        self.assertEqual(event.collection, None)
 
         event = events.pop(0)
         self.assertEqual(event.slot, foo.related)
         self.assertEqual(event.related_object, bar1)
         self.assertEqual(event.member, Foo.bar)
-        self.assertEqual(event.collection, None)
 
         event = events.pop(0)
         self.assertEqual(event.slot, bar1.related)
         self.assertEqual(event.related_object, foo)
         self.assertEqual(event.member, Bar.foo)
-        self.assertEqual(event.collection, None)
 
         self.assertFalse(events)
 
@@ -228,6 +223,26 @@ class OneToManyTestCase(TestCase):
 
         return Foo, Bar
 
+    def test_set_collection_from_constructor(self):
+
+        Foo, Bar = self.get_entities()
+
+        foo = Foo()
+        bar = Bar(foos = [foo])
+
+        assert foo.bar is bar
+        assert bar.foos == [foo]
+
+    def test_set_reference_from_constructor(self):
+
+        Foo, Bar = self.get_entities()
+
+        bar = Bar()
+        foo = Foo(bar = bar)
+
+        assert foo.bar is bar
+        assert bar.foos == [foo]
+
     def test_set(self):
         
         Foo, Bar = self.get_entities()
@@ -252,13 +267,11 @@ class OneToManyTestCase(TestCase):
         self.assertEqual(event.slot, bar.related)
         self.assertEqual(event.related_object, foo1)
         self.assertEqual(event.member, Bar.foos)
-        self.assertEqual(event.collection, bar.foos)
 
         event = events.pop(0)
         self.assertEqual(event.slot, foo1.related)
         self.assertEqual(event.related_object, bar)
         self.assertEqual(event.member, Foo.bar)
-        self.assertEqual(event.collection, None)
 
         self.assertFalse(events)
         
@@ -271,13 +284,11 @@ class OneToManyTestCase(TestCase):
         self.assertEqual(event.slot, bar.related)
         self.assertEqual(event.related_object, foo2)
         self.assertEqual(event.member, Bar.foos)
-        self.assertEqual(event.collection, bar.foos)
 
         event = events.pop(0)
         self.assertEqual(event.slot, foo2.related)
         self.assertEqual(event.related_object, bar)
         self.assertEqual(event.member, Foo.bar)
-        self.assertEqual(event.collection, None)
 
         self.assertFalse(events)
         
@@ -312,13 +323,11 @@ class OneToManyTestCase(TestCase):
         self.assertEqual(event.slot, foo1.related)
         self.assertEqual(event.related_object, bar)
         self.assertEqual(event.member, Foo.bar)
-        self.assertEqual(event.collection, None)
 
         event = events.pop(0)
         self.assertEqual(event.slot, bar.related)
         self.assertEqual(event.related_object, foo1)
         self.assertEqual(event.member, Bar.foos)
-        self.assertEqual(event.collection, bar.foos)
 
         self.assertFalse(events)
 
@@ -331,13 +340,11 @@ class OneToManyTestCase(TestCase):
         self.assertEqual(event.slot, foo2.related)
         self.assertEqual(event.related_object, bar)
         self.assertEqual(event.member, Foo.bar)
-        self.assertEqual(event.collection, None)
 
         event = events.pop(0)
         self.assertEqual(event.slot, bar.related)
         self.assertEqual(event.related_object, foo2)
         self.assertEqual(event.member, Bar.foos)
-        self.assertEqual(event.collection, bar.foos)
 
         self.assertFalse(events)
 
@@ -373,13 +380,11 @@ class OneToManyTestCase(TestCase):
         self.assertEqual(event.slot, bar.unrelated)
         self.assertEqual(event.related_object, foo1)
         self.assertEqual(event.member, Bar.foos)
-        self.assertEqual(event.collection, bar.foos)
 
         event = events.pop(0)
         self.assertEqual(event.slot, foo1.unrelated)
         self.assertEqual(event.related_object, bar)
         self.assertEqual(event.member, Foo.bar)
-        self.assertEqual(event.collection, None)
 
         self.assertFalse(events)
 
@@ -393,13 +398,11 @@ class OneToManyTestCase(TestCase):
         self.assertEqual(event.slot, bar.unrelated)
         self.assertEqual(event.related_object, foo2)
         self.assertEqual(event.member, Bar.foos)
-        self.assertEqual(event.collection, bar.foos)
 
         event = events.pop(0)
         self.assertEqual(event.slot, foo2.unrelated)
         self.assertEqual(event.related_object, bar)
         self.assertEqual(event.member, Foo.bar)
-        self.assertEqual(event.collection, None)
 
         self.assertFalse(events)
 
@@ -435,13 +438,11 @@ class OneToManyTestCase(TestCase):
         self.assertEqual(event.slot, foo1.unrelated)
         self.assertEqual(event.related_object, bar)
         self.assertEqual(event.member, Foo.bar)
-        self.assertEqual(event.collection, None)
 
         event = events.pop(0)
         self.assertEqual(event.slot, bar.unrelated)
         self.assertEqual(event.related_object, foo1)
         self.assertEqual(event.member, Bar.foos)
-        self.assertEqual(event.collection, bar.foos)
 
         self.assertFalse(events)
 
@@ -455,13 +456,11 @@ class OneToManyTestCase(TestCase):
         self.assertEqual(event.slot, foo2.unrelated)
         self.assertEqual(event.related_object, bar)
         self.assertEqual(event.member, Foo.bar)
-        self.assertEqual(event.collection, None)
 
         event = events.pop(0)
         self.assertEqual(event.slot, bar.unrelated)
         self.assertEqual(event.related_object, foo2)
         self.assertEqual(event.member, Bar.foos)
-        self.assertEqual(event.collection, bar.foos)
 
         self.assertFalse(events)
 
@@ -501,25 +500,21 @@ class OneToManyTestCase(TestCase):
         self.assertEqual(event.slot, bar1.unrelated)
         self.assertEqual(event.related_object, foo1)
         self.assertEqual(event.member, Bar.foos)
-        self.assertEqual(event.collection, bar1.foos)
 
         event = events.pop(0)
         self.assertEqual(event.slot, foo1.unrelated)
         self.assertEqual(event.related_object, bar1)
         self.assertEqual(event.member, Foo.bar)
-        self.assertEqual(event.collection, None)
 
         event = events.pop(0)
         self.assertEqual(event.slot, bar2.related)
         self.assertEqual(event.related_object, foo1)
         self.assertEqual(event.member, Bar.foos)
-        self.assertEqual(event.collection, bar2.foos)
 
         event = events.pop(0)
         self.assertEqual(event.slot, foo1.related)
         self.assertEqual(event.related_object, bar2)
         self.assertEqual(event.member, Foo.bar)
-        self.assertEqual(event.collection, None)
 
         self.assertFalse(events)
 
@@ -535,25 +530,21 @@ class OneToManyTestCase(TestCase):
         self.assertEqual(event.slot, bar1.unrelated)
         self.assertEqual(event.related_object, foo2)
         self.assertEqual(event.member, Bar.foos)
-        self.assertEqual(event.collection, bar1.foos)
 
         event = events.pop(0)
         self.assertEqual(event.slot, foo2.unrelated)
         self.assertEqual(event.related_object, bar1)
         self.assertEqual(event.member, Foo.bar)
-        self.assertEqual(event.collection, None)
 
         event = events.pop(0)
         self.assertEqual(event.slot, bar2.related)
         self.assertEqual(event.related_object, foo2)
         self.assertEqual(event.member, Bar.foos)
-        self.assertEqual(event.collection, bar2.foos)
 
         event = events.pop(0)
         self.assertEqual(event.slot, foo2.related)
         self.assertEqual(event.related_object, bar2)
         self.assertEqual(event.member, Foo.bar)
-        self.assertEqual(event.collection, None)
 
         self.assertFalse(events)
 
@@ -595,25 +586,21 @@ class OneToManyTestCase(TestCase):
         self.assertEqual(event.slot, bar1.unrelated)
         self.assertEqual(event.related_object, foo1)
         self.assertEqual(event.member, Bar.foos)
-        self.assertEqual(event.collection, bar1.foos)
 
         event = events.pop(0)
         self.assertEqual(event.slot, foo1.unrelated)
         self.assertEqual(event.related_object, bar1)
         self.assertEqual(event.member, Foo.bar)
-        self.assertEqual(event.collection, None)
 
         event = events.pop(0)
         self.assertEqual(event.slot, foo1.related)
         self.assertEqual(event.related_object, bar2)
         self.assertEqual(event.member, Foo.bar)
-        self.assertEqual(event.collection, None)
 
         event = events.pop(0)
         self.assertEqual(event.slot, bar2.related)
         self.assertEqual(event.related_object, foo1)
         self.assertEqual(event.member, Bar.foos)
-        self.assertEqual(event.collection, bar2.foos)
 
         self.assertFalse(events)
 
@@ -629,25 +616,21 @@ class OneToManyTestCase(TestCase):
         self.assertEqual(event.slot, bar1.unrelated)
         self.assertEqual(event.related_object, foo2)
         self.assertEqual(event.member, Bar.foos)
-        self.assertEqual(event.collection, bar1.foos)
 
         event = events.pop(0)
         self.assertEqual(event.slot, foo2.unrelated)
         self.assertEqual(event.related_object, bar1)
         self.assertEqual(event.member, Foo.bar)
-        self.assertEqual(event.collection, None)
 
         event = events.pop(0)
         self.assertEqual(event.slot, foo2.related)
         self.assertEqual(event.related_object, bar2)
         self.assertEqual(event.member, Foo.bar)
-        self.assertEqual(event.collection, None)
 
         event = events.pop(0)
         self.assertEqual(event.slot, bar2.related)
         self.assertEqual(event.related_object, foo2)
         self.assertEqual(event.member, Bar.foos)
-        self.assertEqual(event.collection, bar2.foos)
 
         self.assertFalse(events)
 

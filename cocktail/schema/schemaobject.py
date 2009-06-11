@@ -265,20 +265,36 @@ class SchemaClass(EventHub, Schema):
 
             # Bidirectional collections require special treatment:
             if self._bidirectional_collection:
-
+                
                 # When setting the collection for the first time, wrap it with an
                 # instrumented instance of the appropiate type
                 if previous_value is None \
                 or not isinstance(previous_value, RelationCollection):
                     value = self.instrument_collection(value, target, member)
 
+                    if value:
+                        for item in value:
+                            _update_relation("relate", instance, item, member)
+
                 # If a collection is already set on the element, update it instead
                 # of just replacing it (this will invoke add/delete hooks on the
                 # collection, and update the opposite end of the relation)
-                else:
+                else:                    
                     changed = value != previous_value
-                    previous_value.set_content(value)
-                    preserve_value = value is not None
+                    if value is None:
+                        # Set an existing collection to None: unrelate all
+                        # its items
+                        if previous_value is not None:
+                            for previously_related_item in previous_value:
+                                _update_relation(
+                                    "unrelate",
+                                    instance,
+                                    previously_related_item,
+                                    member
+                                )
+                    else:
+                        previous_value.set_content(value)
+                        preserve_value = True
             
             # Set the value
             if not preserve_value:
@@ -293,19 +309,9 @@ class SchemaClass(EventHub, Schema):
                         "unrelate", instance, previous_value, member,
                         relocation = value is not None
                     )
-                    instance.unrelated(
-                        member = member,
-                        related_object = previous_value,
-                        collection = None
-                    )
 
                 if value is not None:
                     _update_relation("relate", instance, value, member)
-                    instance.related(
-                        member = member,
-                        related_object = value,
-                        collection = None
-                    )
 
             if not preserve_value:
                 try:
@@ -404,11 +410,6 @@ class SchemaObject(object):
         @type member: L{Relation<cocktail.schema.schemarelations>}
 
         @ivar related_object: The object that has been related to the target.
-
-        @ivar collection: A reference to the collection modified by the current
-            change, if any. On
-            L{reference<cocktail.schema.schemareferences.Reference>} members,
-            this will be set to None.
         """)
 
     unrelated = Event(doc = """
@@ -419,11 +420,6 @@ class SchemaObject(object):
 
         @ivar related_object: The object that is no longer related to the
             target.
-
-        @ivar collection: A reference to the collection modified by the current
-            change, if any. On
-            L{reference<cocktail.schema.schemareferences.Reference>} members,
-            this will be set to None.
         """)
 
     def __init__(self, **values):
