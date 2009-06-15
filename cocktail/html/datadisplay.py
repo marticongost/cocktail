@@ -281,7 +281,7 @@ class DataDisplay(object):
         if isinstance(display, type) and issubclass(display, Element):
             display = display()
         elif callable(display):
-            if isinstance(display, MethodType) and display.im_self is self:
+            if getattr(display, "im_self", None) is self:
                 display = display(obj, member)
             else:
                 display = display(self, obj, member)
