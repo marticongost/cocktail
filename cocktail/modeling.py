@@ -124,10 +124,13 @@ def extend(element):
                     _thread_data.method_stack.pop()
 
             wrap(function, wrapper)
+            wrapper.im_self = element
             setattr(element, function.func_name, wrapper)
         else:
             def wrapper(*args, **kwargs):
                 return function(element, *args, **kwargs)
+            wrapper.func_name = function.func_name
+            wrapper.im_self = element
         
         setattr(element, function.func_name, wrapper)
         return wrapper
