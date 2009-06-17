@@ -47,11 +47,11 @@ class HandlerActivator(object):
                     parent = handler
                     
                 # Execute the response handler
-                try:
+                try:                    
                     return self.callable(*self.args, **self.kwargs)
-            
+
                 except TypeError, x:
-                    raise
+
                     callable = self.callable
                     
                     if not isfunction(callable):
