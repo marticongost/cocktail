@@ -8,6 +8,7 @@ u"""
 """
 from itertools import chain
 from cocktail.modeling import getter, ListWrapper
+from cocktail.language import get_content_language
 from cocktail.schema import Member, expressions, SchemaObjectAccessor
 from cocktail.persistence.index import Index
 
@@ -570,6 +571,12 @@ def _get_filter_info(filter):
     unique = not isinstance(index, Index)
     return member, index, unique
 
+def _get_index_value(member, value):
+    value = member.get_index_value(value)
+    if member.translated:
+        value = (get_content_language(), value)
+    return value
+
 def _expression_resolution(self):
     return ((0, 0), None)
     
@@ -587,11 +594,11 @@ def _equal_resolution(self):
 
         if member and member.primary:
             def impl(dataset):
-                id = member.get_index_value(self.operands[1].value)
+                id = _get_index_value(member, self.operands[1].value)
                 return set([id]) if id in dataset else set()
         else:
             def impl(dataset):
-                value = member.get_index_value(self.operands[1].value)
+                value = _get_index_value(member, self.operands[1].value)
                 match = index.get(value)
                             
                 if match is None:
@@ -601,7 +608,7 @@ def _equal_resolution(self):
     else:
         order = (-1, -1)
         def impl(dataset):
-            value = member.get_index_value(self.operands[1].value)
+            value = _get_index_value(member, self.operands[1].value)
             subset = index[value]
             dataset.intersection_update(subset)
             return dataset
@@ -621,12 +628,12 @@ def _not_equal_resolution(self):
         
         if member and member.primary:
             def impl(dataset):
-                id = member.get_index_value(self.operands[1].value)
+                id = _get_index_value(member, self.operands[1].value)
                 dataset.discard(id)
                 return dataset
         else:
             def impl(dataset):
-                value = member.get_index_value(self.operands[1].value)
+                value = _get_index_value(member, self.operands[1].value)
                 index_value = index.get(value)
                 if index_value is not None:
                     dataset.discard(index_value)
@@ -634,7 +641,7 @@ def _not_equal_resolution(self):
     else:
         order = (-1, -1)
         def impl(dataset):
-            value = member.get_index_value(self.operands[1].value)
+            value = _get_index_value(member, self.operands[1].value)
             subset = index[value]
             dataset.difference_update(subset)
             return dataset
@@ -653,7 +660,7 @@ def _greater_resolution(self):
         exclude_end = isinstance(self, expressions.GreaterExpression)
         
         def impl(dataset):
-            value = member.get_index_value(self.operands[1].value)
+            value = _get_index_value(member, self.operands[1].value)
             method = index.keys if member and member.primary else index.values
             subset = method(min = value, excludemin = exclude_end)
             dataset.intersection_update(subset)
@@ -673,7 +680,7 @@ def _lower_resolution(self):
     else:
         exclude_end = isinstance(self, expressions.LowerExpression)
         def impl(dataset):
-            value = member.get_index_value(self.operands[1].value)
+            value = _get_index_value(member, self.operands[1].value)
             method = index.keys if member and member.primary else index.values
             subset = method(max = value, excludemax = exclude_end)
             dataset.intersection_update(subset)
