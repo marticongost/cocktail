@@ -161,6 +161,7 @@ class Table(Element, CollectionDisplay):
         selection_control["name"] = self.selection_parameter
         selection_control["id"] = "selection_" + str(id)
         selection_control["value"] = id
+        selection_control["autocomplete"] = "off"
 
         if self.selection_mode == SINGLE_SELECTION:
             selection_control["type"] = "radio"
