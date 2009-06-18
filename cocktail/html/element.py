@@ -371,6 +371,10 @@ class Element(object):
             self.__parent.__children.remove(self)
             self.__parent = None
 
+    def reverse(self):
+        if self.__children:
+            self.__children.reverse()
+
     # CSS classes
     #--------------------------------------------------------------------------
 
