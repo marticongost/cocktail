@@ -6,6 +6,7 @@ u"""
 @organization:	Whads/Accent SL
 @since:			November 2007
 """
+import re
 
 XHTML1_STRICT = u"""<!DOCTYPE html
 PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
@@ -22,6 +23,15 @@ PUBLIC "-//W3C//DTD HTML 4.01//EN"
 HTML4_TRANSITIONAL = u"""<!DOCTYPE html
 PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">"""
+
+_entity_expr = re.compile("[\"<>&]")
+_entity_dict = {
+    "\"": "&quot",
+    "<": "&lt;",
+    ">": "&gt;",
+    "&": "&amp;"
+}
+_entity_translation = lambda match: _entity_dict[match.group(0)]
 
 
 class Renderer(object):
@@ -63,7 +73,18 @@ class Renderer(object):
             for key, value in element.attributes.iteritems():
                 if value is not None \
                 and not (isinstance(value, bool) and not value):
-                    self._write_attribute(key, value, out)
+
+                    out(u" ")
+
+                    if key in self.flag_attributes:
+                        if value:
+                            self._write_flag(key, out)
+                    else:
+                        value = _entity_expr.sub(
+                            _entity_translation,
+                            unicode(value)
+                        )
+                        out(key + u'="' + value + u'"')
 
             # Single tag closure
             if tag in self.single_tags:
@@ -91,16 +112,6 @@ class Renderer(object):
 
         for handler in self.__after_rendering:
             handler(element, self)
-
-    def _write_attribute(self, key, value, out):
-
-        out(u" ")
-
-        if key in self.flag_attributes:
-            if value:
-                self._write_flag(key, out)
-        else:
-            out(key + u'="' + unicode(value).replace(u'"', u'\\"') + u'"')
 
 
 class HTML4Renderer(Renderer):
