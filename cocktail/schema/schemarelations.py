@@ -236,7 +236,9 @@ class RelationMember(Member):
 
         if integral is None:
             related_type = self.related_type
-            integral = related_type and related_type.integral or False
+            integral = \
+                related_type and getattr(related_type, "integral", False) \
+                or False
 
         return integral
 
