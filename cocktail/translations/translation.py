@@ -144,7 +144,10 @@ class Translation(DictWrapper):
 
     def __call__(self, obj, **kwargs):
         
-        value = self.__strings.get(obj, "")
+        try:
+            value = self.__strings.get(obj, "")
+        except TypeError:
+            return ""
     
         if value:
 
