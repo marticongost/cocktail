@@ -335,7 +335,7 @@ class TranslationTestCase(TestCase):
 
     def test_inheritance(self):
         
-        from cocktail.schema import Schema, SchemaObject, String, Integer
+        from cocktail.schema import SchemaObject, String, Integer
 
         class Foo(SchemaObject):
             foo_a = String(translated = True)
