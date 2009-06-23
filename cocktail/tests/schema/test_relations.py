@@ -860,6 +860,33 @@ class BidirectionalTestCase(TestCase):
         self.assertTrue(backref.items.type is Bar)
         self.assertTrue(Bar.foo.related_end is backref)
 
+    def test_default(self):
+
+        from cocktail.schema import SchemaObject, Reference, Collection
+
+        class Foo(SchemaObject):
+            bars = Collection(
+                bidirectional = True
+            )
+
+        class Bar(SchemaObject):
+            foo = Reference(
+                type = Foo,
+                bidirectional = True
+            )
+
+        Foo.bars.items = Reference(type = Bar)
+        default_foo = Foo()
+        Bar.foo.default = default_foo
+
+        a = Bar()
+        b = Bar()
+
+        assert a.foo is default_foo
+        assert b.foo is default_foo
+        assert len(default_foo.bars) == 2
+        assert set(default_foo.bars) == set([a, b])
+
 
 class DisabledBidirectionalityTestCase(TestCase):
 
