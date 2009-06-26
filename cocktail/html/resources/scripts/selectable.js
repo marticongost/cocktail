@@ -38,7 +38,7 @@
             selectable._selectionStart = null;
             selectable._selectionEnd = null;            
             selectable.selectionMode = selectionMode;
-                        
+            
             // Create a dummy link element to fake focus for the element
             focusTarget = document.createElement('a');
             focusTarget.href = "javascript:;";
@@ -67,7 +67,7 @@
             
             selectableJQ.find(entryCheckboxSelector)
                 .focus(handleFocus)
-                .blur(handleBlur);        
+                .blur(handleBlur);            
 
             // Double clicking selectable._entries (change the selection and trigger an 'activated'
             // event on the table)
@@ -164,8 +164,16 @@
                 }
             }
 
-            // Togle entry selection when clicking an entry
-            selectable._entries.bind("click", selectable.clickEntryEvent);
+            selectable._entries
+                // Togle entry selection when clicking an entry
+                .bind("click", selectable.clickEntryEvent)
+                
+                // Highlight selected entries
+                .each(function () {
+                    if (jQuery(checkboxSelector + ":checked", this).length) {
+                        jQuery(this).addClass("selected");
+                    }
+                });
         });
     }
 
