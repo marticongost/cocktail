@@ -205,7 +205,7 @@ class SchemaClass(EventHub, Schema):
             else:
                 if self.member.translated:
                     language = require_content_language(language)
-                    target = instance._translations.get(language)
+                    target = instance.translations.get(language)
                     if target is None:
                         return None
                 else:
