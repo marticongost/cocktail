@@ -17,6 +17,9 @@ _selenium_site_address = None
 _selenium_sessions = []
 _current_selenium_session = None
 
+def get_selenium_enabled():
+    return _selenium_site_address is not None
+
 def get_selenium_site_address():
     return _selenium_site_address
 
