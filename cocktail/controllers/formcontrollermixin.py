@@ -148,7 +148,7 @@ class FormControllerMixin(object):
         """Fill the edited instance with data from the form."""
         self.form_adapter.import_object(
             self.form_data,
-            self._form_instance,
+            self.form_instance,
             source_schema = self.form_schema,
             target_schema = self.form_model
         )
