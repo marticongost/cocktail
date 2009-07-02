@@ -23,8 +23,11 @@ class TextArea(Element, DataBoundControl):
         if self.member:
             value = self.__content.value
             if value is not None:
-                self.__content.value = \
-                    self.member.serialize_request_value(value)
+                try:
+                    self.__content.value = \
+                        self.member.serialize_request_value(value)
+                except:
+                    pass
 
         Element._ready(self)
 

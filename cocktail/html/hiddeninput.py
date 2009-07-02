@@ -24,7 +24,10 @@ class HiddenInput(Element, DataBoundControl):
         if self.member:
             value = self["value"]
             if value is not None:
-                self["value"] = self.member.serialize_request_value(value)
+                try:
+                    self["value"] = self.member.serialize_request_value(value)
+                except:
+                    pass
     
         Element._ready(self)
 
