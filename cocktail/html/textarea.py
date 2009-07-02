@@ -19,6 +19,15 @@ class TextArea(Element, DataBoundControl):
         self.__content = Content()
         self.append(self.__content)
 
+    def _ready(self):        
+        if self.member:
+            value = self.__content.value
+            if value is not None:
+                self.__content.value = \
+                    self.member.serialize_request_value(value)
+
+        Element._ready(self)
+
     def _get_value(self):
         return self.__content.value
     
