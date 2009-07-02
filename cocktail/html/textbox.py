@@ -25,7 +25,10 @@ class TextBox(Element, DataBoundControl):
 
             value = self["value"]
             if value is not None:
-                self["value"] = self.member.serialize_request_value(value)
+                try:
+                    self["value"] = self.member.serialize_request_value(value)
+                except:
+                    pass
 
             # Limit the length of the control
             if isinstance(self.member, String) \
