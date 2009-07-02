@@ -23,6 +23,10 @@ class TextBox(Element, DataBoundControl):
 
         if self.member:
 
+            value = self["value"]
+            if value is not None:
+                self["value"] = self.member.serialize_request_value(value)
+
             # Limit the length of the control
             if isinstance(self.member, String) \
             and self.member.max is not None:

@@ -99,8 +99,11 @@ class Selector(Element, DataBoundControl):
                 )
                 self.append(entry)
     
-    def get_item_value(self, item):
-        return getattr(item, "id", None) or str(item)
+    def get_item_value(self, item):        
+        if self.member:
+            return self.member.serialize_request_value(item)
+        else:
+            return getattr(item, "id", None) or str(item)
 
     def get_item_label(self, item):
         return translations(item, default = item)
