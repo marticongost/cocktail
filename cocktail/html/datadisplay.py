@@ -377,7 +377,7 @@ class CollectionDisplay(DataDisplay):
             self.sortable = collection.allow_sorting
             self.searchable = collection.allow_filters
             self.schema = collection.schema
-            self.data = collection.page_subset()
+            self.data = collection.page_subset
             self.order = collection.order
             self.selection = collection.selection
             self.persistence_prefix = collection.persistence_prefix
