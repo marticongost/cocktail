@@ -261,7 +261,7 @@ def get_parameter(
     @param source: By default, all parameters are read from the current
         cherrypy request (which includes both GET and POST parameters), but
         this can be overriden through this parameter. Should be set to a
-        callable that takes a the name of a parameter and returns its raw
+        callable that takes the name of a parameter and returns its raw
         value, or None if the parameter can't be retrieved.
     @type source: callable
 
@@ -556,4 +556,139 @@ class FormSchemaReader(object):
 
     def create_nested_target(self, member, child_member, target):
         return {}
+
+
+class CookieParameterSource(object):
+    """A cookie based persistent source for parameters, used in conjunction
+    with L{get_parameter} or L{FormSchemaReader}.
+
+    @param source: The parameter source that provides updated values for
+        requested parameters. Defaults to X{cherrypy.request.params.get}.
+    @type source: callable
+
+    @param cookie_duration: Sets the 'max-age' attribute for generated cookies.
+        Setting it to None produces session cookies.
+    @type cookie_duration: int
+
+    @param cookie_naming: A formatting string used to determine the name of
+        parameter cookies.
+    @type cookie_naming: str
+
+    @param cookie_prefix: A string to prepend to parameter names when
+        determining the name of the cookie for a parameter. This is useful to
+        qualify parameters or constrain them to a certain context. If set to
+        None, cookie names will be the same as the name of their parameter.
+    @type cookie_prefix: str
+
+    @param cookie_encoding: The encoding to use when encoding and decoding
+        cookie values.
+    @type: str
+
+    @param cookie_path: The path for generated cookies.
+    @type cookie_path: str
+
+    @param ignore_new_values: When set to True, updated values from the
+        L{source} callable will be ignored, and only existing values persisted
+        on cookies will be taken into account. 
+    @type ignore_new_values: bool
+
+    @param update: Indicates if new values from the L{source} callable should
+        update the cookie for the parameter.
+    @type update: bool
+    """
+    source = None
+    cookie_duration = None,
+    cookie_naming = "%(prefix)s%(name)s"
+    cookie_prefix = None,
+    cookie_encoding = "utf-8"
+    cookie_path = "/"
+    ignore_new_values = False,
+    update = True
+
+    def __init__(self,
+        source = None,
+        cookie_duration = None,
+        cookie_naming = "%(prefix)s%(name)s",
+        cookie_prefix = None,
+        cookie_encoding = "utf-8",
+        cookie_path = "/",
+        ignore_new_values = False,
+        update = True):
+
+        self.source = source
+        self.cookie_duration = cookie_duration
+        self.cookie_naming = cookie_naming
+        self.cookie_prefix = cookie_prefix
+        self.cookie_encoding = cookie_encoding
+        self.cookie_path = cookie_path
+        self.ignore_new_values = ignore_new_values
+        self.update = update
+
+    def __call__(self, param_name):
+        
+        if self.ignore_new_values:
+            param_value = None
+        else:
+            source = self.source
+            if source is None:
+                source = cherrypy.request.params.get
+            param_value = source(param_name)
+        
+        cookie_name = self.get_cookie_name(param_name)
+
+        # Persist a new value
+        if param_value:
+            if self.update:
+                if not isinstance(param_value, basestring):
+                    param_value = u",".join(param_value)
+
+                if isinstance(param_value, unicode) and self.cookie_encoding:
+                    cookie_value = param_value.encode(self.cookie_encoding)
+                else:
+                    cookie_value = param_value
+
+                cherrypy.response.cookie[cookie_name] = cookie_value
+                response_cookie = cherrypy.response.cookie[cookie_name]
+                response_cookie["max-age"] = self.cookie_duration
+                response_cookie["path"] = self.cookie_path
+        else:
+            request_cookie = cherrypy.request.cookie.get(cookie_name)
+
+            if request_cookie:
+
+                # Delete a persisted value
+                if param_value == "":
+                    if self.update:
+                        del cherrypy.request.cookie[cookie_name]
+                        cherrypy.response.cookie[cookie_name] = ""
+                        response_cookie = cherrypy.response.cookie[cookie_name]
+                        response_cookie["max-age"] = 0
+                        response_cookie["path"] = self.cookie_path
+
+                # Restore a persisted value
+                else:
+                    param_value = request_cookie.value
+
+                    if param_value and self.cookie_encoding:
+                        param_value = param_value.decode(self.cookie_encoding)
+                
+        return param_value
+
+    def get_cookie_name(self, param_name):
+        """Determines the name of the cookie used to persist a parameter.
+        
+        @param param_name: The name of the persistent parameter.
+        @type param_name: str
+
+        @return: The name for the cookie.
+        @rtype: str
+        """        
+        if self.cookie_naming:
+            prefix = self.cookie_prefix
+            return self.cookie_naming % {
+                "prefix": prefix + "-" if prefix else "",
+                "name": param_name
+            }
+        else:
+            return param_name
 
