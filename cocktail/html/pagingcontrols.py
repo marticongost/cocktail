@@ -32,7 +32,7 @@ class PagingControls(Element):
         Element._ready(self)
 
         if self.user_collection:
-            self.subset = self.user_collection.subset()
+            self.subset = self.user_collection.subset
             self.page = self.user_collection.page
             self.page_size = self.user_collection.page_size
        
