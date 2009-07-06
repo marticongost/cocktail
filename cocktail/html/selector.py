@@ -8,7 +8,7 @@ u"""
 """
 from cocktail.modeling import ListWrapper, SetWrapper
 from cocktail.translations import translations
-from cocktail.schema import Boolean, Number, RelationMember, Collection
+from cocktail import schema
 from cocktail.html import Element
 from cocktail.html.databoundcontrol import DataBoundControl
 
@@ -41,7 +41,7 @@ class Selector(Element, DataBoundControl):
 
     def _get_items_from_member(self, member):
 
-        if isinstance(member, Collection):
+        if isinstance(member, schema.Collection):
             enumeration = member.items.enumeration if member.items else None
         else:
             enumeration = member.enumeration
@@ -51,19 +51,19 @@ class Selector(Element, DataBoundControl):
             if enumeration is not None:
                 return enumeration
 
-        if isinstance(member, Boolean):
+        if isinstance(member, schema.Boolean):
             return (True, False)
 
-        elif isinstance(member, Number):
+        elif isinstance(member, schema.Number):
             if member.min is not None and member.max is not None:
                 return range(member.min, member.max + 1)
 
-        elif isinstance(member, RelationMember):
+        elif isinstance(member, schema.RelationMember):
             if getattr(member, "is_persistent_relation", False):
                 return member.select_constraint_instances(
                     parent = self.data
                 )
-            elif isinstance(member, Collection):
+            elif isinstance(member, schema.Collection):
                 if member.items:
                     return self._get_items_from_member(member.items)
         
@@ -99,10 +99,20 @@ class Selector(Element, DataBoundControl):
                 )
                 self.append(entry)
     
-    def get_item_value(self, item):        
-        if self.member:            
+    def get_item_value(self, item):
+       
+        member = (
+            self.member
+            and (
+                isinstance(self.member, schema.Collection)
+                and self.member.items
+            )
+            or self.member
+        )
+
+        if member:            
             try:
-                return self.member.serialize_request_value(item)
+                return member.serialize_request_value(item)
             except:
                 pass
         
