@@ -179,8 +179,20 @@ def parse_collection(self, reader, value):
     return collection_type(
         [reader.process_value(self.items, part) for part in value]
     )
-    
+
+def serialize_collection(self, value):
+
+    if not value:
+        return ""
+    else:
+        items = self.items
+        serialize_item = self.items \
+            and self.items.serialize_request_value \
+            or unicode
+        return ", ".join(serialize_item(item) for item in value)
+
 schema.Collection.parse_request_value = parse_collection
+schema.Collection.serialize_request_value = serialize_collection
 
 NORMALIZATION_DEFAULT = strip
 STRICT_DEFAULT = True
