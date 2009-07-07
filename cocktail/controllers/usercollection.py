@@ -108,11 +108,11 @@ class UserCollection(object):
         if self.allow_member_selection:
             members = self.params.read(
                 schema.Collection("members",
-                    type = set,
+                    default_type = set,
                     items = schema.String(enumeration = self.public_members),
                     default = members
                 )
-            )
+            ) or members
 
         return members
 
