@@ -26,7 +26,7 @@ PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 
 _entity_expr = re.compile("[\"<>&]")
 _entity_dict = {
-    "\"": "&quot",
+    "\"": "&quot;",
     "<": "&lt;",
     ">": "&gt;",
     "&": "&amp;"
