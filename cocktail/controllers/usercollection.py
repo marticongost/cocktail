@@ -43,18 +43,25 @@ class UserCollection(object):
         self._root_type = root_type
         self.__base_filters = []
         self.__parameter_sources = {}
+        self.__default_source = lambda k: self.get_parameter_source(k)(k)
     
     # Parameters
     #--------------------------------------------------------------------------
     @cached_getter
     def params(self):
         params = FormSchemaReader(strict = True)
-        params.source = lambda k: self.get_parameter_source(k)(k)
+        params.source = self.__default_source
         return params
 
     def get_parameter_source(self, param_name):
-        source = self.__parameter_sources.get(param_name)
-        return source if source is not None else cherrypy.request.params.get
+        source = self.params.source
+
+        if source is self.__default_source:
+            source = self.__parameter_sources.get(param_name)
+            if source is None:
+                source = cherrypy.request.params.get
+        
+        return source
 
     def set_parameter_source(self, param_name, source):
         self.__parameter_sources[param_name] = source
