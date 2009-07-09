@@ -344,6 +344,8 @@ class RuleSet(object):
             source_schema = source_schema,
             target_schema = target_schema
         )
+
+        target_schema.adaptation_source = source_schema
         
         for rule in self.__rules:
             rule.adapt_schema(context)
