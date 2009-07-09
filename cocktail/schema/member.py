@@ -64,6 +64,9 @@ class Member(Variable):
         doc = """An event triggered when the member is added to a schema."""
     )
 
+    # Groupping
+    member_group = None
+
     # Constraints
     primary = False
     default = None
@@ -83,7 +86,7 @@ class Member(Variable):
     translated = False
     translation = None
     translation_source = None
-
+    
     # Attributes that deserve special treatment when performing a deep copy
     _special_copy_keys = set([
         "__class__", "_schema", "_validations_wrapper", "_validations"
