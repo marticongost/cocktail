@@ -478,7 +478,7 @@ def _get_constraint_filters(self, parent):
         item = parent
         while item:
             excluded_items.add(item)
-            item = item.get(relation)
+            item = item.get(self)
             
     if excluded_items:
         yield ExclusionExpression(Self, excluded_items)
