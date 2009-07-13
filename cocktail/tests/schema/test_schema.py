@@ -85,3 +85,31 @@ class SchemaEventsTestCase(TestCase):
         self.assertEqual(event.slot, scrum.inherited)
         self.assertEqual(event.schema, snutch)
 
+
+class SchemaGroupsTestCase(TestCase):
+
+    def test_grouped_members(self):
+
+        from cocktail.schema import Schema, Member
+
+        a1 = Member("a1", member_group = "a")
+        a2 = Member("a2", member_group = "a")
+        b1 = Member("b1", member_group = "b")
+        b2 = Member("b2", member_group = "b")
+        z = Member("z")
+        
+        schema = Schema(members = [a1, b2, a2, z, b1])
+        schema.members_order = ["a2", "a1", "b2", "b1"]
+        schema.groups_order = "a", "b"
+        
+        groups = schema.grouped_members()
+
+        assert len(groups) == 3
+        assert all(isinstance(group, tuple) for group in groups)
+        assert groups[0][0] == None
+        assert groups[1][0] == "a"
+        assert groups[2][0] == "b"
+        assert list(groups[0][1]) == [z]
+        assert list(groups[1][1]) == [a2, a1]
+        assert list(groups[2][1]) == [b2, b1]
+
