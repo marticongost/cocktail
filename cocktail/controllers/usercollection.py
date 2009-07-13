@@ -81,6 +81,9 @@ class UserCollection(object):
                 schema.Reference("type", class_family = type, default = type)
             )
 
+        if type is None:
+            return self._root_type
+
         return type
 
     @cached_getter
