@@ -138,6 +138,9 @@ class RelationMember(Member):
         if self.__related_end:
             return self.__related_end
         
+        if self.adaptation_source:
+            return self.adaptation_source.related_end
+
         related_end = None
         related_type = self.related_type
 
