@@ -70,6 +70,36 @@ class DeleteTestCase(TempStorageMixin, TestCase):
         child.delete()
 
         self.assertFalse(parent.children)
+    
+    def test_delete_updates_self_contained_relation(self):
+
+        from cocktail.schema import Reference, Collection
+        from cocktail.persistence import PersistentObject
+
+        class A(PersistentObject):
+            pass
+
+        class B(PersistentObject):
+            pass
+
+        A.add_member(
+            Collection(
+                "b",
+                items = Reference(type = B),
+                related_end = Collection()
+            )
+        )
+
+        a = A()
+        a.insert()
+
+        b = B()
+        b.insert()
+
+        a.b.append(b)        
+        b.delete()
+
+        assert not a.b
 
     def test_delete_events(self):
 

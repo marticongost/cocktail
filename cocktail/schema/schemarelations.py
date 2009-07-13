@@ -188,7 +188,11 @@ class RelationMember(Member):
 
         return related_end
 
-    def _set_related_end(self, related_end):        
+    def _set_related_end(self, related_end):
+        
+        if related_end is not None:
+            self.bidirectional = True
+
         self.__related_end = related_end
         self._bind_orphan_related_end()
 
@@ -202,7 +206,7 @@ class RelationMember(Member):
         event.source._bind_orphan_related_end()
 
     def _bind_orphan_related_end(self):
-        
+
         related_end = self.__related_end
 
         if related_end \
