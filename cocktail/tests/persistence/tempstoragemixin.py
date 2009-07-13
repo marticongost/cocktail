@@ -15,6 +15,8 @@ class TempStorageMixin(object):
         from ZODB.FileStorage import FileStorage
         from cocktail.persistence import datastore
         self._temp_dir = mkdtemp()
+        datastore.abort()
+        datastore.close()
         datastore.storage = FileStorage(join(self._temp_dir, "testdb.fs"))
 
     def tearDown(self):
