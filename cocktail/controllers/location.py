@@ -7,7 +7,9 @@ u"""
 @since:			October 2008
 """
 from __future__ import with_statement
+from cgi import parse_qs
 from urllib import urlencode
+from urlparse import urlparse
 import cherrypy
 from cocktail.modeling import getter
 from cocktail.translations import translations, get_language, language_context
@@ -26,9 +28,17 @@ class Location(object):
     form_data = None
     relative = False
 
-    def __init__(self):
+    def __init__(self, url = None):
         self.query_string = {}
         self.form_data = {}
+
+        if url:
+            parts = urlparse(url)
+            self.scheme = parts.scheme
+            self.host = parts.hostname
+            self.port = parts.port
+            self.path_info = parts.path
+            self.query_string = parse_qs(parts.query)
 
     @classmethod
     def get_current(cls):
