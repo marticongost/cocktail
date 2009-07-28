@@ -200,15 +200,16 @@ class Collection(RelationMember):
         if value is not None:
             
             item_schema = self.items
-            relation_constraints = self.resolve_constraint(
-                    self.relation_constraints, context)
+            validable = context.validable
+            context.enter(self, value)
             
-            if item_schema is not None or relation_constraints:
+            try:
+                context.setdefault("relation_parent", context.validable)
+           
+                relation_constraints = self.resolve_constraint(
+                        self.relation_constraints, context)
             
-                validable = context.validable
-                context.enter(self, value)
-
-                try:
+                if item_schema is not None or relation_constraints:
                     for item in value:
 
                         if item_schema:
@@ -224,8 +225,8 @@ class Collection(RelationMember):
                                 ):
                                     yield RelationConstraintError(
                                         self, item, context, constraint)
-                finally:
-                    context.leave()
+            finally:
+                context.leave()
 
 
 # Generic add/remove methods

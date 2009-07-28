@@ -10,6 +10,29 @@ from unittest import TestCase
 from cocktail.tests.utils import EventLog
 
 
+class ClassFamilyTestCase(TestCase):
+
+    def test_class_family(self):
+
+        from cocktail.schema import Reference
+        
+        class Foo(object):
+            pass
+
+        class Bar(Foo):
+            pass
+
+        class Spam(object):
+            pass
+
+        ref = Reference(class_family = Foo)
+
+        assert ref.validate(None)
+        assert ref.validate(Foo)
+        assert ref.validate(Bar)
+        assert not ref.validate(Spam)
+
+
 class OneToOneTestCase(TestCase):
 
     def get_entities(self):

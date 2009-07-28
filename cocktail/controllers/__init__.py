@@ -19,11 +19,10 @@ from cocktail.controllers.location import Location
 from cocktail.controllers.viewstate import (
     get_state,
     view_state,
-    view_state_form,
-    get_persistent_param
+    view_state_form
 )
 from cocktail.controllers.parameters import (
-    serialize_parameter, get_parameter, FormSchemaReader
+    serialize_parameter, get_parameter, FormSchemaReader, CookieParameterSource
 )
 from cocktail.controllers.usercollection import UserCollection
 import cocktail.controllers.erroremail

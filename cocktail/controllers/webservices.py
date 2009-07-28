@@ -184,7 +184,7 @@ class PersistentClassWebService(RequestHandler):
         user_collection = UserCollection(self.type)
         self._init_user_collection(user_collection)
         user_collection.read()
-        return user_collection.subset()
+        return user_collection.subset
 
     def _init_user_collection(self, user_collection):
         user_collection.allow_paging = False

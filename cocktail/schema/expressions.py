@@ -298,7 +298,10 @@ class InclusionExpression(Expression):
     by_key = False
     
     def op(self, a, b):
-        return a in b
+        if self.by_key:
+            return a.id in b
+        else:
+            return a in b
 
 
 class ExclusionExpression(Expression):
@@ -306,7 +309,10 @@ class ExclusionExpression(Expression):
     by_key = False
 
     def op(self, a, b):
-        return a not in b
+        if self.by_key:
+            return a.id not in b
+        else:
+            return a not in b
 
 
 class ContainsExpression(Expression):

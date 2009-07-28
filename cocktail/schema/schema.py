@@ -43,6 +43,7 @@ class Schema(Member):
     """
     primary_member = None
     members_order = None
+    groups_order = None
     integral = False
 
     member_added = Event("""
@@ -225,7 +226,10 @@ class Schema(Member):
             )
 
         member._schema = None
-        del self.__members[member]
+        del self.__members[member.name]
+
+        # Remove the member descriptor
+        delattr(self, member.name)
 
     def members(self, recursive = True):
         """A dictionary with all the members defined by the schema and its
@@ -453,4 +457,46 @@ class Schema(Member):
             )
 
         return ordered_members
+
+    def grouped_members(self, recursive = True):
+        """Returns the groups of members defined by the schema.
+        
+        @param recursive: Indicates if the returned list should contain members
+            inherited from base schemas (True) or if only members directly
+            defined by the schema should be included.
+        @type recursive: bool
+
+        @return: A list of groups in the schema and their members, in order.
+            Each group is represented with a tuple containing its name and the
+            list of its members.
+        @rtype: list(tuple(str, L{Member<cocktail.schema.member.Member>} sequence))
+        """
+        members_by_group = {}
+
+        for member in self.ordered_members(recursive):
+            group_members = members_by_group.get(member.member_group)
+            if group_members is None:
+                group_members = []
+                members_by_group[member.member_group] = group_members
+            group_members.append(member)
+
+        if self.groups_order:
+            groups = []
+            default_group_ordered = False
+
+            for group_name in self.groups_order:
+                group_members = members_by_group.get(group_name)
+                if group_name is None:
+                    default_group_ordered = True
+                if group_members:
+                    groups.append((group_name, group_members))
+            
+            if not default_group_ordered:
+                group_members = members_by_group.get(None)
+                if group_members:
+                    groups.insert(0, (None, group_members))
+        else:
+            groups = members_by_group.items()
+ 
+        return groups
 
