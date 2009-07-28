@@ -15,6 +15,9 @@ from cocktail.modeling import getter, OrderedSet
 from cocktail.events import Event, event_handler
 from cocktail.schema import SchemaClass, SchemaObject, Reference, Collection
 from cocktail.schema.exceptions import ValidationError
+from cocktail.schema.expressions import (
+    Expression, CustomExpression, ExclusionExpression, Self
+)
 from cocktail.persistence.datastore import datastore
 from cocktail.persistence.incremental_id import incremental_id
 from cocktail.persistence.query import Query
@@ -420,13 +423,65 @@ schema.RelationMember.select_constraint_instances = \
 def _get_constraint_filters(self, parent):
     
     context = schema.ValidationContext(self, parent)
+    context["relation_parent"] = parent
     constraints = self.resolve_constraint(self.relation_constraints, context)
     
     if constraints:
         for constraint in constraints:
-            if not isinstance(constraint, schema.expressions.Expression):
-                constraint = schema.expressions.CustomExpression(constraint)
+            if not isinstance(constraint, Expression):
+                constraint = CustomExpression(constraint)
             yield constraint
+
+    # Prevent cycles in recursive relations
+    excluded_items = set()
+    
+    # References: exclude the parent and its descendants
+    if isinstance(self, schema.Reference) and not self.cycles_allowed:
+        if self.bidirectional:
+            # 1-n
+            if isinstance(self.related_end, schema.Collection):
+                def recursive_exclusion(item):
+                    excluded_items.add(item)
+                    children = item.get(self.related_end)
+                    if children:
+                        for child in children:
+                            recursive_exclusion(child)
+
+                recursive_exclusion(parent)
+
+            # 1-1
+            else:
+                item = parent
+                while item:
+                    excluded_items.add(item)
+                    item = item.get(self.related_end)
+        # 1-?
+        else:
+            excluded_items.add(parent)
+
+            def forms_cycle(item):
+                related_item = item.get(self)
+                return (
+                    related_item is parent
+                    or (related_item
+                        and forms_cycle(related_item))
+                )
+
+            user_collection.add_base_filter(
+                CustomExpression(lambda item: not forms_cycle(item))
+            )
+
+    # Collections: exclude the parent and its ancestors
+    elif self.bidirectional \
+    and isinstance(self.related_end, schema.Reference) \
+    and not self.related_end.cycles_allowed:
+        item = parent
+        while item:
+            excluded_items.add(item)
+            item = item.get(self)
+            
+    if excluded_items:
+        yield ExclusionExpression(Self, excluded_items)
 
 schema.RelationMember.get_constraint_filters = _get_constraint_filters
 

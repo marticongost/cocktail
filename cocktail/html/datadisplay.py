@@ -23,6 +23,7 @@ class DataDisplay(object):
     """Base class for all visual components that can display schema-based data.
     """
     data = None
+    persistent_object = None
     schema = None
     editable = True
     translations = None
@@ -291,6 +292,7 @@ class DataDisplay(object):
 
         display.data_display = self
         display.data = obj
+        display.persistent_object = self.persistent_object
         display.member = member
         display.language = get_content_language()
 
@@ -377,7 +379,7 @@ class CollectionDisplay(DataDisplay):
             self.sortable = collection.allow_sorting
             self.searchable = collection.allow_filters
             self.schema = collection.schema
-            self.data = collection.page_subset()
+            self.data = collection.page_subset
             self.order = collection.order
             self.selection = collection.selection
             self.persistence_prefix = collection.persistence_prefix

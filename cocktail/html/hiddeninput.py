@@ -19,6 +19,18 @@ class HiddenInput(Element, DataBoundControl):
         DataBoundControl.__init__(self)
         self["type"] = "hidden"
 
+    def _ready(self):
+
+        if self.member:
+            value = self["value"]
+            if value is not None:
+                try:
+                    self["value"] = self.member.serialize_request_value(value)
+                except:
+                    pass
+    
+        Element._ready(self)
+
     def _get_value(self):
         return self["value"]
     

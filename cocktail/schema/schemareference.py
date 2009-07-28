@@ -12,7 +12,10 @@ from cocktail.schema.schemarelations import RelationMember
 from cocktail.schema.accessors import get_accessor, get
 from cocktail.schema.expressions import HasExpression
 from cocktail.schema.exceptions import (
-    ClassFamilyError, RelationCycleError, RelationConstraintError
+    TypeCheckError,
+    ClassFamilyError,
+    RelationCycleError,
+    RelationConstraintError
 )
 
 
@@ -72,34 +75,35 @@ class Reference(RelationMember):
         if value is not None:
  
             # Apply the 'class_family' constraint
-            if isinstance(value, type):
-
-                class_family = \
-                    self.resolve_constraint(self.class_family, context)
-
-                if class_family and not issubclass(value, class_family):
+            class_family = \
+                self.resolve_constraint(self.class_family, context)
+            
+            if class_family:
+                if not isinstance(value, type):
+                    yield TypeCheckError(self, value, context, type)
+                elif not issubclass(value, class_family):
                     yield ClassFamilyError(self, value, context, class_family)
+            else:
+                # Apply the 'cycles_allowed' constraint
+                if not self.cycles_allowed:
+                    obj = get(value, self.name, None)
+                    while obj:
+                        if obj is value:
+                            yield RelationCycleError(self, value, context)
+                            break
+                        obj = get(obj, self.name, None)
 
-            # Apply the 'cycles_allowed' constraint
-            if not self.cycles_allowed:
-                obj = get(value, self.name, None)
-                while obj:
-                    if obj is value:
-                        yield RelationCycleError(self, value, context)
-                        break
-                    obj = get(obj, self.name, None)
+                # Apply relation constraints
+                relation_constraints = \
+                    self.resolve_constraint(self.relation_constraints, context)
 
-            # Apply relation constraints
-            relation_constraints = \
-                self.resolve_constraint(self.relation_constraints, context)
-
-            if relation_constraints:
-                for constraint in relation_constraints:
-                    if not self.validate_relation_constraint(
-                        constraint,
-                        context.validable,
-                        value
-                    ):
-                        yield RelationConstraintError(
-                            self, value, context, constraint)
+                if relation_constraints:
+                    for constraint in relation_constraints:
+                        if not self.validate_relation_constraint(
+                            constraint,
+                            context.validable,
+                            value
+                        ):
+                            yield RelationConstraintError(
+                                self, value, context, constraint)
 

@@ -68,7 +68,7 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
                     py:id="filters_selector"
                     py:tag="div"
                     py:filters="${self.user_collection.user_filters}"
-                    py:available_filters="${self.user_collection.available_filters}"/>
+                    py:available_filters="${self.user_collection.available_user_filters}"/>
             </py:block>
         </py:ready>
     </div>
@@ -128,7 +128,7 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
                             py:id="languages_selector"
                             py:name="language"
                             py:items="@{self.available_languages}"
-                            py:value="@{self.visible_languages}"/>
+                            py:value="@{self.user_collection.languages}"/>
                     </div>
                 </div>
 
@@ -174,7 +174,7 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
 
     <py:ready>
         <?py
-        self.visible_results = bool(self.user_collection.page_subset())
+        self.visible_results = bool(self.user_collection.page_subset)
         self.collection_display.user_collection = self.user_collection
         self.collection_display.selection_mode = self.selection_mode        
         self.collection_display.visible = self.visible_results

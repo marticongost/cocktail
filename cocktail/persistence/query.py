@@ -533,7 +533,7 @@ class Query(object):
         
         child_query = self.__class__(
             self.__type,
-            self.filters if filters is inherit else filters,
+            self.filters if filters is inherit else filters + self.filters,
             self.order if order is inherit else order,
             self.range if range is inherit else range,
             self.__base_collection)

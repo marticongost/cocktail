@@ -77,7 +77,7 @@ def cached_getter(function):
         def clear(self, instance):
             try:
                 delattr(instance, key)
-            except KeyError:
+            except AttributeError:
                 pass
 
     return CachedGetter(wrapper, doc = function.__doc__)
