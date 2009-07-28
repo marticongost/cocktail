@@ -313,7 +313,7 @@ class Query(object):
         return [
             (filter, resolution[1])
             for resolution, filter
-            in sorted((expr.resolve_filter(), expr) for expr in filters)
+            in sorted((expr.resolve_filter(self), expr) for expr in filters)
         ]
     
     def _get_expression_index(self, expr, member = None):
@@ -577,12 +577,12 @@ def _get_index_value(member, value):
         value = (get_content_language(), value)
     return value
 
-def _expression_resolution(self):
+def _expression_resolution(self, query):
     return ((0, 0), None)
     
 expressions.Expression.resolve_filter = _expression_resolution
 
-def _equal_resolution(self):
+def _equal_resolution(self, query):
 
     member, index, unique = _get_filter_info(self)     
 
@@ -617,7 +617,7 @@ def _equal_resolution(self):
 
 expressions.EqualExpression.resolve_filter = _equal_resolution
 
-def _not_equal_resolution(self):
+def _not_equal_resolution(self, query):
 
     member, index, unique = _get_filter_info(self)     
 
@@ -650,7 +650,7 @@ def _not_equal_resolution(self):
 
 expressions.NotEqualExpression.resolve_filter = _not_equal_resolution
 
-def _greater_resolution(self):
+def _greater_resolution(self, query):
 
     member, index, unique = _get_filter_info(self)
 
@@ -671,7 +671,7 @@ def _greater_resolution(self):
 expressions.GreaterExpression.resolve_filter = _greater_resolution
 expressions.GreaterEqualExpression.resolve_filter = _greater_resolution
 
-def _lower_resolution(self):
+def _lower_resolution(self, query):
 
     member, index, unique = _get_filter_info(self)
 
@@ -691,7 +691,7 @@ def _lower_resolution(self):
 expressions.LowerExpression.resolve_filter = _lower_resolution
 expressions.LowerEqualExpression.resolve_filter = _lower_resolution
 
-def _inclusion_resolution(self):
+def _inclusion_resolution(self, query):
 
     if self.operands and self.operands[0] is expressions.Self:
         
@@ -710,7 +710,7 @@ def _inclusion_resolution(self):
 
 expressions.InclusionExpression.resolve_filter = _inclusion_resolution
 
-def _exclusion_resolution(self):
+def _exclusion_resolution(self, query):
 
     if self.operands and self.operands[0] is expressions.Self:
         
@@ -730,13 +730,22 @@ def _exclusion_resolution(self):
 expressions.ExclusionExpression.resolve_filter = _exclusion_resolution
 
 # TODO: Provide an index aware custom implementation for StartsWithExpression
-expressions.StartsWithExpression.resolve_filter = lambda self: ((0, -1), None)
-expressions.EndsWithExpression.resolve_filter = lambda self: ((0, -1), None)
-expressions.ContainsExpression.resolve_filter = lambda self: ((0, -2), None)
-expressions.MatchExpression.resolve_filter = lambda self: ((0, -3), None)
-expressions.SearchExpression.resolve_filter = lambda self: ((0, -4), None)
+expressions.StartsWithExpression.resolve_filter = \
+    lambda self, query: ((0, -1), None)
 
-def _has_resolution(self):
+expressions.EndsWithExpression.resolve_filter = \
+    lambda self, query: ((0, -1), None)
+
+expressions.ContainsExpression.resolve_filter = \
+    lambda self, query: ((0, -2), None)
+
+expressions.MatchExpression.resolve_filter = \
+    lambda self, query: ((0, -3), None)
+
+expressions.SearchExpression.resolve_filter = \
+    lambda self, query: ((0, -4), None)
+
+def _has_resolution(self, query):
 
     index = self.relation.index
     unique = not isinstance(index, Index)
