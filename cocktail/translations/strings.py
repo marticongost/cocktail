@@ -167,32 +167,50 @@ translations.define("jquery_date format",
 )
 
 # -------- ABBREVIATED TRANSLATIONS OF MONTHS
-translations.define("1 ABBR", ca = u"Gen", es = u"Ene", en = u"Jan")
-translations.define("2 ABBR", ca = u"Feb", es = u"Feb", en = u"Feb")
-translations.define("3 ABBR", ca = u"Mar", es = u"Mar", en = u"Mar")
-translations.define("4 ABBR", ca = u"Abr", es = u"Abr", en = u"Apr")
-translations.define("5 ABBR", ca = u"Mai", es = u"May", en = u"May")
-translations.define("6 ABBR", ca = u"Jun", es = u"Jun", en = u"Jun")
-translations.define("7 ABBR", ca = u"Jul", es = u"Jul", en = u"Jul")
-translations.define("8 ABBR", ca = u"Ago", es = u"Ago", en = u"Aug")
-translations.define("9 ABBR", ca = u"Set", es = u"Sep", en = u"Sep")
-translations.define("10 ABBR", ca = u"Oct", es = u"Oct", en = u"Oct")
-translations.define("11 ABBR", ca = u"Nov", es = u"Nov", en = u"Nov")
-translations.define("12 ABBR", ca = u"Des", es = u"Dic", en = u"Dec")
+translations.define("month 1 abbr", ca = u"Gen", es = u"Ene", en = u"Jan")
+translations.define("month 2 abbr", ca = u"Feb", es = u"Feb", en = u"Feb")
+translations.define("month 3 abbr", ca = u"Mar", es = u"Mar", en = u"Mar")
+translations.define("month 4 abbr", ca = u"Abr", es = u"Abr", en = u"Apr")
+translations.define("month 5 abbr", ca = u"Mai", es = u"May", en = u"May")
+translations.define("month 6 abbr", ca = u"Jun", es = u"Jun", en = u"Jun")
+translations.define("month 7 abbr", ca = u"Jul", es = u"Jul", en = u"Jul")
+translations.define("month 8 abbr", ca = u"Ago", es = u"Ago", en = u"Aug")
+translations.define("month 9 abbr", ca = u"Set", es = u"Sep", en = u"Sep")
+translations.define("month 10 abbr", ca = u"Oct", es = u"Oct", en = u"Oct")
+translations.define("month 11 abbr", ca = u"Nov", es = u"Nov", en = u"Nov")
+translations.define("month 12 abbr", ca = u"Des", es = u"Dic", en = u"Dec")
 
 # -------- FULLTEXT TRANSLATIONS OF MONTHS
-translations.define("1 TEXT", ca = u"Gener", es = u"Enero", en = u"January")
-translations.define("2 TEXT", ca = u"Febrer", es = u"Febrero", en = u"February")
-translations.define("3 TEXT", ca = u"Març", es = u"Marzo", en = u"March")
-translations.define("4 TEXT", ca = u"Abril", es = u"Abril", en = u"April")
-translations.define("5 TEXT", ca = u"Maig", es = u"Mayo", en = u"May")
-translations.define("6 TEXT", ca = u"Juny", es = u"Junio", en = u"June")
-translations.define("7 TEXT", ca = u"Juliol", es = u"Julio", en = u"July")
-translations.define("8 TEXT", ca = u"Agost", es = u"Agosto", en = u"August")
-translations.define("9 TEXT", ca = u"Setembre", es = u"Septiembre", en = u"September")
-translations.define("10 TEXT", ca = u"Octubre", es = u"Octubre", en = u"October")
-translations.define("11 TEXT", ca = u"Novembre", es = u"Noviembre", en = u"November")
-translations.define("12 TEXT", ca = u"Decembre", es = u"Diciembre", en = u"December")
+translations.define("month 1", ca = u"Gener", es = u"Enero", en = u"January")
+translations.define("month 2", ca = u"Febrer", es = u"Febrero", en = u"February")
+translations.define("month 3", ca = u"Març", es = u"Marzo", en = u"March")
+translations.define("month 4", ca = u"Abril", es = u"Abril", en = u"April")
+translations.define("month 5", ca = u"Maig", es = u"Mayo", en = u"May")
+translations.define("month 6", ca = u"Juny", es = u"Junio", en = u"June")
+translations.define("month 7", ca = u"Juliol", es = u"Julio", en = u"July")
+translations.define("month 8", ca = u"Agost", es = u"Agosto", en = u"August")
+translations.define("month 9", ca = u"Setembre", es = u"Septiembre", en = u"September")
+translations.define("month 10", ca = u"Octubre", es = u"Octubre", en = u"October")
+translations.define("month 11", ca = u"Novembre", es = u"Noviembre", en = u"November")
+translations.define("month 12", ca = u"Decembre", es = u"Diciembre", en = u"December")
+
+# -------- ABBREVIATED TRANSLATIONS OF WEEKDAYS
+translations.define("weekday 0 abbr", ca = u"Dl", es = u"Lun", en = u"Mon")
+translations.define("weekday 1 abbr", ca = u"Dt", es = u"Mar", en = u"Tue")
+translations.define("weekday 2 abbr", ca = u"Dc", es = u"Mié", en = u"Wed")
+translations.define("weekday 3 abbr", ca = u"Dj", es = u"Jue", en = u"Thu")
+translations.define("weekday 4 abbr", ca = u"Dv", es = u"Vie", en = u"Fri")
+translations.define("weekday 5 abbr", ca = u"Ds", es = u"Sáb", en = u"Sat")
+translations.define("weekday 6 abbr", ca = u"Dg", es = u"Dom", en = u"Sun")
+
+# -------- FULLTEXT TRANSLATIONS OF WEEKDAYS
+translations.define("weekday 0", ca = u"Dilluns", es = u"Lunes", en = u"Monday")
+translations.define("weekday 1", ca = u"Dimarts", es = u"Martes", en = u"Tuesday")
+translations.define("weekday 2", ca = u"Dimecres", es = u"Miércoles", en = u"Wednesday")
+translations.define("weekday 3", ca = u"Dijous", es = u"Jueves", en = u"Thursday")
+translations.define("weekday 4", ca = u"Divendres", es = u"Viernes", en = u"Friday")
+translations.define("weekday 5", ca = u"Dissabte", es = u"Sábado", en = u"Saturday")
+translations.define("weekday 6", ca = u"Diumenge", es = u"Domingo", en = u"Sunday")
 
 DATE_STYLE_NUMBERS = 1
 DATE_STYLE_ABBR = 2
@@ -204,12 +222,12 @@ def _date_instance_ca(instance, style = DATE_STYLE_NUMBERS):
     if style == DATE_STYLE_ABBR :
         return u"%s %s %s" % \
             (instance.day,
-            translations(u"%s %s" % (instance.month,"ABBR"), "ca"),
+            translations(u"month %s %s" % (instance.month,"abbr"), "ca"),
             instance.year)
     if style == DATE_STYLE_TEXT :
         return u"%s %s %s" % \
             (instance.day,
-            translations(u"%s %s" % (instance.month,"TEXT"), "ca"),
+            translations(u"month %s" % (instance.month), "ca"),
             instance.year)
 
 def _date_instance_es(instance, style = DATE_STYLE_NUMBERS):
@@ -218,12 +236,12 @@ def _date_instance_es(instance, style = DATE_STYLE_NUMBERS):
     if style == DATE_STYLE_ABBR :
         return u"%s %s %s" % \
             (instance.day,
-            translations(u"%s %s" % (instance.month,"ABBR"), "es"),
+            translations(u"month %s %s" % (instance.month,"abbr"), "es"),
             instance.year)
     if style == DATE_STYLE_TEXT :
         return u"%s %s %s" % \
             (instance.day,
-            translations(u"%s %s" % (instance.month,"TEXT"), "es"),
+            translations(u"month %s" % (instance.month), "es"),
             instance.year)
 
 def _date_instance_en(instance, style = DATE_STYLE_NUMBERS):
@@ -232,12 +250,12 @@ def _date_instance_en(instance, style = DATE_STYLE_NUMBERS):
     if style == DATE_STYLE_ABBR :
         return u"%s %s %s" % \
             (instance.year,
-            translations(u"%s %s" % (instance.month,"ABBR"), "en"),
+            translations(u"month %s %s" % (instance.month,"abbr"), "en"),
             instance.day)
     if style == DATE_STYLE_TEXT :
         return u"%s %s %s" % \
             (instance.year,
-            translations(u"%s %s" % (instance.month,"TEXT"), "en"),
+            translations(u"month %s" % (instance.month), "en"),
             instance.day)
 
 translations.define("date-instance",
