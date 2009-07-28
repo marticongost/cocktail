@@ -31,6 +31,12 @@ def deep(context, key, value):
     return deepcopy(value)
 
 
+IMPLICIT_COPY_DEFAULT = True
+COPY_VALIDATIONS_DEFAULT = True
+COPY_MODE_DEFAULT = reference
+COLLECTION_COPY_MODE_DEFAULT = reference
+
+
 class AdaptationContext(object):
 
     def __init__(self,
@@ -41,7 +47,8 @@ class AdaptationContext(object):
         source_accessor = None,
         target_accessor = None,
         copy_mode = None,
-        collection_copy_mode = None):
+        collection_copy_mode = None,
+        copy_validations = None):
 
         self.source_object = source_object
         self.target_object = target_object
@@ -52,6 +59,7 @@ class AdaptationContext(object):
         self._consumed_keys = set()            
         self.copy_mode = copy_mode
         self.collection_copy_mode = collection_copy_mode
+        self.copy_validations = copy_validations
 
     def get(self, key, default = undefined, language = None):
         """Gets a key from the source object.
@@ -125,20 +133,22 @@ class Adapter(object):
     def __init__(self,
         source_accessor = None,
         target_accessor = None,
-        implicit_copy = True,
-        copy_validations = True,
-        copy_mode = None,
-        collection_copy_mode = None):
+        implicit_copy = IMPLICIT_COPY_DEFAULT,
+        copy_validations = COPY_VALIDATIONS_DEFAULT,
+        copy_mode = COPY_MODE_DEFAULT,
+        collection_copy_mode = COLLECTION_COPY_MODE_DEFAULT):
 
-        self.source_accessor = source_accessor
-        self.target_accessor = target_accessor
-        self.__implicit_copy = implicit_copy
-        self.copy_validations = copy_validations
-        self.__copy_mode = copy_mode
-        self.__collection_copy_mode = collection_copy_mode
         self.import_rules = RuleSet()
         self.export_rules = RuleSet()        
 
+        self.source_accessor = source_accessor
+        self.target_accessor = target_accessor
+
+        self.implicit_copy = implicit_copy
+        self.copy_validations = copy_validations
+        self.copy_mode = copy_mode
+        self.collection_copy_mode = collection_copy_mode
+        
     def import_schema(self, source_schema, target_schema = None):
 
         if target_schema is None:
@@ -161,9 +171,7 @@ class Adapter(object):
         source_schema = None,
         target_schema = None,
         source_accessor = None,
-        target_accessor = None,
-        copy_mode = None,
-        collection_copy_mode = None):
+        target_accessor = None):
         
         self.import_rules.adapt_object(
             source_object,
@@ -171,9 +179,7 @@ class Adapter(object):
             source_accessor or self.source_accessor,
             target_accessor or self.target_accessor,
             source_schema,
-            target_schema,
-            copy_mode or self.copy_mode,
-            collection_copy_mode or self.collection_copy_mode)
+            target_schema)
 
     def export_object(self,
         source_object,
@@ -181,9 +187,7 @@ class Adapter(object):
         source_schema = None,
         target_schema = None,
         source_accessor = None,
-        target_accessor = None,
-        copy_mode = None,
-        collection_copy_mode = None):
+        target_accessor = None):
         
         self.export_rules.adapt_object(
             source_object,
@@ -191,9 +195,7 @@ class Adapter(object):
             source_accessor or self.source_accessor,
             target_accessor or self.target_accessor,
             source_schema,
-            target_schema,
-            copy_mode or self.copy_mode,
-            collection_copy_mode or self.collection_copy_mode)
+            target_schema)
 
     def _get_implicit_copy(self):
         return self.__implicit_copy
@@ -203,7 +205,37 @@ class Adapter(object):
         self.import_rules.implicit_copy = value
         self.export_rules.implicit_copy = value
 
-    implicit_copy = property(_get_implicit_copy, _set_implicit_copy)
+    implicit_copy = property(_get_implicit_copy, _set_implicit_copy,
+        doc = """Indicates if members of the source schema that are not
+        covered by any adaptation rule should be implicitly copied.
+        
+        Note that setting this property will alter the analogous attribute on
+        both of the adapter's import and export rule sets (but the opposite
+        isn't true; setting X{collection_copy_mode} on either rule set won't
+        affect the adapter).
+        
+        @type: bool
+        """)
+
+    def _get_copy_validations(self):
+        return self.__copy_validations
+
+    def _set_copy_validations(self, copy_validations):
+        self.__copy_validations = copy_validations
+        self.import_rules.copy_validations = copy_validations
+        self.export_rules.copy_validations = copy_validations
+
+    copy_validatioons = property(_get_copy_validations, _set_copy_validations,
+        doc = """Indicates if validations from the source schema and members
+        should be added to adapted schemas and members.
+
+        Note that setting this property will alter the analogous attribute on
+        both of the adapter's import and export rule sets (but the opposite
+        isn't true; setting X{collection_copy_mode} on either rule set won't
+        affect the adapter).
+
+        @type: bool
+        """)
 
     def _get_copy_mode(self):
         return self.__copy_mode
@@ -271,23 +303,17 @@ class Adapter(object):
         mapping,
         export_transform = None,
         import_transform = None,
-        copy_validations = None,
         import_condition = None,
         export_condition = None):
         
-        if copy_validations is None:
-            copy_validations = self.copy_validations
-
         export_rule = Copy(
                         mapping,
-                        copy_validations = copy_validations,
                         transform = export_transform,
                         condition = export_condition)
 
         import_rule = Copy(
                         dict((value, key)
                             for key, value in export_rule.mapping.iteritems()),
-                        copy_validations = copy_validations,
                         transform = import_transform,
                         condition = import_condition)
 
@@ -322,11 +348,13 @@ class Adapter(object):
 
 class RuleSet(object):
 
-    implicit_copy = True
-    copy_mode = None
-    collection_copy_mode = None
     target_accessor = None
     source_accessor = None
+
+    implicit_copy = IMPLICIT_COPY_DEFAULT
+    copy_validations = COPY_VALIDATIONS_DEFAULT
+    copy_mode = COPY_MODE_DEFAULT
+    collection_copy_mode = COLLECTION_COPY_MODE_DEFAULT
 
     def __init__(self, *rules):
         self.__rules = list(rules)
@@ -342,17 +370,24 @@ class RuleSet(object):
 
         context = AdaptationContext(
             source_schema = source_schema,
-            target_schema = target_schema
+            target_schema = target_schema,
+            copy_validations = self.copy_validations
         )
         
         for rule in self.__rules:
             rule.adapt_schema(context)
-
+        
         if self.implicit_copy:
             copy_rule = Copy(
                 set(source_schema.members()) - context._consumed_keys
             )
             copy_rule.adapt_schema(context)
+
+        if self.copy_validations:
+            target_validations = target_schema.validations()
+            for source_validation in source_schema.validations():
+                if source_validation not in target_validations:
+                    target_schema.add_validation(source_validation)
 
         # Preserve member order
         target_members = target_schema.members()
@@ -374,9 +409,7 @@ class RuleSet(object):
         source_accessor = None,
         target_accessor = None,
         source_schema = None,
-        target_schema = None,
-        copy_mode = None,
-        collection_copy_mode = None):
+        target_schema = None):
         
         context = AdaptationContext(
             source_object = source_object,
@@ -389,12 +422,8 @@ class RuleSet(object):
                 or get_accessor(target_object),
             source_schema = source_schema,
             target_schema = target_schema,
-            copy_mode = self.copy_mode
-                or self.copy_mode
-                or reference,
-            collection_copy_mode = collection_copy_mode
-                or self.collection_copy_mode
-                or reference
+            copy_mode = self.copy_mode,
+            collection_copy_mode = self.collection_copy_mode
         )
       
         for rule in self.__rules:
@@ -403,7 +432,7 @@ class RuleSet(object):
         if self.implicit_copy:
             copy_rule = Copy(
                 set(source_schema.members()) - context._consumed_keys
-            )            
+            )
             copy_rule.adapt_object(context)
 
 
@@ -439,7 +468,6 @@ class Copy(Rule):
         mapping,
         properties = None,
         transform = None,
-        copy_validations = True,
         condition = None):
 
         self.mapping = mapping
@@ -485,6 +513,12 @@ class Copy(Rule):
                 if self.properties:
                     for prop_name, prop_value in self.properties.iteritems():
                         setattr(target_member, prop_name, prop_value)
+
+                if context.copy_validations:
+                    target_validations = target_member.validations()
+                    for source_validation in source_member.validations():
+                        if source_validation not in target_validations:
+                            target_member.add_validation(source_validation)
 
                 if not target_member.schema:
                     context.target_schema.add_member(target_member)
