@@ -194,9 +194,6 @@ class PersistentObject(SchemaObject, Persistent):
         
         @return: The requested object, if found. Otherwise, None.
         @rtype: L{PersistentObject} or None
-
-        @raise ValueError: Raised when given insufficient, excessive or
-            otherwise wrong parameters.
         """
         if _id is not None:
             
@@ -260,6 +257,28 @@ class PersistentObject(SchemaObject, Persistent):
 
         return match
     
+    @classmethod
+    def require_instance(cls, _id = None, **criteria):
+        """Obtains an instance of the class or raises an exception.
+
+        @param _id: The primary identifier of the object to retrieve.
+
+        @param criteria: A single keyword parameter, indicating the name of a
+            unique member and its value. It is mutually exclusive with L{_id}.
+        
+        @return: The requested object, if found. Otherwise, None.
+        @rtype: L{PersistentObject} or None
+
+        @raise L{InstanceNotFoundError}: Raised when the requested instance
+            can't be found on the data store.
+        """
+        instance = cls.get_instance(_id, **criteria)
+
+        if instance is None:
+            raise InstanceNotFoundError()
+
+        return instance
+
     @classmethod
     def select(cls, *args, **kwargs):
         """Obtains a selection of instances of the class. Accepts the same
@@ -518,4 +537,10 @@ class NewObjectDeletedError(Exception):
             % persistent_object
         )
         self.persistent_object = persistent_object
+
+
+class InstanceNotFoundError(Exception):
+    """An exception raised by L{PersistentObject.require_instance} when a non
+    existant instance is requested.
+    """
 
