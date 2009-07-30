@@ -81,6 +81,7 @@ class Member(Variable):
     _copy_class = None
     copy_source = None
     adaptation_source = None
+    original_member = None
 
     # Translation
     translated = False
@@ -98,6 +99,7 @@ class Member(Variable):
         self._validations = []
         self._validations_wrapper = ListWrapper(self._validations)
         self.add_validation(Member.member_validation_rule)
+        self.original_member = self
 
         Variable.__init__(self, None)
         self.__type = None
