@@ -19,6 +19,8 @@ class Pager(Element):
     page_size = 15
     hide_when_empty = True
     visible_pages = 10
+
+    user_collection = None
     
     def _build(self):
 
@@ -43,6 +45,12 @@ class Pager(Element):
     def _ready(self):
         
         Element._ready(self)
+
+        if self.user_collection:
+            self.page = self.user_collection.page
+            self.page_size = self.user_collection.page_size
+            if self.user_collection.subset:
+                self.item_count = len(self.user_collection.subset)
 
         page_count = self.page_count
 
