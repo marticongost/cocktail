@@ -369,6 +369,27 @@ class SchemaValidationTestCase(ValidationTestCase):
             exceptions.TypeCheckError
         )
 
+    def test_translated(self):
+        
+        from cocktail.schema import Schema, String, exceptions
+
+        schema = Schema()
+        schema.add_member(String("foo", translated = True, required = True))
+
+        validable = {
+            "foo": {"ca": "Hola", "es": "Hola", "en": "Hello"}
+        }
+
+        assert not list(schema.get_errors(validable))
+
+        validable["foo"]["fr"] = None
+        validable["foo"]["es"] = None
+
+        errors = list(schema.get_errors(validable))
+        assert len(errors) == 2
+        assert set([error.language for error in errors]) == set(["fr", "es"])
+
+
 class DynamicConstraintsTestCase(TestCase):
 
     def test_callable(self):
