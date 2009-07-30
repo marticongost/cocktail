@@ -371,32 +371,18 @@ class Schema(Member):
         if self.__members:
             
             context.enter(self, validable)
-            context_languages = context.get("languages")
-
+            
             try:
                 for name, member in self.__members.iteritems():
  
                     if member.translated:
-
-                        prev_language = context.get("language")
-
-                        try:
-                            for language in (
-                                context_languages 
-                                or accessor.languages(validable, member.name)
-                            ):
-                                context["language"] = language
-                                
-                                value = accessor.get(
-                                    validable,
-                                    name,
-                                    language = language,
-                                    default = None)
-
+                        for value in self.translated_member_values(
+                            member,
+                            validable,
+                            context,
+                            accessor):
                                 for error in member.get_errors(value, context):
                                     yield error
-                        finally:    
-                            context["language"] = prev_language
                     else:
                         value = accessor.get(validable, name, default = None)
 
@@ -404,6 +390,39 @@ class Schema(Member):
                             yield error
             finally:
                 context.leave()
+
+    def translated_member_values(
+        self,
+        member,
+        validable,
+        context,
+        accessor = None):
+
+        accessor = accessor \
+            or self.accessor \
+            or context.get("accessor", None) \
+            or get_accessor(validable)
+
+        context_languages = context.get("languages")
+        prev_language = context.get("language")
+        key = member.name
+
+        try:
+            for language in (
+                context_languages 
+                or accessor.languages(validable, key)
+            ):
+                context["language"] = language
+                
+                value = accessor.get(
+                    validable,
+                    key,
+                    language = language,
+                    default = None)
+
+                yield value
+        finally:
+            context["language"] = prev_language
 
     def ordered_members(self, recursive = True):
         """Gets a list containing all the members defined by the schema, in
