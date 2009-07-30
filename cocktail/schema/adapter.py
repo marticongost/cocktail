@@ -375,6 +375,7 @@ class RuleSet(object):
         )
 
         target_schema.adaptation_source = source_schema
+        target_schema.original_member = source_schema.original_member
         
         for rule in self.__rules:
             rule.adapt_schema(context)
@@ -511,6 +512,7 @@ class Copy(Rule):
                     target_member.name = target_name
                 
                 target_member.adaptation_source = source_member
+                target_member.original_member = source_member.original_member
 
                 if self.properties:
                     for prop_name, prop_value in self.properties.iteritems():
@@ -619,8 +621,9 @@ class Split(Rule):
                     context.target_schema,
                     target
                 )
-                target_member.adaptation_source = \
-                    context.source_schema[self.source]
+                source_member = context.source_schema[self.source]
+                target_member.adaptation_source = source_member
+                target_member.original_member = source_member.original_member
 
     def adapt_object(self, context):
 
@@ -654,8 +657,9 @@ class Join(Rule):
                 context.target_schema,
                 self.target
             )
-            target_member.adaptation_source = \
-                context.source_schema[self.sources[0]]
+            source_member = context.source_schema[self.sources[0]]
+            target_member.adaptation_source = source_member
+            target_member.original_member = source_member.original_member
 
     def adapt_object(self, context):
 
