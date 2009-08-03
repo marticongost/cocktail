@@ -6,16 +6,39 @@ u"""
 @organization:	Whads/Accent SL
 @since:			July 2008
 """
+from time import time
 from itertools import chain
+from cocktail.styled import styled
 from cocktail.modeling import getter, ListWrapper
 from cocktail.language import get_content_language
 from cocktail.schema import Member, expressions, SchemaObjectAccessor
 from cocktail.persistence.index import Index
 
+query_style = lambda t: styled(t.ljust(80), "white", "blue")
+query_attrib_style = lambda k, v: (
+    " " * 4
+    + styled((k + ":").ljust(15), style = "bold")
+    + str(v)
+)
+query_cached_style = lambda t: styled(" " * 4 + t, "white", "green")
+query_phase_style = lambda t: " " * 4 + styled(t, style = "underline")
+query_eval_style = (
+    lambda expr: " " * 4 + styled("Eval:", "magenta") + str(expr)
+)
+query_resolve_style = (
+    lambda expr: " " * 4 + styled("Resolve:", "bright_green") + str(expr)
+)
+query_results_style = (
+    lambda n: " " * 4 + styled(n, style = "bold")
+)
+query_timing_style = lambda s: " " * 4 + ("%.4fs" % s)
+
 inherit = object()
 
 class Query(object):
     """A query over a set of persistent objects."""
+
+    verbose = False
 
     def __init__(self,
         type,
@@ -236,9 +259,25 @@ class Query(object):
     #--------------------------------------------------------------------------    
     def execute(self, _sorted = True):
 
+        if self.verbose:
+            print query_style("Query")
+            print query_attrib_style("type", self.type.full_name)
+
+            if self.filters:
+                print query_attrib_style("filters", self.filters)
+
+            if self.order:
+                print query_attrib_style("order", self.order)
+
+            if self.range:
+                print query_attrib_style("range", self.range)
+            
         # Try to make use of cached results
         if self.cached and self.__cached_results is not None:
             dataset = self.__cached_results
+            
+            if self.verbose:
+                print query_cached_style("cached")
 
         # New data set
         else:
@@ -249,12 +288,23 @@ class Query(object):
                 dataset = (obj.id for obj in self.__base_collection)
 
             # Apply filters
+            if self.verbose:
+                start = time()
+                print query_phase_style("Applying filters")
+
             if self.__filters:
                 dataset = self._apply_filters(dataset)
+
+            if self.verbose:
+                print query_timing_style(time() - start)
 
         # Apply order
         if _sorted and not (self.cached and self.__cached_results_sorted):
 
+            if self.verbose:
+                start = time()
+                print query_phase_style("Applying order")
+            
             # Preserve ordering when selecting items from a custom ordered
             # collection
             if not self.__order and isinstance(
@@ -267,6 +317,9 @@ class Query(object):
             else:
                 dataset = self._apply_order(dataset)
 
+            if self.verbose:
+                print query_timing_style(time() - start)
+
         # Store results for further requests
         if self.cached:
             self.__cached_results = dataset
@@ -274,7 +327,17 @@ class Query(object):
         
         # Apply ranges
         if _sorted:
+            if self.verbose:
+                start = time()
+                print query_phase_style("Applying range")
+            
             dataset = self._apply_range(dataset)
+
+            if self.verbose:
+                print query_timing_style(time() - start)
+
+        if self.verbose:
+            print
 
         return dataset
 
@@ -297,14 +360,26 @@ class Query(object):
             # single item (to spare the intersection between the results for
             # all remaining filters)
             if custom_impl is None or len(dataset) == 1:
+
+                if self.verbose:
+                    print query_eval_style(expr),
+
                 dataset.intersection_update(
                     id
                     for id in dataset
                     if expr.eval(type_index[id], SchemaObjectAccessor)
                 )
+                
             # Custom filter implementation
             else:
+                
+                if self.verbose:
+                    print query_resolve_style(expr),
+
                 dataset = custom_impl(dataset)
+
+            if self.verbose:
+                print query_results_style(len(dataset))
 
         return dataset
 
