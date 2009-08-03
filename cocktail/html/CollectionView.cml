@@ -16,6 +16,7 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
     selection_mode = MULTIPLE_SELECTION
     user_collection = None
     activation_control = None
+    allow_empty_search = False
     excluded_view_state_params = frozenset([
         "members", "language", "page_size", "selection", "filter"
     ])
@@ -52,7 +53,9 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
         <py:ready>
             <?py
             if not self.user_collection.allow_filters or (
-                not self.visible_results and not self.user_collection.user_filters
+                not self.visible_results
+                and not self.user_collection.user_filters
+                and not self.allow_empty_search
             ):
                 element.visible = False
             ?>
