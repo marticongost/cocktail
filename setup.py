@@ -10,7 +10,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = "cocktail",
-    version = "0.1a",
+    version = "0.2",
     author = "Whads/Accent SL",
     author_email = "tech@whads.com",
     description = """A tasty mix of python web development utilities.""",
