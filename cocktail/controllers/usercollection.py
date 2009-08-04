@@ -17,7 +17,7 @@ from cocktail.html.datadisplay import (
     SINGLE_SELECTION,
     MULTIPLE_SELECTION
 )
-from cocktail.controllers.userfilter import get_content_type_filters
+from cocktail.controllers.userfilter import user_filters_registry
 from cocktail.controllers.parameters import (
     get_parameter,
     FormSchemaReader,
@@ -171,7 +171,7 @@ class UserCollection(object):
     #--------------------------------------------------------------------------
     @cached_getter
     def available_user_filters(self):
-        return get_content_type_filters(self.type)
+        return user_filters_registry.get(self.type)
 
     @cached_getter
     def user_filters(self):
