@@ -10,44 +10,27 @@ from itertools import chain
 from cocktail.modeling import getter, cached_getter
 from cocktail.pkgutils import resolve
 from cocktail.schema import (
-    Schema, Member, Number, BaseDateTime, String, Boolean, Collection,
+    Schema,
+    Member,
+    Number,
+    BaseDateTime,
+    String,
+    Boolean,
+    Collection,
     Reference
 )
 from cocktail.schema.expressions import (
-    CustomExpression, Self, InclusionExpression, ExclusionExpression, normalize
+    CustomExpression,
+    Self,
+    InclusionExpression,
+    ExclusionExpression,
+    normalize
 )
+from cocktail.persistence import PersistentObject
 from cocktail.html import templates
 from cocktail.translations import translations
 
-# Add an extension property to allow schemas to define additional user filters
-Schema.custom_user_filters = None
-
 # TODO: Search can be used to indirectly access restricted members
-
-def get_content_type_filters(content_type):
-
-    filters = []
-
-    filter = GlobalSearchFilter()
-    filter.id = "global_search"
-    filter.content_type = content_type
-    filters.append(filter)
-
-    for member in content_type.ordered_members():
-        if member.searchable and member.user_filter and member.visible:
-            filter = resolve(member.user_filter)()
-            filter.id = "member-" + member.name
-            filter.content_type = content_type
-            filter.member = member
-            filters.append(filter)
-
-    if content_type.custom_user_filters:
-        for filter in content_type.custom_user_filters:        
-            filter = resolve(filter)()
-            filter.content_type = content_type
-            filters.append(filter)
-
-    return filters
 
 
 class UserFilter(object):
@@ -208,6 +191,7 @@ class StringFilter(ComparisonFilter):
 
 
 class GlobalSearchFilter(UserFilter):    
+    id = "global_search"
     value = None
     language = None
 
@@ -312,4 +296,46 @@ Member.searchable = True
 # An extension property used to determine which members should be looked at
 # when doing a freeform text search
 String.text_search = True
+
+
+class UserFiltersRegistry(object):
+
+    def __init__(self):
+        self.__filters_by_type = {}
+
+    def get(self, content_type):
+        
+        filters_by_type = self.__filters_by_type
+        filters = []
+
+        # Custom filters
+        for ancestor in content_type.ascend_inheritance(include_self = True):
+            ancestor_filters = filters_by_type.get(ancestor)
+            if ancestor_filters:
+                for filter_class in ancestor_filters:
+                    filter = resolve(filter_class)()
+                    filter.content_type = content_type
+                    filters.append(filter)
+
+        # Member filters
+        for member in content_type.ordered_members():
+            if member.searchable and member.user_filter and member.visible:
+                filter = resolve(member.user_filter)()
+                filter.id = "member-" + member.name
+                filter.content_type = content_type
+                filter.member = member
+                filters.append(filter)
+
+        return filters
+
+    def add(self, cls, filter_class):
+        class_filters = self.__filters_by_type.get(cls)
+        if class_filters is None:
+            class_filters = []
+            self.__filters_by_type[cls] = class_filters
+        
+        class_filters.append(filter_class)
+
+user_filters_registry = UserFiltersRegistry()
+user_filters_registry.add(PersistentObject, GlobalSearchFilter)
 
