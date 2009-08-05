@@ -386,3 +386,18 @@ class Member(Variable):
             **kwargs
         )
 
+    def get_member_explanation(self, language = None, **kwargs):
+        explanation = translations(
+            self.schema.name + "." + self.name + "-explanation",
+            language,
+            **kwargs
+        )
+
+        if not explanation and self.copy_source:
+            explanation = self.copy_source.get_member_explanation(
+                language,
+                **kwargs
+            )
+
+        return explanation
+
