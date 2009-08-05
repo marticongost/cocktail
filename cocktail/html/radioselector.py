@@ -12,6 +12,8 @@ from cocktail.html.selector import Selector
 
 class RadioSelector(Selector):
 
+    empty_option_displayed = False
+
     def _ready(self):
 
         if not self.name and self.data_display:
