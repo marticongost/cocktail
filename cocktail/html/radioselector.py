@@ -27,9 +27,9 @@ class RadioSelector(Selector):
     def create_entry(self, value, label, selected):
         
         entry = Element()
-        entry_id = entry.require_id()
         
         entry.input = Element("input")
+        entry_id = entry.input.require_id()
         entry.input["type"] = "radio"
         entry.input["value"] = value
         entry.input["checked"] = selected
