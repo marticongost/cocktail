@@ -114,7 +114,7 @@ class Expression(object):
         return EndsWithExpression(self, expr)
 
     def contains(self, expr):
-        return ContainsExpression(expr, self)
+        return ContainsExpression(self, expr)
 
     def match(self, expr):
         return MatchExpression(self, expr)
