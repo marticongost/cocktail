@@ -159,6 +159,7 @@ class Form(Element, DataDisplay):
                         if group.matches(member):
                             field_entry = self.create_field(member)
                             container.append(field_entry)
+                            self.build_member_explanation(member, field_entry)
                             has_match = True
                         else:
                             remaining_members.append(member)
@@ -174,6 +175,7 @@ class Form(Element, DataDisplay):
                 for member in self.displayed_members:
                     field_entry = self.create_field(member)
                     self.fields.append(field_entry)
+                    self.build_member_explanation(member, field_entry)
                     setattr(self, member.name + "_field", field_entry)
     
     def create_fieldset(self, group):
@@ -233,8 +235,29 @@ class Form(Element, DataDisplay):
                     entry.append(field_instance)
         else:
             entry.append(create_instance())
-
+        
         return entry
+
+    def build_member_explanation(self, member, entry):
+        explanation = member.get_member_explanation()
+        if explanation:
+            entry.explanation = \
+                self.create_member_explanation(member, explanation)
+
+            if self.table_layout:
+                entry.explanation.tag = "td"
+                row = Element("tr")
+                row.add_class("explanation_row")
+                row.append(entry.explanation)
+                entry.parent.append(row)
+            else:
+                entry.append(entry.explanation)
+
+    def create_member_explanation(self, member, explanation):
+        label = Element()
+        label.add_class("explanation")
+        label.append(explanation)
+        return label
 
     def create_field_instance(self, member):
 
