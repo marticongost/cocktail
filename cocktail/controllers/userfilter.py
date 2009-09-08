@@ -11,13 +11,15 @@ from cocktail.modeling import getter, cached_getter
 from cocktail.pkgutils import resolve
 from cocktail.schema import (
     Schema,
+    SchemaObject,
     Member,
     Number,
     BaseDateTime,
     String,
     Boolean,
     Collection,
-    Reference
+    Reference,
+    RelationMember
 )
 from cocktail.schema.expressions import (
     CustomExpression,
@@ -223,25 +225,11 @@ class GlobalSearchFilter(UserFilter):
             languages = self.language,
         else:
             languages = self.available_languages
-
+        
         def search_object(obj):
-
-            # Concatenate all text fields
-            object_text = ""
-
-            for language in languages:
-                for member in obj.__class__.members().itervalues():
-                    if isinstance(member, String) and member.searchable \
-                    and member.text_search:
-                        member_value = obj.get(member, language)
-                        if member_value:
-                            if object_text:
-                                object_text += " "
-                            
-                            object_text += member_value
-            
-            object_text = normalize(object_text)
-            return all((word in object_text) for word in search_words)
+            text = u" ".join(obj.get_searchable_text(languages))
+            text = normalize(text)
+            return all((word in text) for word in search_words)
 
         return CustomExpression(search_object)
 
@@ -294,8 +282,43 @@ Collection.user_filter = CollectionFilter
 Member.searchable = True
 
 # An extension property used to determine which members should be looked at
-# when doing a freeform text search
+# when doing a freeform text search. When set on a relation member searches
+# will propagate across objects.
 String.text_search = True
+RelationMember.text_search = False
+
+def _get_searchable_text(self, languages, visited_objects = None):
+
+    if visited_objects is None:
+        visited_objects = set()
+    elif self in visited_objects:
+        return
+    
+    visited_objects.add(self)
+
+    # Concatenate all text fields
+    for language in languages:
+        for member in self.__class__.members().itervalues():
+            if getattr(member, "text_search", False):
+                member_value = self.get(member, language)
+                if member_value:
+                    if isinstance(member, String) and member.searchable:
+                        yield member_value
+                    elif isinstance(member, Reference):
+                        for text in member_value.get_searchable_text(
+                            languages,
+                            visited_objects
+                        ):
+                            yield text
+                    elif isinstance(member, Collection):
+                        for child in member_value:
+                            for text in child.get_searchable_text(
+                                languages,
+                                visited_objects
+                            ):
+                                yield text
+
+SchemaObject.get_searchable_text = _get_searchable_text
 
 
 class UserFiltersRegistry(object):
