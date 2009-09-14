@@ -29,17 +29,15 @@ class CheckList(Selector):
     def create_entry(self, value, label, selected):
 
         entry = Element()
-        entry_id = entry.require_id()
 
         entry.check = CheckBox()
         entry.check["name"] = self.name
-        entry.check["id"] = entry_id
         entry.check.value = selected
         entry.check["value"] = value
         entry.append(entry.check)
 
         entry.label = Element("label")
-        entry.label["for"] = entry_id
+        entry.label["for"] = entry.check.require_id()
         entry.label.append(label)
         entry.append(entry.label)
 
