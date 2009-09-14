@@ -18,6 +18,10 @@ from cocktail.html import Element
 from cocktail.html.datadisplay import DataDisplay
 from cocktail.html.hiddeninput import HiddenInput
 
+# Extension property that allows members to define their appearence in HTML
+# forms
+Member.edit_control = None
+
 
 class Form(Element, DataDisplay):
     """A class that generates HTML forms from a schema description.
@@ -342,6 +346,9 @@ class Form(Element, DataDisplay):
         mark.add_class("required_mark")
         mark.append("*")
         return mark
+
+    def get_member_supplied_display(self, obj, member):
+        return member.edit_control
 
     def default_display(self, obj, member):
         if member.enumeration is not None:
