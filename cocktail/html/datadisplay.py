@@ -18,6 +18,9 @@ from cocktail.typemapping import TypeMapping
 from cocktail.schema import Member, get_accessor
 from cocktail.html import templates
 
+# Extension that allows members to specify their prefered display
+Member.display = None
+
 
 class DataDisplay(object):
     """Base class for all visual components that can display schema-based data.
@@ -262,11 +265,18 @@ class DataDisplay(object):
             if display_method:
                 display = display_method(obj, member)
 
-        # Default display
-        if display is None:
-            display = self.get_default_member_display(obj, member)
+            # Supplied by the member
+            if display is None:
+                display = self.get_member_supplied_display(obj, member)
+
+                # Default display
+                if display is None:
+                    display = self.get_default_member_display(obj, member)
 
         return display
+
+    def get_member_supplied_display(self, obj, member):
+        return member.display
 
     def get_default_member_display(self, obj, member):
 
