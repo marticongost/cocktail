@@ -34,6 +34,10 @@ from cocktail.translations import translations
 
 # TODO: Search can be used to indirectly access restricted members
 
+# Extension property used to establish the user interface for a member in
+# searches
+Member.search_control = None
+
 
 class UserFilter(object):
 
