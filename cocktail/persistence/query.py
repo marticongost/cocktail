@@ -622,8 +622,11 @@ class Query(object):
 
     def delete_items(self):
         """Delete all items matched by the query."""
-        for item in list(self):
-            item.delete()
+        type_index = self.type.index
+        for id in list(self.execute(_sorted = False)):
+            item = type_index.get(id)
+            if item is not None:
+                item.delete()
 
 
 # Custom expression resolution
