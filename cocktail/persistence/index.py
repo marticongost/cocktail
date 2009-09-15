@@ -8,6 +8,7 @@ u"""
 """
 from persistent import Persistent
 from cocktail.modeling import empty_set
+from cocktail.persistence.persistentset import PersistentSet
 
 infinite = object()
 
@@ -19,7 +20,7 @@ class Index(Persistent):
 
     def __init__(self, mapping):
         self.__groups = mapping
-        self.__none_entries = set()
+        self.__none_entries = PersistentSet()
 
     def add(self, key, value):
 
@@ -30,7 +31,7 @@ class Index(Persistent):
             group = self.__groups.get(key)
 
             if group is None:
-                self.__groups[key] = group = set()
+                self.__groups[key] = group = PersistentSet()
          
             group.add(value)
             
@@ -68,7 +69,7 @@ class Index(Persistent):
 
     def __delitem__(self, key):
         if key is None:
-            self.__none_entries = set()
+            self.__none_entries = PersistentSet()
         else:
             self.__groups.__delitem__(key)
             self.__groups._p_changed = True
