@@ -29,6 +29,9 @@
             return translations("cocktail.html.UserFilterEntry operator " + item)
 
         return display
+
+    def get_member_supplied_display(self, obj, member):
+        return member.search_control or member.original_member.search_control
     ?>
 
     <?py
