@@ -111,7 +111,7 @@ class FormControllerMixin(object):
         reading data from the form.
         @type: dict
         """
-        return {"strict": False}
+        return {"strict": False, "enable_defaults": False}
 
     @cached_getter
     def form_adapter(self):
