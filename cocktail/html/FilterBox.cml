@@ -46,6 +46,10 @@ from cocktail.controllers import get_state, view_state, serialize_parameter
         return state
     ?>
 
+    <?py
+    self.add_resource("/cocktail/scripts/FilterBox.js")
+    ?>
+
     <div py:id="filter_list">
         <py:ready>            
             <py:new
@@ -60,7 +64,7 @@ from cocktail.controllers import get_state, view_state, serialize_parameter
         <py:new
             py:element="self.create_filter_ui(filter)"
             py:name_suffix="${str(index)}"/>
-        <a>
+        <a class="deleteButton">
             <?py
             filter_param = []
             params = {"page": "0"}
@@ -98,6 +102,12 @@ from cocktail.controllers import get_state, view_state, serialize_parameter
                     <a py:for="desc, filter in filter_items"
                         href="${'?' + view_state(**self.get_add_filter_state(filter))}">
                         ${desc}
+                        <py:new
+                            py:element="self.create_filter_entry('$index', filter)"
+                            py:client_model="cocktail.html.FilterBox-entry-${filter.id}"/>
+                        <?py
+                        element.set_client_param("filterId", filter.id)
+                        ?>
                     </a>
                 </py:ready>
             </div>
