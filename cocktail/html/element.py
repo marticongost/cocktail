@@ -29,6 +29,7 @@ class Element(object):
     collapsible = False
     overlays_enabled = False
     generated_id_format = "cocktail-element%d"
+    client_model = None
 
     # Data binding
     data_display = None

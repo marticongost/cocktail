@@ -261,8 +261,8 @@
     });
 })();
 
-cocktail.init(function () {
-    jQuery(".selectable").each(function () {
+cocktail.init(function (root) {
+    jQuery(".selectable", root).each(function () {
         var params = this.selectableParams || {};
         params.element = this;
         cocktail.selectable(params);

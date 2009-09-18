@@ -41,6 +41,7 @@ class Page(Element):
         self.__client_translations = set()
         self.__client_variables = {}
         self.__client_params_script = None
+        self.__client_model_stack = []
 
     def _build(self):
       
@@ -79,16 +80,22 @@ class Page(Element):
 
     def _before_descendant_rendered(self, descendant, renderer):
 
+        if descendant.client_model:
+            self.__client_model_stack.append(descendant.client_model)
+
         for element in descendant.head_elements:
             self.head.append(Content(element.render(renderer)))
 
-        if descendant.client_params or descendant.client_code:
+        client_params = descendant.client_params
+        client_code = descendant.client_code
+
+        if client_params or client_code:
             
             self._add_resource_to_head(self.JQUERY_SCRIPT)
             self._add_resource_to_head(self.CORE_SCRIPT)
              
             if self.__client_params_script is None:
-                                
+                
                 script_tag = Element("script")
                 script_tag["type"] = "text/javascript"
                 script_tag.append("jQuery(function () {\n")
@@ -99,16 +106,44 @@ class Page(Element):
                 
                 script_tag.append("\tcocktail.init();\n")
                 script_tag.append("});\n")
-                self.head.append(script_tag)
-            
-            js = ["\tjQuery('#%s').each(function () {" % descendant["id"]]
-                
-            for key, value in descendant.client_params.iteritems():
-                js.append("\t\tthis.%s = %s;" % (key, dumps(value)))
-            
-            js.extend("\t\t" + snippet for snippet in descendant.client_code)
+                self.head.append(script_tag)            
 
-            js.append("\t});\n")
+            client_model = (
+                self.__client_model_stack
+                and self.__client_model_stack[-1]
+            )
+
+            js = []
+
+            if client_model:
+                
+                client_model_ref = "\tcocktail._clientModel('%s'" \
+                    % client_model
+
+                if not descendant.client_model:
+                    client_model_ref += ", '%s'" % descendant["id"]
+
+                client_model_ref += ")"
+
+                if client_params:
+                    js.append(client_model_ref + ".params = %s;\n"
+                        % dumps(descendant.client_params)
+                    )
+
+                if client_code:
+                    js.append(client_model_ref + ".code = %s;\n"
+                        % dumps(list(descendant.client_code))
+                    )
+            else:
+                js.append(
+                    "\tjQuery('#%s').each(function () {" % descendant["id"]
+                )
+                
+                for key, value in client_params.iteritems():
+                    js.append("\t\tthis.%s = %s;" % (key, dumps(value)))
+                
+                js.extend("\t\t" + snippet for snippet in client_code)
+                js.append("\t});\n")
             
             self.__client_params_script.value += "\n".join(js)
 
@@ -130,6 +165,9 @@ class Page(Element):
         # Client variables and translations
         self.__client_variables.update(descendant.client_variables)
         self.__client_translations.update(descendant.client_translations)
+
+        if descendant.client_model:
+            self.__client_model_stack.pop(-1)
 
     def _fill_head(self):
 

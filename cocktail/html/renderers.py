@@ -62,6 +62,13 @@ class Renderer(object):
         for handler in self.__before_rendering:
             handler(element, self)
 
+        if element.client_model:
+            out("<script type='text/javascript'>")
+            out("cocktail._clientModel('%s').html = '" % element.client_model)
+            wrapped_out = out
+            def out(snippet):
+                wrapped_out(snippet.replace("'", "\\'").replace("\n", "\\n"))
+
         tag = element.tag
         render_children = True
 
@@ -109,6 +116,9 @@ class Renderer(object):
 
             if tag:
                 out(u"</" + tag + u">")
+
+        if element.client_model:
+            wrapped_out("';</script>")
 
         for handler in self.__after_rendering:
             handler(element, self)

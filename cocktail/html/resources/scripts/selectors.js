@@ -7,34 +7,40 @@
 @since:			September 2008
 -----------------------------------------------------------------------------*/
 
-jQuery(function () {
+cocktail.init(function (root) {
 
-    jQuery(document).click(function (e) {
-       jQuery(".selector").removeClass("unfolded");
-    });
-    
-    jQuery(".selector")
+    jQuery(".selector", root)
         .addClass("scripted")
-        .click( function (e) {        
-            e.stopPropagation();
-        });
-    
-    jQuery(".selector > .label").each( function () {                
-        jQuery(this).replaceWith(
-            '<a href="javascript:;"'
-            + ' id="' + jQuery(this).attr('id') + '"'
-            + ' class="' + jQuery(this).attr('class') + '"'
-            + '>'
-            + jQuery(this).html()
-            + '</a>');
-    });
-    
-    jQuery(".selector > .label").click(function (e) {
-        var content_selector = jQuery(this).next(".selector_content");
-        var selector = jQuery(this).parent(".selector");
-        jQuery(".selector").not(selector).removeClass("unfolded");
-        selector.toggleClass("unfolded");
-        content_selector.find("input:first").focus();
-        e.stopPropagation();                
-    });
+        .click(function (e) { e.stopPropagation(); })
+        .children(".label")
+            .each(function () {
+                jQuery(this).replaceWith(
+                    '<a href="javascript:;"'
+                    + ' id="' + jQuery(this).attr('id') + '"'
+                    + ' class="' + jQuery(this).attr('class') + '"'
+                    + '>'
+                    + jQuery(this).html()
+                    + '</a>'
+                );
+            })
+            .end()
+        .children(".label").
+            click(function (e) {
+                var content_selector = jQuery(this).next(".selector_content");
+                var selector = jQuery(this).parent(".selector");
+                jQuery(".selector").not(selector).removeClass("unfolded");
+                selector.toggleClass("unfolded");
+                content_selector.find("input:first").focus();
+                e.stopPropagation();
+            });
+
+    if (!cocktail.__Selector_clickEvent) {
+        cocktail.__Selector_clickEvent = true;        
+        jQuery(document).click(cocktail.foldSelectors);
+    }
 });
+
+cocktail.foldSelectors = function () {
+    jQuery(".selector").removeClass("unfolded");
+}
+

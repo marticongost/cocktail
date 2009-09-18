@@ -7,7 +7,7 @@
 @since:			February 2009
 -----------------------------------------------------------------------------*/
 
-cocktail.init(function () {
+cocktail.init(function (root) {
     
     function setCollapsed(collapsed) {
         
@@ -26,7 +26,7 @@ cocktail.init(function () {
         setCollapsed.call(this, !this.collapsed);
     }
 
-    jQuery(".PropertyTable").each(function () {
+    jQuery(".PropertyTable", root).each(function () {
 
         jQuery(this).addClass("scripted");
 
