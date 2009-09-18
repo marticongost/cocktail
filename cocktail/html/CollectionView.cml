@@ -115,14 +115,16 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
     <div py:id="collection_display_container">
         
         <!-- Data settings -->
-        <div py:id="settings_box" class="selector">
+        <div py:id="settings_box" class="selector"
+            py:visible="@{self.user_collection.allow_language_selection or self.user_collection.allow_member_selection}">
+                
             <span class="label">
                 <img src="/cocktail/images/collection_settings.png"/>
             </span>
             <div class="selector_content">
-                
+               
                 <!-- Visible languages -->
-                <div py:id="languages_box">
+                <div py:id="languages_box" py:visible="@{self.user_collection.allow_language_selection}">
                     <span class="box_label">
                         ${translations("Visible languages")}
                     </span>
@@ -136,7 +138,7 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
                 </div>
 
                 <!-- Visible members  -->
-                <div py:id="members_box">
+                <div py:id="members_box" py:visible="@{self.user_collection.allow_member_selection}">
                     <span class="box_label">
                         ${translations("Visible members")}
                     </span>
