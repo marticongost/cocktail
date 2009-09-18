@@ -1,6 +1,6 @@
-cocktail.init(function () {
+cocktail.init(function (root) {
             
-    jQuery(".CollectionView").each(function () { 
+    jQuery(".CollectionView", root).each(function () { 
 
         // Row activation
         if (this.activationControl) {

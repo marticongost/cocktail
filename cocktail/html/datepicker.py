@@ -30,46 +30,31 @@ class DatePicker(TextBox):
             "/cocktail/scripts/ui.datepicker-lang.js")
         self.add_resource(
             "/cocktail/styles/jquery-ui-themeroller.css")     
+        self.add_resource(
+            "/cocktail/scripts/jquery.maskedinput.js")
+        self.add_resource(
+            "/cocktail/scripts/DatePicker.js")  
     
         self.date_picker_params = {}             
     
-    def _ready(self):
+    def _ready(self):                
                 
-        id = self.require_id()
-        
-        if isinstance(self.member, (DateTime, Time)):
-            self.add_resource(
-                "/cocktail/scripts/jquery.maskedinput.js")
-            self.add_resource(
-                "/resources/scripts/timepicker.js")  
-                
-            if isinstance(self.member, Time):
-                self.add_class("time")
+        if isinstance(self.member, (DateTime, Time)):            
+            self.set_client_param("hasTime", True)
         
         if isinstance(self.member, (DateTime, Date)):
-        
+            self.set_client_param("hasDate", True)
+            
             params = self.date_picker_params.copy()
             
             for key, value in self.get_default_params().iteritems():
                 params.setdefault(key, value)
            
-            init_script = Element("script", type = "text/javascript")
-            init_script.append(
-            "jQuery(function () {\n"
-            "\tjQuery('#%s')"
-                ".datepicker($.extend({},$.datepicker.regional['%s'],%s));\n"
-            "});"
-                %  (id, get_language(), dumps(params))
-            )                                                                         
+            self.set_client_param("datePickerParams", params)           
             
-            self.add_head_element(init_script)
-            
-            if isinstance(self.member, DateTime):
-                self.add_class("timepickr")                       
-            
-            
-        
         TextBox._ready(self)
+        from cocktail.styled import styled
+        print styled(self.value, "red")
        
     def get_jformat(self):
         return translations("jquery_date format", get_language())    

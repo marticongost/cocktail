@@ -1,5 +1,6 @@
-cocktail.init(function () {
+cocktail.init(function (root) {
     
+    // TODO: this doesn't belong here at all
     if (!Array.prototype.indexOf)
     {
       Array.prototype.indexOf = function(elt /*, from*/)
@@ -25,7 +26,7 @@ cocktail.init(function () {
     
     var button_names = [];
     
-    jQuery("form button").each( function (index) {
+    jQuery("form button", root).each( function (index) {
         
         var nom, replaced
         
@@ -60,7 +61,7 @@ cocktail.init(function () {
     });
         
     if(jQuery.browser.msie){                    
-        jQuery(".body form").submit( function () {
+        jQuery(".body form", root).submit( function () {
 
             jQuery(this).find("button[type='submit']:visible").each(function () {
                 var clases = jQuery(this).attr('class');                

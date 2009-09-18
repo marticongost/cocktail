@@ -281,11 +281,11 @@ $.fn.tableresizer = function(options)
 
 })(jQuery);
 
-cocktail.init(function () {
+cocktail.init(function (root) {
     var opts = {
         row_border:"1px solid #E1E1E1",
         col_border:"1px solid #E1E1E1",
         row_start: "2"
     }
-    jQuery(".resizable").tableresizer(opts);          
+    jQuery(".resizable", root).tableresizer(opts);          
 });
