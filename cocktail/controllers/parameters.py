@@ -81,11 +81,18 @@ Date.serialize_request_value = serialize_date
 def parse_datetime(self, reader, value):
     
     if value is not None:
-        format = translations("date format") + " %H:%M:%S"
+        date_format = translations("date format")
+        time_format = "%H:%M:%S"
         try:
-            value = datetime.datetime.strptime(value, format)
+            value = datetime.datetime.strptime(
+                value,
+                date_format + " " + time_format
+            )
         except ValueError:
-            pass
+            try:
+                value = datetime.datetime.strptime(value, date_format)
+            except:
+                pass
 
     return value
 
