@@ -373,7 +373,7 @@ class Schema(Member):
             context.enter(self, validable)
             
             try:
-                for name, member in self.__members.iteritems():
+                for name, member in self.members().iteritems():
  
                     if member.translated:
                         for value in self.translated_member_values(
