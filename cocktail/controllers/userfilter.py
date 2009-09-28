@@ -334,6 +334,7 @@ class UserFiltersRegistry(object):
 
     def __init__(self):
         self.__filters_by_type = {}
+        self.__filter_parameters = {}
 
     def get(self, content_type):
         
@@ -346,7 +347,7 @@ class UserFiltersRegistry(object):
             if ancestor_filters:
                 for filter_class in ancestor_filters:
                     filter = resolve(filter_class)()
-                    filter.content_type = content_type
+                    self._init_filter(filter, content_type)
                     filters.append(filter)
 
         # Member filters
@@ -354,14 +355,21 @@ class UserFiltersRegistry(object):
             if member.searchable and member.user_filter and member.visible:
                 filter = resolve(member.user_filter)()
                 filter.id = "member-" + member.name
-                filter.content_type = content_type
                 filter.member = member
+                self._init_filter(filter, content_type)
                 filters.append(filter)
 
                 if member.promoted_search:
                     filter.promoted_search = True
 
         return filters
+    
+    def _init_filter(self, filter, content_type):
+        filter.content_type = content_type
+        params = self.get_filter_parameters(content_type, filter.__class__)
+        if params:
+            for key, value in params.iteritems():
+                setattr(filter, key, value)
 
     def add(self, cls, filter_class):
         class_filters = self.__filters_by_type.get(cls)
@@ -370,6 +378,30 @@ class UserFiltersRegistry(object):
             self.__filters_by_type[cls] = class_filters
         
         class_filters.append(filter_class)
+
+    def get_filter_parameters(self, cls, filter_class):
+
+        params = {}
+
+        for content_type in cls.descend_inheritance(include_self = True):
+            content_type_params = \
+                self.__filter_parameters.get((content_type, filter_class))
+            if content_type_params:
+                params.update(content_type_params)
+
+        return params
+
+    def set_filter_parameter(self, cls, filter_class, parameter, value):
+
+        key = (cls, filter_class)
+        params = self.__filter_parameters.get(key)
+
+        if params is None:
+            params = {}
+            self.__filter_parameters[key] = params
+
+        params[parameter] = value
+
 
 user_filters_registry = UserFiltersRegistry()
 user_filters_registry.add(PersistentObject, GlobalSearchFilter)
