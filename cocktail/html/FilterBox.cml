@@ -64,7 +64,7 @@ from cocktail.controllers import get_state, view_state, serialize_parameter
         <py:new
             py:element="self.create_filter_ui(filter)"
             py:name_suffix="${str(index)}"/>
-        <a class="deleteButton">
+        <a class="deleteButton" py:if="not filter.promoted_search">
             <?py
             filter_param = []
             params = {"page": "0"}
