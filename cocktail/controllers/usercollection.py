@@ -189,6 +189,12 @@ class UserCollection(object):
             filters_param = self.params.read(
                 schema.Collection("filter", items = schema.String())
             )
+
+            # If no filter is selected, select all promoted filters
+            if not filters_param:
+                filters_param = [filter.id
+                                 for filter in self.available_user_filters
+                                 if filter.promoted_search]
             
             # Discard all persisted filter parameters (restoring filters
             # selectively isn't supported, it's all or nothing)

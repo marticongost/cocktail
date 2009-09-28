@@ -45,6 +45,7 @@ class UserFilter(object):
     content_type = None
     available_languages = ()
     ui_class = "cocktail.html.UserFilterEntry"
+    promoted_search = False
    
     @cached_getter
     def schema(self):
@@ -291,6 +292,10 @@ Member.searchable = True
 String.text_search = True
 RelationMember.text_search = False
 
+# An extension property used to determine which members have their search
+# controls enabled by default
+Member.promoted_search = False
+
 def _get_searchable_text(self, languages, visited_objects = None):
 
     if visited_objects is None:
@@ -352,6 +357,9 @@ class UserFiltersRegistry(object):
                 filter.content_type = content_type
                 filter.member = member
                 filters.append(filter)
+
+                if member.promoted_search:
+                    filter.promoted_search = True
 
         return filters
 
