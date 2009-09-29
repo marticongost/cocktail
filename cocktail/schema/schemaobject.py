@@ -365,6 +365,9 @@ class SchemaObject(object):
 
         @ivar instance: A reference to the new instance.
         @type instance: L{SchemaObject}
+
+        @ivar values: The parameters passed to the constructor.
+        @type values: dict
         """)
 
     changing = Event(doc = """
@@ -424,7 +427,7 @@ class SchemaObject(object):
 
     def __init__(self, **values):
         self.__class__.init_instance(self, values, SchemaObjectAccessor)
-        self.__class__.instantiated(instance = self)
+        self.__class__.instantiated(instance = self, values = values)
         
     def __repr__(self):
         
