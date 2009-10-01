@@ -158,3 +158,23 @@ cocktail.translate = function (key, params) {
     
     return translation;
 }
+
+cocktail.__dialogBackground = null;
+
+cocktail.showDialog = function (content) {
+
+    if (!cocktail.__dialogBackground) {
+        cocktail.__dialogBackground = document.createElement("div")
+        cocktail.__dialogBackground.className = "dialog-background";
+    }
+    document.body.appendChild(cocktail.__dialogBackground);
+    
+    var $content = jQuery(content);
+    $content.addClass("dialog");
+    jQuery(document.body).append($content);
+}
+
+cocktail.closeDialog = function () {
+    jQuery(".dialog-background").remove();
+    jQuery(".dialog").hide();
+}
