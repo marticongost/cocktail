@@ -140,9 +140,11 @@
 
                 handleFocus(false);
 
-                if (srcTag != "a" && srcTag != "button" && srcTag != "textarea" && srcTag != "img" &&
-                    (srcTag != "input" || jQuery(src).is(entryCheckboxSelector))) {
-                    
+                if (srcTag != "a" && !jQuery(src).parents("a").length
+                    && srcTag != "button" && !jQuery(src).parents("button").length
+                    && srcTag != "textarea"
+                    && (srcTag != "input" || jQuery(src).is(entryCheckboxSelector))
+                ) {
                     // Range selection (shift + click)
                     if (multipleSelection && e.shiftKey) {
                         selectable.clearSelection();
