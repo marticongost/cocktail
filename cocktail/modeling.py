@@ -13,7 +13,7 @@ from threading import local, Lock, RLock
 from cocktail.typemapping import TypeMapping
 
 _thread_data = local()
-
+_undefined = object()
 
 def wrap(function, wrapper):
     wrapper.__doc__ = function.__doc__
@@ -460,7 +460,7 @@ empty_list = ListWrapper([])
 empty_set = SetWrapper(set())
 
 
-# Ordered set
+# Ordered collections
 #------------------------------------------------------------------------------
 
 class OrderedSet(ListWrapper):
@@ -547,6 +547,88 @@ class OrderedSet(ListWrapper):
 
     def __imul__(self, n):
         raise TypeError("Operation not permitted")
+
+
+class OrderedDict(DictWrapper):
+
+    def __init__(self, *args, **kwargs):
+        DictWrapper.__init__(self, {})
+        self.__sequence = []
+        self.update(*args, **kwargs)
+
+    def __iter__(self):
+        return self.__sequence.__iter__()
+
+    def keys(self):
+        return list(self.__sequence)
+
+    def iterkeys(self):
+        return self.__sequence.__iter__()
+
+    def values(self):
+        return [self._items[key] for key in self.__sequence]
+    
+    def itervalues(self):
+        for key in self.__sequence:
+            yield self._items[key]
+
+    def items(self):
+        return [(key, self._items[key]) for key in self.__sequence]
+    
+    def iteritems(self):
+        for key in self.__sequence:
+            yield (key, self._items[key])
+
+    def __setitem__(self, key, value):
+        if key not in self._items:
+            self.__sequence.append(key)
+        self._items[key] = value
+
+    def __delitem__(self, key):
+        self._items.__delitem__(key)
+        self.__sequence.remove(key)
+    
+    def clear(self):
+        self._items = {}
+        self.__sequence = []
+
+    def pop(self, key, default = _undefined):
+
+        value = self._items.get(key, _undefined)
+
+        if value is _undefined:
+            if default is _undefined:
+                raise KeyError(key)
+            value = default
+        else:
+            del self[key]
+
+        return value
+
+    def popitem(self, index = -1):
+        key = self.__sequence.pop(index)
+        value = self._items.pop(key)
+        return key, value
+
+    def update(self, *args, **kwargs):
+        if args:
+            if len(args) != 1:
+                raise TypeError(
+                    "update expected at most 1 argument, got %d"
+                    % len(args)
+                )
+            
+            source = args[0]
+
+            if isinstance(source, (dict, DictWrapper)):
+                source = source.iteritems()
+
+            for key, value in source:
+                self[key] = value
+
+        if kwargs:
+            for key, value in kwargs.iteritems():
+                self[key] = value
 
 
 # Instrumented collections
@@ -724,9 +806,6 @@ class InstrumentedSet(SetWrapper, InstrumentedCollection):
 
         for item in items:
             self.item_added(item)
-
-
-_undefined = object()
 
 
 class InstrumentedDict(DictWrapper, InstrumentedCollection):
