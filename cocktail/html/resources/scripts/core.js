@@ -175,6 +175,10 @@ cocktail.showDialog = function (content) {
 }
 
 cocktail.closeDialog = function () {
-    jQuery(".dialog-background").remove();
-    jQuery(".dialog").hide();
+    // We use a custom remove function because jQuery.remove()
+    // clears event handlers
+    function remove() { this.parentNode.removeChild(this); };
+    jQuery("body > .dialog-background").each(remove);
+    jQuery("body > .dialog").each(remove);
 }
+
