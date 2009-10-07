@@ -275,6 +275,57 @@ class CollectionFilter(BinaryFilter):
                 )
 
 
+class MultipleChoiceFilter(MemberFilter):
+
+    @cached_getter
+    def schema(self):
+        return Schema("UserFilter", members = [
+            Collection("values",
+                items = Reference(
+                    required = True,
+                    type = self.member.related_type
+                ),
+                search_control = "cocktail.html.MultipleChoiceSelector",
+                min = 1,
+                required = True
+            )
+        ])
+
+    @getter
+    def expression(self):
+
+        member = self.member
+
+        if not self.member.bidirectional \
+        and isinstance(self.member, Collection):
+            values = self.values
+            expression = CustomExpression(
+                lambda item: item.get(member) in values
+            )
+
+        else:
+            subset = set()
+
+            if isinstance(self.member, Reference):
+                query = self.content_type.select
+                by_key = True
+                for value in self.values:
+                    subset.update(
+                        query(member.equal(value)).execute()
+                    )
+            
+            elif isinstance(self.member, Collection):
+                by_key = False
+                rel_member = member.related_end
+                for value in self.values:
+                    subset.update(value.get(rel_member))
+                
+            expression = Self.one_of(subset)
+            expression.by_key = by_key
+
+        return expression
+
+
 # An extension property used to associate user filter types with members
 Member.user_filter = EqualityFilter
 Number.user_filter = ComparisonFilter
