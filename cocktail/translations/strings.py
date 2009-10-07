@@ -148,6 +148,24 @@ translations.define("cocktail.html.CollectionView clear selection",
     en = u"None"
 )
 
+translations.define("cocktail.html.MultipleChoiceSelector accept button",
+    ca = u"Acceptar",
+    es = u"Aceptar",
+    en = u"Accept"
+)
+
+translations.define("cocktail.html.MultipleChoiceSelector cancel button",
+    ca = u"Cancel·lar",
+    es = u"Cancelar",
+    en = u"Cancel"
+)
+
+translations.define("cocktail.html.MultipleChoiceSelector select button",
+    ca = u"Seleccionar",
+    es = u"Seleccionar",
+    en = u"Select"
+)
+
 translations.define("Translations",
     ca = u"Traduccions",
     es = u"Traducciones",
@@ -680,4 +698,3 @@ translations.define("decimal.Decimal-instance",
     es = lambda instance: _serialize_thousands(instance, ".", ","),
     en = lambda instance: _serialize_thousands(instance, ",", ".")
 )
-
