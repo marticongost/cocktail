@@ -171,7 +171,9 @@ cocktail.showDialog = function (content) {
     
     var $content = jQuery(content);
     $content.addClass("dialog");
-    jQuery(document.body).append($content);
+    jQuery(document.body)
+        .addClass("modal")
+        .append($content);
 }
 
 cocktail.closeDialog = function () {
@@ -180,5 +182,6 @@ cocktail.closeDialog = function () {
     function remove() { this.parentNode.removeChild(this); };
     jQuery("body > .dialog-background").each(remove);
     jQuery("body > .dialog").each(remove);
+    jQuery(document.body).removeClass("modal");
 }
 
