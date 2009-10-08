@@ -215,11 +215,8 @@ class UserCollection(object):
                     for filter in self.available_user_filters)
 
                 for i, filter_id in enumerate(filters_param):
-                    try:
-                        filter_model = available_filters[filter_id]                    
-                    except KeyError:
-                        raise ValueError("Unknown filter: " + filter_id)
-                    else:
+                    filter_model = available_filters.get(filter_id)
+                    if filter_model:
                         filter = copy(filter_model)
                         filter.available_languages = self.available_languages
                         get_parameter(
