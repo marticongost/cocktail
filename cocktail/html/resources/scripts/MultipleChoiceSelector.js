@@ -17,9 +17,13 @@ cocktail.init(function (root) {
         var dialog = document.createElement("div");
         dialog.className = "MultipleChoiceSelector-dialog";
         
+        var dialogContainer = document.createElement("div");
+        dialogContainer.className = "container";
+        dialog.appendChild(dialogContainer);
+
         // Move the check list's content into the dialog
         while (this.firstChild) {
-            dialog.appendChild(this.firstChild);
+            dialogContainer.appendChild(this.firstChild);
         }
 
         // Dialog buttons
