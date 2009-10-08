@@ -46,7 +46,8 @@ class UserFilter(object):
     available_languages = ()
     ui_class = "cocktail.html.UserFilterEntry"
     promoted_search = False
-   
+    repeatable = True
+
     @cached_getter
     def schema(self):
         raise TypeError("Trying to access abstract property 'schema' on %s"
@@ -107,6 +108,8 @@ class MemberFilter(UserFilter):
 
 class BooleanFilter(MemberFilter):
     
+    repeatable = False
+
     @cached_getter
     def schema(self):
         schema = Schema()
@@ -201,6 +204,7 @@ class GlobalSearchFilter(UserFilter):
     id = "global_search"
     value = None
     language = None
+    repeatable = False
 
     @cached_getter
     def schema(self):
@@ -276,6 +280,8 @@ class CollectionFilter(BinaryFilter):
 
 
 class MultipleChoiceFilter(MemberFilter):
+
+    repeatable = False
 
     @cached_getter
     def schema(self):

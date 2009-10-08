@@ -94,8 +94,10 @@ from cocktail.controllers import get_state, view_state, serialize_parameter
             <div class="selector_content">
                 <py:ready>
                     <?py
+                    chosen = set(filter.id for filter in self.filters)
                     filter_items = [(translations(filter), filter)
-                                    for filter in self.available_filters]
+                                    for filter in self.available_filters
+                                    if filter.repeatable or filter.id not in chosen]
 
                     filter_items.sort(key = lambda item: normalize(item[0]))
                     ?>
