@@ -59,6 +59,9 @@ from cocktail.controllers import get_state, view_state, serialize_parameter
     </div>
 
     <div py:def="filter_entry" py:args="index, filter">
+        <?py
+        element.add_class("filter-" + filter.id)
+        ?>
         <input type="hidden" name="filter" value="${filter.id}"/>
         <span class="filter_desc">${translations(filter)}</span>
         <py:new
