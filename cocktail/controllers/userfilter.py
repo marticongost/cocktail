@@ -352,6 +352,7 @@ RelationMember.text_search = False
 # An extension property used to determine which members have their search
 # controls enabled by default
 Member.promoted_search = False
+Member.promoted_search_list = None
 
 def _get_searchable_text(self, languages, visited_objects = None):
 
@@ -399,7 +400,7 @@ class UserFiltersRegistry(object):
         filters = []
 
         # Custom filters
-        for ancestor in content_type.ascend_inheritance(include_self = True):
+        for ancestor in content_type.descend_inheritance(include_self = True):
             ancestor_filters = filters_by_type.get(ancestor)
             if ancestor_filters:
                 for filter_class in ancestor_filters:
