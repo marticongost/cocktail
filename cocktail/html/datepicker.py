@@ -53,8 +53,6 @@ class DatePicker(TextBox):
             self.set_client_param("datePickerParams", params)           
             
         TextBox._ready(self)
-        from cocktail.styled import styled
-        print styled(self.value, "red")
        
     def get_jformat(self):
         return translations("jquery_date format", get_language())    
