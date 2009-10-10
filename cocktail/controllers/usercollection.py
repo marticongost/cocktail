@@ -333,7 +333,9 @@ class UserCollection(object):
 
         for user_filter in self.user_filters:
             if user_filter.schema.validate(user_filter):
-                subset.add_filter(user_filter.expression)
+                expression = user_filter.expression
+                if expression is not None:
+                    subset.add_filter(expression)
 
         for criteria in self.order:
             subset.add_order(criteria)
