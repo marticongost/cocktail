@@ -58,7 +58,7 @@ from cocktail.controllers import get_state, view_state, serialize_parameter
         </py:ready>
     </div>
 
-    <div py:def="filter_entry" py:args="index, filter">
+    <div py:def="filter_entry" py:args="index, filter" py:filter="${filter}">
         <?py
         element.add_class("filter-" + filter.id)
         ?>
