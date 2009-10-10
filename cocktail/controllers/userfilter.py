@@ -65,11 +65,19 @@ class UserFilter(object):
         ui.data = self
         return ui
 
+    @getter
+    def members(self):
+        return ()
+
 
 class MemberFilter(UserFilter):
     member = None
     value = None
     language = None
+
+    @getter
+    def members(self):
+        return (self.member,)
 
     def _add_language_to_schema(self, schema):
         if self.member.translated:
@@ -337,6 +345,10 @@ class DateTimeRangeFilter(UserFilter):
     id = "datetime_range"
     start_date_member = None
     end_date_member = None
+
+    @getter
+    def members(self):
+        return (self.start_date_member, self.end_date_member)
 
     @cached_getter
     def schema(self):
