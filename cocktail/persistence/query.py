@@ -362,7 +362,7 @@ class Query(object):
             if custom_impl is None or len(dataset) == 1:
 
                 if self.verbose:
-                    print query_eval_style(expr),
+                    print query_eval_style(expr)
 
                 dataset.intersection_update(
                     id
@@ -374,7 +374,7 @@ class Query(object):
             else:
                 
                 if self.verbose:
-                    print query_resolve_style(expr),
+                    print query_resolve_style(expr)
 
                 dataset = custom_impl(dataset)
 
@@ -385,11 +385,22 @@ class Query(object):
 
     def _get_execution_plan(self, filters):
         """Create an optimized execution plan for the given set of filters."""
-        return [
-            (filter, resolution[1])
-            for resolution, filter
-            in sorted((expr.resolve_filter(self), expr) for expr in filters)
-        ]
+
+        plan = []
+        And = expressions.AndExpression
+
+        for filter in filters:
+            # Flatten regular AND expressions
+            if isinstance(filter, And):
+                for operand in filter.operands:
+                    plan.append((operand.resolve_filter(self), operand))
+            else:
+                plan.append((filter.resolve_filter(self), filter))
+
+        plan.sort()
+
+        for resolution, filter in plan:
+            yield (filter, resolution[1])
     
     def _get_expression_index(self, expr, member = None):
 
