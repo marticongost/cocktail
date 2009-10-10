@@ -208,28 +208,48 @@ class GreaterExpression(NormalizableExpression):
     
     def op(self, a, b):
         a, b = self.normalize_operands(a, b)
-        return a > b
+        if a is None:
+            return False
+        elif b is None:
+            return True
+        else:
+            return a > b
 
 
 class GreaterEqualExpression(NormalizableExpression):
     
     def op(self, a, b):
         a, b = self.normalize_operands(a, b)
-        return a >= b
+        if a is None:
+            return b is None
+        elif b is None:
+            return True
+        else:
+            return a >= b
 
 
 class LowerExpression(NormalizableExpression):
 
     def op(self, a, b):
         a, b = self.normalize_operands(a, b)
-        return a < b
+        if b is None:
+            return False
+        elif a is None:
+            return True
+        else:
+            return a < b
 
 
 class LowerEqualExpression(NormalizableExpression):
 
     def op(self, a, b):
         a, b = self.normalize_operands(a, b)
-        return a <= b
+        if b is None:
+            return a is None
+        elif a is None:
+            return True
+        else:
+            return a <= b
 
 
 class StartsWithExpression(NormalizableExpression):
