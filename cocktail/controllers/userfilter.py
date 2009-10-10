@@ -332,6 +332,42 @@ class MultipleChoiceFilter(MemberFilter):
         return expression
 
 
+class DateTimeRangeFilter(UserFilter):
+
+    id = "datetime_range"
+    start_date_member = None
+    end_date_member = None
+
+    @cached_getter
+    def schema(self):
+
+        if self.start_date_member.__class__ \
+        is not self.end_date_member.__class__:
+            raise TypeError(
+                "Different types for start_date_member and end_date_member"
+            )
+        
+        start_date = self.start_date_member.copy()
+        start_date.name = "start_date"
+
+        end_date = self.end_date_member.copy()
+        end_date.name = "end_date"
+
+        return Schema("DateTimeRangeFilter", members = [start_date, end_date])
+
+    @getter
+    def expression(self):
+    
+        if self.start_date and self.end_date:
+            expression = self.start_date.greater_equal(self.start_date) \
+                         .and_(self.end_date.lower(self.end_date))
+        elif self.start_date:
+            expression = self.start_date.greater_equal(self.start_date)
+        elif self.end_date:
+            expression = self.end_date.lower(self.end_date)
+
+        return expression
+
 # An extension property used to associate user filter types with members
 Member.user_filter = EqualityFilter
 Number.user_filter = ComparisonFilter

@@ -407,6 +407,27 @@ translations.define("cocktail.controllers.userfilter.GlobalSearchFilter-instance
     en = u"Has the words"
 )
 
+translations.define(
+    "cocktail.controllers.userfilter.DateTimeRangeFilter-instance",
+    ca = u"Rang de dates",
+    es = u"Rango de fechas",
+    en = u"Date range"
+)
+
+translations.define(
+    "DateTimeRangeFilter.start_date",
+    ca = u"Des de",
+    es = u"Desde",
+    en = u"From"
+)
+
+translations.define(
+   "DateTimeRangeFilter.end_date",
+    ca = u"Fins a",
+    es = u"Hasta",
+    en = u"Until"
+)
+
 # Languages
 #------------------------------------------------------------------------------
 translations.define("ca",
