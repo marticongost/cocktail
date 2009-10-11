@@ -210,7 +210,7 @@ translations.define("month 8", ca = u"Agost", es = u"Agosto", en = u"August")
 translations.define("month 9", ca = u"Setembre", es = u"Septiembre", en = u"September")
 translations.define("month 10", ca = u"Octubre", es = u"Octubre", en = u"October")
 translations.define("month 11", ca = u"Novembre", es = u"Noviembre", en = u"November")
-translations.define("month 12", ca = u"Decembre", es = u"Diciembre", en = u"December")
+translations.define("month 12", ca = u"Desembre", es = u"Diciembre", en = u"December")
 
 # -------- ABBREVIATED TRANSLATIONS OF WEEKDAYS
 translations.define("weekday 0 abbr", ca = u"Dl", es = u"Lun", en = u"Mon")
