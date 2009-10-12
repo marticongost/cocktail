@@ -30,8 +30,21 @@
 
         return display
 
-    def get_member_supplied_display(self, obj, member):
-        return member.search_control or member.original_member.search_control
+    def get_member_supplied_display(self, user_filter, member):
+        
+        control = member.search_control
+        
+        if control is None and member.name in ("value", "values"):
+            
+            user_filter_member = getattr(user_filter, "member", None)
+            
+            if user_filter_member:
+                control = user_filter_member.search_control
+
+            if control is None:
+                control = user_filter.search_control
+
+        return control
     ?>
 
     <?py
