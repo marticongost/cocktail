@@ -148,19 +148,19 @@ translations.define("cocktail.html.CollectionView clear selection",
     en = u"None"
 )
 
-translations.define("cocktail.html.MultipleChoiceSelector accept button",
+translations.define("cocktail.html.modal_selector accept button",
     ca = u"Acceptar",
     es = u"Aceptar",
     en = u"Accept"
 )
 
-translations.define("cocktail.html.MultipleChoiceSelector cancel button",
+translations.define("cocktail.html.modal_selector cancel button",
     ca = u"Cancel·lar",
     es = u"Cancelar",
     en = u"Cancel"
 )
 
-translations.define("cocktail.html.MultipleChoiceSelector select button",
+translations.define("cocktail.html.modal_selector select button",
     ca = u"Seleccionar",
     es = u"Seleccionar",
     en = u"Select"
