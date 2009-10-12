@@ -9,6 +9,33 @@
 from cocktail.translations import translations
 from cocktail.html.element import Element
 
+def get_tag_cloud_font_sizes(tags, max_font_increment = 75):
+
+    # Find minimum and maximum frequency
+    min_frequency = None
+    max_frequency = 0
+
+    for frequency in tags.itervalues():
+
+        if min_frequency is None or frequency < min_frequency:
+            min_frequency = frequency
+        
+        if frequency > max_frequency:
+            max_frequency = frequency
+
+    # Assign font sizes
+    divergence = max_frequency - min_frequency
+
+    if not divergence:
+        font_sizes = dict((tag, 100) for tag in tags)
+    else:
+        font_sizes = {}
+        for tag, frequency in tags.iteritems():
+            ratio = float(frequency - min_frequency) / divergence
+            font_sizes[tag] = 100 + int(ratio * max_font_increment)
+
+    return font_sizes
+
 
 class TagCloud(Element):
     """An element that renders a link cloud for a set of tags.
@@ -26,39 +53,24 @@ class TagCloud(Element):
     def _ready(self):
         Element._ready(self)
         
-        # Find minimum and maximum frequency
-        min_frequency = None
-        max_frequency = 0
+        self._font_sizes = get_tag_cloud_font_sizes(
+            self.tags,
+            self.max_font_increment
+        )
 
-        for tag, frequency in self.tags.iteritems():
+        for tag in self.sorted_tags(self.tags):
+            self.append(self.create_tag_entry(tag, self.tags[tag]))
 
-            if min_frequency is None or frequency < min_frequency:
-                min_frequency = frequency
-            
-            if frequency > max_frequency:
-                max_frequency = frequency
+    def sorted_tags(self, tags):
+        return sorted(tags.keys(), key = translations)
 
-        self._min_frequency = min_frequency
-        self._max_frequency = max_frequency
-        self._divergence = self._max_frequency - self._min_frequency
-        
-        # Render tags
-        for tag, frequency in self.tags.iteritems():
-            self.append(self.create_tag_link(tag, frequency))
-
-    def create_tag_link(self, tag, frequency):
-        
-        entry = Element("a")
-        entry.append(self.create_tag_label(tag, frequency))
-        
-        # Font size variation
-        if self._divergence:
-            ratio = float(frequency - self._min_frequency) / self._divergence
-            size_increment = int(ratio * self.max_font_increment)
-            entry.set_style("font-size", str(100 + size_increment) + "%")
-
+    def create_tag_entry(self, tag, frequency):        
+        entry = Element("a")        
+        entry.label = self.create_tag_label(tag, frequency) 
+        entry.append(entry.label)
+        entry.set_style("font-size", str(self._font_sizes[tag]) + "%")                
         return entry
 
     def create_tag_label(self, tag, frequency):
-        return "%s (%d)" % (translations(tag), frequency)
+        return translations(tag)
 
