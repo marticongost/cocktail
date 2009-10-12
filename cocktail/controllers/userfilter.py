@@ -47,6 +47,7 @@ class UserFilter(object):
     ui_class = "cocktail.html.UserFilterEntry"
     promoted_search = False
     repeatable = True
+    search_control = None
 
     @cached_getter
     def schema(self):
@@ -290,6 +291,7 @@ class CollectionFilter(BinaryFilter):
 class MultipleChoiceFilter(MemberFilter):
 
     repeatable = False
+    search_control = "cocktail.html.MultipleChoiceSelector"
 
     @cached_getter
     def schema(self):
@@ -299,7 +301,6 @@ class MultipleChoiceFilter(MemberFilter):
                     required = True,
                     type = self.member.related_type
                 ),
-                search_control = "cocktail.html.MultipleChoiceSelector",
                 min = 1,
                 required = True
             )
