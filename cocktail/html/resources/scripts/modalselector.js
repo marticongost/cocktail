@@ -61,8 +61,8 @@ cocktail.init(function (root) {
             jQuery("input[type=checkbox]:checked", dialog).each(function () {
                 
                 var content = jQuery("label", this.parentNode).get(0);
-                var entry = document.createElement("span");
-                entry.className = content.className;
+                var entry = document.createElement("div");
+                entry.className = "entry " + content.className;
                 entry.innerHTML = content.innerHTML;
 
                 var input = document.createElement("input");
@@ -71,9 +71,6 @@ cocktail.init(function (root) {
                 input.value = this.value;
                 entry.appendChild(input);
 
-                if (container.firstChild) {
-                    container.appendChild(document.createTextNode(", "));
-                }
                 container.appendChild(entry);
             });
         }
