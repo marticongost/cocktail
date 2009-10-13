@@ -14,7 +14,7 @@ cocktail.init(function (root) {
         var filterBox = this;
         var filterList = jQuery(".filter_list", this).get(0);
 
-        this.addFilter = function (filterId) {
+        this.addUserFilter = function (filterId) {
             var index = filterList.childNodes.length;
             var entry = cocktail.instantiate(
                 "cocktail.html.FilterBox-entry-" + filterId,
@@ -61,7 +61,7 @@ cocktail.init(function (root) {
             .attr("href", "javascript:")
             .click(function () {
                 cocktail.foldSelectors();
-                filterBox.addFilter(this.filterId);
+                filterBox.addUserFilter(this.filterId);
                 return false;
             });
         
