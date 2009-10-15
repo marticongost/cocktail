@@ -41,10 +41,22 @@ class Location(object):
             self.query_string = parse_qs(parts.query)
 
     @classmethod
+    def get_current_host(cls):
+
+        request = cherrypy.request
+
+        location = cls()
+        location.method = "GET"
+        location.scheme = request.scheme
+        location.host = request.local.name
+        location.port = request.local.port
+
+        return location
+
+    @classmethod
     def get_current(cls):
         
         request = cherrypy.request
-
         query_string = get_state()
 
         location = cls()
