@@ -975,7 +975,7 @@ class SynchronizedList(object):
         return self._items.count(item)
         
     def index(self, item):
-        return self._items.index(self, item)
+        return self._items.index(item)
         
     def append(self, item):
         self._items.append(item)
