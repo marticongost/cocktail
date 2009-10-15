@@ -87,7 +87,7 @@ class Location(object):
 
     def __str__(self):
 
-        if self.relative:
+        if self.relative or self.host is None:
             url = ""
         else:
             url = self.scheme + "://" + self.host
