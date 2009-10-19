@@ -371,13 +371,15 @@ class DateTimeRangeFilter(UserFilter):
     @getter
     def expression(self):
     
+        expression = None
+
         if self.start_date and self.end_date:
-            expression = self.start_date.greater_equal(self.start_date) \
-                         .and_(self.end_date.lower(self.end_date))
+            expression = self.start_date_member.greater_equal(self.start_date) \
+                         .and_(self.end_date_member.lower(self.end_date))
         elif self.start_date:
-            expression = self.start_date.greater_equal(self.start_date)
+            expression = self.start_date_member.greater_equal(self.start_date)
         elif self.end_date:
-            expression = self.end_date.lower(self.end_date)
+            expression = self.end_date_member.lower(self.end_date)
 
         return expression
 
