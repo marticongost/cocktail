@@ -35,6 +35,9 @@ class Table(Element, CollectionDisplay):
     nested_list_max_length = 5
     translated_values = True
     persistence_prefix = None
+    entry_selector = "tbody tr"
+    checkbox_selector = "td.selection input"
+    resizable_rows_selector = "tbody tr"
 
     def __init__(self, *args, **kwargs):
         Element.__init__(self, *args, **kwargs)
@@ -64,8 +67,13 @@ class Table(Element, CollectionDisplay):
         selectable(
             self,
             mode = self.selection_mode,
-            entry_selector = "tbody tr",
-            checkbox_selector = "td.selection input"
+            entry_selector = self.entry_selector,
+            checkbox_selector = self.checkbox_selector
+        )
+
+        self.set_client_param(
+            "resizableRowsSelector",
+            self.resizable_rows_selector
         )
 
         self.set_client_param("persistencePrefix", self.persistence_prefix)
