@@ -144,6 +144,10 @@ class Table(Element, CollectionDisplay):
 
             row = self.create_row(i, item)
             self.append(row)
+            self._row_added(index, item, row)
+
+    def _row_added(self, index, item, row):
+        pass
 
     def create_group_row(self, group):
         
