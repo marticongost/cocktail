@@ -160,10 +160,10 @@ $.fn.tableresizer = function(options)
      * Make table rows resizable
      */  
     var resize_rows = function(root)
-    {            
+    {        
         var tbl = root.find("table");
         var row,newheight;
-        var rows = root.find("tr").children("td:visible");
+        var rows = root.find(tbl.get(0).resizableRowsSelector || "tbody tr").children("td:visible");
         var resize = false;
         var top = root.offset().top;
 		
