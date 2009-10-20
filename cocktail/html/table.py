@@ -157,7 +157,10 @@ class Table(Element, CollectionDisplay):
         cell = Element("td", colspan = "0", children = [
             Element("span",
                 class_name = "grouping_value",
-                children = [self.grouping.translate_grouping_value(group)]
+                children = [
+                    self.grouping.translate_grouping_value(group)
+                    or unicode(group)
+                ]
             ),
             Element("span",
                 class_name = "grouping_member",
