@@ -8,9 +8,15 @@ u"""
 """
 from copy import copy
 import cherrypy
+from cocktail.pkgutils import resolve
 from cocktail.modeling import ListWrapper, SetWrapper, getter, cached_getter
 from cocktail.language import get_content_language
 from cocktail import schema
+from cocktail.schema.expressions import (
+    PositiveExpression,
+    NegativeExpression,
+    TranslationExpression
+)
 from cocktail.persistence.query import Query
 from cocktail.html.datadisplay import (
     NO_SELECTION,
@@ -37,6 +43,7 @@ class UserCollection(object):
     allow_language_selection = True
     allow_filters = True
     allow_sorting = True
+    allow_grouping = True
     allow_paging = True
 
     def __init__(self, root_type):
@@ -259,10 +266,10 @@ class UserCollection(object):
                 for key in order_param:
 
                     if key.startswith("-"):
-                        sign = schema.expressions.NegativeExpression
+                        sign = NegativeExpression
                         key = key[1:]
                     else:
-                        sign = schema.expressions.PositiveExpression
+                        sign = PositiveExpression
 
                     member = self._get_member(
                         key,
@@ -275,6 +282,55 @@ class UserCollection(object):
 
         return ListWrapper(order)
     
+    # Grouping
+    #------------------------------------------------------------------------------
+    @cached_getter
+    def grouping(self):
+
+        grouping = None
+
+        if self.allow_grouping:
+            
+            grouping_param = self.params.read(schema.String("grouping"))
+
+            if grouping_param:
+
+                # Ascending / descending
+                if grouping_param.startswith("-"):
+                    sign = NegativeExpression
+                    grouping_param = grouping_param[1:]
+                else:
+                    sign = PositiveExpression
+                
+                # Grouping variant
+                pos = grouping_param.find("!")
+                if pos != -1:
+                    variant = grouping_param[pos+1:]
+                    grouping_param = grouping_param[:pos]
+                else:
+                    variant = None
+
+                # Groupped member
+                member = self._get_member(
+                    grouping_param,
+                    translatable = True,
+                    from_type = True
+                )
+
+                if isinstance(member, TranslationExpression):
+                    member, language = member.operands
+                else:
+                    language = None
+                
+                if member and member.grouping:
+                    grouping_class = resolve(member.grouping)
+                    grouping = grouping_class()
+                    grouping.member = member
+                    grouping.sign = sign
+                    grouping.variant = variant                    
+
+        return grouping
+
     # Paging
     #--------------------------------------------------------------------------
     @cached_getter
@@ -337,6 +393,9 @@ class UserCollection(object):
                 if expression is not None:
                     subset.add_filter(expression)
 
+        if self.grouping:
+            subset.add_order(self.grouping.order)
+        
         for criteria in self.order:
             subset.add_order(criteria)
 
