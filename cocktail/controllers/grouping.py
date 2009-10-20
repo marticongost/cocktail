@@ -44,7 +44,7 @@ class MemberGrouping(object):
             if self.sign is NegativeExpression:
                 value = "-" + value
             if self.language:
-                value += "-" + self.language
+                value += "." + self.language
             if self.variant:
                 value += "!" + self.variant
             return value
