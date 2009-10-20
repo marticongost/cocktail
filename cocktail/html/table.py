@@ -35,6 +35,9 @@ class Table(Element, CollectionDisplay):
     nested_list_max_length = 5
     translated_values = True
     persistence_prefix = None
+    entry_selector = "tbody tr"
+    checkbox_selector = "td.selection input"
+    resizable_rows_selector = "tbody tr"
 
     def __init__(self, *args, **kwargs):
         Element.__init__(self, *args, **kwargs)
@@ -64,11 +67,23 @@ class Table(Element, CollectionDisplay):
         selectable(
             self,
             mode = self.selection_mode,
-            entry_selector = "tbody tr",
-            checkbox_selector = "td.selection input"
+            entry_selector = self.entry_selector,
+            checkbox_selector = self.checkbox_selector
+        )
+
+        self.set_client_param(
+            "resizableRowsSelector",
+            self.resizable_rows_selector
         )
 
         self.set_client_param("persistencePrefix", self.persistence_prefix)
+
+        if self.grouping:
+            self.set_member_displayed(self.grouping.member, False)
+            self._grouping_member_translation = \
+                u"(" + translations(self.grouping.member) + u")"
+            self._remove_grouping_translation = \
+                translations("sitebasis.views.ContentTable remove grouping")
 
         self._fill_head()
         self._fill_body()
@@ -110,9 +125,56 @@ class Table(Element, CollectionDisplay):
                 self.head_row.append(header)
     
     def _fill_body(self):
+
+        if self.grouping:
+            undefined = object()
+            current_group = undefined        
+            get_group = self.grouping.get_grouping_value
+        else:
+            get_group = None
+
         for i, item in enumerate(self.data):
+
+            if get_group:
+                group = get_group(item)
+                if group != current_group:
+                    group_row = self.create_group_row(group)
+                    self.append(group_row)
+                    current_group = group
+
             row = self.create_row(i, item)
             self.append(row)
+            self._row_added(i, item, row)
+
+    def _row_added(self, index, item, row):
+        pass
+
+    def create_group_row(self, group):
+        
+        row = Element("tr")
+        row.add_class("group")
+        
+        cell = Element("td", colspan = "0", children = [
+            Element("span",
+                class_name = "grouping_value",
+                children = [
+                    self.grouping.translate_grouping_value(group)
+                    or unicode(group)
+                ]
+            ),
+            Element("span",
+                class_name = "grouping_member",
+                children = [self._grouping_member_translation]
+            ),
+            Element("a",
+                href = u"?" + view_state(grouping = "", page = 0),
+                class_name = "remove_grouping",
+                children = [self._remove_grouping_translation]
+            )
+        ])
+        row.append(cell)
+        
+        return row
 
     def create_row(self, index, item):
         row = Element("tr")
@@ -222,7 +284,10 @@ class Table(Element, CollectionDisplay):
             if language:
                 order_param += "." + language
 
-            header.label["href"] = "?" + view_state(order = order_param)
+            header.label["href"] = "?" + view_state(
+                order = order_param,
+                page = 0
+            )
 
     def create_cell(self, item, column, language = None):
         cell = Element("td")
