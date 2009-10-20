@@ -164,7 +164,7 @@ class Table(Element, CollectionDisplay):
                 children = [self._grouping_member_translation]
             ),
             Element("a",
-                href = u"?" + view_state(grouping = ""),
+                href = u"?" + view_state(grouping = "", page = 0),
                 class_name = "remove_grouping",
                 children = [self._remove_grouping_translation]
             )
@@ -281,7 +281,10 @@ class Table(Element, CollectionDisplay):
             if language:
                 order_param += "." + language
 
-            header.label["href"] = "?" + view_state(order = order_param)
+            header.label["href"] = "?" + view_state(
+                order = order_param,
+                page = 0
+            )
 
     def create_cell(self, item, column, language = None):
         cell = Element("td")
