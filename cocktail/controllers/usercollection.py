@@ -318,7 +318,10 @@ class UserCollection(object):
                 )
 
                 if isinstance(member, TranslationExpression):
-                    member, language = member.operands
+                    member, language = (
+                        member.operands[0],
+                        member.operands[1].value
+                    )
                 else:
                     language = None
                 
@@ -327,6 +330,7 @@ class UserCollection(object):
                     grouping = grouping_class()
                     grouping.member = member
                     grouping.sign = sign
+                    grouping.language = language
                     grouping.variant = variant                    
 
         return grouping
