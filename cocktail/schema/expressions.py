@@ -456,11 +456,20 @@ class RangeIntersectionExpression(Expression):
         self.excludemax = excludemax
 
     def op(self, a, b, c, d):
-        min_operator = operator.gt if self.excludemin else operator.ge
-        max_operator = operator.lt if self.excludemax else operator.le
+        min_operator = (
+            GreaterExpression
+            if self.excludemin
+            else GreaterEqualExpression
+        )
+
+        max_operator = (
+            LowerExpression
+            if self.excludemax
+            else LowerEqualExpression
+        )
         
         return (
-            (d is None or max_operator(a, d))
-            and (b is None or min_operator(b, c))
+            (d is None or max_operator(a, d).eval({}))
+            and (b is None or min_operator(b, c).eval({}))
         )
 
