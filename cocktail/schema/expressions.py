@@ -125,6 +125,38 @@ class Expression(object):
     def translated_into(self, language):
         return TranslationExpression(self, language)
 
+    def between(self,
+        i = None,
+        j = None,
+        excludemin = False,
+        excludemax = True):
+        
+        min_operator = (
+            GreaterExpression
+            if excludemin
+            else GreaterEqualExpression
+        )
+
+        max_operator = (
+            LowerExpression
+            if excludemax
+            else LowerEqualExpression
+        )
+
+        if i is not None and j is not None:
+            expr = min_operator(self, i).and_(max_operator(self, j))
+        elif i is not None:
+            expr = min_operator(self, i)            
+        elif j is not None:
+            expr = max_operator(self, j)
+        else:
+            expr = Constant(True)
+
+        if excludemin and i is None:
+            expr = expr.and_(self.not_equal(None))
+
+        return expr
+
 
 class Constant(Expression):
 
