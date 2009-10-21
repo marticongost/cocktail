@@ -372,6 +372,11 @@ class MemberQueryTestCase(TempStorageMixin, TestCase):
         assert intersect(1, 2, 0, None)
 
         # Equal
+        assert not intersect(1, 1, 1, 1)
+        assert not intersect(1, 1, 1, 1, excludemin = True)
+        assert intersect(1, 1, 1, 1, excludemax = False)
+        assert not intersect(1, 1, 1, 1, excludemin = True, excludemax = False)
+
         assert intersect(1, 2, 1, 2)
         assert intersect(1, 2, 1, 2, excludemin = True)
         assert intersect(1, 5, 1, 5, excludemin = True)
