@@ -56,6 +56,11 @@ class ComparisonTestCase(TestCase):
             return Expression.wrap(x).between(i, j, **kwargs).eval({})
 
         # Discrete values
+        assert not between(1, 1, 1)
+        assert not between(1, 1, 1, excludemin = True)
+        assert between(1, 1, 1, excludemax = False)
+        assert not between(1, 1, 1, excludemin = True, excludemax = False)
+
         assert between(1, 1, 2)
         assert not between(2, 1, 2)
         assert between(2, 1, 3)
@@ -113,6 +118,11 @@ class ComparisonTestCase(TestCase):
         assert intersect(1, 2, 0, None)
 
         # Equal
+        assert not intersect(1, 1, 1, 1)
+        assert not intersect(1, 1, 1, 1, excludemin = True) 
+        assert intersect(1, 1, 1, 1, excludemax = False)
+        assert not intersect(1, 1, 1, 1, excludemin = True, excludemax = False) 
+
         assert intersect(1, 2, 1, 2)
         assert intersect(1, 2, 1, 2, excludemin = True)
         assert intersect(1, 5, 1, 5, excludemin = True)
