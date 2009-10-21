@@ -96,15 +96,16 @@ class DateGrouping(MemberGrouping):
     def get_grouping_value(self, item):
         
         value = item.get(self.member, self.language)
+        
+        if value is not None:
+            if self.variant == "day":
+                return date(value.year, value.month, value.day)
 
-        if self.variant == "day":
-            return date(value.year, value.month, value.day)
+            elif self.variant == "month":
+                return date(value.year, value.month, 1)
 
-        elif self.variant == "month":
-            return date(value.year, value.month, 1)
-
-        elif self.variant == "year":
-            return date(value.year, 1, 1)
+            elif self.variant == "year":
+                return date(value.year, 1, 1)
 
         return value
 
@@ -117,7 +118,7 @@ class TimeGrouping(MemberGrouping):
 
         value = item.get(self.member, self.language)
 
-        if self.variant == "hour":
+        if value is not None and self.variant == "hour":
             return datetime(value.year, value.month, value.day, value.hour)
         else:
             return value
