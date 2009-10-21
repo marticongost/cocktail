@@ -404,6 +404,7 @@ class RuleSet(object):
                     target_order.append(target_member.name)
                     ordered_members.add(target_member)
 
+        target_schema.groups_order = source_schema.groups_order
         target_schema.members_order = target_order
 
     def adapt_object(self,
