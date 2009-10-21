@@ -444,3 +444,23 @@ class HasExpression(Expression):
 
         return False
 
+
+class RangeIntersectionExpression(Expression):
+
+    excludemin = False
+    excludemax = True
+
+    def __init__(self, a, b, c, d, excludemin = False, excludemax = True):
+        Expression.__init__(self, a, b, c, d)
+        self.excludemin = excludemin
+        self.excludemax = excludemax
+
+    def op(self, a, b, c, d):
+        min_operator = operator.gt if self.excludemin else operator.ge
+        max_operator = operator.lt if self.excludemax else operator.le
+        
+        return (
+            (d is None or max_operator(a, d))
+            and (b is None or min_operator(b, c))
+        )
+
