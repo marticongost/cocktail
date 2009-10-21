@@ -65,11 +65,13 @@ cocktail.init(function (root) {
                 entry.className = "entry " + content.className;
                 entry.innerHTML = content.innerHTML;
 
-                var input = document.createElement("input");
-                input.type = "hidden";
-                input.name = this.name;
-                input.value = this.value;
-                entry.appendChild(input);
+                if (!this.disabled) {
+                    var input = document.createElement("input");
+                    input.type = "hidden";
+                    input.name = this.name;
+                    input.value = this.value;
+                    entry.appendChild(input);
+                }
 
                 container.appendChild(entry);
             });
