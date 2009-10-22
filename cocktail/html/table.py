@@ -159,7 +159,11 @@ class Table(Element, CollectionDisplay):
                 class_name = "grouping_value",
                 children = [
                     self.grouping.translate_grouping_value(group)
-                    or unicode(group)
+                    or self.translate_value(
+                        self.data,
+                        self.grouping.member,
+                        group
+                    )
                 ]
             ),
             Element("span",
