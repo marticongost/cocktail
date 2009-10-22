@@ -13,7 +13,6 @@ from cocktail.translations.translation import (
     translations,
     ca_possessive
 )
-from cocktail.schema import RelationMember
 from cocktail.schema.expressions import PositiveExpression
 
 translations.define("bool-instance",
@@ -488,6 +487,8 @@ translations.define("Exception-instance",
 #------------------------------------------------------------------------------
 def member_identifier(error, language):
     
+    from cocktail.schema import RelationMember
+
     desc = [
         translations(member, language).lower()
         for member, validable in error.path
