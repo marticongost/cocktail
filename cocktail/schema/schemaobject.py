@@ -27,6 +27,10 @@ from cocktail.schema.schemacollections import (
 from cocktail.schema.schemamappings import Mapping, RelationMapping
 from cocktail.schema.accessors import MemberAccessor
 
+# Extension property that allows members to knowingly shadow existing
+# class attributes
+Member.shadows_attribute = False
+
 # Class stub
 SchemaObject = None
 
@@ -96,14 +100,19 @@ class SchemaClass(EventHub, Schema):
 
         Schema._check_member(cls, member)
         
-        if hasattr(cls, member.name) \
+        if not member.shadows_attribute \
         and (
-            getattr(cls, member.name) is not member
-            or any(hasattr(base, member.name) for base in cls.__bases__)
+            hasattr(cls, member.name) \
+            and (
+                getattr(cls, member.name) is not member
+                or any(hasattr(base, member.name) for base in cls.__bases__)
+            )
         ):
             raise AttributeError(
-                "Can't declare a member called %s on %s; the schema "
-                "already has an attribute with that name"
+                "Trying to declare a member called %s on %s; the schema "
+                "already has an attribute with that name. If this is "
+                "intentional, the 'shadows_attribute' property can be used to "
+                "ignore this restriction."
                 % (member.name, cls)
             )
 
@@ -365,6 +374,9 @@ class SchemaObject(object):
 
         @ivar instance: A reference to the new instance.
         @type instance: L{SchemaObject}
+
+        @ivar values: The parameters passed to the constructor.
+        @type values: dict
         """)
 
     changing = Event(doc = """
@@ -424,7 +436,7 @@ class SchemaObject(object):
 
     def __init__(self, **values):
         self.__class__.init_instance(self, values, SchemaObjectAccessor)
-        self.__class__.instantiated(instance = self)
+        self.__class__.instantiated(instance = self, values = values)
         
     def __repr__(self):
         

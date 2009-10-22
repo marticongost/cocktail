@@ -8,8 +8,13 @@ u"""
 """
 import re
 from decimal import Decimal
-from cocktail.translations.translation import translations
+from cocktail.pkgutils import get_full_name
+from cocktail.translations.translation import (
+    translations,
+    ca_possessive
+)
 from cocktail.schema import RelationMember
+from cocktail.schema.expressions import PositiveExpression
 
 translations.define("bool-instance",
     ca = lambda instance: u"Sí" if instance else u"No",
@@ -149,6 +154,24 @@ translations.define("cocktail.html.CollectionView clear selection",
     en = u"None"
 )
 
+translations.define("cocktail.html.modal_selector accept button",
+    ca = u"Acceptar",
+    es = u"Aceptar",
+    en = u"Accept"
+)
+
+translations.define("cocktail.html.modal_selector cancel button",
+    ca = u"Cancel·lar",
+    es = u"Cancelar",
+    en = u"Cancel"
+)
+
+translations.define("cocktail.html.modal_selector select button",
+    ca = u"Seleccionar",
+    es = u"Seleccionar",
+    en = u"Select"
+)
+
 translations.define("Translations",
     ca = u"Traduccions",
     es = u"Traducciones",
@@ -193,7 +216,7 @@ translations.define("month 8", ca = u"Agost", es = u"Agosto", en = u"August")
 translations.define("month 9", ca = u"Setembre", es = u"Septiembre", en = u"September")
 translations.define("month 10", ca = u"Octubre", es = u"Octubre", en = u"October")
 translations.define("month 11", ca = u"Novembre", es = u"Noviembre", en = u"November")
-translations.define("month 12", ca = u"Decembre", es = u"Diciembre", en = u"December")
+translations.define("month 12", ca = u"Desembre", es = u"Diciembre", en = u"December")
 
 # -------- ABBREVIATED TRANSLATIONS OF WEEKDAYS
 translations.define("weekday 0 abbr", ca = u"Dl", es = u"Lun", en = u"Mon")
@@ -226,9 +249,11 @@ def _date_instance_ca(instance, style = DATE_STYLE_NUMBERS):
             translations(u"month %s %s" % (instance.month,"abbr"), "ca"),
             instance.year)
     if style == DATE_STYLE_TEXT :
-        return u"%s %s %s" % \
+        return u"%s %s de %s" % \
             (instance.day,
-            translations(u"month %s" % (instance.month), "ca"),
+            ca_possessive(
+                translations(u"month %s" % (instance.month), "ca").lower()
+            ),
             instance.year)
 
 def _date_instance_es(instance, style = DATE_STYLE_NUMBERS):
@@ -388,6 +413,27 @@ translations.define("cocktail.controllers.userfilter.GlobalSearchFilter-instance
     ca = u"Conté les paraules",
     es = u"Contiene las palabras",
     en = u"Has the words"
+)
+
+translations.define(
+    "cocktail.controllers.userfilter.DateTimeRangeFilter-instance",
+    ca = u"Rang de dates",
+    es = u"Rango de fechas",
+    en = u"Date range"
+)
+
+translations.define(
+    "DateTimeRangeFilter.start_date",
+    ca = u"Des de",
+    es = u"Desde",
+    en = u"From"
+)
+
+translations.define(
+   "DateTimeRangeFilter.end_date",
+    ca = u"Fins a",
+    es = u"Hasta",
+    en = u"Until"
 )
 
 # Languages
@@ -689,5 +735,64 @@ translations.define("decimal.Decimal-instance",
     ca = lambda instance: _serialize_thousands(instance, ".", ","),
     es = lambda instance: _serialize_thousands(instance, ".", ","),
     en = lambda instance: _serialize_thousands(instance, ",", ".")
+)
+
+# Grouping
+#------------------------------------------------------------------------------
+translations.define("cocktail.controllers.grouping.MemberGrouping-ascending",
+    ca = u"Ascendent",
+    es = u"Ascendiente",
+    en = u"Ascending"
+)
+
+translations.define("cocktail.controllers.grouping.MemberGrouping-descending",
+    ca = u"Descendent",
+    es = u"Descendiente",
+    en = u"Descending"
+)
+
+translations.define(
+    "cocktail.controllers.grouping.MemberGrouping default variant",
+    ca = u"Per valor",
+    es = u"Por valor",
+    en = u"By value"
+)
+
+translations.define("cocktail.controllers.grouping.DateGrouping year variant",
+    ca = u"Per any",
+    es = u"Por año",
+    en = u"By year"
+)
+
+translations.define("cocktail.controllers.grouping.DateGrouping month variant",
+    ca = u"Per mes",
+    es = u"Por mes",
+    en = u"By month"
+)
+
+translations.define("cocktail.controllers.grouping.DateGrouping day variant",
+    ca = u"Per dia",
+    es = u"Por día",
+    en = u"By day"
+)
+
+translations.define("cocktail.controllers.grouping.TimeGrouping hour variant",
+    ca = u"Per hora",
+    es = u"Por hora",
+    en = u"By hour"
+)
+
+def _DateGrouping_value(grouping, value, language):
+    if grouping.variant == "year":
+        return value.year
+    elif grouping.variant == "month":
+        return "%s %d" % (translations("month %d" % value.month, language), value.year)
+    else:
+        return translations(value, language, style = DATE_STYLE_TEXT)
+
+translations.define("cocktail.controllers.grouping.DateGrouping value",
+    ca = lambda grouping, value: _DateGrouping_value(grouping, value, "ca"),
+    es = lambda grouping, value: _DateGrouping_value(grouping, value, "es"),
+    en = lambda grouping, value: _DateGrouping_value(grouping, value, "en")
 )
 

@@ -391,6 +391,7 @@ class CollectionDisplay(DataDisplay):
             self.schema = collection.schema
             self.data = collection.page_subset
             self.order = collection.order
+            self.grouping = collection.grouping
             self.selection = collection.selection
             self.persistence_prefix = collection.persistence_prefix
 

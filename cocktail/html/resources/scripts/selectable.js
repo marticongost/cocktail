@@ -32,9 +32,9 @@
         jQuery(elementSelector).each(function () {
 
             var selectable = this;
-            var selectableJQ = jQuery(selectable);
+            var $selectable = jQuery(selectable);
             selectable.entrySelector = entrySelector;
-            selectable._entries = selectableJQ.find(entrySelector);
+            selectable._getEntries = function () { return $selectable.find(entrySelector); }
             selectable._selectionStart = null;
             selectable._selectionEnd = null;            
             selectable.selectionMode = selectionMode;
@@ -43,52 +43,64 @@
             focusTarget = document.createElement('a');
             focusTarget.href = "javascript:;";
             focusTarget.className = "target_focus";
-            selectableJQ.prepend(focusTarget);
+            $selectable.prepend(focusTarget);
 
             function handleFocus(updateSelection /* optional*/) {
                 focusedSelectable = selectable;
-                selectableJQ.addClass("focused");
+                $selectable.addClass("focused");
 
                 if (updateSelection !== false
                 && !selectable._selectionStart
-                && selectable._entries.length) {
-                    selectable.setEntrySelected(selectable._entries[0], true);
+                && selectable._getEntries().length) {
+                    selectable.setEntrySelected(selectable._getEntries()[0], true);
                 }
             }
 
             function handleBlur() {
                 focusedSelectable = null;
-                selectableJQ.removeClass("focused");
+                $selectable.removeClass("focused");
             }
         
             jQuery(focusTarget)
                 .focus(handleFocus)
                 .blur(handleBlur);
             
-            selectableJQ.find(entryCheckboxSelector)
+            $selectable.find(entryCheckboxSelector)
                 .focus(handleFocus)
                 .blur(handleBlur);            
 
-            // Double clicking selectable._entries (change the selection and trigger an 'activated'
+            // Double clicking selectable._getEntries() (change the selection and trigger an 'activated'
             // event on the table)
 
             selectable.dblClickEntryEvent = function () {
                 selectable.clearSelection();
                 selectable.setEntrySelected(this, true);
-                selectableJQ.trigger("activated");
+                $selectable.trigger("activated");
             }
 
-            selectable._entries.bind("dblclick", selectable.dblClickEntryEvent);
+            selectable._getEntries().bind("dblclick", selectable.dblClickEntryEvent);
         
+            selectable.getNextEntry = function (entry) {                
+                var $entries = this._getEntries();
+                var i = $entries.index(entry);                
+                return (i == -1 || i == $entries.length) ? null : $entries[i + 1];
+            }
+
+            selectable.getPreviousEntry = function (entry) {
+                var $entries = this._getEntries();
+                var i = $entries.index(entry);
+                return (i < 1) ? null : $entries[i - 1];
+            }
+
             selectable.entryIsSelected = function (entry) {
                 return jQuery(entry).hasClass("selected");
             }
 
             selectable.getSelection = function () {
-                return selectable._entries.filter(":has(" + checkboxSelector + ":checked)");
+                return selectable._getEntries().filter(":has(" + checkboxSelector + ":checked)");
             }
 
-            selectable.setEntrySelected = function (entry, selected) {
+            selectable.setEntrySelected = function (entry, selected, scroll /* = false */) {
                 
                 jQuery(checkboxSelector, entry).get(0).checked = selected;
 
@@ -96,36 +108,40 @@
                     selectable._selectionStart = entry;
                     selectable._selectionEnd = entry;
                     jQuery(entry).addClass("selected");
+
+                    if (scroll && entry.scrollIntoView) {
+                        entry.scrollIntoView();
+                    }
                 }
                 else {
                     jQuery(entry).removeClass("selected");
                 }
 
-                selectableJQ.trigger("selectionChanged");
+                $selectable.trigger("selectionChanged");
             }
 
             selectable.clearSelection = function () {
-                selectable._entries.filter(".selected").each(function () {
+                selectable._getEntries().filter(".selected").each(function () {
                     selectable.setEntrySelected(this, false);
                 });
             }
 
             selectable.selectAll = function () {
-                selectable._entries.each(function () {                
+                selectable._getEntries().each(function () {                
                     selectable.setEntrySelected(this, true);
                 });
             }
 
             selectable.setRangeSelected = function (firstEntry, lastEntry, selected) {
                 
-                var i = selectable._entries.index(firstEntry);
-                var j = selectable._entries.index(lastEntry);
+                var i = selectable._getEntries().index(firstEntry);
+                var j = selectable._getEntries().index(lastEntry);
                 
                 var pos = Math.min(i, j);
                 var end = Math.max(i, j);
 
                 for (; pos <= end; pos++) {
-                    this.setEntrySelected(selectable._entries[pos], selected);
+                    this.setEntrySelected(selectable._getEntries()[pos], selected);
                 }
 
                 selectable._selectionStart = firstEntry;
@@ -140,13 +156,15 @@
 
                 handleFocus(false);
 
-                if (srcTag != "a" && srcTag != "button" && srcTag != "textarea" && srcTag != "img" &&
-                    (srcTag != "input" || jQuery(src).is(entryCheckboxSelector))) {
-                    
+                if (srcTag != "a" && !jQuery(src).parents("a").length
+                    && srcTag != "button" && !jQuery(src).parents("button").length
+                    && srcTag != "textarea"
+                    && (srcTag != "input" || jQuery(src).is(entryCheckboxSelector))
+                ) {
                     // Range selection (shift + click)
                     if (multipleSelection && e.shiftKey) {
                         selectable.clearSelection();
-                        selectable.setRangeSelected(selectable._selectionStart || selectable._entries[0], this, true);
+                        selectable.setRangeSelected(selectable._selectionStart || selectable._getEntries()[0], this, true);
                     }
                     // Cumulative selection (control + click)
                     else if (multipleSelection && e.ctrlKey) {
@@ -164,7 +182,7 @@
                 }
             }
 
-            selectable._entries
+            selectable._getEntries()
                 // Togle entry selection when clicking an entry
                 .bind("click", selectable.clickEntryEvent)
                 
@@ -197,7 +215,9 @@
         else if (key == 36) {
 
             focusedSelectable.clearSelection();
-            var firstEntry = focusedSelectable._entries[0];
+            var firstEntry = focusedSelectable._getEntries()[0];
+
+            console.log(firstEntry);
 
             if (multipleSelection && e.shiftKey) {
                 focusedSelectable.setRangeSelected(
@@ -205,28 +225,32 @@
                     firstEntry,
                     true);
             }
-            else {  
-                focusedSelectable.setEntrySelected(firstEntry, true);
+            else {
+                focusedSelectable.setEntrySelected(firstEntry, true, true);
             }
+
+            return false;
         }
         // End key
         else if (key == 35) {
 
             focusedSelectable.clearSelection();
-            var lastEntry = focusedSelectable._entries[focusedSelectable._entries.length - 1];
+            var lastEntry = focusedSelectable._getEntries()[focusedSelectable._getEntries().length - 1];
 
             if (multipleSelection && e.shiftKey) {
                 focusedSelectable.setRangeSelected(focusedSelectable._selectionStart, lastEntry, true);
             }
             else {  
-                focusedSelectable.setEntrySelected(lastEntry, true);
+                focusedSelectable.setEntrySelected(lastEntry, true, true);
             }
+
+            return false;
         }
         // Down key
         else if (key == 40) {
             
             var nextEntry = focusedSelectable._selectionEnd
-                       && focusedSelectable._selectionEnd.nextSibling;
+                         && focusedSelectable.getNextEntry(focusedSelectable._selectionEnd);
 
             if (nextEntry) {
                 focusedSelectable.clearSelection();
@@ -236,15 +260,17 @@
                         focusedSelectable._selectionStart, nextEntry, true);
                 }
                 else {
-                    focusedSelectable.setEntrySelected(nextEntry, true);
+                    focusedSelectable.setEntrySelected(nextEntry, true, true);
                 }
             }
+
+            return false;
         }
         // Up key        
         else if (key == 38) {
                
             var previousEntry = focusedSelectable._selectionEnd
-                       && focusedSelectable._selectionEnd.previousSibling;
+                             && focusedSelectable.getPreviousEntry(focusedSelectable._selectionEnd);
 
             if (previousEntry) {
                 focusedSelectable.clearSelection();
@@ -254,9 +280,11 @@
                         focusedSelectable._selectionStart, previousEntry, true);
                 }
                 else {
-                    focusedSelectable.setEntrySelected(previousEntry, true);
+                    focusedSelectable.setEntrySelected(previousEntry, true, true);
                 }
             }
+
+            return false;
         }
     });
 })();

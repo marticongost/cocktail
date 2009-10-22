@@ -8,9 +8,15 @@ u"""
 """
 from copy import copy
 import cherrypy
+from cocktail.pkgutils import resolve
 from cocktail.modeling import ListWrapper, SetWrapper, getter, cached_getter
 from cocktail.language import get_content_language
 from cocktail import schema
+from cocktail.schema.expressions import (
+    PositiveExpression,
+    NegativeExpression,
+    TranslationExpression
+)
 from cocktail.persistence.query import Query
 from cocktail.html.datadisplay import (
     NO_SELECTION,
@@ -37,6 +43,7 @@ class UserCollection(object):
     allow_language_selection = True
     allow_filters = True
     allow_sorting = True
+    allow_grouping = True
     allow_paging = True
 
     def __init__(self, root_type):
@@ -189,6 +196,15 @@ class UserCollection(object):
             filters_param = self.params.read(
                 schema.Collection("filter", items = schema.String())
             )
+
+            # If no filter is selected, select all promoted filters
+            if not filters_param:
+                filters_param = (
+                    self.type.promoted_search_list
+                    or [filter.id
+                        for filter in self.available_user_filters
+                        if filter.promoted_search]
+                )
             
             # Discard all persisted filter parameters (restoring filters
             # selectively isn't supported, it's all or nothing)
@@ -209,11 +225,8 @@ class UserCollection(object):
                     for filter in self.available_user_filters)
 
                 for i, filter_id in enumerate(filters_param):
-                    try:
-                        filter_model = available_filters[filter_id]                    
-                    except KeyError:
-                        raise ValueError("Unknown filter: " + filter_id)
-                    else:
+                    filter_model = available_filters.get(filter_id)
+                    if filter_model:
                         filter = copy(filter_model)
                         filter.available_languages = self.available_languages
                         get_parameter(
@@ -253,10 +266,10 @@ class UserCollection(object):
                 for key in order_param:
 
                     if key.startswith("-"):
-                        sign = schema.expressions.NegativeExpression
+                        sign = NegativeExpression
                         key = key[1:]
                     else:
-                        sign = schema.expressions.PositiveExpression
+                        sign = PositiveExpression
 
                     member = self._get_member(
                         key,
@@ -269,6 +282,59 @@ class UserCollection(object):
 
         return ListWrapper(order)
     
+    # Grouping
+    #------------------------------------------------------------------------------
+    @cached_getter
+    def grouping(self):
+
+        grouping = None
+
+        if self.allow_grouping:
+            
+            grouping_param = self.params.read(schema.String("grouping"))
+
+            if grouping_param:
+
+                # Ascending / descending
+                if grouping_param.startswith("-"):
+                    sign = NegativeExpression
+                    grouping_param = grouping_param[1:]
+                else:
+                    sign = PositiveExpression
+                
+                # Grouping variant
+                pos = grouping_param.find("!")
+                if pos != -1:
+                    variant = grouping_param[pos+1:]
+                    grouping_param = grouping_param[:pos]
+                else:
+                    variant = None
+
+                # Groupped member
+                member = self._get_member(
+                    grouping_param,
+                    translatable = True,
+                    from_type = True
+                )
+
+                if isinstance(member, TranslationExpression):
+                    member, language = (
+                        member.operands[0],
+                        member.operands[1].value
+                    )
+                else:
+                    language = None
+                
+                if member and member.grouping:
+                    grouping_class = resolve(member.grouping)
+                    grouping = grouping_class()
+                    grouping.member = member
+                    grouping.sign = sign
+                    grouping.language = language
+                    grouping.variant = variant                    
+
+        return grouping
+
     # Paging
     #--------------------------------------------------------------------------
     @cached_getter
@@ -327,8 +393,13 @@ class UserCollection(object):
 
         for user_filter in self.user_filters:
             if user_filter.schema.validate(user_filter):
-                subset.add_filter(user_filter.expression)
+                expression = user_filter.expression
+                if expression is not None:
+                    subset.add_filter(expression)
 
+        if self.grouping:
+            subset.add_order(self.grouping.order)
+        
         for criteria in self.order:
             subset.add_order(criteria)
 

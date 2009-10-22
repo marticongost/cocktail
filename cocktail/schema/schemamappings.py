@@ -38,7 +38,7 @@ class Mapping(Collection):
     #--------------------------------------------------------------------------
     def items_validation_rule(self, value, context):
 
-        if value is not None:
+        if value is not None and self.name != "translations":
 
             # Item validation
             keys = self.keys
