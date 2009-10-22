@@ -61,7 +61,7 @@ class ValidationError(Exception):
         self.member = member
         self.value = value
         self.language = context.get("language")
-        self.path = context.path()
+        self.path = list(context.path())
 
     def __str__(self):
 
