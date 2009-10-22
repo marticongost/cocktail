@@ -34,13 +34,17 @@ class RangedMember(object):
 
         if value is not None:
 
-            min = self.resolve_constraint(self.min, context)
+            type = self.resolve_constraint(self.type, context)
 
-            if min is not None and value < min:
-                yield MinValueError(self, value, context, min)
-            else:
-                max = self.resolve_constraint(self.max, context)
+            if type is None or isinstance(value, type):
 
-                if max is not None and value > max:
-                    yield MaxValueError(self, value, context, max)
+                min = self.resolve_constraint(self.min, context)
+
+                if min is not None and value < min:
+                    yield MinValueError(self, value, context, min)
+                else:
+                    max = self.resolve_constraint(self.max, context)
+
+                    if max is not None and value > max:
+                        yield MaxValueError(self, value, context, max)
 
