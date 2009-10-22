@@ -6,9 +6,10 @@ u"""
 @organization:	Whads/Accent SL
 @since:			July 2008
 """
-from cocktail.translations.translation import translations
-from decimal import Decimal
 import re
+from decimal import Decimal
+from cocktail.translations.translation import translations
+from cocktail.schema import RelationMember
 
 translations.define("bool-instance",
     ca = lambda instance: u"Sí" if instance else u"No",
@@ -440,13 +441,22 @@ translations.define("Exception-instance",
 # Validation errors
 #------------------------------------------------------------------------------
 def member_identifier(error, language):
+    
+    desc = [
+        translations(member, language).lower()
+        for member, validable in error.path
+        if isinstance(member, RelationMember)
+    ]            
+    
     if error.language:
-        return "%s (%s)" % (
+        desc.append("%s (%s)" % (
             translations(error.member, language).lower(),
             translations(error.language, language)
-        )
+        ))
     else:
-        return translations(error.member, language).lower()
+        desc.append(translations(error.member, language).lower())
+
+    return u" &gt; ".join(desc)
 
 translations.define("cocktail.schema.exceptions.ValidationError-instance",
     ca = lambda instance:
