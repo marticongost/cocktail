@@ -125,6 +125,38 @@ class Expression(object):
     def translated_into(self, language):
         return TranslationExpression(self, language)
 
+    def between(self,
+        i = None,
+        j = None,
+        excludemin = False,
+        excludemax = True):
+        
+        min_operator = (
+            GreaterExpression
+            if excludemin
+            else GreaterEqualExpression
+        )
+
+        max_operator = (
+            LowerExpression
+            if excludemax
+            else LowerEqualExpression
+        )
+
+        if i is not None and j is not None:
+            expr = min_operator(self, i).and_(max_operator(self, j))
+        elif i is not None:
+            expr = min_operator(self, i)            
+        elif j is not None:
+            expr = max_operator(self, j)
+        else:
+            expr = Constant(True)
+
+        if excludemin and i is None:
+            expr = expr.and_(self.not_equal(None))
+
+        return expr
+
 
 class Constant(Expression):
 
@@ -208,28 +240,48 @@ class GreaterExpression(NormalizableExpression):
     
     def op(self, a, b):
         a, b = self.normalize_operands(a, b)
-        return a > b
+        if a is None:
+            return False
+        elif b is None:
+            return True
+        else:
+            return a > b
 
 
 class GreaterEqualExpression(NormalizableExpression):
     
     def op(self, a, b):
         a, b = self.normalize_operands(a, b)
-        return a >= b
+        if a is None:
+            return b is None
+        elif b is None:
+            return True
+        else:
+            return a >= b
 
 
 class LowerExpression(NormalizableExpression):
 
     def op(self, a, b):
         a, b = self.normalize_operands(a, b)
-        return a < b
+        if b is None:
+            return False
+        elif a is None:
+            return True
+        else:
+            return a < b
 
 
 class LowerEqualExpression(NormalizableExpression):
 
     def op(self, a, b):
         a, b = self.normalize_operands(a, b)
-        return a <= b
+        if b is None:
+            return a is None
+        elif a is None:
+            return True
+        else:
+            return a <= b
 
 
 class StartsWithExpression(NormalizableExpression):
@@ -391,4 +443,33 @@ class HasExpression(Expression):
             return all(filter.eval(value, accessor) for filter in self.filters)
 
         return False
+
+
+class RangeIntersectionExpression(Expression):
+
+    excludemin = False
+    excludemax = True
+
+    def __init__(self, a, b, c, d, excludemin = False, excludemax = True):
+        Expression.__init__(self, a, b, c, d)
+        self.excludemin = excludemin
+        self.excludemax = excludemax
+
+    def op(self, a, b, c, d):
+        min_operator = (
+            GreaterExpression
+            if self.excludemin
+            else GreaterEqualExpression
+        )
+
+        max_operator = (
+            LowerExpression
+            if self.excludemax
+            else LowerEqualExpression
+        )
+        
+        return (
+            (d is None or max_operator(a, d).eval({}))
+            and (b is None or min_operator(b, c).eval({}))
+        )
 

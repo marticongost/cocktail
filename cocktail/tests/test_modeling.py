@@ -135,3 +135,60 @@ class GenericMethodTestCase(TestCase):
         self.assertEqual(test_param, {"value": "base"})
         self.assertEqual(rvalue, "base")
 
+
+class OrderedDictTestCase(TestCase):
+
+    pairs = [
+        ("Chuck", "Norris"),
+        ("Steven", "Seagal"),
+        ("Kurt", "Russell")
+    ]
+
+    def assert_order(self, dictionary, pairs):
+        
+        ordered_keys = [key for key, value in pairs]
+        ordered_values = [value for key, value in pairs]
+
+        assert list(dictionary) == ordered_keys
+        assert dictionary.keys() == ordered_keys
+        assert list(dictionary.iterkeys()) == ordered_keys
+
+        assert dictionary.values() == ordered_values
+        assert list(dictionary.itervalues()) == ordered_values
+
+        assert dictionary.items() == pairs
+        assert list(dictionary.iteritems()) == pairs
+
+    def test_constructor(self):
+        from cocktail.modeling import OrderedDict
+        d = OrderedDict(self.pairs)
+        self.assert_order(d, self.pairs)
+
+    def test_set_item(self):
+        from cocktail.modeling import OrderedDict
+        d = OrderedDict()
+                
+        for key, value in self.pairs:
+            d[key] = value
+
+        self.assert_order(d, self.pairs)
+
+    def test_update(self):
+        from cocktail.modeling import OrderedDict
+        d = OrderedDict()
+        d.update(self.pairs)
+        self.assert_order(d, self.pairs)
+
+    def test_delete(self):
+        from cocktail.modeling import OrderedDict
+        d = OrderedDict(self.pairs)
+        del d["Steven"]
+        self.assert_order(d, [("Chuck", "Norris"), ("Kurt", "Russell")])
+
+    def test_pop(self):
+        from cocktail.modeling import OrderedDict
+        d = OrderedDict(self.pairs)
+        value = d.pop("Steven")
+        assert value == "Seagal"
+        self.assert_order(d, [("Chuck", "Norris"), ("Kurt", "Russell")])
+

@@ -362,7 +362,7 @@ class Query(object):
             if custom_impl is None or len(dataset) == 1:
 
                 if self.verbose:
-                    print query_eval_style(expr),
+                    print query_eval_style(expr)
 
                 dataset.intersection_update(
                     id
@@ -374,7 +374,7 @@ class Query(object):
             else:
                 
                 if self.verbose:
-                    print query_resolve_style(expr),
+                    print query_resolve_style(expr)
 
                 dataset = custom_impl(dataset)
 
@@ -385,11 +385,22 @@ class Query(object):
 
     def _get_execution_plan(self, filters):
         """Create an optimized execution plan for the given set of filters."""
-        return [
-            (filter, resolution[1])
-            for resolution, filter
-            in sorted((expr.resolve_filter(self), expr) for expr in filters)
-        ]
+
+        plan = []
+        And = expressions.AndExpression
+
+        for filter in filters:
+            # Flatten regular AND expressions
+            if isinstance(filter, And):
+                for operand in filter.operands:
+                    plan.append((operand.resolve_filter(self), operand))
+            else:
+                plan.append((filter.resolve_filter(self), filter))
+
+        plan.sort()
+
+        for resolution, filter in plan:
+            yield (filter, resolution[1])
     
     def _get_expression_index(self, expr, member = None):
 
@@ -859,4 +870,76 @@ def _has_resolution(self, query):
         return ((0, -1), impl)
 
 expressions.HasExpression.resolve_filter = _has_resolution
+
+def _range_intersection_resolution(self, query):
+
+    min_member = (
+        self.operands[0]
+        if isinstance(self.operands[0], Member)
+        else None
+    )
+
+    max_member = (
+        self.operands[1]
+        if isinstance(self.operands[1], Member)
+        else None
+    )
+
+    if self.index:
+        min_index, max_index = self.index
+    else:
+        min_index = None if min_member is None else min_member.index
+        max_index = None if max_member is None else max_member.index
+    
+    # One or both fields not indexed
+    if min_index is None or max_index is None:
+        order = (0, 0)
+        impl = None
+    else:
+        def impl(dataset):
+            min_value = self.operands[2].value
+            if min_member:
+                min_value = _get_index_value(min_member, min_value)
+
+            max_value = self.operands[3].value
+            if max_member:
+                max_value = _get_index_value(max_member, max_value)          
+            
+            min_method = (
+                min_index.keys
+                if min_member and min_member.primary
+                else min_index.values
+            )
+
+            max_method = (
+                max_index.keys
+                if max_member and max_member.primary
+                else max_index.values
+            )
+
+            subset = set(max_method(max = None, excludemax = False))
+            subset.update(
+                max_method(min = min_value, excludemin = self.excludemin)
+            )
+
+            if max_value is not None:
+                subset.intersection_update(
+                    min_method(max = max_value, excludemax = self.excludemax)
+                )
+            
+            dataset.intersection_update(subset)
+            return dataset
+
+        # One or both fields have non-unique indexes
+        if isinstance(min_index, Index) or isinstance(max_index, Index):
+            order = (-1, 0)
+        # Both fields have unique indexes
+        else:
+            order = (-2, 0)
+    
+    return (order, impl)
+
+
+expressions.RangeIntersectionExpression.resolve_filter = \
+    _range_intersection_resolution
 

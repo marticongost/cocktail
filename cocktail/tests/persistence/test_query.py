@@ -320,6 +320,100 @@ class MemberQueryTestCase(TempStorageMixin, TestCase):
             (m.lower_equal(u"FOO"), [0, 1, 2, 3, 4, 5])
         )
 
+    def test_range_intersection(self):
+        from cocktail.schema import Integer
+        from cocktail.schema.expressions import RangeIntersectionExpression
+        from cocktail.persistence import PersistentObject
+
+        class Range(PersistentObject):
+            a = Integer(indexed = True)
+            b = Integer(indexed = True)
+
+        def intersect(a, b, c, d, **kwargs):
+            Range.select().delete_items()
+            r = Range(a = a, b = b)
+            r.insert()
+            expr = RangeIntersectionExpression(
+                Range.a,
+                Range.b,
+                c,
+                d,
+                **kwargs
+            )
+            q = Range.select([expr])
+            order, impl = expr.resolve_filter(q)
+            assert impl is not None
+            dataset = set([r.id])
+            dataset = impl(dataset)
+            return list(dataset) == [r.id]
+        
+        # Completely apart
+        assert not intersect(1, 2, 3, 4)
+        assert not intersect(3, 4, 1, 2)
+        assert not intersect(None, 1, 2, 3)
+        assert not intersect(2, 3, None, 1)
+        assert not intersect(1, 2, 3, None)
+        assert not intersect(3, None, 1, 2)
+        
+        # Single point intersection
+        assert intersect(1, 2, 2, 3)
+        assert not intersect(3, 4, 2, 3)
+        assert not intersect(1, 2, 2, 3, excludemin = True)
+        assert intersect(3, 4, 2, 3, excludemax = False)
+
+        # Contained
+        assert intersect(1, 4, 2, 3)
+        assert intersect(2, 3, 1, 4)
+        assert intersect(None, None, 1, 2)
+        assert intersect(1, 2, None, None)
+        assert intersect(None, 3, 1, 2)
+        assert intersect(1, 2, None, 3)
+        assert intersect(0, None, 1, 2)
+        assert intersect(1, 2, 0, None)
+
+        # Equal
+        assert not intersect(1, 1, 1, 1)
+        assert not intersect(1, 1, 1, 1, excludemin = True)
+        assert intersect(1, 1, 1, 1, excludemax = False)
+        assert not intersect(1, 1, 1, 1, excludemin = True, excludemax = False)
+
+        assert intersect(1, 2, 1, 2)
+        assert intersect(1, 2, 1, 2, excludemin = True)
+        assert intersect(1, 5, 1, 5, excludemin = True)
+        assert intersect(1, 2, 1, 2, excludemax = True)
+        assert intersect(1, 2, 1, 2, excludemin = True, excludemax = True)
+
+        assert intersect(None, None, None, None)
+        assert intersect(None, None, None, None, excludemin = True)
+        assert intersect(None, None, None, None, excludemax = False)
+        assert intersect(None, None, None, None,
+            excludemin = True,
+            excludemax = False
+        )
+
+        assert intersect(None, 1, None, 1)
+        assert intersect(None, 1, None, 1, excludemin = True)
+        assert intersect(None, 1, None, 1, excludemax = False)
+        assert intersect(None, 1, None, 1,
+            excludemin = True,
+            excludemax = False
+        )
+
+        assert intersect(1, None, 1, None)
+        assert intersect(1, None, 1, None, excludemin = True)
+        assert intersect(1, None, 1, None, excludemax = False)
+        assert intersect(1, None, 1, None,
+            excludemin = True,
+            excludemax = False
+        )
+
+        # Partial overlap
+        assert intersect(1, 3, 2, 4)
+        assert intersect(2, 4, 1, 3)
+        assert intersect(None, 5, 3, None)
+        assert intersect(3, None, None, 5)
+
+
 class OrderTestCase(TempStorageMixin, TestCase):
 
     def setUp(self):

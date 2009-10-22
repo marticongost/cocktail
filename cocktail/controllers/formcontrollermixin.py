@@ -124,11 +124,8 @@ class FormControllerMixin(object):
     def _get_form_instance(self):
         if self._form_instance is None:
             if self.form_model:
-                if isinstance(self.form_model, type):
-                    self._form_instance = self.form_model()
-                else:
-                    self._form_instance = {}
-
+                self._form_instance = self._create_form_instance()
+                
         return self._form_instance
 
     def _set_form_instance(self, form_instance):
@@ -143,6 +140,12 @@ class FormControllerMixin(object):
             or dict
         """
     )
+
+    def _create_form_instance(self):
+        if isinstance(self.form_model, type):
+            return self.form_model()
+        else:
+            return {}
 
     def _apply_form_data(self):
         """Fill the edited instance with data from the form."""
