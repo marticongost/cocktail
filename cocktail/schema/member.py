@@ -386,6 +386,12 @@ class Member(Variable):
             **kwargs
         )
 
+    def translate_value(self, value, language = None, **kwargs):
+        if value is None:
+            return u""
+        else:
+            return unicode(value)
+
     def get_member_explanation(self, language = None, **kwargs):
         
         explanation = None

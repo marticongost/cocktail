@@ -228,21 +228,7 @@ class DataDisplay(object):
             return accessor.get(obj, member.name, None, language)
 
     def translate_value(self, obj, member, value):
-
-        if value is None:
-            value = u"-"
-
-        elif isinstance(value, (list, ListWrapper, set, SetWrapper)):
-            if value:
-                value = u", ".join(translations(item, default = item)
-                                   for item in value)
-            else:
-                value = u"-"
-        
-        elif not (member.translated and isinstance(member, String)):
-            value = translations(value, default = value)
-            
-        return value
+        return member.translate_value(value) or u"-"
 
     def get_member_display(self, obj, member):
         member = self._resolve_member(member)
