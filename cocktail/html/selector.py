@@ -31,12 +31,24 @@ class Selector(Element, DataBoundControl):
     def _ready(self):
 
         Element._ready(self)
+        item_translator = None
 
         if self.member:
         
             if self.items is None:
                 self.items = self._get_items_from_member(self.member)
-            
+
+            if isinstance(self.member, schema.Collection):
+                if self.member.items:
+                    item_translator = self.member.items.translate_value
+            else:
+                item_translator = self.member.translate_value
+        
+        self._item_translator = (
+            item_translator
+            or (lambda item, **kw: translations(item, **kw))
+        )
+        
         self._fill_entries()
 
     def _get_items_from_member(self, member):
@@ -119,7 +131,7 @@ class Selector(Element, DataBoundControl):
         return getattr(item, "id", None) or str(item)
 
     def get_item_label(self, item):
-        return translations(item, default = item)
+        return self._item_translator(item)
     
     def create_entry(self, value, label, selected):
         pass
