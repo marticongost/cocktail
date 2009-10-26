@@ -7,6 +7,7 @@ u"""
 @since:			July 2008
 """
 import re
+from datetime import datetime
 from decimal import Decimal
 from cocktail.pkgutils import get_full_name
 from cocktail.translations.translation import (
@@ -784,5 +785,202 @@ translations.define("cocktail.controllers.grouping.DateGrouping value",
     ca = lambda grouping, value: _DateGrouping_value(grouping, value, "ca"),
     es = lambda grouping, value: _DateGrouping_value(grouping, value, "es"),
     en = lambda grouping, value: _DateGrouping_value(grouping, value, "en")
+)
+
+# Date interval
+#------------------------------------------------------------------------------
+def _date_interval_ca(dates = None):
+    start_date, end_date = dates
+
+    date_string = ""
+
+    def month_string(date, show = False):
+        if date.month in (4, 8, 10):
+            return  u"d'%s" % translations(u"month %s" % (date.month), "ca") \
+                if show else ""
+        else:
+            return  u"de %s" % translations(u"month %s" % (date.month), "ca") \
+                if show else ""
+
+    def year_string(date, show = False):
+        return " de %d" % (date.year,) if show else ""
+
+    show_start_year = show_end_year = show_start_month = show_end_month = False
+
+    if start_date.year != end_date.year:
+        show_start_year = show_end_year = show_start_month = show_end_month = True
+    elif start_date.month != end_date.month:
+        show_end_year = end_date.year != datetime.now().year
+        show_start_month = show_end_month = True
+    else:
+        show_end_year = end_date.year != datetime.now().year
+        show_end_month = True
+
+    # One day interval
+    if start_date.day == end_date.day and \
+        start_date.month == end_date.month and \
+        start_date.year == end_date.year:
+
+        date_string = "%d %s%s" % (
+            start_date.day, 
+            month_string(start_date, True),
+            year_string(
+                start_date, 
+                show = start_date.year != datetime.now().year
+            )
+        )
+
+    else:
+        if start_date.day == 1:
+            day_format = u"De l'%d "
+        else:
+            day_format = u"Del %d "
+
+        date_string = day_format % (start_date.day,)
+
+        if start_date.month == end_date.month \
+            and start_date.year == end_date.year:
+
+            date_string += "al %d %s%s" % (
+                end_date.day, 
+                month_string(end_date, show_end_month),
+                year_string(end_date, show_end_year)
+            )
+
+        else:
+            date_string += "%s%s al %d %s%s" % (
+                month_string(start_date, show_start_month),
+                year_string(start_date, show_start_year),
+                end_date.day,
+                month_string(end_date, show_end_month),
+                year_string(end_date, show_end_year)
+            )
+
+    return date_string
+
+def _date_interval_es(dates = None):
+    start_date, end_date = dates
+
+    date_string = ""
+
+    def month_string(date, show = False):
+        return  u"de %s" % translations(u"month %s" % (date.month), "es") \
+            if show else ""
+
+    def year_string(date, show = False):
+        return " de %d" % (date.year,) if show else ""
+
+    show_start_year = show_end_year = show_start_month = show_end_month = False
+
+    if start_date.year != end_date.year:
+        show_start_year = show_end_year = show_start_month = show_end_month = True
+    elif start_date.month != end_date.month:
+        show_end_year = end_date.year != datetime.now().year
+        show_start_month = show_end_month = True
+    else:
+        show_end_year = end_date.year != datetime.now().year
+        show_end_month = True
+
+    # One day interval
+    if start_date.day == end_date.day and \
+        start_date.month == end_date.month and \
+        start_date.year == end_date.year:
+
+        date_string = "%d %s%s" % (
+            start_date.day, 
+            month_string(start_date, True),
+            year_string(
+                start_date, 
+                show = start_date.year != datetime.now().year
+            )
+        )
+
+    else:
+        date_string = u"Del %d " % (start_date.day,)
+
+        if start_date.month == end_date.month \
+            and start_date.year == end_date.year:
+
+            date_string += "al %d %s%s" % (
+                end_date.day, 
+                month_string(end_date, show_end_month),
+                year_string(end_date, show_end_year)
+            )
+
+        else:
+            date_string += "%s%s al %d %s %s" % (
+                month_string(start_date, show_start_month),
+                year_string(start_date, show_start_year),
+                end_date.day,
+                month_string(end_date, show_end_month),
+                year_string(end_date, show_end_year)
+            )
+
+    return date_string
+
+def _date_interval_en(dates = None):
+    start_date, end_date = dates
+
+    date_string = ""
+
+    def month_string(date, show = False):
+        return  u"%s" % translations(u"month %s" % (date.month), "en") \
+            if show else ""
+
+    def year_string(date, show = False):
+        return ", %d" % (date.year,) if show else ""
+
+    show_start_year = show_end_year = show_start_month = show_end_month = False
+
+    if start_date.year != end_date.year:
+        show_start_year = show_end_year = show_start_month = show_end_month = True
+    elif start_date.month != end_date.month:
+        show_end_year = end_date.year != datetime.now().year
+        show_start_month = show_end_month = True
+    else:
+        show_end_year = end_date.year != datetime.now().year
+        show_end_month = True
+
+    # One day interval
+    if start_date.day == end_date.day and \
+        start_date.month == end_date.month and \
+        start_date.year == end_date.year:
+
+        date_string = "%d %s%s" % (
+            start_date.day, 
+            month_string(start_date, True),
+            year_string(
+                start_date, 
+                show = start_date.year != datetime.now().year
+            )
+        )
+
+    else:
+        if start_date.month == end_date.month \
+            and start_date.year == end_date.year:
+
+            date_string += "From %s %d to %d%s" % (
+                month_string(end_date, show_end_month),
+                start_date.day, 
+                end_date.day, 
+                year_string(end_date, show_end_year)
+            )
+
+        else:
+            date_string += "From %s %d%s to %s %d%s" % (
+                month_string(start_date, show_start_month),
+                start_date.day,
+                year_string(start_date, show_start_year),
+                month_string(end_date, show_end_month),
+                end_date.day,
+                year_string(end_date, show_end_year)
+            )
+
+    return date_string
+
+translations.define("Date interval",
+    ca = _date_interval_ca,
+    es = _date_interval_es,
+    en = _date_interval_en
 )
 
