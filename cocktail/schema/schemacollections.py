@@ -57,6 +57,19 @@ class Collection(RelationMember):
         self.add_validation(self.__class__.collection_validation_rule)
         self.add_validation(self.__class__.items_validation_rule)
 
+    def translate_value(self, value, language = None, **kwargs):
+        if not value:
+            return u""
+        else:
+            if self.items:
+                item_translator = self.items.translate_value
+            else:
+                item_translator = lambda item, **kwargs: unicode(item)
+            
+            return u", ".join(
+                item_translator(item, language, **kwargs) for item in value
+            )            
+
     def _add_relation(self, obj, related_obj):
 
         key = self.name
