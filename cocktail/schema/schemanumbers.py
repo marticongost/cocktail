@@ -7,6 +7,7 @@ u"""
 @since:			April 2008
 """
 from decimal import Decimal
+from cocktail.translations import translations
 from cocktail.schema.member import Member
 from cocktail.schema.rangedmember import RangedMember
 
@@ -33,4 +34,9 @@ class Decimal(Number):
     """A numeric field limited to decimal values."""
     type = Decimal
 
+    def translate_value(self, value, language = None, **kwargs):
+        if value is None:
+            return u""
+        else:
+            return translations(value, language, **kwargs)
 
