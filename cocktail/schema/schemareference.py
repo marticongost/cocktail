@@ -8,6 +8,7 @@ u"""
 """
 from cocktail.modeling import getter
 from cocktail.pkgutils import import_object
+from cocktail.translations import translations
 from cocktail.schema.schemarelations import RelationMember
 from cocktail.schema.accessors import get_accessor, get
 from cocktail.schema.expressions import HasExpression
@@ -28,6 +29,12 @@ class Reference(RelationMember):
     def __init__(self, *args, **kwargs):
         RelationMember.__init__(self, *args, **kwargs)
         self.add_validation(self.__class__.reference_validation_rule)
+
+    def translate_value(self, value, language = None, **kwargs):
+        if value is None:
+            return u""
+        else:
+            return translations(value, language, **kwargs)
 
     def _add_relation(self, obj, related_obj):
         get_accessor(obj).set(obj, self.name, related_obj)                
