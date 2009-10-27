@@ -387,7 +387,9 @@ class PersistentObject(SchemaObject, Persistent):
                         if isinstance(member, schema.Reference):
                             value.delete(deleted_objects)
                         else:
-                            for item in value:
+                            # Make a copy of the collection, since it may
+                            # change during iteration
+                            for item in list(value):
                                 item.delete(deleted_objects)
 
                 # Remove all known references to the item (drop all its
