@@ -706,7 +706,7 @@ def _serialize_thousands(value, thousands_sep, fraction_sep):
     pos = len(num) + precision
     integer = num[:pos]
     fraction = num[pos:]
-    
+
     blocks = []
 
     while integer:
@@ -721,8 +721,6 @@ def _serialize_thousands(value, thousands_sep, fraction_sep):
     if fraction:
         serialized_value += fraction_sep \
                           + str("".join(str(i) for i in fraction))
-    else:
-        serialized_value += fraction_sep + "00"
 
     if sign:
         serialized_value = "-" + serialized_value
