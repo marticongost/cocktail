@@ -91,6 +91,31 @@ class CascadeDeleteTestCase(TempStorageMixin, TestCase):
 
         self.assertFalse(TestObject.index)
 
+    def test_bidirectional_collection(self):
+
+        from cocktail.schema import Collection, Reference
+        from cocktail.persistence import PersistentObject
+
+        class TestObject(PersistentObject):
+            
+            parent = Reference(
+                bidirectional = True
+            )
+            
+            collection = Collection(
+                cascade_delete = True,
+                bidirectional = True
+            )
+        
+        TestObject.parent.type = TestObject
+        TestObject.collection.items = Reference(type = TestObject)
+
+        a = TestObject(collection = [TestObject(), TestObject()])
+        a.insert()
+        a.delete()
+
+        assert not TestObject.index
+
     def test_collection_multilevel(self):
 
         from cocktail.schema import Collection
