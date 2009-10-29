@@ -8,10 +8,13 @@ A plugin that integrates Selenium with the Nose testing framework.
 @since:			May 2009
 """
 import os
+import socket
 from urlparse import urlparse
 from cocktail.modeling import wrap
 from nose.plugins import Plugin
 from selenium import selenium as SeleniumSession
+
+SITE_PORT_RANGE = (1025, 9000)
 
 _selenium_site_address = None
 _selenium_sessions = []
@@ -105,18 +108,24 @@ class SeleniumTester(Plugin):
         if self.enabled \
         and options.selenium_host \
         and options.selenium_port \
-        and options.selenium_browsers \
-        and options.selenium_url:
-
-            url = urlparse(options.selenium_url)
-            _selenium_site_address = url.hostname, url.port or 80
+        and options.selenium_browsers:
+        
+            if options.selenium_url:
+                selenium_url = options.selenium_url
+                url = urlparse(selenium_url)
+                _selenium_site_address = url.hostname, url.port or 80
+            else:
+                _selenium_site_address = (
+                    self._get_default_site_address(options.selenium_host)
+                )
+                selenium_url = "http://%s:%d" % _selenium_site_address
             
             for browser_command in options.selenium_browsers.split(","):
                 session = SeleniumSession(
                     options.selenium_host,
                     options.selenium_port,
                     browser_command,
-                    options.selenium_url
+                    selenium_url
                 )
                 _selenium_sessions.append(session)
 
@@ -129,4 +138,34 @@ class SeleniumTester(Plugin):
         # Close all browsers after all tests have run
         for session in _selenium_sessions:
             session.stop()
+
+    def _get_default_site_address(self, selenium_host):
+        
+        # Get the local host's IP address, as seen from the selenium server
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect((selenium_host, 0))
+        site_host = s.getsockname()[0]
+        s.close()
+        
+        # Find the first available port on the local host
+        site_port = self._find_free_port(SITE_PORT_RANGE)
+
+        return (site_host, site_port)
+
+    def _find_free_port(self, port_range):
+        
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        host = "0.0.0.0"
+        
+        for port in port_range:
+            try:
+                s.bind((host, port))
+            except:
+                pass
+            else:
+                s.close()
+                return port
+
+        raise IOError("Can't find a free port "
+                      "to launch a site to host selenium tests")
 
