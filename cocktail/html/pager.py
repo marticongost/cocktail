@@ -17,6 +17,7 @@ class Pager(Element):
     item_count = 0
     page = 0
     page_size = 15
+    page_param_name = "page"
     hide_when_empty = True
     visible_pages = 10
 
@@ -49,10 +50,13 @@ class Pager(Element):
         if self.user_collection:
             self.page = self.user_collection.page
             self.page_size = self.user_collection.page_size
+            self.page_param_name = \
+                self.user_collection.params.get_key(self.page_param_name)
             if self.user_collection.subset:
                 self.item_count = len(self.user_collection.subset)
 
         page_count = self.page_count
+
 
         # Hide the pager when only one page is visible
         if self.hide_when_empty and page_count < 2:
@@ -64,19 +68,20 @@ class Pager(Element):
             self.first_page_button.visible = False
             self.previous_page_button.visible = False
         else:
-            self.first_page_button["href"] = "?" + self._view_state(page = 0)
-            self.previous_page_button["href"] = \
-                "?" + self._view_state(page = self.page - 1)
+            self.first_page_button["href"] = self._get_page_link(0)
+            self.previous_page_button["href"] = self._get_page_link(
+                self.page - 1
+            )
         
         # Last page
         if self.page + 1 == page_count:
             self.next_page_button.visible = False
             self.last_page_button.visible = False
         else:
-            self.next_page_button["href"] = \
-                "?" + self._view_state(page = self.page + 1)
-            self.last_page_button["href"] = \
-                "?" + self._view_state(page = page_count - 1)
+            self.next_page_button["href"] = self._get_page_link(self.page + 1)
+            self.last_page_button["href"] = self._get_page_link(
+                self.page_count - 1
+            )
 
         # Direct page links
         radius = self.visible_pages / 2
@@ -114,7 +119,7 @@ class Pager(Element):
     def create_page_link(self, page):
 
         page_link = Element("a")
-        page_link["href"] = "?" + self._view_state(page = page)
+        page_link["href"] = self._get_page_link(page)
         page_link.append(str(page + 1))
 
         if page == self.page:
@@ -132,6 +137,9 @@ class Pager(Element):
 
     def _get_qualified_name(self, param):
         return self.name + "_" + param if self.name else param
+
+    def _get_page_link(self, page_number):
+        return "?" + self._view_state(**{self.page_param_name: page_number})
 
     @getter
     def page_count(self):
