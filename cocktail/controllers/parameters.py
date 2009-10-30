@@ -518,7 +518,7 @@ class FormSchemaReader(object):
 
     def get_key(self, member, language = None, path = None):
         
-        name = member.name
+        name = member if isinstance(member, basestring) else member.name
 
         if language:
             name += "-" + language
