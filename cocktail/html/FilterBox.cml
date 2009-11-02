@@ -113,6 +113,7 @@ from cocktail.controllers import get_state, view_state, serialize_parameter
                             py:client_model="cocktail.html.FilterBox-entry-${filter.id}"/>
                         <?py
                         element.set_client_param("filterId", filter.id)
+                        element.add_class("new_filter-" + filter.id)
                         ?>
                     </a>
                 </py:ready>
