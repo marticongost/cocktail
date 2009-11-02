@@ -305,6 +305,19 @@ class SearchExpression(NormalizableExpression):
         return all((word in a) for word in b.split())
 
 
+class GlobalSearchExpression(Expression):
+
+    def __init__(self, search, languages):
+        Expression.__init__(self)
+        self.search_words = set(normalize(search).split())
+        self.languages = languages
+
+    def eval(self, context, accessor = None):        
+        text = u" ".join(context.get_searchable_text(self.languages))
+        text = normalize(text)
+        return all((word in text) for word in self.search_words)
+
+
 class AddExpression(Expression):
     op = operator.add
 

@@ -60,10 +60,14 @@ def _selenium_test_factory(test_func, session):
 class SeleniumSessionProxy(object):
 
     def __getattribute__(self, key):
-        if key == "jquery_count":
+        if key in ("jquery_html", "jquery_count"):
             return object.__getattribute__(self, key)
         else:
             return getattr(_current_selenium_session, key)
+
+    def jquery_html(self, selector):
+        return _current_selenium_session \
+            .get_eval("window.jQuery('%s').html()" % selector)
 
     def jquery_count(self, selector):
         return int(
@@ -119,7 +123,7 @@ class SeleniumTester(Plugin):
                     self._get_default_site_address(options.selenium_host)
                 )
                 selenium_url = "http://%s:%d" % _selenium_site_address
-            
+
             for browser_command in options.selenium_browsers.split(","):
                 session = SeleniumSession(
                     options.selenium_host,
