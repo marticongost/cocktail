@@ -26,6 +26,7 @@ from cocktail.schema.expressions import (
     Self,
     InclusionExpression,
     ExclusionExpression,
+    GlobalSearchExpression,
     normalize
 )
 from cocktail.persistence import PersistentObject
@@ -237,19 +238,12 @@ class GlobalSearchFilter(UserFilter):
     @getter
     def expression(self):
 
-        search_words = set(normalize(self.value).split())
-        
         if self.language:
             languages = self.language,
         else:
             languages = self.available_languages
-        
-        def search_object(obj):
-            text = u" ".join(obj.get_searchable_text(languages))
-            text = normalize(text)
-            return all((word in text) for word in search_words)
 
-        return CustomExpression(search_object)
+        return GlobalSearchExpression(self.value, languages)
 
 
 class CollectionFilter(BinaryFilter):
