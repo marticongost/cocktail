@@ -164,6 +164,7 @@ class Form(Element, DataDisplay):
                             field_entry = self.create_field(member)
                             container.append(field_entry)
                             self.build_member_explanation(member, field_entry)
+                            setattr(self, member.name + "_field", field_entry)
                             has_match = True
                         else:
                             remaining_members.append(member)
