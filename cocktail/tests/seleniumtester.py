@@ -9,6 +9,7 @@ A plugin that integrates Selenium with the Nose testing framework.
 """
 import os
 import socket
+from time import time, sleep
 from urlparse import urlparse
 from cocktail.modeling import wrap
 from nose.plugins import Plugin
@@ -60,7 +61,7 @@ def _selenium_test_factory(test_func, session):
 class SeleniumSessionProxy(object):
 
     def __getattribute__(self, key):
-        if key in ("jquery_html", "jquery_count"):
+        if key in ("jquery_html", "jquery_count", "wait_for_element_present"):
             return object.__getattribute__(self, key)
         else:
             return getattr(_current_selenium_session, key)
@@ -74,6 +75,15 @@ class SeleniumSessionProxy(object):
             _current_selenium_session
             .get_eval("window.jQuery('%s').length" % selector)
         )
+
+    def wait_for_element_present(self, locator, timeout, interval = 0.1):
+        start = time()
+        while not self.is_element_present(locator):
+            time_span= time() - start
+            if time_span > timeout:
+                raise Exception("Timed out after %.2f seconds" % time_span)
+            else:
+                sleep(interval)
 
 browser = SeleniumSessionProxy()
 
