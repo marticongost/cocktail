@@ -190,6 +190,12 @@ class SchemaClass(EventHub, Schema):
 
         cls.translation.__module__ = cls.__module__
 
+    def schema_tree(cls):
+        yield cls
+        for child in cls.__derived_schemas:
+            for descendant in child.schema_tree():
+                yield descendant
+
     def derived_schemas(cls, recursive = True):
         for schema in cls.__derived_schemas:
             yield schema
