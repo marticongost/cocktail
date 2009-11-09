@@ -109,20 +109,13 @@ class Location(object):
         else:
             return self.form_data
     
-    def go(self):
-        
-        if self.method == "GET":
-            raise cherrypy.HTTPRedirect(str(self))
-
-        elif self.method == "POST":
+    def go(self):        
+        if self.method == "POST":
             cherrypy.response.status = 200
             cherrypy.response.body = self.get_form()
             raise StopRequest()
-
         else:
-            raise ValueError(
-                "Can't redirect using a %s HTTP method"
-                % self.method)
+            raise cherrypy.HTTPRedirect(str(self))
 
     def get_form(self):
         with language_context(get_language() or "en"):
