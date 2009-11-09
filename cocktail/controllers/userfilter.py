@@ -99,6 +99,10 @@ class MemberFilter(UserFilter):
         value_member.name = "value"
         value_member.translated = False
 
+        # Remove the bidirectional flag from relations
+        if isinstance(value_member, RelationMember):
+            value_member.bidirectional = False
+
         # Restricting relation cycles doesn't serve any purpose when collecting
         # the value of a user filter
         if isinstance(value_member, Reference):
