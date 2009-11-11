@@ -12,6 +12,7 @@ from cocktail.pkgutils import resolve
 from cocktail.modeling import ListWrapper, SetWrapper, getter, cached_getter
 from cocktail.language import get_content_language
 from cocktail import schema
+from cocktail.schema.io import export_file
 from cocktail.schema.expressions import (
     PositiveExpression,
     NegativeExpression,
@@ -423,3 +424,12 @@ class UserCollection(object):
         self.__class__.subset.clear(self)
         self.__class__.page_subset.clear(self)
 
+    # Exportation
+    #------------------------------------------------------------------------------
+    def export_file(self, dest, mime_type = None, **kwargs):
+        """Exports the user_collection to a file"""
+        members = [member
+            for member in self.schema.ordered_members()
+            if member.name in self.members]
+
+        export_file(self.subset, dest, self.type, mime_type, members, **kwargs)
