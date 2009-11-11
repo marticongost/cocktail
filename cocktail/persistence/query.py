@@ -12,6 +12,7 @@ from cocktail.styled import styled
 from cocktail.modeling import getter, ListWrapper
 from cocktail.language import get_content_language
 from cocktail.schema import Member, expressions, SchemaObjectAccessor
+from cocktail.schema.io import export_file
 from cocktail.persistence.index import Index
 
 query_style = lambda t: styled(t.ljust(80), "white", "blue")
@@ -638,6 +639,13 @@ class Query(object):
             item = type_index.get(id)
             if item is not None:
                 item.delete()
+
+    # Exportation
+    #------------------------------------------------------------------------------
+    def export_file(self, dest, mime_type = None, members = None, **kwargs):
+        """Exports the query to a file"""
+        export_file(self, dest, self.type, mime_type, members, **kwargs)
+        
 
 
 # Custom expression resolution
