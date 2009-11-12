@@ -7,9 +7,10 @@
 @since:			October 2009
 """
 from unittest import TestCase
+from cocktail.tests.persistence.tempstoragemixin import TempStorageMixin
 
 
-class ComparisonTestCase(TestCase):
+class ComparisonTestCase(TempStorageMixin, TestCase):
 
     def test_eval_greater(self):
         from cocktail.schema.expressions import GreaterExpression
@@ -158,4 +159,22 @@ class ComparisonTestCase(TestCase):
         assert intersect(2, 4, 1, 3)
         assert intersect(None, 5, 3, None)
         assert intersect(3, None, None, 5)
+
+    def test_eval_isinstance(self):
+        from cocktail.schema.expressions import IsInstanceExpression
+        from cocktail.persistence import PersistentObject, datastore
+
+        datastore.root.clear()
+
+        class A(PersistentObject):
+            pass
+
+        class B(PersistentObject):
+            pass
+
+        a = A()
+        b = B()
+
+        assert not IsInstanceExpression(a, B).eval({})
+        assert IsInstanceExpression(a, (A, B)).eval({})
 

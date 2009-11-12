@@ -967,3 +967,40 @@ class RelationalQueriesTestCase(TempStorageMixin, TestCase):
             set([o[4]])
         )
 
+    def test_isinstance(self):
+
+        from cocktail.persistence import PersistentObject
+        from cocktail.schema.expressions import Self
+
+        class Category(PersistentObject):            
+            pass
+
+        class C1(Category):
+            pass
+
+        class C2(Category):
+            pass
+
+        a = C1()
+        a.insert()
+
+        b = C1()
+        b.insert()
+
+        c = C2()
+        c.insert()
+
+        d = C2()
+        d.insert()
+
+        assert set(Category.select(Self.isinstance(C1))) == \
+            set([a, b])
+        assert not set(Category.select(Self.isinstance(C1))) == \
+            set([c, d])
+        assert set(Category.select(Self.isinstance(C2))) == \
+            set([c, d])
+        assert not set(Category.select(Self.isinstance(C2))) == \
+            set([a, b])
+        assert set(Category.select(Self.isinstance((C1, C2)))) == \
+            set([a, b, c, d])
+
