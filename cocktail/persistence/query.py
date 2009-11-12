@@ -951,3 +951,34 @@ def _range_intersection_resolution(self, query):
 expressions.RangeIntersectionExpression.resolve_filter = \
     _range_intersection_resolution
 
+def _isinstance_resolution(self, query):
+    # TODO: Implement the resolution for the queries that its first operand is
+    #   a Reference
+
+    if self.operands and self.operands[0] is expressions.Self:
+        
+        subset = set()
+
+        if isinstance(self.operands[1], expressions.Constant):
+            operand = self.operands[1].eval()
+        else:
+            operand = self.operands[1]
+
+        if isinstance(operand, (tuple, list)):
+            models = operand
+        else:
+            models = list()
+            models.append(operand)
+
+        for model in models:
+            subset.update(model.keys)
+
+        def impl(dataset):
+            dataset.intersection_update(subset)
+            return dataset
+        
+        return ((-3, 0), impl)
+    else:
+        return ((0, 0), None)
+
+expressions.IsInstanceExpression.resolve_filter = _isinstance_resolution
