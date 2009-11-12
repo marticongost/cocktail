@@ -157,6 +157,9 @@ class Expression(object):
 
         return expr
 
+    def isinstance(self, expr):
+        return IsInstanceExpression(self, expr)
+
 
 class Constant(Expression):
 
@@ -485,4 +488,10 @@ class RangeIntersectionExpression(Expression):
             (d is None or max_operator(a, d).eval({}))
             and (b is None or min_operator(b, c).eval({}))
         )
+
+
+class IsInstanceExpression(Expression):
+
+    op = isinstance
+
 
