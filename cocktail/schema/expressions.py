@@ -492,6 +492,11 @@ class RangeIntersectionExpression(Expression):
 
 class IsInstanceExpression(Expression):
 
+    def __init__(self, a, b):
+        if isinstance(b, type):
+            b = Constant(b)
+        Expression.__init__(self, a, b)
+
     op = isinstance
 
 
