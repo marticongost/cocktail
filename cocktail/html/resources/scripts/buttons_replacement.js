@@ -1,77 +1,74 @@
 cocktail.init(function (root) {
+ 
+    if (jQuery.browser.msie) {
     
-    // TODO: this doesn't belong here at all
-    if (!Array.prototype.indexOf)
-    {
-      Array.prototype.indexOf = function(elt /*, from*/)
-      {
-        var len = this.length;
-    
-        var from = Number(arguments[1]) || 0;
-        from = (from < 0)
-             ? Math.ceil(from)
-             : Math.floor(from);
-        if (from < 0)
-          from += len;
-    
-        for (; from < len; from++)
-        {
-          if (from in this &&
-              this[from] === elt)
-            return from;
-        }
-        return -1;
-      };
-    }
-    
-    var button_names = [];
-    
-    jQuery("form button", root).each( function (index) {
-        
-        var nom, replaced
-        
-        if(jQuery(this).attr('name') == ""){
-            nom = "joker_" + index;
-        }else{
-            nom = jQuery(this).attr('name');
-            jQuery(this).removeAttr('name');            
-        }
+        jQuery("form", root).each(function () {
+			
+			if (this.buttonsReplacementScript) {
+				return;
+			}
 
-        if(button_names.indexOf(nom) < 0) {
-            //TODO: Retirar con el control que carga el script solo en IE.
-            if(jQuery.browser.msie){                
-                replaced = document.createElement("<input type='hidden' name='" + nom + "'>");
-            }else{
-                replaced = document.createElement('input');
-                jQuery(replaced).attr({
-                    type: "hidden",
-                    name: nom
-                });
-            }            
-            jQuery(replaced).insertBefore(jQuery(this));             
-            button_names.push(nom);
-        }
+			this.buttonsReplacementScript = true;
 
-        if(this.attributes.getNamedItem("value")){
-            jQuery(this).click( function () {                
-                jQuery("input[name='" + nom + "']").val(this.attributes.getNamedItem("value").nodeValue);
-            });
-        }
-        
-    });
-        
-    if(jQuery.browser.msie){                    
-        jQuery(".body form", root).submit( function () {
+            var form = this;
+            var hidden;
 
-            jQuery(this).find("button[type='submit']:visible").each(function () {
-                var clases = jQuery(this).attr('class');                
-                var boto = document.createElement('button');
-                boto.innerHTML = jQuery(this).html();
-                if(jQuery(this).attr('class') != "")  boto.className = jQuery(this).attr('class');
-                jQuery(this).after(boto).remove();
-            });
+            function clearHidden() {
+                if (hidden) {
+                    form.removeChild(hidden);
+                }
+            }
 
-            return true;
+			jQuery(form).click(function (e) {
+
+				var element = e.srcElement;
+
+				if (element.isButtonReplacement) {
+					
+                    clearHidden();
+                    
+                    if(jQuery.browser.msie){
+                        hidden = document.createElement("<input type='hidden' name='" + element.buttonName + "'>");
+                    }else{
+                        hidden = document.createElement("input");
+                        hidden.type = "hidden";
+                        hidden.name = element.buttonName;
+                        hidden.style = element.styled
+                    }
+
+                    hidden.value = element.buttonValue;
+					jQuery(form).append(hidden);                  
+                    jQuery(form).submit();
+				}
+				else if (element.tagName.toLowerCase() == "input" && element.type == "submit") {
+					clearHidden();
+				}
+			});
         });
     }
 });
+
+cocktail.init(function (root) {
+	if (jQuery.browser.msie) {
+		jQuery("button[type=submit]", root).each(function () {
+			if (this.parentNode) {
+				if(jQuery.browser.msie){
+                    replacement = document.createElement("<button type='button'>");
+                }else{
+                    replacement = document.createElement("button");
+                    replacement.type = "button";
+                }                
+				replacement.isButtonReplacement = true;
+				replacement.buttonName = this.name;                
+				var attribute = this.attributes.getNamedItem("value");
+				replacement.buttonValue = attribute ? attribute.nodeValue : "";
+				replacement.id = this.id;
+				replacement.className = this.className;
+				replacement.innerHTML = this.innerHTML;
+                replacement.style.cssText = this.style.cssText;                
+				jQuery(this).replaceWith(replacement);
+			}
+		});
+	}
+});
+
