@@ -185,3 +185,24 @@ cocktail.closeDialog = function () {
     jQuery(document.body).removeClass("modal");
 }
 
+cocktail.createElement = function (tag, name, type) {
+
+    if (jQuery.browser.msie) {
+        var html = "<" + tag;
+        if (name) {
+            html += " name='" + name + "'";
+        }
+        if (type) {
+            html += " type='" + type + "'";
+        }
+        html += ">";
+        return document.createElement(html);
+    }
+    else {
+        var element = document.createElement(tag);
+        element.name = name;
+        element.type = type;
+        return element
+    }
+}
+
