@@ -21,6 +21,31 @@ from cocktail.html import templates
 # Extension that allows members to specify their prefered display
 Member.display = None
 
+def display_factory(display_name, **kwargs):
+    """A convenience function to assign displays to schema members.
+    
+    @param display_name: A fully qualified name of an
+        L{Element<element.Element>} subclass or CML template.
+    @type display_name: str
+
+    @param kwargs: HTML or Python attributes to set on the display.
+    
+    @return: A function that produces displays of the indicated kind,
+        initialized with the supplied parameters.
+    @rtype: L{Element<element.Element>}
+    """
+    def func(parent, obj, member):
+        display = templates.new(display_name)
+        
+        for key, value in kwargs.iteritems():
+            if hasattr(display, key):
+                setattr(display, key, value)
+            else:
+                display[key] = value
+
+        return display
+
+    return func
 
 class DataDisplay(object):
     """Base class for all visual components that can display schema-based data.
