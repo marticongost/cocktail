@@ -24,8 +24,8 @@ from cocktail.controllers import get_state, view_state, serialize_parameter
 
         for i, f in enumerate(self.filters):
             for member in f.schema.members().itervalues():
-                state["filter_" + member.name + str(i)] = None
-        
+                state["filter_" + member.name + str(i)] = ""
+
         return state
 
     def get_add_filter_state(self, filter):
