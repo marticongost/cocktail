@@ -75,7 +75,7 @@ class Selector(Element, DataBoundControl):
                 items = member.select_constraint_instances(
                     parent = self.persistent_object or self.data
                 )
-                if member.default_order:
+                if isinstance(member, schema.Reference) and member.default_order:
                     items.add_order(member.default_order)
                 return items
             elif isinstance(member, schema.Collection):
