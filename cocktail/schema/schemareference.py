@@ -25,7 +25,7 @@ class Reference(RelationMember):
     __class_family = None
 
     cycles_allowed = True
-    default_member = None
+    default_order = None
 
     def __init__(self, *args, **kwargs):
         RelationMember.__init__(self, *args, **kwargs)
