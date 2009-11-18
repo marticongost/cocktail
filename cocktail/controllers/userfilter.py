@@ -293,11 +293,18 @@ class MultipleChoiceFilter(MemberFilter):
 
     @cached_getter
     def schema(self):
+
+        if isinstance(self.member, Reference):
+            order = self.member.default_order
+        elif isinstance(self.member, Collection):
+            order = self.member.items.default_order
+
         return Schema("UserFilter", members = [
             Collection("values",
                 items = Reference(
                     required = True,
-                    type = self.member.related_type
+                    type = self.member.related_type,
+                    default_order = order
                 ),
                 min = 1,
                 required = True

@@ -52,7 +52,7 @@ class Selector(Element, DataBoundControl):
         self._fill_entries()
 
     def _get_items_from_member(self, member):
-
+        
         if isinstance(member, schema.Collection):
             enumeration = member.items.enumeration if member.items else None
         else:
@@ -72,9 +72,22 @@ class Selector(Element, DataBoundControl):
 
         elif isinstance(member, schema.RelationMember):
             if getattr(member, "is_persistent_relation", False):
-                return member.select_constraint_instances(
+                items = member.select_constraint_instances(
                     parent = self.persistent_object or self.data
                 )
+                
+                order = None
+
+                if isinstance(member, schema.Reference):
+                    order = member.default_order
+                elif isinstance(member, schema.Collection):
+                    order = member.items.default_order
+
+                if order:
+                    items.add_order(order)
+
+                return items
+                
             elif isinstance(member, schema.Collection):
                 if member.items:
                     return self._get_items_from_member(member.items)
