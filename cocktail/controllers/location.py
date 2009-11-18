@@ -43,13 +43,18 @@ class Location(object):
     @classmethod
     def get_current_host(cls):
 
-        request = cherrypy.request
+        base = cherrypy.request.base
 
         location = cls()
         location.method = "GET"
-        location.scheme = request.scheme
-        location.host = request.local.name
-        location.port = request.local.port
+        scheme, rest = base.split("://")
+        location.scheme = scheme
+        pos = rest.find(":")
+        if pos == -1:
+            location.host = rest
+        else:
+            location.host = rest[:pos]
+            location.port = rest[pos+1:]
 
         return location
 
@@ -59,12 +64,9 @@ class Location(object):
         request = cherrypy.request
         query_string = get_state()
 
-        location = cls()
+        location = cls().get_current_host()
         location.relative = True
         location.method = request.method
-        location.scheme = request.scheme
-        location.host = request.local.name
-        location.port = request.local.port
         location.path_info = request.path_info        
         location.query_string.update(query_string)
         location.form_data.update(
