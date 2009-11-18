@@ -72,9 +72,12 @@ class Selector(Element, DataBoundControl):
 
         elif isinstance(member, schema.RelationMember):
             if getattr(member, "is_persistent_relation", False):
-                return member.select_constraint_instances(
+                items = member.select_constraint_instances(
                     parent = self.persistent_object or self.data
                 )
+                if member.default_order:
+                    items.add_order(member.default_order)
+                return items
             elif isinstance(member, schema.Collection):
                 if member.items:
                     return self._get_items_from_member(member.items)
