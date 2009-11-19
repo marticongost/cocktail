@@ -6,7 +6,6 @@ u"""
 @organization:	Whads/Accent SL
 @since:			October 2008
 """
-from itertools import chain
 import decimal
 import time
 import datetime
@@ -141,13 +140,7 @@ def parse_reference(self, reader, value):
 
         # Class references
         if self.class_family:
-
-            classes = chain(
-                [self.class_family],
-                self.class_family.derived_schemas()
-            )
-
-            for cls in classes:
+            for cls in self.class_family.schema_tree():
                 if cls.full_name == value:
                     value = cls
                     break
