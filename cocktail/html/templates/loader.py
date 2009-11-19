@@ -20,10 +20,17 @@ class TemplateLoader(object):
 
     class Cache(Cache):
 
+        auto_reload = True
+
         def _is_current(self, entry):
-            template = entry.value
-            return template.source_file \
-                and entry.creation >= os.stat(template.source_file).st_mtime
+            # Reload templates if their source file has been modified since
+            # they were loaded
+            if self.auto_reload:
+                template = entry.value
+                return template.source_file \
+                    and entry.creation >= os.stat(template.source_file).st_mtime
+            else:
+                return True
 
     def __init__(self):
         self.__dependencies = {}
