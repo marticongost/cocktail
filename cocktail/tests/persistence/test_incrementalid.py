@@ -9,15 +9,13 @@ u"""
 from unittest import TestCase
 from cocktail.tests.persistence.tempstoragemixin import TempStorageMixin
 
-# TODO: Test threaded
-# TODO: Test multiprocess
 
 class IncrementalIdTestCase(TempStorageMixin, TestCase):
 
     python_cmd = "python"
     zeo_cmd = "runzeo"
     db_host = "127.0.0.1"
-    db_port = "43784"    
+    db_port = "43784"
 
     def test_acquisition(self):
 
