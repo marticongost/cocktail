@@ -8,37 +8,57 @@ u"""
 """
 import os
 from pkg_resources import resource_filename
+from cocktail.modeling import extend
 from cocktail.cache import Cache
 from cocktail.pkgutils import import_object, set_full_name
 from cocktail.html.templates.compiler import TemplateCompiler
 
 
-class TemplateLoader(object):
+class TemplateLoaderCache(Cache):
 
+    checks_modification_time = True
+    expiration = None
+
+    def _is_current(self, entry):
+        
+        if not Cache._is_current(self, entry):
+            return False
+
+        # Reload templates if their source file has been modified since
+        # they were loaded
+        if self.checks_modification_time:
+            template = entry.value
+            if template.source_file \
+            and entry.creation < os.stat(template.source_file).st_mtime:
+                return False
+ 
+        # Reload templates if their dependencies need to be reloaded
+        return all(
+            self._is_current(self[dependency])
+            for dependency in self._loader.iter_dependencies(entry.key)
+        )
+
+
+class TemplateLoader(object):
+    """A class that loads template classes from their source files.
+
+    @var cache: The cache used by the loader to store requested templates.
+    @type: L{Cache<cocktail.cache.Cache>}
+    """
     extension = ".cml"
     Compiler = TemplateCompiler
-
-    class Cache(Cache):
-
-        auto_reload = True
-
-        def _is_current(self, entry):
-            # Reload templates if their source file has been modified since
-            # they were loaded
-            if self.auto_reload:
-                template = entry.value
-                return template.source_file \
-                    and entry.creation >= os.stat(template.source_file).st_mtime
-            else:
-                return True
-
+    Cache = TemplateLoaderCache
+    
     def __init__(self):
         self.__dependencies = {}
         self.__derivatives = {}
 
-        self.cache = self.Cache()
-        self.cache.expiration = None
-        self.cache.load = self._load_template
+        self.cache = self.Cache(self._load_template)
+        self.cache._loader = self
+
+        @extend(self.cache)
+        def _entry_removed(cache, entry):
+            self._forget_template(entry.key)
 
     def get_class(self, name):
         """Obtains a python class from the specified template.
@@ -72,23 +92,25 @@ class TemplateLoader(object):
         pkg_name, class_name = self._split_name(name)
         return self.Compiler(pkg_name, class_name, self, source)
 
-    def _load_template(self, name):
+    def iter_dependencies(self, name, recursive = True, include_self = False):
+        if include_self:
+            yield name
 
-        pkg_name, class_name = self._split_name(name)
-
-        # Drop cached templates that depend on the requested template
-        derivatives = self.__derivatives.get(name)
-
-        if derivatives:
-            for derivative in derivatives:
-                self.cache.pop(derivative, None)
-        
-        # Discard previous dependencies
         dependencies = self.__dependencies.get(name)
 
         if dependencies:
-            for dependency in dependencies:
-                self.__derivatives[dependency].remove(name)
+            if recursive:
+                for dependency in dependencies:
+                    for recursive_dependency \
+                    in self.iter_dependencies(dependency, include_self = True):
+                        yield recursive_dependency
+            else:
+                for dependency in dependencies:
+                    yield dependency
+
+    def _load_template(self, name):
+
+        pkg_name, class_name = self._split_name(name)
 
         # Try to obtain the template class from a template file
         try:
@@ -100,26 +122,31 @@ class TemplateLoader(object):
 
         if source_file is not None:
 
+            # Read the template's source
+            f = file(source_file, "r")
             try:
-                f = file(source_file, "r")
                 source = f.read()
             finally:
                 f.close()
 
+            # Compile the template's source
             compiler = self.Compiler(pkg_name, class_name, self, source)
 
-            deps = compiler.classes.keys()
-            self.__dependencies[name] = deps
-
             # Update the template dependency graph
-            for dependency in deps:
-                derivatives = self.__derivatives.get(dependency)
-
-                if derivatives is None:
-                    self.__derivatives[dependency] = derivatives = set()
-
-                derivatives.add(name)
+            dependencies = set()
+            self.__dependencies[name] = dependencies
             
+            for dependency in compiler.classes.keys():
+
+                dependencies.add(dependency)
+                dependency_derivatives = self.__derivatives.get(dependency)
+
+                if dependency_derivatives is None:
+                    dependency_derivatives = set()
+                    self.__derivatives[dependency] = dependency_derivatives
+
+                dependency_derivatives.add(name)
+
             cls = compiler.get_template_class()
             set_full_name(cls, full_name)
 
@@ -137,6 +164,28 @@ class TemplateLoader(object):
         cls.source_file = source_file
         return cls
    
+    def _forget_template(self, name):
+
+        # Clear the dependency declarations for the previous version of the
+        # template
+        dependencies = self.__dependencies.get(name)
+
+        if dependencies:
+            for dependency in dependencies:
+                self.__derivatives[dependency].remove(name)
+
+            del self.__dependencies[name]
+
+        # Drop cached templates that depend on the requested template,
+        # recursively
+        derivatives = self.__derivatives.get(name)
+
+        if derivatives:
+            for derivative in list(derivatives):
+                self.cache.pop(derivative, None)
+            
+            del self.__derivatives[name]
+
     def _split_name(self, name):
         
         pos = name.rfind(".")
