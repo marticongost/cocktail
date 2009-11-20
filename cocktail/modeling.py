@@ -186,8 +186,8 @@ class DictWrapper(object):
             other = other._items
         return self._items > other
 
-    def __hash__(self, other):
-        return self._items.__hash__(other)
+    def __hash__(self):
+        return self._items.__hash__()
 
     def __iter__(self):
         try:
