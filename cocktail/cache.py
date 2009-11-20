@@ -24,7 +24,7 @@ class Cache(DictWrapper):
 
         if load is not None:
             self.load = load
-        
+ 
     def _drop_expired(self):
         
         if self.expiration:
@@ -33,7 +33,7 @@ class Cache(DictWrapper):
 
             for key, entry in self.__entries.items():
                 if entry.creation < oldest_creation_time:
-                    del self.__entries[key]
+                    del self[key]
 
     def request(self, key):
         if self.enabled:
@@ -52,17 +52,36 @@ class Cache(DictWrapper):
         pass
 
     def __delitem__(self, key):
-        del self.__entries[key]
+        entry = self.__entries.get(key)
+        if entry:
+            self._entry_removed(entry)
+        else:
+            raise KeyError(key)
     
-    def pop(self, key, default = None):
-        return self.__entries.pop(key, default)
+    def pop(self, key, default = missing):
+        entry = self.__entries.get(key)
+        if entry is None:
+            if default is missing:
+                raise KeyError(key)
+            return default
+        else:
+            del self.__entries[key]
+            self._entry_removed(entry)
+            return entry
 
     def clear(self):
+        entries = self.__entries.values()
         self.__entries.clear()
+        for entry in entries:
+            self._entry_removed(entry)
 
     def _is_current(self, entry):
         return self.expiration is None \
             or time() - entry.creation < self.expiration
+
+    def _entry_removed(self, entry):
+        pass
+
 
 class CacheEntry(object):
     
