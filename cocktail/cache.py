@@ -16,6 +16,7 @@ class Cache(DictWrapper):
     expiration = None
     entries = None
     enabled = True
+    updatable = True
 
     def __init__(self, load = None):
         entries = {}
@@ -39,7 +40,8 @@ class Cache(DictWrapper):
         if self.enabled:
             entry = self.__entries.get(key, missing)
 
-            if entry is missing or not self._is_current(entry):
+            if entry is missing \
+            or (self.updatable and not self._is_current(entry)):
                 value = self.load(key)
                 self.__entries[key] = CacheEntry(key, value)
                 return value
