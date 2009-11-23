@@ -172,9 +172,47 @@ class ComparisonTestCase(TempStorageMixin, TestCase):
         class B(PersistentObject):
             pass
 
+        class C(A):
+            pass
+
         a = A()
         b = B()
+        c = C()
 
-        assert not IsInstanceExpression(a, B).eval({})
-        assert IsInstanceExpression(a, (A, B)).eval({})
+        assert IsInstanceExpression(c, C).eval({})
+        assert IsInstanceExpression(c, A).eval({})
+        assert IsInstanceExpression(a, A, is_inherited = False).eval({})
+
+        assert IsInstanceExpression(c, (A, B)).eval({})
+        assert not IsInstanceExpression(c, (A, B), is_inherited = False).eval({})
+        assert IsInstanceExpression(c, (C, B)).eval({})
+        assert not IsInstanceExpression(a, (C, B)).eval({})
+
+    def test_eval_not_isinstance(self):
+        from cocktail.schema.expressions import NotIsInstanceExpression
+        from cocktail.persistence import PersistentObject, datastore
+
+        datastore.root.clear()
+
+        class A(PersistentObject):
+            pass
+
+        class B(PersistentObject):
+            pass
+
+        class C(A):
+            pass
+
+        a = A()
+        b = B()
+        c = C()
+
+        assert NotIsInstanceExpression(a, B).eval({})
+        assert not NotIsInstanceExpression(a, A).eval({})
+        assert not NotIsInstanceExpression(c, A).eval({})
+        assert NotIsInstanceExpression(c, A, is_inherited = False).eval({})
+
+        assert NotIsInstanceExpression(b, (A, C)).eval({})
+        assert not NotIsInstanceExpression(c, (B, A)).eval({})
+        assert NotIsInstanceExpression(c, (B, A), is_inherited = False).eval({})
 

@@ -969,8 +969,10 @@ class RelationalQueriesTestCase(TempStorageMixin, TestCase):
 
     def test_isinstance(self):
 
-        from cocktail.persistence import PersistentObject
-        from cocktail.schema.expressions import Self
+        from cocktail.persistence import PersistentObject, datastore
+        from cocktail.schema.expressions import Self, IsInstanceExpression
+
+        datastore.root.clear()
 
         class Category(PersistentObject):            
             pass
@@ -1003,4 +1005,53 @@ class RelationalQueriesTestCase(TempStorageMixin, TestCase):
             set([a, b])
         assert set(Category.select(Self.isinstance((C1, C2)))) == \
             set([a, b, c, d])
+        assert set(Category.select(Self.isinstance(Category))) == \
+            set([a, b, c, d])
+        assert set(Category.select(
+            IsInstanceExpression(Self, Category, is_inherited = False)
+        )) == set()
+
+    def test_not_isinstance(self):
+
+        from cocktail.persistence import PersistentObject, datastore
+        from cocktail.schema.expressions import Self, NotIsInstanceExpression
+
+        datastore.root.clear()
+
+        class Category(PersistentObject):            
+            pass
+
+        class C1(Category):
+            pass
+
+        class C2(Category):
+            pass
+
+        a = C1()
+        a.insert()
+
+        b = C1()
+        b.insert()
+
+        c = C2()
+        c.insert()
+
+        d = C2()
+        d.insert()
+
+        assert not set(Category.select(Self.not_isinstance(C1))) == \
+            set([a, b])
+        assert set(Category.select(Self.not_isinstance(C1))) == \
+            set([c, d])
+        assert not set(Category.select(Self.not_isinstance(C2))) == \
+            set([c, d])
+        assert set(Category.select(Self.not_isinstance(C2))) == \
+            set([a, b])
+        assert set(Category.select(Self.not_isinstance((C1, C2)))) == \
+            set()
+        assert set(Category.select(Self.not_isinstance(Category))) == \
+            set()
+        assert set(Category.select(
+            NotIsInstanceExpression(Self, Category,is_inherited = False))
+        ) == set([a, b, c, d])
 

@@ -160,6 +160,9 @@ class Expression(object):
     def isinstance(self, expr):
         return IsInstanceExpression(self, expr)
 
+    def not_isinstance(self, expr):
+        return NotIsInstanceExpression(self, expr)
+
 
 class Constant(Expression):
 
@@ -492,11 +495,27 @@ class RangeIntersectionExpression(Expression):
 
 class IsInstanceExpression(Expression):
 
-    def __init__(self, a, b):
+    is_inherited = True
+
+    def __init__(self, a, b, is_inherited = True):
         if isinstance(b, type):
             b = Constant(b)
         Expression.__init__(self, a, b)
+        self.is_inherited = is_inherited
 
-    op = isinstance
+    def op(self, a, b):
+        if self.is_inherited:
+            return isinstance(a, b)
+        else:
+            if isinstance(b, tuple):
+                return a.__class__ in b
+            else:
+                return a.__class__ == b
+
+
+class NotIsInstanceExpression(IsInstanceExpression):
+
+    def op(self, a, b):
+        return not IsInstanceExpression.op(self, a, b)
 
 
