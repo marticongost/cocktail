@@ -31,7 +31,6 @@ class PropertyTable(Element, DataDisplay):
 
         if self.group_by_type:
 
-            self.add_resource("/cocktail/scripts/jquery.js")
             self.add_resource("/cocktail/scripts/jquery.cookie.js")
             self.add_resource("/cocktail/scripts/PropertyTable.js")
 
