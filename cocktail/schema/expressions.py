@@ -160,8 +160,8 @@ class Expression(object):
     def isinstance(self, expr):
         return IsInstanceExpression(self, expr)
 
-    def not_isinstance(self, expr):
-        return NotIsInstanceExpression(self, expr)
+    def is_not_instance(self, expr):
+        return IsNotInstanceExpression(self, expr)
 
 
 class Constant(Expression):
@@ -513,7 +513,7 @@ class IsInstanceExpression(Expression):
                 return a.__class__ == b
 
 
-class NotIsInstanceExpression(IsInstanceExpression):
+class IsNotInstanceExpression(IsInstanceExpression):
 
     def op(self, a, b):
         return not IsInstanceExpression.op(self, a, b)

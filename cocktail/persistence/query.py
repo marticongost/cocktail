@@ -997,7 +997,7 @@ def _isinstance_resolution(self, query):
 
 expressions.IsInstanceExpression.resolve_filter = _isinstance_resolution
 
-def _not_isinstance_resolution(self, query):
+def _is_not_instance_resolution(self, query):
     # TODO: Implement the resolution for the queries that its first operand is
     #   a Reference
 
@@ -1013,4 +1013,4 @@ def _not_isinstance_resolution(self, query):
     else:
         return ((0, 0), None)
 
-expressions.NotIsInstanceExpression.resolve_filter = _not_isinstance_resolution
+expressions.IsNotInstanceExpression.resolve_filter = _is_not_instance_resolution

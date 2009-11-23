@@ -1011,10 +1011,10 @@ class RelationalQueriesTestCase(TempStorageMixin, TestCase):
             IsInstanceExpression(Self, Category, is_inherited = False)
         )) == set()
 
-    def test_not_isinstance(self):
+    def test_is_not_instance(self):
 
         from cocktail.persistence import PersistentObject, datastore
-        from cocktail.schema.expressions import Self, NotIsInstanceExpression
+        from cocktail.schema.expressions import Self, IsNotInstanceExpression
 
         datastore.root.clear()
 
@@ -1039,19 +1039,19 @@ class RelationalQueriesTestCase(TempStorageMixin, TestCase):
         d = C2()
         d.insert()
 
-        assert not set(Category.select(Self.not_isinstance(C1))) == \
+        assert not set(Category.select(Self.is_not_instance(C1))) == \
             set([a, b])
-        assert set(Category.select(Self.not_isinstance(C1))) == \
+        assert set(Category.select(Self.is_not_instance(C1))) == \
             set([c, d])
-        assert not set(Category.select(Self.not_isinstance(C2))) == \
+        assert not set(Category.select(Self.is_not_instance(C2))) == \
             set([c, d])
-        assert set(Category.select(Self.not_isinstance(C2))) == \
+        assert set(Category.select(Self.is_not_instance(C2))) == \
             set([a, b])
-        assert set(Category.select(Self.not_isinstance((C1, C2)))) == \
+        assert set(Category.select(Self.is_not_instance((C1, C2)))) == \
             set()
-        assert set(Category.select(Self.not_isinstance(Category))) == \
+        assert set(Category.select(Self.is_not_instance(Category))) == \
             set()
         assert set(Category.select(
-            NotIsInstanceExpression(Self, Category,is_inherited = False))
+            IsNotInstanceExpression(Self, Category,is_inherited = False))
         ) == set([a, b, c, d])
 
