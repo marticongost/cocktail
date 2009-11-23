@@ -23,8 +23,6 @@ class DatePicker(TextBox):
         TextBox.__init__(self, *args, **kwargs)
         DataBoundControl.__init__(self)
         self.add_resource(
-            "/cocktail/scripts/jquery.js")
-        self.add_resource(
             "/cocktail/scripts/jquery-ui.js")
         self.add_resource(
             "/cocktail/scripts/ui.datepicker-lang.js")

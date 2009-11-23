@@ -103,10 +103,8 @@ class Page(Element):
                 self.__client_params_script = Content()
                 self.__client_params_script.value = ""
                 script_tag.append(self.__client_params_script)
-                
-                script_tag.append("\tcocktail.init();\n")
                 script_tag.append("});\n")
-                self.head.append(script_tag)            
+                self.head.append(script_tag)
 
             client_model = (
                 self.__client_model_stack
@@ -218,6 +216,12 @@ class Page(Element):
             ))
             head.append(script_tag)
         
+        if self.CORE_SCRIPT in self.__resource_uris:
+            script_tag = Element("script")
+            script_tag["type"] = "text/javascript"
+            script_tag.append("jQuery(function () { cocktail.init(); });")
+            head.append(script_tag)
+
     def _add_resource_to_head(self, resource):
         
         is_string = isinstance(resource, basestring)
@@ -232,7 +236,9 @@ class Page(Element):
 
             if isinstance(resource, Script):
                 
-                if uri != self.CORE_SCRIPT:
+                if uri == self.CORE_SCRIPT:
+                    self._add_resource_to_head(self.JQUERY_SCRIPT)
+                elif uri != self.JQUERY_SCRIPT:
                     self._add_resource_to_head(self.CORE_SCRIPT)
 
                 script_tag = Element("script")
