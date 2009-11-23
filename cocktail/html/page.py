@@ -220,7 +220,7 @@ class Page(Element):
             script_tag = Element("script")
             script_tag["type"] = "text/javascript"
             script_tag.append("jQuery(function () { cocktail.init(); });")
-            head.append(script_tag)
+            self.head.append(script_tag)
 
     def _add_resource_to_head(self, resource):
         
