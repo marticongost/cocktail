@@ -95,8 +95,7 @@ class Form(Element, DataDisplay):
 
     def _build(self):
         
-        self.add_resource("/cocktail/scripts/jquery.js")
-        self.add_resource("/cocktail/scripts/buttons_replacement.js")
+        self.add_resource("/cocktail/scripts/form.js")
 
         self.fields = Element()
         self.fields.add_class("fields")
