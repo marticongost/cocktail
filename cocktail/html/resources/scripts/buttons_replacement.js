@@ -1,9 +1,9 @@
 cocktail.init(function (root) {
- 
+
     if (jQuery.browser.msie) {
-    
+
         jQuery("form", root).each(function () {
-			
+
 			if (this.buttonsReplacementScript) {
 				return;
 			}
@@ -24,20 +24,10 @@ cocktail.init(function (root) {
 				var element = e.srcElement;
 
 				if (element.isButtonReplacement) {
-					
                     clearHidden();
-                    
-                    if(jQuery.browser.msie){
-                        hidden = document.createElement("<input type='hidden' name='" + element.buttonName + "'>");
-                    }else{
-                        hidden = document.createElement("input");
-                        hidden.type = "hidden";
-                        hidden.name = element.buttonName;
-                        hidden.style = element.styled
-                    }
-
+                    hidden = document.createElement("<input type='hidden' name='" + element.buttonName + "'>");
                     hidden.value = element.buttonValue;
-					jQuery(form).append(hidden);                  
+					jQuery(form).append(hidden);
                     jQuery(form).submit();
 				}
 				else if (element.tagName.toLowerCase() == "input" && element.type == "submit") {
@@ -52,20 +42,15 @@ cocktail.init(function (root) {
 	if (jQuery.browser.msie) {
 		jQuery("button[type=submit]", root).each(function () {
 			if (this.parentNode) {
-				if(jQuery.browser.msie){
-                    replacement = document.createElement("<button type='button'>");
-                }else{
-                    replacement = document.createElement("button");
-                    replacement.type = "button";
-                }                
+                var replacement = document.createElement("<button type='button'>");
 				replacement.isButtonReplacement = true;
-				replacement.buttonName = this.name;                
+				replacement.buttonName = this.name;
 				var attribute = this.attributes.getNamedItem("value");
 				replacement.buttonValue = attribute ? attribute.nodeValue : "";
 				replacement.id = this.id;
 				replacement.className = this.className;
 				replacement.innerHTML = this.innerHTML;
-                replacement.style.cssText = this.style.cssText;                
+                replacement.style.cssText = this.style.cssText;
 				jQuery(this).replaceWith(replacement);
 			}
 		});
