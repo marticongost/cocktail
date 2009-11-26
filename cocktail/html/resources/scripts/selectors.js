@@ -13,9 +13,7 @@ cocktail.init(function (root) {
         .addClass("scripted")
         .click(function (e) {
             var element = e.target || e.srcElement;
-            alert(element.tagName);
-            if(element.tagName != "BUTTON") 
-            e.stopPropagation(); 
+            if(element.tagName != "BUTTON") e.stopPropagation();
         })
         .children(".label")
             .each(function () {
