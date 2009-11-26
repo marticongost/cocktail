@@ -343,9 +343,10 @@ class TemplateCompiler(object):
 
             # User defined names
             identifier = attributes.pop(self.TEMPLATE_NS + ">id", None)
+            local_identifier = attributes.pop(self.TEMPLATE_NS + ">local_id", None)
             def_identifier = \
                 attributes.pop(self.TEMPLATE_NS + ">def", None)
-
+            
             if def_identifier:
                 is_new = False
             
@@ -377,6 +378,11 @@ class TemplateCompiler(object):
                 # parents
                 if identifier is not None and iter_expr is None:
                     source.write("self.%s = %s" % (identifier, id))
+
+                if local_identifier is not None:
+                    source.write("%s.%s = %s"
+                        % (parent_id, local_identifier, id)
+                    )
 
                 # Parent and position
                 parent = attributes.pop(self.TEMPLATE_NS + ">parent", None)
@@ -462,9 +468,9 @@ class TemplateCompiler(object):
             # Automatically add the name of an element as one of its CSS
             # classes. Note this is done *after* assigning attribute values,
             # otherwise a 'class' attribute would overwrite this.
-            if identifier or def_identifier:
+            if identifier or def_identifier or local_identifier:
                 source.write("%s.add_class(%s)"
-                    % (id, repr(factory_id))
+                    % (id, repr(factory_id or local_identifier))
                 )
     
     def EndElementHandler(self, name):
