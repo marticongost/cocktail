@@ -11,7 +11,12 @@ cocktail.init(function (root) {
 
     jQuery(".selector", root)
         .addClass("scripted")
-        .click(function (e) { e.stopPropagation(); })
+        .click(function (e) {
+            var element = e.target || e.srcElement;
+            alert(element.tagName);
+            if(element.tagName != "BUTTON") 
+            e.stopPropagation(); 
+        })
         .children(".label")
             .each(function () {
                 jQuery(this).replaceWith(
