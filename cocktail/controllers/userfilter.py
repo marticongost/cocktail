@@ -27,6 +27,7 @@ from cocktail.schema.expressions import (
     InclusionExpression,
     ExclusionExpression,
     GlobalSearchExpression,
+    DescendsFromExpression,
     normalize
 )
 from cocktail.persistence import PersistentObject
@@ -387,6 +388,34 @@ class DateTimeRangeFilter(UserFilter):
             expression = self.end_date_member.lower(self.end_date)
 
         return expression
+
+
+class DescendsFromFilter(UserFilter):
+    id = "descends-from"
+    relation = None
+
+    @cached_getter
+    def schema(self):
+        
+        return Schema("DescendsFromFilter", members = [
+            Reference(
+                "root",
+                required = True,
+                type = self.relation.schema
+            ),
+            Boolean(
+                "include_self",
+                required = True,
+                default = True
+            )
+        ])
+
+    @cached_getter
+    def expression(self):
+        return DescendsFromExpression(
+            Self, self.root, self.relation, self.include_self
+        )
+
 
 # An extension property used to associate user filter types with members
 Member.user_filter = EqualityFilter
