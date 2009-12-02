@@ -4,3 +4,5 @@ cocktail.egg-info
 html/resources/styles/images
 build
 dist
+glob:asdf
+relre:asdf
