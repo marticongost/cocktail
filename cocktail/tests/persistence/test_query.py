@@ -1055,3 +1055,208 @@ class RelationalQueriesTestCase(TempStorageMixin, TestCase):
             IsNotInstanceExpression(Self, Category,is_inherited = False))
         ) == set([a, b, c, d])
 
+
+class DescendsFromTestCase(TempStorageMixin, TestCase):
+
+    def setUp(self):
+        TempStorageMixin.setUp(self)
+
+        from cocktail.schema import Reference, Collection
+        from cocktail.persistence import PersistentObject, datastore
+
+        datastore.root.clear()
+
+        class Document(PersistentObject):
+            parent = Reference(
+                bidirectional = True,
+                related_key = "children"
+            )
+            children = Collection(
+                bidirectional = True,
+                related_key = "parent"
+            )
+
+            extension = Reference(
+                bidirectional = True,
+                related_key = "extended"
+            )
+            extended = Reference(
+                bidirectional = True,
+                related_key = "extension"
+            )
+
+            improvement = Reference()
+            related_documents = Collection()
+
+        Document.extension.type = Document
+        Document.extended.type = Document
+        Document.parent.type = Document
+        Document.children.items = Reference(type = Document)
+        Document.improvement.type = Document
+        Document.related_documents.items = Reference(type = Document)
+
+        self.Document = Document
+
+    def test_descends_from_one_to_one_bidirectional(self):
+        from cocktail.schema.expressions import DescendsFromExpression, Self
+
+        a = self.Document()
+        b = self.Document()
+        c = self.Document()
+
+        a.extension = b
+        b.extension = c
+
+        a.insert()
+        b.insert()
+        c.insert()
+
+        assert set(self.Document.select(
+            Self.descends_from(a, self.Document.extension)
+        )) == set([a, b, c])
+        assert set(self.Document.select(
+            Self.descends_from(a, self.Document.extension, include_self = False)
+        )) == set([b, c])
+        assert set(self.Document.select(
+            Self.descends_from(b, self.Document.extension)
+        )) == set([b, c])
+        assert set(self.Document.select(
+            Self.descends_from(b, self.Document.extension, include_self = False)
+        )) == set([c])
+        assert set(self.Document.select(
+            Self.descends_from(c, self.Document.extension)
+        )) == set([c])
+        assert set(self.Document.select(
+            Self.descends_from(c, self.Document.extension, include_self = False)
+        )) == set([])
+
+    def test_descends_from_one_to_many_bidirectional(self):
+        from cocktail.schema.expressions import DescendsFromExpression, Self
+        
+        a = self.Document()
+        b = self.Document()
+        c = self.Document()
+        d = self.Document()
+        e = self.Document()
+
+        a.children = [b, c]
+        b.children = [d, e]
+
+        a.insert()
+        b.insert()
+        c.insert()
+        d.insert()
+        e.insert()
+
+        assert set(self.Document.select(
+            Self.descends_from(a, self.Document.children)
+        )) == set([a, b, c, d, e])
+        assert set(self.Document.select(
+            Self.descends_from(a, self.Document.children, include_self = False)
+        )) == set([b, c, d, e])
+        assert set(self.Document.select(
+            Self.descends_from(b, self.Document.children)
+        )) == set([b, d, e])
+        assert set(self.Document.select(
+            Self.descends_from(b, self.Document.children, include_self = False)
+        )) == set([d, e])
+        assert set(self.Document.select(
+            Self.descends_from(c, self.Document.children)
+        )) == set([c])
+        assert set(self.Document.select(
+            Self.descends_from(c, self.Document.children, include_self = False)
+        )) == set([])
+        assert set(self.Document.select(
+            Self.descends_from(d, self.Document.children)
+        )) == set([d])
+        assert set(self.Document.select(
+            Self.descends_from(d, self.Document.children, include_self = False)
+        )) == set([])
+
+    def test_descends_from_one_to_one(self):
+        from cocktail.schema.expressions import DescendsFromExpression, Self
+
+        a = self.Document()
+        b = self.Document()
+        c = self.Document()
+
+        a.improvement = b
+        b.improvement = c
+
+        a.insert()
+        b.insert()
+        c.insert()
+
+        assert set(self.Document.select(
+            Self.descends_from(a, self.Document.improvement)
+        )) == set([a, b, c])
+        assert set(self.Document.select(
+            Self.descends_from(
+                a, self.Document.improvement, include_self = False
+            )
+        )) == set([b, c])
+        assert set(self.Document.select(
+            Self.descends_from(
+                b, self.Document.improvement, include_self = False
+            )
+        )) == set([c])
+        assert set(self.Document.select(
+            Self.descends_from(c, self.Document.improvement)
+        )) == set([c])
+        assert set(self.Document.select(
+            Self.descends_from(
+                c, self.Document.improvement, include_self = False
+            )
+        )) == set([])
+
+    def test_descends_from_many_to_many(self):
+        from cocktail.schema.expressions import DescendsFromExpression, Self
+
+        a = self.Document()
+        b = self.Document()
+        c = self.Document()
+        d = self.Document()
+        e = self.Document()
+
+        a.related_documents = [b, c]
+        b.related_documents = [d, e]
+
+        a.insert()
+        b.insert()
+        c.insert()
+        d.insert()
+        e.insert()
+
+        assert set(self.Document.select(
+            Self.descends_from(a, self.Document.related_documents)
+        )) == set([a, b, c, d, e])
+        assert set(self.Document.select(
+            Self.descends_from(
+                a, self.Document.related_documents, include_self = False
+            )
+        )) == set([b, c, d, e])
+        assert set(self.Document.select(
+            Self.descends_from(b, self.Document.related_documents)
+        )) == set([b, d, e])
+        assert set(self.Document.select(
+            Self.descends_from(
+                b, self.Document.related_documents, include_self = False
+            )
+        )) == set([d, e])
+        assert set(self.Document.select(
+            Self.descends_from(c, self.Document.related_documents)
+        )) == set([c])
+        assert set(self.Document.select(
+            Self.descends_from(
+                c, self.Document.related_documents, include_self = False
+            )
+        )) == set([])
+        assert set(self.Document.select(
+            Self.descends_from(d, self.Document.related_documents)
+        )) == set([d])
+        assert set(self.Document.select(
+            Self.descends_from(
+                d, self.Document.related_documents, include_self = False
+            )
+        )) == set([])
+

@@ -1014,3 +1014,39 @@ def _is_not_instance_resolution(self, query):
         return ((0, 0), None)
 
 expressions.IsNotInstanceExpression.resolve_filter = _is_not_instance_resolution
+
+def _descends_from_resolution(self, query):
+
+    if self.operands[0] is expressions.Self:
+
+        def impl(dataset):
+            subset = set()
+            root = self.operands[1].eval(None)
+            relation = self.relation
+
+            if relation._many:
+                def descend(item, include_self):
+                    if include_self:
+                        subset.add(item.id)
+                    children = item.get(relation)
+                    if children:                
+                        for child in children:
+                            descend(child, True)
+                descend(root, self.include_self)
+            else:
+                item = root if self.include_self else root.get(relation)
+
+                while item is not None:
+                    subset.add(item.id)
+                    item = item.get(relation)
+        
+            dataset.intersection_update(subset)
+            return dataset
+        
+        return ((-3, 0), impl)
+    
+    else:
+        return ((0, 0), None)
+
+expressions.DescendsFromExpression.resolve_filter = _descends_from_resolution
+
