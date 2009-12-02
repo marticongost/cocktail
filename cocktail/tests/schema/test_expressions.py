@@ -216,3 +216,126 @@ class ComparisonTestCase(TempStorageMixin, TestCase):
         assert not IsNotInstanceExpression(c, (B, A)).eval({})
         assert IsNotInstanceExpression(c, (B, A), is_inherited = False).eval({})
 
+
+class DescendsFromTestCase(TempStorageMixin, TestCase):
+
+    def setUp(self):
+        TempStorageMixin.setUp(self)
+
+        from cocktail.schema import Reference, Collection
+        from cocktail.persistence import PersistentObject, datastore
+
+        datastore.root.clear()
+
+        class Document(PersistentObject):
+            parent = Reference(
+                bidirectional = True,
+                related_key = "children"
+            )
+            children = Collection(
+                bidirectional = True,
+                related_key = "parent"
+            )
+
+            extension = Reference(
+                bidirectional = True,
+                related_key = "extended"
+            )
+            extended = Reference(
+                bidirectional = True,
+                related_key = "extension"
+            )
+
+            improvement = Reference()
+            related_documents = Collection()
+
+        Document.extension.type = Document
+        Document.extended.type = Document
+        Document.parent.type = Document
+        Document.children.items = Reference(type = Document)
+        Document.improvement.type = Document
+        Document.related_documents.items = Reference(type = Document)
+
+        self.Document = Document
+
+    def test_eval_descends_from_one_to_one_bidirectional(self):
+        from cocktail.schema.expressions import DescendsFromExpression
+
+        a = self.Document()
+        b = self.Document()
+        c = self.Document()
+
+        a.extension = b
+        b.extension = c
+
+        assert DescendsFromExpression(a, a, self.Document.extension).eval({})
+        assert not DescendsFromExpression(
+            a, a, self.Document.extension, include_self = False
+        ).eval({})
+        assert DescendsFromExpression(b, a, self.Document.extension).eval({})
+        assert DescendsFromExpression(c, a, self.Document.extension).eval({})
+        assert not DescendsFromExpression(a, b, self.Document.extension).eval({})
+        assert not DescendsFromExpression(b, c, self.Document.extension).eval({})
+
+    def test_eval_descends_from_one_to_many_bidirectional(self):
+        from cocktail.schema.expressions import DescendsFromExpression
+        
+        a = self.Document()
+        b = self.Document()
+        c = self.Document()
+        d = self.Document()
+        e = self.Document()
+
+        a.children = [b, c]
+        b.children = [d, e]
+
+        assert DescendsFromExpression(a, a, self.Document.children).eval({})
+        assert not DescendsFromExpression(
+            a, a, self.Document.extension, include_self = False
+        ).eval({})
+        assert DescendsFromExpression(b, a, self.Document.children).eval({})
+        assert not DescendsFromExpression(a, b, self.Document.children).eval({})
+        assert DescendsFromExpression(d, a, self.Document.children).eval({})
+        assert not DescendsFromExpression(c, b, self.Document.children).eval({})
+        assert not DescendsFromExpression(d, c, self.Document.children).eval({})
+
+    def test_eval_descends_from_one_to_one(self):
+        from cocktail.schema.expressions import DescendsFromExpression
+
+        a = self.Document()
+        b = self.Document()
+        c = self.Document()
+
+        a.improvement = b
+        b.improvement = c
+
+        assert DescendsFromExpression(a, a, self.Document.improvement).eval({})
+        assert not DescendsFromExpression(
+            a, a, self.Document.extension, include_self = False
+        ).eval({})
+        assert DescendsFromExpression(b, a, self.Document.improvement).eval({})
+        assert DescendsFromExpression(c, a, self.Document.improvement).eval({})
+        assert not DescendsFromExpression(a, b, self.Document.improvement).eval({})
+        assert not DescendsFromExpression(b, c, self.Document.improvement).eval({})
+
+    def test_eval_descends_from_many_to_many(self):
+        from cocktail.schema.expressions import DescendsFromExpression
+
+        a = self.Document()
+        b = self.Document()
+        c = self.Document()
+        d = self.Document()
+        e = self.Document()
+
+        a.related_documents = [b, c]
+        b.related_documents = [d, e]
+
+        assert DescendsFromExpression(a, a, self.Document.related_documents).eval({})
+        assert not DescendsFromExpression(
+            a, a, self.Document.extension, include_self = False
+        ).eval({})
+        assert DescendsFromExpression(c, a, self.Document.related_documents).eval({})
+        assert DescendsFromExpression(d, a, self.Document.related_documents).eval({})
+        assert not DescendsFromExpression(d, c, self.Document.related_documents).eval({})
+        assert not DescendsFromExpression(a, b, self.Document.related_documents).eval({})
+
