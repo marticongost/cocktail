@@ -13,6 +13,7 @@ from cocktail.modeling import getter, ListWrapper
 from cocktail.language import get_content_language
 from cocktail.schema import Member, expressions, SchemaObjectAccessor
 from cocktail.schema.io import export_file
+from cocktail.schema.expressions import TranslationExpression
 from cocktail.persistence.index import Index
 
 query_style = lambda t: styled(t.ljust(80), "white", "blue")
@@ -429,7 +430,17 @@ class Query(object):
     
     def _apply_order(self, dataset):
  
-        order = self.__order
+        order = []
+
+        # Wrap the translated members into a TranslationExpression
+        for criteria in self.__order:
+            member = criteria.operands[0]
+            if isinstance(member, Member) and member.translated:
+                order.append(criteria.__class__(
+                    member.translated_into(get_content_language())
+                ))
+            else:
+                order.append(criteria)
 
         # Force a default order on queries that don't specify one, but request
         # a dataset range
@@ -442,8 +453,13 @@ class Query(object):
         # Optimized case: single indexed member, or a member that is both
         # required and unique followed by other members
         expr = order[0].operands[0]
+
+        if isinstance(expr, TranslationExpression):
+            language = expr.operands[1].eval(None)
+            expr = expr.operands[0]
+
         index = self._get_expression_index(expr)
-        
+
         if index is not None and (
             len(order) == 1
             or (isinstance(expr, Member) and expr.unique and expr.required)
@@ -454,7 +470,12 @@ class Query(object):
             if isinstance(expr, Member) and expr.primary:
                 sequence = index.iterkeys()
             else:
-                sequence = index.itervalues()
+                if expr.translated:
+                    sequence = (id
+                                for key, id in index.iteritems()
+                                if key[0] == language)
+                else:
+                    sequence = index.itervalues()
 
             dataset = [id
                        for id in sequence
@@ -470,11 +491,18 @@ class Query(object):
         
         for criteria in order:            
             expr = criteria.operands[0]
+
+            if isinstance(expr, TranslationExpression):
+                language = expr.operands[1].eval(None)
+                expr = expr.operands[0]
+            else:
+                language = None
+
             index = self._get_expression_index(expr)
             if index is None:
                 break            
             reversed = isinstance(criteria, expressions.NegativeExpression)
-            indexes.append((expr, index, reversed))
+            indexes.append((expr, index, reversed, language))
         else:
             ranks = {}
             
@@ -488,12 +516,14 @@ class Query(object):
             if not isinstance(dataset, set):
                 dataset = set(dataset)
 
-            for expr, index, reversed in indexes:
+            for expr, index, reversed, language in indexes:
              
                 if isinstance(index, Index):
                     for i, key in enumerate(index):
                         if reversed:
                             i = -i
+                        if expr.translated and key[0] != language:
+                            continue
                         for id in index[key]:
                             if id in dataset:
                                 add_rank(id, i)
@@ -501,7 +531,12 @@ class Query(object):
                     if isinstance(expr, Member) and expr.primary:
                         sequence = index.iterkeys()
                     else:
-                        sequence = index.itervalues()
+                        if expr.translated:
+                            sequence = (id
+                                for key, id in index.iteritems()
+                                if key[0] == language)
+                        else:
+                            sequence = index.itervalues()
 
                     for i, id in enumerate(sequence):
                         if id in dataset:
@@ -976,7 +1011,6 @@ def _isinstance_subset(expression):
                 children_subset.update(child.keys)
             subset.update(set(cls.keys).difference(children_subset))
 
-    print subset
     return subset
 
 def _isinstance_resolution(self, query):
