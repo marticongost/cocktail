@@ -32,6 +32,10 @@ schema.Member.parse_request_value = None
 # request values
 schema.Member.serialize_request_value = unicode
 
+# Extension property that allows members to define a reader function for
+# request values
+schema.Member.read_request_value = None
+
 def parse_int(self, reader, value):
 
     if value is not None:
@@ -457,8 +461,11 @@ class FormSchemaReader(object):
         language,
         path):
  
-        key = self.get_key(member, language, path)
-        value = self.source(key)
+        if member.read_request_value:
+            value = member.read_request_value(self)
+        else:
+            key = self.get_key(member, language, path)
+            value = self.source(key)
 
         if not (value is None and self.skip_undefined):
             value = self.process_value(member, value)
