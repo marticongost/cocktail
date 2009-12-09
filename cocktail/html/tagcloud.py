@@ -60,6 +60,7 @@ class TagCloud(Element):
 
         for tag in self.sorted_tags(self.tags):
             self.append(self.create_tag_entry(tag, self.tags[tag]))
+	    self.append(" ")
 
     def sorted_tags(self, tags):
         return sorted(tags.keys(), key = translations)
