@@ -72,8 +72,8 @@
             // Double clicking selectable._getEntries() (change the selection and trigger an 'activated'
             // event on the table)
 
-            selectable.dblClickEntryEvent = function () {
-                selectable.clearSelection();
+            selectable.dblClickEntryEvent = function (e) {
+                selectable.clearSelection();                
                 selectable.setEntrySelected(this, true);
                 $selectable.trigger("activated");
             }
@@ -209,15 +209,14 @@
 
         // Enter key; trigger the 'activated' event
         if (key == 13) {
-            focusedSelectable.trigger("activated");
+            jQuery(focusedSelectable).trigger("activated");
+			return false;
         }
         // Home key
         else if (key == 36) {
 
             focusedSelectable.clearSelection();
             var firstEntry = focusedSelectable._getEntries()[0];
-
-            console.log(firstEntry);
 
             if (multipleSelection && e.shiftKey) {
                 focusedSelectable.setRangeSelected(

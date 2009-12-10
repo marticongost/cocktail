@@ -70,18 +70,19 @@ cocktail.init(function (root) {
 
             jQuery(this).click(function (e) {
 
-                var element = e.srcElement;
+                var ele = (e.target || e.srcElement);
 
-                if (element.isButtonReplacement) {
+                if (ele.tagName == "BUTTON" && ele.isButtonReplacement) {
                     clearHidden();
-                    hidden = document.createElement("<input type='hidden' name='" + element.buttonName + "'>");
-                    hidden.value = element.buttonValue;
+                    hidden = document.createElement("<input type='hidden' name='" + ele.buttonName + "'>");
+                    hidden.value = ele.buttonValue;             
                     jQuery(form).append(hidden);
-                    jQuery(form).submit();
+                    jQuery(form).submit();                   
                 }
-                else if (element.tagName.toLowerCase() == "input" && element.type == "submit") {
+                else if (ele.tagName.toLowerCase() == "input" && ele.type == "submit") {
                     clearHidden();
                 }
+
             });
 
             jQuery("button[type=submit]", this).each(function () {
