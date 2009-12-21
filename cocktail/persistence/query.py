@@ -524,16 +524,16 @@ class Query(object):
 
         type_index = self.type.index
 
-        entries = [
-            (
-                id,
-                tuple(
-                    expr.eval(type_index[id], SchemaObjectAccessor)
-                    for expr in order_expressions
-                )
-            )
-            for id in dataset
-        ]
+        entries = []
+
+        for id in dataset:
+            sorting_values = []
+            for expr in order_expressions:
+                value = expr.eval(type_index[id], SchemaObjectAccessor)
+                if hasattr(value, "get_ordering_key"):
+                    value = value.get_ordering_key()
+                sorting_values.append(value)
+            entries.append([id, sorting_values])
 
         def compare(entry_a, entry_b):
             
