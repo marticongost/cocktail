@@ -13,6 +13,7 @@ from BTrees.IOBTree import IOBTree
 from cocktail import schema
 from cocktail.modeling import getter, OrderedSet
 from cocktail.events import Event, event_handler
+from cocktail.translations import translations
 from cocktail.schema import SchemaClass, SchemaObject, Reference, Collection
 from cocktail.schema.exceptions import ValidationError
 from cocktail.schema.expressions import (
@@ -420,6 +421,9 @@ class PersistentObject(SchemaObject, Persistent):
 
     def _should_index_member(self, member):
         return self.indexed and member.indexed
+
+    def get_ordering_key(self):
+        return translations(self)
 
 PersistentObject._translation_schema_metaclass = PersistentClass
 PersistentObject._translation_schema_base = PersistentObject
