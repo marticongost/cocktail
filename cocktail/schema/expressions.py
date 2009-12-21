@@ -163,6 +163,11 @@ class Expression(object):
     def is_not_instance(self, expr):
         return IsNotInstanceExpression(self, expr)
 
+    def descends_from(self, expr, relation, include_self = True):
+        return DescendsFromExpression(
+            self, expr, relation, include_self = include_self
+        )
+
 
 class Constant(Expression):
 
@@ -517,5 +522,65 @@ class IsNotInstanceExpression(IsInstanceExpression):
 
     def op(self, a, b):
         return not IsInstanceExpression.op(self, a, b)
+
+
+class DescendsFromExpression(Expression):
+
+    # The relation parameter always is the children relation.
+    def __init__(self, a, b, relation, include_self = True):
+        Expression.__init__(self, a, b)
+        self.relation = relation
+        self.include_self = include_self
+
+
+    def op(self, a, b):
+
+        if self.relation.bidirectional and (
+            not self.relation.related_end._many or not self.relation._many
+        ):
+            def find(root, target, relation, include_self):
+
+                if include_self and root == target:
+                    return True
+
+                item = root.get(relation)
+
+                while item is not None:
+                    if item is target:
+                        return True
+                    item = item.get(relation)
+
+                return False
+
+            if not self.relation.related_end._many:
+                return find(a, b, self.relation.related_end, self.include_self)
+            elif not self.relation._many:
+                return find(b, a, self.relation, self.include_self)
+
+        else:
+            def find(root, target, relation, include_self):
+
+                if include_self and root == target:
+                    return True
+
+                value = root.get(relation)
+
+                if not value:
+                    return False
+                else:
+                    if not relation._many:
+                        value = [value]
+
+                    if target in value:
+                        return True
+                    else:
+                        for v in value:
+                            result = find(v, target, relation, True)
+                            if result:
+                                return result
+
+                        return False
+
+            return find(b, a, self.relation, self.include_self)
 
 

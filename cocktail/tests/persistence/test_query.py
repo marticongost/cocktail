@@ -8,6 +8,7 @@ u"""
 """
 from unittest import TestCase
 from cocktail.tests.persistence.tempstoragemixin import TempStorageMixin
+from cocktail.language import set_content_language
 
 
 class MemberQueryTestCase(TempStorageMixin, TestCase):
@@ -773,6 +774,897 @@ class OrderTestCase(TempStorageMixin, TestCase):
         sorted_projects = list(Project.select(order = Project.review))
         assert sorted_projects == [p3, p1, p2]
 
+class TranslatedOrderTestCase(TempStorageMixin, TestCase):
+
+    def setUp(self):
+
+        TempStorageMixin.setUp(self)
+
+        from cocktail.schema import String, Integer
+        from cocktail.persistence import PersistentObject
+
+        class Product(PersistentObject):
+            product_name = String(
+                unique = True,
+                indexed = True,
+                required = True,
+                translated = True
+            )
+            category = String(
+                indexed = True, 
+                translated = True
+            )
+            subcategory = String(
+                indexed = True, 
+                translated = True
+            )
+            color = String(
+                translated = True
+            )
+            country = String(
+                translated = True
+            )
+            price = Integer(
+                indexed = True
+            )
+            weight = Integer()
+        
+        self.Product = Product
+
+    def match(self, results, *group):        
+        results_group = set(results.pop(0) for i in range(len(group)))
+        self.assertEqual(results_group, set(group))
+
+    def test_single_indexed_unique_translated_member(self):
+ 
+        a = self.Product()
+        a.set("product_name", u"Poma", "ca")
+        a.set("product_name", u"Apple", "en")
+        a.insert()
+
+        b = self.Product()
+        b.set("product_name", u"Formatge", "ca")
+        b.set("product_name", u"Cheese", "en")
+        b.insert()
+
+        c = self.Product()
+        c.set("product_name", u"Pernil", "ca")
+        c.set("product_name", u"Ham", "en")
+        c.insert()
+
+        d = self.Product()
+        d.set("product_name", u"Ous", "ca")
+        d.set("product_name", u"Eggs", "en")
+        d.insert()
+
+        e = self.Product()
+        e.set("product_name", u"Suc", "ca")
+        e.set("product_name", u"Juice", "en")
+        e.insert()
+
+        set_content_language("ca")
+
+        results = [product
+                   for product in self.Product.select(order = "product_name")]
+        assert [b, d, c, a, e] == results
+
+        results = [product
+                   for product in self.Product.select(order = "-product_name")]
+        assert [e, a, c, d, b] == results
+
+        set_content_language("en")
+
+        results = [product
+                   for product in self.Product.select(order = "product_name")]
+        assert [a, b, d, c, e] == results
+
+        results = [product
+                   for product in self.Product.select(order = "-product_name")]
+        assert [e, c, d, b, a] == results
+
+    def test_single_not_indexed_translated_member(self):
+
+        a = self.Product()
+        a.set("color", u"vermell", "ca")
+        a.set("color", u"red", "en")
+        a.insert()
+
+        b = self.Product()
+        b.set("color", u"verd", "ca")
+        b.set("color", u"green", "en")
+        b.insert()
+
+        c = self.Product()
+        c.set("color", u"blau", "ca")
+        c.set("color", u"blue", "en")
+        c.insert()
+
+        d = self.Product()
+        d.set("color", u"verd", "ca")
+        d.set("color", u"green", "en")
+        d.insert()
+
+        e = self.Product()
+        e.set("color", u"vermell", "ca")
+        e.set("color", u"red", "en")
+        e.insert()
+
+        f = self.Product()
+        f.set("color", u"blau", "ca")
+        f.set("color", u"blue", "en")
+        f.insert()
+
+        set_content_language("ca")
+
+        results = [product for product in self.Product.select(order = "color")]
+        self.match(results, c, f)
+        self.match(results, b, d)
+        self.match(results, a, e)
+
+        results = [product
+                   for product in self.Product.select(order = "-color")]
+        self.match(results, a, e)
+        self.match(results, b, d)
+        self.match(results, c, f)
+
+        set_content_language("en")
+
+        results = [product for product in self.Product.select(order = "color")]
+        self.match(results, c, f)
+        self.match(results, b, d)
+        self.match(results, a, e)
+
+        results = [product
+                   for product in self.Product.select(order = "-color")]
+        self.match(results, a, e)
+        self.match(results, b, d)
+        self.match(results, c, f)
+
+    def test_not_indexed_not_translated_vs_not_indexed_translated(self):
+
+        a = self.Product()
+        a.weight = 3
+        a.set("color", u"vermell", "ca")
+        a.set("color", u"red", "en")
+        a.insert()
+
+        b = self.Product()
+        b.weight = 4
+        b.set("color", u"verd", "ca")
+        b.set("color", u"green", "en")
+        b.insert()
+
+        c = self.Product()
+        c.weight = 4
+        c.set("color", u"groc", "ca")
+        c.set("color", u"yellow", "en")
+        c.insert()
+
+        d = self.Product()
+        d.weight = 3
+        d.set("color", u"verd", "ca")
+        d.set("color", u"green", "en")
+        d.insert()
+
+        e = self.Product()
+        e.weight = 1
+        e.set("color", u"groc", "ca")
+        e.set("color", u"yellow", "en")
+        e.insert()
+
+        f = self.Product()
+        f.weight = 7
+        f.set("color", u"vermell", "ca")
+        f.set("color", u"red", "en")
+        f.insert()
+
+        set_content_language("ca")
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("weight", "color"))]
+        
+        assert [e, d, a, c, b, f] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("weight", "-color"))]
+        
+        assert [e, a, d, b, c, f] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("-weight", "color"))]
+        
+        assert [f, c, b, d, a, e] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("-weight", "-color"))]
+        
+        assert [f, b, c, a, d, e] == results
+
+        set_content_language("en")
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("weight", "color"))]
+        
+        assert [e, d, a, b, c, f] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("weight", "-color"))]
+        
+        assert [e, a, d, c, b, f] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("-weight", "color"))]
+        
+        assert [f, b, c, d, a, e] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("-weight", "-color"))]
+        
+        assert [f, c, b, a, d, e] == results
+
+    def test_not_indexed_not_translated_vs_indexed_translated(self):
+
+        a = self.Product()
+        a.weight = 3
+        a.set("category", u"esports", "ca")
+        a.set("category", u"sports", "en")
+        a.insert()
+
+        b = self.Product()
+        b.weight = 4
+        b.set("category", u"fotografia", "ca")
+        b.set("category", u"photography", "en")
+        b.insert()
+
+        c = self.Product()
+        c.weight = 4
+        c.set("category", u"menjar", "ca")
+        c.set("category", u"food", "en")
+        c.insert()
+
+        d = self.Product()
+        d.weight = 3
+        d.set("category", u"fotografia", "ca")
+        d.set("category", u"photography", "en")
+        d.insert()
+
+        e = self.Product()
+        e.weight = 1
+        e.set("category", u"menjar", "ca")
+        e.set("category", u"food", "en")
+        e.insert()
+
+        f = self.Product()
+        f.weight = 7
+        f.set("category", u"esports", "ca")
+        f.set("category", u"sports", "en")
+        f.insert()
+
+        set_content_language("ca")
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("weight", "category"))]
+        
+        assert [e, a, d, b, c, f] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("weight", "-category"))]
+        
+        assert [e, d, a, c, b, f] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("-weight", "category"))]
+        
+        assert [f, b, c, a, d, e] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("-weight", "-category"))]
+        
+        assert [f, c, b, d, a, e] == results
+
+        set_content_language("en")
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("weight", "category"))]
+        
+        assert [e, d, a, c, b, f] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("weight", "-category"))]
+        
+        assert [e, a, d, b, c, f] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("-weight", "category"))]
+        
+        assert [f, c, b, d, a, e] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("-weight", "-category"))]
+        
+        assert [f, b, c, a, d, e] == results
+
+    def test_indexed_not_translated_vs_not_indexed_translated(self):
+
+        a = self.Product()
+        a.price = 3
+        a.set("color", u"vermell", "ca")
+        a.set("color", u"red", "en")
+        a.insert()
+
+        b = self.Product()
+        b.price = 4
+        b.set("color", u"verd", "ca")
+        b.set("color", u"green", "en")
+        b.insert()
+
+        c = self.Product()
+        c.price = 4
+        c.set("color", u"groc", "ca")
+        c.set("color", u"yellow", "en")
+        c.insert()
+
+        d = self.Product()
+        d.price = 3
+        d.set("color", u"verd", "ca")
+        d.set("color", u"green", "en")
+        d.insert()
+
+        e = self.Product()
+        e.price = 1
+        e.set("color", u"groc", "ca")
+        e.set("color", u"yellow", "en")
+        e.insert()
+
+        f = self.Product()
+        f.price = 7
+        f.set("color", u"vermell", "ca")
+        f.set("color", u"red", "en")
+        f.insert()
+
+        set_content_language("ca")
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("price", "color"))]
+        
+        assert [e, d, a, c, b, f] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("price", "-color"))]
+        
+        assert [e, a, d, b, c, f] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("-price", "color"))]
+        
+        assert [f, c, b, d, a, e] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("-price", "-color"))]
+        
+        assert [f, b, c, a, d, e] == results
+
+        set_content_language("en")
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("price", "color"))]
+        
+        assert [e, d, a, b, c, f] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("price", "-color"))]
+        
+        assert [e, a, d, c, b, f] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("-price", "color"))]
+        
+        assert [f, b, c, d, a, e] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("-price", "-color"))]
+        
+        assert [f, c, b, a, d, e] == results
+
+    def test_indexed_not_translated_vs_indexed_translated(self):
+
+        a = self.Product()
+        a.price = 3
+        a.set("category", u"esports", "ca")
+        a.set("category", u"sports", "en")
+        a.insert()
+
+        b = self.Product()
+        b.price = 4
+        b.set("category", u"fotografia", "ca")
+        b.set("category", u"photography", "en")
+        b.insert()
+
+        c = self.Product()
+        c.price = 4
+        c.set("category", u"menjar", "ca")
+        c.set("category", u"food", "en")
+        c.insert()
+
+        d = self.Product()
+        d.price = 3
+        d.set("category", u"fotografia", "ca")
+        d.set("category", u"photography", "en")
+        d.insert()
+
+        e = self.Product()
+        e.price = 1
+        e.set("category", u"menjar", "ca")
+        e.set("category", u"food", "en")
+        e.insert()
+
+        f = self.Product()
+        f.price = 7
+        f.set("category", u"esports", "ca")
+        f.set("category", u"sports", "en")
+        f.insert()
+
+        set_content_language("ca")
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("price", "category"))]
+        
+        assert [e, a, d, b, c, f] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("price", "-category"))]
+        
+        assert [e, d, a, c, b, f] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("-price", "category"))]
+        
+        assert [f, b, c, a, d, e] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("-price", "-category"))]
+        
+        assert [f, c, b, d, a, e] == results
+
+        set_content_language("en")
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("price", "category"))]
+        
+        assert [e, d, a, c, b, f] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("price", "-category"))]
+        
+        assert [e, a, d, b, c, f] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("-price", "category"))]
+        
+        assert [f, c, b, d, a, e] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("-price", "-category"))]
+        
+        assert [f, b, c, a, d, e] == results
+
+    def test_not_indexed_translated_vs_not_indexed_translated(self):
+
+        a = self.Product()
+        a.set("color", u"vermell", "ca")
+        a.set("color", u"red", "en")
+        a.set("country", u"espanya", "ca")
+        a.set("country", u"spain", "en")
+        a.insert()
+
+        b = self.Product()
+        b.set("color", u"verd", "ca")
+        b.set("color", u"green", "en")
+        b.set("country", u"espanya", "ca")
+        b.set("country", u"spain", "en")
+        b.insert()
+
+        c = self.Product()
+        c.set("color", u"groc", "ca")
+        c.set("color", u"yellow", "en")
+        c.set("country", u"anglaterra", "ca")
+        c.set("country", u"england", "en")
+        c.insert()
+
+        d = self.Product()
+        d.set("color", u"verd", "ca")
+        d.set("color", u"green", "en")
+        d.set("country", u"estats units", "ca")
+        d.set("country", u"united states", "en")
+        d.insert()
+
+        e = self.Product()
+        e.set("color", u"groc", "ca")
+        e.set("color", u"yellow", "en")
+        e.set("country", u"estats units", "ca")
+        e.set("country", u"united states", "en")
+        e.insert()
+
+        f = self.Product()
+        f.set("color", u"vermell", "ca")
+        f.set("color", u"red", "en")
+        f.set("country", u"anglaterra", "ca")
+        f.set("country", u"england", "en")
+        f.insert()
+
+        set_content_language("ca")
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("color", "country"))]
+        
+        assert [c, e, b, d, f, a] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("color", "-country"))]
+        
+        assert [e, c, d, b, a, f] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("-color", "country"))]
+        
+        assert [f, a, b, d, c, e] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("-color", "-country"))]
+        
+        assert [a, f, d, b, e, c] == results
+
+        set_content_language("en")
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("color", "country"))]
+        
+        assert [b, d, f, a, c, e] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("color", "-country"))]
+        
+        assert [d, b, a, f, e, c] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("-color", "country"))]
+        
+        assert [c, e, f, a, b, d] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("-color", "-country"))]
+        
+        assert [e, c, a, f, d, b] == results
+
+    def test_not_indexed_translated_vs_indexed_translated(self):
+
+        a = self.Product()
+        a.set("color", u"vermell", "ca")
+        a.set("color", u"red", "en")
+        a.set("category", u"esports", "ca")
+        a.set("category", u"sports", "en")
+        a.insert()
+
+        b = self.Product()
+        b.set("color", u"verd", "ca")
+        b.set("color", u"green", "en")
+        b.set("category", u"menjar", "ca")
+        b.set("category", u"food", "en")
+        b.insert()
+
+        c = self.Product()
+        c.set("color", u"groc", "ca")
+        c.set("color", u"yellow", "en")
+        c.set("category", u"menjar", "ca")
+        c.set("category", u"food", "en")
+        c.insert()
+
+        d = self.Product()
+        d.set("color", u"verd", "ca")
+        d.set("color", u"green", "en")
+        d.set("category", u"fotografia", "ca")
+        d.set("category", u"photography", "en")
+        d.insert()
+
+        e = self.Product()
+        e.set("color", u"groc", "ca")
+        e.set("color", u"yellow", "en")
+        e.set("category", u"esports", "ca")
+        e.set("category", u"sports", "en")
+        e.insert()
+
+        f = self.Product()
+        f.set("color", u"vermell", "ca")
+        f.set("color", u"red", "en")
+        f.set("category", u"fotografia", "ca")
+        f.set("category", u"photography", "en")
+        f.insert()
+
+        set_content_language("ca")
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("color", "category"))]
+        
+        assert [e, c, d, b, a, f] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("color", "-category"))]
+        
+        assert [c, e, b, d, f, a] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("-color", "category"))]
+        
+        assert [a, f, d, b, e, c] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("-color", "-category"))]
+        
+        assert [f, a, b, d, c, e] == results
+
+        set_content_language("en")
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("color", "category"))]
+        
+        assert [b, d, f, a, c, e] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("color", "-category"))]
+        
+        assert [d, b, a, f, e, c] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("-color", "category"))]
+        
+        assert [c, e, f, a, b, d] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("-color", "-category"))]
+        
+        assert [e, c, a, f, d, b] == results
+
+    def test_indexed_translated_vs_indexed_translated(self):
+
+        a = self.Product()
+        a.set("category", u"esports", "ca")
+        a.set("category", u"sports", "en")
+        a.set("subcategory", u"futbol", "ca")
+        a.set("subcategory", u"soccer", "en")
+        a.insert()
+
+        b = self.Product()
+        b.set("category", u"menjar", "ca")
+        b.set("category", u"food", "en")
+        b.set("subcategory", u"peix", "ca")
+        b.set("subcategory", u"fish", "en")
+        b.insert()
+
+        c = self.Product()
+        c.set("category", u"menjar", "ca")
+        c.set("category", u"food", "en")
+        c.set("subcategory", u"carn", "ca")
+        c.set("subcategory", u"meat", "en")
+        c.insert()
+
+        d = self.Product()
+        d.set("category", u"fotografia", "ca")
+        d.set("category", u"photography", "en")
+        d.set("subcategory", u"paisatge", "ca")
+        d.set("subcategory", u"landscape", "en")
+        d.insert()
+
+        e = self.Product()
+        e.set("category", u"esports", "ca")
+        e.set("category", u"sports", "en")
+        e.set("subcategory", u"esqui", "ca")
+        e.set("subcategory", u"ski", "en")
+        e.insert()
+
+        f = self.Product()
+        f.set("category", u"fotografia", "ca")
+        f.set("category", u"photography", "en")
+        f.set("subcategory", u"retrat", "ca")
+        f.set("subcategory", u"portrait", "en")
+        f.insert()
+
+        set_content_language("ca")
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("category", "subcategory"))]
+        
+        assert [e, a, d, f, c, b] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("category", "-subcategory"))]
+        
+        assert [a, e, f, d, b, c] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("-category", "subcategory"))]
+        
+        assert [c, b, d, f, e, a] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("-category", "-subcategory"))]
+        
+        assert [b, c, f, d, a, e] == results
+
+        set_content_language("en")
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("category", "subcategory"))]
+        
+        assert [b, c, d, f, e, a] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("category", "-subcategory"))]
+        
+        assert [c, b, f, d, a, e] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("-category", "subcategory"))]
+        
+        assert [e, a, d, f, b, c] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("-category", "-subcategory"))]
+        
+        assert [a, e, f, d, c, b] == results
+
+    def test_indexed_translated_vs_indexed_unique_translated(self):
+
+        a = self.Product()
+        a.set("category", u"esports", "ca")
+        a.set("category", u"sports", "en")
+        a.set("product_name", u"Poma", "ca")
+        a.set("product_name", u"Apple", "en")
+        a.insert()
+
+        b = self.Product()
+        b.set("category", u"menjar", "ca")
+        b.set("category", u"food", "en")
+        b.set("product_name", u"Formatge", "ca")
+        b.set("product_name", u"Cheese", "en")
+        b.insert()
+
+        c = self.Product()
+        c.set("category", u"menjar", "ca")
+        c.set("category", u"food", "en")
+        c.set("product_name", u"Pernil", "ca")
+        c.set("product_name", u"Ham", "en")
+        c.insert()
+
+        d = self.Product()
+        d.set("category", u"fotografia", "ca")
+        d.set("category", u"photography", "en")
+        d.set("product_name", u"Ous", "ca")
+        d.set("product_name", u"Eggs", "en")
+        d.insert()
+
+        e = self.Product()
+        e.set("category", u"esports", "ca")
+        e.set("category", u"sports", "en")
+        e.set("product_name", u"Suc", "ca")
+        e.set("product_name", u"Juice", "en")
+        e.insert()
+
+        f = self.Product()
+        f.set("category", u"fotografia", "ca")
+        f.set("category", u"photography", "en")
+        f.set("product_name", u"Carret", "ca")
+        f.set("product_name", u"Roll", "en")
+        f.insert()
+
+        set_content_language("ca")
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("category", "product_name"))]
+        
+        assert [a, e, f, d, b, c] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("category", "-product_name"))]
+        
+        assert [e, a, d, f, c, b] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("-category", "product_name"))]
+        
+        assert [b, c, f, d, a, e] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("-category", "-product_name"))]
+        
+        assert [c, b, d, f, e, a] == results
+
+        set_content_language("en")
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("category", "product_name"))]
+        
+        assert [b, c, d, f, a, e] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("category", "-product_name"))]
+        
+        assert [c, b, f, d, e, a] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("-category", "product_name"))]
+        
+        assert [a, e, d, f, b, c] == results
+
+        results = [product
+                   for product in self.Product.select(
+                       order = ("-category", "-product_name"))]
+        
+        assert [e, a, f, d, c, b] == results
+
+
 class RelationalQueriesTestCase(TempStorageMixin, TestCase):
            
     def setUp(self):
@@ -1131,4 +2023,209 @@ class RelationalQueriesTestCase(TempStorageMixin, TestCase):
         assert set(Category.select(
             IsNotInstanceExpression(Self, Category,is_inherited = False))
         ) == set([a, b, c, d])
+
+
+class DescendsFromTestCase(TempStorageMixin, TestCase):
+
+    def setUp(self):
+        TempStorageMixin.setUp(self)
+
+        from cocktail.schema import Reference, Collection
+        from cocktail.persistence import PersistentObject, datastore
+
+        datastore.root.clear()
+
+        class Document(PersistentObject):
+            parent = Reference(
+                bidirectional = True,
+                related_key = "children"
+            )
+            children = Collection(
+                bidirectional = True,
+                related_key = "parent"
+            )
+
+            extension = Reference(
+                bidirectional = True,
+                related_key = "extended"
+            )
+            extended = Reference(
+                bidirectional = True,
+                related_key = "extension"
+            )
+
+            improvement = Reference()
+            related_documents = Collection()
+
+        Document.extension.type = Document
+        Document.extended.type = Document
+        Document.parent.type = Document
+        Document.children.items = Reference(type = Document)
+        Document.improvement.type = Document
+        Document.related_documents.items = Reference(type = Document)
+
+        self.Document = Document
+
+    def test_descends_from_one_to_one_bidirectional(self):
+        from cocktail.schema.expressions import DescendsFromExpression, Self
+
+        a = self.Document()
+        b = self.Document()
+        c = self.Document()
+
+        a.extension = b
+        b.extension = c
+
+        a.insert()
+        b.insert()
+        c.insert()
+
+        assert set(self.Document.select(
+            Self.descends_from(a, self.Document.extension)
+        )) == set([a, b, c])
+        assert set(self.Document.select(
+            Self.descends_from(a, self.Document.extension, include_self = False)
+        )) == set([b, c])
+        assert set(self.Document.select(
+            Self.descends_from(b, self.Document.extension)
+        )) == set([b, c])
+        assert set(self.Document.select(
+            Self.descends_from(b, self.Document.extension, include_self = False)
+        )) == set([c])
+        assert set(self.Document.select(
+            Self.descends_from(c, self.Document.extension)
+        )) == set([c])
+        assert set(self.Document.select(
+            Self.descends_from(c, self.Document.extension, include_self = False)
+        )) == set([])
+
+    def test_descends_from_one_to_many_bidirectional(self):
+        from cocktail.schema.expressions import DescendsFromExpression, Self
+        
+        a = self.Document()
+        b = self.Document()
+        c = self.Document()
+        d = self.Document()
+        e = self.Document()
+
+        a.children = [b, c]
+        b.children = [d, e]
+
+        a.insert()
+        b.insert()
+        c.insert()
+        d.insert()
+        e.insert()
+
+        assert set(self.Document.select(
+            Self.descends_from(a, self.Document.children)
+        )) == set([a, b, c, d, e])
+        assert set(self.Document.select(
+            Self.descends_from(a, self.Document.children, include_self = False)
+        )) == set([b, c, d, e])
+        assert set(self.Document.select(
+            Self.descends_from(b, self.Document.children)
+        )) == set([b, d, e])
+        assert set(self.Document.select(
+            Self.descends_from(b, self.Document.children, include_self = False)
+        )) == set([d, e])
+        assert set(self.Document.select(
+            Self.descends_from(c, self.Document.children)
+        )) == set([c])
+        assert set(self.Document.select(
+            Self.descends_from(c, self.Document.children, include_self = False)
+        )) == set([])
+        assert set(self.Document.select(
+            Self.descends_from(d, self.Document.children)
+        )) == set([d])
+        assert set(self.Document.select(
+            Self.descends_from(d, self.Document.children, include_self = False)
+        )) == set([])
+
+    def test_descends_from_one_to_one(self):
+        from cocktail.schema.expressions import DescendsFromExpression, Self
+
+        a = self.Document()
+        b = self.Document()
+        c = self.Document()
+
+        a.improvement = b
+        b.improvement = c
+
+        a.insert()
+        b.insert()
+        c.insert()
+
+        assert set(self.Document.select(
+            Self.descends_from(a, self.Document.improvement)
+        )) == set([a, b, c])
+        assert set(self.Document.select(
+            Self.descends_from(
+                a, self.Document.improvement, include_self = False
+            )
+        )) == set([b, c])
+        assert set(self.Document.select(
+            Self.descends_from(
+                b, self.Document.improvement, include_self = False
+            )
+        )) == set([c])
+        assert set(self.Document.select(
+            Self.descends_from(c, self.Document.improvement)
+        )) == set([c])
+        assert set(self.Document.select(
+            Self.descends_from(
+                c, self.Document.improvement, include_self = False
+            )
+        )) == set([])
+
+    def test_descends_from_many_to_many(self):
+        from cocktail.schema.expressions import DescendsFromExpression, Self
+
+        a = self.Document()
+        b = self.Document()
+        c = self.Document()
+        d = self.Document()
+        e = self.Document()
+
+        a.related_documents = [b, c]
+        b.related_documents = [d, e]
+
+        a.insert()
+        b.insert()
+        c.insert()
+        d.insert()
+        e.insert()
+
+        assert set(self.Document.select(
+            Self.descends_from(a, self.Document.related_documents)
+        )) == set([a, b, c, d, e])
+        assert set(self.Document.select(
+            Self.descends_from(
+                a, self.Document.related_documents, include_self = False
+            )
+        )) == set([b, c, d, e])
+        assert set(self.Document.select(
+            Self.descends_from(b, self.Document.related_documents)
+        )) == set([b, d, e])
+        assert set(self.Document.select(
+            Self.descends_from(
+                b, self.Document.related_documents, include_self = False
+            )
+        )) == set([d, e])
+        assert set(self.Document.select(
+            Self.descends_from(c, self.Document.related_documents)
+        )) == set([c])
+        assert set(self.Document.select(
+            Self.descends_from(
+                c, self.Document.related_documents, include_self = False
+            )
+        )) == set([])
+        assert set(self.Document.select(
+            Self.descends_from(d, self.Document.related_documents)
+        )) == set([d])
+        assert set(self.Document.select(
+            Self.descends_from(
+                d, self.Document.related_documents, include_self = False
+            )
+        )) == set([])
 
