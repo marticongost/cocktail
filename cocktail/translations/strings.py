@@ -436,6 +436,19 @@ translations.define(
     en = u"Until"
 )
 
+translations.define(
+    "cocktail.controllers.userfilter.DescendsFromFilter-instance",
+    ca = u"Descendència",
+    es = u"Descendencia",
+    en = u"Descendancy"
+)
+
+translations.define("DescendsFromFilter.include_self",
+    ca = u"Arrel inclosa",
+    es = u"Raíz incluida",
+    en = u"Root included"
+)
+
 # Languages
 #------------------------------------------------------------------------------
 translations.define("ca",

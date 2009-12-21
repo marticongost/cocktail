@@ -75,6 +75,9 @@ class HandlerActivator(object):
             except cherrypy.HTTPRedirect: 
                 raise
 
+            except StopRequest:
+                raise
+
             # Custom error handlers
             except Exception, request_error:
                 for handler in reversed(visited):
