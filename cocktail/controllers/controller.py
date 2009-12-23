@@ -6,16 +6,15 @@ u"""
 @organization:	Whads/Accent SL
 @since:			October 2008
 """
+from warnings import warn
 import cherrypy
-import buffet
 from simplejson import dumps
 from cocktail.modeling import ListWrapper, cached_getter
 from cocktail.events import Event
 from cocktail.controllers.dispatcher import StopRequest, context
 from cocktail.controllers.parameters import FormSchemaReader
 from cocktail.controllers.requesthandler import RequestHandler
-
-_rendering_engines = {}
+from cocktail.controllers.renderingengines import get_rendering_engine
 
 
 class Controller(RequestHandler):
@@ -86,6 +85,15 @@ class Controller(RequestHandler):
     rendering_format_param = "format"
     allowed_rendering_formats = frozenset(["html", "xhtml", "json"])
 
+    def _get_rendering_engine(self, engine_name):
+        warn(
+            "Controller._get_rendering_engine() is deprecated, use "
+            "cocktail.controllers.renderingengines.get_rendering_engine() instead",
+            DeprecationWarning,
+            stacklevel = 2
+        )
+        return get_rendering_engine(engine_name)
+
     @cached_getter
     def rendering_format(self):
 
@@ -108,20 +116,7 @@ class Controller(RequestHandler):
             "rendering.engine",
             self.default_rendering_engine
         )
-        return self._get_rendering_engine(engine_name)
-        
-    def _get_rendering_engine(self, engine_name):
-
-        engine = _rendering_engines.get(engine_name)
-
-        if engine is None:
-            engine_type = buffet.available_engines[engine_name]
-            engine_options = \
-                cherrypy.request.config.get("rendering.engine_options")
-            engine = engine_type(options = engine_options)
-            _rendering_engines[engine_name] = engine
-
-        return engine
+        return get_rendering_engine(engine_name)
 
     @cached_getter
     def view_class(self):
