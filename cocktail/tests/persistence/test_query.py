@@ -696,6 +696,83 @@ class OrderTestCase(TempStorageMixin, TestCase):
         
         self.assertEqual([a, b], results)
 
+    def test_default_sorting_for_related_objects(self):
+
+        from cocktail import schema
+        from cocktail.persistence import PersistentObject
+
+        class Actor(PersistentObject):
+
+            first_name = schema.String()
+            last_name = schema.String()
+            movies = schema.Collection(bidirectional = True)
+
+            def __translate__(self, language, **kwargs):
+                return (self.last_name, self.first_name)
+        
+        class Movie(PersistentObject):
+
+            title = schema.String()
+            lead_actor = schema.Reference(bidirectional = True)
+            
+        Actor.movies.items = schema.Reference(type = Movie)
+        Movie.lead_actor.type = Actor
+
+        cn = Actor(first_name = u"Chuck", last_name = u"Norris")
+        df2 = Movie(title = u"Delta Force 2", lead_actor = cn)
+        cn.insert()
+        
+        vd = Actor(first_name = u"Jean Claude", last_name = u"Van Damme")
+        us = Movie(title = u"Universal Soldier", lead_actor = vd)
+        vd.insert()
+
+        cb = Actor(first_name = u"Charles", last_name = u"Bronson")
+        dw = Movie(title = u"Death Wish", lead_actor = cb)
+        cb.insert()
+
+        ss = Actor(first_name = u"Steven", last_name = u"Seagal")
+        htk = Movie(title = u"Hard to Kill", lead_actor = ss)
+        ss.insert()
+
+        sorted_movies = list(Movie.select(order = Movie.lead_actor))
+        assert sorted_movies == [dw, df2, htk, us]
+
+    def test_custom_sorting_for_related_objects(self):
+
+        from cocktail import schema
+        from cocktail.persistence import PersistentObject
+
+        class Review(PersistentObject):
+            points = schema.Integer()
+            project = schema.Reference(bidirectional = True)
+
+            def __translate__(self, language, **kwargs):
+                return str(self.points)
+
+            def get_ordering_key(self):
+                return self.points
+
+        class Project(PersistentObject):
+            title = schema.String()
+            review = schema.Reference(bidirectional = True)
+
+        Review.project.type = Project
+        Project.review.type = Review
+
+        p1 = Project(title = 'Project 1')
+        r1 = Review(points = 2, project = p1)
+        p1.insert()
+
+        p2 = Project(title = 'Project 2')
+        r2 = Review(points = 11, project = p2)
+        p2.insert()
+
+        p3 = Project(title = 'Project 3')
+        r3 = Review(points = 1, project = p3)
+        p3.insert()
+
+        sorted_projects = list(Project.select(order = Project.review))
+        assert sorted_projects == [p3, p1, p2]
 
 class TranslatedOrderTestCase(TempStorageMixin, TestCase):
 

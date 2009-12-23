@@ -44,6 +44,7 @@ class PropertyTable(Element, DataDisplay):
 
             if self.group_by_type and current_schema is not prev_schema:
                 type_table = Element("table")
+                type_table.add_class(current_schema.name+"-group")
                 type_table.add_class("type_group")
                 type_table.set_client_param("groupSchema", current_schema.name)
                 self.append(type_table)
