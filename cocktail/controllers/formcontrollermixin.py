@@ -38,8 +38,13 @@ class FormControllerMixin(object):
         if form_model is None:
             raise ValueError("Form model missing")
         
+        form_adapter = self.form_adapter
+
+        if not form_adapter.has_rules():
+            return form_model
+
         form_schema = schema.Schema(form_model.name + "Form")
-        self.form_adapter.export_schema(form_model, form_schema)
+        form_adapter.export_schema(form_model, form_schema)
         return form_schema
 
     @cached_getter
