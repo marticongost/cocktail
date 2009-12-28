@@ -299,6 +299,12 @@ class Adapter(object):
         @type: function
         """)
 
+    def has_rules(self):
+        """Indicates if the adapter defines one or more import or export rules.
+        @rtype: bool
+        """
+        return self.export_rules.rules or self.import_rules.rules
+
     def copy(self,
         mapping,
         export_transform = None,
