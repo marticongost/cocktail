@@ -225,7 +225,7 @@ class Adapter(object):
         self.import_rules.copy_validations = copy_validations
         self.export_rules.copy_validations = copy_validations
 
-    copy_validatioons = property(_get_copy_validations, _set_copy_validations,
+    copy_validations = property(_get_copy_validations, _set_copy_validations,
         doc = """Indicates if validations from the source schema and members
         should be added to adapted schemas and members.
 
