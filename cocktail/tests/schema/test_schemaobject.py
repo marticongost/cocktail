@@ -227,6 +227,26 @@ class AttributeTestCase(TestCase):
         self.assertEqual(foo.bar, "Default bar")
         self.assertEqual(foo.spam, None)
 
+    def test_per_class_defaults(self):
+
+        from cocktail.schema import SchemaObject, String, DynamicDefault
+
+        class Foo(SchemaObject):
+            x = String(default = "foo")
+            y = String()
+
+        class Bar(Foo):
+            default_x = "bar"
+            default_y = DynamicDefault(lambda: "bar!")
+
+        foo = Foo()
+        assert foo.x == "foo"
+        assert not foo.y
+
+        bar = Bar()
+        assert bar.x == "bar"
+        assert bar.y == "bar!"
+
     def test_get_set(self):
 
         from cocktail.schema import Schema, SchemaObject, String, Integer

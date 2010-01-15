@@ -193,14 +193,25 @@ class Member(Variable):
         @type: L{Expression<cocktail.schema.expressions.Expression>}
         """)
 
-    def produce_default(self):
+    def produce_default(self, instance = None):
         """Generates a default value for the member. Can be overridden (ie. to
         produce dynamic default values).
+
+        @param instance: The instance that the default is produced for.
+        @type instance: object
+
+        @return: The resulting default value.
+        @rtype: object
         """
-        if isinstance(self.default, DynamicDefault):
-            return self.default()
+        if instance is not None and self.name:
+            default = getattr(instance, "default_" + self.name, self.default)
         else:
-            return self.default
+            default = self.default
+
+        if isinstance(default, DynamicDefault):
+            return default()
+        else:
+            return default
 
     def copy(self):
         """Creates a deep, unbound copy of the member.
