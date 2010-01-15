@@ -93,7 +93,7 @@ class Schema(Member):
                 if member.translated:
                     continue
 
-                value = member.produce_default()
+                value = member.produce_default(instance)
 
             accessor.set(instance, name, value)
 
