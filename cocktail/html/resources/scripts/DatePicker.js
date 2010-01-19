@@ -59,7 +59,9 @@ cocktail.init(function (root) {
                 
                 jQuery("form").submit( function () {
                     jQuery(".DatePicker", this).each(function () {
-                        this.value = this.value + " " + this.timeBox.value;
+                        if (this.hasTime) {
+                            this.value = this.value + " " + this.timeBox.value;
+                        }
                         jQuery(this.timeBox).removeAttr('name');
                     });
                 });
