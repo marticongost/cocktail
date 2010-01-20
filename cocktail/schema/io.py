@@ -137,10 +137,8 @@ def export_msexcel(collection, dest, schema, members):
         elif isinstance(value, (list, set, ListWrapper, SetWrapper)):
             return "\n".join(get_cell_content(member, item)
                             for item in value)
-        elif not member.translated:
-            return translations(value, default = unicode(value))
         else:
-            return unicode(value)
+            return member.translate_value(value)
 
     if isinstance(schema, Schema):
         # Column headers
