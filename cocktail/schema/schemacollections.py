@@ -162,16 +162,19 @@ class Collection(RelationMember):
         @type: int
         """)
 
-    def produce_default(self):
-        if self.default is None and self.required:
+    def produce_default(self, instance = None):
+
+        default = Member.produce_default(self, instance)
+
+        if default is None and self.required:
             if self.type is not None:
-                return self.type()
+                default = self.type()
             else:
                 default_type = self.default_type
                 if default_type is not None:
-                    return default_type()
+                    default = default_type()
         
-        return Member.produce_default(self)
+        return default
 
     def _get_default_type(self):
         if self._default_type is None:
