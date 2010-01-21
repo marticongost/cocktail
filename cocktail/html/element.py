@@ -471,17 +471,20 @@ class Element(object):
         else:
             return self.__resource_uris
 
-    def add_resource(self, resource):
+    def add_resource(self, resource, mime_type = None):
         
         # Normalize the resource
         if isinstance(resource, basestring):
             uri = resource
-            resource = Resource.from_uri(uri)
+            resource = Resource.from_uri(uri, mime_type)
         else:
             uri = resource.uri
             
             if uri is None:
                 raise ValueError("Can't add a resource without a defined URI.")
+
+            if mime_type:
+                resource.mime_type = mime_type
 
         if self.__resources is None:
             self.__resources = [resource]
