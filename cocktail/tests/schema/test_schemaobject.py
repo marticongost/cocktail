@@ -147,6 +147,21 @@ class ExtensionTestCase(TestCase):
         Foo.add_member(String("bar", default = "Bar!"))
         self.assertEqual(foo.bar, "Bar!")
 
+    def test_retroactive_per_class_defaults(self):
+
+        from cocktail.schema import SchemaObject, String
+
+        class Foo(SchemaObject):
+            pass
+
+        class Bar(Foo):
+            pass
+            
+        bar = Bar()
+        Foo.add_member(String("spam", default = "Foo!"))
+        Bar.default_spam = "Bar!"
+        self.assertEqual(bar.spam, "Bar!")
+
 
 class AttributeTestCase(TestCase):
 
