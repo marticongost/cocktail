@@ -229,7 +229,7 @@ class SchemaClass(EventHub, Schema):
                 value = getattr(target, self.__priv_key, undefined)
 
                 if value is undefined:
-                    value = self.member.produce_default()
+                    value = self.member.produce_default(instance)
                     self.__set__(
                         instance,
                         value,
