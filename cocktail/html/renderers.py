@@ -45,10 +45,19 @@ class Renderer(object):
         self.__after_rendering = []
 
     def make_page(self, element):
+        
         from cocktail.html.page import Page
+
         page = Page()
         page.doctype = self.doctype
         page.body.append(element)
+
+        if element.page_content_type:
+            page.content_type = element.page_content_type
+
+        if element.page_charset:
+            page.charset = element.page_charset
+
         return page
 
     def before_element_rendered(self, handler):

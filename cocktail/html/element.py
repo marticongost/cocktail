@@ -21,6 +21,8 @@ class Element(object):
     
     tag = "div"
     page_title = None
+    page_charset = None
+    page_content_type = None
     styled_class = False
     scripted = True
     styled = True
@@ -134,7 +136,7 @@ class Element(object):
         return renderer.make_page(self)
 
     def render_page(self, renderer = None):
-        
+
         if not renderer:
             renderer = self._get_default_renderer()
         
