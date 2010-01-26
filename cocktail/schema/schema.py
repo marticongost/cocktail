@@ -77,7 +77,7 @@ class Schema(Member):
                 self.members_order = [member.name for member in members]
 
             self.expand(members)
-    
+            
     def init_instance(self, instance, values = None, accessor = None):
         
         if accessor is None:
@@ -144,7 +144,7 @@ class Schema(Member):
         if include_self:
             yield self
 
-    def add_member(self, member):
+    def add_member(self, member, append = False, after = None, before = None):
         """Adds a new member to the schema.
 
         @param member: The member to add.
@@ -155,6 +155,32 @@ class Schema(Member):
         """
         self._check_member(member)
         self._add_member(member)
+        
+        if append or after or before:
+
+            if ((1 if append else 0)
+              + (1 if after else 0)
+              + (1 if before else 0) > 1):
+
+                raise ValueError(
+                    "Can't combine the 'append', 'after' or 'before' "
+                    "parameters when calling Schema.add_member()"
+                )
+
+            if self.members_order is None:
+                self.members_order = []
+            elif not isinstance(self.members_order, list):
+                self.members_order = list(self.members_order)
+
+            if append:
+                self.members_order.append(member)
+            elif after:
+                pos = self.members_order.index(after)
+                self.members_order.insert(pos + 1, member)
+            else:
+                pos = self.members_order.index(before)
+                self.members_order.insert(pos, member)
+        
         member.attached()
         self.member_added(member = member)
 
