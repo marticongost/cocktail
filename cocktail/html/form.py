@@ -199,15 +199,29 @@ class Form(Element, DataDisplay):
         return fieldset
 
     def get_fieldset_label(self, group):        
-        def tr(schema):
-            return schema \
-                and schema.name \
-                and translations(schema.name + "." + group.id)
         
-        return tr(self.schema) \
-            or tr(self.schema.adaptation_source) \
-            or (self.persistent_object
-                and tr(self.persistent_object.__class__))
+        group_id = group.id
+
+        def get_label(cls):
+            if cls.name:
+                label = translations(cls.name + "." + group_id)
+                if label:
+                    return label
+
+            for base in cls.bases:
+                label = get_label(base)
+                if label:
+                    return label
+        
+        for cls in (
+            self.schema,
+            self.schema.adaptation_source,
+            self.persistent_object and self.persistent_object.__class__
+        ):
+            if cls:
+                label = get_label(cls)
+                if label:
+                    return label
 
     def create_field(self, member):
 
