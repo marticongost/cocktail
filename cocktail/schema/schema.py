@@ -43,7 +43,7 @@ class Schema(Member):
     """
     primary_member = None
     members_order = None
-    groups_order = None
+    groups_order = []
     integral = False
 
     member_added = Event("""
