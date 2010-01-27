@@ -9,6 +9,7 @@ u"""
 from cocktail.modeling import getter
 from cocktail.pkgutils import import_object
 from cocktail.translations import translations
+from cocktail.schema.schema import Schema
 from cocktail.schema.schemarelations import RelationMember
 from cocktail.schema.accessors import get_accessor, get
 from cocktail.schema.expressions import HasExpression
@@ -34,6 +35,8 @@ class Reference(RelationMember):
     def translate_value(self, value, language = None, **kwargs):
         if value is None:
             return u""
+        elif isinstance(value, Schema) and value.name:
+            return translations(value.name, language, **kwargs)
         else:
             return translations(value, language, **kwargs)
 
