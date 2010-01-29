@@ -101,10 +101,11 @@ class PersistentClass(SchemaClass):
         if value is not None:
 
             validable = cls._get_unique_validable(context)
-            
+
             if isinstance(validable, PersistentObject):
+                pschema = member.original_member.schema
                 if member.translated:
-                    duplicates = list(validable.__class__.select(
+                    duplicates = list(pschema.select(
                         validable.__class__.get_member(member.name)
                         .translated_into(context["language"])
                         .equal(value)
@@ -112,7 +113,7 @@ class PersistentClass(SchemaClass):
                     duplicate = duplicates[0] if duplicates else None
                 else:
                     params = {member.name: value}
-                    duplicate = validable.__class__.get_instance(**params)
+                    duplicate = pschema.get_instance(**params)
 
                 if duplicate and duplicate is not validable:
                     yield UniqueValueError(member, value, context)
