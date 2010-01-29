@@ -50,6 +50,60 @@ class ValidationTestCase(TestCase):
                     in error_attributes.iteritems():
                         assert getattr(error, attrib_key) == attrib_value
 
+
+class DuplicatedValidationsTestCase(TestCase):
+
+    def test_duplicated_validations(self):
+
+        from cocktail.schema import Member
+
+        def a(): pass
+        def b(): pass
+
+        m = Member()
+        m.add_validation(a)
+        m.add_validation(b)
+        v1 = list(m.validations())
+        m.add_validation(a)
+        v2 = list(m.validations())
+        assert v1 == v2
+
+    def test_add_duplicated_validation_to_derived_schema(self):
+
+        from cocktail.schema import Schema
+
+        def a(): pass
+
+        s1 = Schema()
+        s1.add_validation(a)
+        
+        s2 = Schema()
+        s2.inherit(s1)
+        v1 = list(s2.validations())
+        s2.add_validation(a)
+        v2 = list(s2.validations())
+         
+        assert v1 == v2
+
+    def test_add_duplicated_validation_to_base_schema(self):
+
+        from cocktail.schema import Schema
+
+        def a(): pass
+
+        s1 = Schema()
+        
+        s2 = Schema()
+        s2.inherit(s1)
+        s2.add_validation(a)
+
+        v1 = list(s2.validations())
+        s1.add_validation(a)
+        v2 = list(s2.validations())
+                
+        assert v1 == v2    
+
+
 class MemberValidationTestCase(ValidationTestCase):
     
     def test_required(self):
@@ -104,7 +158,89 @@ class MemberValidationTestCase(ValidationTestCase):
             ["coconut", "watermelon", "banana"],
             exceptions.EnumerationError
         )
+
+
+class InheritedValidationsTestCase(TestCase):
+
+    def _add_error(self, schema):
+        
+        from cocktail.schema.exceptions import ValidationError
+
+        def validation(member, validable, context):
+            yield ValidationError(schema, validable, context)
+
+        schema.add_validation(validation)
+
+    def test_single_inheritance(self):
+
+        from cocktail.schema import Schema
+
+        base = Schema()
+        self._add_error(base)
+
+        derived = Schema()
+        derived.inherit(base)
     
+        errors = list(derived.get_errors({}))
+        assert len(errors) == 1
+        assert errors[0].member == base
+
+    def test_base_isolation(self):
+
+        from cocktail.schema import Schema
+
+        base = Schema()
+
+        derived = Schema()
+        self._add_error(derived)
+        derived.inherit(base)
+    
+        assert not list(base.get_errors({}))
+
+    def test_multiple_inheritance(self):
+
+        from cocktail.schema import Schema
+
+        base1 = Schema()
+        self._add_error(base1)
+
+        base2 = Schema()
+        self._add_error(base2)
+
+        derived = Schema()
+        derived.inherit(base1)
+        derived.inherit(base2)
+    
+        errors = list(derived.get_errors({}))
+        assert len(errors) == 2
+        assert errors[0].member == base1
+        assert errors[1].member == base2
+
+    def test_deep_inheritance(self):
+
+        from cocktail.schema import Schema
+
+        s1 = Schema()
+        self._add_error(s1)
+
+        s2 = Schema()
+        s2.inherit(s1)
+        self._add_error(s2)
+
+        s3 = Schema()
+        s3.inherit(s2)
+        self._add_error(s3)
+
+        s4 = Schema()
+        s4.inherit(s3)
+            
+        errors = list(s4.get_errors({}))
+        assert len(errors) == 3
+        assert errors[0].member == s1
+        assert errors[1].member == s2
+        assert errors[2].member == s3
+
+
 class StringValidationTestCase(ValidationTestCase):
 
     def test_min(self):

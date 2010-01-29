@@ -10,7 +10,7 @@ Provides the base class for all schema members.
 from itertools import chain
 from copy import deepcopy
 from cocktail.events import Event, EventHub
-from cocktail.modeling import ListWrapper
+from cocktail.modeling import ListWrapper, OrderedSet
 from cocktail.pkgutils import import_object
 from cocktail.translations import translations
 from cocktail.schema import exceptions
@@ -96,7 +96,7 @@ class Member(Variable):
     def __init__(self, name = None, doc = None, **kwargs):
         self._name = None
         self._schema = None
-        self._validations = []
+        self._validations = OrderedSet()
         self._validations_wrapper = ListWrapper(self._validations)
         self.add_validation(Member.member_validation_rule)
         self.original_member = self
@@ -324,10 +324,9 @@ class Member(Variable):
         if context is None:
             context = ValidationContext(self, value, **context_params)
 
-        if self._validations:
-            for validation in self._validations:
-                for error in validation(self, value, context):
-                    yield error
+        for validation in self.validations():
+            for error in validation(self, value, context):
+                yield error
 
     @classmethod
     def resolve_constraint(cls, expr, context):
