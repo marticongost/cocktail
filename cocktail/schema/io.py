@@ -9,6 +9,7 @@ Provides a method to export collections to different mime_types.
 """
 import os
 import pyExcelerator
+from decimal import Decimal
 from cocktail.schema import Schema
 from cocktail.modeling import ListWrapper, SetWrapper
 from cocktail.translations import translations
@@ -137,6 +138,10 @@ def export_msexcel(collection, dest, schema, members):
         elif isinstance(value, (list, set, ListWrapper, SetWrapper)):
             return "\n".join(get_cell_content(member, item)
                             for item in value)
+        elif isinstance(value, (int, float)):
+            return value
+        elif isinstance(value, Decimal):
+            return float(value)
         else:
             return member.translate_value(value)
 
