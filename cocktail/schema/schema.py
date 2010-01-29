@@ -11,7 +11,8 @@ from cocktail.modeling import (
     empty_dict,
     empty_list,
     ListWrapper,
-    DictWrapper
+    DictWrapper,
+    OrderedSet
 )
 from cocktail.events import Event
 from cocktail.schema.member import Member
@@ -366,7 +367,7 @@ class Schema(Member):
         """        
         if self.__bases:
 
-            validations = []
+            validations = OrderedSet()
 
             def descend(schema):
 
@@ -394,28 +395,26 @@ class Schema(Member):
             or context.get("accessor", None) \
             or get_accessor(validable)
 
-        if self.__members:
-            
-            context.enter(self, validable)
-            
-            try:
-                for name, member in self.members().iteritems():
- 
-                    if member.translated:
-                        for value in self.translated_member_values(
-                            member,
-                            validable,
-                            context,
-                            accessor):
-                                for error in member.get_errors(value, context):
-                                    yield error
-                    else:
-                        value = accessor.get(validable, name, default = None)
+        context.enter(self, validable)
 
-                        for error in member.get_errors(value, context):
-                            yield error
-            finally:
-                context.leave()
+        try:
+            for name, member in self.members().iteritems():
+
+                if member.translated:
+                    for value in self.translated_member_values(
+                        member,
+                        validable,
+                        context,
+                        accessor):
+                            for error in member.get_errors(value, context):
+                                yield error
+                else:
+                    value = accessor.get(validable, name, default = None)
+
+                    for error in member.get_errors(value, context):
+                        yield error
+        finally:
+            context.leave()
 
     def translated_member_values(
         self,
