@@ -10,6 +10,7 @@ Provides a mix-in class for controllers that read schema based objects.
 import cherrypy
 from cocktail.modeling import getter, cached_getter
 from cocktail import schema
+from cocktail.persistence import PersistentClass
 from cocktail.controllers.controller import Controller
 from cocktail.controllers.parameters import get_parameter
 
@@ -180,10 +181,22 @@ class FormControllerMixin(object):
         @type: L{ErrorList<cocktail.schema.errorlist.ErrorList>}
         """
         return schema.ErrorList(
-            self.form_schema.get_errors(self.form_data)
+            self.form_schema.get_errors(
+                self.form_data,
+                **self.form_validation_context
+            )
             if self.submitted
             else ()
         )
+
+    @cached_getter
+    def form_validation_context(self):
+        context = {}
+
+        if isinstance(self.form_model, PersistentClass):
+            context["persistent_object"] = self.form_instance
+
+        return context
 
     @cached_getter
     def submitted(self):
