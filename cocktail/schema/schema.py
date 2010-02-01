@@ -502,6 +502,41 @@ class Schema(Member):
 
         return ordered_members
 
+    def ordered_groups(self, recursive = True):
+        """Gets a list containing all the member groups defined by the schema,
+        in order.
+
+        @param recursive: Indicates if the returned list should contain groups
+            defined by base schemas.
+        @type recursive: bool
+
+        @return: The list of groups defined by the schema, in order.
+        @rtype: str list
+        """
+        ordered_groups = []
+        visited = set()
+
+        def collect(schema):
+            if schema.groups_order:
+                for group in schema.groups_order:
+                    if group not in visited:
+                        visited.add(group)
+                        ordered_groups.append(group)
+
+            for member in schema.ordered_members(recursive = False):
+                group = member.member_group
+                if group and group not in visited:
+                    visited.add(group)
+                    ordered_groups.append(group)
+
+            if recursive:
+                if schema.__bases:
+                    for base in schema.__bases:
+                        collect(base)
+
+        collect(self)
+        return ordered_groups
+
     def grouped_members(self, recursive = True):
         """Returns the groups of members defined by the schema.
         
@@ -523,24 +558,17 @@ class Schema(Member):
                 group_members = []
                 members_by_group[member.member_group] = group_members
             group_members.append(member)
-
-        if self.groups_order:
-            groups = []
-            default_group_ordered = False
-
-            for group_name in self.groups_order:
-                group_members = members_by_group.get(group_name)
-                if group_name is None:
-                    default_group_ordered = True
-                if group_members:
-                    groups.append((group_name, group_members))
             
-            if not default_group_ordered:
-                group_members = members_by_group.get(None)
-                if group_members:
-                    groups.insert(0, (None, group_members))
-        else:
-            groups = members_by_group.items()
- 
+        groups = []
+
+        for group_name in self.ordered_groups(recursive):
+            group_members = members_by_group.get(group_name)
+            if group_members:
+                groups.append((group_name, group_members))
+        
+        ungroupped_members = members_by_group.get(None)
+        if ungroupped_members:
+            groups.insert(0, (None, ungroupped_members))
+         
         return groups
 
