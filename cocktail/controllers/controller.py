@@ -137,7 +137,7 @@ class Controller(RequestHandler):
 
         return renderer()
            
-    def _render_template(self):
+    def _render_template(self, format):
 
         view_class = self.view_class
 
@@ -147,16 +147,16 @@ class Controller(RequestHandler):
             output["successful"] = self.successful
             return self.rendering_engine.render(
                             output,
-                            format = self.rendering_format,
+                            format,
                             template = view_class)
         else:
             return ""
 
     def render_html(self):
-        return self._render_template()
+        return self._render_template("html")
 
     def render_xhtml(self):
-        return self._render_template()
+        return self._render_template("xhtml")
 
     def render_json(self):
         cherrypy.response.headers["Content-Type"] = "text/plain"
