@@ -68,5 +68,7 @@ if sys.platform in supported_platforms:
 
 else:
     def styled(string, foreground = None, background = None, style = None):
+        if not isinstance(string, basestring):
+            string = str(string)
         return string
 
