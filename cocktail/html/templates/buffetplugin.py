@@ -27,7 +27,8 @@ class CocktailBuffetPlugin(object):
         """Find a template specified in python 'dot' notation, or load one from
         a string."""
         if template_string is not None:
-            return templates.loader.compile(templatename, template_string)
+            loader = templates.get_loader()
+            return loader.compile(templatename, template_string)
         else:
             return templates.get_class(templatename)
 
