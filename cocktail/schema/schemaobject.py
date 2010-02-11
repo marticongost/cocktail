@@ -50,6 +50,7 @@ class SchemaClass(EventHub, Schema):
         cls.full_name = members.get("full_name") or get_full_name(cls)
         cls.__derived_schemas = []
         cls.members_order = members.get("members_order")
+        cls.groups_order = members.get("groups_order")
         
         # Inherit base schemas
         for base in bases:

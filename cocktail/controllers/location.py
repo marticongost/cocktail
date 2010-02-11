@@ -59,13 +59,13 @@ class Location(object):
         return location
 
     @classmethod
-    def get_current(cls):
+    def get_current(cls, relative = True):
         
         request = cherrypy.request
         query_string = get_state()
 
         location = cls().get_current_host()
-        location.relative = True
+        location.relative = relative
         location.method = request.method
         location.path_info = request.path_info        
         location.query_string.update(query_string)
