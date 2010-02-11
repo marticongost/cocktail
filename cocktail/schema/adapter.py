@@ -400,18 +400,29 @@ class RuleSet(object):
 
         # Preserve member order
         target_members = target_schema.members()
-        target_order = []
+        members_order = []
         ordered_members = set()
 
         for source_member in source_schema.ordered_members():
             for target_member in target_members.itervalues():
                 if target_member.adaptation_source is source_member \
                 and target_member not in ordered_members:
-                    target_order.append(target_member.name)
+                    members_order.append(target_member.name)
                     ordered_members.add(target_member)
 
-        target_schema.groups_order = source_schema.groups_order
-        target_schema.members_order = target_order
+        target_schema.members_order = members_order
+
+        # Preserve group order
+        target_groups = set(
+            target_member.member_group
+            for target_member in target_members.itervalues()
+            if target_member.member_group
+        )
+        target_schema.groups_order = [
+            group
+            for group in source_schema.ordered_groups()
+            if group in target_groups
+        ]
 
     def adapt_object(self,
         source_object,
