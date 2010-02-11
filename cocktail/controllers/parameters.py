@@ -10,6 +10,7 @@ import decimal
 import time
 import datetime
 import cherrypy
+from cherrypy.lib import http
 from string import strip
 from cocktail import schema
 from cocktail.persistence import PersistentClass
@@ -682,6 +683,9 @@ class CookieParameterSource(object):
                         cherrypy.response.cookie[cookie_name] = ""
                         response_cookie = cherrypy.response.cookie[cookie_name]
                         response_cookie["max-age"] = 0
+                        response_cookie["expires"] = http.HTTPDate(                                                                                                                                            
+                            time.time() - (60 * 60 * 24 * 365)
+                        )
                         response_cookie["path"] = self.cookie_path
 
                 # Restore a persisted value
