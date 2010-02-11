@@ -56,6 +56,7 @@ class PropertyTable(Element, DataDisplay):
                 type_table.append(container)
                 
             entry = self.create_entry(index, member)
+            setattr(self, member.name + "_member", entry)
             container.append(entry)
 
             prev_schema = current_schema
