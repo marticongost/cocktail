@@ -67,7 +67,7 @@ class Location(object):
         location = cls().get_current_host()
         location.relative = relative
         location.method = request.method
-        location.path_info = request.path_info        
+        location.path_info = request.path_info.decode("utf-8")
         location.query_string.update(query_string)
         location.form_data.update(
             (key, value)

@@ -9,7 +9,7 @@ u"""
 from threading import local
 from contextlib import contextmanager
 from warnings import warn
-from cocktail.modeling import DictWrapper
+from cocktail.modeling import DictWrapper, ListWrapper
 from cocktail.pkgutils import get_full_name
 
 _thread_data = local()
@@ -172,4 +172,29 @@ def ca_possessive(text):
         return u"d'" + text
     else:
         return u"de " + text
+
+def create_join_function(language, sep1, sep2):
+
+    def join(sequence):
+        if not isinstance(sequence, (list, ListWrapper)):
+            sequence = list(sequence)
+
+        if len(sequence) > 1:
+            return sep1.join(sequence[:-1]) + sep2 + sequence[-1]
+        else:
+            return sequence[0]
+
+    join.func_name = language + "_join"
+    return join
+
+ca_join = create_join_function("ca", u", ", u" i ")
+es_join = create_join_function("es", u", ", u" y ")
+en_join = create_join_function("en", u", ", u" and ")
+de_join = create_join_function("en", u", ", u" und ")
+
+def plural2(count, singular, plural):
+    if count == 1:
+        return singular
+    elif count > 1:
+        return plural
 

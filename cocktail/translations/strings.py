@@ -12,7 +12,11 @@ from decimal import Decimal
 from cocktail.pkgutils import get_full_name
 from cocktail.translations.translation import (
     translations,
-    ca_possessive
+    ca_possessive,
+    ca_join,
+    es_join,
+    en_join,
+    plural2
 )
 from cocktail.schema.expressions import PositiveExpression
 
@@ -297,6 +301,60 @@ translations.define("datetime-instance",
         _date_instance_es(instance, style) + instance.strftime(" %H:%M:%S"),
     en = lambda instance, style = DATE_STYLE_NUMBERS:
         _date_instance_en(instance, style) + instance.strftime(" %H:%M:%S")
+)
+
+def _create_time_span_function(language, span_format, forms, join):
+
+    def time_span(span):
+
+        # Without days
+        if len(span) == 4:
+            return span_format % span[:-1]
+        
+        # With days
+        else:
+            desc = []
+            
+            for value, form in zip(span, forms):
+                if value:
+                    desc.append("%d %s" % (value, plural2(value, *form)))
+
+            return join(desc)
+
+    time_span.func_name = language + "_time_span"
+    return time_span
+
+translations.define("time span",
+    ca = _create_time_span_function(
+        "ca",
+        "%.2d.%.2d.%2d", 
+        [[u"dia", u"dies"],
+         [u"hora", u"hores"],
+         [u"minut", u"minuts"],
+         [u"segon", u"segons"],
+         [u"mil·lisegon", u"mil·lisegons"]],
+        ca_join
+    ),
+    es = _create_time_span_function(
+        "es",
+        "%.2d:%.2d:%2d", 
+        [[u"día", u"días"],
+         [u"hora", u"horas"],
+         [u"minuto", u"minutos"],
+         [u"segundo", u"segundos"],
+         [u"milisegundo", u"milisegundos"]],
+        es_join
+    ),
+    en = _create_time_span_function(
+        "en",
+        "%.2d:%.2d:%2d", 
+        [[u"day", u"days"],
+         [u"hour", u"hours"],
+         [u"minute", u"minutes"],
+         [u"second", u"seconds"],
+         [u"millisecond", u"milliseconds"]],
+        en_join
+    )
 )
 
 # html.FilterBox

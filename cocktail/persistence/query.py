@@ -27,6 +27,11 @@ query_phase_style = lambda t: " " * 4 + styled(t, style = "underline")
 query_eval_style = (
     lambda expr: " " * 4 + styled("Eval:", "magenta") + str(expr)
 )
+query_initial_dataset_style = (
+    lambda dataset:
+        " " * 4 + "Initial dataset: "
+        + styled(len(dataset), style = "bold")
+)
 query_resolve_style = (
     lambda expr: " " * 4 + styled("Resolve:", "bright_green") + str(expr)
 )
@@ -346,6 +351,9 @@ class Query(object):
     def _apply_filters(self, dataset):
  
         type_index = self.type.index
+        
+        if self.verbose:
+            print query_initial_dataset_style(dataset)
 
         for expr, custom_impl in self._get_execution_plan(self.__filters):
 
