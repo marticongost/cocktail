@@ -12,6 +12,7 @@ from calendar import monthrange
 from cocktail.schema.schema import Schema
 from cocktail.schema.rangedmember import RangedMember
 from cocktail.schema.schemanumbers import Integer
+from cocktail.translations import translations
 
 def get_max_day(context):
 
@@ -79,11 +80,13 @@ class DateTime(BaseDateTime):
     type = datetime.datetime
     _is_date = True
     _is_time = True
+    translate_value = translations
 
 
 class Date(BaseDateTime):
     type = datetime.date
     _is_date = True
+    translate_value = translations
 
 
 class Time(BaseDateTime):
