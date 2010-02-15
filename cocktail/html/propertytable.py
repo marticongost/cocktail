@@ -17,7 +17,6 @@ class PropertyTable(Element, DataDisplay):
 
     tag = "table"
     translations = None
-    group_by_type = True
 
     def __init__(self, *args, **kwargs):
         DataDisplay.__init__(self)
@@ -26,77 +25,53 @@ class PropertyTable(Element, DataDisplay):
     def _ready(self):
         Element._ready(self)
 
-        container = self
-        prev_schema = None
+        for group, members in self.displayed_members_by_group:
+            tbody = self.create_group(group, members)
+            if group:
+                setattr(self, group + "_group", tbody)
+            self.append(tbody)
 
-        if self.group_by_type:
+    def create_group(self, group, members):
+        tbody = Element("tbody")
+        
+        if group:
+            tbody.add_class(group + "_group")
+            tbody.header_row = self.create_group_header(group)
+            tbody.append(tbody.header_row)
+        
+        for i, member in enumerate(members):            
+            member_row = self.create_member_row(member)
+            member_row.add_class("even" if i % 2 else "odd")
+            setattr(self, member.name + "_member", member_row)
+            tbody.append(member_row)
 
-            self.add_resource("/cocktail/scripts/jquery.cookie.js")
-            self.add_resource("/cocktail/scripts/PropertyTable.js")
+        return tbody
 
-            if self.tag == "table":
-                self.tag = "div"
+    def create_group_header(self, group):
+        row = Element("tr")
+        row.add_class("group_header")
+        th = Element("th")
+        th["colspan"] = 2
+        th.append(self.get_group_label(group))
+        row.append(th)
+        return row
+    
+    def create_member_row(self, member):
 
-        for index, member in enumerate(self.displayed_members):
-            
-            current_schema = member.adaptation_source.schema \
-                if member.adaptation_source else member.schema
-
-            if self.group_by_type and current_schema is not prev_schema:
-                type_table = Element("table")
-                type_table.add_class(current_schema.name+"-group")
-                type_table.add_class("type_group")
-                type_table.set_client_param("groupSchema", current_schema.name)
-                self.append(type_table)
-                         
-                type_header = self.create_type_header(current_schema)
-                type_table.append(type_header)
-
-                container = self.create_type_container(current_schema)
-                type_table.append(container)
-                
-            entry = self.create_entry(index, member)
-            setattr(self, member.name + "_member", entry)
-            container.append(entry)
-
-            prev_schema = current_schema
-
-    def create_type_header(self, schema):
-        header = Element("thead")
-        header.add_class("type_header")
-        cell = Element("th")
-        cell["colspan"] = "2"
-        cell.append(self.get_type_header_label(schema))
-        header.append(cell)
-        return header
-
-    def get_type_header_label(self, schema):
-        return translations(schema.name)
-
-    def create_type_container(self, schema):
-        return Element("tbody")
-
-    def create_entry(self, index, member):
-
-        entry = Element("tr")
-        entry.add_class("member_entry")
-        entry.add_class("member_%s_entry" % member.name)
-
-        if index % 2 == 0:
-            entry.add_class("odd")
-        else:
-            entry.add_class("even")
-
+        row = Element("tr")
+        row.add_class("member_row")
+        row.add_class(member.name + "_member")
+        
         label = self.create_label(member)
-        entry.append(label)
+        row.append(label)
 
         if member.translated:
-            entry.add_class("translated")
-            entry.append(self.create_translated_values(member))
+            row.add_class("translated")
+            row.append(self.create_translated_values(member))
         else:
-            entry.append(self.create_value(member))
+            row.append(self.create_value(member))
 
-        return entry
+        return row
 
     def create_label(self, member):
         label = Element("th")
@@ -131,6 +106,4 @@ class PropertyTable(Element, DataDisplay):
             language_row.append(language_value_cell)            
 
         return cell
-        
-        raise ValueError("Not implemented")
 
