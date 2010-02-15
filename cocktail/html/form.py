@@ -132,7 +132,7 @@ class Form(Element, DataDisplay):
         if self.schema and self.generate_fields:
 
             if not self.__groups:
-                schema_groups = self.schema.grouped_members()
+                schema_groups = self.displayed_members_by_group
                 if len(schema_groups) > 1:
                     for group_name, members in schema_groups:
                         self.add_group(
@@ -184,10 +184,12 @@ class Form(Element, DataDisplay):
     
     def create_fieldset(self, group):
 
-        fieldset = Element("fieldset")        
-        fieldset.add_class(group.id)
+        group_id = group.id
 
-        label = self.get_fieldset_label(group)
+        fieldset = Element("fieldset") 
+        fieldset.add_class(group_id)
+
+        label = self.get_group_label(group_id)
         if label:            
             fieldset.legend = Element("legend")
             fieldset.legend.append(label)
@@ -197,31 +199,6 @@ class Form(Element, DataDisplay):
             fieldset.add_class("anonymous")
 
         return fieldset
-
-    def get_fieldset_label(self, group):        
-        
-        group_id = group.id
-
-        def get_label(cls):
-            if cls.name:
-                label = translations(cls.name + "." + group_id)
-                if label:
-                    return label
-
-            for base in cls.bases:
-                label = get_label(base)
-                if label:
-                    return label
-        
-        for cls in (
-            self.schema,
-            self.schema.adaptation_source,
-            self.persistent_object and self.persistent_object.__class__
-        ):
-            if cls:
-                label = get_label(cls)
-                if label:
-                    return label
 
     def create_field(self, member):
 
