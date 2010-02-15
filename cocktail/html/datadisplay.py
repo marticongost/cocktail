@@ -91,6 +91,24 @@ class DataDisplay(object):
                 for member in self.schema.ordered_members(True)
                 if self.get_member_displayed(member))
 
+    @getter
+    def displayed_members_by_group(self):
+        if not self.schema:
+            return empty_list
+        else:
+            members_by_group = []
+
+            for group, group_members in self.schema.grouped_members():
+                displayed_members = [
+                    member
+                    for member in group_members
+                    if self.get_member_displayed(member)
+                ]
+                if displayed_members:
+                    members_by_group.append((group, displayed_members))
+
+            return members_by_group
+
     def get_member_name(self, member, language = None):
         name = member.name
 
@@ -173,6 +191,30 @@ class DataDisplay(object):
         @type label: unicode
         """
         self.__member_labels[self._normalize_member(member)] = label
+
+    def get_group_label(self, group):
+
+        if self.schema:
+            def get_label(cls):
+                if cls.name:
+                    label = translations(cls.name + "." + group)
+                    if label:
+                        return label
+
+                for base in cls.bases:
+                    label = get_label(base)
+                    if label:
+                        return label
+            
+            for cls in (
+                self.schema,
+                self.schema.adaptation_source,
+                self.persistent_object and self.persistent_object.__class__
+            ):
+                if cls:
+                    label = get_label(cls)
+                    if label:
+                        return label
 
     def get_member_editable(self, member):
         """Indicates if the given member should be editable by users. This
