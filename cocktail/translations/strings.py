@@ -269,7 +269,7 @@ def _date_instance_es(instance, style = DATE_STYLE_NUMBERS):
             translations(u"month %s %s" % (instance.month,"abbr"), "es"),
             instance.year)
     if style == DATE_STYLE_TEXT :
-        return u"%s %s %s" % \
+        return u"%s de %s de %s" % \
             (instance.day,
             translations(u"month %s" % (instance.month), "es"),
             instance.year)
