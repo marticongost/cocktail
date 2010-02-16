@@ -6,7 +6,18 @@ u"""
 @organization:	Whads/Accent SL
 @since:			December 2008
 """
+from os import listdir
+from os.path import join, isdir
 from setuptools import setup, find_packages
+
+def rglob(base, path, patterns):
+    composite = []
+    for pattern in patterns:
+        composite.append(join(path, pattern))
+    for name in listdir(join(base, path)):
+        if isdir(join(base, path, name)):
+            composite.extend(rglob(base, join(path, name), patterns))
+    return composite
 
 setup(
     name = "cocktail",
@@ -23,8 +34,11 @@ setup(
         "selenium",
         "pyExcelerator"
     ],
-    include_package_data = True,
     packages = find_packages(),
+    package_data = {
+        "cocktail.html": 
+            ["*.cml"] + rglob("cocktail/html", "resources/", ["*.*"])
+    },
 
     # Cocktail can't yet access view resources (images, style sheets, client
     # side scripts, etc) that are packed inside a zipped egg, so distribution
