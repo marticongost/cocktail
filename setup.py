@@ -36,6 +36,7 @@ setup(
     ],
     packages = find_packages(),
     package_data = {
+        "": ["COPYRIGHT", "LICENSE"],
         "cocktail.html": 
             ["*.cml"] + rglob("cocktail/html", "resources/", ["*.*"])
     },
