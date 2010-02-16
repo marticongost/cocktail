@@ -6,8 +6,6 @@ u"""
 @organization:	Whads/Accent SL
 @since:			December 2008
 """
-from os import listdir
-from os.path import join, isdir
 from setuptools import setup, find_packages
 
 setup(
@@ -46,6 +44,7 @@ setup(
         "pyExcelerator"
     ],
     packages = find_packages(),
+    include_package_data = True,
 
     # Cocktail can't yet access view resources (images, style sheets, client
     # side scripts, etc) that are packed inside a zipped egg, so distribution
