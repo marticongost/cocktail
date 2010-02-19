@@ -7,6 +7,7 @@ u"""
 @since:			June 2008
 """
 from cocktail.modeling import getter
+from cocktail.events import event_handler
 from cocktail.pkgutils import import_object
 from cocktail.translations import translations
 from cocktail.schema.schema import Schema
@@ -58,6 +59,11 @@ class Reference(RelationMember):
             filters.append(self.related_type[key].equal(value))
 
         return HasExpression(self, filters)
+
+    @event_handler
+    def handle_attached_as_orphan(cls, event):
+        member = event.source
+        member.type = member.related_end.schema
 
     # Validation
     #--------------------------------------------------------------------------
