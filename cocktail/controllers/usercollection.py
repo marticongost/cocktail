@@ -40,6 +40,7 @@ class UserCollection(object):
     default_page_size = 15
     selection_mode = MULTIPLE_SELECTION
     available_languages = ()
+    default_order = None
 
     allow_type_selection = True
     allow_member_selection = True
@@ -285,6 +286,9 @@ class UserCollection(object):
 
                     if member:
                         order.append(sign(member))
+
+        if not order and self.default_order:
+            order = self.default_order
 
         return ListWrapper(order)
     
