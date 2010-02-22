@@ -274,7 +274,11 @@ class Table(Element, CollectionDisplay):
                     (column.name, language)
                 )
 
-                if current_direction is not None:
+                if current_direction is not None \
+                and not (
+                    self.user_collection
+                    and not self.user_collection.allow_sorting
+                ):
                     header.add_class("sorted")
 
                     if current_direction is PositiveExpression:
@@ -296,8 +300,14 @@ class Table(Element, CollectionDisplay):
     def create_cell(self, item, column, language = None):
         cell = Element("td")
 
-        if self.order \
-        and (column.name, language) in self._sorted_columns:
+        if (
+            self.order
+            and (column.name, language) in self._sorted_columns
+            and not (
+                self.user_collection
+                and not self.user_collection.allow_sorting
+            )
+        ):
             cell.add_class("sorted")
 
         self._init_cell(cell, column, language)
