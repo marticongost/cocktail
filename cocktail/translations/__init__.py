@@ -16,8 +16,12 @@ from cocktail.translations.translation import (
     translations,
     translate,
     ca_apostrophe,
-    ca_possessive
+    ca_possessive,
+    plural2,
+    ca_join,
+    es_join,
+    en_join,
+    de_join
 )
-
 from cocktail.translations import strings
 
