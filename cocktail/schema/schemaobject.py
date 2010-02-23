@@ -191,6 +191,13 @@ class SchemaClass(EventHub, Schema):
 
         cls.translation.__module__ = cls.__module__
 
+    def remove_member(self, member):
+        Schema.remove_member(self, member)
+
+        # Remove the member descriptor
+        delattr(self, member.name)
+
+
     def schema_tree(cls):
         yield cls
         for child in cls.__derived_schemas:

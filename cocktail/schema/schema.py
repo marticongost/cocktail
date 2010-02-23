@@ -255,9 +255,6 @@ class Schema(Member):
         member._schema = None
         del self.__members[member.name]
 
-        # Remove the member descriptor
-        delattr(self, member.name)
-
     def members(self, recursive = True):
         """A dictionary with all the members defined by the schema and its
         bases.
