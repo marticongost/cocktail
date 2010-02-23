@@ -154,28 +154,31 @@ class Table(Element, CollectionDisplay):
         row = Element("tr")
         row.add_class("group")
         
-        cell = Element("td", colspan = "0", children = [
-            Element("span",
-                class_name = "grouping_value",
-                children = [
-                    self.grouping.translate_grouping_value(group)
-                    or self.translate_value(
-                        self.data,
-                        self.grouping.member,
-                        group
-                    )
-                ]
-            ),
-            Element("span",
-                class_name = "grouping_member",
-                children = [self._grouping_member_translation]
-            ),
-            Element("a",
-                href = u"?" + view_state(grouping = "", page = 0),
-                class_name = "remove_grouping",
-                children = [self._remove_grouping_translation]
-            )
-        ])
+        cell = Element("td",
+            colspan = len(self.head_row.children),
+            children = [
+                Element("span",
+                    class_name = "grouping_value",
+                    children = [
+                        self.grouping.translate_grouping_value(group)
+                        or self.translate_value(
+                            self.data,
+                            self.grouping.member,
+                            group
+                        )
+                    ]
+                ),
+                Element("span",
+                    class_name = "grouping_member",
+                    children = [self._grouping_member_translation]
+                ),
+                Element("a",
+                    href = u"?" + view_state(grouping = "", page = 0),
+                    class_name = "remove_grouping",
+                    children = [self._remove_grouping_translation]
+                )
+            ]
+        )
         row.append(cell)
         
         return row
