@@ -1249,7 +1249,7 @@ class Content(Element):
     def substantial(self):
         return self.visible and unicode(self.value).strip()
 
-    def _render(self, render, out):
+    def _render(self, renderer, out):
         self.ready()
         if self.value is not None:
             out(unicode(self.value))
