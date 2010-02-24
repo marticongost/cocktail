@@ -11,9 +11,12 @@ cocktail.init(function (root) {
         }
 
         // Selection controls
-        var table = jQuery(".Table", this).get(0);
+        var display = jQuery(".collection_display", this).get(0);
 
-        if (table && this.hasResults) {
+        if (display
+            && this.hasResults
+            && display.selectableParams
+            && display.selectableParams.mode != cocktail.NO_SELECTION) {
             
             var selectionControls = document.createElement("div");
             selectionControls.className = "selection_controls";
@@ -31,7 +34,7 @@ cocktail.init(function (root) {
             selectAllControl.appendChild(document.createTextNode(
                 cocktail.translate("cocktail.html.CollectionView select all")
             ));
-            jQuery(selectAllControl).click(function () { table.selectAll(); });
+            jQuery(selectAllControl).click(function () { display.selectAll(); });
             selectionControls.appendChild(selectAllControl);
 
             // Clear selection
@@ -40,7 +43,7 @@ cocktail.init(function (root) {
             clearSelectionControl.appendChild(document.createTextNode(
                 cocktail.translate("cocktail.html.CollectionView clear selection")
             ));
-            jQuery(clearSelectionControl).click(function () { table.clearSelection(); });
+            jQuery(clearSelectionControl).click(function () { display.clearSelection(); });
             selectionControls.appendChild(clearSelectionControl);
         }
     });

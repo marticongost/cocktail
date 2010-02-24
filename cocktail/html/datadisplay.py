@@ -280,7 +280,7 @@ class DataDisplay(object):
     def get_member_value(self, obj, member, language = None):
         
         translated = member.translated
-        expr = self.__member_expressions.get(member)
+        expr = self.get_member_expression(member)
 
         if translated and language is None:
             language = require_content_language()
