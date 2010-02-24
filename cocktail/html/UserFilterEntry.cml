@@ -4,7 +4,8 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:py="http://www.whads.com/ns/cocktail/templates"
     py:name_prefix="filter_"
-    py:required_marks="$(False)">
+    py:required_marks="${False}"
+    py:generate_groups="${False}">
     
     <?py-class
     def create_language_display(self, obj, member):
