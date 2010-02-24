@@ -670,6 +670,9 @@ class CookieParameterSource(object):
                 cherrypy.response.cookie[cookie_name] = cookie_value
                 response_cookie = cherrypy.response.cookie[cookie_name]
                 response_cookie["max-age"] = self.cookie_duration
+                response_cookie["expires"] = http.HTTPDate(
+                    time.time() + self.cookie_duration
+                )
                 response_cookie["path"] = self.cookie_path
         else:
             request_cookie = cherrypy.request.cookie.get(cookie_name)
