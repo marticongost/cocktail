@@ -54,6 +54,12 @@ class Form(Element, DataDisplay):
         default behavior; When set to False, filling the form will be left to
         the client code.
     @type generate_fields: bool
+
+    @var generate_groups: Indicates if the form should automatically create the
+        same field groups defined by its assigned schema. This is the default
+        behavior; When set to False, only groups explicitly defined by the
+        client code will be taken into account.
+    @type generate_groups: bool
     """
 
     tag = "form"
@@ -66,6 +72,7 @@ class Form(Element, DataDisplay):
     table_layout = False
     default_button = None
     generate_fields = True
+    generate_groups = True
 
     def __init__(self, *args, **kwargs):
         DataDisplay.__init__(self)
@@ -130,7 +137,7 @@ class Form(Element, DataDisplay):
     def _fill_fields(self):
         if self.schema and self.generate_fields:
 
-            if not self.__groups:
+            if not self.__groups and self.generate_groups:
                 schema_groups = self.displayed_members_by_group
                 if len(schema_groups) > 1:
                     for group_name, members in schema_groups:

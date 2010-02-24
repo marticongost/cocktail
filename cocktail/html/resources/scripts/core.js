@@ -151,7 +151,7 @@ cocktail.translate = function (key, params) {
         }
         else if (params) {
             for (var i in params) {
-                translation = translation.replace(new RegExp("%(" + i + ")s"), params[i]);
+                translation = translation.replace(new RegExp("%\\(" + i + "\\)s"), params[i]);
             }
         }
     }
