@@ -38,13 +38,17 @@ class Table(Element, CollectionDisplay):
     entry_selector = "tbody tr"
     checkbox_selector = "td.selection input"
     resizable_rows_selector = "tbody tr"
+    __split_rows = None
 
     def __init__(self, *args, **kwargs):
-        Element.__init__(self, *args, **kwargs)
         CollectionDisplay.__init__(self)
         self.__column_display = {}
         self.__column_labels = {}
         self.set_member_type_display(Collection, self.display_collection)
+        self.__split_rows = {}
+        self.__split_row_values = {}
+        self.__split_row_iterators = {}
+        Element.__init__(self, *args, **kwargs)
         self.add_class("resizable")
 
     def _build(self):
@@ -144,7 +148,51 @@ class Table(Element, CollectionDisplay):
 
             row = self.create_row(i, item)
             self.append(row)
+            self._add_split_rows(item, row)
             self._row_added(i, item, row)
+
+    def _add_split_rows(self, item, row):
+
+        if not self.__split_rows:
+            return
+        
+        row_span = 1
+        end = False
+        i = 0
+
+        while not end:
+            extra_row = Element("tr")
+            has_content = False
+            
+            i += 1
+            if i > 100:
+                raise Exception("Damn")
+
+            for column in self.displayed_members:
+                key = column.name
+                iterator = self.__split_row_iterators.get(key)
+                cell = None
+
+                if iterator is not None:
+                    try:
+                        self.__split_row_values[key] = iterator.next()
+                    except StopIteration:
+                        end = True
+                    else:
+                        cell = self.create_cell(item, column)
+                        has_content = True
+                
+                if cell is not None:
+                    extra_row.append(cell)
+
+            if has_content:
+                self.append(extra_row)
+                row_span += 1
+
+        for cell in row.children:            
+            if cell.member is None \
+            or cell.member.name not in self.__split_rows:
+                cell["rowspan"] = row_span
 
     def _row_added(self, index, item, row):
         pass
@@ -154,33 +202,40 @@ class Table(Element, CollectionDisplay):
         row = Element("tr")
         row.add_class("group")
         
-        cell = Element("td", colspan = "0", children = [
-            Element("span",
-                class_name = "grouping_value",
-                children = [
-                    self.grouping.translate_grouping_value(group)
-                    or self.translate_value(
-                        self.data,
-                        self.grouping.member,
-                        group
-                    )
-                ]
-            ),
-            Element("span",
-                class_name = "grouping_member",
-                children = [self._grouping_member_translation]
-            ),
-            Element("a",
-                href = u"?" + view_state(grouping = "", page = 0),
-                class_name = "remove_grouping",
-                children = [self._remove_grouping_translation]
-            )
-        ])
+        cell = Element("td",
+            colspan = len(self.head_row.children),
+            children = [
+                Element("span",
+                    class_name = "grouping_value",
+                    children = [
+                        self.grouping.translate_grouping_value(group)
+                        or self.translate_value(
+                            self.data,
+                            self.grouping.member,
+                            group
+                        )
+                    ]
+                ),
+                Element("span",
+                    class_name = "grouping_member",
+                    children = [self._grouping_member_translation]
+                ),
+                Element("a",
+                    href = u"?" + view_state(grouping = "", page = 0),
+                    class_name = "remove_grouping",
+                    children = [self._remove_grouping_translation]
+                )
+            ]
+        )
         row.append(cell)
         
         return row
 
     def create_row(self, index, item):
+        
+        self.__split_row_iterators.clear()
+        self.__split_row_values.clear()
+
         row = Element("tr")
         row.add_class(index % 2 == 0 and "odd" or "even")
         
@@ -199,10 +254,38 @@ class Table(Element, CollectionDisplay):
                     row.append(cell)
                 set_content_language(current_content_language)
             else:
+                key = column.name
+                sequence_factory = self.__split_rows.get(key)
+
+                if sequence_factory is not None:
+                    iterator = iter(sequence_factory(item))
+                    self.__split_row_iterators[key] = iterator
+                    
+                    try:
+                        value = iterator.next()
+                    except StopIteration:
+                        value = None
+
+                    self.__split_row_values[key] = value
+
                 cell = self.create_cell(item, column)
                 row.append(cell)
         
         return row
+
+    def split_rows(self, member, sequence_factory, parent = None):
+
+        if parent is not None:
+            raise RuntimeError("Nesting split rows not implemented yet")
+
+        if not isinstance(member, basestring):
+            member = member.name
+
+        self.__split_rows[member] = sequence_factory
+        self.set_member_expression(
+            member,
+            lambda item: self.__split_row_values[member]
+        )
 
     def get_item_id(self, item):
         pm = self.schema.primary_member
@@ -316,6 +399,7 @@ class Table(Element, CollectionDisplay):
         return cell
 
     def _init_cell(self, cell, column, language = None):
+        cell.member = column
         cell.add_class(column.name + "_column")
 
         if language:
