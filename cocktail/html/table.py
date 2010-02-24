@@ -40,7 +40,6 @@ class Table(Element, CollectionDisplay):
     resizable_rows_selector = "tbody tr"
 
     def __init__(self, *args, **kwargs):
-        Element.__init__(self, *args, **kwargs)
         CollectionDisplay.__init__(self)
         self.__column_display = {}
         self.__column_labels = {}
@@ -319,6 +318,7 @@ class Table(Element, CollectionDisplay):
         return cell
 
     def _init_cell(self, cell, column, language = None):
+        cell.member = column
         cell.add_class(column.name + "_column")
 
         if language:
