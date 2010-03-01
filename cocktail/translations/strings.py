@@ -271,7 +271,7 @@ def _date_instance_es(instance, style = DATE_STYLE_NUMBERS):
     if style == DATE_STYLE_TEXT :
         return u"%s de %s de %s" % \
             (instance.day,
-            translations(u"month %s" % (instance.month), "es"),
+            translations(u"month %s" % (instance.month), "es").lower(),
             instance.year)
 
 def _date_instance_en(instance, style = DATE_STYLE_NUMBERS):
