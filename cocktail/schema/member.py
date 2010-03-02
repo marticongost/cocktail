@@ -1,11 +1,6 @@
 #-*- coding: utf-8 -*-
 u"""
 Provides the base class for all schema members.
-
-@author:		Martí Congost
-@contact:		marti.congost@whads.com
-@organization:	Whads/Accent SL
-@since:			March 2008
 """
 from itertools import chain
 from copy import deepcopy
@@ -17,14 +12,6 @@ from cocktail.schema import exceptions
 from cocktail.schema.expressions import Expression, Variable
 from cocktail.schema.validationcontext import ValidationContext
 from cocktail.schema.accessors import get_accessor
-
-class DynamicDefault(object):
-
-    def __init__(self, factory):
-        self.factory = factory
-
-    def __call__(self):
-        return self.factory()
 
 
 class Member(Variable):
@@ -39,24 +26,27 @@ class Member(Variable):
     This class acts mostly as an abstract type, used as a base by all the
     different kinds of members that can comprise a schema.
 
-    @ivar default: The default value for the member.
+    .. attribute:: default
     
-    @ivar required: Determines if the field requires a value. When set to true,
-        a value of None for this member will trigger a validation error of type
-        L{ValueRequiredError<exceptions.ValueRequiredError>}.
-    @type required: bool
+        The default value for the member.
     
-    @ivar require_none: Determines if the field disallows any value other than
-        None.  When set to true, a value different than None for this member
-        will trigger a validation error of type
-        L{NoneRequiredError<exceptions.NoneRequiredError>}.
-    @type require_none: bool
+    .. attribute:: required
+    
+        Determines if the field requires a value. When set to true, a value of
+        None for this member will trigger a validation error of type
+        `exceptions.ValueRequiredError`.
 
-    @ivar enumeration: Establishes a limited set of acceptable values for the
-        member. If a member with this constraint is given a value not found
-        inside the set, an L{EnumerationError<exceptions.EnumerationError>}
-        error will be triggered.
-    @type enumeration: any container
+    .. attribute:: require_none
+
+        Determines if the field disallows any value other than None.  When set
+        to true, a value different than None for this member will trigger a
+        validation error of type `exceptions.NoneRequiredError`.
+    
+    .. attribute:: enumeration
+
+        Establishes a limited set of acceptable values for the member. If a
+        member with this constraint is given a value not found inside the set,
+        an `exceptions.EnumerationError` error will be triggered.
     """
     __metaclass__ = EventHub
 
@@ -136,11 +126,10 @@ class Member(Variable):
         
         self._name = value
 
-    name = property(_get_name, _set_name, doc = """
-        The name that uniquely identifies the member on the schema it is bound
-        to. Once set it can't be changed (trying to do so will raise a
-        L{MemberRenamedError} exception).
-        @type: str
+    name = property(_get_name, _set_name, doc = 
+        """The name that uniquely identifies the member on the schema it is
+        bound to. Once set it can't be changed (trying to do so will raise a
+        `exceptions.MemberRenamedError` exception).
         """)
 
     def _get_schema(self):
@@ -153,10 +142,10 @@ class Member(Variable):
 
         self._schema = value
 
-    schema = property(_get_schema, _set_schema, doc = """
-        The schema that the member is bound to. Once set it can't be changed
-        (trying to do so will raise a L{MemberReacquiredError} exception).
-        @type: L{Schema<schema.Schema>}
+    schema = property(_get_schema, _set_schema, doc = 
+        """The `schema <Schema>` that the member is bound to. Once set it can't
+        be changed (doing so will raise a `exceptions.MemberReacquiredError`
+        exception).
         """)
 
     def _get_type(self):
@@ -170,12 +159,17 @@ class Member(Variable):
     def _set_type(self, type):
         self.__type = type
 
-    type = property(_get_type, _set_type, doc = """
-        Imposes a data type constraint on the member. All values assigned to
+    type = property(_get_type, _set_type, doc =
+        """Imposes a data type constraint on the member. All values assigned to
         this member must be instances of the specified data type. Breaking this
         restriction will produce a validation error of type
-        L{TypeCheckError<exceptions.TypeCheckError>}.
-        @type type: type or str
+        `exceptions.TypeCheckError`.
+        
+        The value for this constraint can take either a reference to a type
+        object or a fully qualified python name. When set using a name, the
+        indicated type will be imported lazily, the first time the value for
+        this constraint is requested. This can be helpful in avoiding circular
+        references between schemas.
         """)
 
     def _set_exclusive(self, expr):
@@ -186,22 +180,22 @@ class Member(Variable):
         else:
             self.require_none = lambda ctx: not expr(ctx)
 
-    exclusive = property(None, _set_exclusive, doc = """
-        A write only property that eases the definition of members that should
-        be required or empty depending on a condition and its negation,
+    exclusive = property(None, _set_exclusive, doc =
+        """A write only property that eases the definition of members that
+        should be required or empty depending on a condition and its negation,
         respectively.
-        @type: L{Expression<cocktail.schema.expressions.Expression>}
+
+        Should be set to a dynamic expression (a callable object, or an
+        instance of `expressions.Expression`).
         """)
 
     def produce_default(self, instance = None):
         """Generates a default value for the member. Can be overridden (ie. to
         produce dynamic default values).
 
-        @param instance: The instance that the default is produced for.
-        @type instance: object
+        :param instance: The instance that the default is produced for.
 
-        @return: The resulting default value.
-        @rtype: object
+        :return: The resulting default value.
         """
         if instance is not None and self.name:
             default = getattr(instance, "default_" + self.name, self.default)
@@ -214,11 +208,7 @@ class Member(Variable):
             return default
 
     def copy(self):
-        """Creates a deep, unbound copy of the member.
-
-        @return: The resulting copy.
-        @rtype: L{Member}
-        """
+        """Creates a deep, unbound copy of the member."""
         return deepcopy(self)
     
     def __deepcopy__(self, memo):
@@ -247,16 +237,16 @@ class Member(Variable):
     def add_validation(self, validation):
         """Adds a validation function to the member.
         
-        @param validation: A callable that will be added as a validation rule
+        :param validation: A callable that will be added as a validation rule
             for the member. Takes two positional parameters (a reference to the
             member itself, and the value assigned to the member), plus any
             additional number of keyword arguments used to refine validation
             options and context. The callable should produce a sequence of
-            L{ValidationError<exceptions.ValidatitonError>} instances.
-        @type validation: callable
+            `exceptions.ValidationError` instances.
+        :type validation: callable
 
-        @return: The validation rule, as provided.
-        @rtype: callable
+        :return: The validation rule, as provided.
+        :rtype: callable
         """
         self._validations.append(validation)
         return validation
@@ -264,11 +254,11 @@ class Member(Variable):
     def remove_validation(self, validation):
         """Removes one of the validation rules previously added to a member.
 
-        @param validation: The validation to remove, as previously passed to
-            L{add_validation}.
-        @type validation: callable
+        :param validation: The validation to remove, as previously passed to
+            `add_validation`.
+        :type validation: callable
 
-        @raise ValueError: Raised if the member doesn't have the indicated
+        :raise ValueError: Raised if the member doesn't have the indicated
             validation.
         """
         self._validations.remove(validation)
@@ -276,14 +266,15 @@ class Member(Variable):
     def validations(self, recursive = True):
         """Iterates over all the validation rules that apply to the member.
 
-        @param recursive: Indicates if the produced set of validations should
+        :param recursive: Indicates if the produced set of validations should
             include those declared on members contained within the member. This
-            parameter is only meaningful on L{compound members<>}, but is made
+            parameter is only meaningful on compound members, but is made
             available globally in order to allow the method to be called
             polymorphically using a consistent signature.
+        :type recursive: bool
 
-        @return: The sequence of validation rules for the member.
-        @rtype: callable iterable
+        :return: The sequence of validation rules for the member.
+        :rtype: callable iterable
         """
         return self._validations_wrapper
 
@@ -291,13 +282,13 @@ class Member(Variable):
         """Indicates if the given value fulfills all the validation rules
         imposed by the member.
         
-        @param value: The value to validate.
+        :param value: The value to validate.
         
-        @param context: Additional parameters used to fine tune the validation
+        :param context: Additional parameters used to fine tune the validation
             process.
-        @type context: L{ValidationContext<validationcontext.ValidationContext>}
+        :type context: `ValidationContext`
 
-        @param context_params: Arbitrary keyword parameters to feed the
+        :param context_params: Arbitrary keyword parameters to feed the
             validation context with.
         """
         for error in self.get_errors(value, context, **context_params):
@@ -309,17 +300,17 @@ class Member(Variable):
         """Tests the given value with all the validation rules declared by the
         member, iterating over the resulting set of errors.
 
-        @param value: The value to evaluate.
-        @param context: Additional parameters used to fine tune the validation
-            process.
-        @type context: L{ValidationContext<validationcontext.ValidationContext>}
+        :param value: The value to evaluate.
 
-        @param context_params: Arbitrary keyword parameters to feed the
+        :param context: Additional parameters used to fine tune the validation
+            process.
+        :type context: `ValidationContext`
+
+        :param context_params: Arbitrary keyword parameters to feed the
             validation context with.
 
-        @return: An iterable sequence of validation errors.
-        @rtype: L{ValidationError<exceptions.ValidationError>}
-            iterable
+        :return: An iterable sequence of validation errors.
+        :rtype: `exceptions.ValidationError` iterable
         """
         if context is None:
             context = ValidationContext(self, value, **context_params)
@@ -340,16 +331,15 @@ class Member(Variable):
         certain validation context.
 
         Dynamic expressions are formed by assigning a callable object or an
-        L{Expression<cocktail.schema.expressions.Expression>} instance to a
-        constraint value.
+        `expressions.Expression` instance to a constraint value.
 
-        @param expr: The constraint expression to resolve.
+        :param expr: The constraint expression to resolve.
         
-        @param context: The validation context that will be made available to
+        :param context: The validation context that will be made available to
             dynamic constraint expressions.
-        @type context: L{ValidationContext<validationcontext.ValidationContext>}
+        :type context: `ValidationContext`
 
-        @return: The normalized expression value.
+        :return: The normalized expression value.
         """
         if not isinstance(expr, type):
             if isinstance(expr, Expression):
@@ -361,9 +351,8 @@ class Member(Variable):
         return expr
 
     def member_validation_rule(self, value, context):
-        """
-        The base validation rule for all members. Tests the L{required},
-        L{require_none}, L{enumeration} and L{type} constraints.
+        """The base validation rule for all members. Tests the `required`,
+        `require_none`, `enumeration` and `type` constraints.
         """
         # Value required
         if value is None:
@@ -420,4 +409,13 @@ class Member(Variable):
             )
 
         return explanation
+
+
+class DynamicDefault(object):
+
+    def __init__(self, factory):
+        self.factory = factory
+
+    def __call__(self):
+        return self.factory()
 
