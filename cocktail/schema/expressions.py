@@ -158,10 +158,10 @@ class Expression(object):
         return expr
 
     def isinstance(self, expr):
-        return IsInstanceExpression(self, expr)
+        return IsInstanceExpression(Self, expr)
 
     def is_not_instance(self, expr):
-        return IsNotInstanceExpression(self, expr)
+        return IsNotInstanceExpression(Self, expr)
 
     def descends_from(self, expr, relation, include_self = True):
         return DescendsFromExpression(
