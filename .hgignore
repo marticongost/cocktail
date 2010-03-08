@@ -1,8 +1,4 @@
 syntax: glob
 cocktail.egg-info
-*.orig
-html/resources/styles/images
 build
 dist
-glob:asdf
-relre:asdf

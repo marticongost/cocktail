@@ -190,7 +190,7 @@ def create_join_function(language, sep1, sep2):
 ca_join = create_join_function("ca", u", ", u" i ")
 es_join = create_join_function("es", u", ", u" y ")
 en_join = create_join_function("en", u", ", u" and ")
-de_join = create_join_function("en", u", ", u" und ")
+de_join = create_join_function("de", u", ", u" und ")
 
 def plural2(count, singular, plural):
     if count == 1:
