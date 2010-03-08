@@ -7,9 +7,7 @@ u"""
 @since:			September 2008
 """
 from copy import copy
-import time
 import cherrypy
-from cherrypy.lib import http
 from cocktail.pkgutils import resolve
 from cocktail.modeling import ListWrapper, SetWrapper, getter, cached_getter
 from cocktail.language import get_content_language
@@ -30,7 +28,8 @@ from cocktail.controllers.userfilter import user_filters_registry
 from cocktail.controllers.parameters import (
     get_parameter,
     FormSchemaReader,
-    CookieParameterSource
+    CookieParameterSource,
+    set_cookie_expiration
 )
 
 
@@ -40,6 +39,7 @@ class UserCollection(object):
     default_page_size = 15
     selection_mode = MULTIPLE_SELECTION
     available_languages = ()
+    default_order = None
 
     allow_type_selection = True
     allow_member_selection = True
@@ -221,10 +221,7 @@ class UserCollection(object):
                         del cherrypy.request.cookie[key]
                         cherrypy.response.cookie[key] = ""
                         response_cookie = cherrypy.response.cookie[key]
-                        response_cookie["max-age"] = 0
-                        response_cookie["expires"] = http.HTTPDate(
-                            time.time() - (60 * 60 * 24 * 365)
-                        )
+                        set_cookie_expiration(response_cookie, seconds = 0) 
                         response_cookie["path"] = "/"
 
             if filters_param:
@@ -289,6 +286,9 @@ class UserCollection(object):
 
                     if member:
                         order.append(sign(member))
+
+        if not order and self.default_order:
+            order = self.default_order
 
         return ListWrapper(order)
     
