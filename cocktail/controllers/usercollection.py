@@ -183,6 +183,9 @@ class UserCollection(object):
     def available_user_filters(self):
         return user_filters_registry.get(self.type)
 
+    def should_ignore_filter(self, filter):
+        return False
+
     @cached_getter
     def user_filters(self):
  
@@ -242,7 +245,8 @@ class UserCollection(object):
                             prefix = "filter_",
                             suffix = str(i)
                         )
-                        user_filters.append(filter)
+                        if not self.should_ignore_filter(filter):
+                            user_filters.append(filter)
 
         return ListWrapper(user_filters)
 
