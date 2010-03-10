@@ -77,6 +77,43 @@ class CascadeDeleteTestCase(TempStorageMixin, TestCase):
         a.delete()
         self.assertFalse(TestObject.index)
 
+    def test_should_cascade_delete_reference(self):
+
+        from cocktail.schema import Reference
+        from cocktail.persistence import PersistentObject
+
+        class TestObject(PersistentObject):
+            ref = Reference(cascade_delete = True)
+
+            def _should_cascade_delete(self, member):
+                return True
+
+        a = TestObject(ref = TestObject())
+        a.insert()
+        a.delete()
+
+        assert not TestObject.index
+
+    def test_not_should_cascade_delete_reference(self):
+
+        from cocktail.schema import Reference
+        from cocktail.persistence import PersistentObject
+
+        class TestObject(PersistentObject):
+            ref = Reference(cascade_delete = True)
+
+            def _should_cascade_delete(self, member):
+                return False
+
+        a = TestObject()
+        b = TestObject()
+        a.ref = b
+        a.insert()
+        a.delete()
+
+        assert len(TestObject.index) == 1
+        assert set(TestObject.index.values()) == set([b])
+
     def test_collection(self):
 
         from cocktail.schema import Collection
@@ -153,3 +190,40 @@ class CascadeDeleteTestCase(TempStorageMixin, TestCase):
         self.assertEquals(len(TestObject.index), 2)
         self.assertEquals(set(TestObject.index.values()), set([b, c]))
         
+    def test_should_cascade_delete_collection(self):
+
+        from cocktail.schema import Collection
+        from cocktail.persistence import PersistentObject
+
+        class TestObject(PersistentObject):
+            collection = Collection(cascade_delete = True)
+
+            def _should_cascade_delete(self, member):
+                return True
+
+        a = TestObject(collection = [TestObject(), TestObject()])
+        a.insert()
+        a.delete()
+
+        assert not TestObject.index
+
+    def test_not_should_cascade_delete_collection(self):
+
+        from cocktail.schema import Collection
+        from cocktail.persistence import PersistentObject
+
+        class TestObject(PersistentObject):
+            collection = Collection(cascade_delete = True)
+
+            def _should_cascade_delete(self, member):
+                return False
+
+        a = TestObject()
+        b = TestObject()
+        c = TestObject()
+        a.collection = [b,c]
+        a.insert()
+        a.delete()
+
+        assert len(TestObject.index) == 2
+        assert set(TestObject.index.values()) == set([b, c])

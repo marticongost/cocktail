@@ -375,7 +375,7 @@ class PersistentObject(SchemaObject, Persistent):
         if not self.__inserted:
             raise NewObjectDeletedError(self)
 
-        self.deleting()
+        self.deleting(deleted_objects = deleted_objects)
         self.__inserted = False
 
         for member in self.__class__.members().itervalues():
@@ -383,7 +383,7 @@ class PersistentObject(SchemaObject, Persistent):
             if isinstance(member, schema.RelationMember):
 
                 # Cascade delete
-                if member.cascade_delete:
+                if self._should_cascade_delete(member):
                     value = self.get(member)
                     if value is not None:
                         if isinstance(member, schema.Reference):
@@ -399,7 +399,10 @@ class PersistentObject(SchemaObject, Persistent):
                 if self._should_erase_member(member):
                     self.set(member, None)
 
-        self.deleted()
+        self.deleted(deleted_objects = deleted_objects)
+
+    def _should_cascade_delete(self, member):
+        return member.cascade_delete
 
     def _should_erase_member(self, member):
 
