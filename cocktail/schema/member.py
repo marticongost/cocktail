@@ -15,16 +15,15 @@ from cocktail.schema.accessors import get_accessor
 
 
 class Member(Variable):
-    """Schema members are the distinct data units that comprise a
-    L{schema<schema.Schema>}.
+    """A member describes the properties and metadata of a unit of data.
 
-    Members are bound to a single schema, where they are identified by a unique
-    name. The purpose of a member is to describe the nature and constraints of
-    a discrete piece of data for the schema they belong to. Typical examples of
-    members are fields and collections, and their respective subtypes.
-    
-    This class acts mostly as an abstract type, used as a base by all the
-    different kinds of members that can comprise a schema.
+    Although not strictly an abstract class, the class is very generic in
+    nature, and is inherited by a wealth of other classes that add the
+    necessary features to describe a variety of more concrete data types
+    (`String`, `Integer`, `Boolean`, etc.).
+
+    Members can also be composited, in order to describe parts of a more complex
+    data set, by embedding them within a `Collection` or `Schema`.
 
     .. attribute:: default
     
@@ -47,6 +46,11 @@ class Member(Variable):
         Establishes a limited set of acceptable values for the member. If a
         member with this constraint is given a value not found inside the set,
         an `exceptions.EnumerationError` error will be triggered.
+
+    .. attribute:: translated
+
+        Indicates if the member accepts multiple values, each in a different
+        language.
     """
     __metaclass__ = EventHub
 
@@ -84,6 +88,18 @@ class Member(Variable):
     ])
 
     def __init__(self, name = None, doc = None, **kwargs):
+        """Initializes a member, optionally setting its name, docstring and a
+        set of arbitrary attributes.
+
+        :param name: The `name` given to the member.
+        :type name: str
+
+        :param doc: The docstring to assign to the member.
+        :type doc: unicode
+
+        :param kwargs: A set of key/value pairs to set as attributes of the
+            member.
+        """
         self._name = None
         self._schema = None
         self._validations = OrderedSet()

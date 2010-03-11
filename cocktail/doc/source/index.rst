@@ -16,6 +16,7 @@
    pkgutils
    iteration
    schema
+   html
 
 Indices and tables
 ==================
