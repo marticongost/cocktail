@@ -1,11 +1,7 @@
 #-*- coding: utf-8 -*-
 u"""
-Declarative definition of data models and validation rules.
-
-@author:		Martí Congost
-@contact:		marti.congost@whads.com
-@organization:	Whads/Accent SL
-@since:			June 2008
+Provides classes to describe the structure, properties and meta data of Python
+data types.
 """
 from cocktail.schema.member import (
     Member,
