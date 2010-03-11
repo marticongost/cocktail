@@ -1,10 +1,6 @@
 #-*- coding: utf-8 -*-
-u"""
-
-@author:		Martí Congost
-@contact:		marti.congost@whads.com
-@organization:	Whads/Accent SL
-@since:			December 2008
+"""
+An event mechanism for python.
 """
 from weakref import ref, WeakKeyDictionary
 from cocktail.modeling import SynchronizedList
@@ -15,11 +11,11 @@ def when(event):
     """A decorator factory that attaches decorated functions as event handlers
     for the given event slot.
     
-    @param event: The event slot to register the decorated function on.
-    @type event: L{EventSlot}
+    :param event: The event slot to register the decorated function on.
+    :type event: `EventSlot`
 
-    @return: The decorator that does the binding.
-    @rtype: callable
+    :return: The decorator that does the binding.
+    :rtype: callable
     """
     def decorator(function):
         event.append(function)
@@ -30,7 +26,7 @@ def when(event):
 
 class EventHub(type):
     """A convenience metaclass that automatically registers methods marked with
-    the L{event_handler} decorator as class-level event-handlers. 
+    the `event_handler` decorator as class-level event-handlers. 
     """
 
     def __init__(cls, name, bases, members):
@@ -54,7 +50,7 @@ class EventHub(type):
 
 
 class event_handler(classmethod):
-    """A decorator that works hand in hand with L{EventHub} in order to ease
+    """A decorator that works hand in hand with `EventHub` in order to ease
     the attachment of handlers to events.
     """
 
@@ -65,11 +61,11 @@ class Event(object):
     that will be invoked when the event is triggered, which results in a
     flexible extensibility mechanism.
 
-    This class is a X{descriptor}, and does nothing but produce and cache
-    L{event slots<EventSlot>} on the class, its subclasses or its instances, in
-    a thread-safe manner. Each element that the event is requested on spawns a
-    new slot, which will remain assigned to that element throughout the
-    element's life cycle.
+    This class is a descriptor, and does nothing but produce and cache
+    `event slots <EventSlot>` on the class, its subclasses or its instances, in
+    a thread-safe manner. Each object that the event is requested on spawns a
+    new slot, which will remain assigned to that object throughout the object's
+    life cycle.
     """
 
     def __init__(self, doc = None):
@@ -95,6 +91,7 @@ class Event(object):
 
         if slot is None:
             slot = EventSlot()
+            slot.__doc__ = self.__doc__
             slot.event = self
             slot.target = ref(target)
             self.__slots[target] = slot
@@ -108,22 +105,29 @@ class Event(object):
 
 
 class EventSlot(SynchronizedList):
-    """An event slot represents a binding between an L{event<Event>} and one of
-    its targets. Slots work as callable lists of callbacks. They possess all
-    the usual list methods, plus the capability of being called. When called,
-    callbacks are executed in order, receiving any extra parameters through an
-    L{EventInfo} instance. The return value of executed callbacks is ignored.
-
-    @ivar event: The event that the slot stores responses for.
-    @type event: L{Event}
-
-    @ivar target: The object that the slot is bound to.
+    """A binding between an `Event` and one of its targets.
     
-    @ivar next: A list of other event slots that will be chained up to the
-        slot. After a slot has been triggered, and its callbacks processed, its
-        chained slots will also be triggered. This is done recursively. For
-        example, this is used to trigger class-wide events after activating an
-        instance slot.
+    Slots work as callable lists of callbacks. They possess all the usual list
+    methods, plus the capability of being called. When the slot is called,
+    callbacks in the slot are executed in order, and keyword parameters are
+    forwarded to these callbacks, wrapped in an instance of the `EventInfo`
+    class.
+
+    .. attribute:: event
+    
+        The `event <Event>` that the slot stores responses for.
+
+    .. attribute:: target
+
+        The object that the slot is bound to.
+    
+    .. attribute:: next
+
+        A list of other event slots that will be chained up to the slot. After
+        a slot has been triggered, and its callbacks processed, its chained
+        slots will also be triggered. This is done recursively. For example,
+        this is used to trigger class-wide events after activating an instance
+        slot.
     """
     event = None
     target = None
@@ -161,21 +165,28 @@ class EventSlot(SynchronizedList):
 
 class EventInfo(object):
     """An object that encapsulates all the information passed on to callbacks
-    when an L{event slot<EventSlot>} is triggered.
+    when an `event slot <EventSlot>` is triggered.
 
-    @param target: The element that the event is being triggered on.
+    .. attribute:: target
+        
+        The object that the event is being triggered on.
     
-    @param source: The element that the event originated in. While the
-        L{target} changes as the event passes from slot to slot (ie. when
-        ascending along derived class), X{source} will always point to the
-        first element on which the event was invoked.
+    .. attribute:: source
+        
+        The object that the event originated in. While the `target` attribute
+        can change as the event `propagates between slots <EventSlot.next>`,        
+        `source` will always point to the first element on which the event was
+        invoked.
 
-    @param slot: The event slot from which the callback is being triggered.
-    @type slot: L{EventSlot}
+    .. attribute:: slot
 
-    @param consumed: A flag that allows a callback to prevent the execution of
-        any further callback on the slot.
-    @type consumed: bool
+        The `event slot <EventSlot>` from which the callback is being
+        triggered.
+
+    .. attribute:: consumed
+
+        If a callback sets this flag to True, no further callbacks will be
+        invoked for this event.
     """    
     target = None
     source = None

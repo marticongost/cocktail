@@ -1,11 +1,4 @@
 #-*- coding: utf-8 -*-
-u"""
-
-@author:		Martí Congost
-@contact:		marti.congost@whads.com
-@organization:	Whads/Accent SL
-@since:			October 2007
-"""
 from inspect import getmro
 from threading import local
 from cocktail.modeling import getter, empty_list, empty_dict, empty_set
@@ -17,50 +10,57 @@ _thread_data = local()
 
 default = object()
 
+
 class Element(object):
     """Base class for all presentation components.
     
-    An element provides an abstraction over a piece of HTML content. Elements
-    can be modified programatically before being rendered, which makes it
-    possible to compound complex presentations out of simpler elements.
+    An element provides an abstraction over a piece of HTML content. It can be
+    modified programatically before it is rendered, which makes it possible to
+    compound complex presentations out of simpler elements.
     
-    Elements expose all properties of an HTML tag, such as their tag name,
+    Elements expose all the properties of an HTML tag, such as their tag name,
     attributes, CSS classes and inline styles.
 
     Elements can be nested inside each other, conforming a hierarchical
-    structure represented in their L{parent} and L{children} properties. The
-    L{append}, L{insert}, L{place_before} and L{place_after} methods provide
+    structure represented in their `parent` and `children` properties. The
+    `append`, `insert`, `place_before` and `place_after` methods provide
     several ways to grow this tree.
 
-    Elements can be rendered as L{stand alone fragments<render>} or embeded
-    within a L{full page structure<render_page>}.
+    Elements can be rendered as `stand alone fragments <render>` or embeded
+    within a `full page structure <render_page>`.
 
     When being rendered in a full page, elements can take advantage of features
-    such as L{linked resources<resources>}, L{meta declarations<meta>} and
-    propagation of data to the client (L{parameters<client_params>},
-    L{variables<client_variables>}, L{code snippets<client_code>} and
-    L{translations<client_translations>}).
+    such as `linked resources <resources>`, `meta declarations <meta>` and
+    propagation of data to the client (`parameters <client_params>`,
+    `variables <client_variables>`, `code snippets <client_code>` and
+    `translations <client_translations>`).
 
-    @var tag: The tag name assigned to the element. If set to None, the
+    .. attribute:: tag
+
+        The tag name assigned to the element. If set to None, the
         element's tag and attributes won't be rendered, only its content.
-    @type tag: str
+    
+    .. attribute:: page_title
 
-    @var page_title: Sets the title of the resulting document for a L{full page
-        rendering<render_page>} of the element.
-    @type page_title: unicode
+        Sets the title of the resulting document for a
+        `full page rendering <render_page>` of the element.
 
-    @var page_charset: Sets the character set of the resulting document for a
-        L{full page rendering<render_page>} of the element.
-    @type page_charset: str
+    .. attribute:: page_charset
 
-    @var page_content_type: Sets the content type of the resulting document for
-        a L{full page rendering<render_page>} of the element.
-    @type page_content_type: str
+        Sets the character set of the resulting document for a
+        `full page rendering<render_page>` of the element.
 
-    @var styled_class: Indicates if the element class should add its own name
+    .. attribute:: page_content_type
+
+        Sets the content type of the resulting document for
+        a `full page rendering <render_page>` of the element.
+
+    .. attribute:: styled_class
+    
+        Indicates if the element class should add its own name
         as a CSS class of its instances.
         
-        For example, given the following python class hierarchy:
+        For example, given the following python class hierarchy::
             
             class Box(Element):
                 pass
@@ -72,47 +72,51 @@ class Element(object):
         attribute set to "Box FancyBox".
 
         This property is *not inherited* between classes, each class must
-        provide its own value for it. L{Element} sets it to False, its
+        provide its own value for it. `Element` sets it to False, its
         subclasses set it to True by default.
-    @type styled_class: bool
 
-    @var visible: Indicates if the element should be rendered (False) or hidden
+    .. attribute:: visible
+    
+        Indicates if the element should be rendered (False) or hidden
         (True).
-    @type visible: bool
 
-    @var collapsible: Elements marked as collapsible are automatically hidden
+    .. attribute:: collapsible
+    
+        Elements marked as collapsible are automatically hidden
         if they don't have one or more children which should be rendered.
-    @type collapsible: bool
 
-    @var overlays_enabled: Enables or disables L{overlays
-        <cocktail.html.overlays.Overlay>} for the element.
-    @type overlays_enabled: bool
+    .. attribute:: overlays_enabled
+        
+        Enables or disables `overlays <Overlay>` for the element.
 
-    @var generated_id_format: A python formatting string used when L{generating
-        a unique identifier<require_id>} for the element. Takes a single
-        integer parameter.
-    @type generated_id_format: str
+    .. attribute:: generated_id_format
+        
+        A python formatting string used when
+        `generating a unique identifier<require_id>` for the element. Takes a
+        single integer parameter.
 
-    @var client_model: When set to a value other than None, the element won't
+    .. attribute:: client_model
+        
+        When set to a value other than None, the element won't
         be rendered normally. Instead, its HTML and javascript code will be
         serialized to a string and made available to the client side
-        L{cocktail.instantiate} method, using the given identifier.
-    @type client_model: str
+        *cocktail.instantiate* method, using the given identifier.
 
-    @var data_display: The data display used by the element for data binding
+    .. attribute:: data_display
+    
+        The `DataDisplay` used by the element for data binding purposes.
+    
+    .. attribute:: data
+        The source of data used by the element for data binding purposes.
+
+    .. attribute:: member
+        
+        The `~cocktail.schema.Member` used by the element for data binding
         purposes.
-    @type data_display: L{DataDisplay<cocktail.html.datadisplay.DataDisplay>}
 
-    @param data: The source of data used by the element for data binding
-        purposes.
-    @type data: object
-
-    @param member: The member used by the element for data binding purposes.
-    @type member: L{Member<cocktail.schema.member.Member>}
-
-    @param language: The language used by the element for data binding
-        purposes.
-    @type language: str
+    .. attribute:: language
+        
+        The language used by the element for data binding purposes.
     """
     tag = "div"
     page_title = None
@@ -226,13 +230,13 @@ class Element(object):
     def make_page(self, renderer = None):
         """Wraps the element within an HTML page structure.
 
-        @param renderer: The renderer used to generate the page. If none is
+        :param renderer: The renderer used to generate the page. If none is
             provided, one will be automatically obtained by calling the
-            L{_get_default_renderer} method.
-        @type renderer: L{Renderer<cocktail.html.renderers.Renderer>}
-        
-        @return: An element representing an HTML page.
-        @rtype: L{Page<cocktail.html.page.Page>}
+            `_get_default_renderer` method.
+        :type renderer: `Renderer`
+                
+        :return: A page representing the element.
+        :rtype: `Page`
         """ 
         if not renderer:
             renderer = self._get_default_renderer()
@@ -243,17 +247,17 @@ class Element(object):
         """Renders the element as a full HTML page.
 
         This method creates a page structure for the element (using its
-        L{make_page} method) and outputs the resulting HTML code, including
+        `make_page` method) and outputs the resulting HTML code, including
         links to its resources and other metadata.
 
-        @param renderer: The renderer used to generate the markup. If none is
+        :param renderer: The renderer used to generate the markup. If none is
             provided, one will be automatically obtained by calling the
-            L{_get_default_renderer} method.
-        @type renderer: L{Renderer<cocktail.html.renderers.Renderer>}
+            `_get_default_renderer` method.
+        :type renderer: `Renderer`
 
-        @return: The HTML code for the element, embeded within a full HTML
+        :return: The HTML code for the element, embeded within a full HTML
             page.
-        @rtype: unicode
+        :rtype: unicode
         """
         if not renderer:
             renderer = self._get_default_renderer()
@@ -265,16 +269,16 @@ class Element(object):
 
         This method renders the HTML code for the element's tree. Note that the
         resources and meta data associated with the element will *not* be
-        included in the produced markup; use L{render_page} to render them
+        included in the produced markup; use `render_page` to render them
         within a full page structure.
 
-        @param renderer: The renderer used to generate the markup. If none is
+        :param renderer: The renderer used to generate the markup. If none is
             provided, one will be automatically obtained by calling the
-            L{_get_default_renderer} method.
-        @type renderer: L{Renderer<cocktail.html.renderers.Renderer>}
+            `_get_default_renderer` method.
+        :type renderer: `Renderer`
 
-        @return: The HTML code for the element.
-        @rtype: unicode
+        :return: The HTML code for the element.
+        :rtype: unicode
         """
         if not renderer:
             renderer = self._get_default_renderer()
@@ -296,11 +300,11 @@ class Element(object):
     def _get_default_renderer(self):
         """Supplies the default renderer for an HTML rendering operation.
 
-        This method will be called by L{make_page}, L{render_page} and
-        L{render} if no explicit renderer is specified.
+        This method will be called by `make_page`, `render_page` and
+        `render` if no explicit renderer is specified.
 
-        @return: An element renderer.
-        @rtype: L{Renderer<cocktail.html.renderers.Renderer>}
+        :return: An element renderer.
+        :rtype: `Renderer`
         """
         from cocktail.html.renderers import DEFAULT_RENDERER_TYPE
         return DEFAULT_RENDERER_TYPE()
@@ -308,25 +312,25 @@ class Element(object):
     def _render(self, renderer, out):
         """Readies the element and writes its HTML code to the given stream.
 
-        This is an internal method; applications should invoke L{render_page}
-        or L{render}, which in turn will call this method.
+        This is an internal method; applications should invoke `render_page`
+        or `render`, which in turn will call this method.
         
         The default implementation gives the element a last chance to perform
-        any pending initialization before rendering by calling its L{_ready}
+        any pending initialization before rendering by calling its `_ready`
         method, and then delegates the production of its HTML code to the given
         renderer object. Overriding this behavior will seldom be necessary. The
-        L{Content} class is one of the rare cases. Another case were it may
+        `Content` class is one of the rare cases. Another case were it may
         make sense is the rendering of complex elements as opaque HTML blobs
         (for optimization purposes).
 
-        @param renderer: The renderer used to produce the element's code.
-        @type renderer: L{Renderer<cocktail.html.renderers.Renderer>}
+        :param renderer: The renderer used to produce the element's code.
+        :type renderer: `Renderer`
 
-        @param out: The output stream were the element's markup should be
+        :param out: The output stream were the element's markup should be
             written. Implementations should treat the stream as a callable
             object, passing it a single parameter - an HTML chunk to write to
             the stream.
-        @type out: callable
+        :type out: callable
         """
         self.ready()
         if self.rendered:
@@ -335,7 +339,7 @@ class Element(object):
     def _build(self):
         """Initializes the object.
         
-        This method is used by subclasses of L{Element} to initialize their
+        This method is used by subclasses of `Element` to initialize their
         instances. It is recommended to use this method instead of overriding
         the class constructor, which can be tricky.
         """
@@ -350,8 +354,8 @@ class Element(object):
         rows until the table is about to be rendered, allowing the data source
         to change in the mean time).
 
-        The method will first invoke the element's L{_ready} method, and then
-        any function scheduled with L{when_ready}.
+        The method will first invoke the element's `_ready` method, and then
+        any function scheduled with `when_ready`.
 
         It is safe to call this method more than once, but any invocation after
         the first will produce no effect.
@@ -396,8 +400,8 @@ class Element(object):
         """Delay a call to the given function until the element is about to be
         rendered.
 
-        @param handler: The function that will be invoked.
-        @type handler: callable
+        :param handler: The function that will be invoked.
+        :type handler: callable
         """
         if self.__ready_handlers is None:
             self.__ready_handlers = [handler]
@@ -408,11 +412,11 @@ class Element(object):
         """A method invoked just before the element is rendered.
         
         This is a placeholder method, to implement late initialization for the
-        element. It's an alternative to L{when_ready}, and can be more
+        element. It's an alternative to `when_ready`, and can be more
         convenient when defining initialization logic at the class level.
         Implementors should always call the overriden method from their bases.
 
-        See L{ready} for more details on the initialization procedure.
+        See `ready` for more details on the initialization procedure.
         """
 
     def _content_ready(self):
@@ -428,12 +432,10 @@ class Element(object):
     
     @getter
     def attributes(self):
-        """The HTML attributes defined on the element.
+        """A dictionary containing the HTML attributes defined by the element.
 
         Attributes can be set to any value that can be transformed into
-        unicode. Attributes set to None will not be rendered.
-
-        @type: dict
+        unicode. Attributes set to None will not be rendered.        
         """
         if self.__attributes is None:
             return empty_dict
@@ -443,12 +445,11 @@ class Element(object):
     def __getitem__(self, key):
         """Gets the value of an HTML attribute, using the indexing operator.
 
-        @param key: The name of the attribute to retrieve.
-        @type key: str
+        :param key: The name of the attribute to retrieve.
+        :type key: str
 
-        @return: The value for the requested attribute, or None if it's not
+        :return: The value for the requested attribute, or None if it's not
             defined by the element.
-        @rtype: object
         """
         if self.__attributes is None:
             return None
@@ -458,11 +459,10 @@ class Element(object):
     def __setitem__(self, key, value):
         """Sets the value of an HTML attribute, using the indexing operator.
 
-        @param key: The name of the attribute to set.
-        @type key: str
+        :param key: The name of the attribute to set.
+        :type key: str
 
-        @param value: The value to assign to the attribute.
-        @type value: object
+        :param value: The value to assign to the attribute.
         """
         if self.__attributes is None:
             if value is not None:
@@ -494,18 +494,19 @@ class Element(object):
 
         Generated identifiers are guaranteed to be unique throughout a
         rendering operation (that is, within the span of a call to the
-        L{render} or L{render_page} methods). Calling L{require_id} from two
+        `render` or `render_page` methods). Calling `require_id` from two
         separate (not nested) rendering invocations will generate duplicate
         identifiers.
         
         Also, identifier generation is only enabled during rendering
         operations. Calling this method outside a rendering method will raise
-        an L{IdGenerationError} exception.
+        an `IdGenerationError` exception.
 
-        @return: The element's final id attribute.
-        @rtype: str
+        :return: The element's final id attribute.
+        :rtype: str
 
-        @raise L{IdGenerationError}: Raised 
+        :raise: Raises `IdGenerationError` if the method is called outside the
+            scope of a call to `render` or `render_page`.
         """
         id = self["id"]
 
@@ -529,10 +530,8 @@ class Element(object):
     def rendered(self):
         """Indicates if the element should be rendered.
 
-        An element will be rendered or ignored depending on its L{visible} and
-        L{collapsible} attributes.
-
-        @type: bool
+        An element will be rendered or ignored depending on its `visible` and
+        `collapsible` attributes.
         """
         return self.visible \
             and (not self.collapsible or self.has_rendered_children())
@@ -540,25 +539,23 @@ class Element(object):
     @getter
     def substantial(self):
         """Indicates if the element has enough weight to influence the
-        visibility of a L{collapsible} element.
+        visibility of a `collapsible` element.
 
         Collapsible elements are only rendered if they have one or more
         children that are deemed to be substantial. By default, an element is
         considered substantial if it is rendered. Some subclasses may alter
-        this behavior: notably, L{Content} considers an element consisting
+        this behavior: notably, `Content` considers an element consisting
         fully of whitespace to be insubstantial.
-
-        @type: bool
         """
         return self.rendered
 
     def has_rendered_children(self):
         """Indicates if any of the element's children should be rendered.
 
-        @return: True if the element has one or more children which should be
+        :return: True if the element has one or more children which should be
             rendered, False if it has no children or all of its children should
             not be rendered.
-        @rtype: bool
+        :rtype: bool
         """
         if self.__children:
             for child in self.__children:
@@ -572,25 +569,21 @@ class Element(object):
 
     @getter
     def parent(self):
-        """The parent that the element is attached to.
+        """The `element <Element>` that the element is attached to.
 
-        Elements arrange themselves in a tree (by using L{append}, L{insert},
-        L{place_before} or L{place_after}. This property gives access to the
+        Elements arrange themselves in a tree (by using `append`, `insert`,
+        `place_before` or `place_after`. This property gives access to the
         element that acts as a container for the element.
-
-        @type: L{Element}
         """
         return self.__parent
 
     @getter
     def children(self):
-        """The list of children attached to the element.
+        """The list of child `elements <Element>` attached to the element.
 
-        Elements arrange themselves in a tree (by using L{append}, L{insert},
-        L{place_before} or L{place_after}. This property gives access to the
+        Elements arrange themselves in a tree (by using `append`, `insert`,
+        `place_before` or `place_after`. This property gives access to the
         child elements that hang directly from the element.
-
-        @type: L{Element} list
         """
         if self.__children is None:
             return empty_list
@@ -601,13 +594,13 @@ class Element(object):
         """Attach another element as the last child of the element.
 
         If the element to attach is a string, it will be wrapped using a new
-        L{Content} instance.
+        `Content` instance.
 
         If the element to attach already had a parent, it will be
-        L{released<release>} before being relocated within the element.
+        `released <release>` before being relocated within the element.
 
-        @param child: The attached element.
-        @type child: L{Element} or basestring
+        :param child: The attached element.
+        :type child: `Element` or basestring
         """
         if isinstance(child, basestring):
             child = Content(child)
@@ -625,17 +618,17 @@ class Element(object):
         """Attach a child element at the specified position.
 
         If the element to attach is a string, it will be wrapped using a new
-        L{Content} instance.
+        `Content` instance.
 
         If the element to attach already had a parent, it will be
-        L{released<release>} before being relocated within the element.
+        `released <release>` before being relocated within the element.
 
-        @param index: The ordinal position of the new child among its siblings.
+        :param index: The ordinal position of the new child among its siblings.
             Accepts negative indices.
-        @type index: int
+        :type index: int
         
-        @param child: The attached element.
-        @type child: L{Element} or basestring
+        :param child: The attached element.
+        :type child: `Element` or basestring
         """        
         if isinstance(child, basestring):
             child = Content(child)
@@ -651,14 +644,14 @@ class Element(object):
     def place_before(self, sibling):
         """Positions the element just before another element.
 
-        If the element already had a parent, it will be L{released<release>}
+        If the element already had a parent, it will be `released <release>`
         before being relocated.
 
-        @param sibling: The element that indicates the point in the element
+        :param sibling: The element that indicates the point in the element
             tree where the element should be placed.
-        @type sibling: L{Element}
+        :type sibling: `Element`
 
-        @raise L{ElementTreeError}: Raised if the given element has no parent.
+        :raise: Raises `ElementTreeError` if the given element has no parent.
         """
         if sibling.__parent is None:
             raise ElementTreeError()
@@ -675,15 +668,15 @@ class Element(object):
     def place_after(self, sibling):
         """Positions the element just after another element.
 
-        If the element already had a parent, it will be L{released<release>}
+        If the element already had a parent, it will be `released <release>`
         before being relocated.
 
-        @param sibling: The element that indicates the point in the element
+        :param sibling: The element that indicates the point in the element
             tree where the element should be placed.
-        @type sibling: L{Element}
+        :type sibling: `Element`
 
-        @raise L{ElementTreeError}: Raised if the given element has no parent.
-        """        
+        :raise: Raises `ElementTreeError` if the given element has no parent.
+        """
         if sibling.__parent is None:
             raise ElementTreeError()
 
@@ -713,6 +706,38 @@ class Element(object):
             self.__parent.__children.remove(self)
             self.__parent = None
 
+    def replace(self, target):
+        """Puts the element in place of the indicated element.
+        
+        :param target: The element that indicates the point in the element
+            tree where the element should be placed.
+        :type target: `Element`
+
+        :raise: Raises `ElementTreeError` if the given element has no parent.
+        """
+        if target.__parent is None:
+            raise ElementTreeError()
+
+        self.release()        
+        pos = target.__parent.__children.index(target)
+        target.__parent.__children[pos] = self
+        target.__parent = None
+
+    def replace_with(self, replacement):
+        """Replaces the element with another element.
+        
+        :param replacement: The element that will be put in the position
+            currently occupied by the element.            
+        :type replacement: `Element`
+
+        :raise: Raises `ElementTreeError` if the element that is being replaced
+            has no parent.
+        """
+        if isinstance(replacement, basestring):
+            replacement = Content(replacement)
+
+        replacement.replace(self)
+
     def reverse(self):
         """Reverses the order of the element's children."""
         if self.__children:
@@ -723,9 +748,7 @@ class Element(object):
 
     @getter
     def classes(self):
-        """The list of CSS classes assigned to the element.
-        @type: str list
-        """        
+        """The list of CSS classes assigned to the element."""        
         css_class = self["class"]
 
         if css_class is None:
@@ -741,8 +764,8 @@ class Element(object):
         they are assigned. Assigning the same class twice to an element will
         produce no effect.
 
-        @param name: The name of the class to assign to the element.
-        @type name: str
+        :param name: The name of the class to assign to the element.
+        :type name: str
         """
         css_class = self["class"]
 
@@ -755,9 +778,12 @@ class Element(object):
     def remove_class(self, name):
         """Removes a CSS class from the element.
 
-        Just as L{add_class}, this is a convenience method to manipulate the
+        Just as `add_class`, this is a convenience method to manipulate the
         element's 'class' HTML attribute. It is safe to remove an undefined
         class from the element.
+
+        :param name: The CSS class to remove.
+        :type name: str
         """
         css_class = self["class"]
         
@@ -778,8 +804,7 @@ class Element(object):
     
     @getter
     def style(self):
-        """The set of inline CSS declarations assigned to the element.
-        @type: dict
+        """A dictionary containing the inline CSS declarations for the element.
         """
         style = self["style"]
 
@@ -797,12 +822,11 @@ class Element(object):
     def get_style(self, property):
         """Retrieves the value of an inline CSS property.
         
-        @param property: The style property to retrieve (ie. font-weight,
+        :param property: The style property to retrieve (ie. font-weight,
             color, etc).
-        @type property: str
+        :type property: str
 
-        @return: The value for the property, or None if it's undefined.
-        @rtype: object
+        :return: The value for the property, or None if it's undefined.
         """
         return self.style.get(property)
 
@@ -811,12 +835,11 @@ class Element(object):
 
         Setting a property to None removes its declaration from the element.
 
-        @param property: The property to retrieve the value for.
-        @type property: str
+        :param property: The property to retrieve the value for.
+        :type property: str
 
-        @param value: The value to assign to the property. Can be any object
+        :param value: The value to assign to the property. Can be any object
             that can be serialized to a string.
-        @type value: object
         """
         style = self.style
 
@@ -839,13 +862,11 @@ class Element(object):
     
     @getter
     def resources(self):
-        """The list of resources (scripts, stylesheets, etc) linked to the
-        element.
+        """The list of `resources <Resource>` (scripts, stylesheets, etc)
+        linked to the element.
         
-        Linked resources will be rendered along the element when a l{full page
-        rendering<render_page>} is requested.
-
-        @type: L{Resource<cocktail.html.resources.Resource>} list
+        Linked resources will be rendered along the element when a
+        `full page rendering <render_page>` is requested.
         """
         if self.__resources is None:
             return empty_list
@@ -854,35 +875,31 @@ class Element(object):
 
     @getter
     def resource_uris(self):
-        """The set of URIs for all the L{resources} linked to the element.
-        @type: str set
-        """
+        """The set of URIs for all the `resources` linked to the element."""
         if self.__resource_uris is None:
             return empty_set
         else:
             return self.__resource_uris
 
     def add_resource(self, resource, mime_type = None):
-        """Links a L{resource<resources>} to the element.
+        """Links a `resource <resources>` to the element.
 
-        Resources are L{indexed by their URI<resource_uris>}, allowing only one
+        Resources are `indexed by their URI<resource_uris>`, allowing only one
         instance of each URI per element. That means that linking the same
         script or stylesheet twice will produce no effect.
         
-        @param resource: A resource object, or a resource URI. URI strings will
+        :param resource: A resource object, or a resource URI. URI strings will
             be wrapped using a new resource object of the appropiate type.
-        @type resource: L{Resource<cocktail.html.resources.Resource>}
-            or basestring
+        :type resource: `Resource` or basestring
 
-        @param mime_type: Specifies an explicit MIME type for the resource.
-            Although it will always override the type defined by the provided
-            resource, its main use is to identify the type of URIs were that
-            can't be accomplished by looking at their file extension.
-        @type mime_type: str
+        :param mime_type: Specifies an explicit MIME type for the resource.
+            Its main purpose is to manually identify the type of URIs where
+            that can't be accomplished by looking at their file extension.
+        :type mime_type: str
         
-        @return: True if the resource is added to the element, False if its URI
+        :return: True if the resource is added to the element, False if its URI
             was already linked to the element.
-        @rtype: bool
+        :rtype: bool
         """
         # Normalize the resource
         if isinstance(resource, basestring):
@@ -909,13 +926,12 @@ class Element(object):
             return False
 
     def remove_resource(self, resource):
-        """Unlinks a L{resource<resources>} from the element.
+        """Unlinks a `resource <resources>` from the element.
 
-        @param resource: A resource object, or a resource URI.
-        @type resource: L{Resource<cocktail.html.resources.Resource>}
-            or basestring
+        :param resource: A resource object, or a resource URI.
+        :type resource: `Resource` or basestring
 
-        @raise ValueError: Raised if the indicated resource is not linked by
+        :raise: Raises `ValueError` if the indicated resource is not linked by
             the element.
         """
         if isinstance(resource, basestring):
@@ -937,12 +953,10 @@ class Element(object):
     
     @getter
     def meta(self):
-        """The set of meta declarations defined by the element.
+        """A dictionary containing the meta declarations for the element.
 
         Meta declarations will be rendered as <meta> tags when performing a
-        L{full page rendering<render_page>}. 
-
-        @type: dict
+        `full page rendering <render_page>`. 
         """
         if self.__meta is None:
             return empty_dict
@@ -950,14 +964,13 @@ class Element(object):
             return self.__meta
 
     def get_meta(self, key):
-        """Gets the value of the given L{meta declaration<meta>}.
+        """Gets the value of the given `meta declaration <meta>`.
 
-        @param key: The name of the meta tag to retrieve the value for.
-        @type key: str
+        :param key: The name of the meta tag to retrieve the value for.
+        :type key: str
 
-        @return: The value for the indicated declaration, or None if it's not
+        :return: The value for the indicated declaration, or None if it's not
             defined by the element.
-        @rtype: object
         """
         if self.__meta is None:
             return None
@@ -965,13 +978,12 @@ class Element(object):
             return self.__meta.get(key)
 
     def set_meta(self, key, value):
-        """Assigns a L{meta declaration<meta>} to the element.
+        """Assigns a `meta declaration <meta>` to the element.
 
-        @param key: The name of the meta tag to set the value for.
-        @type key: str
+        :param key: The name of the meta tag to set the value for.
+        :type key: str
 
-        @param value: The value to assign to the meta tag.
-        @type value: object
+        :param value: The value to assign to the meta tag.
         """
         if self.__meta is None:
             if value is not None:
@@ -984,17 +996,17 @@ class Element(object):
 
     # Head elements
     #--------------------------------------------------------------------------
-    
+
     @getter
     def head_elements(self):
         """A list of HTML elements that will be added to the <head> tag when
-        the element takes part in a L{full page rendering<render_page>}.
+        the element takes part in a `full page rendering <render_page>`.
 
-        For scripts and stylesheets, using the L{resources} collection and its
-        associated methods (L{add_resource}) is recommended. In contrast with
+        For scripts and stylesheets, using the `resources` collection and its
+        associated methods (`add_resource`) is recommended. In contrast with
         those, this feature doesn't deal with duplicate linked elements.
 
-        @type: L{Element} list
+        :type: `Element` list
         """
         if self.__head_elements is None:
             return empty_list
@@ -1003,11 +1015,11 @@ class Element(object):
 
     def add_head_element(self, element):
         """Specifies that the given element should be rendered within the
-        <head> tag when the element takes part in a L{full page rendering
-        <render_page>}.
+        <head> tag when the element takes part in a
+        `full page rendering <render_page>`.
 
-        @param element: The element to add to the page's head.
-        @type element: L{Element}
+        :param element: The element to add to the page's head.
+        :type element: `Element`
         """
         if self.__head_elements is None:
             self.__head_elements = [element]
@@ -1019,15 +1031,13 @@ class Element(object):
     
     @getter
     def client_params(self):
-        """The set of client side parameters for the element.
+        """A dictionary with the client side parameters for the element.
     
         Each parameter in this dictionary will be relayed client side as an
         attribute of the element's DOM element, using a JSON encoder.
 
-        Client side parameters will only be rendered if a L{full page rendering
-        <render_page>} is requested.
-
-        @type: dict
+        Client side parameters will only be rendered if a
+        `full page rendering <render_page>` is requested.
         """
         if self.__client_params is None:
             return empty_dict
@@ -1035,16 +1045,15 @@ class Element(object):
             return self.__client_params
     
     def get_client_param(self, key):
-        """Gets the value of the indicated L{client side parameter
-        <client_params>}.
+        """Gets the value of the indicated
+        `client side parameter <client_params>`.
         
-        @param key: The parameter to retrieve.
-        @type key: str
+        :param key: The parameter to retrieve.
+        :type key: str
 
-        @return: The value for the indicated parameter.
-        @rtype: object
+        :return: The value for the indicated parameter.
 
-        @raise KeyError: Raised if the element doesn't define the indicated
+        :raise: Raises `KeyError` if the element doesn't define the indicated
             parameter.
         """
         if self.__client_params is None:
@@ -1054,15 +1063,14 @@ class Element(object):
             return self.__client_params[key]
 
     def set_client_param(self, key, value):
-        """Sets the value of the indicated L{client side parameter
-        <client_params>}.
+        """Sets the value of the indicated
+        `client side parameter <client_params>`.
 
-        @param key: The parameter to set.
-        @type key: str
+        :param key: The parameter to set.
+        :type key: str
 
-        @param value: The value for the parameter. Can be any object that can
+        :param value: The value for the parameter. Can be any object that can
             be exported as JSON.
-        @type value: object
         """
         if self.__client_params is None:
             self.__client_params = {key: value}
@@ -1070,12 +1078,12 @@ class Element(object):
             self.__client_params[key] = value
 
     def remove_client_param(self, key):
-        """Deletes a L{client side parameter<client_params>} from the element.
+        """Deletes a `client side parameter <client_params>` from the element.
 
-        @param key: The parameter to delete.
-        @type key: str
+        :param key: The parameter to delete.
+        :type key: str
 
-        @raise KeyError: Raised if the element doesn't define the indicated
+        :raise: Raises `KeyError` if the element doesn't define the indicated
             parameter.
         """
         if self.__client_params is None:
@@ -1089,16 +1097,15 @@ class Element(object):
     
     @getter
     def client_code(self):
-        """The snippets of javascript code attached to the element.
+        """A dictionary containing the snippets of javascript code attached to
+        the element.
 
         Code attached using this mechanism will be executed as soon as the DOM
-        tree is ready and its L{parameters<client_params>} from the server have
+        tree is ready and its `parameters <client_params>` from the server have
         been assigned.
 
-        Attached code will only be rendered if a L{full page rendering
-        <render_page>} is requested.
-
-        @type: str list
+        Attached code will only be rendered if a
+        `full page rendering <render_page>` is requested.
         """
         if self.__client_code is None:
             return empty_list
@@ -1106,11 +1113,11 @@ class Element(object):
             return self.__client_code
     
     def add_client_code(self, snippet):
-        """Attaches a L{snippet of javascript code<client_code>} to the
+        """Attaches a `snippet of javascript code <client_code>` to the
         element.
 
-        @param snippet: The snippet of code to attach to the element.
-        @type snippet: str
+        :param snippet: The snippet of code to attach to the element.
+        :type snippet: str
         """
         if self.__client_code is None:
             self.__client_code = [snippet]
@@ -1122,16 +1129,15 @@ class Element(object):
 
     @getter
     def client_variables(self):
-        """The set of client side variables set by the element.
+        """A dictionary containing the client side variables declared by the
+        element.
     
         Each parameter in this dictionary will be relayed client side as a
         global javascript variable, using a JSON encoder. Note that different
         elements can define the same variable, overriding its value.
 
-        Client side variables will only be rendered if a L{full page rendering
-        <render_page>} is requested.
-
-        @type: dict
+        Client side variables will only be rendered if a
+        `full page rendering <render_page>` is requested.
         """
         if self.__client_variables is None:
             return empty_dict
@@ -1139,16 +1145,16 @@ class Element(object):
             return self.__client_variables
     
     def get_client_variable(self, key):
-        """Gets the value of the indicated L{client side variable
-        <client_variables>}.
+        """Gets the value of the indicated
+        `client side variable <client_variables>`.
 
-        @param key: The name of the variable to obtain retrieve.
-        @type key: str
+        :param key: The name of the variable to obtain retrieve.
+        :type key: str
 
-        @return: The value for the specified variable.
-        @rtype: object
+        :return: The value for the specified variable.
+        :rtype: object
 
-        @raise KeyError: Raised if an undefined variable is requested.
+        :raise: Raises `KeyError` if an undefined variable is requested.
         """
         if self.__client_variables is None:
             raise KeyError("Trying to read an undefined "
@@ -1157,15 +1163,14 @@ class Element(object):
             return self.__client_variables[key]
 
     def set_client_variable(self, key, value):
-        """Sets the value of the indicated L{client side variable
-        <client_variables>}.
+        """Sets the value of the indicated
+        `client side variable <client_variables>`.
 
-        @param key: The name of the variable to set.
-        @type key: str
+        :param key: The name of the variable to set.
+        :type key: str
 
-        @param value: The value to set the variable to. Can be any object that
+        :param value: The value to set the variable to. Can be any object that
             can be serialized as JSON.
-        @type: object
         """
         if self.__client_variables is None:
             self.__client_variables = {key: value}
@@ -1173,13 +1178,13 @@ class Element(object):
             self.__client_variables[key] = value
 
     def remove_client_variable(self, key):
-        """Deletes a L{client side variable<client_variables>} from the
+        """Deletes a `client side variable <client_variables>` from the
         element.
 
-        @param key: The name of the variable to delete.
-        @type: key str
+        :param key: The name of the variable to delete.
+        :type: key str
 
-        @raise KeyError: Raised if trying to delete an undefined variable.
+        :raise: Raises `KeyError` if trying to delete an undefined variable.
         """
         if self.__client_variables is None:
             raise KeyError("Trying to remove an undefined "
@@ -1195,12 +1200,10 @@ class Element(object):
         """A set of translation keys to relay client side.
 
         Translation keys included in this collection will be made available
-        client side, using the X{cocktail.translate} method.
+        client side, using the *cocktail.translate* method.
 
-        Translation keys will only be rendered if a L{full page rendering
-        <render_page>} is requested.
-
-        @type: str set
+        Translation keys will only be rendered if a
+        `full page rendering <render_page>` is requested.
         """
         if self.__client_translations is None:
             return empty_set
@@ -1208,14 +1211,13 @@ class Element(object):
             return self.__client_translations
     
     def add_client_translation(self, key):
-        """Makes the given L{translation key>} available client side.
+        """Makes the given translation key available client side.
 
-        The key will be added to the set of L{translation keys 
-        <client_translations>} that the element requires at the client side.
-        It is safe to call this method twice for the same key.
+        The key will be added to the set of
+        `translation keys <client_translations>` that the element requires at
+        the client side. It is safe to call this method twice for the same key.
 
-        @param key: The translation key to make available.
-        @type key: object
+        :param key: The translation key to make available.
         """
         if self.__client_translations is None:
             self.__client_translations = set()
@@ -1226,12 +1228,13 @@ class Content(Element):
     """A piece of arbitrary HTML content.
 
     When rendered, instances of this class ignore their tag, attributes and
-    children, using their L{value} attribute to as their HTML representation.
+    children, using their `value` attribute as their HTML representation.
     They can still link to resources or client side assets.
 
-    @var value: The HTML code for the element. Can be anything that can be
-        represented as an unicode string.
-    @type value: object
+    .. attribute:: value
+    
+        The HTML code for the element. Can be anything that can be represented
+        as an unicode string.
     """
     styled_class = False
     value = None
@@ -1258,8 +1261,9 @@ class Content(Element):
 class PlaceHolder(Content):
     """A blob of content that produces its value just before it's rendered.
     
-    @var expression: A callable that produces the content for the placeholder.
-    @type expression: callable
+    .. attribute:: expression
+        
+        A callable that produces the content for the placeholder.    
     """
     def __init__(self, expression):
         Content.__init__(self)
@@ -1270,14 +1274,15 @@ class PlaceHolder(Content):
 
 
 class ElementTreeError(Exception):
-    """An exception raised when violating the integrity of an L{Element} tree.
+    """An exception raised when violating the integrity of an `Element` tree.
     """
 
+
 class IdGenerationError(Exception):
-    """An exception raised when trying to L{generate a unique identifier
-    <Element.require_id> outside of a rendering operation.
+    """An exception raised when trying to
+    `generate a unique identifier <Element.require_id>` outside of a rendering
+    operation.
     """
     def __str__(self):
-        return "Element identifiers can only be generated "\
-               "during page rendering"
+        return "Element identifiers can only be generated while rendering"
 
