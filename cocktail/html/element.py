@@ -1250,7 +1250,11 @@ class Content(Element):
     
     @getter
     def substantial(self):
-        return self.visible and unicode(self.value).strip()
+        return (
+            self.visible
+            and self.value is not None
+            and unicode(self.value).strip()
+        )
 
     def _render(self, renderer, out):
         self.ready()
