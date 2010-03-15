@@ -100,7 +100,7 @@ class PersistentClass(SchemaClass):
 
         if value is not None:
 
-            validable = cls._get_unique_validable(context)
+            validable = context.get("persistent_object", context.validable)
 
             if isinstance(validable, PersistentObject):
                 pschema = member.original_member.schema
@@ -115,11 +115,8 @@ class PersistentClass(SchemaClass):
                     params = {member.name: value}
                     duplicate = pschema.get_instance(**params)
 
-                if duplicate and duplicate is not validable:
+                if duplicate and duplicate._counts_as_duplicate(validable):
                     yield UniqueValueError(member, value, context)
-
-    def _get_unique_validable(cls, context):
-        return context.get("persistent_object", context.validable)
 
     class MemberDescriptor(SchemaClass.MemberDescriptor):
 
@@ -428,6 +425,9 @@ class PersistentObject(SchemaObject, Persistent):
 
     def get_ordering_key(self):
         return translations(self)
+
+    def _counts_as_duplicate(self, other):
+        return self is not other
 
 PersistentObject._translation_schema_metaclass = PersistentClass
 PersistentObject._translation_schema_base = PersistentObject
