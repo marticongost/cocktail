@@ -537,7 +537,15 @@ translations.define("fr",
 translations.define("de",
     ca = u"Alemany",
     es = u"Alemán",
-    en = u"German"
+    en = u"German",
+    de = u"Deutsch"
+)
+
+translations.define("pt",
+    ca = u"Portuguès",
+    es = u"Portugués",
+    en = u"Portuguese",
+    pt = u"Português"
 )
 
 translations.define("translated into",

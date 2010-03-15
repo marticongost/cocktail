@@ -1,10 +1,7 @@
 #-*- coding: utf-8 -*-
 u"""
-
-@author:		Martí Congost
-@contact:		marti.congost@whads.com
-@organization:	Whads/Accent SL
-@since:			July 2008
+Provides importing and naming services for packages, modules and their exported
+objects.
 """
 import sys
 import os.path
@@ -13,20 +10,21 @@ from types import ModuleType
 PYTHON_EXTENSIONS = ".py", ".pyc", ".pyo", ".pyd"
 
 def resolve(reference):
-    """Resolves a reference to an object. The refered object can be specified
-    using a fully qualified name, which will be imported, or an object
-    reference, which will be returned as is.
+    """Resolves a reference to an object. 
     
-    @param name: The reference to resolve.
-    @type name: str or object
+    The refered object can be specified using a fully qualified name, which
+    will be imported, or an object reference, which will be returned as is.
+    
+    :param name: The reference to resolve.
+    :type name: str or object
 
-    @return: The refered object.
-    @rtype: object
+    :return: The refered object.
+    :rtype: object
 
-    @raise ImportError: Raised if there's no module or package matching the
+    :raise: Raises `ImportError` if there's no module or package matching the
         indicated qualified name.
 
-    @raise AttributeError: Raised if the indicated module or package doesn't
+    :raise: Raises `AttributeError` if the indicated module or package doesn't
         contain the requested object.
     """
     if isinstance(reference, basestring):
@@ -35,16 +33,15 @@ def resolve(reference):
         return reference
 
 def import_module(name):
-    """Obtains a reference to a module or package, given its fully qualified
-    name.
+    """Obtains a reference to a module or package from a qualified name.
     
-    @param name: The fully qualified name of the module to import.
-    @type name: str
+    :param name: The fully qualified name of the module to import.
+    :type name: str
 
-    @return: The requested module.
-    @rtype: object
+    :return: The requested module.
+    :rtype: object
 
-    @raise ImportError: Raised if there's no module or package matching the
+    :raise: Raises `ImportError` if there's no module or package matching the
         indicated qualified name.
     """
     obj = __import__(name)
@@ -55,18 +52,18 @@ def import_module(name):
     return obj
 
 def import_object(name):
-    """Obtains a reference to an object, given its fully qualified name.
+    """Obtains a reference to an object from a qualified name.
     
-    @param name: The fully qualified name of the object to import.
-    @type name: str
+    :param name: The fully qualified name of the object to import.
+    :type name: str
 
-    @return: The requested object.
-    @rtype: object
+    :return: The requested object.
+    :rtype: object
 
-    @raise ImportError: Raised if there's no module or package matching the
+    :raise: Raises `ImportError` if there's no module or package matching the
         indicated qualified name.
 
-    @raise AttributeError: Raised if the indicated module or package doesn't
+    :raise: Raises `AttributeError` if the indicated module or package doesn't
         contain the requested object.
     """
     components = name.split(".")
@@ -83,19 +80,17 @@ def import_object(name):
 _full_names = {}
 
 def get_full_name(obj):
-    """Obtains the canonical, fully qualified name of the provided python
-    object.
+    """Obtains the canonical qualified name for the provided object.
     
-    @param obj: The object to determine the name for.
-    @type obj: Package, module, class, function or method
+    :param obj: The object to determine the name for.
+    :type obj: Package, module, class, function or method
 
-    @return: The qualified name of the object.
-    @rtype: str
+    :return: The qualified name of the object.
+    :rtype: str
 
-    @raise TypeError: Raised if the provided object is an instance of a type
-        that doesn't map its instances to qualified names.
+    :raise: Raises `TypeError` if the provided object is an instance of a type
+        that can't map its instances to qualified names.
     """
-    
     name = _full_names.get(obj)
 
     if name is None:
@@ -141,19 +136,32 @@ def get_full_name(obj):
         raise TypeError("Can't find the name of %r" % obj)
 
 def set_full_name(obj, name):
+    """Sets the canonical, fully qualified name of the provided python object.
+
+    This function will override the normal behavior of `get_full_name` on the
+    given object, so that it always returns the assigned name. This can be used
+    to supply qualified names for objects that can't be normally mapped to a
+    name (for example, templates produced by `cocktail.html.templates`).
+    
+    :param obj: The object to establish the name for.
+    :type obj: Package, module, class, function or method
+
+    :param name: The qualified name to assign to the object.
+    :type name: str
+    """
     _full_names[obj] = name
 
 def get_path_name(path):
     """Gets the qualified name of the module or package that maps to the
     indicated file or folder.
     
-    @param path: The path to the file or folder to evaluate.
-    @type path: str
+    :param path: The path to the file or folder to evaluate.
+    :type path: str
 
-    @return: The fully qualified name of the package or module at the indicated
+    :return: The fully qualified name of the package or module at the indicated
         location.
 
-    @raise ValueError: Raised if the indicated path doesn't map to a python
+    :raise: Raises `ValueError` if the indicated path doesn't map to a python
         module or package.
     """
     components = []
