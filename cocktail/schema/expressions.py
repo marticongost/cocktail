@@ -320,6 +320,7 @@ class GlobalSearchExpression(Expression):
 
     def __init__(self, search, languages):
         Expression.__init__(self)
+        self.search_query = search
         self.search_words = set(normalize(search).split())
         self.languages = languages
 
