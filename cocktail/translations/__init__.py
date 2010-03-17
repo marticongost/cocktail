@@ -19,9 +19,13 @@ from cocktail.translations.translation import (
     ca_possessive,
     plural2,
     ca_join,
+    ca_either,
     es_join,
+    es_either,
     en_join,
-    de_join
+    en_either,
+    de_join,
+    de_either
 )
 from cocktail.translations import strings
 
