@@ -72,7 +72,7 @@ cocktail.init(function (root) {
 
                 var ele = (e.target || e.srcElement);
 
-                if (ele.tagName == "BUTTON" && ele.isButtonReplacement) {
+                if (ele.tagName == "BUTTON" && ele.isButtonReplacement && !ele.disabled) {
                     clearHidden();
                     hidden = document.createElement("<input type='hidden' name='" + ele.buttonName + "'>");
                     hidden.value = ele.buttonValue;             
@@ -96,6 +96,8 @@ cocktail.init(function (root) {
                     replacement.className = this.className;
                     replacement.innerHTML = this.innerHTML;
                     replacement.style.cssText = this.style.cssText;
+                    replacement.minSelection = this.minSelection;
+                    replacement.maxSelection = this.maxSelection;
                     jQuery(this).replaceWith(replacement);
                 }
             });
