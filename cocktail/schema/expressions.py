@@ -8,6 +8,7 @@ u"""
 """
 import re
 import operator
+from cocktail.translations import translations
 from cocktail.schema.accessors import get_accessor
 
 normalization_map = {}
@@ -179,6 +180,13 @@ class Constant(Expression):
 
     def eval(self, context = None, accessor = None):
         return self.value
+
+    def __translate__(self, language, **kwargs):
+        if self.value is None:
+            return u"Ø"
+        else:
+            return translations(self.value, language, **kwargs) \
+                or unicode(self.value)
 
 
 class Variable(Expression):

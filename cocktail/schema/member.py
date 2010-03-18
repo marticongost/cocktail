@@ -393,13 +393,20 @@ class Member(Variable):
             if type and not isinstance(value, type):
                 yield exceptions.TypeCheckError(self, value, context, type)
 
-    def __translate__(self, language, **kwargs):        
-        return translations(
-            self.schema.name + "." + self.name,
-            language,
-            chain = self.copy_source,
-            **kwargs
-        )
+    def __translate__(self, language, qualified = False, **kwargs):
+        if qualified and self.schema:
+            return translations("cocktail.schema.Member qualified",
+                member = self,
+                language = language,
+                **kwargs
+            )
+        else:
+            return translations(
+                self.schema.name + "." + self.name,
+                language,
+                chain = self.copy_source,
+                **kwargs
+            )
 
     def translate_value(self, value, language = None, **kwargs):
         if value is None:
