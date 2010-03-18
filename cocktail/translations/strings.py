@@ -21,7 +21,6 @@ from cocktail.translations.translation import (
     en_either,
     plural2
 )
-from cocktail.schema import Member
 from cocktail.schema.expressions import (
     Constant,
     PositiveExpression
@@ -1107,8 +1106,7 @@ translations.define("cocktail.schema.expressions.SelfExpression-instance",
 def _op_translation_factory(language, format):
     def operation_translator(instance, **kwargs):
         if len(instance.operands) == 2 \
-        and isinstance(instance.operands[0], Member) \
-        and instance.operands[0].translate_value \
+        and getattr(instance.operands[0], "translate_value", None) \
         and isinstance(instance.operands[1], Constant):
             operands = (
                 translations(instance.operands[0], language, **kwargs),
