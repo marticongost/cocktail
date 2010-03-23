@@ -10,7 +10,7 @@ from copy import copy
 import cherrypy
 from cocktail.pkgutils import resolve
 from cocktail.modeling import ListWrapper, SetWrapper, getter, cached_getter
-from cocktail.language import get_content_language
+from cocktail.translations import get_language
 from cocktail import schema
 from cocktail.schema.io import export_file
 from cocktail.schema.expressions import (
@@ -164,7 +164,7 @@ class UserCollection(object):
     @cached_getter
     def languages(self):
         
-        languages = set([get_content_language()])
+        languages = set([get_language()])
 
         if self.allow_language_selection:
             languages = self.params.read(

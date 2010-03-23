@@ -11,8 +11,11 @@ from types import MethodType
 from operator import getitem
 from cocktail.schema import String
 from cocktail.modeling import getter, ListWrapper, SetWrapper, empty_list
-from cocktail.language import require_content_language, get_content_language
-from cocktail.translations import translations
+from cocktail.translations import (
+    translations,
+    require_language,
+    get_language
+)
 from cocktail.html import Element, Content
 from cocktail.typemapping import TypeMapping
 from cocktail.schema import Member, get_accessor
@@ -283,7 +286,7 @@ class DataDisplay(object):
         expr = self.get_member_expression(member)
 
         if translated and language is None:
-            language = require_content_language()
+            language = require_language()
 
         if expr:
             if translated:
@@ -357,7 +360,7 @@ class DataDisplay(object):
         display.data = obj
         display.persistent_object = self.persistent_object
         display.member = member
-        display.language = get_content_language()
+        display.language = get_language()
 
         if hasattr(display, "value"):
             value = self.get_member_value(obj, member)

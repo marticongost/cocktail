@@ -10,7 +10,7 @@ from time import time
 from itertools import chain
 from cocktail.styled import styled
 from cocktail.modeling import getter, ListWrapper
-from cocktail.language import get_content_language
+from cocktail.translations import get_language
 from cocktail.schema import Member, expressions, SchemaObjectAccessor
 from cocktail.schema.io import export_file
 from cocktail.schema.expressions import TranslationExpression
@@ -445,7 +445,7 @@ class Query(object):
             member = criteria.operands[0]
             if isinstance(member, Member) and member.translated:
                 order.append(criteria.__class__(
-                    member.translated_into(get_content_language())
+                    member.translated_into(get_language())
                 ))
             else:
                 order.append(criteria)
@@ -714,7 +714,7 @@ def _get_filter_info(filter):
 def _get_index_value(member, value):
     value = member.get_index_value(value)
     if member.translated:
-        value = (get_content_language(), value)
+        value = (get_language(), value)
     return value
 
 def _expression_resolution(self, query):

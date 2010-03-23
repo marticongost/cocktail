@@ -10,8 +10,8 @@ import re
 from datetime import datetime
 from decimal import Decimal
 from cocktail.pkgutils import get_full_name
-from cocktail.translations.translation import (
-    translations,
+from cocktail.translations.translation import translations
+from cocktail.translations.helpers import (
     ca_possessive,
     ca_join,
     ca_either,
@@ -251,48 +251,54 @@ DATE_STYLE_ABBR = 2
 DATE_STYLE_TEXT = 3
 
 def _date_instance_ca(instance, style = DATE_STYLE_NUMBERS):
-    if style == DATE_STYLE_NUMBERS :
-        return instance.strftime(translations("date format", "ca"))
-    if style == DATE_STYLE_ABBR :
-        return u"%s %s %s" % \
-            (instance.day,
-            translations(u"month %s %s" % (instance.month,"abbr"), "ca"),
-            instance.year)
-    if style == DATE_STYLE_TEXT :
-        return u"%s %s de %s" % \
-            (instance.day,
+    if style == DATE_STYLE_NUMBERS:
+        return instance.strftime(translations("date format"))
+    elif style == DATE_STYLE_ABBR:
+        return u"%s %s %s" % (
+            instance.day,
+            translations(u"month %s abbr" % instance.month),
+            instance.year
+        )
+    elif style == DATE_STYLE_TEXT:
+        return u"%s %s de %s" % (
+            instance.day,
             ca_possessive(
-                translations(u"month %s" % (instance.month), "ca").lower()
+                translations(u"month %s" % instance.month).lower()
             ),
-            instance.year)
+            instance.year
+        )
 
 def _date_instance_es(instance, style = DATE_STYLE_NUMBERS):
-    if style == DATE_STYLE_NUMBERS :
-        return instance.strftime(translations("date format", "es"))
-    if style == DATE_STYLE_ABBR :
-        return u"%s %s %s" % \
-            (instance.day,
-            translations(u"month %s %s" % (instance.month,"abbr"), "es"),
-            instance.year)
-    if style == DATE_STYLE_TEXT :
-        return u"%s de %s de %s" % \
-            (instance.day,
-            translations(u"month %s" % (instance.month), "es").lower(),
-            instance.year)
+    if style == DATE_STYLE_NUMBERS:
+        return instance.strftime(translations("date format"))        
+    elif style == DATE_STYLE_ABBR:
+        return u"%s %s %s" % (
+            instance.day,
+            translations(u"month %s abbr" % instance.month),
+            instance.year
+        )
+    elif style == DATE_STYLE_TEXT:
+        return u"%s de %s de %s" % (
+            instance.day,
+            translations(u"month %s" % instance.month).lower(),
+            instance.year
+        )
 
 def _date_instance_en(instance, style = DATE_STYLE_NUMBERS):
-    if style == DATE_STYLE_NUMBERS :
-        return instance.strftime(translations("date format", "en"))
-    if style == DATE_STYLE_ABBR :
-        return u"%s %s %s" % \
-            (instance.year,
-            translations(u"month %s %s" % (instance.month,"abbr"), "en"),
-            instance.day)
-    if style == DATE_STYLE_TEXT :
-        return u"%s %s %s" % \
-            (instance.year,
-            translations(u"month %s" % (instance.month), "en"),
-            instance.day)
+    if style == DATE_STYLE_NUMBERS:
+        return instance.strftime(translations("date format"))
+    elif style == DATE_STYLE_ABBR:
+        return u"%s %s %s" % (
+            instance.year,
+            translations(u"month %s abbr" % instance.month),
+            instance.day
+        )
+    elif style == DATE_STYLE_TEXT:
+        return u"%s %s %s" % (
+            instance.year,
+            translations(u"month %s" % instance.month),
+            instance.day
+        )
 
 translations.define("date-instance",
     ca = _date_instance_ca,
@@ -309,7 +315,7 @@ translations.define("datetime-instance",
         _date_instance_en(instance, style) + instance.strftime(" %H:%M:%S")
 )
 
-def _create_time_span_function(language, span_format, forms, join):
+def _create_time_span_function(span_format, forms, join):
 
     def time_span(span):
 
@@ -327,12 +333,10 @@ def _create_time_span_function(language, span_format, forms, join):
 
             return join(desc)
 
-    time_span.func_name = language + "_time_span"
     return time_span
 
 translations.define("time span",
     ca = _create_time_span_function(
-        "ca",
         "%.2d.%.2d.%2d", 
         [[u"dia", u"dies"],
          [u"hora", u"hores"],
@@ -342,7 +346,6 @@ translations.define("time span",
         ca_join
     ),
     es = _create_time_span_function(
-        "es",
         "%.2d:%.2d:%2d", 
         [[u"día", u"días"],
          [u"hora", u"horas"],
@@ -352,7 +355,6 @@ translations.define("time span",
         es_join
     ),
     en = _create_time_span_function(
-        "en",
         "%.2d:%.2d:%2d", 
         [[u"day", u"days"],
          [u"hour", u"hours"],
@@ -555,23 +557,23 @@ translations.define("pt",
 )
 
 translations.define("translated into",
-    ca = lambda lang: "en " + translations(lang, "ca"),
-    es = lambda lang: "en " + translations(lang, "es"),
-    en = lambda lang: "in " + translations(lang, "en")
+    ca = lambda lang: "en " + translations(lang),
+    es = lambda lang: "en " + translations(lang),
+    en = lambda lang: "in " + translations(lang)
 )
 
 translations.define("cocktail.schema.Member qualified",
     ca = lambda member: u"%s %s" % (
-            translations(member, "ca"),
-            ca_possessive(translations(member.schema.name, "ca").lower())
+            translations(member),
+            ca_possessive(translations(member.schema.name).lower())
         ),
     es = lambda member: u"%s de %s" % (
-            translations(member, "es"),
-            translations(member.schema.name, "es").lower()
+            translations(member),
+            translations(member.schema.name).lower()
         ),
     en = lambda member: u"%s %s" % (
-            translations(member.schema.name, "en"),
-            translations(member, "en").lower()
+            translations(member.schema.name),
+            translations(member).lower()
         )
 )
 
@@ -586,182 +588,182 @@ translations.define("Exception-instance",
 
 # Validation errors
 #------------------------------------------------------------------------------
-def member_identifier(error, language):
+def member_identifier(error):
     
     from cocktail.schema import RelationMember
 
     desc = [
-        translations(member, language).lower()
+        translations(member).lower()
         for member, validable in error.path
         if isinstance(member, RelationMember)
-    ]            
+    ]
     
     if error.language:
         desc.append("%s (%s)" % (
-            translations(error.member, language).lower(),
-            translations(error.language, language)
+            translations(error.member).lower(),
+            translations(error.language)
         ))
     else:
-        desc.append(translations(error.member, language).lower())
+        desc.append(translations(error.member).lower())
 
     return u" &gt; ".join(desc)
 
 translations.define("cocktail.schema.exceptions.ValidationError-instance",
     ca = lambda instance:
         u"El camp <em>%s</em> no és vàlid"
-        % member_identifier(instance, "ca"),
+        % member_identifier(instance),
     es = lambda instance:
         u"El campo <em>%s</em> no es válido"        
-        % member_identifier(instance, "es"),
+        % member_identifier(instance),
     en = lambda instance:
         u"The <em>%s</em> field is not valid"
-        % member_identifier(instance, "en")
+        % member_identifier(instance)
 )
 
 translations.define("cocktail.schema.exceptions.ValueRequiredError-instance",
     ca = lambda instance:
         u"El camp <em>%s</em> no pot estar buit"
-        % member_identifier(instance, "ca"),
+        % member_identifier(instance),
     es = lambda instance:
         u"El campo <em>%s</em> no puede estar vacío"
-        % member_identifier(instance, "es"),
+        % member_identifier(instance),
     en = lambda instance:
         u"The <em>%s</em> field can't be empty"
-        % member_identifier(instance, "en")
+        % member_identifier(instance)
 )
 
 translations.define("cocktail.schema.exceptions.NoneRequiredError-instance",
     ca = lambda instance:
         u"El camp <em>%s</em> ha d'estar buit"
-        % member_identifier(instance, "ca"),
+        % member_identifier(instance),
     es = lambda instance:
         u"El campo <em>%s</em> debe estar vacío"
-        % member_identifier(instance, "es"),
+        % member_identifier(instance),
     en = lambda instance:
         u"The <em>%s</em> field must be empty"
-        % member_identifier(instance, "en")
+        % member_identifier(instance)
 )
 
 translations.define("cocktail.schema.exceptions.TypeCheckError-instance",
     ca = lambda instance:
         u"El camp <em>%s</em> té un tipus incorrecte"
-        % member_identifier(instance, "ca"),
+        % member_identifier(instance),
     es = lambda instance:
         u"El campo <em>%s</em> tiene un tipo incorrecto"
-        % member_identifier(instance, "es"),
+        % member_identifier(instance),
     en = lambda instance:
         u"The <em>%s</em> field is of the wrong type"
-        % member_identifier(instance, "en")
+        % member_identifier(instance)
 )
 
 translations.define("cocktail.schema.exceptions.EnumerationError-instance",
     ca = lambda instance:
         u"El valor del camp <em>%s</em> no és un dels permesos"
-        % member_identifier(instance, "ca"),
+        % member_identifier(instance),
     es = lambda instance:
         u"El campo <em>%s</em> no es uno de los permitidos"
-        % member_identifier(instance, "es"),
+        % member_identifier(instance),
     en = lambda instance:
         u"Wrong choice on field <em>%s</em>"
-        % member_identifier(instance, "en")
+        % member_identifier(instance)
 )
 
 translations.define("cocktail.schema.exceptions.MinLengthError-instance",
     ca = lambda instance:
         u"El camp <em>%s</em> ha de tenir un mínim de %d caràcters"
-        % (member_identifier(instance, "ca"), instance.min),
+        % (member_identifier(instance), instance.min),
     es = lambda instance:
         u"El campo <em>%s</em> debe tener un mínimo de %d caracteres"
-        % (member_identifier(instance, "es"), instance.min),
+        % (member_identifier(instance), instance.min),
     en = lambda instance:
         u"The <em>%s</em> field must be at least %d characters long"
-        % (member_identifier(instance, "en"), instance.min)
+        % (member_identifier(instance), instance.min)
 )
 
 translations.define("cocktail.schema.exceptions.MaxLengthError-instance",
     ca = lambda instance:
         u"El camp <em>%s</em> ha de tenir un màxim de %d caràcters"
-        % (member_identifier(instance, "ca"), instance.max),
+        % (member_identifier(instance), instance.max),
     es = lambda instance:
         u"El campo <em>%s</em> debe tener un máximo de %d caracteres"
-        % (member_identifier(instance, "es"), instance.max),
+        % (member_identifier(instance), instance.max),
     en = lambda instance:
         u"The <em>%s</em> field can't be more than %d characters long"
-        % (member_identifier(instance, "en"), instance.max)
+        % (member_identifier(instance), instance.max)
 )
 
 translations.define("cocktail.schema.exceptions.FormatError-instance",
     ca = lambda instance:
         u"El format del camp <em>%s</em> és incorrecte"
-        % member_identifier(instance, "ca"),
+        % member_identifier(instance),
     es = lambda instance:
         u"El formato del campo <em>%s</em> es incorrecto"
-        % member_identifier(instance, "es"),
+        % member_identifier(instance),
     en = lambda instance:
         u"The <em>%s</em> field has a wrong format"
-        % member_identifier(instance, "en")
+        % member_identifier(instance)
 )
 
 translations.define("cocktail.schema.exceptions.MinValueError-instance",
     ca = lambda instance:
         u"El camp <em>%s</em> ha de ser igual o superior a %s"
-        % (member_identifier(instance, "ca"), instance.min),
+        % (member_identifier(instance), instance.min),
     es = lambda instance:
         u"El campo <em>%s</em> debe ser igual o superior a %s"
-        % (member_identifier(instance, "es"), instance.min),
+        % (member_identifier(instance), instance.min),
     en = lambda instance:
         u"The <em>%s</em> field must be greater or equal than %s"
-        % (member_identifier(instance, "en"), instance.min)
+        % (member_identifier(instance), instance.min)
 )
 
 translations.define("cocktail.schema.exceptions.MaxValueError-instance",
     ca = lambda instance:
         u"El camp <em>%s</em> ha de ser igual o inferior a %s"
-        % (member_identifier(instance, "ca"), instance.max),
+        % (member_identifier(instance), instance.max),
     es = lambda instance:
         u"El campo <em>%s</em> debe ser igual o inferior a %s"
-        % (member_identifier(instance, "es"), instance.max),
+        % (member_identifier(instance), instance.max),
     en = lambda instance:
         u"The <em>%s</em> field must be lower or equal than %s"
-        % (member_identifier(instance, "en"), instance.max)
+        % (member_identifier(instance), instance.max)
 )
 
 translations.define("cocktail.schema.exceptions.MinItemsError-instance",
     ca = lambda instance:
         u"El camp <em>%s</em> ha de contenir %d o més elements"
-        % (member_identifier(instance, "ca"), instance.min),
+        % (member_identifier(instance), instance.min),
     es = lambda instance:
         u"El campo <em>%s</em> debe contener %d o más elementos"
-        % (member_identifier(instance, "es"), instance.min),
+        % (member_identifier(instance), instance.min),
     en = lambda instance:
         u"The <em>%s</em> field must contain %d or more items"
-        % (member_identifier(instance, "en"), instance.min)
+        % (member_identifier(instance), instance.min)
 )
 
 translations.define("cocktail.schema.exceptions.MaxItemsError-instance",
     ca = lambda instance:
         u"El camp <em>%s</em> no pot contenir més de %d elements"
-        % (member_identifier(instance, "ca"), instance.max),
+        % (member_identifier(instance), instance.max),
     es = lambda instance:
         u"El campo <em>%s</em> no puede contener más de %d elementos"
-        % (member_identifier(instance, "es"), instance.max),
+        % (member_identifier(instance), instance.max),
     en = lambda instance:
         u"The <em>%s</em> field can't contain more than %d items"
-        % (member_identifier(instance, "en"), instance.max)
+        % (member_identifier(instance), instance.max)
 )
 
 translations.define(
     "cocktail.persistence.persistentobject.UniqueValueError-instance",
     ca = lambda instance:
         u"El valor indicat pel camp <em>%s</em> ja existeix a la base de dades"
-        % member_identifier(instance, "ca"),
+        % member_identifier(instance),
     es = lambda instance:
         u"El valor indicado para el campo <em>%s</em> ya existe en la base de "
         u"datos"
-        % member_identifier(instance, "es"),
+        % member_identifier(instance),
     en = lambda instance:
         u"The value of the <em>%s</em> field is already in use"
-        % member_identifier(instance, "en")
+        % member_identifier(instance)
 )
 
 translations.define(
@@ -884,18 +886,18 @@ translations.define("cocktail.controllers.grouping.TimeGrouping hour variant",
     en = u"By hour"
 )
 
-def _DateGrouping_value(grouping, value, language):
+def _DateGrouping_value(grouping, value):
     if grouping.variant == "year":
         return value.year
     elif grouping.variant == "month":
-        return "%s %d" % (translations("month %d" % value.month, language), value.year)
+        return "%s %d" % (translations("month %d" % value.month), value.year)
     else:
-        return translations(value, language, style = DATE_STYLE_TEXT)
+        return translations(value, style = DATE_STYLE_TEXT)
 
 translations.define("cocktail.controllers.grouping.DateGrouping value",
-    ca = lambda grouping, value: _DateGrouping_value(grouping, value, "ca"),
-    es = lambda grouping, value: _DateGrouping_value(grouping, value, "es"),
-    en = lambda grouping, value: _DateGrouping_value(grouping, value, "en")
+    ca = _DateGrouping_value,
+    es = _DateGrouping_value,
+    en = _DateGrouping_value
 )
 
 # Date interval
@@ -907,10 +909,10 @@ def _date_interval_ca(dates = None):
 
     def month_string(date, show = False):
         if date.month in (4, 8, 10):
-            return  u"d'%s" % translations(u"month %s" % (date.month), "ca") \
+            return  u"d'%s" % translations(u"month %s" % (date.month)) \
                 if show else ""
         else:
-            return  u"de %s" % translations(u"month %s" % (date.month), "ca") \
+            return  u"de %s" % translations(u"month %s" % (date.month)) \
                 if show else ""
 
     def year_string(date, show = False):
@@ -975,7 +977,7 @@ def _date_interval_es(dates = None):
     date_string = ""
 
     def month_string(date, show = False):
-        return  u"de %s" % translations(u"month %s" % (date.month), "es") \
+        return  u"de %s" % translations(u"month %s" % (date.month)) \
             if show else ""
 
     def year_string(date, show = False):
@@ -1035,8 +1037,7 @@ def _date_interval_en(dates = None):
     date_string = ""
 
     def month_string(date, show = False):
-        return  u"%s" % translations(u"month %s" % (date.month), "en") \
-            if show else ""
+        return translations(u"month %s" % (date.month)) if show else ""
 
     def year_string(date, show = False):
         return ", %d" % (date.year,) if show else ""
@@ -1103,22 +1104,21 @@ translations.define("cocktail.schema.expressions.SelfExpression-instance",
     en = u"the evaluated item"
 )
 
-def _op_translation_factory(language, format):
+def _op_translation_factory(format):
     def operation_translator(instance, **kwargs):
         if len(instance.operands) == 2 \
         and getattr(instance.operands[0], "translate_value", None) \
         and isinstance(instance.operands[1], Constant):
             operands = (
-                translations(instance.operands[0], language, **kwargs),
+                translations(instance.operands[0], **kwargs),
                 instance.operands[0].translate_value(
                     instance.operands[1].value,
-                    language,
                     **kwargs
                 ) or u"Ø"
             )
         else:
             operands = tuple(
-                translations(operand, language, **kwargs)
+                translations(operand, **kwargs)
                 for operand in instance.operands
             )
             print format
@@ -1129,62 +1129,62 @@ def _op_translation_factory(language, format):
     return operation_translator
 
 translations.define("cocktail.schema.expressions.EqualExpression-instance",
-    ca = _op_translation_factory("ca", u"%s igual a %s"),
-    es = _op_translation_factory("es", u"%s igual a %s"),
-    en = _op_translation_factory("en", u"%s equals %s")
+    ca = _op_translation_factory(u"%s igual a %s"),
+    es = _op_translation_factory(u"%s igual a %s"),
+    en = _op_translation_factory(u"%s equals %s")
 )
 
 translations.define("cocktail.schema.expressions.NotEqualExpression-instance",
-    ca = _op_translation_factory("ca", u"%s diferent de %s"),
-    es = _op_translation_factory("es", u"%s distinto de %s"),
-    en = _op_translation_factory("en", u"%s not equals %s")
+    ca = _op_translation_factory(u"%s diferent de %s"),
+    es = _op_translation_factory(u"%s distinto de %s"),
+    en = _op_translation_factory(u"%s not equals %s")
 )
 
 translations.define("cocktail.schema.expressions.GreaterExpression-instance",
-    ca = _op_translation_factory("ca", u"%s major que %s"),
-    es = _op_translation_factory("es", u"%s mayor que %s"),
-    en = _op_translation_factory("en", u"%s greater than %s")
+    ca = _op_translation_factory(u"%s major que %s"),
+    es = _op_translation_factory(u"%s mayor que %s"),
+    en = _op_translation_factory(u"%s greater than %s")
 )
 
 translations.define(
     "cocktail.schema.expressions.GreaterEqualExpression-instance",
-    ca = _op_translation_factory("ca", u"%s major o igual que %s"),
-    es = _op_translation_factory("es", u"%s mayor o igual que %s"),
-    en = _op_translation_factory("en", u"%s greater or equal than %s")
+    ca = _op_translation_factory(u"%s major o igual que %s"),
+    es = _op_translation_factory(u"%s mayor o igual que %s"),
+    en = _op_translation_factory(u"%s greater or equal than %s")
 )
 
 translations.define("cocktail.schema.expressions.LowerExpression-instance",
-    ca = _op_translation_factory("ca", u"%s menor que %s"),
-    es = _op_translation_factory("es", u"%s menor que %s"),
-    en = _op_translation_factory("en", u"%s lower than %s")
+    ca = _op_translation_factory(u"%s menor que %s"),
+    es = _op_translation_factory(u"%s menor que %s"),
+    en = _op_translation_factory(u"%s lower than %s")
 )
 
 translations.define(
     "cocktail.schema.expressions.LowerEqualExpression-instance",
-    ca = _op_translation_factory("ca", u"%s menor o igual que %s"),
-    es = _op_translation_factory("es", u"%s menor o igual que %s"),
-    en = _op_translation_factory("en", u"%s lower or equal than %s")
+    ca = _op_translation_factory(u"%s menor o igual que %s"),
+    es = _op_translation_factory(u"%s menor o igual que %s"),
+    en = _op_translation_factory(u"%s lower or equal than %s")
 )
 
 translations.define(
     "cocktail.schema.expressions.StartsWithExpression-instance",
-    ca = _op_translation_factory("ca", u"%s comença per %s"),
-    es = _op_translation_factory("es", u"%s empieza por %s"),
-    en = _op_translation_factory("en", u"%s starts with %s")
+    ca = _op_translation_factory(u"%s comença per %s"),
+    es = _op_translation_factory(u"%s empieza por %s"),
+    en = _op_translation_factory(u"%s starts with %s")
 )
 
 translations.define(
     "cocktail.schema.expressions.EndsWithExpression-instance",
-    ca = _op_translation_factory("ca", u"%s acaba per %s"),
-    es = _op_translation_factory("es", u"%s acaba en %s"),
-    en = _op_translation_factory("en", u"%s ends with %s")
+    ca = _op_translation_factory(u"%s acaba per %s"),
+    es = _op_translation_factory(u"%s acaba en %s"),
+    en = _op_translation_factory(u"%s ends with %s")
 )
 
 translations.define(
     "cocktail.schema.expressions.StartsWithExpression-instance",
-    ca = _op_translation_factory("ca", u"%s conté la cerca %s"),
-    es = _op_translation_factory("es", u"%s contiene la búsqueda %s"),
-    en = _op_translation_factory("en", u"%s contains search query %s")
+    ca = _op_translation_factory(u"%s conté la cerca %s"),
+    es = _op_translation_factory(u"%s contiene la búsqueda %s"),
+    en = _op_translation_factory(u"%s contains search query %s")
 )
 
 translations.define(
@@ -1192,90 +1192,81 @@ translations.define(
     ca = lambda instance:
         u"conté les paraules '"
         + instance.search_string
-        + u"' en " + ca_either([
-            translations(language, "ca")
-            for language in instance.languages
-        ]),
+        + u"' en " + ca_either(map(translations, instance.languages)),
     es = lambda instance:
         u"contiene las palabras '"
         + instance.search_string
-        + u"' en " + es_either([
-            translations(language, "es")
-            for language in instance.languages
-        ]),
+        + u"' en " + es_either(map(translations, instance.languages)),
     en = lambda instance:
         u"contains the words '"
         + instance.search_string
-        + u"' in " + en_either([
-            translations(language, "es")
-            for language in instance.languages
-        ])
+        + u"' in " + en_either(map(translations, instance.languages))
 )
 
 translations.define(
     "cocktail.schema.expressions.AddExpression-instance",
-    ca = _op_translation_factory("ca", u"%s mes %s"),
-    es = _op_translation_factory("es", u"%s mas %s"),
-    en = _op_translation_factory("en", u"%s plus %s")
+    ca = _op_translation_factory(u"%s mes %s"),
+    es = _op_translation_factory(u"%s mas %s"),
+    en = _op_translation_factory(u"%s plus %s")
 )
 
 translations.define(
     "cocktail.schema.expressions.SubtractExpression-instance",
-    ca = _op_translation_factory("ca", u"%s menys %s"),
-    es = _op_translation_factory("es", u"%s menos %s"),
-    en = _op_translation_factory("en", u"%s minus %s")
+    ca = _op_translation_factory(u"%s menys %s"),
+    es = _op_translation_factory(u"%s menos %s"),
+    en = _op_translation_factory(u"%s minus %s")
 )
 
 translations.define(
     "cocktail.schema.expressions.ProductExpression-instance",
-    ca = _op_translation_factory("ca", u"%s pers %s"),
-    es = _op_translation_factory("es", u"%s por %s"),
-    en = _op_translation_factory("en", u"%s multiplied by %s")
+    ca = _op_translation_factory(u"%s pers %s"),
+    es = _op_translation_factory(u"%s por %s"),
+    en = _op_translation_factory(u"%s multiplied by %s")
 )
 
 translations.define(
     "cocktail.schema.expressions.DivisionExpression-instance",
-    ca = _op_translation_factory("ca", u"%s entre %s"),
-    es = _op_translation_factory("es", u"%s entre %s"),
-    en = _op_translation_factory("en", u"%s divided by %s")
+    ca = _op_translation_factory(u"%s entre %s"),
+    es = _op_translation_factory(u"%s entre %s"),
+    en = _op_translation_factory(u"%s divided by %s")
 )
 
 translations.define(
     "cocktail.schema.expressions.AndExpression-instance",
-    ca = _op_translation_factory("ca", u"%s i %s"),
-    es = _op_translation_factory("es", u"%s y %s"),
-    en = _op_translation_factory("en", u"%s and %s")
+    ca = _op_translation_factory(u"%s i %s"),
+    es = _op_translation_factory(u"%s y %s"),
+    en = _op_translation_factory(u"%s and %s")
 )
 
 translations.define(
     "cocktail.schema.expressions.OrExpression-instance",
-    ca = _op_translation_factory("ca", u"%s o %s"),
-    es = _op_translation_factory("es", u"%s o %s"),
-    en = _op_translation_factory("en", u"%s or %s")
+    ca = _op_translation_factory(u"%s o %s"),
+    es = _op_translation_factory(u"%s o %s"),
+    en = _op_translation_factory(u"%s or %s")
 )
 
 translations.define(
     "cocktail.schema.expressions.NotExpression-instance",
-    ca = _op_translation_factory("ca", u"no %s"),
-    es = _op_translation_factory("es", u"no %s"),
-    en = _op_translation_factory("en", u"not %s")
+    ca = _op_translation_factory(u"no %s"),
+    es = _op_translation_factory(u"no %s"),
+    en = _op_translation_factory(u"not %s")
 )
 
 translations.define(
     "cocktail.schema.expressions.NegativeExpression-instance",
-    ca = _op_translation_factory("ca", u"-%s"),
-    es = _op_translation_factory("es", u"-%s"),
-    en = _op_translation_factory("en", u"-%s")
+    ca = _op_translation_factory(u"-%s"),
+    es = _op_translation_factory(u"-%s"),
+    en = _op_translation_factory(u"-%s")
 )
 
 translations.define(
     "cocktail.schema.expressions.PositiveExpression-instance",
-    ca = _op_translation_factory("ca", u"+%s"),
-    es = _op_translation_factory("es", u"+%s"),
-    en = _op_translation_factory("en", u"+%s")
+    ca = _op_translation_factory(u"+%s"),
+    es = _op_translation_factory(u"+%s"),
+    en = _op_translation_factory(u"+%s")
 )
 
-def _list_op_translation_factory(language, format, join):
+def _list_op_translation_factory(format, join):
 
     def list_op_translation(instance, **kwargs):
         rel = instance.operands[0]
@@ -1287,9 +1278,9 @@ def _list_op_translation_factory(language, format, join):
         item_translator = getattr(rel, "translate_value", translations)
 
         return format % (
-            translations(rel, language, **kwargs),
+            translations(rel, **kwargs),
             join(
-                item_translator(item, language, **kwargs)
+                item_translator(item, **kwargs)
                 for item in items
             )
         )
@@ -1298,57 +1289,57 @@ def _list_op_translation_factory(language, format, join):
 
 translations.define(
     "cocktail.schema.expressions.InclusionExpression-instance",
-    ca = _list_op_translation_factory("ca", u"%s és %s", ca_either),
-    es = _list_op_translation_factory("es", u"%s es %s", es_either),
-    en = _list_op_translation_factory("en", u"%s is one of %s", en_either)
+    ca = _list_op_translation_factory(u"%s és %s", ca_either),
+    es = _list_op_translation_factory(u"%s es %s", es_either),
+    en = _list_op_translation_factory(u"%s is one of %s", en_either)
 )
 
 translations.define(
     "cocktail.schema.expressions.ExclusionExpression-instance",
-    ca = _list_op_translation_factory("ca", u"%s no és %s", ca_either),
-    es = _list_op_translation_factory("es", u"%s no es %s", es_either),
-    en = _list_op_translation_factory("en", u"%s is not %s", en_either)
+    ca = _list_op_translation_factory(u"%s no és %s", ca_either),
+    es = _list_op_translation_factory(u"%s no es %s", es_either),
+    en = _list_op_translation_factory(u"%s is not %s", en_either)
 )
 
 translations.define(
     "cocktail.schema.expressions.ContainsExpression-instance",
-    ca = _op_translation_factory("ca", u"%s conté %s"),
-    es = _op_translation_factory("es", u"%s contiene %s"),
-    en = _op_translation_factory("en", u"%s contains %s")
+    ca = _op_translation_factory(u"%s conté %s"),
+    es = _op_translation_factory(u"%s contiene %s"),
+    en = _op_translation_factory(u"%s contains %s")
 )
 
 translations.define(
     "cocktail.schema.expressions.MatchExpression-instance",
-    ca = _op_translation_factory("ca", u"%s passa l'expressió regular %s"),
-    es = _op_translation_factory("es", u"%s pasa la expresión regular %s"),
-    en = _op_translation_factory("en", u"%s matches regular expression %s")
+    ca = _op_translation_factory(u"%s passa l'expressió regular %s"),
+    es = _op_translation_factory(u"%s pasa la expresión regular %s"),
+    en = _op_translation_factory(u"%s matches regular expression %s")
 )
 
 translations.define(
     "cocktail.schema.expressions.AnyExpression-instance",
     ca = lambda instance, **kwargs:
-        u"té %s" % translations(instance.relation, "ca", **kwargs)
+        u"té %s" % translations(instance.relation, **kwargs)
         + (
             u" que compleixen (%s)" % u", ".join(
-                translations(filter, "ca", **kwargs)
+                translations(filter, **kwargs)
                 for filter in instance.filters
             )
             if instance.filters else ""
         ),
     es = lambda instance, **kwargs:
-        u"tiene %s" % translations(instance.relation, "es", **kwargs)
+        u"tiene %s" % translations(instance.relation, **kwargs)
         + (
             u" que cumplen (%s)" % u", ".join(
-                translations(filter, "es", **kwargs)
+                translations(filter, **kwargs)
                 for filter in instance.filters
             )
             if instance.filters else ""
         ),
     en = lambda instance, **kwargs:
-        u"has %s" % translations(instance.relation, "en", **kwargs)
+        u"has %s" % translations(instance.relation, **kwargs)
         + (
             u" matching (%s)" % u", ".join(
-                translations(filter, "en", **kwargs)
+                translations(filter, **kwargs)
                 for filter in instance.filters
             )
             if instance.filters else ""
@@ -1359,25 +1350,25 @@ translations.define(
     "cocktail.schema.expressions.AllExpression-instance",
     ca = lambda instance, **kwargs:
         u"%s compleixen (%s)" % (
-            translations(instance.relation, "ca", **kwargs),
+            translations(instance.relation, **kwargs),
             u", ".join(
-                translations(filter, "ca", **kwargs)
+                translations(filter, **kwargs)
                 for filter in instance.filters
             )
         ),
     es = lambda instance, **kwargs:
         u"%s cumplen (%s)" % (
-            translations(instance.relation, "es", **kwargs),
+            translations(instance.relation, **kwargs),
             u", ".join(
-                translations(filter, "es", **kwargs)
+                translations(filter, **kwargs)
                 for filter in instance.filters
             )
         ),
     en = lambda instance, **kwargs:
         u"%s match (%s)" % (
-            translations(instance.relation, "en", **kwargs),
+            translations(instance.relation, **kwargs),
             u", ".join(
-                translations(filter, "en", **kwargs)
+                translations(filter, **kwargs)
                 for filter in instance.filters
             )
         )
@@ -1387,25 +1378,25 @@ translations.define(
     "cocktail.schema.expressions.AllExpression-instance",
     ca = lambda instance, **kwargs:
         u"%s compleix (%s)" % (
-            translations(instance.relation, "ca", **kwargs),
+            translations(instance.relation, **kwargs),
             u", ".join(
-                translations(filter, "ca", **kwargs)
+                translations(filter, **kwargs)
                 for filter in instance.filters
             )
         ),
     es = lambda instance, **kwargs:
         u"%s cumple (%s)" % (
-            translations(instance.relation, "es", **kwargs),
+            translations(instance.relation, **kwargs),
             u", ".join(
-                translations(filter, "es", **kwargs)
+                translations(filter, **kwargs)
                 for filter in instance.filters
             )
         ),
     en = lambda instance, **kwargs:
         u"%s matches (%s)" % (
-            translations(instance.relation, "en", **kwargs),
+            translations(instance.relation, **kwargs),
             u", ".join(
-                translations(filter, "en", **kwargs)
+                translations(filter, **kwargs)
                 for filter in instance.filters
             )
         )
@@ -1413,49 +1404,52 @@ translations.define(
 
 translations.define(
     "cocktail.schema.expressions.RangeIntersectionExpression-instance",
-    ca = _op_translation_factory("ca",
-        u"(%s, %s) coincideix amb l'interval (%s, %s)"),
-    es = _op_translation_factory("es",
-        u"(%s, %s) coincide con el intervalo (%s, %s)"),
-    en = _op_translation_factory("en",
-        u"(%s, %s) intersects with range (%s, %s)")
+    ca = _op_translation_factory(
+        u"(%s, %s) coincideix amb l'interval (%s, %s)"
+    ),
+    es = _op_translation_factory(
+        u"(%s, %s) coincide con el intervalo (%s, %s)"
+    ),
+    en = _op_translation_factory(
+        u"(%s, %s) intersects with range (%s, %s)"
+    )
 )
 
 translations.define(
     "cocktail.schema.expressions.IsInstanceExpression-instance",
-    ca = _op_translation_factory("ca", u"%s és de tipus %s"),
-    es = _op_translation_factory("es", u"%s es de tipo %s"),
-    en = _op_translation_factory("en", u"%s is instance of %s")
+    ca = _op_translation_factory(u"%s és de tipus %s"),
+    es = _op_translation_factory(u"%s es de tipo %s"),
+    en = _op_translation_factory(u"%s is instance of %s")
 )
 
 translations.define(
     "cocktail.schema.expressions.IsInstanceExpression-instance",
-    ca = _op_translation_factory("ca", u"%s no és de tipus %s"),
-    es = _op_translation_factory("es", u"%s no es de tipo %s"),
-    en = _op_translation_factory("en", u"%s is not instance of %s")
+    ca = _op_translation_factory(u"%s no és de tipus %s"),
+    es = _op_translation_factory(u"%s no es de tipo %s"),
+    en = _op_translation_factory(u"%s is not instance of %s")
 )
 
 translations.define(
     "cocktail.schema.expressions.DescendsFromExpression-instance",
-    ca = _op_translation_factory("ca", u"%s descendeix de %s"),
-    es = _op_translation_factory("es", u"%s desciende de %s"),
-    en = _op_translation_factory("en", u"%s descends from %s")
+    ca = _op_translation_factory(u"%s descendeix de %s"),
+    es = _op_translation_factory(u"%s desciende de %s"),
+    en = _op_translation_factory(u"%s descends from %s")
 )
 
-def _query_translation_factory(language, filtered_format):
+def _query_translation_factory(filtered_format):
 
     def translate_query(instance, **kwargs):
         
-        subject = translations(instance.type.name + "-plural", language, **kwargs)
+        subject = translations(instance.type.name + "-plural", **kwargs)
         
         if instance.filters:
             return filtered_format % {
                 "subject": subject,
                 "filters": u", ".join(
-                    translations(filter, language, **kwargs)
+                    translations(filter, **kwargs)
                     for filter in instance.filters
                 )
-                }
+            }
         else:
             return subject
 
@@ -1463,13 +1457,13 @@ def _query_translation_factory(language, filtered_format):
 
 translations.define(
     "cocktail.persistence.query.Query-instance",
-    ca = _query_translation_factory("ca",
+    ca = _query_translation_factory(
         "%(subject)s que compleixen: %(filters)s"
     ),
-    es = _query_translation_factory("es",
+    es = _query_translation_factory(
         "%(subject)s que cumplan: %(filters)s"
     ),
-    en = _query_translation_factory("en",
+    en = _query_translation_factory(
         "%(subject)s filtered by: %(filters)s"
     )
 )
