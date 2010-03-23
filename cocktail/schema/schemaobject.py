@@ -10,8 +10,7 @@ import sys
 from cocktail.modeling import refine, OrderedSet
 from cocktail.events import Event, EventHub
 from cocktail.pkgutils import get_full_name
-from cocktail.language import require_content_language
-from cocktail.translations import translations
+from cocktail.translations import translations, require_language
 from cocktail.schema.schema import Schema
 from cocktail.schema.member import Member
 from cocktail.schema.schemareference import Reference
@@ -227,7 +226,7 @@ class SchemaClass(EventHub, Schema):
                 return self.member
             else:
                 if self.member.translated:
-                    language = require_content_language(language)
+                    language = require_language(language)
                     target = instance.translations.get(language)
                     if target is None:
                         return None
@@ -257,7 +256,7 @@ class SchemaClass(EventHub, Schema):
             # For translated members, make sure the translation for the specified
             # language exists, and then resolve the assignment against it
             if member.translated:
-                language = require_content_language(language)
+                language = require_language(language)
                 target = instance.translations.get(language)
                 if target is None:
                     target = instance._new_translation(language)

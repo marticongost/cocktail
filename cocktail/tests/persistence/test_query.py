@@ -8,7 +8,7 @@ u"""
 """
 from unittest import TestCase
 from cocktail.tests.persistence.tempstoragemixin import TempStorageMixin
-from cocktail.language import set_content_language
+from cocktail.translations import set_language
 
 
 class MemberQueryTestCase(TempStorageMixin, TestCase):
@@ -698,8 +698,11 @@ class OrderTestCase(TempStorageMixin, TestCase):
 
     def test_default_sorting_for_related_objects(self):
 
+        from cocktail.translations import set_language
         from cocktail import schema
         from cocktail.persistence import PersistentObject
+
+        set_language("en")
 
         class Actor(PersistentObject):
 
@@ -842,7 +845,7 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
         e.set("product_name", u"Juice", "en")
         e.insert()
 
-        set_content_language("ca")
+        set_language("ca")
 
         results = [product
                    for product in self.Product.select(order = "product_name")]
@@ -852,7 +855,7 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
                    for product in self.Product.select(order = "-product_name")]
         assert [e, a, c, d, b] == results
 
-        set_content_language("en")
+        set_language("en")
 
         results = [product
                    for product in self.Product.select(order = "product_name")]
@@ -894,7 +897,7 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
         f.set("color", u"blue", "en")
         f.insert()
 
-        set_content_language("ca")
+        set_language("ca")
 
         results = [product for product in self.Product.select(order = "color")]
         self.match(results, c, f)
@@ -907,7 +910,7 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
         self.match(results, b, d)
         self.match(results, c, f)
 
-        set_content_language("en")
+        set_language("en")
 
         results = [product for product in self.Product.select(order = "color")]
         self.match(results, c, f)
@@ -958,7 +961,7 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
         f.set("color", u"red", "en")
         f.insert()
 
-        set_content_language("ca")
+        set_language("ca")
 
         results = [product
                    for product in self.Product.select(
@@ -984,7 +987,7 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
         
         assert [f, b, c, a, d, e] == results
 
-        set_content_language("en")
+        set_language("en")
 
         results = [product
                    for product in self.Product.select(
@@ -1048,7 +1051,7 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
         f.set("category", u"sports", "en")
         f.insert()
 
-        set_content_language("ca")
+        set_language("ca")
 
         results = [product
                    for product in self.Product.select(
@@ -1074,7 +1077,7 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
         
         assert [f, c, b, d, a, e] == results
 
-        set_content_language("en")
+        set_language("en")
 
         results = [product
                    for product in self.Product.select(
@@ -1138,7 +1141,7 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
         f.set("color", u"red", "en")
         f.insert()
 
-        set_content_language("ca")
+        set_language("ca")
 
         results = [product
                    for product in self.Product.select(
@@ -1164,7 +1167,7 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
         
         assert [f, b, c, a, d, e] == results
 
-        set_content_language("en")
+        set_language("en")
 
         results = [product
                    for product in self.Product.select(
@@ -1228,7 +1231,7 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
         f.set("category", u"sports", "en")
         f.insert()
 
-        set_content_language("ca")
+        set_language("ca")
 
         results = [product
                    for product in self.Product.select(
@@ -1254,7 +1257,7 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
         
         assert [f, c, b, d, a, e] == results
 
-        set_content_language("en")
+        set_language("en")
 
         results = [product
                    for product in self.Product.select(
@@ -1324,7 +1327,7 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
         f.set("country", u"england", "en")
         f.insert()
 
-        set_content_language("ca")
+        set_language("ca")
 
         results = [product
                    for product in self.Product.select(
@@ -1350,7 +1353,7 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
         
         assert [a, f, d, b, e, c] == results
 
-        set_content_language("en")
+        set_language("en")
 
         results = [product
                    for product in self.Product.select(
@@ -1420,7 +1423,7 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
         f.set("category", u"photography", "en")
         f.insert()
 
-        set_content_language("ca")
+        set_language("ca")
 
         results = [product
                    for product in self.Product.select(
@@ -1446,7 +1449,7 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
         
         assert [f, a, b, d, c, e] == results
 
-        set_content_language("en")
+        set_language("en")
 
         results = [product
                    for product in self.Product.select(
@@ -1516,7 +1519,7 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
         f.set("subcategory", u"portrait", "en")
         f.insert()
 
-        set_content_language("ca")
+        set_language("ca")
 
         results = [product
                    for product in self.Product.select(
@@ -1542,7 +1545,7 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
         
         assert [b, c, f, d, a, e] == results
 
-        set_content_language("en")
+        set_language("en")
 
         results = [product
                    for product in self.Product.select(
@@ -1612,7 +1615,7 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
         f.set("product_name", u"Roll", "en")
         f.insert()
 
-        set_content_language("ca")
+        set_language("ca")
 
         results = [product
                    for product in self.Product.select(
@@ -1638,7 +1641,7 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
         
         assert [c, b, d, f, e, a] == results
 
-        set_content_language("en")
+        set_language("en")
 
         results = [product
                    for product in self.Product.select(

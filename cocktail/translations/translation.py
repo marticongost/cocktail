@@ -6,25 +6,17 @@ u"""
 @organization:	Whads/Accent SL
 @since:			July 2008
 """
+from __future__ import with_statement
 from threading import local
 from contextlib import contextmanager
-from warnings import warn
-from cocktail.modeling import DictWrapper, ListWrapper
+from cocktail.modeling import (
+    getter,
+    DictWrapper,
+    ListWrapper
+)
 from cocktail.pkgutils import get_full_name
 
 _thread_data = local()
-
-
-class UndefinedTranslation(object):
-
-    def __nonzero__(self):
-        return False
-
-    def __str__(self):
-        return "Undefined translation"
-
-undefined = UndefinedTranslation()
-
 
 @contextmanager
 def language_context(language):
@@ -33,7 +25,7 @@ def language_context(language):
 
     try:
         set_language(language)
-        yield prev_language
+        yield None
     finally:
         set_language(prev_language)
 
@@ -42,6 +34,15 @@ def get_language():
 
 def set_language(language):
     setattr(_thread_data, "language", language)
+
+def require_language(language = None):
+    if not language:
+        language = get_language()
+
+    if not language:
+        raise NoActiveLanguageError()
+
+    return language
 
 
 class TranslationsRepository(DictWrapper):
@@ -60,7 +61,7 @@ class TranslationsRepository(DictWrapper):
             translation = self.__translations.get(language)
 
             if translation is None:
-                translation = Translation()
+                translation = Translation(language)
                 self.__translations[language] = translation
             
             translation[obj] = string
@@ -72,9 +73,7 @@ class TranslationsRepository(DictWrapper):
         **kwargs):
         
         value = ""
-
-        if language is None:
-            language = get_language()
+        language = require_language(language)
 
         # Translation method
         translation_method = getattr(obj, "__translate__", None)
@@ -122,22 +121,19 @@ class TranslationsRepository(DictWrapper):
 
 translations = TranslationsRepository()
 
-def translate(*args, **kwargs):
-    warn(
-        "translate() is deprecated, use translations() instead",
-        DeprecationWarning,
-        stacklevel = 2,
-    )
-    return translations(*args, **kwargs)
-
 
 class Translation(DictWrapper):
 
     language = None
 
-    def __init__(self):
+    def __init__(self, language):
+        self.__language = language
         self.__strings = {}
         DictWrapper.__init__(self, self.__strings)
+
+    @getter
+    def language(self):
+        return self.__language
 
     def __setitem__(self, obj, string):
         self.__strings[obj] = string
@@ -153,7 +149,8 @@ class Translation(DictWrapper):
 
             # Custom python expression
             if callable(value):
-                value = value(**kwargs)
+                with language_context(self.__language):
+                    value = value(**kwargs)
 
             # String formatting
             elif kwargs:
@@ -162,43 +159,8 @@ class Translation(DictWrapper):
         return value
 
 
-CA_APOSTROPHE_LETTERS = u"haàeèéiíoòóuú"
-
-def ca_apostrophe(word):
-    return word and word[0].lower() in CA_APOSTROPHE_LETTERS
-
-def ca_possessive(text):
-    if ca_apostrophe(text):
-        return u"d'" + text
-    else:
-        return u"de " + text
-
-def create_join_function(language, sep1, sep2):
-
-    def join(sequence):
-        if not isinstance(sequence, (list, ListWrapper)):
-            sequence = list(sequence)
-
-        if len(sequence) > 1:
-            return sep1.join(sequence[:-1]) + sep2 + sequence[-1]
-        else:
-            return sequence[0]
-
-    join.func_name = language + "_join"
-    return join
-
-ca_join = create_join_function("ca", u", ", u" i ")
-ca_either = create_join_function("ca", u", ", u" o ")
-es_join = create_join_function("es", u", ", u" y ")
-es_either = create_join_function("ca", u", ", u" o ")
-en_join = create_join_function("en", u", ", u" and ")
-en_either = create_join_function("ca", u", ", u" or ")
-de_join = create_join_function("de", u", ", u" und ")
-de_either = create_join_function("ca", u", ", u" oder ")
-
-def plural2(count, singular, plural):
-    if count == 1:
-        return singular
-    elif count > 1:
-        return plural
+class NoActiveLanguageError(Exception):
+    """Raised when trying to access a translated string without specifying
+    a language.
+    """
 

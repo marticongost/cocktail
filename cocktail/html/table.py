@@ -6,6 +6,7 @@ u"""
 @organization:	Whads/Accent SL
 @since:			October 2007
 """
+from __future__ import with_statement
 from cocktail.html import templates
 from cocktail.html.element import Element
 from cocktail.html.selectable import selectable
@@ -13,8 +14,11 @@ from cocktail.html.datadisplay import (
     CollectionDisplay,
     NO_SELECTION, SINGLE_SELECTION, MULTIPLE_SELECTION
 )
-from cocktail.translations import translations
-from cocktail.language import get_content_language, set_content_language
+from cocktail.translations import (
+    translations,
+    get_language,
+    language_context
+)
 from cocktail.schema import Collection, get
 from cocktail.schema.expressions import (
     TranslationExpression,
@@ -246,13 +250,11 @@ class Table(Element, CollectionDisplay):
             row["id"] = item.id
                     
         for column in self.displayed_members:
-            if self.translations and column.translated:
-                current_content_language = get_content_language()
+            if self.translations and column.translated:                
                 for language in self.translations:
-                    set_content_language(language)
-                    cell = self.create_cell(item, column, language)
-                    row.append(cell)
-                set_content_language(current_content_language)
+                    with language_context(language):
+                        cell = self.create_cell(item, column, language)
+                        row.append(cell)                
             else:
                 key = column.name
                 sequence_factory = self.__split_rows.get(key)

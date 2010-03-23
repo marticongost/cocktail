@@ -7,7 +7,7 @@ u"""
 @since:			September 2008
 """
 from __future__ import with_statement
-from cocktail.language import get_content_language, content_language_context
+from cocktail.translations import get_language, language_context
 from cocktail.modeling import getter, ListWrapper
 from cocktail.translations import translations
 from cocktail.schema import (
@@ -229,8 +229,8 @@ class Form(Element, DataDisplay):
 
         if member.translated:
             entry.add_class("translated")
-            for language in (self.translations or (get_content_language(),)):
-                with content_language_context(language):
+            for language in (self.translations or (get_language(),)):
+                with language_context(language):
                     field_instance = create_instance()
                     field_instance.add_class(language)
                     entry.append(field_instance)
@@ -295,7 +295,7 @@ class Form(Element, DataDisplay):
         input.value = self.get_member_value(obj, member)
 
         if member.translated:
-            input.language = get_content_language()
+            input.language = get_language()
 
         return input
 
@@ -312,7 +312,7 @@ class Form(Element, DataDisplay):
                 
                 label.label_language = self.create_language_label(
                     member,
-                    get_content_language())
+                    get_language())
 
                 label.append(label.label_language)
 
@@ -359,7 +359,7 @@ class Form(Element, DataDisplay):
 
         if self.errors and self.errors.in_member(
             member,
-            member.translated and get_content_language() or None
+            member.translated and get_language() or None
         ):
             control.add_class("error")
 

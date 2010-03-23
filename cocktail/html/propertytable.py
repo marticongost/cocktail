@@ -9,8 +9,11 @@ u"""
 from __future__ import with_statement
 from cocktail.html.element import Element
 from cocktail.html.datadisplay import DataDisplay
-from cocktail.translations import translations
-from cocktail.language import get_content_language, content_language_context
+from cocktail.translations import (
+    translations
+    get_language,
+    language_context
+)
 
 
 class PropertyTable(Element, DataDisplay):
@@ -90,7 +93,7 @@ class PropertyTable(Element, DataDisplay):
         table.add_class("translated_values")
         cell.append(table)
         
-        for language in (self.translations or (get_content_language(),)):
+        for language in (self.translations or (get_language(),)):
 
             language_row = Element("tr")
             language_row.add_class(language)
@@ -100,7 +103,7 @@ class PropertyTable(Element, DataDisplay):
             language_label.append(translations(language))
             language_row.append(language_label)
             
-            with content_language_context(language):
+            with language_context(language):
                 language_value_cell = self.create_value(member)
                 
             language_row.append(language_value_cell)            
