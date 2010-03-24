@@ -502,7 +502,7 @@ class TemplateCompiler(object):
                         source.write('%s.append(%r)' % (parent_id, chunk))
 
                     elif expr_type == EXPRESSION:
-                        source.write('%s.append(unicode(%s))' \
+                        source.write('%s.append(%s)' \
                             % (parent_id, chunk))
                     
                     elif expr_type == PLACEHOLDER:
