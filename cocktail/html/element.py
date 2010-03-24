@@ -602,8 +602,8 @@ class Element(object):
         :param child: The attached element.
         :type child: `Element` or basestring
         """
-        if isinstance(child, basestring):
-            child = Content(child)
+        if not isinstance(child, Element):
+            child = Content(unicode(child))
         else:
             child.release()
 
@@ -630,8 +630,8 @@ class Element(object):
         :param child: The attached element.
         :type child: `Element` or basestring
         """        
-        if isinstance(child, basestring):
-            child = Content(child)
+        if not isinstance(child, Element):
+            child = Content(unicode(child))
         else:
             child.release()
 
@@ -733,8 +733,8 @@ class Element(object):
         :raise: Raises `ElementTreeError` if the element that is being replaced
             has no parent.
         """
-        if isinstance(replacement, basestring):
-            replacement = Content(replacement)
+        if not isinstance(child, Element):
+            child = Content(unicode(child))
 
         replacement.replace(self)
 
