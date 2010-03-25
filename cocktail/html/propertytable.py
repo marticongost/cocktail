@@ -10,7 +10,7 @@ from __future__ import with_statement
 from cocktail.html.element import Element
 from cocktail.html.datadisplay import DataDisplay
 from cocktail.translations import (
-    translations
+    translations,
     get_language,
     language_context
 )
