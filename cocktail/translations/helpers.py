@@ -3,6 +3,8 @@ u"""Helper functions for translating strings into multiple languages.
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
+from cocktail.modeling import ListWrapper
+
 CA_APOSTROPHE_LETTERS = u"haàeèéiíoòóuú"
 
 def ca_apostrophe(word):
