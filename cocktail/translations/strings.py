@@ -772,8 +772,10 @@ def _thousands_parser(thousands_sep, fraction_sep):
 
 def _serialize_thousands(value, thousands_sep, fraction_sep):    
     
-    sign, num, precision = value.as_tuple()    
-    num = list(num)    
+    sign, num, precision = value.as_tuple()
+    num = list(num)
+    if abs(precision) > len(num):
+        num = [0] * (abs(precision) - len(num)) + num
     pos = len(num) + precision
     integer = num[:pos]
     fraction = num[pos:]
