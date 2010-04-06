@@ -578,6 +578,24 @@ class FormSchemaReader(object):
         return {}
 
 
+def set_cookie_expiration(cookie, seconds=None):
+    """ Sets the 'max-age' and 'expires' attributes for generated cookies.
+        Setting it to None produces session cookies. 
+    """
+
+    if seconds is not None:
+        cookie["max-age"] = seconds
+
+        if seconds == 0:
+            cookie["expires"] = http.HTTPDate(                                                                                                                                            
+                time.time() - (60 * 60 * 24 * 365)
+            )
+        else:
+            cookie["expires"] = http.HTTPDate(
+                time.time() + seconds
+            )
+
+
 class CookieParameterSource(object):
     """A cookie based persistent source for parameters, used in conjunction
     with L{get_parameter} or L{FormSchemaReader}.
@@ -586,8 +604,8 @@ class CookieParameterSource(object):
         requested parameters. Defaults to X{cherrypy.request.params.get}.
     @type source: callable
 
-    @param cookie_duration: Sets the 'max-age' attribute for generated cookies.
-        Setting it to None produces session cookies.
+    @param cookie_duration: Sets the 'max-age' and 'expires' attributes for 
+        generated cookies. Setting it to None produces session cookies.
     @type cookie_duration: int
 
     @param cookie_naming: A formatting string used to determine the name of
@@ -669,7 +687,7 @@ class CookieParameterSource(object):
 
                 cherrypy.response.cookie[cookie_name] = cookie_value
                 response_cookie = cherrypy.response.cookie[cookie_name]
-                response_cookie["max-age"] = self.cookie_duration
+                set_cookie_expiration(response_cookie, seconds = self.cookie_duration)
                 response_cookie["path"] = self.cookie_path
         else:
             request_cookie = cherrypy.request.cookie.get(cookie_name)
@@ -682,10 +700,7 @@ class CookieParameterSource(object):
                         del cherrypy.request.cookie[cookie_name]
                         cherrypy.response.cookie[cookie_name] = ""
                         response_cookie = cherrypy.response.cookie[cookie_name]
-                        response_cookie["max-age"] = 0
-                        response_cookie["expires"] = http.HTTPDate(                                                                                                                                            
-                            time.time() - (60 * 60 * 24 * 365)
-                        )
+                        set_cookie_expiration(response_cookie, seconds = 0)
                         response_cookie["path"] = self.cookie_path
 
                 # Restore a persisted value
