@@ -221,19 +221,19 @@ class Form(Element, DataDisplay):
             if member.required:
                 entry.add_class("required")
 
-        def create_instance():
+        def create_instance(language = None):
             if hidden:
-                return self.create_hidden_input(self.data, member)
+                with language_context(language):
+                    return self.create_hidden_input(self.data, member)
             else:
-                return self.create_field_instance(member)
+                return self.create_field_instance(member, language)
 
         if member.translated:
             entry.add_class("translated")
             for language in (self.translations or (get_language(),)):
-                with language_context(language):
-                    field_instance = create_instance()
-                    field_instance.add_class(language)
-                    entry.append(field_instance)
+                field_instance = create_instance(language)
+                field_instance.add_class(language)
+                entry.append(field_instance)
         else:
             entry.append(create_instance())
         
@@ -260,17 +260,18 @@ class Form(Element, DataDisplay):
         label.append(explanation)
         return label
 
-    def create_field_instance(self, member):
+    def create_field_instance(self, member, language = None):
 
         field_instance = Element("td" if self.table_layout else "div")
         field_instance.add_class("field_instance")
     
         # Label
-        field_instance.label = self.create_label(member)
+        field_instance.label = self.create_label(member, language)
         field_instance.append(field_instance.label)
         
         # Control
-        field_instance.control = self.create_control(self.data, member)
+        with language_context(language):
+            field_instance.control = self.create_control(self.data, member)
 
         if field_instance.control.class_css:
             for class_name in field_instance.control.class_css.split(" "):
@@ -299,7 +300,7 @@ class Form(Element, DataDisplay):
 
         return input
 
-    def create_label(self, member):
+    def create_label(self, member, language = None):
         
         label = Element("label")
         text = self.get_member_label(member)
@@ -308,11 +309,11 @@ class Form(Element, DataDisplay):
             label.label_title = self.create_label_title(member, text)
             label.append(label.label_title)
             
-            if member.translated:
+            if language:
                 
                 label.label_language = self.create_language_label(
                     member,
-                    get_language())
+                    language)
 
                 label.append(label.label_language)
 
