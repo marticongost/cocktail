@@ -239,8 +239,8 @@ class UserCollection(object):
                             filter.schema,
                             target = filter,
                             source = filter_source,
-                            prefix = "filter_",
-                            suffix = str(i)
+                            prefix = (self.params.prefix or "") + "filter_",
+                            suffix = (self.params.suffix or "") + str(i)
                         )
                         if not self.should_ignore_filter(filter):
                             user_filters.append(filter)
