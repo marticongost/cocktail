@@ -21,13 +21,15 @@ _thread_data = local()
 @contextmanager
 def language_context(language):
 
-    prev_language = get_language()
+    if language:
+        prev_language = get_language()
+        set_language(language)
 
     try:
-        set_language(language)
         yield None
     finally:
-        set_language(prev_language)
+        if language:
+            set_language(prev_language)
 
 def get_language():
     return getattr(_thread_data, "language", None)
