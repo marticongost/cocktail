@@ -50,7 +50,7 @@
             function batchSelection(func) {
                 suppressSelectionEvents = true;
                 try {
-                    func();
+                    func.call(selectable);
                 }
                 catch (ex) {
                     throw ex;
