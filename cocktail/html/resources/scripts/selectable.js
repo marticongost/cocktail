@@ -45,6 +45,22 @@
             focusTarget.className = "target_focus";
             $selectable.prepend(focusTarget);
 
+            var suppressSelectionEvents = false;
+
+            function batchSelection(func) {
+                suppressSelectionEvents = true;
+                try {
+                    func();
+                }
+                catch (ex) {
+                    throw ex;
+                }
+                finally {
+                    suppressSelectionEvents = false;
+                }
+                $selectable.trigger("selectionChanged");
+            }
+
             function handleFocus(updateSelection /* optional*/) {
                 focusedSelectable = selectable;
                 $selectable.addClass("focused");
@@ -117,32 +133,41 @@
                     jQuery(entry).removeClass("selected");
                 }
 
-                $selectable.trigger("selectionChanged");
+                if (!suppressSelectionEvents) {
+                    $selectable.trigger("selectionChanged");
+                }
             }
 
             selectable.clearSelection = function () {
-                selectable._getEntries().filter(".selected").each(function () {
-                    selectable.setEntrySelected(this, false);
+                batchSelection(function () {
+                    selectable._getEntries().filter(".selected").each(function () {
+                        selectable.setEntrySelected(this, false);
+                    });
                 });
             }
 
             selectable.selectAll = function () {
-                selectable._getEntries().each(function () {                
-                    selectable.setEntrySelected(this, true);
+                batchSelection(function () {
+                    selectable._getEntries().each(function () {
+                        selectable.setEntrySelected(this, true);
+                    });
                 });
             }
 
             selectable.setRangeSelected = function (firstEntry, lastEntry, selected) {
                 
-                var i = selectable._getEntries().index(firstEntry);
-                var j = selectable._getEntries().index(lastEntry);
+                var entries = selectable._getEntries();
+                var i = entries.index(firstEntry);
+                var j = entries.index(lastEntry);
                 
                 var pos = Math.min(i, j);
                 var end = Math.max(i, j);
 
-                for (; pos <= end; pos++) {
-                    this.setEntrySelected(selectable._getEntries()[pos], selected);
-                }
+                batchSelection(function () {
+                    for (; pos <= end; pos++) {
+                        this.setEntrySelected(entries[pos], selected);
+                    }
+                });
 
                 selectable._selectionStart = firstEntry;
                 selectable._selectionEnd = lastEntry;
