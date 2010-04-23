@@ -365,6 +365,86 @@ translations.define("time span",
     )
 )
 
+def _date_range_ca(start, end):
+    if start.year != end.year:
+        return u"Del %s al %s" % (
+            translations(start, style = DATE_STYLE_TEXT),
+            translations(end, style = DATE_STYLE_TEXT)
+        )
+    elif start.month != end.month:
+        return u"Del %d %s al %d %s de %d" % (
+            start.day,
+            ca_possessive(translations("month %d" % start.month)),
+            end.day,
+            ca_possessive(translations("month %d" % end.month)),
+            start.year
+        )
+    else:
+        return u"Del %d al %d %s de %d" % (
+            start.day,
+            end.day,
+            ca_possessive(translations("month %d" % start.month)),
+            start.year
+        )
+
+def _date_range_es(start, end):
+    if start.year != end.year:
+        return u"Del %s al %s" % (
+            translations(start, style = DATE_STYLE_TEXT),
+            translations(end, style = DATE_STYLE_TEXT)
+        )
+    elif start.month != end.month:
+        return u"Del %d de %s al %d de %s de %d" % (
+            start.day,
+            translations("month %d" % start.month),
+            end.day,
+            translations("month %d" % end.month),
+            start.year
+        )
+    else:
+        return u"Del %d al %d de %s de %d" % (
+            start.day,
+            end.day,
+            translations("month %d" % start.month),
+            start.year
+        )
+
+translations.define("ordinal",
+    en = lambda number:
+        str(number)
+        + {1: 'st', 2: 'nd', 3: 'rd'}
+          .get(number % (10 < number % 100 < 14 or 10), 'th')
+)
+
+
+def _date_range_en(start, end):
+    if start.year != end.year:
+        return u"From %s until %s" % (
+            translations(start, style = DATE_STYLE_TEXT),
+            translations(end, style = DATE_STYLE_TEXT)
+        )
+    elif start.month != end.month:
+        return u"From the %s of %s until the %s of %s %d" % (
+            translations("ordinal", number = start.day),
+            translations("month %d" % start.month),
+            translations("ordinal", number = end.day),
+            translations("month %d" % end.month),
+            start.year
+        )
+    else:
+        return u"From the %s until the %s of %s %d" % (
+            translations("ordinal", number = start.day),
+            translations("ordinal", number = end.day),
+            translations("month %d" % start.month),
+            start.year
+        )
+
+translations.define("date range",
+    ca = _date_range_ca,
+    es = _date_range_es,
+    en = _date_range_en
+)
+
 # html.FilterBox
 #------------------------------------------------------------------------------
 translations.define("cocktail.html.FilterBox add filter",
