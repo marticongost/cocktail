@@ -53,7 +53,8 @@ class Query(object):
         order = None,
         range = None,
         base_collection = None,
-        cached = True):
+        cached = True,
+        verbose = None):
 
         self.__type = type
         self.__filters = None
@@ -68,6 +69,9 @@ class Query(object):
         self.range = range
         self.base_collection = base_collection
         self.cached = cached
+
+        if verbose is not None:
+            self.verbose = verbose
 
     def __repr__(self):
         return (
