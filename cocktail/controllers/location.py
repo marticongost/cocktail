@@ -97,7 +97,11 @@ class Location(object):
             if self.port:
                 url += ":" + str(self.port)
 
-        url += self.path_info
+        url += (
+            self.path_info.encode("utf-8")
+            if isinstance(self.path_info, unicode)
+            else self.path_info
+        )
 
         if self.query_string:
             url += "?" + urlencode(self.query_string, True)
