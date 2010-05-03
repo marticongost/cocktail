@@ -125,7 +125,7 @@ class Table(Element, CollectionDisplay):
         # Regular columns
         for column in self.displayed_members:
             if column.translated:
-                for language in self.translations:
+                for language in self.translations or (get_language(),):
                     header = self.create_header(column, language)
                     self.head_row.append(header)
             else:
