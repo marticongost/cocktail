@@ -87,26 +87,25 @@ class Location(object):
             for part in parts
         )
 
-    def __str__(self):
+    def __unicode__(self):
 
         if self.relative or self.host is None:
-            url = ""
+            url = u""
         else:
-            url = self.scheme + "://" + self.host
+            url = self.scheme + u"://" + self.host
 
             if self.port:
-                url += ":" + str(self.port)
+                url += u":" + unicode(self.port)
 
-        url += (
-            self.path_info.encode("utf-8")
-            if isinstance(self.path_info, unicode)
-            else self.path_info
-        )
+        url += self.path_info
 
         if self.query_string:
-            url += "?" + urlencode(self.query_string, True)
+            url += u"?" + urlencode(self.query_string, True)
 
         return url
+
+    def __str__(self):
+        return unicode(self).encode("utf-8")
 
     @getter
     def params(self):
