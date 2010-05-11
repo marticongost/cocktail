@@ -107,6 +107,7 @@ class Pager(Element):
 
     def create_button(self, name):
         button = Element("a")
+        button.add_class("button")
         button.add_class(name)
         button.append(Element("img", src = "/resources/images/%s.png" % name))
         return button
