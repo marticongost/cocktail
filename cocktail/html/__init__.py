@@ -19,4 +19,5 @@ wide assortment of needs: forms, tables, calendars, etc.
 from cocktail.html.element import Element, Content, PlaceHolder
 from cocktail.html.resources import Resource, Script, StyleSheet
 from cocktail.html.overlay import Overlay
+from cocktail.html.utils import alternate_classes, first_last_classes
 
