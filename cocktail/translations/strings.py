@@ -201,18 +201,89 @@ translations.define("jquery_date format",
 )
 
 # -------- ABBREVIATED TRANSLATIONS OF MONTHS
-translations.define("month 1 abbr", ca = u"Gen", es = u"Ene", en = u"Jan")
-translations.define("month 2 abbr", ca = u"Feb", es = u"Feb", en = u"Feb")
-translations.define("month 3 abbr", ca = u"Mar", es = u"Mar", en = u"Mar")
-translations.define("month 4 abbr", ca = u"Abr", es = u"Abr", en = u"Apr")
-translations.define("month 5 abbr", ca = u"Mai", es = u"May", en = u"May")
-translations.define("month 6 abbr", ca = u"Jun", es = u"Jun", en = u"Jun")
-translations.define("month 7 abbr", ca = u"Jul", es = u"Jul", en = u"Jul")
-translations.define("month 8 abbr", ca = u"Ago", es = u"Ago", en = u"Aug")
-translations.define("month 9 abbr", ca = u"Set", es = u"Sep", en = u"Sep")
-translations.define("month 10 abbr", ca = u"Oct", es = u"Oct", en = u"Oct")
-translations.define("month 11 abbr", ca = u"Nov", es = u"Nov", en = u"Nov")
-translations.define("month 12 abbr", ca = u"Des", es = u"Dic", en = u"Dec")
+translations.define("month 1 abbr",
+    ca = u"Gen",
+    es = u"Ene",
+    en = u"Jan",
+    pt = u"Jan"
+)
+
+translations.define("month 2 abbr",
+    ca = u"Feb",
+    es = u"Feb",
+    en = u"Feb",
+    pt = u"Fev"
+)
+
+translations.define("month 3 abbr",
+    ca = u"Mar",
+    es = u"Mar",
+    en = u"Mar",
+    pt = u"Mar"
+)
+
+translations.define("month 4 abbr",
+    ca = u"Abr",
+    es = u"Abr",
+    en = u"Apr",
+    pt = u"Abr"
+)
+
+translations.define("month 5 abbr",
+    ca = u"Mai",
+    es = u"May",
+    en = u"May",
+    pt = u"Mai"
+)
+
+translations.define("month 6 abbr",
+    ca = u"Jun",
+    es = u"Jun",
+    en = u"Jun",
+    pt = u"Jun"
+)
+
+translations.define("month 7 abbr",
+    ca = u"Jul",
+    es = u"Jul",
+    en = u"Jul",
+    pt = u"Jul"
+)
+
+translations.define("month 8 abbr",
+    ca = u"Ago",
+    es = u"Ago",
+    en = u"Aug",
+    pt = u"Ago"
+)
+
+translations.define("month 9 abbr",
+    ca = u"Set",
+    es = u"Sep",
+    en = u"Sep",
+    pt = u"Set"
+)
+
+translations.define("month 10 abbr",
+    ca = u"Oct",
+    es = u"Oct",
+    en = u"Oct",
+    pt = u"Out"
+)
+
+translations.define("month 11 abbr",
+    ca = u"Nov",
+    es = u"Nov",
+    en = u"Nov",
+    pt = u"Nov"
+)
+
+translations.define("month 12 abbr",
+    ca = u"Des",
+    es = u"Dic",
+    en = u"Dec",
+    pt = u"Dez"
+)
 
 # -------- FULLTEXT TRANSLATIONS OF MONTHS
 translations.define("month 1", ca = u"Gener", es = u"Enero", en = u"January")
