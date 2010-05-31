@@ -129,7 +129,7 @@ class Form(Element, DataDisplay):
 
         elif self.default_button:
             hidden_button = Element(self.default_button.tag)
-            for key, value in hidden_button.attributes.itervalues():
+            for key, value in self.default_button.attributes.iteritems():
                 hidden_button[key] = value
             hidden_button.set_style("display", "none")
             self.insert(0, hidden_button)
