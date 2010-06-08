@@ -395,18 +395,24 @@ class Schema(Member):
         context.enter(self, validable)
 
         try:
-            for name, member in self.members().iteritems():
+            for member in self.ordered_members():
 
                 if member.translated:
+                    
                     for value in self.translated_member_values(
                         member,
                         validable,
                         context,
                         accessor):
-                            for error in member.get_errors(value, context):
-                                yield error
+
+                        for error in member.get_errors(value, context):
+                            yield error
                 else:
-                    value = accessor.get(validable, name, default = None)
+                    value = accessor.get(
+                        validable,
+                        member.name,
+                        default = None
+                    )
 
                     for error in member.get_errors(value, context):
                         yield error
