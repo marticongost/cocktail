@@ -15,6 +15,7 @@ from cocktail.html.databoundcontrol import DataBoundControl
 class TinyMCE(Element, DataBoundControl):
     
     tag = None
+    default_tinymce_params = {}
 
     def __init__(self, *args, **kwargs):
         Element.__init__(self, *args, **kwargs)
@@ -32,7 +33,8 @@ class TinyMCE(Element, DataBoundControl):
 
         Element._ready(self)
 
-        params = self.tinymce_params.copy()
+        params = self.default_tinymce_params.copy()
+        params.update(self.tinymce_params)
         params.setdefault("language", get_language())
         params["mode"] = "exact"
         params["elements"] = self.textarea.require_id()
