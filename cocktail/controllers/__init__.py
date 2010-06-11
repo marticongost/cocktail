@@ -29,3 +29,22 @@ import cocktail.controllers.grouping
 import cocktail.controllers.erroremail
 import cocktail.controllers.handlerprofiler
 
+
+def make_uri(*args, **kwargs):
+
+    uri = u"/".join(unicode(arg).strip(u"/") for arg in args)
+
+    if kwargs:
+        params = []
+
+        for pair in kwargs.iteritems():
+            if isinstance(pair[1], basestring):
+                params.append(pair)
+            else:
+                for item in pair[1]:
+                    params.append(pair[0], item)
+
+        uri += "?" + "&".join("%s=%s" % pair for pair in params.iteritems())
+
+    return uri
+

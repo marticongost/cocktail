@@ -59,7 +59,8 @@ translations.define("Select",
 translations.define("Submit",
     ca = u"Confirmar",
     es = u"Confirmar",
-    en = u"Submit"
+    en = u"Submit",
+    pt = u"Enviar"
 )
 
 translations.define("Item count",
@@ -780,6 +781,9 @@ translations.define("cocktail.schema.exceptions.ValueRequiredError-instance",
         % member_identifier(instance),
     en = lambda instance:
         u"The <em>%s</em> field can't be empty"
+        % member_identifier(instance),
+    pt = lambda instance:
+        u"O campo <em>%s</em> é obrigatório"
         % member_identifier(instance)
 )
 
