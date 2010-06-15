@@ -3,6 +3,9 @@ var cocktail = {};
 cocktail.__initCallbacks = [];
 cocktail.__clientModels = {};
 cocktail.__autoId = 0;
+cocktail.__iframeId = 0;
+cocktail.__bindings = [];
+cocktail.__bindingId = 0;
 
 cocktail.init = function (param) {
     
@@ -10,12 +13,98 @@ cocktail.init = function (param) {
         cocktail.__initCallbacks.push(param);
     }
     else {
+        var root = param || document.body;
         jQuery(document.body).addClass("scripted");
         var callbacks = cocktail.__initCallbacks;
         for (var i = 0; i < callbacks.length; i++) {
-            callbacks[i](param || document.body);
+            callbacks[i](root);
+        }
+        cocktail.applyBindings(root);
+    }
+}
+
+cocktail.applyBindings = function (root) {
+    if (window.console) {
+        console.log("Applying bindings");
+    }
+    for (var i = 0; i < cocktail.__bindings.length; i++) {
+        cocktail.__bindings[i].apply(root);
+    }
+}
+
+cocktail.bind = function (/* varargs */) {
+
+    if (arguments.length == 1) {
+        var binding = arguments[0];
+    }
+    else if (arguments.length <= 3) {
+        var binding = {
+            selector: arguments[0],
+            behavior: arguments[1],
+            children: arguments.length == 3 ? arguments[3] : null
         }
     }
+    else {
+        throw "Invalid binding parameters";
+    }
+    
+    if (binding.children) {
+        if (binding.children instanceof Array) {
+            for (var i = 0; i < binding.children.length; i++) {
+                binding.children[i].parent = binding;
+                var child = cocktail.bind(binding.children[i]);
+                binding.children[i] = child;
+            }
+        }
+        else {
+            var children = [];
+            for (var selector in binding.children) {
+                var child = cocktail.bind({
+                    selector: selector,
+                    behavior: binding.children[selector],
+                    parent: binding
+                });
+                children.push(child);
+            }
+            binding.children = children;
+        }
+    }
+
+    binding.id = cocktail.__bindingId++;
+
+    if (!binding.parent) {
+        cocktail.__bindings.push(binding);
+    }
+
+    binding.apply = function (root) {
+        jQuery(binding.selector, root || document.body).each(function () {
+            if (binding.children) {
+                for (var i = 0; i < binding.children.length; i++) {
+                    binding.children[i].apply(this);
+                }
+            }
+            if (!this._cocktail_bindings) {
+                this._cocktail_bindings = {};
+            }
+            if (!this._cocktail_bindings[binding.id]) {
+                var $element = jQuery(this);
+                if (root && binding.name) {
+                    root[binding.name] = this;
+                    root["$" + binding.name] = $element;
+                }
+                this._cocktail_bindings[binding.id] = true;
+                if (window.console) {
+                    console.log(
+                        'Applying binding "' + binding.selector
+                        + '" #' + binding.id
+                        + " to <" + this.tagName + " id='" + this.id + "' class='" + this.className + "'>"
+                    );
+                }
+                binding.behavior.call(this, $element, jQuery(root));
+            }
+        });
+    }
+    return binding;
 }
 
 cocktail._clientModel = function (modelId, partId /* optional */) {
@@ -206,3 +295,70 @@ cocktail.createElement = function (tag, name, type) {
     }
 }
 
+cocktail.loadElement = function (element, url, callback) {
+    
+    var pos = url.indexOf(" ");
+    var fragment = "*";
+    
+    if (pos != -1) {
+        fragment = url.substr(pos);
+        url = url.substr(0, pos);
+    }
+
+    var container = document.createElement("div");
+
+    jQuery.get(url, function (data) {
+        cocktail.updateElement(element, data, fragment);
+        if (callback) {
+            callback.apply(element);
+        }
+    });
+}
+
+cocktail.submit = function (params) {
+
+    var iframe = document.createElement("iframe");
+    iframe.name = "cocktail_iframe" + cocktail.__iframeId++;
+    iframe.style.left = "-2000px";
+    document.body.appendChild(iframe);
+    iframe.onload = function () {
+        var doc = (this.contentWindow || this.contentDocument);
+        doc = doc.document || doc;
+        if (params.targetElement) {
+            cocktail.updateElement(
+                params.targetElement,
+                doc.documentElement.innerHTML,
+                params.fragment || "body > *"
+            );
+        }
+        iframe.parentNode.removeChild(iframe);
+        if (params.callback) {
+            params.callback.call(params.form, params, doc);
+        }
+    }
+    params.form.target = iframe.name;
+    params.form.submit();
+}
+
+cocktail.updateElement = function (element, data, fragment) {
+
+    var container = document.createElement("div");
+    var $container = jQuery(container);
+    container.innerHTML = data;
+
+    var newElement = $container.find(fragment).get(0);
+    newElement.parentNode.removeChild(newElement);
+
+    // Assign CSS classes
+    element.className = newElement.className;
+
+    // Copy children
+    jQuery(element)
+        .empty()
+        .append(newElement.childNodes);
+
+    // TODO: add new resources, client params, translations, etc
+
+    // Re-apply behaviors
+    cocktail.applyBindings();
+}
