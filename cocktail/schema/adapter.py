@@ -310,7 +310,8 @@ class Adapter(object):
         export_transform = None,
         import_transform = None,
         import_condition = None,
-        export_condition = None):
+        export_condition = None,
+        rule_position = None):
         
         export_rule = Copy(
                         mapping,
@@ -323,33 +324,49 @@ class Adapter(object):
                         transform = import_transform,
                         condition = import_condition)
 
-        self.export_rules.add_rule(export_rule)
-        self.import_rules.add_rule(import_rule)
+        self.export_rules.add_rule(export_rule, rule_position)
+        self.import_rules.add_rule(import_rule, rule_position)
 
-    def exclude(self, members):
+    def exclude(self, members, rule_position = None):
         
         if isinstance(members, basestring):
             members = [members]
 
         exclusion = Exclusion(members)
-        self.import_rules.add_rule(exclusion)
-        self.export_rules.add_rule(exclusion)
+        self.import_rules.add_rule(exclusion, rule_position)
+        self.export_rules.add_rule(exclusion, rule_position)
     
-    def split(self, source_member, separator, target_members):
+    def split(self,
+        source_member,
+        separator,
+        target_members,
+        rule_position = None):
         
         self.export_rules.add_rule(
-            Split(source_member, separator, target_members))
+            Split(source_member, separator, target_members),
+            rule_position
+        )
 
         self.import_rules.add_rule(
-            Join(target_members, separator, source_member))
+            Join(target_members, separator, source_member),
+            rule_position
+        )
 
-    def join(self, source_members, glue, target_member):
+    def join(self,
+        source_members,
+        glue,
+        target_member,
+        rule_position = None):
         
         self.export_rules.add_rule(
-            Join(source_members, glue, target_member))
+            Join(source_members, glue, target_member),
+            rule_position
+        )
         
         self.import_rules.add_rule(
-            Split(target_member, glue, source_members))
+            Split(target_member, glue, source_members),
+            rule_position
+        )
 
 
 class RuleSet(object):
@@ -366,8 +383,11 @@ class RuleSet(object):
         self.__rules = list(rules)
         self.rules = ListWrapper(self.__rules)
 
-    def add_rule(self, rule):
-        self.__rules.append(rule)
+    def add_rule(self, rule, position = None):
+        if position is None:
+            self.__rules.append(rule)
+        else:
+            self.__rules.insert(position, rule)
 
     def remove_rule(self, rule):
         self.__rules.remove(rule)
