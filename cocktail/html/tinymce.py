@@ -14,7 +14,6 @@ from cocktail.html.databoundcontrol import DataBoundControl
 
 class TinyMCE(Element, DataBoundControl):
     
-    tag = None
     default_tinymce_params = {}
 
     def __init__(self, *args, **kwargs):
