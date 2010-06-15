@@ -1,4 +1,5 @@
 #-*- coding: utf-8 -*-
+from time import time
 from inspect import getmro
 from threading import local
 from cocktail.modeling import getter, empty_list, empty_dict, empty_set
@@ -129,7 +130,7 @@ class Element(object):
     visible = True
     collapsible = False
     overlays_enabled = False
-    generated_id_format = "cocktail-element%d"
+    generated_id_format = "cocktail-element-%s-%d"
     client_model = None
 
     # Data binding
@@ -287,10 +288,12 @@ class Element(object):
         out = canvas.append
         
         if not hasattr(_thread_data, "generated_id"):
+            _thread_data.prefix = str(time()).replace(".", "")
             _thread_data.generated_id = 0
             try:
                 self._render(renderer, out)
             finally:
+                del _thread_data.prefix
                 del _thread_data.generated_id
         else:
             self._render(renderer, out)
@@ -518,7 +521,10 @@ class Element(object):
 
             _thread_data.generated_id += 1
 
-            id = self.generated_id_format % incremental_id
+            id = self.generated_id_format % (
+                _thread_data.prefix,
+                incremental_id
+            )
             self["id"] = id
 
         return id
