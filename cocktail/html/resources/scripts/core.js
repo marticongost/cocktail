@@ -319,6 +319,7 @@ cocktail.submit = function (params) {
 
     var iframe = document.createElement("iframe");
     iframe.name = "cocktail_iframe" + cocktail.__iframeId++;
+    iframe.style.position = "absolute";
     iframe.style.left = "-2000px";
     document.body.appendChild(iframe);
     iframe.onload = function () {
