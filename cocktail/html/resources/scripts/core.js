@@ -260,6 +260,13 @@ cocktail.showDialog = function (content) {
     if (!cocktail.__dialogBackground) {
         cocktail.__dialogBackground = document.createElement("div")
         cocktail.__dialogBackground.className = "dialog-background";
+
+        // Close the dialog when pressing the Escape key
+        jQuery(document).keyup(function (e) {
+            if (e.keyCode == 27) {
+                cocktail.closeDialog();
+            }
+        });
     }
     document.body.appendChild(cocktail.__dialogBackground);
     
