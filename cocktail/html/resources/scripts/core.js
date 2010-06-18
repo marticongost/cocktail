@@ -77,7 +77,12 @@ cocktail.bind = function (/* varargs */) {
     }
 
     binding.apply = function (root) {
-        jQuery(binding.selector, root || document.body).each(function () {
+        var $root = jQuery(root || document.body);
+        var $matches = $root.find(binding.selector);        
+        if ($root.is(binding.selector)) {
+            $matches = $root.add($matches);
+        }
+        $matches.each(function () {
             if (binding.children) {
                 for (var i = 0; i < binding.children.length; i++) {
                     binding.children[i].apply(this);
