@@ -60,7 +60,8 @@ translations.define("Submit",
     ca = u"Confirmar",
     es = u"Confirmar",
     en = u"Submit",
-    pt = u"Enviar"
+    pt = u"Enviar",
+    de = u"Abschicken"
 )
 
 translations.define("Item count",
