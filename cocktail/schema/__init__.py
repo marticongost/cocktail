@@ -27,6 +27,7 @@ from cocktail.schema.schemanumbers import (
     Number,
     Integer,
     Decimal,
+    Fraction,
     Float
 )
 from cocktail.schema.schemabooleans import Boolean
