@@ -6,7 +6,8 @@ u"""
 @organization:	Whads/Accent SL
 @since:			April 2008
 """
-from decimal import Decimal
+import decimal
+import fractions
 from cocktail.translations import translations
 from cocktail.schema.member import Member
 from cocktail.schema.rangedmember import RangedMember
@@ -32,11 +33,16 @@ class Float(Number):
 
 class Decimal(Number):
     """A numeric field limited to decimal values."""
-    type = Decimal
+    type = decimal.Decimal
 
     def translate_value(self, value, language = None, **kwargs):
         if value is None:
             return u""
         else:
             return translations(value, language, **kwargs)
+
+
+class Fraction(Number):
+    """A numeric field limited to fractional values."""
+    type = fractions.Fraction
 

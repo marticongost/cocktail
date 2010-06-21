@@ -10,6 +10,7 @@ import decimal
 import time
 import datetime
 import cherrypy
+from fractions import Fraction
 from cherrypy.lib import http
 from string import strip
 from cocktail import schema
@@ -62,6 +63,17 @@ def parse_decimal(self, reader, value):
     return value
 
 schema.Decimal.parse_request_value = parse_decimal
+
+def parse_fraction(self, reader, value):
+    if value is not None:
+        try:
+            value = Fraction(value)
+        except ValueError:
+            pass
+
+    return value
+
+schema.Fraction.parse_request_value = parse_fraction
 
 def parse_date(self, reader, value):
     
