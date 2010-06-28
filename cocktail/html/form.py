@@ -128,11 +128,13 @@ class Form(Element, DataDisplay):
             self.buttons.visible = False
 
         elif self.default_button:
+            hidden_button_block = Element()
+            hidden_button_block.set_style("display", "none")
             hidden_button = Element(self.default_button.tag)
             for key, value in self.default_button.attributes.iteritems():
                 hidden_button[key] = value
-            hidden_button.set_style("display", "none")
-            self.insert(0, hidden_button)
+            hidden_button_block.append(hidden_button)
+            self.insert(0, hidden_button_block)
 
     def _fill_fields(self):
         if self.schema and self.generate_fields:
