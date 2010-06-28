@@ -22,6 +22,7 @@ class RadioSelector(Selector):
                 self.language
             )
 
+        self["name"] = None
         Selector._ready(self)
 
     def create_entry(self, value, label, selected):
