@@ -98,6 +98,7 @@ class Form(Element, DataDisplay):
         self.__groups = []
         self.groups = ListWrapper(self.__groups)
         self.__hidden_members = {}
+        kwargs.setdefault("action", "")
         Element.__init__(self, *args, **kwargs)
 
     def _build(self):
