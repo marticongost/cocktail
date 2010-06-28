@@ -76,7 +76,13 @@ class Renderer(object):
             out("cocktail._clientModel('%s').html = '" % element.client_model)
             wrapped_out = out
             def out(snippet):
-                wrapped_out(snippet.replace("'", "\\'").replace("\n", "\\n"))
+                wrapped_out(
+                    snippet
+                    .replace("'", "\\'")
+                    .replace("\n", "\\n")
+                    .replace("&", "\\x26")
+                    .replace("<", "\\x3C")
+                )
 
         tag = element.tag
         render_children = True
