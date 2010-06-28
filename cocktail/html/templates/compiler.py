@@ -600,7 +600,7 @@ class TemplateCompiler(object):
                     chunks.append(repr(chunk))
                 else:
                     is_placeholder = (expr_type == PLACEHOLDER)
-                    chunks.append(chunk)
+                    chunks.append("(" + chunk + ")")
             
             value_source = " + ".join(chunks) or '""'
 
