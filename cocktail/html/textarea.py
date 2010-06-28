@@ -14,6 +14,8 @@ class TextArea(Element, DataBoundControl):
     tag = "textarea"
 
     def __init__(self, *args, **kwargs):
+        kwargs.setdefault("rows", 4)
+        kwargs.setdefault("cols", 20)
         Element.__init__(self, *args, **kwargs)
         DataBoundControl.__init__(self)
         self.__content = Content()
