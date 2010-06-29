@@ -16,7 +16,12 @@ Some of its most notable features include:
 Also, an extensive set of ready made components is provided as well, covering a
 wide assortment of needs: forms, tables, calendars, etc.
 """
-from cocktail.html.element import Element, Content, PlaceHolder
+from cocktail.html.element import (
+    Element,
+    Content,
+    PlaceHolder,
+    get_current_renderer
+)
 from cocktail.html.resources import Resource, Script, StyleSheet
 from cocktail.html.overlay import Overlay
 from cocktail.html.utils import alternate_classes, first_last_classes
