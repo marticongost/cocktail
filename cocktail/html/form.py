@@ -287,7 +287,9 @@ class Form(Element, DataDisplay):
         else:
             field_instance.append(field_instance.control)
 
-        field_instance.label["for"] = field_instance.control.require_id()
+        if field_instance.control.tag \
+        in ("input", "button", "select", "textarea"):
+            field_instance.label["for"] = field_instance.control.require_id()
 
         return field_instance
 
