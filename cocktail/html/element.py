@@ -12,6 +12,11 @@ _thread_data = local()
 default = object()
 
 
+def get_current_renderer():
+    """Gets the `Renderer` object used by the current thread."""
+    return getattr(_thread_data, "renderer", None)
+
+
 class Element(object):
     """Base class for all presentation components.
     
@@ -200,7 +205,7 @@ class Element(object):
                 cls.styled_class = True
 
             for c in cls._classes:
-                if getattr(c, "styled_class", False):                
+                if getattr(c, "styled_class", False):
                     css_classes.append(c.__name__)
 
             cls.class_css = css_classes and " ".join(css_classes) or None
@@ -284,21 +289,30 @@ class Element(object):
         if not renderer:
             renderer = self._get_default_renderer()
         
-        canvas = []
-        out = canvas.append
-        
-        if not hasattr(_thread_data, "generated_id"):
-            _thread_data.prefix = str(time()).replace(".", "")
-            _thread_data.generated_id = 0
-            try:
+        prev_renderer = getattr(_thread_data, "renderer", None)
+        _thread_data.renderer = renderer
+
+        try:
+
+            canvas = []
+            out = canvas.append
+                    
+            if not hasattr(_thread_data, "generated_id"):
+                _thread_data.prefix = str(time()).replace(".", "")
+                _thread_data.generated_id = 0
+                try:
+                    self._render(renderer, out)
+                finally:
+                    del _thread_data.prefix
+                    del _thread_data.generated_id
+            else:
                 self._render(renderer, out)
-            finally:
-                del _thread_data.prefix
-                del _thread_data.generated_id
-        else:
-            self._render(renderer, out)
         
-        return u"".join(canvas)
+            markup = u"".join(canvas)
+        finally:
+            _thread_data.renderer = prev_renderer
+
+        return markup
 
     def _get_default_renderer(self):
         """Supplies the default renderer for an HTML rendering operation.
