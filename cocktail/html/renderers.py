@@ -24,6 +24,8 @@ HTML4_TRANSITIONAL = u"""<!DOCTYPE html
 PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">"""
 
+HTML5 = u"""<!DOCTYPE HTML>"""
+
 _entity_expr = re.compile("[\"<>&]")
 _entity_dict = {
     "\"": "&quot;",
@@ -139,13 +141,20 @@ class Renderer(object):
             handler(element, self)
 
 
-class HTML4Renderer(Renderer):
+class HTMLRenderer(Renderer):
 
-    doctype = HTML4_STRICT
     single_tag_closure = u">"
 
     def _write_flag(self, key, out):
         out(key)
+
+
+class HTML4Renderer(HTMLRenderer):
+    doctype = HTML4_STRICT
+    
+
+class HTML5Renderer(HTMLRenderer):
+    doctype = HTML5
 
 
 class XHTMLRenderer(Renderer):
