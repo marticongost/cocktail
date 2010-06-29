@@ -23,6 +23,12 @@ from cocktail.html.element import (
     get_current_renderer
 )
 from cocktail.html.resources import Resource, Script, StyleSheet
+from cocktail.html.renderers import HTML4Renderer, HTML5Renderer, XHTMLRenderer
 from cocktail.html.overlay import Overlay
-from cocktail.html.utils import alternate_classes, first_last_classes
+from cocktail.html.utils import (
+    alternate_classes,
+    first_last_classes,
+    html5_tag,
+    html5_attr
+)
 
