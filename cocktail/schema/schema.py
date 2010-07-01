@@ -79,7 +79,11 @@ class Schema(Member):
 
             self.expand(members)
             
-    def init_instance(self, instance, values = None, accessor = None):
+    def init_instance(self,
+        instance,
+        values = None,
+        accessor = None,
+        excluded_members = None):
         
         if accessor is None:
             accessor = get_accessor(instance)
@@ -87,6 +91,10 @@ class Schema(Member):
         # Set the value of all object members, either from a parameter or from
         # a default value definition
         for name, member in self.members().iteritems():
+            
+            if excluded_members is not None and member in excluded_members:
+                continue
+
             value = default if values is None else values.get(name, default)
 
             if value is default:
