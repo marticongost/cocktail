@@ -179,6 +179,8 @@ class SchemaClass(EventHub, Schema):
             members
         )
 
+        cls.translation.init_instance = _init_translation
+
         cls.translation.translation_source = cls
 
         # Make the translation class available at the module level, so that its
@@ -276,11 +278,22 @@ class SchemaClass(EventHub, Schema):
 
             if changed:
                 event = instance.changing(
-                    member = member,
+                    member = member.translation_source or member,
                     language = language,
                     value = value,
                     previous_value = previous_value
                 )
+
+                value = event.value
+
+                if member.translation_source:
+                    event = instance.translated_object.changing(
+                        member = member.translation_source,
+                        language = instance.language,
+                        value = value,
+                        previous_value = previous_value
+                    )
+
                 value = event.value
             
             preserve_value = False
@@ -343,11 +356,19 @@ class SchemaClass(EventHub, Schema):
 
             if changed:
                 instance.changed(
-                    member = member,
+                    member = member.translation_source or member,
                     language = language,
                     value = value,
                     previous_value = previous_value
                 )
+
+                if member.translation_source:
+                    instance.translated_object.changed(
+                        member = member.translation_source,
+                        language = instance.language,
+                        value = value,
+                        previous_value = previous_value
+                    )
 
         def instrument_collection(self, collection, owner, member):
 
@@ -368,6 +389,29 @@ class SchemaClass(EventHub, Schema):
                 collection = RelationMapping(collection, owner, member)
 
             return collection
+
+
+@classmethod
+def _init_translation(cls,
+    instance,
+    values = None,
+    accessor = None,
+    excluded_members = None):
+
+    # Set 'translated_object' first, so events for changes in all other members
+    # are relayed to the translation owner
+    if values is not None:
+        translated_object = values.pop("translated_object")
+        if translated_object is not None:
+            instance.translated_object = translated_object
+
+        if excluded_members is None:
+            excluded_members = (cls.translated_object,)
+        else:
+            excluded_members = \
+                set([cls.translated_object]) + set(excluded_members)
+
+    Schema.init_instance(cls, instance, values, accessor, excluded_members)
 
 
 class SchemaObject(object):
@@ -497,7 +541,7 @@ class SchemaObject(object):
 
     def _new_translation(self, language):
         translation = self.translation(
-            object = self,
+            translated_object = self,
             language = language)
         self.translations[language] = translation
         return translation
