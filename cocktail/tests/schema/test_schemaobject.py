@@ -395,3 +395,110 @@ class TranslationTestCase(TestCase):
     def test_get_set(self):
         pass
 
+    def test_changing_translated_member_triggers_event(self):
+    
+        from cocktail.schema import SchemaObject, String
+
+        class Foo(SchemaObject):
+            spam = String(translated = True)
+
+        foo = Foo()
+        foo.set("spam", u"green", "en")
+        foo.set("spam", u"grün", "de")
+        
+        events = EventLog()
+        events.listen(foo_changed = foo.changed)
+    
+        foo.set("spam", u"red", "en")
+        foo.set("spam", u"rot", "de")
+
+        event = events.pop(0)
+        assert event.slot is foo.changed
+        assert event.member is Foo.spam
+        assert event.value == u"red"    
+        assert event.previous_value == u"green"
+        assert event.language == "en"
+
+        event = events.pop(0)
+        assert event.slot is foo.changed
+        assert event.member is Foo.spam
+        assert event.value == u"rot"
+        assert event.previous_value == u"grün"
+        assert event.language == "de"
+
+    def test_changing_translation_notifies_owner(self):
+
+        from cocktail.schema import SchemaObject, String
+
+        class Foo(SchemaObject):
+            spam = String(translated = True)
+
+        foo = Foo()
+        foo.set("spam", u"green", "en")
+        foo.set("spam", u"grün", "de")
+        
+        events = EventLog()
+        events.listen(foo_changed = foo.changed)
+    
+        foo.translations["en"].spam = u"red"
+        foo.translations["de"].spam = u"rot"
+
+        event = events.pop(0)
+        assert event.slot is foo.changed
+        assert event.member is Foo.spam
+        assert event.value == u"red"    
+        assert event.previous_value == u"green"
+        assert event.language == "en"
+
+        event = events.pop(0)
+        assert event.slot is foo.changed
+        assert event.member is Foo.spam
+        assert event.value == u"rot"
+        assert event.previous_value == u"grün"
+        assert event.language == "de"
+
+    def test_adding_translation_notifies_owner(self):
+        return
+
+        from cocktail.schema import SchemaObject, String
+
+        class Foo(SchemaObject):
+            spam = String(translated = True)
+            bar = String(translated = True, default = "gray")
+
+        foo = Foo()
+        
+        events = EventLog()
+        events.listen(foo_changed = foo.changed)
+    
+        foo.set("spam", u"green", "en")
+        foo.set("spam", u"grün", "de")
+
+        event = events.pop(0)
+        assert event.slot is foo.changed
+        assert event.member is Foo.spam
+        assert event.value == u"green"
+        assert event.previous_value is None
+        assert event.language == "en"
+
+        event = events.pop(0)
+        assert event.slot is foo.changed
+        assert event.member is Foo.bar
+        assert event.value == u"gray"
+        assert event.previous_value is None
+        assert event.language == "en"
+
+        event = events.pop(0)
+        assert event.slot is foo.changed
+        assert event.member is Foo.spam
+        assert event.value == u"grün"
+        assert event.previous_value is None
+        assert event.language == "de"
+
+        event = events.pop(0)
+        assert event.slot is foo.changed
+        assert event.member is Foo.bar
+        assert event.value == u"gray"
+        assert event.previous_value is None
+        assert event.language == "de"
+
