@@ -322,11 +322,15 @@ class Form(Element, DataDisplay):
 
                 label.append(label.label_language)
 
-            if self.required_marks \
-            and (isinstance(member.min, int) \
-            and member.min if isinstance(member, Collection) else member.required):
-                label.required_mark = self.create_required_mark(member)
-                label.append(label.required_mark)
+            if self.required_marks:
+                if isinstance(member, Collection):
+                    is_required = (isinstance(member.min, int) and member.min)
+                else:
+                    is_required = (member.required == True)
+
+                if is_required:
+                    label.required_mark = self.create_required_mark(member)
+                    label.append(label.required_mark)
         else:
             label.visible = False
 
