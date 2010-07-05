@@ -21,7 +21,9 @@ class TinyMCE(Element, DataBoundControl):
         DataBoundControl.__init__(self)
         self.tinymce_params = {}
         self.add_resource(
-            "/resources/scripts/tinymce/jscripts/tiny_mce/tiny_mce.js")
+            "/cocktail/scripts/TinyMCE.js")
+        self.add_resource(
+            "/resources/scripts/tinymce/jscripts/tiny_mce/tiny_mce_src.js")
 
     def _build(self):
         self.textarea = templates.new("cocktail.html.TextArea")
@@ -29,19 +31,13 @@ class TinyMCE(Element, DataBoundControl):
         self.binding_delegate = self.textarea
         
     def _ready(self):
-
         Element._ready(self)
-
         params = self.default_tinymce_params.copy()
         params.update(self.tinymce_params)
         params.setdefault("language", get_language())
         params["mode"] = "exact"
         params["elements"] = self.textarea.require_id()
-
-        init_script = Element("script")
-        init_script["type"] = "text/javascript"
-        init_script.append("tinyMCE.init(%s)" % dumps(params))
-        self.append(init_script)
+        self.set_client_param("tinymceSettings", params);
     
     def _get_value(self):
         return self.textarea.value
