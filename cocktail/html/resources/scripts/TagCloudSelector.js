@@ -7,24 +7,21 @@
 @since:			October 2009
 -----------------------------------------------------------------------------*/
 
-cocktail.init(function (root) {
+cocktail.bind(".TagCloudSelector", function ($selector) {
 
-    jQuery(".TagCloudSelector", root).each(function () {
-
-        function update() {
-            var $parent = jQuery(this.parentNode);
-            if (this.checked) {
-                $parent.addClass("selected");
-            }
-            else {
-                $parent.removeClass("selected");
-            }
+    function update() {
+        var $parent = jQuery(this.parentNode);
+        if (this.checked) {
+            $parent.addClass("selected");
         }
+        else {
+            $parent.removeClass("selected");
+        }
+    }
 
-        jQuery(".entry input", this)
-            .hide()
-            .each(update)
-            .change(update);
-    });
+    $selector.find(".entry input")
+        .hide()
+        .each(update)
+        .change(update);
 });
 

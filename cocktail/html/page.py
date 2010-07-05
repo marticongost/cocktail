@@ -96,15 +96,12 @@ class Page(Element):
              
             if self.__client_params_script is None:
                 
-                script_tag = Element("script")
-                script_tag["type"] = "text/javascript"
-                script_tag.append("jQuery(function () {\n")
-                
-                self.__client_params_script = Content()
-                self.__client_params_script.value = ""
-                script_tag.append(self.__client_params_script)
-                script_tag.append("});\n")
-                self.head.append(script_tag)
+                self.__client_params_script = Element("script")
+                self.__client_params_script["type"] = "text/javascript"
+                self.__client_params_script.append(
+                    "// cocktail.html client-side setup\n"
+                )                                
+                self.head.append(self.__client_params_script)
 
             client_model = (
                 self.__client_model_stack
@@ -133,17 +130,19 @@ class Page(Element):
                         % dumps(list(descendant.client_code))
                     )
             else:
-                js.append(
-                    "\tjQuery('#%s').each(function () {" % descendant["id"]
-                )
-                
-                for key, value in client_params.iteritems():
-                    js.append("\t\tthis.%s = %s;" % (key, dumps(value)))
-                
-                js.extend("\t\t" + snippet for snippet in client_code)
-                js.append("\t});\n")
+                if client_params:
+                    js.append("\tcocktail.__clientParams['%s'] = %s;\n" % (
+                        descendant["id"],
+                        dumps(client_params)
+                    ))
+                if client_code:
+                    js.append("\tcocktail.__clientCode['%s'] = [%s];\n" % (
+                        descendant["id"],
+                        ", ".join("function () { %s }" % snippet
+                                  for snippet in client_code)
+                    ))
             
-            self.__client_params_script.value += "\n".join(js)
+            self.__client_params_script.append("\n".join(js))
 
     def _after_descendant_rendered(self, descendant, renderer):
 

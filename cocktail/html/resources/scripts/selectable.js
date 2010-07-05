@@ -220,104 +220,104 @@
         });
     }
 
-    jQuery(document).keydown(function (e) {
-        
-        if (!focusedSelectable) {
-            jQuery("body").enableTextSelect();
-            return true;
-        }
-        
-        jQuery("body").disableTextSelect();
-
-        var key = e.charCode || e.keyCode;
-        var multipleSelection = (focusedSelectable.selectionMode == cocktail.MULTIPLE_SELECTION);
-
-        // Enter key; trigger the 'activated' event
-        if (key == 13) {
-            jQuery(focusedSelectable).trigger("activated");
-			return false;
-        }
-        // Home key
-        else if (key == 36) {
-
-            focusedSelectable.clearSelection();
-            var firstEntry = focusedSelectable._getEntries()[0];
-
-            if (multipleSelection && e.shiftKey) {
-                focusedSelectable.setRangeSelected(
-                    focusedSelectable._selectionStart,
-                    firstEntry,
-                    true);
-            }
-            else {
-                focusedSelectable.setEntrySelected(firstEntry, true, true);
-            }
-
-            return false;
-        }
-        // End key
-        else if (key == 35) {
-
-            focusedSelectable.clearSelection();
-            var lastEntry = focusedSelectable._getEntries()[focusedSelectable._getEntries().length - 1];
-
-            if (multipleSelection && e.shiftKey) {
-                focusedSelectable.setRangeSelected(focusedSelectable._selectionStart, lastEntry, true);
-            }
-            else {  
-                focusedSelectable.setEntrySelected(lastEntry, true, true);
-            }
-
-            return false;
-        }
-        // Down key
-        else if (key == 40) {
+    jQuery(function () {
+        jQuery(document).keydown(function (e) {
             
-            var nextEntry = focusedSelectable._selectionEnd
-                         && focusedSelectable.getNextEntry(focusedSelectable._selectionEnd);
+            if (!focusedSelectable) {
+                jQuery("body").enableTextSelect();
+                return true;
+            }
+            
+            jQuery("body").disableTextSelect();
 
-            if (nextEntry) {
+            var key = e.charCode || e.keyCode;
+            var multipleSelection = (focusedSelectable.selectionMode == cocktail.MULTIPLE_SELECTION);
+
+            // Enter key; trigger the 'activated' event
+            if (key == 13) {
+                jQuery(focusedSelectable).trigger("activated");
+                return false;
+            }
+            // Home key
+            else if (key == 36) {
+
                 focusedSelectable.clearSelection();
-                            
+                var firstEntry = focusedSelectable._getEntries()[0];
+
                 if (multipleSelection && e.shiftKey) {
                     focusedSelectable.setRangeSelected(
-                        focusedSelectable._selectionStart, nextEntry, true);
+                        focusedSelectable._selectionStart,
+                        firstEntry,
+                        true);
                 }
                 else {
-                    focusedSelectable.setEntrySelected(nextEntry, true, true);
+                    focusedSelectable.setEntrySelected(firstEntry, true, true);
                 }
+
+                return false;
             }
+            // End key
+            else if (key == 35) {
 
-            return false;
-        }
-        // Up key        
-        else if (key == 38) {
-               
-            var previousEntry = focusedSelectable._selectionEnd
-                             && focusedSelectable.getPreviousEntry(focusedSelectable._selectionEnd);
-
-            if (previousEntry) {
                 focusedSelectable.clearSelection();
-            
-                if (multipleSelection && e.shiftKey) {
-                    focusedSelectable.setRangeSelected(
-                        focusedSelectable._selectionStart, previousEntry, true);
-                }
-                else {
-                    focusedSelectable.setEntrySelected(previousEntry, true, true);
-                }
-            }
+                var lastEntry = focusedSelectable._getEntries()[focusedSelectable._getEntries().length - 1];
 
-            return false;
-        }
+                if (multipleSelection && e.shiftKey) {
+                    focusedSelectable.setRangeSelected(focusedSelectable._selectionStart, lastEntry, true);
+                }
+                else {  
+                    focusedSelectable.setEntrySelected(lastEntry, true, true);
+                }
+
+                return false;
+            }
+            // Down key
+            else if (key == 40) {
+                
+                var nextEntry = focusedSelectable._selectionEnd
+                             && focusedSelectable.getNextEntry(focusedSelectable._selectionEnd);
+
+                if (nextEntry) {
+                    focusedSelectable.clearSelection();
+                                
+                    if (multipleSelection && e.shiftKey) {
+                        focusedSelectable.setRangeSelected(
+                            focusedSelectable._selectionStart, nextEntry, true);
+                    }
+                    else {
+                        focusedSelectable.setEntrySelected(nextEntry, true, true);
+                    }
+                }
+
+                return false;
+            }
+            // Up key        
+            else if (key == 38) {
+                   
+                var previousEntry = focusedSelectable._selectionEnd
+                                 && focusedSelectable.getPreviousEntry(focusedSelectable._selectionEnd);
+
+                if (previousEntry) {
+                    focusedSelectable.clearSelection();
+                
+                    if (multipleSelection && e.shiftKey) {
+                        focusedSelectable.setRangeSelected(
+                            focusedSelectable._selectionStart, previousEntry, true);
+                    }
+                    else {
+                        focusedSelectable.setEntrySelected(previousEntry, true, true);
+                    }
+                }
+
+                return false;
+            }
+        });
     });
 })();
 
-cocktail.init(function (root) {
-    jQuery(".selectable", root).each(function () {
-        var params = this.selectableParams || {};
-        params.element = this;
-        cocktail.selectable(params);
-    });
+cocktail.bind(".selectable", function () {
+    var params = this.selectableParams || {};
+    params.element = this;
+    cocktail.selectable(params);
 });
 

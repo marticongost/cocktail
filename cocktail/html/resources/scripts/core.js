@@ -1,35 +1,67 @@
 
 var cocktail = {};
-cocktail.__initCallbacks = [];
+cocktail.__initialized = false;
 cocktail.__clientModels = {};
 cocktail.__autoId = 0;
 cocktail.__iframeId = 0;
 cocktail.__bindings = [];
 cocktail.__bindingId = 0;
+cocktail.__clientParams = {};
+cocktail.__clientCode = {};
 
-cocktail.init = function (param) {
+cocktail.init = function (root) {
     
-    if (param && (param instanceof Function)) {
-        cocktail.__initCallbacks.push(param);
-    }
-    else {
-        var root = param || document.body;
+    if (!cocktail.__initialized) {
+        cocktail.__initialized = true;
         jQuery(document.body).addClass("scripted");
-        var callbacks = cocktail.__initCallbacks;
-        for (var i = 0; i < callbacks.length; i++) {
-            callbacks[i](root);
-        }
-        cocktail.applyBindings(root);
     }
-}
+    
+    root = root || document.body;
 
-cocktail.applyBindings = function (root) {
-    if (window.console) {
-        console.log("Applying bindings");
+    // Set server supplied parameters
+    var remainingParams = {};
+
+    for (var id in cocktail.__clientParams) {
+        var target = cocktail._findById(root, id);
+        var params = cocktail.__clientParams[id];
+        if (target) {
+            for (var key in params) {
+                target[key] = params[key];
+            }
+        }
+        else {
+            remainingParams[id] = params;
+        }
     }
+
+    cocktail.__clientParams = remainingParams;
+
+    // Apply server supplied code
+    var remainingCode = {};
+
+    for (var id in cocktail.__clientCode) {
+        var target = cocktail._findById(root, id);
+        var code = cocktail.__clientCode[id];
+        if (target) {
+            for (var i = 0; i < code.length; i++) {
+                code[i].call(target);
+            }
+        }
+        else {
+            remainingCode[id] = code;
+        }
+    }
+
+    cocktail.__clientCode = remainingCode;
+
+    // Apply bindings
     for (var i = 0; i < cocktail.__bindings.length; i++) {
         cocktail.__bindings[i].apply(root);
     }
+}
+
+cocktail._findById = function (root, id) {
+    return (root.id == id) ? root : jQuery(root).find("#" + id).get(0);
 }
 
 cocktail.bind = function (/* varargs */) {
@@ -76,13 +108,36 @@ cocktail.bind = function (/* varargs */) {
         cocktail.__bindings.push(binding);
     }
 
-    binding.apply = function (root) {
-        var $root = jQuery(root || document.body);
-        var $matches = $root.find(binding.selector);        
+    binding.toString = function () {
+        return "Binding #" + this.id + " \"" + this.selector + "\"";
+    }
+
+    binding.find = function (root) {
+        if (!root) {
+            var body = root = document.body;
+        }
+        else {
+            var body = root.ownerDocument.body;
+        }
+
+        var $root = jQuery(root);
+        
+        if (root == body) {
+            var $matches = jQuery(body).find(binding.selector);
+        }
+        else {
+            var $matches = jQuery(root).find("*").filter(binding.selector);
+        }
+
         if ($root.is(binding.selector)) {
             $matches = $root.add($matches);
         }
-        $matches.each(function () {
+
+        return $matches;
+    }
+
+    binding.apply = function (root) {
+        this.find(root).each(function () {
             if (binding.children) {
                 for (var i = 0; i < binding.children.length; i++) {
                     binding.children[i].apply(this);
@@ -98,13 +153,6 @@ cocktail.bind = function (/* varargs */) {
                     root["$" + binding.name] = $element;
                 }
                 this._cocktail_bindings[binding.id] = true;
-                if (window.console) {
-                    console.log(
-                        'Applying binding "' + binding.selector
-                        + '" #' + binding.id
-                        + " to <" + this.tagName + " id='" + this.id + "' class='" + this.className + "'>"
-                    );
-                }
                 binding.behavior.call(this, $element, jQuery(root));
             }
         });
@@ -324,6 +372,7 @@ cocktail.loadElement = function (element, url, callback) {
         if (callback) {
             callback.apply(element);
         }
+        cocktail.init(element);
     });
 }
 
@@ -348,20 +397,22 @@ cocktail.submit = function (params) {
         if (params.callback) {
             params.callback.call(params.form, params, doc);
         }
+        if (params.targetElement) {
+            cocktail.init(element);
+        }
     }
     params.form.target = iframe.name;
     params.form.submit();
 }
 
+cocktail.__clientSetupRegExp = /<script(?:\s+[^>]*)?>\s*\/\/ cocktail\.html client-side setup\n([\s\S]+?)<\/script>/g;
+
 cocktail.updateElement = function (element, data, fragment) {
 
-    var container = document.createElement("div");
-    var $container = jQuery(container);
-    container.innerHTML = data;
-
+    var $container = jQuery("<div>").html(data);
     var newElement = $container.find(fragment).get(0);
     newElement.parentNode.removeChild(newElement);
-
+    
     // Assign CSS classes
     element.className = newElement.className;
 
@@ -370,8 +421,31 @@ cocktail.updateElement = function (element, data, fragment) {
         .empty()
         .append(newElement.childNodes);
 
-    // TODO: add new resources, client params, translations, etc
+    // Copy client parameters and code
+    var match = cocktail.__clientSetupRegExp.exec(data);
+    if (match) {
+        eval(match[1]);
+        if (newElement.id) {
+            if (!element.id) {
+                element.id = newElement.id;
+            }
+            else if (element.id != newElement.id) {
+                // Parameters
+                var newParams = cocktail.__clientParams[newElement.id] || {};
+                var params = cocktail.__clientParams[element.id] || (cocktail.__clientParams[element.id] = {});
+                for (var key in newParams) {
+                    params[key] = newParams[key];
+                }
 
-    // Re-apply behaviors
-    cocktail.applyBindings();
+                // Code
+                var newCode = cocktail.__clientCode[newElement.id] || [];
+                var code = cocktail.__clientCode[element.id] || (cocktail.__clientCode[element.id] == []);
+                for (var i = 0; i < newCode.length; i++) {
+                    code.push(newCode[i]);
+                }
+            }
+        }
+    }
+
+    // TODO: add new resources, translations, etc
 }

@@ -7,8 +7,8 @@
 @since:			February 2009
 -----------------------------------------------------------------------------*/
 
-cocktail.init(function (root) {
-    
+cocktail.bind(".PropertyTable", function ($ptable) {
+
     function setCollapsed(collapsed) {
         
         this.collapsed = collapsed;
@@ -26,19 +26,14 @@ cocktail.init(function (root) {
         setCollapsed.call(this, !this.collapsed);
     }
 
-    jQuery(".PropertyTable", root).each(function () {
-
-        jQuery(this).addClass("scripted");
-
-        jQuery(".type_group", this).each(function () {
+    $ptable.find(".type_group").each(function () {
+        
+        this.collapsedCookieKey = "cocktail.html.PropertyTable-collapsed " + this.groupSchema;
+        setCollapsed.call(this, jQuery.cookie(this.collapsedCookieKey) == "true");
             
-            this.collapsedCookieKey = "cocktail.html.PropertyTable-collapsed " + this.groupSchema;
-            setCollapsed.call(this, jQuery.cookie(this.collapsedCookieKey) == "true");
-                
-            jQuery(".type_header", this).click(function () {
-                var group = jQuery(this).parents(".type_group").get(0);
-                toggleCollapsed.call(group);
-            });
+        jQuery(this).find(".type_header").click(function () {
+            var group = jQuery(this).parents(".type_group").get(0);
+            toggleCollapsed.call(group);
         });
     });
 });

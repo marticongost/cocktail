@@ -7,66 +7,54 @@
 @since:			September 2009
 -----------------------------------------------------------------------------*/
 
-cocktail.init(function (root) {
+cocktail.bind(".DatePicker", function ($datePicker) {
 
-    jQuery(".DatePicker", root).each(function () {
+    var timeBox;
 
-        var timeBox;
+    if (this.hasDate) {
 
-        if (this.hasDate) {
+        // Apply the date picker behavior
+        var params = $.extend(
+            {},
+            $.datepicker.regional[cocktail.getLanguage()],
+            this.datePickerParams
+        );
+        $datePicker.datepicker(params);
 
-            // Apply the date picker behavior
-            var params = $.extend(
-                {},
-                $.datepicker.regional[cocktail.getLanguage()],
-                this.datePickerParams
-            );
-            jQuery(this).datepicker(params);
+        // Create the time portion of date time controls
+        if (this.hasTime) {
+            timeBox = document.createElement('input');
+            this.timeBox = timeBox;
+            timeBox.className = "time";
+            timeBox.setAttribute('type', 'text');
 
-            // Create the time portion of date time controls
-            if (this.hasTime) {
-                var timeBox = document.createElement('input');
-                this.timeBox = timeBox;
-                timeBox.className = "time";
-                timeBox.setAttribute('type', 'text');
-                timeBox.name = "timepickr_" + this.name;
-
-                if (this.value != "") {
-                    var parts = this.value.split(" ");
-                    this.value = parts[0];
-                    timeBox.value = parts[1];
-                }
-
-                jQuery(this).after(timeBox);
+            if (this.value != "") {
+                var parts = this.value.split(" ");
+                this.value = parts[0];
+                timeBox.value = parts[1];
             }
-        }
-        else if (this.hasTime) {
-            var timeBox = this;
-        }
 
-        // Masked input for time boxes
-        if (timeBox) {
-            jQuery(timeBox).mask("99:99:99", {fullfilled: true, maskedtype: "time"});
+            $datePicker.after(timeBox);
         }
+    }
+    else if (this.hasTime) {
+        var timeBox = this;
+    }
 
-        // When submitting forms with date time fields, put the date and time
-        // parts back together
-        if (this.hasDate && this.hasTime) {
+    // Masked input for time boxes
+    if (timeBox) {
+        jQuery(timeBox).mask("99:99:99", {fullfilled: true, maskedtype: "time"});
+    }
+});
 
-            // Make sure this event is only declared once
-            if (!cocktail.__DatePicker_formEvent) {
-                cocktail.__DatePicker_formEvent = true;
-                
-                jQuery("form").submit( function () {
-                    jQuery(".DatePicker", this).each(function () {
-                        if (this.hasTime) {
-                            this.value = this.value + " " + this.timeBox.value;
-                        }
-                        jQuery(this.timeBox).removeAttr('name');
-                    });
-                });
+// When submitting forms with date time fields, put the date and time
+// parts back together
+cocktail.bind("form", function ($form) {
+    $form.submit(function () {
+        $form.find(".DatePicker").each(function () {
+            if (this.hasDate && this.hasTime) {
             }
-        }
+        });
     });
 });
 
