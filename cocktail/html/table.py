@@ -63,7 +63,7 @@ class Table(Element, CollectionDisplay):
         self.head_row = Element("tr")
         self.head.append(self.head_row)
 
-        self.body = Element("body")
+        self.body = Element("tbody")
         self.append(self.body)
 
     def _ready(self):
