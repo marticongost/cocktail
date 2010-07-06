@@ -355,24 +355,23 @@ cocktail.createElement = function (tag, name, type) {
     }
 }
 
-cocktail.loadElement = function (element, url, callback) {
-    
-    var pos = url.indexOf(" ");
-    var fragment = "*";
-    
-    if (pos != -1) {
-        fragment = url.substr(pos);
-        url = url.substr(0, pos);
+cocktail.update = function (params) {
+
+    if (params.nodeType) {
+        params = {element: params};
     }
 
-    var container = document.createElement("div");
+    if (!params.url) {
+        params.url = location.href;
+    }
 
-    jQuery.get(url, function (data) {
-        cocktail.updateElement(element, data, fragment);
-        if (callback) {
-            callback.apply(element);
+    jQuery.get(params.url, function (data) {
+        params.data = data;
+        cocktail._updateElement(params);
+        if (params.callback) {
+            params.callback.call(params.element, params);
         }
-        cocktail.init(element);
+        cocktail.init(params.element);
     });
 }
 
@@ -387,65 +386,78 @@ cocktail.submit = function (params) {
         var doc = (this.contentWindow || this.contentDocument);
         doc = doc.document || doc;
         if (params.targetElement) {
-            cocktail.updateElement(
-                params.targetElement,
-                doc.documentElement.innerHTML,
-                params.fragment || "body > *"
-            );
+            cocktail._updateElement({
+                element: params.targetElement,
+                data: doc.documentElement.innerHTML,
+                fragment: params.fragment || "body > *"
+            });
         }
         iframe.parentNode.removeChild(iframe);
         if (params.callback) {
             params.callback.call(params.form, params, doc);
         }
         if (params.targetElement) {
-            cocktail.init(element);
+            cocktail.init(params.targetElement);
         }
     }
     params.form.target = iframe.name;
     params.form.submit();
 }
 
-cocktail.__clientSetupRegExp = /<script(?:\s+[^>]*)?>\s*\/\/ cocktail\.html client-side setup\n([\s\S]+?)<\/script>/g;
+cocktail.CLIENT_ASSETS_MARK = "// cocktail.html client-side setup";
 
-cocktail.updateElement = function (element, data, fragment) {
+cocktail._updateElement = function (params) {
 
-    var $container = jQuery("<div>").html(data);
-    var newElement = $container.find(fragment).get(0);
-    newElement.parentNode.removeChild(newElement);
+    params.$container = jQuery("<div>").html(params.data);
+    var target = params.element;
+    var source = params.$container.find(params.fragment || "*").get(0);
     
     // Assign CSS classes
-    element.className = newElement.className;
+    target.className = source.className;
 
     // Copy children
-    jQuery(element)
-        .empty()
-        .append(newElement.childNodes);
+    if (params.updateContent || params.updateContent === undefined) {
+        jQuery(target).html(jQuery(source).html());
+    }
 
     // Copy client parameters and code
-    var match = cocktail.__clientSetupRegExp.exec(data);
-    if (match) {
-        eval(match[1]);
-        if (newElement.id) {
-            if (!element.id) {
-                element.id = newElement.id;
-            }
-            else if (element.id != newElement.id) {
-                // Parameters
-                var newParams = cocktail.__clientParams[newElement.id] || {};
-                var params = cocktail.__clientParams[element.id] || (cocktail.__clientParams[element.id] = {});
-                for (var key in newParams) {
-                    params[key] = newParams[key];
-                }
+    if (params.updateAssets || params.updateAssets === undefined) {
 
-                // Code
-                var newCode = cocktail.__clientCode[newElement.id] || [];
-                var code = cocktail.__clientCode[element.id] || (cocktail.__clientCode[element.id] == []);
-                for (var i = 0; i < newCode.length; i++) {
-                    code.push(newCode[i]);
+        var clientAssets = null;
+        var scriptStart = params.data.indexOf(cocktail.CLIENT_ASSETS_MARK)
+        if (scriptStart != -1) {
+            scriptStart += cocktail.CLIENT_ASSETS_MARK.length;
+            var scriptEnd = params.data.indexOf("</script>", scriptStart);
+            if (scriptEnd != -1) {
+                clientAssets = params.data.substring(scriptStart, scriptEnd);
+            }
+        }
+
+        if (clientAssets) {
+            eval(clientAssets);
+            if (source.id) {
+                if (!target.id) {
+                    target.id = source.id;
+                }
+                else if (target.id != source.id) {
+                    // Parameters
+                    var newClientParams = cocktail.__clientParams[source.id] || {};
+                    var clientParams = cocktail.__clientParams[target.id]
+                                   || (cocktail.__clientParams[target.id] = {});
+                    for (var key in newClientParams) {
+                        clientParams[key] = newClientParams[key];
+                    }
+
+                    // Code
+                    var newCode = cocktail.__clientCode[source.id] || [];
+                    var code = cocktail.__clientCode[target.id]
+                           || (cocktail.__clientCode[target.id] == []);
+                    for (var i = 0; i < newCode.length; i++) {
+                        code.push(newCode[i]);
+                    }
                 }
             }
         }
+        // TODO: add new resources, translations, etc
     }
-
-    // TODO: add new resources, translations, etc
 }
