@@ -404,11 +404,20 @@ cocktail.submit = function (params) {
     params.form.submit();
 }
 
+cocktail.__htmlBodyRegExp = /<body(\s[^>]*)?/;
 cocktail.CLIENT_ASSETS_MARK = "// cocktail.html client-side setup";
 
 cocktail._updateElement = function (params) {
 
-    params.$container = jQuery("<div>").html(params.data);
+    var bodyHTML = params.data;
+    var bodyStart = params.data.search(cocktail.__htmlBodyRegExp);
+    if (bodyStart != -1) {
+        bodyStart += params.data.match(cocktail.__htmlBodyRegExp)[0].length;
+        var bodyEnd = params.data.indexOf("</body>", bodyStart);
+        bodyHTML = params.data.substring(bodyStart, bodyEnd);
+    }
+
+    params.$container = jQuery("<div>").html(bodyHTML);
     var target = params.element;
     var source = params.$container.find(params.fragment || "*").get(0);
     
