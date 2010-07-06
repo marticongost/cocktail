@@ -50,6 +50,18 @@ def parse_int(self, reader, value):
 
 schema.Integer.parse_request_value = parse_int
 
+def parse_float(self, reader, value):
+
+    if value is not None:
+        try:
+            value = float(value)
+        except ValueError:
+            pass
+
+    return value
+
+schema.Float.parse_request_value = parse_float
+
 def parse_decimal(self, reader, value):
 
     if value is not None:
