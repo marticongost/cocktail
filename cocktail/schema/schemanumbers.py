@@ -7,7 +7,10 @@ u"""
 @since:			April 2008
 """
 import decimal
-import fractions
+try:
+    import fractions
+except ImportError:
+    fractions = None
 from cocktail.translations import translations
 from cocktail.schema.member import Member
 from cocktail.schema.rangedmember import RangedMember
@@ -42,7 +45,9 @@ class Decimal(Number):
             return translations(value, language, **kwargs)
 
 
-class Fraction(Number):
-    """A numeric field limited to fractional values."""
-    type = fractions.Fraction
+if fractions:
+    class Fraction(Number):
+        """A numeric field limited to fractional values."""
+        type = fractions.Fraction
+
 
