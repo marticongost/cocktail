@@ -27,9 +27,12 @@ from cocktail.schema.schemanumbers import (
     Number,
     Integer,
     Decimal,
-    Fraction,
     Float
 )
+try:
+    from cocktail.schema.schemanumbers import Fraction
+except ImportError:
+    pass
 from cocktail.schema.schemabooleans import Boolean
 from cocktail.schema.schemadates import (
     BaseDateTime,
