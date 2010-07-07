@@ -13,6 +13,7 @@ from decimal import Decimal
 from cocktail.schema import Schema
 from cocktail.modeling import ListWrapper, SetWrapper
 from cocktail.translations import translations
+from cocktail.typemapping import TypeMapping
 
 _exporters_by_mime_type = {}
 _exporters_by_extension = {}
@@ -119,6 +120,23 @@ def export_file(collection, dest, schema,
 
 # Exporters
 #------------------------------------------------------------------------------
+msexcel_exporters = TypeMapping()
+msexcel_exporters[type(None)] = lambda member, value: ""
+msexcel_exporters[object] = lambda member, value: member.translate_value(value)
+msexcel_exporters[bool] = lambda member, value: member.translate_value(value)
+msexcel_exporters[int] = lambda member, value: value
+msexcel_exporters[int] = lambda member, value: value
+msexcel_exporters[float] = lambda member, value: value
+msexcel_exporters[Decimal] = lambda member, value: float(value)
+
+def _iterables_to_msexcel(member, value):
+    return "\n".join(msexcel_exporters[type(item)](member.items, item) 
+                    for item in value)
+
+msexcel_exporters[list] = _iterables_to_msexcel
+msexcel_exporters[set] = _iterables_to_msexcel
+msexcel_exporters[ListWrapper] = _iterables_to_msexcel
+msexcel_exporters[SetWrapper] = _iterables_to_msexcel
 
 def export_msexcel(collection, dest, schema, members):
     """Method to export a collection to MS Excel."""
@@ -131,20 +149,6 @@ def export_msexcel(collection, dest, schema, members):
     header_style.font = pyExcelerator.Font()
     header_style.font.bold = True
     
-    # Sheet content
-    def get_cell_content(member, value):                
-        if value is None:
-            return ""
-        elif isinstance(value, (list, set, ListWrapper, SetWrapper)):
-            return "\n".join(get_cell_content(member, item)
-                            for item in value)
-        elif isinstance(value, (int, float)):
-            return value
-        elif isinstance(value, Decimal):
-            return float(value)
-        else:
-            return member.translate_value(value)
-
     if isinstance(schema, Schema):
         # Column headers
         for col, member in enumerate(members):
@@ -161,14 +165,14 @@ def export_msexcel(collection, dest, schema, members):
                 else:
                     value = item.get(member.name)
 
-                cell_content = get_cell_content(member, value)
+                cell_content = msexcel_exporters[type(value)](member, value)
                 sheet.write(row + 1, col, cell_content)
     else:
         # Column headers
         sheet.write(0, 0, schema.name or "", header_style)
 
         for row, item in enumerate(collection):
-            cell_content = get_cell_content(schema, item)
+            cell_content = msexcel_exporters[type(item)](schema, item)
             sheet.write(row + 1, 0, cell_content)
 
     book.save(dest)
