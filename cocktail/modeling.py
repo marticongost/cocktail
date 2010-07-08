@@ -7,6 +7,7 @@ A set of constructs for modeling classes.
 @organization:	Whads/Accent SL
 @since:			November 2007
 """
+import re
 import types
 from copy import copy, deepcopy
 from threading import local, Lock, RLock
@@ -14,6 +15,14 @@ from cocktail.typemapping import TypeMapping
 
 _thread_data = local()
 _undefined = object()
+
+_first_cap_re = re.compile('(.)([A-Z][a-z]+)')
+_all_cap_re = re.compile('([a-z0-9])([A-Z])')
+
+def camel_to_underscore(name):
+    """Converts a camelCaseName to an underscore_name."""
+    s1 = _first_cap_re.sub(r'\1_\2', name)
+    return _all_cap_re.sub(r'\1_\2', s1).lower()
 
 def wrap(function, wrapper):
     wrapper.__doc__ = function.__doc__
