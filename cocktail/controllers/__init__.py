@@ -9,6 +9,7 @@ Utilities for writing application controllers.
 """
 from cocktail.controllers.requesthandler import RequestHandler
 from cocktail.controllers.controller import Controller
+from cocktail.controllers.formprocessor import FormProcessor, Form
 from cocktail.controllers.formcontrollermixin import FormControllerMixin
 from cocktail.controllers.dispatcher import (
     Dispatcher,

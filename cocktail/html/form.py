@@ -73,6 +73,7 @@ class Form(Element, DataDisplay):
     default_button = None
     generate_fields = True
     generate_groups = True
+    __form = None
 
     def __init__(self, *args, **kwargs):
         DataDisplay.__init__(self)
@@ -100,6 +101,21 @@ class Form(Element, DataDisplay):
         self.__hidden_members = {}
         kwargs.setdefault("action", "")
         Element.__init__(self, *args, **kwargs)
+
+    def _get_form(self):
+        return self.__form
+
+    def _set_form(self, form):
+        self.__form = form
+        if form:
+            self.schema = form.schema
+            self.data = form.data
+            self.errors = form.errors
+
+    form = property(_get_form, _set_form, doc = """
+        A convenience property that sets up the form using information
+        contained in the supplied `~cocktail.controllers.Form` instance.
+        """)
 
     def _build(self):
         
