@@ -26,6 +26,7 @@ from cocktail.controllers.parameters import (
     serialize_parameter, get_parameter, FormSchemaReader, CookieParameterSource
 )
 from cocktail.controllers.usercollection import UserCollection
+from cocktail.controllers.fileupload import FileUpload
 import cocktail.controllers.grouping
 import cocktail.controllers.erroremail
 import cocktail.controllers.handlerprofiler
