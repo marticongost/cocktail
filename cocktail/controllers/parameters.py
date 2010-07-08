@@ -257,6 +257,10 @@ def get_parameter(
     @param member: The schema member describing the nature of the value to
         retrieve, which will be used to apply the required processing to turn
         the raw data supplied by the request into a value of the given type.
+
+        Can also accept a string, which will implicitly create a temporary
+        `schema.String` member.
+
     @type member: L{Member<cocktail.schema.member.Member>}
 
     @param target: If supplied, the read member will be set on the given
@@ -427,6 +431,10 @@ class FormSchemaReader(object):
             retrieve, which will be used to apply the required processing to
             turn the raw data supplied by the request into a value of the given
             type.
+            
+            Can also accept a string, which will implicitly create a temporary
+            `schema.String` member.
+
         @type member: L{Member<cocktail.schema.member.Member>}
 
         @param languages: A collection of languages (ISO codes) to read the
@@ -458,6 +466,9 @@ class FormSchemaReader(object):
             values. Reading a translated member will produce a dictionary with
             language/value pairs.
         """
+        if isinstance(member, basestring):
+            member = schema.String(member)
+
         if path is None:
             path = []
 
