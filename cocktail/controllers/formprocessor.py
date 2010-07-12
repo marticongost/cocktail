@@ -46,7 +46,7 @@ class FormProcessor(object):
 
     @cached_getter
     def valid(self):
-        return not any(form.errors for form in self.submitted_forms)
+        return all(form.valid for form in self.submitted_forms)
 
     @cached_getter
     def submitted_forms(self):
@@ -102,6 +102,11 @@ class Form(object):
     def submit(self):
         """Load and handle form data when the form is submitted."""
         self.apply_form_data()
+
+    @cached_getter
+    def valid(self):
+        """Indicates if the form is valid and can be submitted."""
+        return not self.errors
 
     @cached_getter
     def errors(self):
