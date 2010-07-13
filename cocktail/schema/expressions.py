@@ -319,6 +319,8 @@ class EndsWithExpression(NormalizableExpression):
 
 class SearchExpression(NormalizableExpression):
 
+    normalized_strings = True
+
     def op(self, a, b):
         a, b = self.normalize_operands(a, b)
         return all((word in a) for word in b.split())
