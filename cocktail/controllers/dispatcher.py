@@ -169,6 +169,7 @@ class Dispatcher(object):
 
         # Traverse handlers
         try:
+            resolved_to_self = False
 
             while True:
 
@@ -215,14 +216,15 @@ class Dispatcher(object):
                                 child = None
 
                 # Dynamic resolver
-                if child is None:
+                if child is None and not resolved_to_self:
                     resolver = getattr(handler, "resolve", None)
                     if resolver:
                         child = resolver(path)
+                
+                if child is handler: 
+                    resolved_to_self = True
 
-                # End of the road: no child could be retrieved, or the handler
-                # resolves to itself
-                if child is None or child is handler: 
+                if child is None:
                     break
                 else:
                     handler = child
