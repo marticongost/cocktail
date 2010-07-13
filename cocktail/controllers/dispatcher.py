@@ -173,33 +173,35 @@ class Dispatcher(object):
 
             while True:
 
-                # Instantiate classes
-                if isinstance(handler, type):
-                    handler = handler()
-                
-                if not getattr(handler, "exposed", False):
-                    handler = None
-                    break
+                if not resolved_to_self:
 
-                # Add the handler to the execution chain
-                chain.append(handler)
+                    # Instantiate classes
+                    if isinstance(handler, type):
+                        handler = handler()
+                    
+                    if not getattr(handler, "exposed", False):
+                        handler = None
+                        break
 
-                # Handler specific configuration
-                handler_config = getattr(handler, "_cp_config", None)
-                
-                if handler_config is not None:
-                    config.update(handler_config)
+                    # Add the handler to the execution chain
+                    chain.append(handler)
 
-                # Path specific configuration (overrides per-handler configuration)
-                path_config = request.app.config.get(path.current_path)
+                    # Handler specific configuration
+                    handler_config = getattr(handler, "_cp_config", None)
+                    
+                    if handler_config is not None:
+                        config.update(handler_config)
 
-                if path_config:
-                    config.update(path_config)
+                    # Path specific configuration (overrides per-handler configuration)
+                    path_config = request.app.config.get(path.current_path)
 
-                # Trigger the 'traversed' event
-                event_slot = getattr(handler, "traversed", None)
-                if event_slot is not None:
-                    event_slot(path = path, config = config)
+                    if path_config:
+                        config.update(path_config)
+
+                    # Trigger the 'traversed' event
+                    event_slot = getattr(handler, "traversed", None)
+                    if event_slot is not None:
+                        event_slot(path = path, config = config)
 
                 # Descend:                
                 child = None
@@ -221,8 +223,7 @@ class Dispatcher(object):
                     if resolver:
                         child = resolver(path)
                 
-                if child is handler: 
-                    resolved_to_self = True
+                resolved_to_self = child is handler
 
                 if child is None:
                     break
