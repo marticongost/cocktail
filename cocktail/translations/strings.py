@@ -288,18 +288,18 @@ translations.define("month 12 abbr",
 )
 
 # -------- FULLTEXT TRANSLATIONS OF MONTHS
-translations.define("month 1", ca = u"Gener", es = u"Enero", en = u"January")
-translations.define("month 2", ca = u"Febrer", es = u"Febrero", en = u"February")
-translations.define("month 3", ca = u"Març", es = u"Marzo", en = u"March")
-translations.define("month 4", ca = u"Abril", es = u"Abril", en = u"April")
-translations.define("month 5", ca = u"Maig", es = u"Mayo", en = u"May")
-translations.define("month 6", ca = u"Juny", es = u"Junio", en = u"June")
-translations.define("month 7", ca = u"Juliol", es = u"Julio", en = u"July")
-translations.define("month 8", ca = u"Agost", es = u"Agosto", en = u"August")
-translations.define("month 9", ca = u"Setembre", es = u"Septiembre", en = u"September")
-translations.define("month 10", ca = u"Octubre", es = u"Octubre", en = u"October")
-translations.define("month 11", ca = u"Novembre", es = u"Noviembre", en = u"November")
-translations.define("month 12", ca = u"Desembre", es = u"Diciembre", en = u"December")
+translations.define("month 1", ca = u"Gener", es = u"Enero", en = u"January", pt = u"Janeiro")
+translations.define("month 2", ca = u"Febrer", es = u"Febrero", en = u"February", pt = u"Fevereiro")
+translations.define("month 3", ca = u"Març", es = u"Marzo", en = u"March", pt = u"Março")
+translations.define("month 4", ca = u"Abril", es = u"Abril", en = u"April", pt = u"Abril")
+translations.define("month 5", ca = u"Maig", es = u"Mayo", en = u"May", pt = u"Maio")
+translations.define("month 6", ca = u"Juny", es = u"Junio", en = u"June", pt = u"Junho")
+translations.define("month 7", ca = u"Juliol", es = u"Julio", en = u"July", pt = u"Julho")
+translations.define("month 8", ca = u"Agost", es = u"Agosto", en = u"August", pt = u"Agosto")
+translations.define("month 9", ca = u"Setembre", es = u"Septiembre", en = u"September", pt = u"Setembro")
+translations.define("month 10", ca = u"Octubre", es = u"Octubre", en = u"October", pt = u"Outubro")
+translations.define("month 11", ca = u"Novembre", es = u"Noviembre", en = u"November", pt = u"Novembro")
+translations.define("month 12", ca = u"Desembre", es = u"Diciembre", en = u"December", pt = u"Dezembro")
 
 # -------- ABBREVIATED TRANSLATIONS OF WEEKDAYS
 translations.define("weekday 0 abbr", ca = u"Dl", es = u"Lun", en = u"Mon")
@@ -373,10 +373,27 @@ def _date_instance_en(instance, style = DATE_STYLE_NUMBERS):
             instance.day
         )
 
+def _date_instance_pt(instance, style = DATE_STYLE_NUMBERS):
+    if style == DATE_STYLE_NUMBERS:
+        return instance.strftime(translations("date format"))        
+    elif style == DATE_STYLE_ABBR:
+        return u"%s %s %s" % (
+            instance.day,
+            translations(u"month %s abbr" % instance.month),
+            instance.year
+        )
+    elif style == DATE_STYLE_TEXT:
+        return u"%s de %s de %s" % (
+            instance.day,
+            translations(u"month %s" % instance.month).lower(),
+            instance.year
+        )
+
 translations.define("date-instance",
     ca = _date_instance_ca,
     es = _date_instance_es,
-    en = _date_instance_en
+    en = _date_instance_en,
+    pt = _date_instance_pt
 )
 
 translations.define("datetime-instance",
@@ -385,7 +402,9 @@ translations.define("datetime-instance",
     es = lambda instance, style = DATE_STYLE_NUMBERS:
         _date_instance_es(instance, style) + instance.strftime(" %H:%M:%S"),
     en = lambda instance, style = DATE_STYLE_NUMBERS:
-        _date_instance_en(instance, style) + instance.strftime(" %H:%M:%S")
+        _date_instance_en(instance, style) + instance.strftime(" %H:%M:%S"),
+    pt = lambda instance, style = DATE_STYLE_NUMBERS:
+        _date_instance_pt(instance, style) + instance.strftime(" %H:%M:%S")
 )
 
 def _create_time_span_function(span_format, forms, join):
@@ -512,10 +531,33 @@ def _date_range_en(start, end):
             start.year
         )
 
+def _date_range_pt(start, end):
+    if start.year != end.year:
+        return u"De %s a %s" % (
+            translations(start, style = DATE_STYLE_TEXT),
+            translations(end, style = DATE_STYLE_TEXT)
+        )
+    elif start.month != end.month:
+        return u"De %d de %s a %d de %s de %d" % (
+            start.day,
+            translations("month %d" % start.month),
+            end.day,
+            translations("month %d" % end.month),
+            start.year
+        )
+    else:
+        return u"De %d a %d de %s de %d" % (
+            start.day,
+            end.day,
+            translations("month %d" % start.month),
+            start.year
+        )
+
 translations.define("date range",
     ca = _date_range_ca,
     es = _date_range_es,
-    en = _date_range_en
+    en = _date_range_en,
+    pt = _date_range_pt
 )
 
 # html.FilterBox
