@@ -23,7 +23,8 @@ class FormProcessor(object):
         """The list of `forms <Form>` defined by the controller."""
         forms = {}        
         
-        for member in self.__class__.__dict__.itervalues():
+        for key in dir(self.__class__):
+            member = getattr(self.__class__, key, None)
             if isinstance(member, type) and issubclass(member, Form):
                 form = member(self)
                 forms[form.form_id] = form
