@@ -29,6 +29,7 @@ def first_last_classes(element, first_class = "first", last_class = "last"):
         for child in reversed(element.children):
             if child.rendered:
                 child.add_class(last_class)
+                break
 
 def html5_tag(element, tag):
 
