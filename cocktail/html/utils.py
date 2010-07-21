@@ -3,9 +3,9 @@ u"""Utilities covering typical HTML design patterns.
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
+import re
 from itertools import izip, cycle
 from cocktail.html.element import get_current_renderer
-from cocktail.html.renderers import HTML5Renderer
 
 def alternate_classes(element, classes = ("odd", "even")):
     
@@ -34,13 +34,25 @@ def html5_tag(element, tag):
 
     @element.when_ready
     def set_html5_alternative_tag():
-        if isinstance(get_current_renderer(), HTML5Renderer):
+        if getattr(get_current_renderer(), "html_version", None) >= 5:
             element.tag = tag
 
 def html5_attr(element, key, value):
 
     @element.when_ready
     def set_html5_attribute():
-        if isinstance(get_current_renderer(), HTML5Renderer):
+        if getattr(get_current_renderer(), "html_version", None) >= 5:
             element[key] = value
+
+_entity_expr = re.compile("[\"<>&]")
+_entity_dict = {
+    "\"": "&quot;",
+    "<": "&lt;",
+    ">": "&gt;",
+    "&": "&amp;"
+}
+_entity_translation = lambda match: _entity_dict[match.group(0)]
+
+def escape_attrib(value):
+    return _entity_expr.sub(_entity_translation, value)
 
