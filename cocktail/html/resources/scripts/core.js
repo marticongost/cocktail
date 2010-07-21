@@ -377,13 +377,14 @@ cocktail.update = function (params) {
     });
 }
 
-cocktail.submit = function (params) {
+cocktail.prepareBackgroundSubmit = function (params) {
 
     var iframe = document.createElement("iframe");
     iframe.name = "cocktail_iframe" + cocktail.__iframeId++;
     iframe.style.position = "absolute";
     iframe.style.left = "-2000px";
     document.body.appendChild(iframe);
+
     iframe.onload = function () {
         var doc = (this.contentWindow || this.contentDocument);
         doc = doc.document || doc;
@@ -404,6 +405,10 @@ cocktail.submit = function (params) {
     }
 
     params.form.target = iframe.name;
+}
+    
+cocktail.submit = function (params) {
+    cocktail.prepareBackgroundSubmit(params);
     params.form.submit();
 }
 
