@@ -6,7 +6,7 @@ u"""
 @organization:	Whads/Accent SL
 @since:			November 2007
 """
-import re
+from cocktail.html.utils import escape_attrib
 
 XHTML1_STRICT = u"""<!DOCTYPE html
 PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
@@ -25,15 +25,6 @@ PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">"""
 
 HTML5 = u"""<!DOCTYPE HTML>"""
-
-_entity_expr = re.compile("[\"<>&]")
-_entity_dict = {
-    "\"": "&quot;",
-    "<": "&lt;",
-    ">": "&gt;",
-    "&": "&amp;"
-}
-_entity_translation = lambda match: _entity_dict[match.group(0)]
 
 
 class Renderer(object):
@@ -104,10 +95,7 @@ class Renderer(object):
                         if value:
                             self._write_flag(key, out)
                     else:
-                        value = _entity_expr.sub(
-                            _entity_translation,
-                            unicode(value)
-                        )
+                        value = escape_attrib(unicode(value))
                         out(key + u'="' + value + u'"')
 
             # Single tag closure
@@ -144,6 +132,7 @@ class Renderer(object):
 class HTMLRenderer(Renderer):
 
     single_tag_closure = u">"
+    html_version = None
 
     def _write_flag(self, key, out):
         out(key)
@@ -151,16 +140,19 @@ class HTMLRenderer(Renderer):
 
 class HTML4Renderer(HTMLRenderer):
     doctype = HTML4_STRICT
+    html_version = 4
     
 
 class HTML5Renderer(HTMLRenderer):
     doctype = HTML5
+    html_version = 5
 
 
 class XHTMLRenderer(Renderer):
 
     doctype = XHTML1_STRICT
     single_tag_closure = u"/>"
+    html_version = 4
 
     def _write_flag(self, key, out):
         out(key + u'="' + key + u'"')

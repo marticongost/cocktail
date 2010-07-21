@@ -29,6 +29,7 @@ from cocktail.html.utils import (
     alternate_classes,
     first_last_classes,
     html5_tag,
-    html5_attr
+    html5_attr,
+    escape_attrib
 )
 
