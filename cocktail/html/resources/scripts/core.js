@@ -315,6 +315,8 @@ cocktail.showDialog = function (content) {
                 cocktail.closeDialog();
             }
         });
+
+        jQuery(cocktail.__dialogBackground).click(cocktail.closeDialog);
     }
     document.body.appendChild(cocktail.__dialogBackground);
     
@@ -400,6 +402,7 @@ cocktail.submit = function (params) {
             cocktail.init(params.targetElement);
         }
     }
+
     params.form.target = iframe.name;
     params.form.submit();
 }
