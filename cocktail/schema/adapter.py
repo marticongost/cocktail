@@ -684,7 +684,7 @@ class Join(Rule):
         self.glue = glue
 
         if isinstance(target, basestring):
-            target = {"name": target}
+            target = {"name": target, "__class__": String}
 
         self.target = target
 
