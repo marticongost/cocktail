@@ -230,6 +230,7 @@ class Form(Element, DataDisplay):
         hidden = self.get_member_hidden(member)
         
         entry = Element("tr" if self.table_layout else "div")
+        entry.field_instances = []
 
         if hidden:
             entry.tag = None
@@ -245,7 +246,9 @@ class Form(Element, DataDisplay):
                 with language_context(language):
                     return self.create_hidden_input(self.data, member)
             else:
-                return self.create_field_instance(member, language)
+                instance = self.create_field_instance(member, language)
+                entry.field_instances.append(instance)
+                return instance
 
         if member.translated:
             entry.add_class("translated")
