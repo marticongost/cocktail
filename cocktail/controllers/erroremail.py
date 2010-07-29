@@ -84,9 +84,9 @@ def error_email(
         receivers = ",".join(receivers)
 
     html = template % {
-        "base": cherrypy.request.base,
-        "path_info": cherrypy.request.path_info,
-        "query_string": cherrypy.request.query_string,
+        "base": unicode(cherrypy.request.base, "utf-8", errors='replace'),
+        "path_info": unicode(cherrypy.request.path_info, "utf-8", errors='replace'),
+        "query_string": unicode(cherrypy.request.query_string, "utf-8", errors='replace'),
         "headers": u"".join(header_template % (k, v)
                             for k, v in cherrypy.request.header_list),
         "params": u"".join(
