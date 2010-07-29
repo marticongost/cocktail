@@ -63,7 +63,8 @@ def error_email(
     receivers = (),
     template = TEMPLATE,
     header_template = HEADER_TEMPLATE,
-    param_template = PARAM_TEMPLATE):
+    param_template = PARAM_TEMPLATE,
+    encoding = "utf-8"):
     
     host_name = cherrypy.request.headers.get(
         "X-FORWARDED-HOST",
@@ -84,9 +85,9 @@ def error_email(
         receivers = ",".join(receivers)
 
     html = template % {
-        "base": cherrypy.request.base,
-        "path_info": cherrypy.request.path_info,
-        "query_string": cherrypy.request.query_string,
+        "base": unicode(cherrypy.request.base, encoding, errors='replace'),
+        "path_info": unicode(cherrypy.request.path_info, encoding, errors='replace'),
+        "query_string": unicode(cherrypy.request.query_string, encoding, errors='replace'),
         "headers": u"".join(header_template % (k, v)
                             for k, v in cherrypy.request.header_list),
         "params": u"".join(
@@ -101,7 +102,7 @@ def error_email(
         "traceback": _cperror.format_exc()
     }
  
-    message = MIMEText(html, mime_type)
+    message = MIMEText(html.encode(encoding), _subtype = mime_type, _charset = encoding)
     message["Subject"] = subject
     message["From"] = sender or "errors@" + host_name
     message["To"] = receivers
