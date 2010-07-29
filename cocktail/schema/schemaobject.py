@@ -398,18 +398,23 @@ def _init_translation(cls,
     accessor = None,
     excluded_members = None):
 
-    # Set 'translated_object' first, so events for changes in all other members
-    # are relayed to the translation owner
+    # Set 'translated_object' and 'language' first, so events for changes in
+    # all other members are relayed to the translation owner
     if values is not None:
+                
+        language = values.pop("language")
+        if language is not None:
+            instance.language = language
+        
         translated_object = values.pop("translated_object")
         if translated_object is not None:
             instance.translated_object = translated_object
 
         if excluded_members is None:
-            excluded_members = (cls.translated_object,)
+            excluded_members = (cls.translated_object, cls.language)
         else:
             excluded_members = \
-                set([cls.translated_object]) + set(excluded_members)
+                set([cls.translated_object, cls.language]) + set(excluded_members)
 
     Schema.init_instance(cls, instance, values, accessor, excluded_members)
 
