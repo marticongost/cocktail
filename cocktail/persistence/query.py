@@ -498,10 +498,17 @@ class Query(object):
 
             return dataset
 
-        # Optimized case: indexes available for all involved criteria
-        indexes = []
-        
-        for criteria in order:            
+        # General case: mix indexes and brute force sorting as needed
+        sorting_keys = {}
+
+        def add_sorting_key(item_id, key):
+            item_keys = sorting_keys.get(item_id)
+            if item_keys is None:
+                sorting_keys[item_id] = [key]
+            else:
+                item_keys.append(key)
+
+        for criteria in order:
             expr = criteria.operands[0]
 
             if isinstance(expr, TranslationExpression):
@@ -510,36 +517,28 @@ class Query(object):
             else:
                 language = None
 
-            index = self._get_expression_index(expr)
-            if index is None:
-                break            
+            index = self._get_expression_index(expr)            
             reversed = isinstance(criteria, expressions.NegativeExpression)
-            indexes.append((expr, index, reversed, language))
-        else:
-            ranks = {}
             
-            def add_rank(id, rank):
-                item_ranks = ranks.get(id)
-                if item_ranks is None:
-                    item_ranks = []
-                    ranks[id] = item_ranks
-                item_ranks.append(rank)
+            # Sort using an index
+            if index is not None:
 
-            if not isinstance(dataset, set):
-                dataset = set(dataset)
+                # Normalize the dataset to a set, to speed up lookups
+                if not isinstance(dataset, set):
+                    dataset = set(dataset)
 
-            for expr, index, reversed, language in indexes:
-             
+                # Index with duplicates
                 if isinstance(index, Index):
                     for i, key in enumerate(index):
-                        if reversed:
-                            i = -i
-                        if expr.translated and key[0] != language:
-                            continue
-                        for id in index[key]:
-                            if id in dataset:
-                                add_rank(id, i)
-                else:                    
+                        if not expr.translated or key[0] == language:
+                            if reversed:
+                                i = -i
+                            for id in index[key]:
+                                if id in dataset:
+                                    add_sorting_key(id, i)
+
+                # Index without duplicates
+                else:
                     if isinstance(expr, Member) and expr.primary:
                         sequence = index.iterkeys()
                     else:
@@ -553,65 +552,22 @@ class Query(object):
                     for i, id in enumerate(sequence):
                         if id in dataset:
                             if reversed:
-                                i = -i                        
-                            add_rank(id, i)
+                                i = -i
+                            add_sorting_key(id, i)
 
-            return sorted(dataset, key = ranks.__getitem__)
+            # Brute force
+            else:
+                for id in dataset:
+                    instance = self.type.index[id]
+                    value = expr.eval(instance, SchemaObjectAccessor)
 
-        # Proceed with the brute force approach
-        if not isinstance(dataset, list):
-            dataset = list(dataset)
+                    # Allow related objects to specify their relative ordering
+                    if hasattr(value, "get_ordering_key"):
+                        value = value.get_ordering_key()
 
-        order_expressions = []
-        descending = []
-        
-        for expr in order:
-            order_expressions.append(expr.operands[0])
-            descending.append(isinstance(expr, expressions.NegativeExpression))
+                    add_sorting_key(id, Comparator(value, reversed))
 
-        type_index = self.type.index
-
-        entries = []
-
-        for id in dataset:
-            sorting_values = []
-            for expr in order_expressions:
-                value = expr.eval(type_index[id], SchemaObjectAccessor)
-                if hasattr(value, "get_ordering_key"):
-                    value = value.get_ordering_key()
-                sorting_values.append(value)
-            entries.append([id, sorting_values])
-
-        def compare(entry_a, entry_b):
-            
-            values_a = entry_a[1]
-            values_b = entry_b[1]
-
-            for expr, desc, value_a, value_b in zip(
-                order_expressions,
-                descending,
-                values_a,
-                values_b
-            ):            
-                if desc:
-                    value_a, value_b = value_b, value_a
-
-                if (value_a is None and value_b is None) \
-                or value_a == value_b:
-                    pass
-                elif value_a is None:
-                    return -1
-                elif value_b is None:
-                    return 1
-                elif value_a < value_b:
-                    return -1
-                elif value_a > value_b:
-                    return 1
-
-            return 0
-
-        entries.sort(cmp = compare)
-        return [entry[0] for entry in entries]
+        return sorted(dataset, key = sorting_keys.__getitem__)
 
     def _apply_range(self, dataset):
 
@@ -692,7 +648,32 @@ class Query(object):
     def export_file(self, dest, mime_type = None, members = None, **kwargs):
         """Exports the query to a file"""
         export_file(self, dest, self.type, mime_type, members, **kwargs)
+
+
+class Comparator(object):
+    """A wrapper for comparable values that takes into account None values and
+    descending order.
+    """
+
+    def __init__(self, value, reversed = False):
+        self.value = value
+        self.reversed = reversed
+
+    def __cmp__(self, other):
+        a = self.value
+        b = other.value
+
+        if self.reversed:
+            a, b = b, a
         
+        if a is None and b is None:
+            return 0
+        elif a is None:
+            return -1
+        elif b is None:
+            return 1
+
+        return cmp(a, b)
 
 
 # Custom expression resolution
