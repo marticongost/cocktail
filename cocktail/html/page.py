@@ -86,6 +86,9 @@ class Page(Element):
         for element in descendant.head_elements:
             self.head.append(Content(element.render(renderer)))
 
+        for element in descendant.body_end_elements:
+            self.body.append(Content(element.render(renderer)))
+
         client_params = descendant.client_params
         client_code = descendant.client_code
 

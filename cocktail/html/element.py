@@ -170,6 +170,7 @@ class Element(object):
 
         self.__meta = None
         self.__head_elements = None
+        self.__body_end_elements = None
         self.__resources = None
         self.__resource_uris = None
         self.__client_params = None
@@ -1045,6 +1046,29 @@ class Element(object):
             self.__head_elements = [element]
         else:
             self.__head_elements.append(element)
+
+    @getter
+    def body_end_elements(self):
+        """A list of HTML elements that will be added before the closing of the
+        <body> tag when the element takes part in a `full page rendering
+        <render_page>`.
+
+        :type: `Element` list
+        """
+        if self.__body_end_elements is None:
+            return empty_list
+        else:
+            return self.__body_end_elements
+
+    def add_body_end_element(self, element):
+        """Specifies that the given element should be rendered just before the
+        closure of the <body> tag when the element takes part in a 
+        `full page rendering <render_page>`
+        """
+        if self.__body_end_elements is None:
+            self.__body_end_elements = [element]
+        else:
+            self.__body_end_elements.append(element)
 
     # Client side element parameters
     #--------------------------------------------------------------------------
