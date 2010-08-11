@@ -296,7 +296,7 @@ class Query(object):
             if self.__base_collection is None:
                 dataset = self.type.keys
             else:
-                dataset = (obj.id for obj in self.__base_collection)
+                dataset = [obj.id for obj in self.__base_collection]
 
             # Apply filters
             if self.verbose:
