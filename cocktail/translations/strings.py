@@ -827,7 +827,10 @@ translations.define("cocktail.schema.exceptions.ValueRequiredError-instance",
         % member_identifier(instance),
     pt = lambda instance:
         u"O campo <em>%s</em> é obrigatório"
-        % member_identifier(instance)
+        % member_identifier(instance),
+    de = lambda instance:
+        u"Das Feld <em>%s</em> muss ausgefüllt werden"
+        % member_identifier(instance),
 )
 
 translations.define("cocktail.schema.exceptions.NoneRequiredError-instance",
@@ -899,6 +902,9 @@ translations.define("cocktail.schema.exceptions.FormatError-instance",
         % member_identifier(instance),
     en = lambda instance:
         u"The <em>%s</em> field has a wrong format"
+        % member_identifier(instance),
+    de = lambda instance:
+        u"Das Feld <em>%s</em> hat ein falsches Format"
         % member_identifier(instance)
 )
 
