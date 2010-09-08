@@ -7,6 +7,7 @@ Provides a member that handles compound values.
 @organization:	Whads/Accent SL
 @since:			March 2008
 """
+from copy import deepcopy
 from cocktail.modeling import (
     empty_dict,
     empty_list,
@@ -61,6 +62,9 @@ class Schema(Member):
         @type schema: L{Schema}
         """)
 
+    _special_copy_keys = Member._special_copy_keys \
+                         | set(["_Schema__bases", "_Schema__members"])
+
     def __init__(self, *args, **kwargs):
 
         members = kwargs.pop("members", None)
@@ -78,7 +82,19 @@ class Schema(Member):
                 self.members_order = [member.name for member in members]
 
             self.expand(members)
-            
+ 
+    def __deepcopy__(self, memo):
+        schema_copy = Member.__deepcopy__(self, memo)
+
+        if self.__bases:
+            for base in self.__bases:
+                schema_copy.inherit(base)
+
+        for member in self.__members.itervalues():
+            schema_copy.add_member(deepcopy(member))
+
+        return schema_copy
+
     def init_instance(self,
         instance,
         values = None,
@@ -132,6 +148,34 @@ class Schema(Member):
 
             for ancestor in reversed(list(base.ascend_inheritance(True))):
                 ancestor.inherited(schema = self)
+
+    def copy(self, *args, **kwargs):
+        """Creates a copy of the schema.
+
+        Positional arguments are added as additional members of the resulting
+        schema. Keyword arguments are assigned as attributes of the new schema.
+        It is possible to use dotted names in keyword arguments to modify the
+        attributes of nested objects (ie. member constraints).
+        """
+        # Copy the schema
+        new_schema = deepcopy(self)
+        
+        # Add additional members
+        if args:
+            new_schema.expand(args)
+
+        # Set attributes
+        for key, value in kwargs.iteritems():
+            obj = new_schema
+            
+            name_parts = key.split(".")
+            
+            for name in name_parts[:-1]:
+                obj = getattr(obj, name)
+            
+            setattr(obj, name_parts[-1], value)
+
+        return new_schema
 
     def ascend_inheritance(self, include_self = False):
         
