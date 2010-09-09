@@ -112,8 +112,7 @@ class DataDisplay(object):
 
     def get_member_name(self, member, language = None):
         return member.get_parameter_name(
-            member, 
-            member.translated and self.translations and language,
+            language = member.translated and self.translations and language,
             prefix = self.name_prefix,
             suffix = self.name_suffix
         )
