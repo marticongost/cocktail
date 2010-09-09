@@ -21,6 +21,7 @@ class Pager(Element):
     hide_when_empty = True
     visible_pages = 10
 
+    pagination = None
     user_collection = None
     
     def _build(self):
@@ -51,12 +52,19 @@ class Pager(Element):
             self.page = self.user_collection.page
             self.page_size = self.user_collection.page_size
             self.page_param_name = \
-                self.user_collection.params.get_key(self.page_param_name)
+                self.user_collection.params.get_parameter_name(
+                    self.page_param_name
+                )
             if self.user_collection.subset:
                 self.item_count = len(self.user_collection.subset)
+        elif self.pagination:
+            self.page = self.pagination.current_page
+            self.page_size = self.pagination.page_size
+            self.page_param_name = \
+                self.pagination.__class__.page.get_parameter_name()
+            self.item_count = self.pagination.item_count
 
         page_count = self.page_count
-
 
         # Hide the pager when only one page is visible
         if self.hide_when_empty and page_count < 2:

@@ -175,7 +175,7 @@ class Form(object):
             get_parameter(
                 self.schema,
                 target = data,
-                skip_undefined = True
+                undefined = "skip"
             )
         else:
             self.apply_instance_data(data)
@@ -221,7 +221,7 @@ class Form(object):
         `get_parameter <cocktail.controllers.parameters.get_parameter>` when
         reading data from the form.        
         """
-        return {"strict": False, "enable_defaults": False}
+        return {"errors": "ignore", "undefined": "set_none"}
 
     @cached_getter
     def instance(self):
