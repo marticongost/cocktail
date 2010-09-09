@@ -7,6 +7,7 @@ Provides a member that handles compound values.
 @organization:	Whads/Accent SL
 @since:			March 2008
 """
+from copy import deepcopy
 from cocktail.modeling import (
     empty_dict,
     empty_list,
@@ -61,6 +62,9 @@ class Schema(Member):
         @type schema: L{Schema}
         """)
 
+    _special_copy_keys = Member._special_copy_keys \
+                         | set(["_Schema__bases", "_Schema__members"])
+
     def __init__(self, *args, **kwargs):
 
         members = kwargs.pop("members", None)
@@ -78,7 +82,19 @@ class Schema(Member):
                 self.members_order = [member.name for member in members]
 
             self.expand(members)
-            
+ 
+    def __deepcopy__(self, memo):
+        schema_copy = Member.__deepcopy__(self, memo)
+
+        if self.__bases:
+            for base in self.__bases:
+                schema_copy.inherit(base)
+
+        for member in self.__members.itervalues():
+            schema_copy.add_member(deepcopy(member))
+
+        return schema_copy
+
     def init_instance(self,
         instance,
         values = None,
