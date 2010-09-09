@@ -25,6 +25,7 @@ from cocktail.controllers.viewstate import (
 from cocktail.controllers.parameters import (
     serialize_parameter, get_parameter, FormSchemaReader, CookieParameterSource
 )
+from cocktail.controllers.pagination import Pagination
 from cocktail.controllers.usercollection import UserCollection
 from cocktail.controllers.fileupload import FileUpload
 import cocktail.controllers.grouping
