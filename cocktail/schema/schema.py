@@ -149,34 +149,6 @@ class Schema(Member):
             for ancestor in reversed(list(base.ascend_inheritance(True))):
                 ancestor.inherited(schema = self)
 
-    def copy(self, *args, **kwargs):
-        """Creates a copy of the schema.
-
-        Positional arguments are added as additional members of the resulting
-        schema. Keyword arguments are assigned as attributes of the new schema.
-        It is possible to use dotted names in keyword arguments to modify the
-        attributes of nested objects (ie. member constraints).
-        """
-        # Copy the schema
-        new_schema = deepcopy(self)
-        
-        # Add additional members
-        if args:
-            new_schema.expand(args)
-
-        # Set attributes
-        for key, value in kwargs.iteritems():
-            obj = new_schema
-            
-            name_parts = key.split(".")
-            
-            for name in name_parts[:-1]:
-                obj = getattr(obj, name)
-            
-            setattr(obj, name_parts[-1], value)
-
-        return new_schema
-
     def ascend_inheritance(self, include_self = False):
         
         if include_self:

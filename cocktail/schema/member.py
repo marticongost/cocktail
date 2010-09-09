@@ -222,11 +222,27 @@ class Member(Variable):
             return default()
         else:
             return default
-
-    def copy(self):
-        """Creates a deep, unbound copy of the member."""
-        return deepcopy(self)
     
+    def copy(self, **kwargs):
+        """Creates a deep, unbound copy of the member.
+
+        Keyword arguments are assigned as attributes of the new member. It is
+        possible to use dotted names to set attributes of nested objects.
+        """
+        member_copy = deepcopy(self)
+
+        for key, value in kwargs.iteritems():
+            obj = member_copy
+            
+            name_parts = key.split(".")
+            
+            for name in name_parts[:-1]:
+                obj = getattr(obj, name)
+            
+            setattr(obj, name_parts[-1], value)
+
+        return member_copy
+
     def __deepcopy__(self, memo):
 
         if self._copy_class:
