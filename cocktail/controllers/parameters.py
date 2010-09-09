@@ -704,11 +704,11 @@ class FormSchemaReader(object):
             if language:
                 member += "-" + language
 
-            if prefix:
-                member = prefix + member
+            if self.prefix:
+                member = self.prefix + member
 
-            if suffix:
-                member += suffix
+            if self.suffix:
+                member += self.suffix
 
             return member
         else:
