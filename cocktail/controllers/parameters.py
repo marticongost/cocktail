@@ -25,12 +25,12 @@ from cocktail.controllers.fileupload import FileUpload
 # them when retrieved as parameters in an HTTP request
 schema.Member.parameter_name = None
 
-def _get_parameter_name(member, language = None, prefix = None, suffix = None):
+def _get_parameter_name(self, language = None, prefix = None, suffix = None):
     
-    parameter = member.parameter_name or member.name
+    parameter = self.parameter_name or self.name
 
-    if parameter and member.schema and member.parameter_name_is_qualified:
-        parameter = member.schema.get_parameter_name() + "." + parameter
+    if parameter and self.schema and self.parameter_name_is_qualified:
+        parameter = self.schema.get_parameter_name() + "." + parameter
         
     if language:
         parameter += "-" + language
