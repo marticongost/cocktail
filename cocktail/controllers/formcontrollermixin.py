@@ -87,7 +87,7 @@ class FormControllerMixin(object):
         get_parameter(
             self.form_schema,
             target = form_data,
-            skip_undefined = True
+            undefined = "skip"
         )
 
     def _apply_instance_data(self, form_data):
@@ -122,7 +122,7 @@ class FormControllerMixin(object):
         reading data from the form.
         @type: dict
         """
-        return {"strict": False, "enable_defaults": False}
+        return {"errors": "ignore", "undefined": "set_none"}
 
     @cached_getter
     def form_adapter(self):

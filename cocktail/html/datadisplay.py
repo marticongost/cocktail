@@ -7,19 +7,17 @@ Visual elements for data binding.
 @organization:	Whads/Accent SL
 @since:			July 2008
 """
-from types import MethodType
-from operator import getitem
-from cocktail.schema import String
-from cocktail.modeling import getter, ListWrapper, SetWrapper, empty_list
+from cocktail.schema import Member, get_accessor
+from cocktail.modeling import getter, ListWrapper, empty_list
 from cocktail.translations import (
     translations,
     require_language,
     get_language
 )
-from cocktail.html import Element, Content
 from cocktail.typemapping import TypeMapping
-from cocktail.schema import Member, get_accessor
+from cocktail.html import Element, Content
 from cocktail.html import templates
+import cocktail.controllers.parameters
 
 # Extension that allows members to specify their prefered display
 Member.display = None
@@ -113,18 +111,12 @@ class DataDisplay(object):
             return members_by_group
 
     def get_member_name(self, member, language = None):
-        name = member.name
-
-        if member.translated and self.translations and language:
-            name += "-" + language
-
-        if self.name_prefix:
-            name = self.name_prefix + name
-
-        if self.name_suffix:
-            name += self.name_suffix
-
-        return name
+        return member.get_parameter_name(
+            member, 
+            member.translated and self.translations and language,
+            prefix = self.name_prefix,
+            suffix = self.name_suffix
+        )
 
     def get_member_displayed(self, member):
         """Indicates if the specified member should be displayed. By default,
@@ -134,8 +126,8 @@ class DataDisplay(object):
         the HTML for a hidden column, but hide it using a CSS declaration, so
         that its visibility can be toggled later on using client side
         scripting. Members that shouldn't be shown at all shouldn't appear on
-        the schema provided to the data display (possibly taking advantadge of
-        the L{subset<cocktail.schema.member.Member.copy>} functionality).
+        the schema provided to the data display (possibly by excluding them
+        using an `~cocktail.schema.adapter.Adapter`).
         
         @param member: The member to get the display state for. Can be
             specified using a direct reference to the member object, or by

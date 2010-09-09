@@ -16,7 +16,9 @@ class PagingControls(Element):
     page = None
     page_size = None
     page_size_editable = True
-    
+    page_size_param_name = "page_size"
+ 
+    pagination = None
     user_collection = None
 
     def _build(self):
@@ -35,6 +37,16 @@ class PagingControls(Element):
             self.subset = self.user_collection.subset
             self.page = self.user_collection.page
             self.page_size = self.user_collection.page_size
+            self.page_param_name = \
+                self.user_collection.params.get_parameter_name(
+                    self.page_size_param_name
+                )
+        elif self.pagination:
+            self.subset = self.pagination.current_page_items
+            self.page = self.pagination.current_page
+            self.page_size = self.pagination.page_size
+            self.page_size_param_name = \
+                    self.pagination.__class__.page_size.get_parameter_name()
        
         if (not self.user_collection or self.user_collection.allow_paging) \
         and self.subset:
@@ -76,7 +88,7 @@ class PagingControls(Element):
         control.append(translations("Results per page"))
         
         control.input = Element("input", type = "text")
-        control.input["name"] = "page_size"
+        control.input["name"] = self.page_size_param_name
         control.append(control.input)
 
         return control

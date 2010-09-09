@@ -9,15 +9,64 @@ u"""
 import decimal
 import time
 import datetime
+from warnings import warn
 import cherrypy
 from cherrypy.lib import http
 from string import strip
+from cocktail.iteration import first
 from cocktail import schema
 from cocktail.persistence import PersistentClass
 from cocktail.schema.schemadates import Date, DateTime, Time
 from cocktail.translations import get_language
 from cocktail.translations.translation import translations
 from cocktail.controllers.fileupload import FileUpload
+
+# Extension property that allows members to override the key that identifies
+# them when retrieved as parameters in an HTTP request
+schema.Member.parameter_name = None
+
+def _get_parameter_name(member, language = None, prefix = None, suffix = None):
+    
+    parameter = member.parameter_name or member.name
+
+    if parameter and member.schema and member.parameter_name_is_qualified:
+        parameter = member.schema.get_parameter_name() + "." + parameter
+        
+    if language:
+        parameter += "-" + language
+
+    if prefix:
+        parameter = prefix + parameter
+
+    if suffix:
+        parameter += suffix
+
+    return parameter
+
+schema.Member.get_parameter_name = _get_parameter_name
+
+def _get_parameter_name_is_qualified(self):
+
+    # By default, only members nested at two levels of depth or more use
+    # qualified names as keys in HTTP requests
+    if self._parameter_name_is_qualified is None:
+        return self.schema is not None \
+           and self.schema.schema is not None
+        
+    return self._parameter_name_is_qualified
+
+def _set_parameter_name_is_qualified(self, value):
+    self._parameter_name_is_qualified = value
+
+schema.Member._parameter_name_is_qualified = None
+schema.Member.parameter_name_is_qualified = property(
+    _get_parameter_name_is_qualified,
+    _set_parameter_name_is_qualified,
+    doc = """Indicates if the name of the member when used as a parameter in an
+    HTTP request or response should be qualified by the name of the schema it
+    belongs to.
+    """
+)
 
 def serialize_parameter(member, value):
     if value is None:
@@ -228,9 +277,8 @@ schema.Collection.parse_request_value = parse_collection
 schema.Collection.serialize_request_value = serialize_collection
 
 NORMALIZATION_DEFAULT = strip
-STRICT_DEFAULT = True
-SKIP_UNDEFINED_DEFAULT = False
-ENABLED_DEFAULTS_DEFAULT = True
+UNDEFINED_DEFAULT = "set_default"
+ERRORS_DEFAULT = "set_none"
 IMPLICIT_BOOLEANS_DEFAULT = True
 
 def get_parameter(
@@ -238,9 +286,8 @@ def get_parameter(
     target = None,
     languages = None,
     normalization = NORMALIZATION_DEFAULT,
-    strict = STRICT_DEFAULT,
-    skip_undefined = SKIP_UNDEFINED_DEFAULT,
-    enable_defaults = ENABLED_DEFAULTS_DEFAULT,
+    undefined = UNDEFINED_DEFAULT,
+    errors = ERRORS_DEFAULT,
     implicit_booleans = IMPLICIT_BOOLEANS_DEFAULT,
     prefix = None,
     suffix = None,
@@ -284,22 +331,44 @@ def get_parameter(
         characters from the beginning and end of the read value.
     @type normalization: callable(str) => str
 
-    @param strict: Determines if values should be validated against their
-        member's constraints, and discarded if found to be invalid.
-    @type: bool
+    @param errors: Specifies what should happen if the read value doesn't
+        satisfy the constraints and validations set by the member. Can be set
+        to any of the following string identifiers:
 
-    @param skip_undefined: Determines the treatment received by members defined
-        by the retrieved schema that aren't given an explicit value by the
-        request. The default value, False, sets those members to either None or
-        its default value, depending on the value of L{enable_defaults}. When
-        set to True, members with no value specified will be ignored. This
-        allows updating objects selectively.
-    @type skip_undefined: bool
+            set_none
+                Incorrect values will be replaced with None. This is the
+                default behavior.
+            
+            set_default
+                Incorrect values will be replaced with their field's default 
+                value.
 
-    @param enable_defaults: A flag that indicates if missing values should be
-        replaced with the default value for their member (this is the default
-        behavior).
-    @type enable_defaults: bool
+            ignore
+                No validations are executed, incorrect values are returned
+                unmodified.
+
+            raise
+                As soon as an incorrect value is found, the first of its
+                validation errors will be raised as an exception.
+    
+    @type errors: str
+
+    @param undefined: Determines the treatment received by members defined by
+        the retrieved schema that aren't given an explicit value by the
+        request. Can take any of the following string identifiers:
+            
+            set_default
+                Undefined values will be replaced by their member's default
+                value. This is the default behavior.
+
+            set_none
+                Undefined values will be set to None.
+
+            skip
+                Undefined values will be reported as None, but won't modify the
+                target object.        
+    
+    @type undefined: str
 
     @param implicit_booleans: A flag that indicates if missing required boolean
         parameters should assume a value of 'False'. This is the default
@@ -327,22 +396,21 @@ def get_parameter(
         
         The function will try to coerce request parameters into an instance of
         an adequate type, through the L{parse_request_value<cocktail.schema.member.Member>}
-        method of the supplied member. Member constraints (max value, minimum
-        length, etc) will also be tested against the obtained value. If the
-        L{strict} parameter is set to True, values that don't match their
-        member's type or requirements will be discarded, and None will be
-        returned instead. When L{strict} is False, invalid values are returned
-        unmodified.
+        method of the supplied member. Depending on the value of the L{errors}
+        parameter, member constraints (max value, minimum length, etc) will
+        also be tested against the obtained value. Validation errors can be
+        ignored, raised as exceptions or used to set the retrieved value to
+        None or to the member's specified default.
         
-        By default, reading a schema will produce a dictionary with all its
+        By default, reading a schema will produce a dictionary or a
+        L{SchemaObject<cocktail.schema.schemaobject.SchemaObject>} with all its
         values. Reading a translated member will produce a dictionary with
         language/value pairs.
     """
     reader = FormSchemaReader(
         normalization = normalization,
-        strict = strict,
-        skip_undefined = skip_undefined,
-        enable_defaults = enable_defaults,
+        errors = errors,
+        undefined = UNDEFINED_DEFAULT,
         implicit_booleans = implicit_booleans,
         prefix = prefix,
         suffix = suffix,
@@ -367,10 +435,44 @@ class FormSchemaReader(object):
         characters from the beginning and end of the read value.
     @type normalization: callable(str) => str
 
-    @ivar enable_defaults: A flag that indicates if missing values should be
-        replaced with the default value for their member (this is the default
-        behavior).
-    @type enable_defaults: bool
+    @ivar errors: Specifies what should happen if the read value doesn't
+        satisfy the constraints and validations set by the member. Can be set
+        to any of the following string identifiers:
+            
+            set_none
+                Incorrect values will be replaced with None. This is the
+                default behavior.
+            
+            set_default
+                Incorrect values will be replaced with their field's default 
+                value.
+
+            ignore
+                No validations are executed, incorrect values are returned
+                unmodified.
+
+            raise
+                As soon as an incorrect value is found, the first of its
+                validation errors will be raised as an exception.
+    
+    @type errors: string
+
+    @ivar undefined: Determines the treatment received by members defined by
+        the retrieved schema that aren't given an explicit value by the
+        request. Can take any of the following string identifiers:
+            
+            set_default
+                Undefined values will be replaced by their member's default
+                value. This is the default behavior.
+
+            set_none
+                Undefined values will be set to None.
+
+            skip
+                Undefined values will be reported as None, but won't modify the
+                target object.        
+    
+    @type undefined: str
 
     @ivar implicit_booleans: A flag that indicates if missing required boolean
         parameters should assume a value of 'False'. This is the default
@@ -396,18 +498,16 @@ class FormSchemaReader(object):
 
     def __init__(self,
         normalization = NORMALIZATION_DEFAULT,
-        strict = STRICT_DEFAULT,
-        skip_undefined = SKIP_UNDEFINED_DEFAULT,
-        enable_defaults = ENABLED_DEFAULTS_DEFAULT,
+        errors = ERRORS_DEFAULT,
+        undefined = UNDEFINED_DEFAULT,
         implicit_booleans = IMPLICIT_BOOLEANS_DEFAULT,
         prefix = None,
         suffix = None,
         source = None):
 
         self.normalization = normalization
-        self.strict = strict
-        self.skip_undefined = skip_undefined
-        self.enable_defaults = enable_defaults
+        self.errors = errors
+        self.undefined = UNDEFINED_DEFAULT
         self.implicit_booleans = implicit_booleans
         self.prefix = prefix
         self.suffix = suffix
@@ -455,14 +555,14 @@ class FormSchemaReader(object):
             
             The function will try to coerce request parameters into an instance
             of an adequate type, through the L{parse_request_value<cocktail.schema.member.Member>}
-            method of the supplied member. Member constraints (max value,
-            minimum length, etc) will also be tested against the obtained
-            value. If the L{strict} parameter is set to True, values that don't
-            match their member's type or requirements will be discarded, and
-            None will be returned instead. When L{strict} is False, invalid
-            values are returned unmodified.
+            method of the supplied member. Depending on the value of the L{errors}
+            parameter, member constraints (max value, minimum length, etc) will
+            also be tested against the obtained value. Validation errors can be
+            ignored, raised as exceptions or used to set the retrieved value to
+            None or to the member's specified default.
             
-            By default, reading a schema will produce a dictionary with all its
+            By default, reading a schema will produce a dictionary or a
+            L{SchemaObject<cocktail.schema.schemaobject.SchemaObject>} with all its
             values. Reading a translated member will produce a dictionary with
             language/value pairs.
         """
@@ -504,17 +604,31 @@ class FormSchemaReader(object):
         if member.read_request_value:
             value = member.read_request_value(self)
         else:
-            key = self.get_key(member, language, path)
+            key = self.get_parameter_name(member, language)
             value = self.source(key)
 
-        if not (value is None and self.skip_undefined):
+        if not (value is None and self.undefined == "skip"):
             value = self.process_value(member, value)
-            
-            if self.strict and not member.validate(value):
-                value = None
+
+            if not path and self.errors != "ignore":
+                value = self._fix_value(target, member, value)
 
             if target is not None:
                 schema.set(target, member.name, value, language)
+
+        return value
+
+    def _fix_value(self, target, member, value, error = None):
+
+        error = error or first(member.get_errors(value))
+
+        if error:
+            if self.errors == "raise":
+                raise error
+            elif self.errors == "set_none":
+                value = None
+            elif self.errors == "set_default":
+                value = member.produce_default(target)
 
         return value
 
@@ -530,7 +644,10 @@ class FormSchemaReader(object):
         path):
      
         if target is None:
-            target = {}
+            if isinstance(member, type):
+                target = member()
+            else:
+                target = {}
 
         path.append(member)
 
@@ -551,29 +668,55 @@ class FormSchemaReader(object):
                     nested_target,
                     languages if child_member.translated else None,
                     path)
+            
+            # Validate child members *after* all members have read their values
+            # (this allows conditional validations based on other members in 
+            # the schema)
+            if self.errors != "ignore":
+                invalid_members = set()
+
+                for error in member.get_errors(target):
+                    error_member = error.member
+                    if error_member not in invalid_members:
+                        invalid_members.add(error_member)
+                        error_target = error.path[-1][1]
+                        fixed_value = self._fix_value(
+                            error_target, 
+                            error_member,
+                            error.value,
+                            error
+                        )
+                        schema.set(
+                            error_target, 
+                            error_member.name, 
+                            fixed_value
+                        )
         finally:
             path.pop()
             
         return target
 
-    def get_key(self, member, language = None, path = None):
-        
-        name = member if isinstance(member, basestring) else member.name
+    def get_parameter_name(self, member, language = None):
+        if isinstance(member, basestring):
+            # TODO: supporting arbitrary strings here as well as members is
+            # necessary for historical reasons, but should be removed sometime
+            # in the future
+            if language:
+                member += "-" + language
 
-        if language:
-            name += "-" + language
+            if prefix:
+                member = prefix + member
 
-        if path and len(path) > 1:
-            path_name = ".".join(self.get_key(step) for step in path[1:])
-            name = path_name + "-" + name
+            if suffix:
+                member += suffix
 
-        if self.prefix:
-            name = self.prefix + name
-
-        if self.suffix:
-            name += self.suffix
-
-        return name
+            return member
+        else:
+            return member.get_parameter_name(
+                language, 
+                prefix = self.prefix,
+                suffix = self.suffix
+            )
 
     def process_value(self, member, value):
 
@@ -599,7 +742,7 @@ class FormSchemaReader(object):
             and member.required \
             and isinstance(member, schema.Boolean):
                 value = False
-            elif self.enable_defaults:
+            elif self.undefined == "set_default":
                 value = member.produce_default()
 
         return value

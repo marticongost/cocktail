@@ -93,7 +93,7 @@ class PersistentClassWebService(RequestHandler):
                 class_family = self.root_type,
                 default = self.root_type
             ),
-            strict = True
+            errors = "set_none"
         )
 
         if cls is None:
@@ -231,10 +231,9 @@ class PersistentClassWebService(RequestHandler):
             target = instance,
             prefix = "item.",
             languages = self.languages,
-            skip_undefined = True,
+            undefined = "skip",
             implicit_booleans = False,
-            enable_defaults = False,
-            strict = False
+            errors = "ignore"
         )
 
         # Validate the new instance
@@ -277,10 +276,9 @@ class PersistentClassWebService(RequestHandler):
             target = data,
             prefix = "item.",
             languages = self.languages,
-            skip_undefined = True,
+            undefined = "skip",
             implicit_booleans = False,
-            enable_defaults = False,
-            strict = False
+            errors = "ignore"
         )
 
         for error in instance.__class__.get_errors(

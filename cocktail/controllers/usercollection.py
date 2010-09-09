@@ -59,7 +59,7 @@ class UserCollection(object):
     #--------------------------------------------------------------------------
     @cached_getter
     def params(self):
-        params = FormSchemaReader(strict = True)
+        params = FormSchemaReader(errors = "set_none")
         params.source = self.__default_source
         return params
 
