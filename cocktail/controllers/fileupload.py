@@ -42,6 +42,9 @@ class FileUpload(schema.Schema):
 
     def parse_request_value(self, reader, value):       
         
+        if value is None:
+            return None
+
         file_name = unicode(value.filename, 'utf-8')
 
         # IE insists in sending the full local path of uploaded files, which is
