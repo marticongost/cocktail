@@ -410,7 +410,7 @@ def get_parameter(
     reader = FormSchemaReader(
         normalization = normalization,
         errors = errors,
-        undefined = UNDEFINED_DEFAULT,
+        undefined = undefined,
         implicit_booleans = implicit_booleans,
         prefix = prefix,
         suffix = suffix,
@@ -507,7 +507,7 @@ class FormSchemaReader(object):
 
         self.normalization = normalization
         self.errors = errors
-        self.undefined = UNDEFINED_DEFAULT
+        self.undefined = undefined
         self.implicit_booleans = implicit_booleans
         self.prefix = prefix
         self.suffix = suffix
