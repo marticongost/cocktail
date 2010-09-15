@@ -8,6 +8,7 @@ u"""
 """
 import cherrypy
 import hashlib
+from mimetypes import guess_type
 from cocktail import schema
 
 class FileUpload(schema.Schema):
@@ -57,6 +58,12 @@ class FileUpload(schema.Schema):
             "file_size": None,
             "file_hash": None
         }
+
+        # Support per-extension MIME types
+        if value.type == "application/octet-stream":
+            mime_type_guess = guess_type(file_name, strict = False)
+            if mime_type_guess:
+                upload["mime_type"] = mime_type_guess[0]
         
         dest = self.get_file_destination(upload)
         dest_file = None
