@@ -41,8 +41,8 @@ class FileUpload(schema.Schema):
         self.add_member(schema.String("mime_type", **mime_type_kw))
 
     def parse_request_value(self, reader, value):       
-        
-        if value is None:
+ 
+        if value is None or not value.filename:
             return None
 
         file_name = unicode(value.filename, 'utf-8')
