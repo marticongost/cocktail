@@ -36,6 +36,7 @@ from cocktail.controllers.fileupload import FileUpload
 import cocktail.controllers.grouping
 import cocktail.controllers.erroremail
 import cocktail.controllers.handlerprofiler
+import cocktail.controllers.switchhandler
 
 
 def make_uri(*args, **kwargs):
