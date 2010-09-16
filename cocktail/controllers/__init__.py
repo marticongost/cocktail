@@ -8,6 +8,11 @@ Utilities for writing application controllers.
 @since:			July 2008
 """
 from cocktail.controllers.requesthandler import RequestHandler
+from cocktail.controllers.static import (
+    file_publisher, 
+    folder_publisher,
+    serve_file
+)
 from cocktail.controllers.controller import Controller
 from cocktail.controllers.formprocessor import FormProcessor, Form
 from cocktail.controllers.formcontrollermixin import FormControllerMixin
