@@ -31,8 +31,11 @@ class Resource(object):
 
             extension = getattr(cls, "extension", None)
             
-            if extension is not None:
-                cls._type_register[extension] = cls
+            if extension:
+                if isinstance(extension, basestring):
+                    extension = (extension,)
+                for ext in extension:
+                    cls._type_register[ext] = cls
             
     @classmethod
     def from_uri(cls, uri, mime_type = None):
@@ -67,6 +70,6 @@ class Script(Resource):
 
 
 class StyleSheet(Resource):
-    extension = ".css"
+    extension = (".css", ".sss")
     mime_type = "text/css"
 
