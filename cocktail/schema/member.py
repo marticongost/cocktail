@@ -116,6 +116,9 @@ class Member(Variable):
         for key, value in kwargs.iteritems():
             setattr(self, key, value)
 
+    def __eq__(self, other):
+        return self is other
+
     def __repr__(self):
         
         member_desc = self._name \

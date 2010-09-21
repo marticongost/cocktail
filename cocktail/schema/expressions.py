@@ -40,6 +40,9 @@ class Expression(object):
     def __init__(self, *operands):
         self.operands = tuple(self.wrap(operand) for operand in operands)
 
+    def __eq__(self, other):
+        return type(self) is type(other) and self.operands == other.operands
+
     def __repr__(self):
         return "%s(%s)" % (
             self.__class__.__name__,
@@ -175,6 +178,9 @@ class Constant(Expression):
     def __init__(self, value):
         self.value = value
 
+    def __eq__(self, other):
+        return type(self) is type(other) and self.value == other.value
+        
     def __repr__(self):
         return "Constant(%r)" % self.value
 
