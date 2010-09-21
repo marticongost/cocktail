@@ -53,11 +53,29 @@ class FormProcessor(object):
     def submitted_forms(self):
         """A list of all the `forms` in the controller that have been submitted
         in the current request.
-        """        
+        """
         if not self.submitted:
             return []
         else:
-            return [form for form in self.forms.itervalues() if form.submitted]
+            forms = []
+            form_ids = set()
+
+            def find_submitted_forms(form):
+                if form.form_id not in form_ids and form.submitted:
+                    form_ids.add(form.form_id)
+
+                    if form.process_after:
+                        for dependency_id in form.process_after:
+                            dependency = self.forms.get(dependency_id)
+                            if dependency:
+                                find_submitted_forms(dependency)
+                
+                    forms.append(form)
+                            
+            for form in self.forms.itervalues():
+                find_submitted_forms(form)
+
+            return forms
 
     def submit(self):
         for form in self.submitted_forms:
@@ -71,6 +89,7 @@ class Form(object):
     """A description of a form based on a schema."""
     controller = None
     actions = (None,)
+    process_after = ()
 
     def __init__(self, controller):
         self.controller = controller
