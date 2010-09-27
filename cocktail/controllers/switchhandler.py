@@ -20,22 +20,18 @@ else:
     class SSSCache(Cache):
 
         def load(self, key):
-            return SSSStyleSheet(key).cssText
+            return SSSStyleSheet(key)
 
         def _is_current(self, entry):
-            
+
             if not Cache._is_current(self, entry):
                 return False
 
             # Reprocess modified files
-            # TODO: take 'include' directives into account, recursively
-            # Sadly, Switch doesn't seem to expose this information
             try:
-                mtime = os.stat(entry.key).st_mtime
-            except:
+                return entry.creation >= entry.value.get_last_update()
+            except OSError, IOError:
                 return False
-            else:
-                return entry.creation >= mtime
 
     cache = SSSCache()
 
@@ -43,13 +39,13 @@ else:
     def switch_css_handler(path, content_type):
 
         try:    
-            css = cache.request(path)
-        except:
+            stylesheet = cache.request(path)
+        except OSError, IOError:
             raise cherrypy.NotFound()
 
         cherrypy.response.headers["Content-Type"] = "text/css"
         cherrypy.response.headers["Last-Modified"] = \
             http.HTTPDate(cache[path].creation)
         cptools.validate_since()
-        cherrypy.response.body = [css]
+        cherrypy.response.body = [stylesheet.cssText]
 
