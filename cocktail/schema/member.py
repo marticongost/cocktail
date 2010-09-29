@@ -61,8 +61,9 @@ class Member(Variable):
     # Groupping
     member_group = None
 
-    # Constraints
+    # Constraints and behavior
     primary = False
+    descriptive = False
     default = None
     required = False
     require_none = False
