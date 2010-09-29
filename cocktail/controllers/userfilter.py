@@ -136,9 +136,9 @@ class BooleanFilter(MemberFilter):
     @getter
     def expression(self):
         if self.value:
-            return self._get_member_expression()
+            return self._get_member_expression().equal(True)
         else:
-            return self._get_member_expression().not_()
+            return self._get_member_expression().equal(False)
 
 
 class BinaryFilter(MemberFilter):
