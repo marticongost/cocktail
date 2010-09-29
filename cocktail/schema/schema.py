@@ -44,6 +44,7 @@ class Schema(Member):
         L{ascend_inheritance} method instead.
     """
     primary_member = None
+    descriptive_member = None
     members_order = None
     groups_order = []
     integral = False
@@ -222,6 +223,9 @@ class Schema(Member):
         if member.primary:
             self.primary_member = member
         
+        if member.descriptive:
+            self.descriptive_member = member
+
         self.__members[member.name] = member
         member._schema = self
 

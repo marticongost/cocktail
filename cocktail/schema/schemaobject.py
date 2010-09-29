@@ -510,11 +510,16 @@ class SchemaObject(object):
         return self.__class__.full_name + " instance"
 
     def __translate__(self, language, **kwargs):
-        desc = translations(self.__class__.name, language, **kwargs)
+        
+        if self.descriptive_member:
+            desc = self.get(self.descriptive_member, language)
+        
+        if not desc:
+            desc = translations(self.__class__.name, language, **kwargs)
 
-        if self.__class__.primary_member:
-            desc += " #" \
-                + str(getattr(self, self.__class__.primary_member.name))
+            if self.__class__.primary_member:
+                desc += " #" \
+                    + str(getattr(self, self.__class__.primary_member.name))
  
         return desc
 
