@@ -80,6 +80,10 @@ def cached_getter(function):
         return value
 
     class CachedGetter(property):
+
+        def __repr__(self):
+            return "CachedGetter(%s)" % function
+
         def __call__(self, instance):
             return function(instance)
 
