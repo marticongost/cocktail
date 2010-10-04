@@ -96,6 +96,15 @@ class SchemaClass(EventHub, Schema):
         for base in bases:
             base.__derived_schemas.append(cls)
 
+    def remove_derived_schema(self, cls):
+        """Forget about the indicated derived schema.
+        
+        @param cls: The class to remove from the list of inheritors of the
+            schema.
+        @type cls: `SchemaObject` class
+        """
+        self.__derived_schemas.remove(cls)
+
     def _check_member(cls, member):
 
         Schema._check_member(cls, member)
