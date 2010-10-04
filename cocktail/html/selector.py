@@ -21,7 +21,7 @@ class Selector(Element, DataBoundControl):
     
     empty_option_displayed = True
     empty_value = ""
-    empty_label = "---"
+    empty_label = None
    
     def __init__(self, *args, **kwargs):
         Element.__init__(self, *args, **kwargs)
@@ -97,9 +97,18 @@ class Selector(Element, DataBoundControl):
     def _fill_entries(self):
         
         if self.empty_option_displayed:
+
+            empty_label = self.empty_label
+
+            if not empty_label and self.member:
+                empty_label = self.member.translate_value(None)
+
+            if not empty_label:
+                empty_label = "---"
+
             entry = self.create_entry(
                 self.empty_value,
-                self.empty_label,
+                empty_label,
                 self.value is None
             )
             self.append(entry)
