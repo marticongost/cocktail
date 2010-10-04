@@ -68,6 +68,21 @@ class TranslationsRepository(DictWrapper):
             
             translation[obj] = string
 
+    def clear_key(self, obj):
+        """Remove all translations of the given key for all languages."""
+        for trans in self.__translations.itervalues():
+            try:
+                del trans[obj]
+            except KeyError:
+                pass
+
+    def copy_key(self, source, dest, overwrite = True):
+        """Copy the translated strings of the given key into another key."""
+        for trans in self.__translations.itervalues():
+            string = trans(source)
+            if string and (overwrite or not trans(dest)):
+                trans[dest] = string
+
     def __call__(self, obj,
         language = None,
         default = "",
@@ -139,6 +154,9 @@ class Translation(DictWrapper):
 
     def __setitem__(self, obj, string):
         self.__strings[obj] = string
+
+    def __delitem__(self, obj):
+        del self.__strings[obj]
 
     def __call__(self, obj, **kwargs):
         
