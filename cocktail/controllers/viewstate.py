@@ -23,11 +23,24 @@ def get_state(**kwargs):
 def view_state(**kwargs):
     return urlencode(get_state(**kwargs), True)
 
-def view_state_form(**kwargs):
+def view_state_form(schema = None, **kwargs):
 
     form = []
+    form_data = {}
 
-    for key, values in get_state(**kwargs).iteritems():
+    if schema:
+        for name, member in schema.members().iteritems():
+            if name in kwargs:
+                values = kwargs[name]
+                if not isinstance(values, list):
+                    values = [values]
+                form_data[name] = []
+                for value in values:
+                    form_data[name].append(member.serialize_request_value(value))
+    else:
+        form_data = get_state(**kwargs)
+
+    for key, values in form_data.iteritems():
         if values is not None:
             for value in values:
                 form.append(
