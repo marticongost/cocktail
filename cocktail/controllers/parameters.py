@@ -249,9 +249,12 @@ schema.Reference.parse_request_value = parse_reference
 schema.Reference.serialize_request_value = serialize_reference
 
 def parse_collection(self, reader, value):
-    
+        
     if not value:
-        return self.produce_default()
+        if self.required:
+            return self.produce_default()
+        else:
+            return None
 
     elif isinstance(value, basestring):         
         value = reader.split_collection(self, value)
