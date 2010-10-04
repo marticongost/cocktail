@@ -520,8 +520,10 @@ class SchemaObject(object):
 
     def __translate__(self, language, **kwargs):
         
-        if self.descriptive_member:
-            desc = self.get(self.descriptive_member, language)
+        desc = None
+
+        if self.__class__.descriptive_member:
+            desc = self.get(self.__class__.descriptive_member, language)
         
         if not desc:
             desc = translations(self.__class__.name, language, **kwargs)
