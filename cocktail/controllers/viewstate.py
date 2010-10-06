@@ -7,8 +7,9 @@ u"""
 @since:			September 2008
 """
 import cherrypy
-from cgi import parse_qs, escape
+from cgi import parse_qs
 from urllib import urlencode
+from cocktail.html.utils import escape_attrib
 
 def get_state(**kwargs):
     state = parse_qs(cherrypy.request.query_string)
@@ -44,8 +45,8 @@ def view_state_form(schema = None, **kwargs):
         if values is not None:
             for value in values:
                 form.append(
-                    "<input type='hidden' name='%s' value='%s'>"
-                    % (key, escape(value))
+                    '<input type="hidden" name="%s" value="%s">'
+                    % (key, escape_attrib(value))
                 )
 
     return "\n".join(form)
