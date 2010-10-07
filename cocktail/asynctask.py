@@ -38,7 +38,7 @@ class TaskManager(DictWrapper):
             now = time()
             for task in self.values():
                 if task.completed and task.end_time - now > self.expiration:
-                    task.delete()
+                    self.remove_task(task)
 
 
 class Task(Thread):
