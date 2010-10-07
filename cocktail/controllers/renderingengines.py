@@ -9,18 +9,17 @@
 import buffet
 import cherrypy
 
-_rendering_engines = {}
+rendering_options = {}
 
-def get_rendering_engine(engine_name):
 
-    engine = _rendering_engines.get(engine_name)
+def get_rendering_engine(engine_name, options = None):
+ 
+    if rendering_options and options:
+        custom_options = options
+        options = rendering_options.copy()
+        options.update(custom_options)
+    elif options is None:
+        options = rendering_options
 
-    if engine is None:
-        engine_type = buffet.available_engines[engine_name]
-        engine_options = \
-            cherrypy.request.config.get("rendering.engine_options")
-        engine = engine_type(options = engine_options)
-        _rendering_engines[engine_name] = engine
-
-    return engine
+    return buffet.available_engines[engine_name](options = options)
 
