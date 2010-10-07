@@ -92,7 +92,10 @@ class Controller(RequestHandler):
             DeprecationWarning,
             stacklevel = 2
         )
-        return get_rendering_engine(engine_name)
+        return get_rendering_engine(
+            engine_name,
+            cherrypy.request.config.get("rendering.engine_options")
+        )
 
     @cached_getter
     def rendering_format(self):
@@ -116,7 +119,10 @@ class Controller(RequestHandler):
             "rendering.engine",
             self.default_rendering_engine
         )
-        return get_rendering_engine(engine_name)
+        return get_rendering_engine(
+            engine_name,
+            cherrypy.request.config.get("rendering.engine_options")
+        )                
 
     @cached_getter
     def view_class(self):
