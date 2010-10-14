@@ -478,3 +478,136 @@ cocktail._updateElement = function (params) {
         // TODO: add new resources, translations, etc
     }
 }
+
+if (!jQuery.fn.reverse) {
+    jQuery.fn.reverse = [].reverse;
+}
+
+cocktail.findPrevious = function (element, filter /* optional */) {
+    
+    var $iterator = jQuery(element);
+
+    while ($iterator.length) {
+        var $prev = $iterator.prev();
+        
+        while ($prev.length) {
+            if (!filter || $prev.filter(filter).length) {
+                return $prev.get(0);
+            }
+            $descendants = $prev.find("*");
+            if (filter) {
+                $descendants = $descendants.filter(filter);
+            }
+            if ($descendants.length) {                
+                return $descendants.last().get(0);
+            }
+            $prev = $prev.prev();
+        }
+
+        $iterator = $iterator.parent();
+        
+        if ($iterator.length) {
+            if (!filter || $iterator.filter(filter).length) {
+                return $iterator.get(0);
+            }
+        }
+    }
+}
+
+cocktail.findNext = function (element, filter /* optional */) {
+    
+    var $iterator = jQuery(element);
+    var first = true;
+
+    while ($iterator.length) {
+        
+        var $next = $iterator;
+
+        while ($next.length) {
+
+            if (!first) {
+                var $descendants = $next.find("*");
+                if (filter) {
+                    $descendants = $descendants.filter(filter);
+                }
+                if ($descendants.length) {
+                    return $descendants.get(0);
+                }
+            }
+            first = false;
+
+            var $next = $next.next();
+            if (!filter || $next.is(filter)) {
+                return $next.get(0);
+            }
+        }
+
+        $iterator = $iterator.parent();
+        
+        if ($iterator.length) {
+            if (!filter || $iterator.filter(filter).length) {
+                return $iterator.get(0);
+            }
+        }
+
+        first = true;
+    }
+}
+
+cocktail.isVisible = function (element, recursive) {
+    
+    var $element = jQuery(element);    
+    if ($element.css("visibility") == "hidden" 
+        || $element.css("display") == "none") {
+        return false;
+    }
+    
+    if (recursive && element.parentNode && element != document.body) {
+        return cocktail.isVisible(element.parentNode, true);
+    }
+    
+    return true;    
+}
+
+cocktail.acceptsFocus = function (element) {
+    return ("tabIndex" in element) && element.tabIndex != -1 && cocktail.isVisible(element, true);
+}
+
+cocktail.focusNext = function (item) {
+
+    var target;
+    var origin = item || jQuery(":focused").get(0);
+    var focusable = function () { return cocktail.acceptsFocus(this); }
+
+    if (origin) {
+        target = cocktail.findNext(origin, focusable);
+    }
+
+    if (!target) {
+        target = jQuery(document.body).find(focusable).get(0);
+    }
+
+    if (target) {
+        target.focus();
+    }
+}
+
+cocktail.focusPrevious = function (item) {
+
+    var target;
+    var origin = item || jQuery(":focused").get(0);
+    var focusable = function () { return cocktail.acceptsFocus(this); }
+    
+    if (origin) {
+        target = cocktail.findPrevious(origin, focusable);
+    }
+
+    if (!target) {
+        target = jQuery(document.body).find(focusable).last().get(0);
+    }
+
+    if (target) {
+        target.focus();
+    }
+}
+
