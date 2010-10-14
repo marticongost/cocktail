@@ -46,7 +46,10 @@ class FileUpload(schema.Schema):
         if value is None or not value.filename:
             return None
 
-        file_name = unicode(value.filename, 'utf-8')
+        file_name = value.filename
+
+        if isinstance(file_name, str):
+            file_name = file_name.decode("utf-8")
 
         # IE insists in sending the full local path of uploaded files, which is
         # completely absurd. Strip path information from the file name.
