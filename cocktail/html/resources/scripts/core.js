@@ -517,11 +517,11 @@ cocktail.findPrevious = function (element, filter /* optional */) {
 cocktail.findNext = function (element, filter /* optional */) {
     
     var $iterator = jQuery(element);
-    var first = true;
 
     while ($iterator.length) {
         
         var $next = $iterator;
+        var first = true;
 
         while ($next.length) {
 
@@ -537,7 +537,7 @@ cocktail.findNext = function (element, filter /* optional */) {
             first = false;
 
             var $next = $next.next();
-            if (!filter || $next.is(filter)) {
+            if (!filter || $next.filter(filter).length) {
                 return $next.get(0);
             }
         }
@@ -549,8 +549,6 @@ cocktail.findNext = function (element, filter /* optional */) {
                 return $iterator.get(0);
             }
         }
-
-        first = true;
     }
 }
 
@@ -576,7 +574,7 @@ cocktail.acceptsFocus = function (element) {
 cocktail.focusNext = function (item) {
 
     var target;
-    var origin = item || jQuery(":focused").get(0);
+    var origin = item || jQuery(":focus").get(0);
     var focusable = function () { return cocktail.acceptsFocus(this); }
 
     if (origin) {
@@ -595,7 +593,7 @@ cocktail.focusNext = function (item) {
 cocktail.focusPrevious = function (item) {
 
     var target;
-    var origin = item || jQuery(":focused").get(0);
+    var origin = item || jQuery(":focus").get(0);
     var focusable = function () { return cocktail.acceptsFocus(this); }
     
     if (origin) {
