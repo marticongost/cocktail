@@ -754,8 +754,8 @@ class Element(object):
         :raise: Raises `ElementTreeError` if the element that is being replaced
             has no parent.
         """
-        if not isinstance(child, Element):
-            child = Content(unicode(child))
+        if not isinstance(replacement, Element):
+            replacement = Content(unicode(replacement))
 
         replacement.replace(self)
 
