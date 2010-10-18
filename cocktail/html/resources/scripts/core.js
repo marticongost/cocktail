@@ -332,7 +332,9 @@ cocktail.closeDialog = function () {
     // clears event handlers
     function remove() { this.parentNode.removeChild(this); };
     jQuery("body > .dialog-background").each(remove);
-    jQuery("body > .dialog").each(remove);
+    jQuery("body > .dialog")
+        .each(remove)
+        .trigger("dialogClosed");
     jQuery(document.body).removeClass("modal");
 }
 
