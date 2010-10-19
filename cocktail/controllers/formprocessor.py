@@ -157,7 +157,7 @@ class Form(object):
         if self.model is None:
             raise ValueError("No form model specified for %s" % self)
         
-        if self.adapter.has_rules:
+        if self.adapter.has_rules():
             adapted_schema = schema.Schema(self.form_id)
             return self.adapter.export_schema(self.model, adapted_schema)
         else:
