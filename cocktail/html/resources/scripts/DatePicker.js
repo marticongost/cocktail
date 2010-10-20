@@ -53,6 +53,7 @@ cocktail.bind("form", function ($form) {
     $form.submit(function () {
         $form.find(".DatePicker").each(function () {
             if (this.hasDate && this.hasTime) {
+                this.value = this.value + " " + this.timeBox.value;
             }
         });
     });
