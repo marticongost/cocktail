@@ -485,6 +485,13 @@ if (!jQuery.fn.reverse) {
     jQuery.fn.reverse = [].reverse;
 }
 
+// Add a :focus selector
+jQuery.extend(jQuery.expr[':'], {
+    focus: function(element) { 
+        return element == document.activeElement; 
+    }
+});
+
 cocktail.findPrevious = function (element, filter /* optional */) {
     
     var $iterator = jQuery(element);
@@ -575,7 +582,6 @@ cocktail.acceptsFocus = function (element) {
 
 cocktail.focusNext = function (item) {
 
-    var target;
     var origin = item || jQuery(":focus").get(0);
     var focusable = function () { return cocktail.acceptsFocus(this); }
 
