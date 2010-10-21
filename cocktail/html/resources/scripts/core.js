@@ -617,3 +617,27 @@ cocktail.focusPrevious = function (item) {
     }
 }
 
+cocktail.declare = function (dottedName) {
+    var obj;
+    var parts = dottedName.split(".");
+    var visitedParts = [];
+    var container = window;
+
+    for (var i = 0; i < parts.length; i++) {
+        visitedParts.push(parts[i]);
+        obj = container[parts[i]];
+        if (!obj) {
+            obj = {};
+            container[parts[i]] = obj;
+        }
+        obj.__dottedName__ = visitedParts.join(".");
+        obj.__name__ = parts[i];
+        obj.__container__ = container;
+        if (obj.toString == Object.prototype.toString) {
+            obj.toString = function () { return this.__dottedName__; }
+        }
+        container = obj;
+    }
+    return obj;
+}
+
