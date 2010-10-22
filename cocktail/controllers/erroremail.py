@@ -81,8 +81,9 @@ def error_email(
     elif callable(subject):
         subject = subject()
 
-    if not isinstance(receivers, basestring):
-        receivers = ",".join(receivers)
+    if isinstance(receivers, basestring):
+        receivers = receivers.split(",")
+    receivers = set([receiver.strip() for receiver in receivers])
 
     html = template % {
         "base": unicode(cherrypy.request.base, encoding, errors='replace'),
@@ -105,11 +106,11 @@ def error_email(
     message = MIMEText(html.encode(encoding), _subtype = mime_type, _charset = encoding)
     message["Subject"] = subject
     message["From"] = sender or "errors@" + host_name
-    message["To"] = receivers
+    message["To"] = ",".join(receivers)
     message["Date"] = formatdate()
 
     smtp = smtplib.SMTP(smtp_host, smtp_port)
-    smtp.sendmail(sender, receivers, message.as_string())
+    smtp.sendmail(sender, list(receivers), message.as_string())
     smtp.quit()
 
 cherrypy.tools.error_email = cherrypy.Tool(
