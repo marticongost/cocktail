@@ -1387,9 +1387,9 @@ translations.define(
 )
 
 translations.define(
-    "cocktail.schema.expressions.StartsWithExpression-instance",
-    ca = _op_translation_factory(u"%s conté la cerca %s"),
-    es = _op_translation_factory(u"%s contiene la búsqueda %s"),
+    "cocktail.schema.expressions.ContainsExpression-instance",
+    ca = _op_translation_factory(u"%s conté les paraules %s"),
+    es = _op_translation_factory(u"%s contiene las palabras %s"),
     en = _op_translation_factory(u"%s contains search query %s")
 )
 
