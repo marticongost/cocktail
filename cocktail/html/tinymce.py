@@ -25,9 +25,9 @@ class TinyMCE(Element, DataBoundControl):
     tinymce_params = {}
 
     def __init__(self, *args, **kwargs):
+        self.tinymce_params = {}
         Element.__init__(self, *args, **kwargs)
         DataBoundControl.__init__(self)
-        self.tinymce_params = {}
         self.add_resource(
             "/cocktail/scripts/TinyMCE.js")
         self.add_resource(
