@@ -327,6 +327,7 @@ class Form(Element, DataDisplay):
     def create_label(self, member, language = None):
         
         label = Element("label")
+        label.add_class("field_label")
         text = self.get_member_label(member)
         
         if text:
