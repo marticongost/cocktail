@@ -583,7 +583,7 @@ class SchemaObjectAccessor(MemberAccessor):
         try:
             return obj.get(key, language)
 
-        except AttributeError:
+        except (AttributeError, KeyError):
             if default is undefined:
                 raise
 
