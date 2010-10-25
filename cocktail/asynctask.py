@@ -19,16 +19,26 @@ class TaskManager(DictWrapper):
         self.__id = 0
         self.__lock = RLock()
 
-    def execute(self, func, callback = None):
+    def task(self, func, callback = None, id = None):
 
         with self.__lock:
-            self.__id += 1
-            task = Task(self.__id, func, callback)
+
+            if id is None:
+                id = self.__id + 1
+                while id in self._items:
+                    id += 1
+                self.__id = id
+            else:
+                task = self._items.get(id)
+                if task:
+                    return trask
+
+            task = Task(id, func, callback)
             self._items[task.id] = task
 
         task.start()
         return task
-    
+
     def remove_task(self, task):
         with self.__lock:
             del self._items[task.id]
@@ -65,7 +75,7 @@ class Task(Thread):
         return self.__end_time
 
     def run(self):
-        
+
         rvalue = self.__func()
 
         if isinstance(rvalue, GeneratorType):
