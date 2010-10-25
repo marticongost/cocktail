@@ -1327,8 +1327,6 @@ def _op_translation_factory(format):
                 translations(operand, **kwargs)
                 for operand in instance.operands
             )
-            print format
-            print operands
 
         return format % operands
 
