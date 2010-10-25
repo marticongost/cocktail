@@ -707,6 +707,15 @@ def _expression_resolution(self, query):
     
 expressions.Expression.resolve_filter = _expression_resolution
 
+def _constant_resolution(self, query):
+
+    def impl(dataset):
+        return dataset if self.value else set()
+
+    return ((-4, 0), impl)
+
+expressions.Constant.resolve_filter = _constant_resolution
+
 def _equal_resolution(self, query):
 
     member, index, unique = _get_filter_info(self)     
