@@ -329,7 +329,7 @@ class SearchExpression(NormalizableExpression):
 
     def op(self, a, b):
         a, b = self.normalize_operands(a, b)
-        return all((word in a) for word in b.split())
+        return a and b and all((word in a) for word in b.split())
 
 
 class GlobalSearchExpression(Expression):
