@@ -55,7 +55,7 @@ class Schema(Member):
         @ivar member: The added member.
         @type member: L{Member<cocktail.schema.Member>}
         """)
-    
+
     inherited = Event("""
         An event triggered when the schema is extended by another schema.
 
@@ -70,7 +70,7 @@ class Schema(Member):
 
         members = kwargs.pop("members", None)
         Member.__init__(self, *args, **kwargs)
-        
+
         self.add_validation(Schema.schema_validation_rule)
 
         self.__bases = None
@@ -83,7 +83,7 @@ class Schema(Member):
                 self.members_order = [member.name for member in members]
 
             self.expand(members)
- 
+
     def __deepcopy__(self, memo):
         schema_copy = Member.__deepcopy__(self, memo)
 
@@ -101,21 +101,21 @@ class Schema(Member):
         values = None,
         accessor = None,
         excluded_members = None):
-        
+
         if accessor is None:
             accessor = get_accessor(instance)
 
         # Set the value of all object members, either from a parameter or from
         # a default value definition
         for name, member in self.members().iteritems():
-            
+
             if excluded_members is not None and member in excluded_members:
                 continue
 
             value = default if values is None else values.get(name, default)
 
             if value is default:
-                
+
                 if member.translated:
                     continue
 
@@ -143,7 +143,7 @@ class Schema(Member):
         if self.__bases is None:
             self.__bases = []
             self.bases = ListWrapper(self.__bases)
-        
+
         for base in bases:
             self.__bases.append(base)
 
@@ -151,7 +151,7 @@ class Schema(Member):
                 ancestor.inherited(schema = self)
 
     def ascend_inheritance(self, include_self = False):
-        
+
         if include_self:
             yield self
 
@@ -181,7 +181,7 @@ class Schema(Member):
         """
         self._check_member(member)
         self._add_member(member)
-        
+
         if append or after or before:
 
             if ((1 if append else 0)
@@ -206,7 +206,7 @@ class Schema(Member):
             else:
                 pos = self.members_order.index(before)
                 self.members_order.insert(pos, member)
-        
+
         member.attached()
         self.member_added(member = member)
 
@@ -222,7 +222,7 @@ class Schema(Member):
 
         if member.primary:
             self.primary_member = member
-        
+
         if member.descriptive:
             self.descriptive_member = member
 
@@ -231,14 +231,14 @@ class Schema(Member):
 
     def expand(self, members):
         """Adds several members to the schema.
-        
+
         @param members: A list or mapping of additional members to add to the
             copy. When given as a mapping, the keys will be used for the member
             names.
         @type members: L{Member<member.Member>} list
             or (str, L{Member<member.Member>}) dict
         """
-        
+
         # From a dictionary
         if isinstance(members, dict):
             for name, member in members.iteritems():
@@ -311,7 +311,7 @@ class Schema(Member):
                     for name, member in schema.__members.iteritems():
                         members[name] = member
 
-            descend(self)           
+            descend(self)
             return DictWrapper(members)
 
         else:
@@ -319,7 +319,7 @@ class Schema(Member):
 
     def get_member(self, name):
         """Obtains one of the schema's members given its name.
-        
+
         @param name: The name of the member to look for.
         @type name: str
 
@@ -348,14 +348,14 @@ class Schema(Member):
 
         @raise KeyError: Raised if neither the schema or its bases possess a
             member with the specified name.
-        """        
+        """
         member = self.get_member(name)
 
         if member is None:
             raise KeyError("%s doesn't define a '%s' member" % (self, name))
-            
+
         return member
-    
+
     def __setitem__(self, name, member):
         """Overrides the indexing operator to bind members to the schema under
         the specified name.
@@ -389,7 +389,7 @@ class Schema(Member):
 
         @return: The sequence of validation rules for the member.
         @rtype: callable iterable
-        """        
+        """
         if self.__bases:
 
             validations = OrderedSet()
@@ -402,13 +402,13 @@ class Schema(Member):
 
                 if schema._validations:
                     validations.extend(schema._validations)
-            
+
             descend(self)
             return ListWrapper(validations)
 
         elif self._validations:
             return ListWrapper(self._validations)
-        
+
         else:
             return empty_list
 
@@ -426,7 +426,7 @@ class Schema(Member):
             for member in self.ordered_members():
 
                 if member.translated:
-                    
+
                     for value in self.translated_member_values(
                         member,
                         validable,
@@ -465,11 +465,11 @@ class Schema(Member):
 
         try:
             for language in (
-                context_languages 
+                context_languages
                 or accessor.languages(validable, key)
             ):
                 context["language"] = language
-                
+
                 value = accessor.get(
                     validable,
                     key,
@@ -483,7 +483,7 @@ class Schema(Member):
     def ordered_members(self, recursive = True):
         """Gets a list containing all the members defined by the schema, in
         order.
-        
+
         Schemas can define the ordering for their members by supplying a
         L{members_order} attribute, which should contain a series of object or
         string references to members defined by the schema. Members not in that
@@ -495,7 +495,7 @@ class Schema(Member):
 
         Alternatively, schema subclasses can override this method to allow for
         more involved sorting logic.
-        
+
         @param recursive: Indicates if the returned list should contain members
             inherited from base schemas (True) or if only members directly
             defined by the schema should be included.
@@ -615,7 +615,7 @@ class Schema(Member):
 
     def grouped_members(self, recursive = True):
         """Returns the groups of members defined by the schema.
-        
+
         @param recursive: Indicates if the returned list should contain members
             inherited from base schemas (True) or if only members directly
             defined by the schema should be included.
@@ -634,17 +634,17 @@ class Schema(Member):
                 group_members = []
                 members_by_group[member.member_group] = group_members
             group_members.append(member)
-            
+
         groups = []
 
         for group_name in self.ordered_groups(recursive):
             group_members = members_by_group.get(group_name)
             if group_members:
                 groups.append((group_name, group_members))
-        
+
         ungroupped_members = members_by_group.get(None)
         if ungroupped_members:
             groups.insert(0, (None, ungroupped_members))
-         
+
         return groups
 
