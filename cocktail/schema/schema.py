@@ -489,7 +489,10 @@ class Schema(Member):
         string references to members defined by the schema. Members not in that
         list will be appended at the end, sorted by name. Inherited members
         will be prepended, in the order defined by their parent schema.
-        
+
+        The L{Member.before_member} and L{after_member} attributes can also be
+        used to alter the position of the member they are defined in.
+
         Alternatively, schema subclasses can override this method to allow for
         more involved sorting logic.
         
@@ -501,37 +504,79 @@ class Schema(Member):
         @return: The list of members in the schema, in order.
         @rtype: L{Member<member.Member>} list
         """
-        ordered_members = []
-        
-        if recursive and self.__bases:
-            for base in self.__bases:
-                ordered_members.extend(base.ordered_members(True))
-        
-        ordering = self.members_order
+        ordered = []
+        relative = list()
 
-        if ordering:
-            ordering = [
-                (
-                    self.__members[member]
-                    if isinstance(member, basestring)
-                    else member
-                )
-                for member in ordering
-            ]
-            ordered_members.extend(ordering)
-            remaining_members = \
-                set(self.__members.itervalues()) - set(ordering)
-        else:
-            remaining_members = self.__members.itervalues() \
-                                if self.__members \
-                                else ()
+        schemas = self.descend_inheritance(True) if recursive else (self,)
 
-        if remaining_members:
-            ordered_members.extend(
-                sorted(remaining_members, key = lambda m: m.name)
-            )
+        for schema in schemas:
+            if schema.__members:
+                remaining = set(schema.__members.itervalues())
 
-        return ordered_members
+                if schema.members_order:
+                    for member in schema.members_order:
+                        if isinstance(member, basestring):
+                            member = schema[member]
+                        if not (member.before_member or member.after_member):
+                            remaining.remove(member)
+                            ordered.append(member)
+
+                for member in list(remaining):
+                    if member.before_member or member.after_member:
+                        relative.append(member)
+                        remaining.remove(member)
+
+                ordered.extend(sorted(remaining, key = lambda m: m.name))
+
+        if relative:
+            def insert_relative(member, visited):
+                
+                # Disallow conflicting positions
+                if member.before_member and member.after_member:
+                    raise ValueError(
+                        "Can't decide the proper order for %s, it defines "
+                        "both 'before_member' and 'after_member'" % member
+                    )
+
+                # Prevent cycles
+                if member not in visited:
+                    visited.add(member)
+                else:
+                    raise ValueError(
+                        "Cycle detected in the relative position for %s"
+                        % member
+                    )
+
+                # Locate the 'anchor' member
+                pos = -1
+                anchor = member.before_member or member.after_member
+
+                if isinstance(anchor, basestring):
+                    anchor = self.get_member(anchor)
+
+                if anchor:
+                    # If the anchor member is also relatively positioned,
+                    # fix down its position (this works recursively)
+                    if anchor.before_member or anchor.after_member \
+                    and anchor in relative:
+                        relative.remove(anchor)
+                        pos = insert_relative(anchor, visited)
+                    else:
+                        pos = ordered.index(anchor)
+
+                # Insert the member
+                if pos == -1:
+                    pos = len(ordered)
+                elif member.after_member:
+                    pos += 1
+
+                ordered.insert(pos, member)
+                return pos
+
+            while relative:
+                insert_relative(relative.pop(0), set())
+
+        return ordered
 
     def ordered_groups(self, recursive = True):
         """Gets a list containing all the member groups defined by the schema,

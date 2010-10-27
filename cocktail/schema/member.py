@@ -58,8 +58,10 @@ class Member(Variable):
         doc = """An event triggered when the member is added to a schema."""
     )
 
-    # Groupping
+    # Groupping and sorting
     member_group = None
+    before_member = None
+    after_member = None
 
     # Constraints and behavior
     primary = False
