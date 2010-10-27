@@ -30,6 +30,7 @@ class Page(Element):
         "expires",
         "refresh",
         "set-cookie"
+        "X-UA-Compatible"
     ))
 
     def __init__(self, *args, **kwargs):
