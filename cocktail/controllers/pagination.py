@@ -70,7 +70,7 @@ class Pagination(schema.SchemaObject):
         """Gives the ordinal position of the currently selected page, starting
         at 0.
 
-        This property is usually be equivalent to `page`, but it normalizes
+        This property will usually be equivalent to `page`, but it normalizes
         negative indices to positive values.
         """
         page = self.page
