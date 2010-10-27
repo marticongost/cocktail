@@ -126,3 +126,17 @@ class Pagination(schema.SchemaObject):
         """Indicates if the selected page is the last one."""
         return self.current_page + 1 == self.page_count
 
+    def page_for(self, item):
+        """Indicates the page that contains the specified item."""
+        if self.items is None:
+            raise ValueError(
+                "Can't call Pagination.page_for() if the 'items' property has "
+                "not been set"
+            )
+
+        for i, pagination_item in enumerate(self.items):
+            if item == pagination_item:
+                return i / self.page_size
+
+        return None
+
