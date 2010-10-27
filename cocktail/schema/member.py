@@ -6,7 +6,7 @@ from itertools import chain
 from copy import deepcopy
 from cocktail.events import Event, EventHub
 from cocktail.modeling import ListWrapper, OrderedSet
-from cocktail.pkgutils import import_object
+from cocktail.pkgutils import import_object, get_full_name
 from cocktail.translations import translations
 from cocktail.schema import exceptions
 from cocktail.schema.expressions import Expression, Variable
@@ -435,6 +435,39 @@ class Member(Variable):
             return u""
         else:
             return unicode(value)
+
+    def translate_error(self, error, language = None, **kwargs):
+
+        # Error translations can be overriden on a per-member basis
+        if self.schema and self.name:
+            try:
+                class_name = get_full_name(error.__class__)
+            except Exception, ex:
+                class_name = error.__class__.__name__
+
+            trans = translations(
+                    "%s.%s-error: %s" % (
+                    self.schema.name,
+                    self.name,
+                    class_name
+                ),
+                language = language,
+                **kwargs
+            )
+            if trans:
+                return trans
+
+        # If the member is a copy of another member, inherit its custom
+        # translations
+        if self.copy_source:
+            return self.copy_source.translate_error(
+                error, 
+                language = language,
+                **kwargs
+            )
+
+        # No custom translation for the error, return the stock description
+        return translations(error, language = language, **kwargs)
 
     def get_member_explanation(self, language = None, **kwargs):
         
