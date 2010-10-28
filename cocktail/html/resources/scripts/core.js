@@ -641,3 +641,11 @@ cocktail.declare = function (dottedName) {
     return obj;
 }
 
+// Implement support for the 'autofocus' HTML 5 attribute
+jQuery(function () {
+    var supportsAutofocus = "autofocus" in document.createElement('input');
+    if (!supportsAutofocus) {
+        jQuery("[autofocus]").first().focus();
+    }
+});
+
