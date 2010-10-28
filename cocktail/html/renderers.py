@@ -31,7 +31,7 @@ class Renderer(object):
 
     doctype = None
     single_tags = "img", "link", "meta", "br", "hr", "input"
-    flag_attributes = "selected", "checked"
+    flag_attributes = "selected", "checked", "autofocus"
 
     def __init__(self):
         self.__before_rendering = []
