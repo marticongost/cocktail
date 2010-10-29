@@ -252,7 +252,11 @@ class Form(Element, DataDisplay):
 
         if member.translated:
             entry.add_class("translated")
-            for language in (self.translations or (get_language(),)):
+            for language in (
+                self.translations 
+                if self.translations is not None 
+                else (get_language(),)
+            ):
                 field_instance = create_instance(language)
                 field_instance.add_class(language)
                 entry.append(field_instance)
