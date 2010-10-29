@@ -578,7 +578,7 @@ class FormSchemaReader(object):
         if self._is_schema(member):
             return self._read_schema(member, target, languages, path)
 
-        elif languages:
+        elif languages is not None:
 
             if not member.translated:
                 raise ValueError(
