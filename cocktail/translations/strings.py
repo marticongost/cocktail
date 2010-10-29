@@ -1650,7 +1650,7 @@ def _query_translation_factory(filtered_format):
             return filtered_format % {
                 "subject": subject,
                 "filters": u", ".join(
-                    translations(filter, **kwargs)
+                    translations(filter)
                     for filter in instance.filters
                 )
             }
