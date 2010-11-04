@@ -14,6 +14,7 @@ class IntegralTestCase(TestCase):
     def test_implicit_cascade_delete(self):
         
         from cocktail.schema import Reference, Collection
+        import cocktail.persistence # load extension attributes
 
         ref = Reference(
             bidirectional = True,
