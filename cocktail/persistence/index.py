@@ -1,14 +1,10 @@
 #-*- coding: utf-8 -*-
 u"""
 
-@author:		Martí Congost
-@contact:		marti.congost@whads.com
-@organization:	Whads/Accent SL
-@since:			July 2008
+.. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
 from persistent import Persistent
-from cocktail.modeling import empty_set
-from cocktail.persistence.persistentset import PersistentSet
+from BTrees.OOBTree import OOTreeSet
 
 infinite = object()
 
@@ -18,75 +14,39 @@ class Index(Persistent):
     maintain an index for a non unique field.
     """
 
-    def __init__(self, mapping):
-        self.__groups = mapping
-        self.__none_entries = PersistentSet()
+    def __init__(self):
+        self.__items = OOTreeSet()
 
     def add(self, key, value):
-
-        if key is None:
-            self.__none_entries.add(value)
-            self._p_changed = True
-        else:
-            group = self.__groups.get(key)
-
-            if group is None:
-                self.__groups[key] = group = PersistentSet()
-         
-            group.add(value)
-            
-            self._p_changed = True
-            self.__groups._p_changed = True
+        self.__items.insert((key, value))
 
     def remove(self, key, value):
-        
-        if key is None:
-            self.__none_entries.discard(value)
-            self._p_changed = True
-        else:
-            group = self.__groups.get(key)
-            
-            if group is not None:
-                group.discard(value)
-
-                if not group:
-                    del self.__groups[key]
-
-                self._p_changed = True
-                self.__groups._p_changed = True
+        self.__items.remove((key, value))
 
     def __getitem__(self, key):
-        
-        if isinstance(key, slice):        
+
+        if isinstance(key, slice):
             raise ValueError(
                 "Slicing an index is not supported; use keys()/values() "
                 "instead")
         else:
-            if key is None:
-                return self.__none_entries
-            else:
-                return self.__groups.get(key, empty_set)
+            return self.values(min = key, max = key)
 
     def __delitem__(self, key):
-        if key is None:
-            self.__none_entries = PersistentSet()
-        else:
-            self.__groups.__delitem__(key)
-            self.__groups._p_changed = True
-
-        self._p_changed = True
+        for pair in self[key]:
+            del self.__items[pair]
 
     def keys(self,
         min = infinite,
         max = infinite,
         excludemin = False,
         excludemax = False):
-        
+
         return list(self.iterkeys(
             min = min,
             max = max,
             excludemin = excludemin,
-            excludemax = excludemax            
+            excludemax = excludemax
         ))
 
     def values(self,
@@ -94,12 +54,12 @@ class Index(Persistent):
         max = infinite,
         excludemin = False,
         excludemax = False):
-        
+
         return list(self.itervalues(
             min = min,
             max = max,
             excludemin = excludemin,
-            excludemax = excludemax            
+            excludemax = excludemax
         ))
 
     def items(self,
@@ -107,12 +67,12 @@ class Index(Persistent):
         max = infinite,
         excludemin = False,
         excludemax = False):
-        
+
         return list(self.iteritems(
             min = min,
             max = max,
             excludemin = excludemin,
-            excludemax = excludemax            
+            excludemax = excludemax
         ))
 
     def itervalues(self,
@@ -121,128 +81,73 @@ class Index(Persistent):
         excludemin = False,
         excludemax = False):
 
-        if (min is infinite or (min is None and not excludemin)) \
-        and (max is not None or (max is None and not excludemax)) \
-        and self.__none_entries:
-            for item in self.__none_entries:
-                yield item
-       
-        if max is not None:
-
-            if min is infinite:
-                min = None
-
-            if max is infinite:
-                max = None
-            
-            for group in self.__groups.itervalues(
-                min = min,
-                max = max,
-                excludemin = excludemin and min is not None,
-                excludemax = excludemax and max is not None
-            ):
-                for item in group:
-                    yield item
+        for pair in self.__items.keys(
+            min = pair_comparator(min, excludemin, 1),
+            max = pair_comparator(max, excludemax, -1)
+        ):
+            yield pair[1]
 
     def iterkeys(self,
         min = infinite,
         max = infinite,
         excludemin = False,
         excludemax = False):
-        
-        if (min is infinite or (min is None and not excludemin)) \
-        and (max is not None or (max is None and not excludemax)) \
-        and self.__none_entries:
-            yield None
-        
-        if max is not None:
 
-            if min is infinite:
-                min = None
-
-            if max is infinite:
-                max = None
-            
-            for key in self.__groups.iterkeys(
-                min = min,
-                max = max,
-                excludemin = excludemin and min is not None,
-                excludemax = excludemax and max is not None
-            ):
-                yield key
+        for pair in self.__items.keys(
+            min = pair_comparator(min, excludemin, 1),
+            max = pair_comparator(max, excludemax, -1)
+        ):
+            yield pair[0]
 
     def iteritems(self,
         min = infinite,
         max = infinite,
         excludemin = False,
         excludemax = False):
-        
-        if (min is infinite or (min is None and not excludemin)) \
-        and (max is not None or (max is None and not excludemax)) \
-        and self.__none_entries:
-            for item in self.__none_entries:
-                yield None, item
 
-        if max is not None:
+        for pair in self.__items.keys(
+            min = pair_comparator(min, excludemin, 1),
+            max = pair_comparator(max, excludemax, -1)
+        ):
+            yield pair
 
-            if min is infinite:
-                min = None
-
-            if max is infinite:
-                max = None
-
-            for key, group in self.__groups.iteritems(
-                min = min,
-                max = max,
-                excludemin = excludemin and min is not None,
-                excludemax = excludemax and max is not None
-            ):                
-                for item in group:
-                    yield key, item
-
-    def minKey(self):        
-        if self.__none_entries:
-            return None
-        else:
-            return self.__groups.minKey()
+    def minKey(self):
+        return self.__items.minKey()[0]
 
     def maxKey(self):
-        try:
-            return self.__groups.maxKey()
-        except ValueError:
-            if self.__none_entries:
-                return None
-            else:
-                raise
+        return self.__items.maxKey()[0]
 
     def __len__(self):
-        count = self.__groups.__len__()
+        return len(self.__items)
 
-        if self.__none_entries:
-            count += 1
-
-        return count
+    def __notzero__(self):
+        return bool(self.__items)
 
     def __iter__(self):
-        if self.__none_entries:
-            yield None
-
-        for group in self.__groups:
-            yield group
+        return self.iterkeys()
 
     def __contains__(self, key):
-        if key is None:
-            return bool(self.__none_entries)
-        else:
-            return self.__groups.__contains__(key)
-    
-    def __notzero__(self):
-        return self.__none_entries or self.__groups
+        for pair in self.iterkeys(min = key, max = key):
+            return True
+
+        return False
 
     def has_key(self, key):
-        
-        if key is None:
-            return bool(self.__none_entries)
-        else:
-            return self.__groups.has_key(key)
+        return self.__contains__(key)
+
+
+class PairComparator(object):
+
+    def __init__(self, boundary, tie = 0):
+        self.boundary = boundary
+        self.tie = tie
+
+    def __cmp__(self, pair):
+        return cmp(self.boundary, pair[0]) or self.tie
+
+
+def pair_comparator(boundary, excluded, tie):
+    if boundary is infinite:
+        return None
+    return PairComparator(boundary, tie if excluded else -tie)
 

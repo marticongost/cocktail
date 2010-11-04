@@ -136,10 +136,9 @@ def _create_index(self):
     elif self.unique:
         index = self.index_type()
 
-    # Multi-value indexes are wrapped inside an Index instance,
-    # which organizes colliding keys into sets of values
+    # Multi-value indexes are handled by the Index class
     else:
-        index = Index(self.index_type())
+        index = Index()
 
     datastore.root[self.index_key] = index
     return index
@@ -327,6 +326,44 @@ def _string_get_index_value(self, value):
 
 schema.String.get_index_value = _string_get_index_value
 schema.String.normalized_index = False
+
+def _datetime_get_index_value(self, value):
+    if value is not None:
+        value = (
+            value.year,
+            value.month,
+            value.day,
+            value.hour,
+            value.minute,
+            value.second,
+            value.microsecond
+        )
+    return value
+
+schema.DateTime.get_index_value = _datetime_get_index_value
+
+def _date_get_index_value(self, value):
+    if value is not None:
+        value = (
+            value.year,
+            value.month,
+            value.day
+        )
+    return value
+
+schema.Date.get_index_value = _date_get_index_value
+
+def _time_get_index_value(self, value):
+    if value is not None:
+        value = (
+            value.hour,
+            value.minute,
+            value.second,
+            value.microsecond
+        )
+    return value
+
+schema.Time.get_index_value = _time_get_index_value
 
 def _reference_get_index_value(self, value):
     if value is not None:
