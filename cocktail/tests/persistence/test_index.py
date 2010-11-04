@@ -94,8 +94,8 @@ class IndexTestCase(TestCase):
         assert len(self.index) == key_count
 
     def test_supports_indexing_operator(self):
-        assert self.index[1] == ["foo"]
-        assert self.index[2] == ["bar", "bar2"]
-        assert self.index[3] == ["spam"]
-        assert self.index[4] == ["sprunge", "sprunge2", "sprunge3"]
+        assert self.index[1] == set(["foo"])
+        assert self.index[2] == set(["bar", "bar2"])
+        assert self.index[3] == set(["spam"])
+        assert self.index[4] == set(["sprunge", "sprunge2", "sprunge3"])
 

@@ -30,7 +30,7 @@ class Index(Persistent):
                 "Slicing an index is not supported; use keys()/values() "
                 "instead")
         else:
-            return self.values(min = key, max = key)
+            return set(self.itervalues(min = key, max = key))
 
     def __delitem__(self, key):
         for pair in self[key]:
