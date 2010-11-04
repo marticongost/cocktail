@@ -46,6 +46,10 @@ class Page(Element):
 
     def _build(self):
       
+        language = self.language or get_language()
+        self["lang"] = language
+        self["xml:lang"] = language
+
         self.head = Element("head")
         self.append(self.head)
 
