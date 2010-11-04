@@ -23,6 +23,14 @@ class Index(Persistent):
     def remove(self, key, value):
         self.__items.remove((key, value))
 
+    def discard(self, key, value):
+        try:
+            self.__items.remove((key, value))
+        except KeyError:
+            return False
+
+        return True
+
     def __getitem__(self, key):
 
         if isinstance(key, slice):

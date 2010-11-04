@@ -311,7 +311,7 @@ def remove_index_entry(obj, member, value, language = None):
         except KeyError:
             pass
     else:
-        member.index.remove(k, obj.id)
+        member.index.discard(k, obj.id)
 
 def _member_get_index_value(self, value):
     return value
