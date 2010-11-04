@@ -529,13 +529,17 @@ class Query(object):
 
                 # Index with duplicates
                 if isinstance(index, Index):
-                    for i, key in enumerate(index):
+                    pos = 0
+                    prev_key = None
+                    for key, id in index.iteritems():
+                        # Skip entries in non-active languages
                         if not expr.translated or key[0] == language:
-                            if reversed:
-                                i = -i
-                            for id in index[key]:
-                                if id in dataset:
-                                    add_sorting_key(id, i)
+                            if id in dataset:
+                                if key != prev_key:
+                                    pos += 1
+                                    prev_key = key
+
+                                add_sorting_key(id, -pos if reversed else pos)
 
                 # Index without duplicates
                 else:
@@ -734,7 +738,6 @@ def _equal_resolution(self, query):
             def impl(dataset):
                 value = _get_index_value(member, self.operands[1].value)
                 match = index.get(value)
-                            
                 if match is None:
                     return set()
                 else:
@@ -942,14 +945,15 @@ def _range_intersection_resolution(self, query):
         impl = None
     else:
         def impl(dataset):
+            
             min_value = self.operands[2].value
             if min_member:
                 min_value = _get_index_value(min_member, min_value)
 
             max_value = self.operands[3].value
             if max_member:
-                max_value = _get_index_value(max_member, max_value)          
-            
+                max_value = _get_index_value(max_member, max_value)
+
             min_method = (
                 min_index.keys
                 if min_member and min_member.primary
