@@ -231,7 +231,6 @@ class MembersOrderTestCase(TestCase):
         schema.add_member(m6)
 
         ordered_members = schema.ordered_members()
-        print ordered_members
         assert ordered_members == [m6, m3, m2, m5, m4, m1]
 
     def test_members_can_specify_relative_positions_using_base_schemas(self):
