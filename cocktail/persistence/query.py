@@ -1098,9 +1098,16 @@ def _search_resolution(self, query):
         
         def impl(dataset):
             terms = expressions.normalize(self.operands[1])
-            language = get_language() if member.translated else None
-            index = self.get_full_text_index(language)
-            subset = index.search(terms).iterkeys()
+            languages = set([None])
+            if member.translated:
+                languages.append(get_language())
+
+            subset = set()
+            
+            for language in languages:
+                index = self.get_full_text_index(language)
+                subset.update(index.search(terms).iterkeys())
+
             dataset.intersection_update(subset)
             return dataset
 
