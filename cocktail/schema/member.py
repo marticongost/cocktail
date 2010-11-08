@@ -84,7 +84,10 @@ class Member(Variable):
     translated = False
     translation = None
     translation_source = None
-    
+
+    # Wether the member is included in full text searches
+    text_search = False
+
     # Attributes that deserve special treatment when performing a deep copy
     _special_copy_keys = set([
         "__class__", "_schema", "_validations_wrapper", "_validations"

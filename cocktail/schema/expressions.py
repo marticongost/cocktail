@@ -329,7 +329,7 @@ class SearchExpression(NormalizableExpression):
 
     def op(self, a, b):
         a, b = self.normalize_operands(a, b)
-        return a and b and all((word in a) for word in b.split())
+        return a and b and any((word in a) for word in b.split())
 
 
 class GlobalSearchExpression(Expression):
@@ -343,7 +343,7 @@ class GlobalSearchExpression(Expression):
     def eval(self, context, accessor = None):        
         text = u" ".join(context.get_searchable_text(self.languages))
         text = normalize(text)
-        return all((word in text) for word in self.search_words)
+        return any((word in text) for word in self.search_words)
 
 
 class AddExpression(Expression):

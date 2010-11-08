@@ -32,6 +32,7 @@ class String(Member):
     type = basestring
     min = None
     max = None
+    text_search = True
     _format = None
 
     def __init__(self, *args, **kwargs):

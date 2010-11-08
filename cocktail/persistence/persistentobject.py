@@ -423,6 +423,9 @@ class PersistentObject(SchemaObject, Persistent):
     def _should_index_member(self, member):
         return self.indexed and member.indexed
 
+    def _should_index_member_full_text(self, member):
+        return member.full_text_indexed
+
     def get_ordering_key(self):
         return translations(self)
 
