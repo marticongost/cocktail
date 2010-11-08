@@ -207,7 +207,6 @@ class SchemaClass(EventHub, Schema):
         # Remove the member descriptor
         delattr(self, member.name)
 
-
     def schema_tree(cls):
         yield cls
         for child in cls.__derived_schemas:
@@ -566,6 +565,44 @@ class SchemaObject(object):
             language = language)
         self.translations[language] = translation
         return translation
+
+    def get_searchable_text(self, languages, visited_objects = None):
+
+        if visited_objects is None:
+            visited_objects = set()
+        elif self in visited_objects:
+            return
+        
+        visited_objects.add(self)
+
+        # Yield all text fields, traversing selected relations
+        for language in languages:
+            for member in self.__class__.members().itervalues():
+                if getattr(member, "text_search", False):
+                    member_value = self.get(member, language)
+                    if member_value:
+
+                        # Yield strings
+                        if isinstance(member, String):
+                            yield member_value
+                        
+                        # Recurse into selected references
+                        elif isinstance(member, Reference):
+                            for text in member_value.get_searchable_text(
+                                languages,
+                                visited_objects
+                            ):
+                                yield text
+
+                        # Recurse into selected collections
+                        elif isinstance(member, Collection):
+                            for child in member_value:
+                                for text in child.get_searchable_text(
+                                    languages,
+                                    visited_objects
+                                ):
+                                    yield text
+
 
 SchemaObject._translation_schema_metaclass = SchemaClass
 SchemaObject._translation_schema_base = SchemaObject

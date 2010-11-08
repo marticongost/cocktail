@@ -1090,3 +1090,45 @@ def _descends_from_resolution(self, query):
 
 expressions.DescendsFromExpression.resolve_filter = _descends_from_resolution
 
+def _search_resolution(self, query):
+
+    member, index, unique = _get_filter_info(self)
+
+    if member and member.full_text_indexed:
+        
+        def impl(dataset):
+            terms = expressions.normalize(self.operands[1])
+            language = get_language() if member.translated else None
+            index = self.get_full_text_index(language)
+            subset = index.search(terms).iterkeys()
+            dataset.intersection_update(subset)
+            return dataset
+
+        return ((-1, 0), impl)
+    else:
+        return ((0, 0), None)    
+
+expressions.SearchExpression.resolve_filter = _search_resolution
+
+
+def _global_search_resolution(self, query):
+
+    if query.type.full_text_indexed:
+        
+        def impl(dataset):
+            terms = expressions.normalize(self.search_query)            
+            subset = set()
+            
+            for language in self.languages:
+                index = query.type.get_full_text_index(language)
+                subset.update(index.search(terms).iterkeys())
+            
+            dataset.intersection_update(subset)
+            return dataset
+
+        return ((-1, 1), impl)
+    else:
+        return ((0, 0), None)    
+
+expressions.GlobalSearchExpression.resolve_filter = _global_search_resolution
+
