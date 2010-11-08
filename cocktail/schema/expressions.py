@@ -338,6 +338,8 @@ class GlobalSearchExpression(Expression):
         Expression.__init__(self)
         self.search_query = search
         self.search_words = set(normalize(search).split())
+        if None not in languages:
+            languages.append(None)
         self.languages = languages
 
     def eval(self, context, accessor = None):        
