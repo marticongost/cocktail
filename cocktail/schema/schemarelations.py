@@ -108,7 +108,7 @@ class RelationMember(Member):
     """
     bidirectional = False
     related_key = None
-    relation_constraints = None
+    relation_constraints = None    
     _integral = None
     _many = False
     __related_end = None
