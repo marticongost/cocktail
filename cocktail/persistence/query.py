@@ -7,7 +7,9 @@ u"""
 @since:			July 2008
 """
 from time import time
-from itertools import chain
+from itertools import chain, islice
+from BTrees.IOBTree import IOTreeSet, IOSet
+from BTrees.OOBTree import OOBTree, OOBucket, OOTreeSet, OOSet
 from cocktail.styled import styled
 from cocktail.modeling import getter, ListWrapper
 from cocktail.translations import get_language
@@ -42,6 +44,13 @@ query_timing_style = lambda s: " " * 4 + ("%.4fs" % s)
 
 inherit = object()
 
+fast_membership_test_sequence_types = (
+    set,
+    IOTreeSet,
+    IOSet
+)
+
+
 class Query(object):
     """A query over a set of persistent objects."""
 
@@ -59,10 +68,12 @@ class Query(object):
         self.__type = type
         self.__filters = None
         self.__order = None
+        self.__range = None
         self.__base_collection = None
-
         self.__cached_results = None
         self.__cached_results_sorted = False
+        self.__cached_results_sliced = False
+        self.__cached_length = None
 
         self.filters = filters or []
         self.order = order or []
@@ -92,6 +103,8 @@ class Query(object):
     def discard_results(self):
         self.__cached_results = None
         self.__cached_results_sorted = False
+        self.__cached_results_sliced = False
+        self.__cached_length = None
 
     @getter
     def type(self):
@@ -163,10 +176,8 @@ class Query(object):
 
     def _set_order(self, value):
 
-        self.discard_results()
-
         if value is None:
-            self.__order = []
+            order = []
         else:
             if isinstance(value, (basestring, expressions.Expression)):
                 value = value,
@@ -176,6 +187,8 @@ class Query(object):
             for criteria in value:
                 order.append(self._normalize_order_criteria(criteria))
 
+        if order != self.__order:
+            self.__cached_results_sorted = False
             self.__order = order
 
     order = property(_get_order, _set_order, doc = """            
@@ -198,7 +211,7 @@ class Query(object):
         """)
 
     def add_order(self, criteria):
-        self.discard_results()
+        self.__cached_results_sorted = False
         self.__order.append(self._normalize_order_criteria(criteria))
 
     def _normalize_order_criteria(self, criteria):
@@ -242,9 +255,7 @@ class Query(object):
 
     def _set_range(self, value):
 
-        if value is None:
-            self.__range = value
-        else:
+        if value is not None:
             if not isinstance(value, tuple) \
             or len(value) != 2 \
             or not isinstance(value[0], int) \
@@ -256,7 +267,13 @@ class Query(object):
                     "Negative indexes not supported on query ranges: %d, %d"
                     % value
                 )
-            
+
+        if value != self.__range:
+            if self.__range is None:
+                self.__cached_results_sliced = False
+            else:
+                self.discard_results()
+
             self.__range = value
 
     range = property(_get_range, _set_range, doc = """        
@@ -296,7 +313,7 @@ class Query(object):
             if self.__base_collection is None:
                 dataset = self.type.keys
             else:
-                dataset = [obj.id for obj in self.__base_collection]
+                dataset = (obj.id for obj in self.__base_collection)
 
             # Apply filters
             if self.verbose:
@@ -321,23 +338,18 @@ class Query(object):
             if not self.__order and isinstance(
                 self.__base_collection,
                 (list, tuple, ListWrapper)
-            ):
-                dataset = [obj.id
+            ):                
+                dataset = (obj.id
                            for obj in self.__base_collection
-                           if obj.id in dataset]
+                           if obj.id in dataset)
             else:
                 dataset = self._apply_order(dataset)
 
             if self.verbose:
                 print query_timing_style(time() - start)
-
-        # Store results for further requests
-        if self.cached:
-            self.__cached_results = dataset
-            self.__cached_results_sorted = _sorted
-        
-        # Apply ranges
-        if _sorted:
+      
+        # Apply range
+        if self.range and not (self.cached and self.__cached_results_sliced):
             if self.verbose:
                 start = time()
                 print query_phase_style("Applying range")
@@ -347,13 +359,21 @@ class Query(object):
             if self.verbose:
                 print query_timing_style(time() - start)
 
+        # Store results for further requests
+        if self.cached:
+            if not hasattr(dataset, "__len__"):
+                dataset = list(dataset)
+            self.__cached_results = dataset
+            self.__cached_results_sorted = _sorted
+            self.__cached_results_sliced = True
+
         if self.verbose:
             print
 
         return dataset
 
     def _apply_filters(self, dataset):
- 
+
         type_index = self.type.index
         
         if self.verbose:
@@ -475,28 +495,29 @@ class Query(object):
         if index is not None and (
             len(order) == 1
             or (isinstance(expr, Member) and expr.unique and expr.required)
-        ):            
-            if not isinstance(dataset, set):
+        ):
+            if not isinstance(dataset, fast_membership_test_sequence_types):
                 dataset = set(dataset)
 
             if isinstance(expr, Member) and expr.primary:
                 sequence = index.iterkeys()
             else:
-                if expr.translated:
+                if getattr(expr, "translated", False):
                     sequence = (id
                                 for key, id in index.iteritems()
                                 if key[0] == language)
                 else:
                     sequence = index.itervalues()
 
-            dataset = [id
+            ordered_dataset = (id
                        for id in sequence
-                       if id in dataset]
+                       if id in dataset)
 
             if isinstance(order[0], expressions.NegativeExpression):
-                dataset.reverse()
+                ordered_dataset = list(ordered_dataset)
+                ordered_dataset.reverse()
 
-            return dataset
+            return ordered_dataset
 
         # General case: mix indexes and brute force sorting as needed
         sorting_keys = {}
@@ -519,6 +540,7 @@ class Query(object):
 
             index = self._get_expression_index(expr)            
             reversed = isinstance(criteria, expressions.NegativeExpression)
+            sign = -1 if reversed else 1
             
             # Sort using an index
             if index is not None:
@@ -539,7 +561,7 @@ class Query(object):
                                     pos += 1
                                     prev_key = key
 
-                                add_sorting_key(id, -pos if reversed else pos)
+                                add_sorting_key(id, pos * sign)
 
                 # Index without duplicates
                 else:
@@ -555,9 +577,7 @@ class Query(object):
 
                     for i, id in enumerate(sequence):
                         if id in dataset:
-                            if reversed:
-                                i = -i
-                            add_sorting_key(id, i)
+                            add_sorting_key(id, i * sign)
 
             # Brute force
             else:
@@ -578,7 +598,7 @@ class Query(object):
         r = self.range
         
         if dataset and r:
-            dataset = dataset[r[0]:r[1]]
+            dataset = islice(dataset, r[0], r[1])
 
         return dataset
 
@@ -586,23 +606,22 @@ class Query(object):
         type_index = self.type.index
         for id in self.execute():
             yield type_index[id]
-        
-    def __len__(self):
-        
-        if self.filters:
-            return len(self.execute(_sorted = False))
+
+    def __len__(self):        
+        if self.cached:
+            if self.__cached_length is None:
+                self.__cached_length = len(self.execute(_sorted = False))
+
+            return self.__cached_length
         else:
-            if self.__base_collection is None:
-                return len(self.type.keys)
-            else:
-                return len(self.__base_collection)
-    
+            return len(self.execute(_sorted = False))
+
     def __notzero__(self):
-        # TODO: Could be optimized to look for just one match on each filter
-        return bool(self.execute(_sorted = False))
+        for id in self.execute(_sorted = False):
+            return True
+        return False
 
     def __contains__(self, item):
-        # TODO: This too could be optimized
         return item.id in self.execute()
 
     def __getitem__(self, index):
@@ -618,24 +637,35 @@ class Query(object):
         # Retrieve a single item
         else:
             results = self.execute()
-            return self.type.index[results[index]]
+            if hasattr(results, "__getitem__"):
+                id = results[index]
+            else:
+                for id in results:
+                    if index == 0:
+                        break
+                    index -= 1
+                return self.type.index[id]
 
     def select(self,
         filters = inherit,
         order = inherit,
-        range = inherit):
+        range = inherit,
+        verbose = inherit):
         
         child_query = self.__class__(
             self.__type,
             self.filters if filters is inherit else filters + self.filters,
             self.order if order is inherit else order,
             self.range if range is inherit else range,
-            self.__base_collection)
+            self.__base_collection,
+            verbose = self.verbose if verbose is inherit else verbose)
 
-        if filters is None:
+        if filters is inherit:
             child_query.__cached_results = self.__cached_results
-            child_query.__cached_results_sorted = order is None \
-                and self.__cached_results_sorted
+            child_query.__cached_results_sorted = \
+                self.__cached_results_sorted if order is inherit else False
+            child_query.__cached_results_sliced = \
+                self.__cached_results_sliced if range is inherit else False
 
         return child_query
 
