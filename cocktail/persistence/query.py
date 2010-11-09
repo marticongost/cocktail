@@ -9,7 +9,7 @@ u"""
 from time import time
 from itertools import chain, islice
 from BTrees.IOBTree import IOTreeSet, IOSet
-from BTrees.OOBTree import OOBTree, OOBucket, OOTreeSet, OOSet
+from BTrees.OOBTree import OOTreeSet, OOSet
 from cocktail.styled import styled
 from cocktail.modeling import getter, ListWrapper
 from cocktail.translations import get_language
@@ -44,12 +44,13 @@ query_timing_style = lambda s: " " * 4 + ("%.4fs" % s)
 
 inherit = object()
 
+ordered_collection_types = (list, tuple, ListWrapper)
+
 fast_membership_test_sequence_types = (
     set,
-    IOTreeSet,
-    IOSet
+    IOTreeSet, IOSet,
+    OOTreeSet, OOSet
 )
-
 
 class Query(object):
     """A query over a set of persistent objects."""
@@ -337,8 +338,14 @@ class Query(object):
             # collection
             if not self.__order and isinstance(
                 self.__base_collection,
-                (list, tuple, ListWrapper)
+                ordered_collection_types
             ):                
+                if not isinstance(
+                    dataset,
+                    fast_membership_test_sequence_types
+                ):
+                    dataset = set(dataset)
+
                 dataset = (obj.id
                            for obj in self.__base_collection
                            if obj.id in dataset)
