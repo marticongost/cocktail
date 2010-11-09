@@ -301,7 +301,13 @@ class Query(object):
                 print query_attrib_style("range", self.range)
             
         # Try to make use of cached results
-        if self.cached and self.__cached_results is not None:
+        if self.cached \
+        and self.__cached_results is not None \
+        and not (
+            self.__cached_results_sliced 
+            and not self.__cached_results_sorted 
+            and _sorted
+        ):
             dataset = self.__cached_results
             
             if self.verbose:
@@ -309,6 +315,9 @@ class Query(object):
 
         # New data set
         else:
+            # Discard cached results
+            self.discard_results()
+
             # Object universe
             if self.__base_collection is None:
                 dataset = self.type.keys
