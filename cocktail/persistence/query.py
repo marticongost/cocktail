@@ -348,16 +348,18 @@ class Query(object):
             if not self.__order and isinstance(
                 self.__base_collection,
                 ordered_collection_types
-            ):                
+            ):
+                subset = dataset
+
                 if not isinstance(
-                    dataset,
+                    subset,
                     fast_membership_test_sequence_types
                 ):
-                    dataset = set(dataset)
+                    subset = set(subset)
 
                 dataset = (obj.id
-                           for obj in self.__base_collection
-                           if obj.id in dataset)
+                           for obj in self.__base_collection 
+                           if obj.id in subset)
             else:
                 dataset = self._apply_order(dataset)
 
