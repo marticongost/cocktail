@@ -21,6 +21,7 @@ from cocktail.controllers.dispatcher import (
     StopRequest,
     context
 )
+from cocktail.controllers.uriutils import make_uri, try_decode
 from cocktail.controllers.location import Location
 from cocktail.controllers.viewstate import (
     get_state,
@@ -37,23 +38,4 @@ import cocktail.controllers.grouping
 import cocktail.controllers.erroremail
 import cocktail.controllers.handlerprofiler
 import cocktail.controllers.switchhandler
-
-
-def make_uri(*args, **kwargs):
-
-    uri = u"/".join(unicode(arg).strip(u"/") for arg in args)
-
-    if kwargs:
-        params = []
-
-        for pair in kwargs.iteritems():
-            if isinstance(pair[1], basestring):
-                params.append(pair)
-            else:
-                for item in pair[1]:
-                    params.append(pair[0], item)
-
-        uri += "?" + "&".join("%s=%s" % pair for pair in params.iteritems())
-
-    return uri
 
