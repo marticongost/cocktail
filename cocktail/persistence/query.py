@@ -599,6 +599,9 @@ class Query(object):
 
             # Brute force
             else:
+                if not isinstance(dataset, set):
+                    dataset = set(dataset)
+
                 for id in dataset:
                     instance = self.type.index[id]
                     value = expr.eval(instance, SchemaObjectAccessor)
