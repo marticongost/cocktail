@@ -574,6 +574,12 @@ class SchemaObject(object):
             return
         
         visited_objects.add(self)
+        return self._get_searchable_text(languages, visited_objects)
+    
+    def _get_searchable_text(self, languages, visited_objects = None, stack = None):
+
+        if stack is None:
+            stack = []
 
         # Yield all text fields, traversing selected relations
         for language in languages:
@@ -588,20 +594,30 @@ class SchemaObject(object):
                         
                         # Recurse into selected references
                         elif isinstance(member, Reference):
-                            for text in member_value.get_searchable_text(
-                                languages,
-                                visited_objects
-                            ):
-                                yield text
+                            stack.append(self)
+                            try:
+                                for text in member_value._get_searchable_text(
+                                    languages,
+                                    visited_objects,
+                                    stack
+                                ):
+                                    yield text
+                            finally:
+                                stack.pop()
 
                         # Recurse into selected collections
                         elif isinstance(member, Collection):
-                            for child in member_value:
-                                for text in child.get_searchable_text(
-                                    languages,
-                                    visited_objects
-                                ):
-                                    yield text
+                            stack.append(self)
+                            try:
+                                for child in member_value:
+                                    for text in child._get_searchable_text(
+                                        languages,
+                                        visited_objects,
+                                        stack
+                                    ):
+                                        yield text
+                            finally:
+                                stack.pop()
 
 
 SchemaObject._translation_schema_metaclass = SchemaClass
