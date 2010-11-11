@@ -119,10 +119,10 @@ class Index(Persistent):
         ):
             yield pair
 
-    def minKey(self):
+    def min_key(self):
         return self.__items.minKey()[0]
 
-    def maxKey(self):
+    def max_key(self):
         return self.__items.maxKey()[0]
 
     def __len__(self):
