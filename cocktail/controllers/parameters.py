@@ -830,7 +830,7 @@ class CookieParameterSource(object):
     cookie_prefix = None,
     cookie_encoding = "utf-8"
     cookie_path = "/"
-    ignore_new_values = False,
+    ignore_new_values = False
     update = True
 
     def __init__(self,
