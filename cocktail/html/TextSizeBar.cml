@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?py
+from cocktail.controllers import (
+    get_parameter,
+    CookieParameterSource
+)
+from cocktail.schema import Integer
+?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:py="http://www.whads.com/ns/cocktail/templates">
+
+    <?py-class
+    size = None
+    param_name = "text_size"
+
+    _text_size_target = None
+
+    def _get_text_size_target(self):
+        return self._text_size_target
+
+    def _set_text_size_target(self, target):
+        
+        @target.when_ready
+        def apply_size_to_target():
+
+            # The target may have changed
+            if self._text_size_target is target:
+                self.apply_size(target)
+
+        self._text_size_target = target
+
+    text_size_target = property(
+        _get_text_size_target,
+        _set_text_size_target
+    )
+
+    def apply_size(self, element):
+        self.ready()
+        element.add_class("text_size-%d" % self.size)
+        element.set_style("font-size", "%d%%" % (100 + self.size * 10))
+    ?>
+
+    <?py
+    self.add_resource("/cocktail/scripts/jquery.cookie.js")
+    self.add_resource("/cocktail/scripts/TextSizeBar.js")
+    ?>
+
+    <py:ready>
+        <?py
+        cookie_source = CookieParameterSource()
+
+        if self.size is None:
+            self.size = get_parameter(
+                Integer(
+                    self.param_name,
+                    default = 0,
+                    min = -9
+                ),
+                source = cookie_source,
+                errors = "set_default",
+                undefined = "set_default"
+            )
+
+        self.set_client_param("textSize", self.size)
+        self.set_client_param(
+            "textSizeCookie", 
+            cookie_source.get_cookie_name(self.param_name)
+        )
+        
+        if self._text_size_target:
+            self.set_client_param("textSizeTarget", self._text_size_target.require_id())
+        ?>
+    </py:ready>
+
+    <form method="GET">
+        <input type="hidden" name="@{self.param_name}" value="@{self.size - 1}"/>
+        <button py:id="decrease_size_button" type="submit">A<sup>-</sup></button>
+    </form>
+
+    <form method="GET">
+        <input type="hidden" name="@{self.param_name}" value="@{self.size + 1}"/>
+        <button py:id="increase_size_button" type="submit">A<sup>+</sup></button>
+    </form>
+
+</div>
+
