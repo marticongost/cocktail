@@ -649,9 +649,11 @@ class Query(object):
 
     # Exportation
     #------------------------------------------------------------------------------
-    def export_file(self, dest, mime_type = None, members = None, **kwargs):
+    def export_file(
+        self, dest, mime_type = None, members = None, languages = None, **kwargs
+    ):
         """Exports the query to a file"""
-        export_file(self, dest, self.type, mime_type, members, **kwargs)
+        export_file(self, dest, self.type, mime_type, members, languages, **kwargs)
 
 
 class Comparator(object):
