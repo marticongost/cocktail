@@ -12,7 +12,7 @@ import pyExcelerator
 from decimal import Decimal
 from cocktail.schema import Schema
 from cocktail.modeling import ListWrapper, SetWrapper
-from cocktail.translations import translations
+from cocktail.translations import translations, get_language
 from cocktail.typemapping import TypeMapping
 
 _exporters_by_mime_type = {}
@@ -60,6 +60,7 @@ def register_exporter(func, mime_types, extensions = ()):
 def export_file(collection, dest, schema,
     mime_type = None,
     members = None,
+    languages = None,
     **kwargs):
     """Writes a collection of objects to a file.
     
@@ -79,6 +80,10 @@ def export_file(collection, dest, schema,
     @var members: Limits the members that will be written to the file to a
         subset of the given schema.
     @type members: L{Member<cocktail.schema.Member>} sequence
+
+    @var languages: A collection of languages (ISO codes) to translate the
+        translated members.
+    @type languages: collection: iterable
     """
     exporter = None
     dest_is_string = isinstance(dest, basestring)
@@ -112,11 +117,11 @@ def export_file(collection, dest, schema,
     if dest_is_string:
         dest = open(dest, "w")
         try:
-            exporter(collection, dest, schema, members, **kwargs)
+            exporter(collection, dest, schema, members, languages, **kwargs)
         finally:
             dest.close()
     else:
-        exporter(collection, dest, schema, members, **kwargs)
+        exporter(collection, dest, schema, members, languages, **kwargs)
 
 # Exporters
 #------------------------------------------------------------------------------
@@ -138,11 +143,14 @@ msexcel_exporters[set] = _iterables_to_msexcel
 msexcel_exporters[ListWrapper] = _iterables_to_msexcel
 msexcel_exporters[SetWrapper] = _iterables_to_msexcel
 
-def export_msexcel(collection, dest, schema, members):
+def export_msexcel(collection, dest, schema, members, languages = None):
     """Method to export a collection to MS Excel."""
 
     book = pyExcelerator.Workbook()
     sheet = book.add_sheet('0')
+
+    if languages is None:
+        languages = [get_language()]
 
     # Header style
     header_style = pyExcelerator.XFStyle()
@@ -151,22 +159,41 @@ def export_msexcel(collection, dest, schema, members):
     
     if isinstance(schema, Schema):
         # Column headers
-        for col, member in enumerate(members):
-            label = translations(member)
-            sheet.write(0, col, label, header_style)
+        col = 0
+        for member in members:
+            if member.translated:
+                for language in languages:
+                    label = "%s (%s)" % (
+                        translations(member), translations(language)
+                    )
+                    sheet.write(0, col, label, header_style)
+                    col += 1
+            else:
+                label = translations(member)
+                sheet.write(0, col, label, header_style)
+                col += 1
 
         for row, item in enumerate(collection):
-            for col, member in enumerate(members):
+            col = 0
+            for member in members:
 
-                if member.name == "element":
-                    value = translations(item)
-                elif member.name == "class":
-                    value = translations(item.__class__.name)
+                if member.translated:
+                    for language in languages:
+                        value = item.get(member.name, language)
+                        cell_content = msexcel_exporters[type(value)](member, value)
+                        sheet.write(row + 1, col, cell_content)
+                        col += 1
                 else:
-                    value = item.get(member.name)
+                    if member.name == "element":
+                        value = translations(item)
+                    elif member.name == "class":
+                        value = translations(item.__class__.name)
+                    else:
+                        value = item.get(member.name)
 
-                cell_content = msexcel_exporters[type(value)](member, value)
-                sheet.write(row + 1, col, cell_content)
+                    cell_content = msexcel_exporters[type(value)](member, value)
+                    sheet.write(row + 1, col, cell_content)
+                    col += 1
     else:
         # Column headers
         sheet.write(0, 0, schema.name or "", header_style)
