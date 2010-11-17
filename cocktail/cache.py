@@ -49,7 +49,10 @@ class Cache(DictWrapper):
                 return entry.value
         else:
             return self.load(key)
-    
+
+    def set_value(self, key, value):
+        self.__entries[key] = CacheEntry(key, value)
+
     def load(self, key):
         pass
 
