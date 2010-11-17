@@ -13,7 +13,7 @@ cocktail.bind(".TextSizeBar", function ($textSizeBar) {
         newSize = Math.max(-9, newSize);
         jQuery(document.body).removeClass("text_size-" + this.textSize);
         this.textSize = newSize;
-        jQuery.cookie(this.textSizeCookie, newSize);
+        jQuery.cookie(this.textSizeCookie, newSize, {path: "/"});
         jQuery(document.body)
             .css("font-size", (100 + newSize * 10) + "%")
             .addClass("text_size-" + newSize);
