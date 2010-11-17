@@ -18,11 +18,16 @@ class IEConditionalComment(Element):
         Element.__init__(self, **kwargs)
         self.condition = condition
 	
-    def _render(self, renderer, out):
-        self.ready()
+    def _render(self, rendering):
+
         if self.rendered:
-            if self.condition:
-                out(u"<!--[if %s]>" % self.condition)
-            renderer.write_element(self, out)
-            if self.condition:
-                out(u"<![endif]-->")
+            condition = self.condition
+            
+            if condition:
+                rendering.write(u"<!--[if %s]>" % condition)
+            
+            rendering.renderer.write_element(self, rendering)
+
+            if condition:
+                rendering.write(u"<![endif]-->")
+

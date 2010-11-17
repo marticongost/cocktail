@@ -5,7 +5,7 @@ u"""Utilities covering typical HTML design patterns.
 """
 import re
 from itertools import izip, cycle
-from cocktail.html.element import get_current_renderer
+from cocktail.html.rendering import get_current_rendering
 
 def alternate_classes(element, classes = ("odd", "even")):
     
@@ -31,18 +31,26 @@ def first_last_classes(element, first_class = "first", last_class = "last"):
                 child.add_class(last_class)
                 break
 
+def rendering_html5():
+    html_version = getattr(
+        get_current_rendering().renderer, 
+        "html_version",
+        None
+    ) 
+    return html_version >= 5
+
 def html5_tag(element, tag):
 
     @element.when_ready
     def set_html5_alternative_tag():
-        if getattr(get_current_renderer(), "html_version", None) >= 5:
+        if rendering_html5():    
             element.tag = tag
 
 def html5_attr(element, key, value):
 
     @element.when_ready
     def set_html5_attribute():
-        if getattr(get_current_renderer(), "html_version", None) >= 5:
+        if rendering_html5():    
             element[key] = value
 
 _entity_expr = re.compile("[\"<>&]")

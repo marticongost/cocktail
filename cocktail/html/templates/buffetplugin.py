@@ -59,9 +59,9 @@ class CocktailBuffetPlugin(object):
         renderer = None
 
         if format == "html":
-            renderer = renderers.HTML4Renderer()
+            renderer = renderers.html4_renderer
         elif format == "xhtml":
-            renderer = renderers.XHTMLRenderer()
+            renderer = renderers.xhtml_renderer
         elif format:
             raise ValueError("Can't render '%s' using format '%s'"
                 % (template, format))

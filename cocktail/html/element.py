@@ -1,20 +1,25 @@
 #-*- coding: utf-8 -*-
 from time import time
-from inspect import getmro
-from threading import local
-from cocktail.modeling import getter, empty_list, empty_dict, empty_set
+from warnings import warn
+from cocktail.modeling import (
+    getter,
+    empty_list,
+    empty_dict,
+    empty_set,
+    OrderedSet
+)
 from cocktail.iteration import first
+from cocktail.html import renderers
+from cocktail.html.rendering import (
+    Rendering,
+    generate_id,
+    rendering_cache
+)
+from cocktail.html.documentmetadata import DocumentMetadata
 from cocktail.html.resources import Resource
 from cocktail.html.overlay import apply_overlays
 
-_thread_data = local()
-
 default = object()
-
-
-def get_current_renderer():
-    """Gets the `Renderer` object used by the current thread."""
-    return getattr(_thread_data, "renderer", None)
 
 
 class Element(object):
@@ -45,7 +50,12 @@ class Element(object):
 
         The tag name assigned to the element. If set to None, the
         element's tag and attributes won't be rendered, only its content.
-    
+
+    .. attribute:: page_doctype
+
+        Sets the doctype of the resulting document for a
+        `full page rendering <render_page>` of the element.
+
     .. attribute:: page_title
 
         Sets the title of the resulting document for a
@@ -95,12 +105,6 @@ class Element(object):
         
         Enables or disables `overlays <Overlay>` for the element.
 
-    .. attribute:: generated_id_format
-        
-        A python formatting string used when
-        `generating a unique identifier<require_id>` for the element. Takes a
-        single integer parameter.
-
     .. attribute:: client_model
         
         When set to a value other than None, the element won't
@@ -125,17 +129,14 @@ class Element(object):
         The language used by the element for data binding purposes.
     """
     tag = "div"
+    page_doctype = None
     page_title = None
     page_charset = None
     page_content_type = None
     styled_class = False
-    scripted = True # ?
-    styled = True # ?
-    theme = None # ?
     visible = True
     collapsible = False
     overlays_enabled = False
-    generated_id_format = "cocktail-element-%s-%d"
     client_model = None
 
     # Data binding
@@ -169,17 +170,16 @@ class Element(object):
             self.add_class(class_name)
 
         self.__meta = None
-        self.__head_elements = None
-        self.__body_end_elements = None
         self.__resources = None
-        self.__resource_uris = None
         self.__client_params = None
         self.__client_code = None
         self.__client_variables = None
         self.__client_translations = None
+        self.__is_bound = False
         self.__is_ready = False
         self.__binding_handlers = None
         self.__ready_handlers = None
+        self.__document_ready_callbacks = None
 
         if tag is not default:
             self.tag = tag
@@ -198,7 +198,7 @@ class Element(object):
                 cls.overlays_enabled = True
 
             # Aggregate CSS classes from base types
-            cls._classes = list(getmro(cls))[:-1]
+            cls._classes = list(cls.__mro__)[:-1]
             cls._classes.reverse()
             css_classes = []
 
@@ -234,44 +234,79 @@ class Element(object):
     # Rendering
     #--------------------------------------------------------------------------
 
-    def make_page(self, renderer = None):
-        """Wraps the element within an HTML page structure.
-
-        :param renderer: The renderer used to generate the page. If none is
-            provided, one will be automatically obtained by calling the
-            `_get_default_renderer` method.
-        :type renderer: `Renderer`
-                
-        :return: A page representing the element.
-        :rtype: `Page`
-        """ 
-        if not renderer:
-            renderer = self._get_default_renderer()
-
-        return renderer.make_page(self)
-
-    def render_page(self, renderer = None):
+    def render_page(self,
+        renderer = None,
+        document_metadata = None,
+        collect_metadata = True,
+        cache = rendering_cache):
         """Renders the element as a full HTML page.
 
         This method creates a page structure for the element (using its
         `make_page` method) and outputs the resulting HTML code, including
         links to its resources and other metadata.
 
-        :param renderer: The renderer used to generate the markup. If none is
-            provided, one will be automatically obtained by calling the
-            `_get_default_renderer` method.
+        :param renderer: The renderer that will generate the markup for the
+            element.
         :type renderer: `Renderer`
+
+        :param document_metadata: The set of resources and metadata for the
+            rendered document: scripts, stylesheets, meta tags, client side
+            state, etc.
+
+            This parameter covers two use cases: it makes it possible to inject
+            additional metadata into the rendered document, and it allows to
+            inspect the produced metadata after rendering (the object will be
+            modified by the rendering operation).
+        :type document_metadata: `DocumentMetadata`
+
+        :param collect_metadata: Determines if resources and meta data
+            (scripts, stylesheets, meta tags, etc) defined by rendered elements
+            should be evaluated and collected.
+        :type collect_metadata: bool
+
+        :param cache: A cache for rendered content and metadata. Will be used
+            by those elements with `caching enabled <cached>`. Setting this
+            parameter to None disables use of the cache for this rendering
+            operation.
+        :type cache: `~cocktail.cache.Cache`
 
         :return: The HTML code for the element, embeded within a full HTML
             page.
         :rtype: unicode
         """
-        if not renderer:
-            renderer = self._get_default_renderer()
-        
-        return self.make_page(renderer).render(renderer)
+        if renderer is None:
+            renderer = renderers.default_renderer
 
-    def render(self, renderer = None):
+        if document_metadata is None:
+            document_metadata = DocumentMetadata()
+
+        content = self.render(
+            renderer = renderer,
+            document_metadata = document_metadata,
+            collect_metadata = collect_metadata,
+            cache = cache
+        )
+
+        from cocktail.html.document import HTMLDocument
+        document = HTMLDocument()
+        document.content = content
+        document.metadata = document_metadata
+        document.rendering_options = {
+            "renderer": renderer,
+            "cache": cache
+        }
+
+        return document.render(
+            renderer = renderer,
+            collect_metadata = False,
+            cache = None
+        )
+
+    def render(self,
+        renderer = None,
+        document_metadata = None,
+        collect_metadata = True,
+        cache = rendering_cache):
         """Renders the element as an HTML fragment.
 
         This method renders the HTML code for the element's tree. Note that the
@@ -279,80 +314,64 @@ class Element(object):
         included in the produced markup; use `render_page` to render them
         within a full page structure.
 
-        :param renderer: The renderer used to generate the markup. If none is
-            provided, one will be automatically obtained by calling the
-            `_get_default_renderer` method.
+        :param renderer: The renderer that will generate the markup for the
+            element.
         :type renderer: `Renderer`
+
+        :param document_metadata: The set of resources and metadata required by
+            the rendered document: scripts, stylesheets, meta tags, client side
+            state, etc.
+            
+            This parameter covers two use cases: it makes it possible to inject
+            additional metadata into rendering results, and it allows to
+            inspect the produced metadata after rendering (the object will be
+            modified by the rendering operation).
+        :type document_metadata: `DocumentMetadata`
+
+        :param collect_metadata: Determines if resources and meta data
+            (scripts, stylesheets, meta tags, etc) defined by rendered elements
+            should be evaluated and collected.
+        :type collect_metadata: bool
+
+        :param cache: A cache for rendered content and metadata. Will be used
+            by those elements with `caching enabled <cached>`. Setting this
+            parameter to None disables use of the cache for this rendering
+            operation.
+        :type cache: `~cocktail.cache.Cache`
 
         :return: The HTML code for the element.
         :rtype: unicode
         """
-        if not renderer:
-            renderer = self._get_default_renderer()
-        
-        prev_renderer = getattr(_thread_data, "renderer", None)
-        _thread_data.renderer = renderer
+        if renderer is None:
+            renderer = renderers.default_renderer
 
-        try:
+        rendering = Rendering(
+            renderer = renderer,
+            document_metadata = document_metadata,
+            collect_metadata = collect_metadata,
+            cache = cache        
+        )
+        rendering.render_element(self)
+        return rendering.markup()                
 
-            canvas = []
-            out = canvas.append
-                    
-            if not hasattr(_thread_data, "generated_id"):
-                _thread_data.prefix = str(time()).replace(".", "")
-                _thread_data.generated_id = 0
-                try:
-                    self._render(renderer, out)
-                finally:
-                    del _thread_data.prefix
-                    del _thread_data.generated_id
-            else:
-                self._render(renderer, out)
-        
-            markup = u"".join(canvas)
-        finally:
-            _thread_data.renderer = prev_renderer
-
-        return markup
-
-    def _get_default_renderer(self):
-        """Supplies the default renderer for an HTML rendering operation.
-
-        This method will be called by `make_page`, `render_page` and
-        `render` if no explicit renderer is specified.
-
-        :return: An element renderer.
-        :rtype: `Renderer`
-        """
-        from cocktail.html.renderers import DEFAULT_RENDERER_TYPE
-        return DEFAULT_RENDERER_TYPE()
-
-    def _render(self, renderer, out):
+    def _render(self, rendering):
         """Readies the element and writes its HTML code to the given stream.
 
         This is an internal method; applications should invoke `render_page`
         or `render`, which in turn will call this method.
         
-        The default implementation gives the element a last chance to perform
-        any pending initialization before rendering by calling its `_ready`
-        method, and then delegates the production of its HTML code to the given
-        renderer object. Overriding this behavior will seldom be necessary. The
-        `Content` class is one of the rare cases. Another case were it may
-        make sense is the rendering of complex elements as opaque HTML blobs
-        (for optimization purposes).
+        The default implementation delegates the production of its HTML code to
+        the given renderer object. Overriding this behavior will seldom be 
+        necessary. The `Content` class is one of the rare cases. Another case
+        were it may make sense is to optimize expensive rendering operations,
+        bypassing the `Element` class to produce opaque HTML blobs for nested
+        content.
 
-        :param renderer: The renderer used to produce the element's code.
-        :type renderer: `Renderer`
-
-        :param out: The output stream were the element's markup should be
-            written. Implementations should treat the stream as a callable
-            object, passing it a single parameter - an HTML chunk to write to
-            the stream.
-        :type out: callable
+        :param rendering: The rendering buffer where the element should be
+            written.
+        :type renderer: `Rendering`
         """
-        self.ready()
-        if self.rendered:
-            renderer.write_element(self, out)
+        rendering.renderer.write_element(self, rendering)
 
     def _build(self):
         """Initializes the object.
@@ -362,32 +381,87 @@ class Element(object):
         the class constructor, which can be tricky.
         """
 
-    def ready(self):
-        """Readies the element before it is rendered.
+    def bind(self):
+        """Updates the element's state before it is rendered.
+        
+        This method gives the element a chance to initialize its state before
+        its HTML code is written. 
+        
+        `bind` serves a similar purpose to `ready`, which is executed right 
+        after. By convention, `bind` code should only perform 'shallow' updates
+        of the element's state: modifying its content should be done at the
+        `ready` stage. This separation makes it possible to implement effective
+        caching: `bind` will always be called before rendering, while `ready`
+        won't be when rendering an element from cached content.
 
-        This method gives the element a chance to initialize itself before its
-        HTML code is written. This can be useful to delay filling certain parts
-        of an element until the very last moment. Data driven controls are a
-        very common use case for this mechanism (ie. don't create a table's
-        rows until the table is about to be rendered, allowing the data source
-        to change in the mean time).
-
-        The method will first invoke the element's `_ready` method, and then
-        any function scheduled with `when_ready`.
+        The method will first invoke the element's `_binding` method, and then
+        any function scheduled with `when_binding`.
 
         It is safe to call this method more than once, but any invocation after
         the first will produce no effect.
         """
-        if not self.__is_ready:
-
-            # Binding
+        if not self.__is_bound:
             self._binding()
 
             if self.__binding_handlers:
                 for handler in self.__binding_handlers:
                     handler()
+
+    def when_binding(self, handler):
+        """Call the given function when the element reaches the `bind` stage.
+
+        See `bind` and `ready` for more details on late initialization.
+
+        :param handler: The function that will be invoked. It should
+            not receive any parameter.
+        :type handler: callable
+        """
+        if self.__binding_handlers is None:
+            self.__binding_handlers = [handler]
+        else:
+            self.__binding_handlers.append(handler)
+
+    def _binding(self):
+        """A method invoked when the element reaches the `bind` stage.
+        
+        This is a placeholder method, to implement late initialization for the
+        element. It's an alternative to `when_binding`, and can be more
+        convenient when defining initialization logic at the class level.
+        Implementors should always call the overriden method from their bases.
+
+        See `bind` and `ready` for more details on late initialization.
+        """
+
+    def ready(self):
+        """Readies the element before it is rendered.
+
+        This method gives the element a chance to initialize itself and its
+        content before its HTML code is written. This can be useful to delay
+        filling certain parts of an element until the very last moment. Data
+        driven controls are a very common use case for this mechanism (ie.
+        don't create a table's rows until the table is about to be rendered,
+        allowing the data source to change in the mean time).
+
+        This method serves a similar purpose to `bind`, which is always
+        executed before `ready`. While `bind` is expected to perform shallow,
+        relatively unexpensive updates of the element, `ready` is allowed to
+        modify its content and perform heavy weight initialization duty.
+
+        Note that the rendering cache takes advantage of this convention, by
+        skipping the `ready` stage when rendering an element from cached
+        content.
+        
+        The method will first invoke `bind`, then the element's `_ready`
+        method, and then any function scheduled with `when_ready`.
+
+        It is safe to call this method more than once, but any invocation after
+        the first will produce no effect. Likewise, the implicit call to `bind`
+        won't produce any effect if it had been executed already.
+        """
+        if not self.__is_ready:
             
-            # Ready
+            self.bind()
+                        
             self._ready()
             
             if self.__ready_handlers:
@@ -401,24 +475,14 @@ class Element(object):
                 self.add_class(self.member.__class__.__name__)
 
             self.__is_ready = True
-    
-    def when_binding(self, handler):
-        # TODO: get rid of this, find a better way to solve handler
-        # dependencies / priority (use cocktail events? would be nice for
-        # consistency, but must check the overhead)
-        if self.__binding_handlers is None:
-            self.__binding_handlers = [handler]
-        else:
-            self.__binding_handlers.append(handler)
-
-    def _binding(self):
-        pass
 
     def when_ready(self, handler):
-        """Delay a call to the given function until the element is about to be
-        rendered.
+        """Call the given function when the element reaches the `ready` stage.
+        
+        See `bind` and `ready` for more details on late initialization.
 
-        :param handler: The function that will be invoked.
+        :param handler: The function that will be invoked. It should
+            not receive any parameter.
         :type handler: callable
         """
         if self.__ready_handlers is None:
@@ -427,23 +491,22 @@ class Element(object):
             self.__ready_handlers.append(handler)
 
     def _ready(self):
-        """A method invoked just before the element is rendered.
+        """A method invoked when the element reaches the `ready` stage.
         
         This is a placeholder method, to implement late initialization for the
         element. It's an alternative to `when_ready`, and can be more
         convenient when defining initialization logic at the class level.
         Implementors should always call the overriden method from their bases.
 
-        See `ready` for more details on the initialization procedure.
+        See `bind` and `ready` for more details on late initialization.
         """
 
-    def _content_ready(self):
-        """A method invoked just after the element's content has been rendered.
+    # Cached content
+    #--------------------------------------------------------------------------
+    cached = False
 
-        Although any further modification to the element itself will be mostly
-        pointless, as it will have already been rendered, this method may still
-        prove useful in order to implement post-rendering behavior.
-        """
+    def get_cache_key(self):
+        raise KeyError("%s doesn't define a cache key" % self)
 
     # Attributes
     #--------------------------------------------------------------------------
@@ -516,11 +579,11 @@ class Element(object):
         separate (not nested) rendering invocations will generate duplicate
         identifiers.
         
-        Also, identifier generation is only enabled during rendering
-        operations. Calling this method outside a rendering method will raise
-        an `IdGenerationError` exception.
+        Identifier generation is only enabled during rendering operations.
+        Calling this method outside a rendering method will raise an
+        `IdGenerationError` exception.
 
-        :return: The element's final id attribute.
+        :return: The id attribute assigned to the element.
         :rtype: str
 
         :raise: Raises `IdGenerationError` if the method is called outside the
@@ -529,17 +592,7 @@ class Element(object):
         id = self["id"]
 
         if not id:
-            try:
-                incremental_id = _thread_data.generated_id
-            except AttributeError:
-                raise IdGenerationError()
-
-            _thread_data.generated_id += 1
-
-            id = self.generated_id_format % (
-                _thread_data.prefix,
-                incremental_id
-            )
+            id = generate_id()
             self["id"] = id
 
         return id
@@ -894,15 +947,7 @@ class Element(object):
         else:
             return self.__resources
 
-    @getter
-    def resource_uris(self):
-        """The set of URIs for all the `resources` linked to the element."""
-        if self.__resource_uris is None:
-            return empty_set
-        else:
-            return self.__resource_uris
-
-    def add_resource(self, resource, mime_type = None):
+    def add_resource(self, resource, mime_type = None, ie_condition = None):
         """Links a `resource <resources>` to the element.
 
         Resources are `indexed by their URI<resource_uris>`, allowing only one
@@ -917,34 +962,34 @@ class Element(object):
             Its main purpose is to manually identify the type of URIs where
             that can't be accomplished by looking at their file extension.
         :type mime_type: str
-        
-        :return: True if the resource is added to the element, False if its URI
-            was already linked to the element.
-        :rtype: bool
+
+        :param ie_condition: Indicates that the linked resource should be
+            wrapped in an Internet Explorer `conditional comment 
+            <http://msdn.microsoft.com/en-us/library/ms537512(VS.85).aspx>`
+            with the specified expression.
+        :type ie_condition: str
         """
         # Normalize the resource
         if isinstance(resource, basestring):
             uri = resource
-            resource = Resource.from_uri(uri, mime_type)
+            resource = Resource.from_uri(uri, mime_type, ie_condition)
         else:
+            if mime_type or ie_condition:
+                raise ValueError(
+                    "Element.add_resource() should receive a reference to a "
+                    "Resource object or values for creating a new Resource "
+                    "instance; mixing the two is not allowed."
+                )
+
             uri = resource.uri
             
             if uri is None:
                 raise ValueError("Can't add a resource without a defined URI.")
 
-            if mime_type:
-                resource.mime_type = mime_type
-
         if self.__resources is None:
-            self.__resources = [resource]
-            self.__resource_uris = set([uri])
-            return True
-        elif uri not in self.__resource_uris:
-            self.__resources.append(resource)
-            self.__resource_uris.add(resource.uri)
-            return True
-        else:
-            return False
+            self.__resources = OrderedSet()
+
+        self.__resources.append(resource)
 
     def remove_resource(self, resource):
         """Unlinks a `resource <resources>` from the element.
@@ -964,10 +1009,8 @@ class Element(object):
                     "the element doesn't have a resource with that URI")
             else:
                 self.__resources.remove(resource)
-                self.__resource_uris.remove(removed_uri)
         else:
             self.__resources.remove(resource)
-            self.__resource_uris.remove(resource.uri)
 
     # Meta attributes
     #--------------------------------------------------------------------------
@@ -1015,24 +1058,20 @@ class Element(object):
             else:
                 self.__meta[key] = value
 
-    # Head elements
+    # Document ready callback functions
     #--------------------------------------------------------------------------
+    def when_document_ready(self, callback):
+        if self.__document_ready_callbacks is None:
+            self.__document_ready_callbacks = [callback]
+        else:
+            self.__document_ready_callbacks.append(callback)
 
     @getter
-    def head_elements(self):
-        """A list of HTML elements that will be added to the <head> tag when
-        the element takes part in a `full page rendering <render_page>`.
-
-        For scripts and stylesheets, using the `resources` collection and its
-        associated methods (`add_resource`) is recommended. In contrast with
-        those, this feature doesn't deal with duplicate linked elements.
-
-        :type: `Element` list
-        """
-        if self.__head_elements is None:
+    def document_ready_callbacks(self):
+        if self.__document_ready_callbacks is None:
             return empty_list
         else:
-            return self.__head_elements
+            return self.__document_ready_callbacks
 
     def add_head_element(self, element):
         """Specifies that the given element should be rendered within the
@@ -1042,33 +1081,32 @@ class Element(object):
         :param element: The element to add to the page's head.
         :type element: `Element`
         """
-        if self.__head_elements is None:
-            self.__head_elements = [element]
-        else:
-            self.__head_elements.append(element)
-
-    @getter
-    def body_end_elements(self):
-        """A list of HTML elements that will be added before the closing of the
-        <body> tag when the element takes part in a `full page rendering
-        <render_page>`.
-
-        :type: `Element` list
-        """
-        if self.__body_end_elements is None:
-            return empty_list
-        else:
-            return self.__body_end_elements
+        warn(
+            "Element.add_head_element() is deprecated, use the more general "
+            "Element.when_document_ready method instead, which can be used to "
+            "achieve the same effect",
+            DeprecationWarning,
+            stacklevel = 2
+        )
+        @self.when_document_ready
+        def add_head_element(document):
+            document.head.append(element)
 
     def add_body_end_element(self, element):
         """Specifies that the given element should be rendered just before the
         closure of the <body> tag when the element takes part in a 
         `full page rendering <render_page>`
         """
-        if self.__body_end_elements is None:
-            self.__body_end_elements = [element]
-        else:
-            self.__body_end_elements.append(element)
+        warn(
+            "Element.add_body_end_element() is deprecated, use the more "
+            "general Element.when_document_ready method instead, which can "
+            "be used to achieve the same effect",
+            DeprecationWarning,
+            stacklevel = 2
+        )
+        @self.when_document_ready
+        def add_body_end_element(document):
+            document.body.append(element)
 
     # Client side element parameters
     #--------------------------------------------------------------------------
@@ -1300,10 +1338,9 @@ class Content(Element):
             and unicode(self.value).strip()
         )
 
-    def _render(self, renderer, out):
-        self.ready()
+    def _render(self, rendering):
         if self.value is not None:
-            out(unicode(self.value))
+            rendering.write(unicode(self.value))
 
 
 class PlaceHolder(Content):
@@ -1324,13 +1361,4 @@ class PlaceHolder(Content):
 class ElementTreeError(Exception):
     """An exception raised when violating the integrity of an `Element` tree.
     """
-
-
-class IdGenerationError(Exception):
-    """An exception raised when trying to
-    `generate a unique identifier <Element.require_id>` outside of a rendering
-    operation.
-    """
-    def __str__(self):
-        return "Element identifiers can only be generated while rendering"
 
