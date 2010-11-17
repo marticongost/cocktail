@@ -191,7 +191,8 @@ class Form(object):
             get_parameter(
                 self.schema,
                 target = data,
-                undefined = "skip"
+                undefined = "skip",
+                errors = "ignore"
             )
         else:
             self.apply_instance_data(data)
