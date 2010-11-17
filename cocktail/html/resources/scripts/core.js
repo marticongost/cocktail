@@ -641,6 +641,13 @@ cocktail.declare = function (dottedName) {
     return obj;
 }
 
+cocktail.setVariable = function (dottedName, value) {
+    var parts = dottedName.split(".");
+    var name = parts.pop();
+    var container = parts.length ? cocktail.declare(parts.join(".")) : window;
+    container[name] = value;
+}
+
 // Implement support for the 'autofocus' HTML 5 attribute
 jQuery(function () {
     var supportsAutofocus = "autofocus" in document.createElement('input');
