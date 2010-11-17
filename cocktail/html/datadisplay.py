@@ -386,6 +386,7 @@ class CollectionDisplay(DataDisplay):
     searchable = True
     selection_mode = NO_SELECTION
     selection = None
+    grouping = None
     
     def __init__(self):
         DataDisplay.__init__(self)
