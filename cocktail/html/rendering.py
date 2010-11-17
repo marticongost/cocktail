@@ -93,14 +93,17 @@ class Rendering(object):
 
                 if element.cached and element.rendered:
                     cache_key = (self.get_cache_key(), element.get_cache_key())
-                    cache_entry = self.cache.get(cache_key)
-                    cached = True
+                    cached_rendering = self.cache.get_value(
+                        cache_key,
+                        default = None,
+                        invalidation = element.get_cache_invalidation
+                    )
 
                     # Cached rendering
-                    if cache_entry is not None:
-                        self.update(cache_entry.value)
+                    if cached_rendering is not None:
+                        self.update(cached_rendering)
                         return
-            
+
             element.ready()
 
             # Skip invisible elements
@@ -124,7 +127,11 @@ class Rendering(object):
                         cache = self.cache,
                         rendered_client_model = self.rendered_client_model
                     )
-                    self.cache.set_value(cache_key, target_rendering)
+                    self.cache.set_value(
+                        cache_key,
+                        target_rendering,
+                        element.cache_expiration
+                    )
                 else:
                     target_rendering = self
 

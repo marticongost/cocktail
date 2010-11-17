@@ -189,4 +189,59 @@ class CacheTestCase(TestCase):
 
         assert "foo" in e.render_page()
 
+    def test_elements_can_define_cache_expiration(self):
+
+        from time import sleep
+        from cocktail.html.element import Element
+        
+        e = Element()
+        e.cached = True
+        e.get_cache_key = lambda: "test"
+        e.cache_expiration = 1
+        e.render()
+
+        e.append("foo")
+        assert "foo" not in e.render()
+
+        sleep(1)
+        assert "foo" in e.render()
+
+    def test_elements_can_invalidate_cached_content(self):
+
+        from time import time, sleep
+        from datetime import datetime
+        from cocktail.html.element import Element
+
+        e = Element()
+        e.cached = True
+        e.get_cache_key = lambda: "test_with_timestamps"
+        
+        # Older timestamp: cached content should still be valid
+        t1 = time()
+        e.render()
+        e.append("foo")
+        e.get_cache_invalidation = lambda: t1
+        assert "foo" not in e.render()
+
+        # Newer timestamp: cached content should be invalidated 
+        t2 = time()
+        e.get_cache_invalidation = lambda: t2
+        assert "foo" in e.render()
+
+        e = Element()
+        e.cached = True
+        e.get_cache_key = lambda: "test_with_datetime"
+        
+        # Older datetime: cached content should still be valid
+        t1 = datetime.now()
+        e.render()
+        e.append("foo")
+        e.get_cache_invalidation = lambda: t1
+        assert "foo" not in e.render()
+
+        # Newer timestamp: cached content should be invalidated 
+        sleep(1)
+        t2 = datetime.now()
+        e.get_cache_invalidation = lambda: t2
+        assert "foo" in e.render()
 
