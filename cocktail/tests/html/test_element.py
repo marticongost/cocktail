@@ -629,7 +629,6 @@ class ElementResourcesTestCase(TestCase):
     def test_starts_empty(self):        
         from cocktail.html.element import Element
         self.assertEquals(Element().resources, [])
-        self.assertEquals(Element().resource_uris, set())
 
     def __test_create_resource_from_uri(self, uri, expected_type):
         from cocktail.html.resources import Resource        
@@ -658,12 +657,10 @@ class ElementResourcesTestCase(TestCase):
         e = Element()
         e.add_resource(uri)
         self.assertEquals(len(e.resources), 1)
-        self.assertEquals(len(e.resource_uris), 1)
 
         resource = e.resources[0]
         self.assertEquals(resource.uri, uri)
         self.assertTrue(isinstance(resource, expected_type))
-        self.assertTrue(e.resource_uris, set([uri]))
 
     def test_add_script_uri(self):
         from cocktail.html.resources import Script
@@ -683,12 +680,10 @@ class ElementResourcesTestCase(TestCase):
         r1 = Resource("foo.js")
         e.add_resource(r1)
         self.assertEquals(e.resources, [r1])
-        self.assertEquals(e.resource_uris, set(["foo.js"]))
 
         r2 = Resource("bar.js")
         e.add_resource(r2)
         self.assertEquals(e.resources, [r1, r2])
-        self.assertEquals(e.resource_uris, set(["foo.js", "bar.js"]))
 
     def test_add_resource_without_uri(self):
 
@@ -716,7 +711,6 @@ class ElementResourcesTestCase(TestCase):
         # Elements are correctly removed
         e.remove_resource("bar.js")
         self.assertEquals(e.resources, [r1, r3])
-        self.assertEquals(e.resource_uris, set([r1.uri, r3.uri]))
 
         # Removing an undefined resource raises an exception
         def remove_undefined():
@@ -727,11 +721,9 @@ class ElementResourcesTestCase(TestCase):
         # Removing the remaining resources works ok
         e.remove_resource("foo.js")
         self.assertEquals(e.resources, [r3])
-        self.assertEquals(e.resource_uris, set([r3.uri]))
 
         e.remove_resource("spam.js")
         self.assertEquals(e.resources, [])
-        self.assertEquals(e.resource_uris, set())
 
     def test_remove_resource(self):
         
@@ -752,7 +744,6 @@ class ElementResourcesTestCase(TestCase):
         # Elements are correctly removed
         e.remove_resource(r2)
         self.assertEquals(e.resources, [r1, r3])
-        self.assertEquals(e.resource_uris, set([r1.uri, r3.uri]))
 
         # Removing an undefined resource raises an exception
         def remove_undefined():
@@ -763,11 +754,9 @@ class ElementResourcesTestCase(TestCase):
         # Removing the remaining resources works ok
         e.remove_resource(r1)
         self.assertEquals(e.resources, [r3])
-        self.assertEquals(e.resource_uris, set([r3.uri]))
 
         e.remove_resource(r3)
         self.assertEquals(e.resources, [])
-        self.assertEquals(e.resource_uris, set())
 
     def test_resource_set(self):
         
@@ -778,32 +767,24 @@ class ElementResourcesTestCase(TestCase):
         r1 = Resource("foo.js")
 
         # Adding the same resource object twice only adds the resource once
-        added = e.add_resource(r1)
-        self.assertTrue(added)        
-        added = e.add_resource(r1)
-        self.assertFalse(added)
+        e.add_resource(r1)        
+        e.add_resource(r1)
         self.assertEquals(e.resources, [r1])
-        self.assertEquals(e.resource_uris, set([r1.uri]))
 
         # Adding a different resource object with the same resource URI adds a
         # single resource
-        added = e.add_resource(Resource("foo.js"))
-        self.assertFalse(added)
+        e.add_resource(Resource("foo.js"))
         self.assertEquals(e.resources, [r1])
-        self.assertEquals(e.resource_uris, set([r1.uri]))
 
-        # Again, a different resource object with the same URI, this time using
-        # a different resource type; should get the same result.
-        added = e.add_resource(Script("foo.js"))
-        self.assertFalse(added)
-        self.assertEquals(e.resources, [r1])
-        self.assertEquals(e.resource_uris, set([r1.uri]))
+        # A different resource object with the same URI counts as a different
+        # resource
+        r2 = Script("foo.js")
+        e.add_resource(r2)
+        self.assertEquals(e.resources, [r1, r2])
 
         # Adding the same URI using a string is also ignored
-        added = e.add_resource("foo.js")
-        self.assertFalse(added)
-        self.assertEquals(e.resources, [r1])
-        self.assertEquals(e.resource_uris, set([r1.uri]))
+        e.add_resource("foo.js")
+        self.assertEquals(e.resources, [r1, r2])
 
     def test_set_resource_uri(self):
         
