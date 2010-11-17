@@ -23,7 +23,7 @@ from cocktail.schema import Integer
     @self.when_document_ready
     def modify_document_size(document):
         size = self.size
-        document.body.add_class("text_size-%d" size)
+        document.body.add_class("text_size-%d" % size)
         document.body.set_style("font-size", "%d%%" % (100 + size * 10))
     ?>
 
