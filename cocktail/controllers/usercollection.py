@@ -435,10 +435,11 @@ class UserCollection(object):
 
     # Exportation
     #------------------------------------------------------------------------------
-    def export_file(self, dest, mime_type = None, **kwargs):
+    def export_file(self, dest, mime_type = None, languages = None, **kwargs):
         """Exports the user_collection to a file"""
         members = [member
             for member in self.schema.ordered_members()
             if member.name in self.members]
 
-        export_file(self.subset, dest, self.type, mime_type, members, **kwargs)
+        export_file(self.subset, dest, self.type, mime_type, members,
+            languages, **kwargs)
