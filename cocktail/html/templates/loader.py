@@ -19,9 +19,9 @@ class TemplateLoaderCache(Cache):
     checks_modification_time = True
     expiration = None
 
-    def _is_current(self, entry):
+    def _is_current(self, entry, invalidation = None):
         
-        if not Cache._is_current(self, entry):
+        if not Cache._is_current(self, entry, invalidation = invalidation):
             return False
 
         # Reload templates if their source file has been modified since
@@ -34,7 +34,7 @@ class TemplateLoaderCache(Cache):
  
         # Reload templates if their dependencies need to be reloaded
         return all(
-            self._is_current(self[dependency])
+            self._is_current(self[dependency], invalidation = invalidation)
             for dependency in self._loader.iter_dependencies(entry.key)
         )
 
