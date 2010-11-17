@@ -504,9 +504,13 @@ class Element(object):
     # Cached content
     #--------------------------------------------------------------------------
     cached = False
+    cache_expiration = None
 
     def get_cache_key(self):
         raise KeyError("%s doesn't define a cache key" % self)
+
+    def get_cache_invalidation(self):
+        return None
 
     # Attributes
     #--------------------------------------------------------------------------
