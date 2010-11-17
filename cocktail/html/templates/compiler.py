@@ -476,6 +476,15 @@ class TemplateCompiler(object):
 
                 source.write("%s.get_cache_key = lambda: %s" % (id, cache_key))
 
+            # Cache invalidation
+            cache_invalidation = \
+                attributes.pop(self.TEMPLATE_NS + ">cache_invalidation", None)
+
+            if cache_invalidation:
+                source.write("%s.get_cache_invalidation = lambda: %s" 
+                    % (id, cache_invalidation)
+                )
+
             # Attributes and properties
             if elem_tag is not default:
                 source.write("%s.tag = %r" % (id, elem_tag))
