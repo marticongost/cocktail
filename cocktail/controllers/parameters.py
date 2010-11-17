@@ -9,7 +9,6 @@ u"""
 import decimal
 import time
 import datetime
-from warnings import warn
 import cherrypy
 from cherrypy.lib import http
 from string import strip
