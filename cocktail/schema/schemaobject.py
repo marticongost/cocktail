@@ -566,20 +566,23 @@ class SchemaObject(object):
         self.translations[language] = translation
         return translation
 
-    def get_searchable_text(self, languages, visited_objects = None):
+    def get_searchable_text(self,
+        languages, 
+        visited_objects = None,
+        stack = None):
+        
+        if stack is None:
+            stack = []
 
         if visited_objects is None:
             visited_objects = set()
         elif self in visited_objects:
-            return
+            return []
         
         visited_objects.add(self)
-        return self._get_searchable_text(languages, visited_objects)
+        return self._get_searchable_text(languages, visited_objects, stack)
     
-    def _get_searchable_text(self, languages, visited_objects = None, stack = None):
-
-        if stack is None:
-            stack = []
+    def _get_searchable_text(self, languages, visited_objects, stack):
 
         # Yield all text fields, traversing selected relations
         for language in languages:
@@ -596,7 +599,7 @@ class SchemaObject(object):
                         elif isinstance(member, Reference):
                             stack.append(self)
                             try:
-                                for text in member_value._get_searchable_text(
+                                for text in member_value.get_searchable_text(
                                     languages,
                                     visited_objects,
                                     stack
@@ -610,7 +613,7 @@ class SchemaObject(object):
                             stack.append(self)
                             try:
                                 for child in member_value:
-                                    for text in child._get_searchable_text(
+                                    for text in child.get_searchable_text(
                                         languages,
                                         visited_objects,
                                         stack

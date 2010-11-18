@@ -10,15 +10,9 @@ from unittest import TestCase
 
 class HTML4RendererTestCase(TestCase):
 
-    def get_html(self, element, full_page = False):
-        
-        from cocktail.html.renderers import HTML4Renderer
-        renderer = HTML4Renderer()
-        
-        if full_page:
-            return element.render_page(renderer)
-        else:
-            return element.render(renderer)
+    def get_html(self, element):
+        from cocktail.html.renderers import html4_renderer
+        return element.render(renderer = html4_renderer)
 
     def get_test_tree(self):
         
@@ -41,9 +35,8 @@ class HTML4RendererTestCase(TestCase):
             ]
         )
 
-    def get_test_tree_html(self, full_page = False):
-
-        body = (
+    def get_test_tree_html(self):
+        return (
             '<div>'
                 '<p>'
                     '<img src="foo.png">'
@@ -52,11 +45,6 @@ class HTML4RendererTestCase(TestCase):
                 '<p>The best <em>foo</em> in town!</p>'
             '</div>'
         )
-
-        if full_page:
-            return '<html><head></head><body>%s</body></html>' % body
-        else:
-            return body
 
     def test_void_element(self):        
         from cocktail.html.element import Element
@@ -191,26 +179,13 @@ class HTML4RendererTestCase(TestCase):
         tree = self.get_test_tree()
         html = self.get_html(tree)
         self.assertEquals(self.get_html(tree), self.get_test_tree_html())
-    
-#    def test_render_page(self):        
-#        
-#        from cocktail.html.renderers import HTML4Renderer
-#        
-#        tree = self.get_test_tree()
-#        
-#        renderer = HTML4Renderer()
-#        renderer.doctype = None
-
-#        self.assertEquals(
-#            tree.render_page(renderer),
-#            self.get_test_tree_html(full_page = True))
 
 
 class XHTMLRendererTestCase(TestCase):
 
     def get_html(self, element):
-        from cocktail.html.renderers import XHTMLRenderer
-        return element.render(XHTMLRenderer())
+        from cocktail.html.renderers import xhtml_renderer
+        return element.render(renderer = xhtml_renderer)
 
     def test_void_element(self):        
         from cocktail.html.element import Element        

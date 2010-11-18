@@ -22,9 +22,9 @@ else:
         def load(self, key):
             return SSSStyleSheet(key)
 
-        def _is_current(self, entry):
+        def _is_current(self, entry, invalidation = None):
 
-            if not Cache._is_current(self, entry):
+            if not Cache._is_current(self, entry, invalidation = invalidation):
                 return False
 
             # Reprocess modified files
