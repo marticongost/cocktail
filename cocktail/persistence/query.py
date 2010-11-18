@@ -45,11 +45,11 @@ class Query(object):
                 + str(v)
             ),
         "cached":
-            (lambda t: styled(" " * 4 + t, "white", "green")),
+            (lambda t: " " * 4 + styled(t, "black", "bright_green")),
         "phase":
-            (lambda t: " " * 4 + styled(t, style = "underline")),
+            (lambda t: " " * 4 + styled(t, "white", "black", "underline")),
         "eval":
-            (lambda expr: " " * 4 + styled("Eval:", "magenta") + str(expr)),
+            (lambda expr: " " * 4 + styled("Eval: ", "magenta") + str(expr)),
         "initial_dataset":
             (lambda dataset:
                 " " * 4
@@ -59,7 +59,7 @@ class Query(object):
         "resolve":
             (lambda expr:
                 " " * 4
-                + styled("Resolve:", "bright_green")
+                + styled("Resolve: ", "bright_green")
                 + str(expr)
             ),
         "results":
@@ -352,6 +352,7 @@ class Query(object):
             # Apply filters
             if self.verbose:
                 start = time()
+                print
                 self._verbose_message("phase", "Applying filters")
 
             if self.__filters:
@@ -365,6 +366,7 @@ class Query(object):
 
             if self.verbose:
                 start = time()
+                print
                 self._verbose_message("phase", "Applying order")
             
             # Preserve ordering when selecting items from a custom ordered
@@ -394,6 +396,7 @@ class Query(object):
         if self.range and not (self.cached and self.__cached_results_sliced):
             if self.verbose:
                 start = time()
+                print
                 self._verbose_message("phase", "Applying range")
             
             dataset = self._apply_range(dataset)
