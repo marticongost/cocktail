@@ -107,10 +107,6 @@ class Cache(DictWrapper):
             if isinstance(invalidation, datetime):
                 invalidation = mktime(invalidation.timetuple())
 
-        from cocktail.styled import styled
-        print styled(invalidation, "magenta")
-        print styled(entry.creation, "pink")
-
         return (
             (expiration is None or time() - entry.creation < expiration)
             and (invalidation is None or entry.creation >= invalidation)
