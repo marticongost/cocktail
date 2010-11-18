@@ -1672,3 +1672,9 @@ translations.define(
     )
 )
 
+translations.define("cocktail.html.Table remove grouping",
+    ca = u"Treure agrupació",
+    es = u"Quitar agrupación",
+    en = u"Remove grouping"
+)
+
