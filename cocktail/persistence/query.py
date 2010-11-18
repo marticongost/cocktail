@@ -139,21 +139,9 @@ class Query(object):
     def _get_filters(self):
         return self.__filters
     
-    def _set_filters(self, value):
-        
+    def _set_filters(self, value):        
         self.discard_results()
-
-        if value is None:
-            self.__filters = []
-        else:
-            if isinstance(value, expressions.Expression):
-                self.__filters = [value]
-            elif isinstance(value, dict):
-                self.__filters = [
-                    self.type[k].equal(v) for k, v in value.iteritems()
-                ]
-            else:
-                self.__filters = list(value)
+        self.__filters = self._normalize_filters(value)
 
     filters = property(_get_filters, _set_filters, doc = """
         An optional set of constraints that all instances produced by the query
@@ -162,7 +150,19 @@ class Query(object):
         @type filters: L{Expression<cocktail.schema.expressions.Expression>}
             list
         """)
-    
+ 
+    def _normalize_filters(self, value):
+        if value is None:
+            return []
+        elif isinstance(value, expressions.Expression):
+            return [value]
+        elif isinstance(value, dict):
+            return [
+                self.type[k].equal(v) for k, v in value.iteritems()
+            ]
+        else:
+            return list(value)
+
     def add_filter(self, filter):
         
         self.discard_results()
@@ -171,6 +171,10 @@ class Query(object):
             self.filters = [filter]
         else:
             self.filters.append(filter)
+
+    def extend_filters(self, filters):
+        self.discard_results()
+        self.__fitlers += self._normalize_filters(filters)
 
     def _get_order(self):
         return self.__order or []
@@ -675,7 +679,9 @@ class Query(object):
         
         child_query = self.__class__(
             self.__type,
-            self.filters if filters is inherit else filters + self.filters,
+            self.filters
+                if filters is inherit 
+                else self._normalize_filters(filters) + self.filters,
             self.order if order is inherit else order,
             self.range if range is inherit else range,
             self.__base_collection,
