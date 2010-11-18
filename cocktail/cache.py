@@ -60,7 +60,7 @@ class Cache(DictWrapper):
                     return entry.value 
 
         if default is missing:
-            raise KeyError("Undefined cache key: %s" % key)
+            raise KeyError("Undefined cache key: %s" % repr(key))
     
         return default
 
