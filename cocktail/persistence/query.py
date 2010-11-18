@@ -18,30 +18,6 @@ from cocktail.schema.io import export_file
 from cocktail.schema.expressions import TranslationExpression
 from cocktail.persistence.index import Index
 
-query_style = lambda t: styled(t.ljust(80), "white", "blue")
-query_attrib_style = lambda k, v: (
-    " " * 4
-    + styled((k + ":").ljust(15), style = "bold")
-    + str(v)
-)
-query_cached_style = lambda t: styled(" " * 4 + t, "white", "green")
-query_phase_style = lambda t: " " * 4 + styled(t, style = "underline")
-query_eval_style = (
-    lambda expr: " " * 4 + styled("Eval:", "magenta") + str(expr)
-)
-query_initial_dataset_style = (
-    lambda dataset:
-        " " * 4 + "Initial dataset: "
-        + styled(len(dataset), style = "bold")
-)
-query_resolve_style = (
-    lambda expr: " " * 4 + styled("Resolve:", "bright_green") + str(expr)
-)
-query_results_style = (
-    lambda n: " " * 4 + styled(n, style = "bold")
-)
-query_timing_style = lambda s: " " * 4 + ("%.4fs" % s)
-
 inherit = object()
 
 ordered_collection_types = (list, tuple, ListWrapper)
@@ -56,6 +32,41 @@ class Query(object):
     """A query over a set of persistent objects."""
 
     verbose = False
+
+    styles = {
+        "header":
+            (lambda t: styled(t.ljust(80), "black", "slate_blue")),
+        "nested_header":
+            (lambda t: styled(t.ljust(76), "black", "violet")),
+        "attrib":
+            (lambda k, v:
+                " " * 4
+                + styled((k + ":").ljust(15), style = "bold")
+                + str(v)
+            ),
+        "cached":
+            (lambda t: styled(" " * 4 + t, "white", "green")),
+        "phase":
+            (lambda t: " " * 4 + styled(t, style = "underline")),
+        "eval":
+            (lambda expr: " " * 4 + styled("Eval:", "magenta") + str(expr)),
+        "initial_dataset":
+            (lambda dataset:
+                " " * 4
+                + "Initial dataset: "
+                + styled(len(dataset), style = "bold")
+            ),
+        "resolve":
+            (lambda expr:
+                " " * 4
+                + styled("Resolve:", "bright_green")
+                + str(expr)
+            ),
+        "results":
+            (lambda n: " " * 4 + styled(n, style = "bold")),
+        "timing":
+            (lambda s: " " * 4 + ("%.4fs" % s))
+    }
 
     def __init__(self,
         type,
@@ -81,6 +92,7 @@ class Query(object):
         self.range = range
         self.base_collection = base_collection
         self.cached = cached
+        self.nesting = 0
 
         if verbose is not None:
             self.verbose = verbose
@@ -288,22 +300,30 @@ class Query(object):
         @type: (int, int) tuple
         """)
 
+    def _verbose_message(self, style, *args, **kwargs):
+        print " " * 4 * self.nesting + self.styles[style](*args, **kwargs)
+
     # Execution
     #--------------------------------------------------------------------------    
     def execute(self, _sorted = True):
 
         if self.verbose:
-            print query_style("Query")
-            print query_attrib_style("type", self.type.full_name)
+            if self.nesting:
+                print
+                self._verbose_message("nested_header", "Nested query")
+            else:
+                self._verbose_message("header", "Query")
+
+            self._verbose_message("attrib", "type", self.type.full_name)
 
             if self.filters:
-                print query_attrib_style("filters", self.filters)
+                self._verbose_message("attrib", "filters", self.filters)
 
             if self.order:
-                print query_attrib_style("order", self.order)
+                self._verbose_message("attrib", "order", self.order)
 
             if self.range:
-                print query_attrib_style("range", self.range)
+                self._verbose_message("attrib", "range", self.range)
             
         # Try to make use of cached results
         if self.cached \
@@ -316,7 +336,7 @@ class Query(object):
             dataset = self.__cached_results
             
             if self.verbose:
-                print query_cached_style("cached")
+                self._verbose_message("cached", "cached")
 
         # New data set
         else:
@@ -332,20 +352,20 @@ class Query(object):
             # Apply filters
             if self.verbose:
                 start = time()
-                print query_phase_style("Applying filters")
+                self._verbose_message("phase", "Applying filters")
 
             if self.__filters:
                 dataset = self._apply_filters(dataset)
 
             if self.verbose:
-                print query_timing_style(time() - start)
+                self._verbose_message("timing", time() - start)
 
         # Apply order
         if _sorted and not (self.cached and self.__cached_results_sorted):
 
             if self.verbose:
                 start = time()
-                print query_phase_style("Applying order")
+                self._verbose_message("phase", "Applying order")
             
             # Preserve ordering when selecting items from a custom ordered
             # collection
@@ -368,18 +388,18 @@ class Query(object):
                 dataset = self._apply_order(dataset)
 
             if self.verbose:
-                print query_timing_style(time() - start)
+                self._verbose_message("timing", time() - start)
       
         # Apply range
         if self.range and not (self.cached and self.__cached_results_sliced):
             if self.verbose:
                 start = time()
-                print query_phase_style("Applying range")
+                self._verbose_message("phase", "Applying range")
             
             dataset = self._apply_range(dataset)
 
             if self.verbose:
-                print query_timing_style(time() - start)
+                self._verbose_message("timing", time() - start)
 
         # Store results for further requests
         if self.cached:
@@ -399,7 +419,7 @@ class Query(object):
         type_index = self.type.index
         
         if self.verbose:
-            print query_initial_dataset_style(dataset)
+            self._verbose_message("initial_dataset", dataset)
 
         for expr, custom_impl in self._get_execution_plan(self.__filters):
 
@@ -418,7 +438,7 @@ class Query(object):
             if custom_impl is None or len(dataset) == 1:
 
                 if self.verbose:
-                    print query_eval_style(expr)
+                    self._verbose_message("eval", expr)
 
                 dataset.intersection_update(
                     id
@@ -430,12 +450,12 @@ class Query(object):
             else:
                 
                 if self.verbose:
-                    print query_resolve_style(expr)
+                    self._verbose_message("resolve", expr)
 
                 dataset = custom_impl(dataset)
 
             if self.verbose:
-                print query_results_style(len(dataset))
+                self._verbose_message("results", len(dataset))
 
         return dataset
 
