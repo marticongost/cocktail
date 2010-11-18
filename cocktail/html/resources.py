@@ -10,66 +10,77 @@ from cocktail.modeling import getter
 
 class Resource(object):
     
-    mime_type = None
-    extension = None
-    _mime_type_register = {}
-    _type_register = {}
+    default_mime_type = None
+    mime_types = {}
+    extensions = {}
 
-    def __init__(self, uri):
+    def __init__(self, uri, mime_type = None, ie_condition = None):
         self.__uri = uri
-
-    # Map file extensions to resource types
-    class __metaclass__(type):
-
-        def __init__(cls, name, bases, members):
-            type.__init__(cls, name, bases, members)
-
-            mime_type = getattr(cls, "mime_type", None)
-            
-            if mime_type is not None:
-                cls._mime_type_register[mime_type] = cls
-
-            extension = getattr(cls, "extension", None)
-            
-            if extension:
-                if isinstance(extension, basestring):
-                    extension = (extension,)
-                for ext in extension:
-                    cls._type_register[ext] = cls
-            
+        self.__mime_type = mime_type or self.default_mime_type
+        self.__ie_condition = ie_condition
+           
     @classmethod
-    def from_uri(cls, uri, mime_type = None):
+    def from_uri(cls, uri, mime_type = None, ie_condition = None):
+
+        resource_type = None
 
         # By mime type
         if mime_type:
-            resource_type = cls._mime_type_register.get(mime_type)
-            if resource_type:
-                resource = resource_type(uri)
-                resource.mime_type = mime_type
-                return resource
+            resource_type = cls.mime_types.get(mime_type)
 
         # By extension
         else:
-            for extension, resource_type in cls._type_register.iteritems():
+            for extension, resource_type in cls.extensions.iteritems():
                 if uri.endswith(extension):
-                    return resource_type(uri)
-        
-        raise ValueError(
-            "Error handling resource: URI=%s, mime-type=%s" %
-            (uri, mime_type)
+                    break
+            else:
+                resource_type = None
+
+        if resource_type is None:
+            raise ValueError(
+                "Error handling resource: URI=%s, mime-type=%s"
+                % (uri, mime_type)
+            )
+
+        return resource_type(
+            uri, 
+            mime_type = mime_type,
+            ie_condition = ie_condition
         )
 
     @getter
     def uri(self):
         return self.__uri
 
+    @getter
+    def mime_type(self):
+        return self.__mime_type
+
+    @getter
+    def ie_condition(self):
+        return self.__ie_condition
+
+    def __hash__(self):
+        return hash(self.uri + self.mime_type + (self.ie_condition or ""))
+
+    def __eq__(self, other):
+        return self.__class__ is other.__class__ \
+           and self.uri == other.uri \
+           and self.mime_type == other.mime_type \
+           and self.ie_condition == other.ie_condition
+
 
 class Script(Resource):
-    extension = ".js"
-    mime_type = "text/javascript"
+    default_mime_type = "text/javascript"
 
 
 class StyleSheet(Resource):
-    extension = (".css", ".sss")
-    mime_type = "text/css"
+    default_mime_type = "text/css"
+
+
+Resource.extensions[".js"] = Script
+Resource.extensions[".css"] = StyleSheet
+Resource.extensions[".sss"] = StyleSheet
+Resource.mime_types["text/javascript"] = Script
+Resource.mime_types["text/css"] = StyleSheet
 

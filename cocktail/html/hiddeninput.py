@@ -13,6 +13,7 @@ from cocktail.html.databoundcontrol import DataBoundControl
 class HiddenInput(Element, DataBoundControl):
 
     tag = "input"
+    styled_class = False
 
     def __init__(self, *args, **kwargs):
         Element.__init__(self, *args, **kwargs)

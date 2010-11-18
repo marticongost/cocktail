@@ -557,7 +557,7 @@ class Schema(Member):
                 if anchor:
                     # If the anchor member is also relatively positioned,
                     # fix down its position (this works recursively)
-                    if anchor.before_member or anchor.after_member \
+                    if (anchor.before_member or anchor.after_member) \
                     and anchor in relative:
                         relative.remove(anchor)
                         pos = insert_relative(anchor, visited)

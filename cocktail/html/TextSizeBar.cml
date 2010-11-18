@@ -14,37 +14,17 @@ from cocktail.schema import Integer
     <?py-class
     size = None
     param_name = "text_size"
-
-    _text_size_target = None
-
-    def _get_text_size_target(self):
-        return self._text_size_target
-
-    def _set_text_size_target(self, target):
-        
-        @target.when_ready
-        def apply_size_to_target():
-
-            # The target may have changed
-            if self._text_size_target is target:
-                self.apply_size(target)
-
-        self._text_size_target = target
-
-    text_size_target = property(
-        _get_text_size_target,
-        _set_text_size_target
-    )
-
-    def apply_size(self, element):
-        self.ready()
-        element.add_class("text_size-%d" % self.size)
-        element.set_style("font-size", "%d%%" % (100 + self.size * 10))
     ?>
 
     <?py
     self.add_resource("/cocktail/scripts/jquery.cookie.js")
     self.add_resource("/cocktail/scripts/TextSizeBar.js")
+
+    @self.when_document_ready
+    def modify_document_size(document):
+        size = self.size
+        document.body.add_class("text_size-%d" % size)
+        document.body.set_style("font-size", "%d%%" % (100 + size * 10))
     ?>
 
     <py:ready>
@@ -68,9 +48,6 @@ from cocktail.schema import Integer
             "textSizeCookie", 
             cookie_source.get_cookie_name(self.param_name)
         )
-        
-        if self._text_size_target:
-            self.set_client_param("textSizeTarget", self._text_size_target.require_id())
         ?>
     </py:ready>
 

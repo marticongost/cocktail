@@ -33,52 +33,10 @@ class Renderer(object):
     single_tags = "img", "link", "meta", "br", "hr", "input"
     flag_attributes = "selected", "checked", "autofocus"
 
-    def __init__(self):
-        self.__before_rendering = []
-        self.__after_rendering = []
-
-    def make_page(self, element):
-        
-        from cocktail.html.page import Page
-
-        page = Page()
-        page.doctype = self.doctype
-        page.body.append(element)
-
-        if element.page_content_type:
-            page.content_type = element.page_content_type
-
-        if element.page_charset:
-            page.charset = element.page_charset
-
-        return page
-
-    def before_element_rendered(self, handler):
-        self.__before_rendering.append(handler)
-
-    def after_element_rendered(self, handler):
-        self.__after_rendering.append(handler)
-
-    def write_element(self, element, out):
-
-        for handler in self.__before_rendering:
-            handler(element, self)
-
-        if element.client_model:
-            out("<script type='text/javascript'>")
-            out("cocktail._clientModel('%s').html = '" % element.client_model)
-            wrapped_out = out
-            def out(snippet):
-                wrapped_out(
-                    snippet
-                    .replace("'", "\\'")
-                    .replace("\n", "\\n")
-                    .replace("&", "\\x26")
-                    .replace("<", "\\x3C")
-                )
+    def write_element(self, element, rendering):
 
         tag = element.tag
-        render_children = True
+        out = rendering.write
 
         if tag:
             # Tag opening
@@ -106,27 +64,17 @@ class Renderer(object):
                         "Children not allowed on <%s> tags" % tag)
 
                 out(self.single_tag_closure)
-                render_children = False
+                return
 
             # Beginning of tag content
             else:
                 out(u">")
+        
+        for child in element.children:
+            rendering.render_element(child)
 
-        if render_children:
-
-            for child in element.children:
-                child._render(self, out)
-
-            element._content_ready()
-
-            if tag:
-                out(u"</" + tag + u">")
-
-        if element.client_model:
-            wrapped_out("';</script>")
-
-        for handler in self.__after_rendering:
-            handler(element, self)
+        if tag:
+            out(u"</" + tag + u">")
 
 
 class HTMLRenderer(Renderer):
@@ -158,8 +106,12 @@ class XHTMLRenderer(Renderer):
         out(key + u'="' + key + u'"')
 
 
-DEFAULT_RENDERER_TYPE = HTML4Renderer
+html4_renderer = HTML4Renderer()
+html5_renderer = HTML5Renderer()
+xhtml_renderer = XHTMLRenderer()
+
+default_renderer = html4_renderer
 
 class RenderingError(Exception):
-    pass
+    """An error raised when trying to render an incorrect element."""
 

@@ -6,7 +6,8 @@ u"""
 @organization:	Whads/Accent SL
 @since:			February 2008
 """
-from time import time
+from time import time, mktime
+from datetime import datetime
 from cocktail.modeling import DictWrapper, getter
 
 missing = object()
@@ -36,20 +37,36 @@ class Cache(DictWrapper):
                 if entry.creation < oldest_creation_time:
                     del self[key]
 
-    def request(self, key):
-        if self.enabled:
-            entry = self.__entries.get(key, missing)
+    def request(self, key, expiration = None, invalidation = None):
+        try:
+            return self.get_value(key, invalidation = invalidation)
+        except KeyError:
+            value = self.load(key)
+            if self.enabled:
+                self.__entries[key] = CacheEntry(key, value, expiration)
+            return value
 
-            if entry is missing \
-            or (self.updatable and not self._is_current(entry)):
-                value = self.load(key)
-                self.__entries[key] = CacheEntry(key, value)
-                return value
-            else:
-                return entry.value
-        else:
-            return self.load(key)
+    def get_value(self, key, default = missing, invalidation = None):
+        if self.enabled:
+            entry = self.__entries.get(key, None)
+
+            if entry is not None:
+        
+                if self.updatable \
+                and not self._is_current(entry, invalidation):
+                    if default is missing:
+                        raise ExpiredEntryError(entry)
+                else:
+                    return entry.value 
+
+        if default is missing:
+            raise KeyError("Undefined cache key: %s" % repr(key))
     
+        return default
+
+    def set_value(self, key, value, expiration = None):
+        self.__entries[key] = CacheEntry(key, value, expiration)
+
     def load(self, key):
         pass
 
@@ -77,9 +94,23 @@ class Cache(DictWrapper):
         for entry in entries:
             self._entry_removed(entry)
 
-    def _is_current(self, entry):
-        return self.expiration is None \
-            or time() - entry.creation < self.expiration
+    def _is_current(self, entry, invalidation = None):
+        
+        expiration = entry.expiration
+        
+        if expiration is None:
+            expiration = self.expiration
+        
+        if invalidation is not None:
+            if callable(invalidation):
+                invalidation = invalidation()
+            if isinstance(invalidation, datetime):
+                invalidation = mktime(invalidation.timetuple())
+
+        return (
+            (expiration is None or time() - entry.creation < expiration)
+            and (invalidation is None or entry.creation >= invalidation)
+        )
 
     def _entry_removed(self, entry):
         pass
@@ -87,8 +118,16 @@ class Cache(DictWrapper):
 
 class CacheEntry(object):
     
-    def __init__(self, key, value):
+    def __init__(self, key, value, expiration = None):
         self.key = key
         self.value = value
         self.creation = time()
+        self.expiration = expiration
+
+
+class ExpiredEntryError(KeyError):
+
+    def __init__(self, entry):
+        KeyError.__init__(self, "Cache key expired: %s" % entry.key)
+        self.entry = entry
 

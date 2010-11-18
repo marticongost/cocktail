@@ -9,7 +9,7 @@ u"""
 import decimal
 import time
 import datetime
-from warnings import warn
+import cgi
 import cherrypy
 from cherrypy.lib import http
 from string import strip
@@ -733,7 +733,7 @@ class FormSchemaReader(object):
 
         if value is not None:
 
-            if self.normalization and not isinstance(member, FileUpload):
+            if self.normalization and not isinstance(value, cgi.FieldStorage):
                 if isinstance(value, basestring):
                     value = self.normalization(value)
                 else:

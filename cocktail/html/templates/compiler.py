@@ -457,7 +457,34 @@ class TemplateCompiler(object):
                 def return_element():
                     source.write("return %s" % id)
                     source.unindent()
-                
+            
+            # Cache key
+            if identifier:
+                cache_key = "%s.%s.%s" % (
+                    self.pkg_name,
+                    self.class_name,
+                    identifier
+                )
+
+                cache_key_qualifier = \
+                    attributes.pop(self.TEMPLATE_NS + ">cache_key", None)
+
+                if cache_key_qualifier is None:
+                    cache_key = repr(cache_key)
+                else:
+                    cache_key = "(%r, %s)" % (cache_key, cache_key_qualifier)
+
+                source.write("%s.get_cache_key = lambda: %s" % (id, cache_key))
+
+            # Cache invalidation
+            cache_invalidation = \
+                attributes.pop(self.TEMPLATE_NS + ">cache_invalidation", None)
+
+            if cache_invalidation:
+                source.write("%s.get_cache_invalidation = lambda: %s" 
+                    % (id, cache_invalidation)
+                )
+
             # Attributes and properties
             if elem_tag is not default:
                 source.write("%s.tag = %r" % (id, elem_tag))
