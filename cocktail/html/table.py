@@ -91,7 +91,7 @@ class Table(Element, CollectionDisplay):
             self._grouping_member_translation = \
                 u"(" + translations(self.grouping.member) + u")"
             self._remove_grouping_translation = \
-                translations("woost.views.ContentTable remove grouping")
+                translations("cocktail.html.Table remove grouping")
 
         self._fill_head()
         self._fill_body()
