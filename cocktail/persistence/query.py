@@ -1156,15 +1156,18 @@ def _search_resolution(self, query):
     if member and member.full_text_indexed:
         
         def impl(dataset):
-            terms = expressions.normalize(self.operands[1])
+            searched_text = self.operands[1]
+            if isinstance(searched_text, expressions.Expression):
+                searched_text = searched_text.eval({})
+            terms = expressions.normalize(searched_text)
             languages = set([None])
             if member.translated:
-                languages.append(get_language())
+                languages.add(get_language())
 
             subset = set()
             
             for language in languages:
-                index = self.get_full_text_index(language)
+                index = member.get_full_text_index(language)
                 subset.update(index.search(terms).iterkeys())
 
             dataset.intersection_update(subset)
