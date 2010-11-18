@@ -8,7 +8,7 @@ u"""
 """
 import re
 import operator
-from cocktail.translations import translations
+from cocktail.translations import translations, get_language
 from cocktail.schema.accessors import get_accessor
 
 normalization_map = {}
@@ -334,13 +334,20 @@ class SearchExpression(NormalizableExpression):
 
 class GlobalSearchExpression(Expression):
 
-    def __init__(self, search, languages):
+    def __init__(self, search, languages = None):
         Expression.__init__(self)
         self.search_query = search
         self.search_words = set(normalize(search).split())
-        self.languages = list(languages)
-        if None not in self.languages:
-            self.languages.append(None)
+        
+        if languages is None:
+            languages = [get_language()]
+        else:
+            languages = list(languages)
+
+        if None not in languages:
+            languages.append(None)
+        
+        self.languages = languages
 
     def eval(self, context, accessor = None):        
         text = u" ".join(context.get_searchable_text(self.languages))
