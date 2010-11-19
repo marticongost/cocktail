@@ -773,7 +773,13 @@ def set_cookie_expiration(cookie, seconds=None):
         Setting it to None produces session cookies. 
     """
 
-    if seconds is not None:
+    if seconds is None:
+        for key in ("max-age", "expires"):
+            try:
+                del cookie[key]
+            except KeyError:
+                pass
+    else:
         cookie["max-age"] = seconds
 
         if seconds == 0:
