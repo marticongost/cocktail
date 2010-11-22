@@ -269,7 +269,7 @@ class SchemaClass(EventHub, Schema):
                 language = require_language(language)
                 target = instance.translations.get(language)
                 if target is None:
-                    target = instance._new_translation(language)
+                    target = instance.new_translation(language)
             else:
                 target = instance
 
@@ -559,7 +559,7 @@ class SchemaObject(object):
         setter = member.schema.__dict__[member.name].__set__
         setter(self, value, language)
 
-    def _new_translation(self, language):
+    def new_translation(self, language):
         translation = self.translation(
             translated_object = self,
             language = language)
