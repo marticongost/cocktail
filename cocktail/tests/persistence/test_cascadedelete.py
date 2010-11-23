@@ -92,6 +92,7 @@ class CascadeDeleteTestCase(TempStorageMixin, TestCase):
         a.insert()
         a.delete()
 
+        print TestObject.index
         assert not TestObject.index
 
     def test_not_should_cascade_delete_reference(self):

@@ -183,18 +183,18 @@ class PersistentObject(SchemaObject, Persistent):
         self._v_initializing = False
 
     @classmethod
-    def get_instance(cls, _id = None, **criteria):
+    def get_instance(cls, id = None, **criteria):
         """Obtains an instance of the class, using one of its unique indexes.
 
         @param _id: The primary identifier of the object to retrieve.
 
         @param criteria: A single keyword parameter, indicating the name of a
-            unique member and its value. It is mutually exclusive with L{_id}.
+            unique member and its value. It is mutually exclusive with L{id}.
         
         @return: The requested object, if found. Otherwise, None.
         @rtype: L{PersistentObject} or None
         """
-        if _id is not None:
+        if id is not None:
             
             if criteria:
                 raise ValueError("Can't call get_instance() using both "
@@ -209,7 +209,7 @@ class PersistentObject(SchemaObject, Persistent):
                     "argument on a type without a primary member"
                 )
                 
-            value = _id
+            value = id
         else:
             if len(criteria) > 1:
                 raise ValueError(
@@ -229,7 +229,7 @@ class PersistentObject(SchemaObject, Persistent):
                 "Can't call get_instance() on a non unique member (%s)"
                 % member
             )
-        
+
         match = None
         value = member.get_index_value(value)
 
@@ -237,7 +237,11 @@ class PersistentObject(SchemaObject, Persistent):
             match = member.index.get(value)
 
         elif member.indexed:
-            id = member.index.get(value)
+            if member.index.accepts_multiple_values:
+                for id in member.index.values(key = value):
+                    break
+            else:
+                id = member.index.get(value)
             if id is not None:
                 match = cls.index.get(id)
         else:
@@ -246,7 +250,7 @@ class PersistentObject(SchemaObject, Persistent):
                     "Can't call get_instance() if neither the requested class "
                     "or member have an index"
                 )
-            for instance in cls.index.itervalues():
+            for instance in cls.index.values():
                 if instance.get(member) == value:
                     match = instance
                     break
@@ -257,13 +261,13 @@ class PersistentObject(SchemaObject, Persistent):
         return match
     
     @classmethod
-    def require_instance(cls, _id = None, **criteria):
+    def require_instance(cls, id = None, **criteria):
         """Obtains an instance of the class or raises an exception.
 
-        @param _id: The primary identifier of the object to retrieve.
+        @param id: The primary identifier of the object to retrieve.
 
         @param criteria: A single keyword parameter, indicating the name of a
-            unique member and its value. It is mutually exclusive with L{_id}.
+            unique member and its value. It is mutually exclusive with L{id}.
         
         @return: The requested object, if found. Otherwise, None.
         @rtype: L{PersistentObject} or None
@@ -271,7 +275,7 @@ class PersistentObject(SchemaObject, Persistent):
         @raise L{InstanceNotFoundError}: Raised when the requested instance
             can't be found on the data store.
         """
-        instance = cls.get_instance(_id, **criteria)
+        instance = cls.get_instance(id, **criteria)
 
         if instance is None:
             raise InstanceNotFoundError()

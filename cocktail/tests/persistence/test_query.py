@@ -359,8 +359,8 @@ class MemberQueryTestCase(TempStorageMixin, TestCase):
         # Single point intersection
         assert intersect(1, 2, 2, 3)
         assert not intersect(3, 4, 2, 3)
-        assert not intersect(1, 2, 2, 3, excludemin = True)
-        assert intersect(3, 4, 2, 3, excludemax = False)
+        assert not intersect(1, 2, 2, 3, exclude_min = True)
+        assert intersect(3, 4, 2, 3, exclude_max = False)
 
         # Contained
         assert intersect(1, 4, 2, 3)
@@ -374,38 +374,38 @@ class MemberQueryTestCase(TempStorageMixin, TestCase):
 
         # Equal
         assert not intersect(1, 1, 1, 1)
-        assert not intersect(1, 1, 1, 1, excludemin = True)
-        assert intersect(1, 1, 1, 1, excludemax = False)
-        assert not intersect(1, 1, 1, 1, excludemin = True, excludemax = False)
+        assert not intersect(1, 1, 1, 1, exclude_min = True)
+        assert intersect(1, 1, 1, 1, exclude_max = False)
+        assert not intersect(1, 1, 1, 1, exclude_min = True, exclude_max = False)
 
         assert intersect(1, 2, 1, 2)
-        assert intersect(1, 2, 1, 2, excludemin = True)
-        assert intersect(1, 5, 1, 5, excludemin = True)
-        assert intersect(1, 2, 1, 2, excludemax = True)
-        assert intersect(1, 2, 1, 2, excludemin = True, excludemax = True)
+        assert intersect(1, 2, 1, 2, exclude_min = True)
+        assert intersect(1, 5, 1, 5, exclude_min = True)
+        assert intersect(1, 2, 1, 2, exclude_max = True)
+        assert intersect(1, 2, 1, 2, exclude_min = True, exclude_max = True)
 
         assert intersect(None, None, None, None)
-        assert intersect(None, None, None, None, excludemin = True)
-        assert intersect(None, None, None, None, excludemax = False)
+        assert intersect(None, None, None, None, exclude_min = True)
+        assert intersect(None, None, None, None, exclude_max = False)
         assert intersect(None, None, None, None,
-            excludemin = True,
-            excludemax = False
+            exclude_min = True,
+            exclude_max = False
         )
 
         assert intersect(None, 1, None, 1)
-        assert intersect(None, 1, None, 1, excludemin = True)
-        assert intersect(None, 1, None, 1, excludemax = False)
+        assert intersect(None, 1, None, 1, exclude_min = True)
+        assert intersect(None, 1, None, 1, exclude_max = False)
         assert intersect(None, 1, None, 1,
-            excludemin = True,
-            excludemax = False
+            exclude_min = True,
+            exclude_max = False
         )
 
         assert intersect(1, None, 1, None)
-        assert intersect(1, None, 1, None, excludemin = True)
-        assert intersect(1, None, 1, None, excludemax = False)
+        assert intersect(1, None, 1, None, exclude_min = True)
+        assert intersect(1, None, 1, None, exclude_max = False)
         assert intersect(1, None, 1, None,
-            excludemin = True,
-            excludemax = False
+            exclude_min = True,
+            exclude_max = False
         )
 
         # Partial overlap
