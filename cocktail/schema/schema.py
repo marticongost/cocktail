@@ -552,7 +552,10 @@ class Schema(Member):
                 anchor = member.before_member or member.after_member
 
                 if isinstance(anchor, basestring):
-                    anchor = self.get_member(anchor)
+                    if recursive:
+                        anchor = self.get_member(anchor)
+                    else:
+                        anchor = self.__members.get(anchor)
 
                 if anchor:
                     # If the anchor member is also relatively positioned,
