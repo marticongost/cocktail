@@ -16,7 +16,6 @@ from cocktail.translations import get_language
 from cocktail.schema import Member, expressions, SchemaObjectAccessor
 from cocktail.schema.io import export_file
 from cocktail.schema.expressions import TranslationExpression
-from cocktail.persistence.index import Index
 
 inherit = object()
 
@@ -129,7 +128,7 @@ class Query(object):
 
     def _get_base_collection(self):
         if self.__base_collection is None:
-            return self.type.index.itervalues()
+            return self.type.index.values()
         else:
             return self.__base_collection
     
@@ -305,9 +304,10 @@ class Query(object):
 
     # Execution
     #--------------------------------------------------------------------------    
-    def execute(self, _sorted = True):
+    def execute(self, _sorted = True, _sliced = True):
 
         if self.verbose:
+            
             if self.nesting:
                 print
                 self._verbose_message("nested_header", "Nested query")
@@ -393,7 +393,9 @@ class Query(object):
                 self._verbose_message("timing", time() - start)
       
         # Apply range
-        if self.range and not (self.cached and self.__cached_results_sliced):
+        if _sliced \
+        and self.range \
+        and not (self.cached and self.__cached_results_sliced):
             if self.verbose:
                 start = time()
                 print
@@ -410,7 +412,7 @@ class Query(object):
                 dataset = list(dataset)
             self.__cached_results = dataset
             self.__cached_results_sorted = _sorted
-            self.__cached_results_sliced = True
+            self.__cached_results_sliced = _sliced
 
         if self.verbose:
             print
@@ -539,28 +541,26 @@ class Query(object):
 
         if index is not None and (
             len(order) == 1
-            or (isinstance(expr, Member) and expr.unique and expr.required)
+            or not index.accepts_multiple_values
         ):
             if not isinstance(dataset, fast_membership_test_sequence_types):
                 dataset = set(dataset)
 
+            desc = isinstance(order[0], expressions.NegativeExpression)
+
             if isinstance(expr, Member) and expr.primary:
-                sequence = index.iterkeys()
+                sequence = index.keys(descending = desc)
+            elif getattr(expr, "translated", False):
+                sequence = (id
+                            for key, id 
+                            in index.items(descending = desc)
+                            if key[0] == language)
             else:
-                if getattr(expr, "translated", False):
-                    sequence = (id
-                                for key, id in index.iteritems()
-                                if key[0] == language)
-                else:
-                    sequence = index.itervalues()
+                sequence = index.values(descending = desc)
 
             ordered_dataset = (id
                        for id in sequence
                        if id in dataset)
-
-            if isinstance(order[0], expressions.NegativeExpression):
-                ordered_dataset = list(ordered_dataset)
-                ordered_dataset.reverse()
 
             return ordered_dataset
 
@@ -584,8 +584,7 @@ class Query(object):
                 language = None
 
             index = self._get_expression_index(expr)            
-            reversed = isinstance(criteria, expressions.NegativeExpression)
-            sign = -1 if reversed else 1
+            desc = isinstance(criteria, expressions.NegativeExpression)
             
             # Sort using an index
             if index is not None:
@@ -595,10 +594,10 @@ class Query(object):
                     dataset = set(dataset)
 
                 # Index with duplicates
-                if isinstance(index, Index):
+                if index.accepts_multiple_values:
                     pos = 0
                     prev_key = None
-                    for key, id in index.iteritems():
+                    for key, id in index.items(descending = desc):
                         # Skip entries in non-active languages
                         if not expr.translated or key[0] == language:
                             if id in dataset:
@@ -606,27 +605,27 @@ class Query(object):
                                     pos += 1
                                     prev_key = key
 
-                                add_sorting_key(id, pos * sign)
+                                add_sorting_key(id, pos)
 
                 # Index without duplicates
                 else:
                     if isinstance(expr, Member) and expr.primary:
-                        sequence = index.iterkeys()
+                        sequence = index.keys(descending = desc)
                     else:
                         if expr.translated:
                             sequence = (id
-                                for key, id in index.iteritems()
+                                for key, id in index.items(descending = desc)
                                 if key[0] == language)
                         else:
-                            sequence = index.itervalues()
+                            sequence = index.values(descending = desc)
 
-                    for i, id in enumerate(sequence):
+                    for pos, id in enumerate(sequence):
                         if id in dataset:
-                            add_sorting_key(id, i * sign)
+                            add_sorting_key(id, pos)
 
             # Brute force
             else:
-                if not isinstance(dataset, set):
+                if not isinstance(dataset, fast_membership_test_sequence_types):
                     dataset = set(dataset)
 
                 for id in dataset:
@@ -637,7 +636,7 @@ class Query(object):
                     if hasattr(value, "get_ordering_key"):
                         value = value.get_ordering_key()
 
-                    add_sorting_key(id, Comparator(value, reversed))
+                    add_sorting_key(id, Comparator(value, desc))
 
         return sorted(dataset, key = sorting_keys.__getitem__)
 
@@ -664,8 +663,8 @@ class Query(object):
         else:
             return len(self.execute(_sorted = False))
 
-    def __notzero__(self):
-        for id in self.execute(_sorted = False):
+    def __nonzero__(self):
+        for id in self.execute(_sorted = False, _sliced = False):
             return True
         return False
 
@@ -779,8 +778,7 @@ def _get_filter_info(filter):
         if index is None:
             index = filter.index
 
-    unique = not isinstance(index, Index)
-    return member, index, unique
+    return member, index
 
 def _get_index_value(member, value):
     value = member.get_index_value(value)
@@ -804,12 +802,12 @@ expressions.Constant.resolve_filter = _constant_resolution
 
 def _equal_resolution(self, query):
 
-    member, index, unique = _get_filter_info(self)     
+    member, index = _get_filter_info(self)     
 
     if index is None:
         return ((0, -1), None)
 
-    elif unique:
+    elif not index.accepts_multiple_values:
         order = (-2, -1)
 
         if member and member.primary:
@@ -828,8 +826,7 @@ def _equal_resolution(self, query):
         order = (-1, -1)
         def impl(dataset):
             value = _get_index_value(member, self.operands[1].value)
-            subset = index[value]
-            dataset.intersection_update(subset)
+            dataset.intersection_update(index.values(key = value))
             return dataset
     
     return (order, impl)
@@ -838,11 +835,11 @@ expressions.EqualExpression.resolve_filter = _equal_resolution
 
 def _not_equal_resolution(self, query):
 
-    member, index, unique = _get_filter_info(self)     
+    member, index = _get_filter_info(self)     
 
     if index is None:
         return ((0, 0), None)
-    elif unique:
+    elif not index.accepts_multiple_values:
         order = (-2, 0)
         
         if member and member.primary:
@@ -861,8 +858,7 @@ def _not_equal_resolution(self, query):
         order = (-1, -1)
         def impl(dataset):
             value = _get_index_value(member, self.operands[1].value)
-            subset = index[value]
-            dataset.difference_update(subset)
+            dataset.difference_update(index.values(key = value))
             return dataset
     
     return (order, impl)
@@ -871,7 +867,7 @@ expressions.NotEqualExpression.resolve_filter = _not_equal_resolution
 
 def _greater_resolution(self, query):
 
-    member, index, unique = _get_filter_info(self)
+    member, index = _get_filter_info(self)
 
     if index is None:
         return ((0, 0), None)
@@ -881,18 +877,18 @@ def _greater_resolution(self, query):
         def impl(dataset):
             value = _get_index_value(member, self.operands[1].value)
             method = index.keys if member and member.primary else index.values
-            subset = method(min = value, excludemin = exclude_end)
+            subset = method(min = value, exclude_min = exclude_end)
             dataset.intersection_update(subset)
             return dataset
 
-        return ((-2 if unique else -1, 0), impl)
+        return ((-1 if index.accepts_multiple_values else -2, 0), impl)
 
 expressions.GreaterExpression.resolve_filter = _greater_resolution
 expressions.GreaterEqualExpression.resolve_filter = _greater_resolution
 
 def _lower_resolution(self, query):
 
-    member, index, unique = _get_filter_info(self)
+    member, index = _get_filter_info(self)
 
     if index is None:
         return ((0, 0), None)
@@ -901,11 +897,11 @@ def _lower_resolution(self, query):
         def impl(dataset):
             value = _get_index_value(member, self.operands[1].value)
             method = index.keys if member and member.primary else index.values
-            subset = method(max = value, excludemax = exclude_end)
+            subset = method(max = value, exclude_max = exclude_end)
             dataset.intersection_update(subset)
             return dataset
 
-        return ((-2 if unique else -1, 0), impl)
+        return ((-1 if index.accepts_multiple_values else -2, 0), impl)
 
 expressions.LowerExpression.resolve_filter = _lower_resolution
 expressions.LowerEqualExpression.resolve_filter = _lower_resolution
@@ -967,7 +963,6 @@ expressions.SearchExpression.resolve_filter = \
 def _has_resolution(self, query):
 
     index = self.relation.index
-    unique = not isinstance(index, Index)
 
     if index is None:
         return ((1, 0), None)
@@ -981,16 +976,14 @@ def _has_resolution(self, query):
                 
                 subset = set()
 
-                if unique:
+                if not index.accepts_multiple_values:
                     for related_id in related_subset:
                         referer_id = index.get(related_id)
                         if referer_id is not None:
                             subset.add(referer_id)
                 else:
                     for related_id in related_subset:
-                        referers = index[related_id]
-                        if referers:
-                            subset.update(referers)
+                        subset.update(index.values(key = related_id))
 
                 dataset.intersection_update(subset)
                 return dataset
@@ -1048,21 +1041,22 @@ def _range_intersection_resolution(self, query):
                 else max_index.values
             )
 
-            subset = set(max_method(max = None, excludemax = False))
+            subset = set(max_method(max = None, exclude_max = False))
             subset.update(
-                max_method(min = min_value, excludemin = self.excludemin)
+                max_method(min = min_value, exclude_min = self.exclude_min)
             )
 
             if max_value is not None:
                 subset.intersection_update(
-                    min_method(max = max_value, excludemax = self.excludemax)
+                    min_method(max = max_value, exclude_max = self.exclude_max)
                 )
             
             dataset.intersection_update(subset)
             return dataset
 
         # One or both fields have non-unique indexes
-        if isinstance(min_index, Index) or isinstance(max_index, Index):
+        if min_index.accepts_multiple_values \
+        or max_index.accepts_multiple_values:
             order = (-1, 0)
         # Both fields have unique indexes
         else:
@@ -1174,7 +1168,7 @@ expressions.DescendsFromExpression.resolve_filter = _descends_from_resolution
 
 def _search_resolution(self, query):
 
-    member, index, unique = _get_filter_info(self)
+    member, index = _get_filter_info(self)
 
     if member and member.full_text_indexed:
         
