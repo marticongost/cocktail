@@ -24,6 +24,14 @@ def camel_to_underscore(name):
     s1 = _first_cap_re.sub(r'\1_\2', name)
     return _all_cap_re.sub(r'\1_\2', s1).lower()
 
+def overrides(source_method):
+    """A decorator that helps preserving metada when overriding methods."""
+    def decorator(override):
+        if not override.__doc__:
+            override.__doc__ = source_method.__doc__
+        return override
+    return decorator
+
 def wrap(function, wrapper):
     wrapper.__doc__ = function.__doc__
     wrapper.func_name = function.func_name
