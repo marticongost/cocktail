@@ -31,7 +31,7 @@ class TaskManager(DictWrapper):
             else:
                 task = self._items.get(id)
                 if task:
-                    return trask
+                    return task
 
             task = Task(id, func, callback)
             self._items[task.id] = task
