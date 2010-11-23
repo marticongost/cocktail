@@ -305,7 +305,7 @@ class Query(object):
 
     # Execution
     #--------------------------------------------------------------------------    
-    def execute(self, _sorted = True):
+    def execute(self, _sorted = True, _sliced = True):
 
         if self.verbose:
             if self.nesting:
@@ -393,7 +393,9 @@ class Query(object):
                 self._verbose_message("timing", time() - start)
       
         # Apply range
-        if self.range and not (self.cached and self.__cached_results_sliced):
+        if _sliced \
+        and self.range \
+        and not (self.cached and self.__cached_results_sliced):
             if self.verbose:
                 start = time()
                 print
@@ -410,7 +412,7 @@ class Query(object):
                 dataset = list(dataset)
             self.__cached_results = dataset
             self.__cached_results_sorted = _sorted
-            self.__cached_results_sliced = True
+            self.__cached_results_sliced = _sliced
 
         if self.verbose:
             print
@@ -664,8 +666,8 @@ class Query(object):
         else:
             return len(self.execute(_sorted = False))
 
-    def __notzero__(self):
-        for id in self.execute(_sorted = False):
+    def __nonzero__(self):
+        for id in self.execute(_sorted = False, _sliced = False):
             return True
         return False
 
