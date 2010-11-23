@@ -24,7 +24,11 @@ from cocktail.persistence.persistentobject import (
 )
 from cocktail.persistence.datastore import datastore
 from cocktail.persistence.incremental_id import incremental_id
-from cocktail.persistence.index import Index
+from cocktail.persistence.index import (
+    Index,
+    SingleValueIndex,
+    MultipleValuesIndex
+)
 from cocktail.persistence import indexing
 from cocktail.persistence import fulltextsearch
 from cocktail.persistence.query import Query

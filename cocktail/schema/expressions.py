@@ -132,18 +132,18 @@ class Expression(object):
     def between(self,
         i = None,
         j = None,
-        excludemin = False,
-        excludemax = True):
+        exclude_min = False,
+        exclude_max = True):
         
         min_operator = (
             GreaterExpression
-            if excludemin
+            if exclude_min
             else GreaterEqualExpression
         )
 
         max_operator = (
             LowerExpression
-            if excludemax
+            if exclude_max
             else LowerEqualExpression
         )
 
@@ -156,7 +156,7 @@ class Expression(object):
         else:
             expr = Constant(True)
 
-        if excludemin and i is None:
+        if exclude_min and i is None:
             expr = expr.and_(self.not_equal(None))
 
         return expr
@@ -497,24 +497,24 @@ class HasExpression(Expression):
 
 class RangeIntersectionExpression(Expression):
 
-    excludemin = False
-    excludemax = True
+    exclude_min = False
+    exclude_max = True
 
-    def __init__(self, a, b, c, d, excludemin = False, excludemax = True):
+    def __init__(self, a, b, c, d, exclude_min = False, exclude_max = True):
         Expression.__init__(self, a, b, c, d)
-        self.excludemin = excludemin
-        self.excludemax = excludemax
+        self.exclude_min = exclude_min
+        self.exclude_max = exclude_max
 
     def op(self, a, b, c, d):
         min_operator = (
             GreaterExpression
-            if self.excludemin
+            if self.exclude_min
             else GreaterEqualExpression
         )
 
         max_operator = (
             LowerExpression
-            if self.excludemax
+            if self.exclude_max
             else LowerEqualExpression
         )
         

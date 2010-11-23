@@ -13,7 +13,7 @@ from cocktail.modeling import getter
 from cocktail.events import when
 from cocktail import schema
 from cocktail.persistence.datastore import datastore
-from cocktail.persistence.index import Index
+from cocktail.persistence.index import SingleValueIndex, MultipleValuesIndex
 from cocktail.persistence.persistentobject import (
     PersistentObject, PersistentClass
 )
@@ -130,15 +130,15 @@ def _create_index(self):
 
     # Primary index
     if isinstance(self, PersistentClass):
-        index = self.primary_member.index_type()
+        return self.primary_member.create_index()
 
-    # Unique indexes use a "raw" ZODB binary tree
-    elif self.unique:
-        index = self.index_type()
+    # Single-value indexes
+    if self.unique and self.required:
+        index = SingleValueIndex()
 
     # Multi-value indexes are handled by the Index class
     else:
-        index = Index()
+        index = MultipleValuesIndex()
 
     datastore.root[self.index_key] = index
     return index
@@ -289,29 +289,19 @@ def add_index_entry(obj, member, value, language = None):
         k = (language, k)
     
     v = obj if member.primary else obj.id
-
-    if member.unique:
-        member.index[k] = v
-    else:
-        member.index.add(k, v)
+    member.index.add(k, v)
 
 def remove_index_entry(obj, member, value, language = None):
     
-    k = member.get_index_value(value)
+    key = member.get_index_value(value)
         
     if language:
-        k = (language, k)
+        key = (language, key)
 
-    if member.unique:
-        try:
-            del member.index[k]
-        except TypeError:
-            if value is not None:
-                raise        
-        except KeyError:
-            pass
+    if member.index.accepts_multiple_values:
+        member.index.remove(key, obj.id)
     else:
-        member.index.discard(k, obj.id)
+        member.index.remove(key)
 
 def _member_get_index_value(self, value):
     return value
