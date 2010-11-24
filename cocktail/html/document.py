@@ -3,7 +3,7 @@ u"""Defines the `HTMLDocument` class.
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
-from json import dumps
+from simplejson import dumps
 from cocktail.translations import translations, get_language
 from cocktail.html.element import Element, Content
 from cocktail.html.ieconditionalcomment import IEConditionalComment
