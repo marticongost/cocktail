@@ -83,7 +83,7 @@ class Controller(RequestHandler):
     # Rendering
     #------------------------------------------------------------------------------   
     rendering_format_param = "format"
-    allowed_rendering_formats = frozenset(["html", "xhtml", "json"])
+    allowed_rendering_formats = frozenset(["html", "html5", "xhtml", "json"])
 
     def _get_rendering_engine(self, engine_name):
         warn(
@@ -157,6 +157,9 @@ class Controller(RequestHandler):
                             template = view_class)
         else:
             return ""
+
+    def render_html5(self):
+        return self._render_template()
 
     def render_html(self):
         return self._render_template()
