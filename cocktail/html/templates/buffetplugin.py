@@ -60,6 +60,8 @@ class CocktailBuffetPlugin(object):
 
         if format == "html":
             renderer = renderers.html4_renderer
+        elif format == "html5":
+            renderer = renderers.html5_renderer
         elif format == "xhtml":
             renderer = renderers.xhtml_renderer
         elif format:
