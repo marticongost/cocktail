@@ -67,9 +67,9 @@ class CocktailBuffetPlugin(object):
                 % (template, format))
 
         if fragment:
-            return element.render()
+            return element.render(renderer = renderer)
         else:
-            return element.render_page()
+            return element.render_page(renderer = renderer)
 
     # This method is not required for most uses of templates.
     # It is specifically used for efficiently inserting widget
