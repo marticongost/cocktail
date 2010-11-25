@@ -60,6 +60,8 @@ class CocktailBuffetPlugin(object):
 
         if format == "html":
             renderer = renderers.html4_renderer
+        elif format == "html5":
+            renderer = renderers.html5_renderer
         elif format == "xhtml":
             renderer = renderers.xhtml_renderer
         elif format:
@@ -67,9 +69,9 @@ class CocktailBuffetPlugin(object):
                 % (template, format))
 
         if fragment:
-            return element.render()
+            return element.render(renderer = renderer)
         else:
-            return element.render_page()
+            return element.render_page(renderer = renderer)
 
     # This method is not required for most uses of templates.
     # It is specifically used for efficiently inserting widget
