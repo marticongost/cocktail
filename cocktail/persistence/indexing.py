@@ -151,7 +151,7 @@ def _rebuild_index(self):
     self.create_index()
 
     for obj in self.schema.select():
-        if obj.indexed:
+        if obj.indexed and obj._should_index_member(self):
             if self.translated:
                 for language in obj.translations:
                     value = obj.get(self, language)
