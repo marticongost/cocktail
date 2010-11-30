@@ -230,6 +230,9 @@ class Dispatcher(object):
                 else:
                     handler = child
         
+            if handler is None:
+                raise cherrypy.NotFound()
+
         except Exception, error:
             def handler(*args, **kwargs):
                 raise error
