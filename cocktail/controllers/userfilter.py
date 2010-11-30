@@ -265,12 +265,12 @@ class CollectionFilter(BinaryFilter):
 
         if self.member.bidirectional:
 
-            related_value = self.value.get(self.member.related_end) or set()
+            related_value = self.value.get(self.member.related_end)
 
             if isinstance(self.member.related_end, Collection):
-                collection = related_value
+                collection = related_value or set()
             else:
-                collection = set([related_value])
+                collection = set() if related_value is None else related_value
 
             if self.operator == "cn":
                 return InclusionExpression(Self, collection)
