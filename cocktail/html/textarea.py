@@ -7,21 +7,21 @@ u"""
 @since:			September 2008
 """
 from cocktail.html import Element, Content
-from cocktail.html.databoundcontrol import DataBoundControl
+from cocktail.html.databoundcontrol import data_bound
 
 
-class TextArea(Element, DataBoundControl):
+class TextArea(Element):
     tag = "textarea"
 
     def __init__(self, *args, **kwargs):
         kwargs.setdefault("rows", 4)
         kwargs.setdefault("cols", 20)
         Element.__init__(self, *args, **kwargs)
-        DataBoundControl.__init__(self)
+        data_bound(self)
         self.__content = Content()
         self.append(self.__content)
 
-    def _ready(self):        
+    def _ready(self):
         if self.member:
             value = self.__content.value
             if value is not None:

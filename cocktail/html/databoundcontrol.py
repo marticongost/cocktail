@@ -6,28 +6,45 @@ u"""
 @organization:	Whads/Accent SL
 @since:			November 2008
 """
+from warnings import warn
 
 class DataBoundControl(object):
 
     binding_delegate = None
 
     def __init__(self):
-        self.when_binding(self._bind_member)
+        warn(
+            "The DataBoundControl class has been deprecated in favor of the "
+            "data_bound() function",
+            DeprecationWarning,
+            stacklevel = 2
+        )
+
+        data_bound(self)
 
     def _bind_member(self, control = None):
+        bind_member(self, control)
 
-        if self.member and self.member.name:
 
-            if self.data_display:
-                name = self.data_display.get_member_name(
-                    self.member,
-                    self.language
-                )
-            else:
-                name = self.member.name
+def data_bound(element):
+    @element.when_binding
+    def binding():
+        bind_member(element)
+    
+def bind_member(element, control = None):
 
-                if self.language:
-                    name += "-" + self.language
+    if element.member and element.member.name:
 
-            (control or self.binding_delegate or self)["name"] = name
+        if element.data_display:
+            name = element.data_display.get_member_name(
+                element.member,
+                element.language
+            )
+        else:
+            name = element.member.name
+            if element.language:
+                name += "-" + element.language
+
+        control = control or getattr(element, "binding_delegate", element)
+        control["name"] = name
 

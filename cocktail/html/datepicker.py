@@ -14,14 +14,14 @@ from cocktail.translations.translation import translations
 from cocktail.html import templates
 from cocktail.html.element import Element
 from cocktail.html.textbox import TextBox
-from cocktail.html.databoundcontrol import DataBoundControl
+from cocktail.html.databoundcontrol import data_bound
 from cocktail.schema.schemadates import Date, DateTime, Time
 
 class DatePicker(TextBox):         
 
     def __init__(self, *args, **kwargs):
         TextBox.__init__(self, *args, **kwargs)
-        DataBoundControl.__init__(self)
+        data_bound(self)
         self.add_resource(
             "/cocktail/scripts/jquery-ui.js")
         self.add_resource(
