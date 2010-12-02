@@ -7,15 +7,15 @@ u"""
 @since:			September 2008
 """
 from cocktail.html import Element
-from cocktail.html.databoundcontrol import DataBoundControl
+from cocktail.html.databoundcontrol import data_bound
 
-class CheckBox(Element, DataBoundControl):
+class CheckBox(Element):
 
     tag = "input"
     
     def __init__(self, *args, **kwargs):
         Element.__init__(self, *args, **kwargs)
-        DataBoundControl.__init__(self)
+        data_bound(self)
         self["type"] = "checkbox"
 
     def _get_value(self):

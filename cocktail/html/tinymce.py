@@ -10,10 +10,10 @@ from warnings import warn
 from simplejson import dumps
 from cocktail.translations import get_language
 from cocktail.html import Element, templates
-from cocktail.html.databoundcontrol import DataBoundControl
+from cocktail.html.databoundcontrol import data_bound
 
 
-class TinyMCE(Element, DataBoundControl):
+class TinyMCE(Element):
     
     class __metaclass__(Element.__metaclass__):
         def __init__(cls, name, bases, members):
@@ -27,7 +27,7 @@ class TinyMCE(Element, DataBoundControl):
     def __init__(self, *args, **kwargs):
         self.tinymce_params = {}
         Element.__init__(self, *args, **kwargs)
-        DataBoundControl.__init__(self)
+        data_bound(self)
         self.add_resource(
             "/cocktail/scripts/TinyMCE.js")
         self.add_resource(
