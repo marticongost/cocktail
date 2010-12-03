@@ -183,10 +183,10 @@ class PersistentClassWebService(RequestHandler):
         """
         user_collection = UserCollection(self.type)
         self._init_user_collection(user_collection)
-        user_collection.read()
         return user_collection.subset
 
     def _init_user_collection(self, user_collection):
+        user_collection.available_languages = self.languages
         user_collection.allow_paging = False
         user_collection.allow_member_selection = False
         user_collection.selection_mode = 0
