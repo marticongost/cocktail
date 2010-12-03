@@ -7,17 +7,17 @@ u"""
 @since:			October 2008
 """
 from cocktail.html import Element
-from cocktail.html.databoundcontrol import DataBoundControl
+from cocktail.html.databoundcontrol import data_bound
 
 
-class HiddenInput(Element, DataBoundControl):
+class HiddenInput(Element):
 
     tag = "input"
     styled_class = False
 
     def __init__(self, *args, **kwargs):
         Element.__init__(self, *args, **kwargs)
-        DataBoundControl.__init__(self)
+        data_bound(self)
         self["type"] = "hidden"
 
     def _ready(self):
