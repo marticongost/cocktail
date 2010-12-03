@@ -7,16 +7,16 @@ u"""
 @since:			September 2008
 """
 from cocktail.html import Element
-from cocktail.html.databoundcontrol import DataBoundControl
+from cocktail.html.databoundcontrol import data_bound
 from cocktail.schema import String
 
-class TextBox(Element, DataBoundControl):
+class TextBox(Element):
 
     tag = "input"
 
     def __init__(self, *args, **kwargs):
         Element.__init__(self, *args, **kwargs)
-        DataBoundControl.__init__(self)
+        data_bound(self)
         self["type"] = "text"
 
     def _ready(self):

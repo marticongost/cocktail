@@ -58,15 +58,14 @@ class CocktailBuffetPlugin(object):
 
         renderer = None
 
-        if format == "html":
-            renderer = renderers.html4_renderer
-        elif format == "html5":
-            renderer = renderers.html5_renderer
-        elif format == "xhtml":
-            renderer = renderers.xhtml_renderer
-        elif format:
-            raise ValueError("Can't render '%s' using format '%s'"
-                % (template, format))
+        if format:
+            if format == "html":
+                format = "default"
+            try:
+                renderer = getattr(renderers, "%s_renderer" % format)
+            except AttributeError:
+                raise ValueError("Can't render '%s' using format '%s'"
+                    % (template, format))
 
         if fragment:
             return element.render(renderer = renderer)
