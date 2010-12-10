@@ -98,22 +98,23 @@ class DocumentMetadata(object):
             cache = None
         )
 
-    def collect(self, element):
+    def collect(self, element, rendering_client_model = False):
 
-        if element.page_doctype:
-            self.doctype = element.page_doctype
+        if not rendering_client_model:
+            if element.page_doctype:
+                self.doctype = element.page_doctype
 
-        if element.page_title:
-            self.page_title = element.page_title
+            if element.page_title:
+                self.page_title = element.page_title
 
-        if element.language:
-            self.language = element.language
+            if element.language:
+                self.language = element.language
 
-        if element.page_content_type:
-            self.content_type = element.page_content_type
+            if element.page_content_type:
+                self.content_type = element.page_content_type
 
-        if element.page_charset:
-            self.charset = element.page_charset
+            if element.page_charset:
+                self.charset = element.page_charset
 
         self.meta.update(element.meta)
         self.resources.extend(element.resources)
