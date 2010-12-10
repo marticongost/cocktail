@@ -48,53 +48,54 @@ cocktail.bind("form", function ($form) {
             }
         }
     });
+});
 
-    // Fix <button> tags in IE
-    if (jQuery.browser.msie) {
+// Fix <button> tags in IE
+if (jQuery.browser.msie) {
+    
+    cocktail.bind("form", function ($form) {
 
-        var form = this;
         var hidden;
+
+        this.setSubmitButtonForIE = function (name, value) {
+            clearHidden();
+            hidden = document.createElement("<input type='hidden' name='" + name + "'>");
+            hidden.value = value;
+            this.appendChild(hidden);
+            this.submit();
+        }
 
         function clearHidden() {
             if (hidden) {
-                form.removeChild(hidden);
+                $form.remove(hidden);
             }
         }
 
-        $form.click(function (e) {
+        $form.find("input[type=submit]").live("click", clearHidden);
+    });
 
-            var ele = (e.target || e.srcElement);
+    cocktail.bind("button[type=submit]", function ($button) {
+        if (this.parentNode) {
+            var replacement = document.createElement("<button type='button'>");
+            replacement.isButtonReplacement = true;
+            replacement.buttonName = this.name;
+            var attribute = this.attributes.getNamedItem("value");
+            replacement.buttonValue = attribute ? attribute.nodeValue : "";
+            replacement.id = this.id;
+            replacement.className = this.className;
+            replacement.innerHTML = this.innerHTML;
+            replacement.style.cssText = this.style.cssText;
+            // FIXME: this is woost specific code and doesn't belong here
+            replacement.minSelection = this.minSelection;
+            replacement.maxSelection = this.maxSelection;
 
-            if (ele.tagName == "BUTTON" && ele.isButtonReplacement && !ele.disabled) {
-                clearHidden();
-                hidden = document.createElement("<input type='hidden' name='" + ele.buttonName + "'>");
-                hidden.value = ele.buttonValue;             
-                jQuery(form).append(hidden);
-                jQuery(form).submit();                   
-            }
-            else if (ele.tagName.toLowerCase() == "input" && ele.type == "submit") {
-                clearHidden();
-            }
-
-        });
-
-        jQuery("button[type=submit]", this).each(function () {
-            if (this.parentNode) {
-                var replacement = document.createElement("<button type='button'>");
-                replacement.isButtonReplacement = true;
-                replacement.buttonName = this.name;
-                var attribute = this.attributes.getNamedItem("value");
-                replacement.buttonValue = attribute ? attribute.nodeValue : "";
-                replacement.id = this.id;
-                replacement.className = this.className;
-                replacement.innerHTML = this.innerHTML;
-                replacement.style.cssText = this.style.cssText;
-                // FIXME: this is woost specific code and doesn't belong here
-                replacement.minSelection = this.minSelection;
-                replacement.maxSelection = this.maxSelection;
-                jQuery(this).replaceWith(replacement);
-            }
-        });
-    }
-});
+            jQuery(replacement).click(function () {
+                jQuery(replacement).closest("form").each(function () {
+                    this.setSubmitButtonForIE(replacement.buttonName, replacement.buttonValue);
+                });
+            });
+            $button.replaceWith(replacement);
+        }
+    });
+}
 
