@@ -139,7 +139,10 @@ class Rendering(object):
                 element._render(target_rendering)
 
                 if target_rendering.collect_metadata:
-                    target_rendering.document_metadata.collect(element)
+                    target_rendering.document_metadata.collect(
+                        element,
+                        self.rendered_client_model is not None
+                    )
 
                 # After rendering to the cache, render to the main stream as well
                 if target_rendering is not self:
