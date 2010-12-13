@@ -440,12 +440,15 @@ cocktail._updateElement = function (params) {
     var target = params.element;
     var source = params.$container.find(params.fragment || "*").get(0);
     
-    // Assign CSS classes
-    target.className = source.className;
+    if (source) {
 
-    // Copy children
-    if (params.updateContent || params.updateContent === undefined) {
-        jQuery(target).html(jQuery(source).html());
+        // Assign CSS classes
+        target.className = source.className;
+
+        // Copy children
+        if (params.updateContent || params.updateContent === undefined) {
+            jQuery(target).html(jQuery(source).html());
+        }
     }
 
     // Copy client parameters and code
@@ -463,7 +466,7 @@ cocktail._updateElement = function (params) {
 
         if (clientAssets) {
             eval(clientAssets);
-            if (source.id) {
+            if (source && source.id) {
                 if (!target.id) {
                     target.id = source.id;
                 }
