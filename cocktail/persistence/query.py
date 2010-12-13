@@ -1185,7 +1185,9 @@ def _search_resolution(self, query):
             
             for language in languages:
                 index = member.get_full_text_index(language)
-                subset.update(index.search(terms).iterkeys())
+                results = index.search(terms)
+                if results:
+                    subset.update(results.iterkeys())
 
             dataset.intersection_update(subset)
             return dataset
@@ -1207,7 +1209,9 @@ def _global_search_resolution(self, query):
             
             for language in self.languages:
                 index = query.type.get_full_text_index(language)
-                subset.update(index.search(terms).iterkeys())
+                results = index.search(terms)
+                if results:
+                    subset.update(results.iterkeys())
             
             dataset.intersection_update(subset)
             return dataset
