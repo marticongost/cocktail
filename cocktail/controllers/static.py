@@ -18,25 +18,30 @@ def file_publisher(path, content_type = None, disposition = None, name = None):
     
     return handler
 
-def folder_publisher(path):
+class FolderPublisher(object):
     """Creates a CherryPy handler that serves files in the specified folder."""
+    
+    def __init__(self, path):
+        self.path = path
 
     @cherrypy.expose
-    def handler(self, *args):
+    def __call__(self, *args):
         
-        requested_path = path
+        requested_path = self.path
         
         for arg in args:
             requested_path = os.path.join(requested_path, arg)
 
         # Prevent serving files outside the specified root path
         if not os.path.normpath(requested_path) \
-        .startswith(os.path.normpath(path)):
+        .startswith(os.path.normpath(self.path)):
             raise cherrypy.HTTPError(403)
 
         return serve_file(requested_path)
 
-    return handler
+    default = __call__
+
+folder_publisher = FolderPublisher
 
 content_type_handlers = DictWrapper()
 
