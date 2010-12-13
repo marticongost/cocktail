@@ -369,14 +369,21 @@ cocktail.update = function (params) {
         params.url = location.href;
     }
 
-    jQuery.get(params.url, function (data) {
+    function processReceivedContent(data, textStatus, request) {
         params.data = data;
         cocktail._updateElement(params);
         if (params.callback) {
             params.callback.call(params.element, params);
         }
         cocktail.init(params.element);
-    });
+    }
+
+    if (params.method == "get" || !params.method) {
+        jQuery.get(params.url, processReceivedContent);
+    }
+    else if (params.method == "post") {
+        jQuery.post(params.url, params.postData, processReceivedContent);
+    }
 }
 
 cocktail.prepareBackgroundSubmit = function (params) {
