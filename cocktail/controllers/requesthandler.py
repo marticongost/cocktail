@@ -58,6 +58,11 @@ class RequestHandler(object):
             eventually, the user.
         @type handled: bool
         """)
+    
+    @cherrypy.expose
+    def default(self, *args, **kwargs):
+        # Compatibility with the standard CherryPy dispatcher
+        return self.__call__(*args, **kwargs)
 
 
 class handler(RequestHandler):
