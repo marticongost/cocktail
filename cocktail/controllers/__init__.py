@@ -7,6 +7,7 @@ Utilities for writing application controllers.
 @organization:	Whads/Accent SL
 @since:			July 2008
 """
+from cocktail.controllers.requestproperty import request_property
 from cocktail.controllers.requesthandler import RequestHandler
 from cocktail.controllers.static import (
     file_publisher, 
