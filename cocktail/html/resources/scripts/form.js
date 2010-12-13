@@ -62,7 +62,7 @@ if (jQuery.browser.msie) {
             hidden = document.createElement("<input type='hidden' name='" + name + "'>");
             hidden.value = value;
             this.appendChild(hidden);
-            this.submit();
+            $form.submit();
         }
 
         function clearHidden() {
@@ -91,7 +91,7 @@ if (jQuery.browser.msie) {
 
             jQuery(replacement).click(function () {
                 jQuery(replacement).closest("form").each(function () {
-                    this.setSubmitButtonForIE(replacement.buttonName, replacement.buttonValue);
+                    this.setSubmitButtonForIE(replacement.buttonName, replacement.buttonValue);                    
                 });
             });
             $button.replaceWith(replacement);
