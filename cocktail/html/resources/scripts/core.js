@@ -656,3 +656,13 @@ jQuery(function () {
     }
 });
 
+// Allow AJAX calls to redirect the browser
+jQuery(function () {
+    $("body").bind("ajaxComplete", function (e, request, settings) {
+        var redirect = request.getResponseHeader("Ajax-Redirect");
+        if (redirect) {
+           window.location = redirect;
+        };
+    });
+});
+
