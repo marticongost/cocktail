@@ -6,6 +6,7 @@ u"""
 @organization:	Whads/Accent SL
 @since:			December 2008
 """
+import cherrypy
 from cocktail.events import Event, EventHub
 
 
