@@ -72,11 +72,12 @@ def error_email(
     )
 
     if subject is None:
+        exc_type = sys.exc_info()[0]
         subject = "%s %s" % (
             host_name,
-            sys.exc_type.__name__
-                if isinstance(sys.exc_type, type)
-                else sys.exc_type
+            exc_type.__name__
+                if isinstance(exc_type, type)
+                else exc_type
         )
     elif callable(subject):
         subject = subject()
