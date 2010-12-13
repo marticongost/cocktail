@@ -371,6 +371,8 @@ cocktail.update = function (params) {
 
     function processReceivedContent(data, textStatus, request) {
         params.data = data;
+        params.textStatus = textStatus;
+        params.request = request;
         cocktail._updateElement(params);
         if (params.callback) {
             params.callback.call(params.element, params);
