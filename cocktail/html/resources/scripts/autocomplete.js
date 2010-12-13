@@ -173,8 +173,15 @@ cocktail.autocomplete = function (input, params /* optional */) {
                 resultsReady(query, results);
             }
             else {
-                throw new Exception("AJAX not implemented yet");
-                // TODO: ajax
+                if (typeof(uri) == "string") {
+                    var requestURI = uri;
+                }
+                else {
+                    var requestURI = requestURI(query);
+                }
+                jQuery.getJSON(requestURI, function (data) {
+                    resultsReady(query, data);
+                });
             }
         }
     }
