@@ -13,7 +13,9 @@ from cocktail.schema import Integer
 
     <?py-class
     size = None
-    param_name = "text_size"
+    min_text_size = None
+    max_text_size = None
+    param_name = "text_size"   
     ?>
 
     <?py
@@ -36,7 +38,8 @@ from cocktail.schema import Integer
                 Integer(
                     self.param_name,
                     default = 0,
-                    min = -9
+                    max = self.max_text_size,
+                    min = self.min_text_size
                 ),
                 source = cookie_source,
                 errors = "set_default",
@@ -44,6 +47,8 @@ from cocktail.schema import Integer
             )
 
         self.set_client_param("textSize", self.size)
+        self.set_client_param("minTextSize", self.min_text_size)
+        self.set_client_param("maxTextSize", self.max_text_size)
         self.set_client_param(
             "textSizeCookie", 
             cookie_source.get_cookie_name(self.param_name)
@@ -53,12 +58,17 @@ from cocktail.schema import Integer
 
     <form method="GET">
         <input type="hidden" name="@{self.param_name}" value="@{self.size - 1}"/>
-        <button py:id="decrease_size_button" type="submit">A<sup>-</sup></button>
+        <button py:id="decrease_size_button" 
+            type="submit"
+            disabled="@{self.min_text_size is not None and self.size &lt;= self.min_text_size}">A<sup>-</sup>
+        </button>
     </form>
 
     <form method="GET">
         <input type="hidden" name="@{self.param_name}" value="@{self.size + 1}"/>
-        <button py:id="increase_size_button" type="submit">A<sup>+</sup></button>
+        <button py:id="increase_size_button"
+            type="submit"
+            disabled="@{self.max_text_size is not None and self.size &gt;= self.max_text_size}">A<sup>+</sup></button>
     </form>
 
 </div>
