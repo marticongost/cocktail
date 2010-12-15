@@ -82,6 +82,7 @@ if (jQuery.browser.msie) {
             var attribute = this.attributes.getNamedItem("value");
             replacement.buttonValue = attribute ? attribute.nodeValue : "";
             replacement.id = this.id;
+            replacement.title = this.title;
             replacement.className = this.className;
             replacement.innerHTML = this.innerHTML;
             replacement.style.cssText = this.style.cssText;
