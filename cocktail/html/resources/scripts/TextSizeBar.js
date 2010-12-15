@@ -9,14 +9,40 @@
 
 cocktail.bind(".TextSizeBar", function ($textSizeBar) {
  
+    function setDisabled($control, disabled) {
+        if (disabled) {
+            $control.attr("disabled", true);
+        }
+        else {
+            $control.removeAttr("disabled");
+        }
+    }
+        
     this.setTextSize = function (newSize) {
-        newSize = Math.max(-9, newSize);
+        
+        if (!isNaN(this.minTextSize) && newSize < this.minTextSize) {
+            newSize = this.minTextSize;
+        }        
+        else if (!isNaN(this.maxTextSize) && newSize > this.maxTextSize) {
+            newSize = this.maxTextSize;
+        }
+
         jQuery(document.body).removeClass("text_size-" + this.textSize);
         this.textSize = newSize;
         jQuery.cookie(this.textSizeCookie, newSize, {path: "/"});
         jQuery(document.body)
             .css("font-size", (100 + newSize * 10) + "%")
             .addClass("text_size-" + newSize);
+        
+        setDisabled(
+            $textSizeBar.find(".decrease_size_button"),
+            !isNaN(this.minTextSize) && newSize <= this.minTextSize
+        )
+            
+        setDisabled(
+            $textSizeBar.find(".increase_size_button"),
+            !isNaN(this.maxTextSize) && newSize >= this.maxTextSize
+        )        
     }
 
     this.changeTextSize = function (change) {
