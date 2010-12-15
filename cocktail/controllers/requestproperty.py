@@ -15,7 +15,7 @@ class RequestProperty(object):
     lifecycle bound to HTTP requests."""
 
     def __init__(self, getter = None):
-        self.__call__ = getter or (lambda self: None)
+        self._getter = getter or (lambda self: None)
         self.__doc__ = getter and getter.__doc__
 
     def __get__(self, instance, type = None):
@@ -27,13 +27,16 @@ class RequestProperty(object):
             try:
                 return properties[key]
             except KeyError:
-                value = self.__call__(instance)
+                value = self._getter(instance)
                 properties[key] = value
                 return value
 
     def __set__(self, instance, value):
         properties = cherrypy.request._cocktail_request_properties
         properties[(self, instance)] = value
+
+    def __call__(self, instance):
+        return self._getter(instance)
 
     def __repr__(self):
         return "RequestProperty(%s)" % self.__call__
