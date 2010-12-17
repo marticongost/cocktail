@@ -182,7 +182,7 @@ class Constant(Expression):
         return type(self) is type(other) and self.value == other.value
         
     def __repr__(self):
-        return "Constant(%r)" % self.value
+        return "Constant(%s)" % repr(self.value)
 
     def eval(self, context = None, accessor = None):
         return self.value
