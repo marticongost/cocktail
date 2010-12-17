@@ -10,6 +10,7 @@ import buffet
 import cherrypy
 
 rendering_options = {}
+_engine_cache = []
 
 
 def get_rendering_engine(engine_name, options = None):
@@ -21,5 +22,11 @@ def get_rendering_engine(engine_name, options = None):
     elif options is None:
         options = rendering_options
 
-    return buffet.available_engines[engine_name](options = options)
+    for engine_request, engine in _engine_cache:
+        if engine_request[0] == engine_name and engine_request[1] == options:
+            return engine
+
+    engine = buffet.available_engines[engine_name](options = options.copy())
+    _engine_cache.append(((engine_name, options), engine))
+    return engine
 
