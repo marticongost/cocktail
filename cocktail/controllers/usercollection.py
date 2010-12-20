@@ -240,7 +240,8 @@ class UserCollection(object):
                             target = filter,
                             source = filter_source,
                             prefix = (self.params.prefix or "") + "filter_",
-                            suffix = (self.params.suffix or "") + str(i)
+                            suffix = (self.params.suffix or "") + str(i),
+                            errors = "ignore"
                         )
                         if not self.should_ignore_filter(filter):
                             user_filters.append(filter)
