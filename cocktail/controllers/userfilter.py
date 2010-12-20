@@ -195,6 +195,14 @@ class StringFilter(ComparisonFilter):
     operators = ComparisonFilter.operators + ("sr", "sw", "ew", "re")
     normalized_strings = True
 
+    @cached_getter
+    def schema(self):
+        schema = ComparisonFilter.schema(self)
+        # Remove validations
+        value = schema.get_member("value")
+        value.min = value.max = value.format = None
+        return schema
+
     @getter
     def expression(self):
         
