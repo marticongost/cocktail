@@ -313,6 +313,8 @@ class StartsWithExpression(NormalizableExpression):
     
     def op(self, a, b):
         a, b = self.normalize_operands(a, b)
+        if a is None or b is None:
+            return False
         return a.startswith(b)
 
 
@@ -320,6 +322,8 @@ class EndsWithExpression(NormalizableExpression):
 
     def op(self, a, b):
         a, b = self.normalize_operands(a, b)
+        if a is None or b is None:
+            return False
         return a.endswith(b)
 
 
