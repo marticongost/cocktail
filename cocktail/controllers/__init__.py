@@ -40,3 +40,15 @@ import cocktail.controllers.erroremail
 import cocktail.controllers.handlerprofiler
 import cocktail.controllers.switchhandler
 
+
+import cherrypy
+
+def apply_forwarded_url_scheme():
+
+    forwarded_scheme = cherrypy.request.headers.get('X-Forwarded-Scheme')
+
+    if forwarded_scheme:
+        scheme, rest = cherrypy.request.base.split("://")
+        cherrypy.request.base = '%s://%s' % (forwarded_scheme, rest)
+
+cherrypy.request.hooks.attach("on_start_resource", apply_forwarded_url_scheme)
