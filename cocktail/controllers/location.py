@@ -45,11 +45,12 @@ class Location(object):
     def get_current_host(cls):
 
         base = cherrypy.request.base
+        headers = cherrypy.request.headers
 
         location = cls()
         location.method = "GET"
         scheme, rest = base.split("://")
-        location.scheme = scheme
+        location.scheme = headers.get('X-Forwarded-Scheme') or scheme
         pos = rest.find(":")
         if pos == -1:
             location.host = rest
