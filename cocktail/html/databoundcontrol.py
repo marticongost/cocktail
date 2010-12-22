@@ -26,10 +26,10 @@ class DataBoundControl(object):
         bind_member(self, control)
 
 
-def data_bound(element):
+def data_bound(element, control = None):
     @element.when_binding
     def binding():
-        bind_member(element)
+        bind_member(element, control)
     
 def bind_member(element, control = None):
 
