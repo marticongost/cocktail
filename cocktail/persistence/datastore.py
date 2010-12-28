@@ -7,7 +7,7 @@ u"""
 @since:			July 2008
 """
 from types import FunctionType
-from threading import local, Lock
+from threading import local, RLock
 from ZODB import DB
 import transaction
 from cocktail.modeling import getter
@@ -17,18 +17,21 @@ from cocktail.events import Event
 class DataStore(object):
     """A thread safe wrapper over the application's object database. Normally
     used through its global L{datastore} instance.
-    
+
     The class expects an X{storage} setting, containing a
     L{storage<ZODB.BaseStorage.BaseStorage>} instance pointing to the physical
     location of the database (see the ZODB documentation for more details).
     """
+    automatic_migration = False
+
     def __init__(self, storage = None):
         self._thread_data = local()
-        self.__storage_lock = Lock()
+        self.__storage_lock = RLock()
         self.__db = None
         self.__storage = None
+        self.migrations = []
         self.storage = storage
-    
+
     storage_changed = Event("""
         An event triggered when changing which storage is used by the
         datastore.
@@ -43,11 +46,12 @@ class DataStore(object):
         """)
 
     def _get_storage(self):
-        if isinstance(self.__storage, FunctionType):            
+        if isinstance(self.__storage, FunctionType):
             self.__storage_lock.acquire()
             try:
                 if isinstance(self.__storage, FunctionType):
                     self.__storage = self.__storage()
+                    self.__possibly_migrate()
             finally:
                 self.__storage_lock.release()
         return self.__storage
@@ -57,6 +61,7 @@ class DataStore(object):
         try:
             self.__storage = storage
             self.__db = None
+            self.__possibly_migrate()
             self.storage_changed()
         finally:
             self.__storage_lock.release()
@@ -65,6 +70,16 @@ class DataStore(object):
         Gets or sets the underlying ZODB storage for the data store.
         @type: L{ZODB.Storage}
         """)
+
+    def __possibly_migrate(self):
+        if self.automatic_migration \
+        and self.__storage is not None \
+        and not isinstance(self.__storage, FunctionType):
+            self.migrate()
+
+    def migrate(self):
+        for migration in self.migrations:
+            migration.execute()
 
     @getter
     def db(self):
@@ -78,7 +93,7 @@ class DataStore(object):
         """Gives access to the root container of the database. The property is
         thread safe; accessing it on different threads will produce different
         containers, each bound to a separate database connection.
-        @type: mapping 
+        @type: mapping
         """
         root = getattr(self._thread_data, "root", None)
 
