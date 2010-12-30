@@ -113,3 +113,49 @@ def grouped(collection, key):
 
     return groupby(sorted(collection, key = key), key = key)
 
+_undefined = object()
+
+def find_max(collection, key = None, default = _undefined):
+
+    max_item = _undefined
+    max_key = _undefined
+
+    if isinstance(key, basestring):
+        attrib = key
+        key = lambda item: getattr(item, attrib, None)
+    
+    for item in collection:
+        item_key = item if key is None else key(item)
+        if max_item is _undefined or item_key > max_key:
+            max_item = item
+            max_key = item_key
+
+    if max_item is _undefined:
+        if default is _undefined:
+            raise ValueError("Can't call find_max() on an empty collection")
+        return default
+
+    return max_item
+
+def find_min(collection, key = None, default = _undefined):
+
+    min_item = _undefined
+    min_key = _undefined
+
+    if isinstance(key, basestring):
+        attrib = key
+        key = lambda item: getattr(item, attrib, None)
+    
+    for item in collection:
+        item_key = item if key is None else key(item)
+        if min_item is _undefined or item_key < min_key:
+            min_item = item
+            min_key = item_key
+
+    if min_item is _undefined:
+        if default is _undefined:
+            raise ValueError("Can't call find_min() on an empty collection")
+        return default
+
+    return min_item
+
