@@ -327,6 +327,13 @@ cocktail.showDialog = function (content) {
         .append($content);
 }
 
+cocktail.center = function (element) {
+    var windowWidth = window.innerWidth || document.documentElement.clientWidth;
+    var windowHeight = window.innerHeight || document.documentElement.clientHeight;
+    element.style.left = (windowWidth / 2 - element.offsetWidth / 2) + "px";
+    element.style.top = (windowHeight / 2 - element.offsetHeight / 2) + "px";
+}
+
 cocktail.closeDialog = function () {
     // We use a custom remove function because jQuery.remove()
     // clears event handlers
