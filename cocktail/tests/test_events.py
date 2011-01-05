@@ -402,7 +402,10 @@ class EventTestCase(TestCase):
             def handle_spammed(cls):
                 pass
  
-        self.assertEqual(list(Foo.spammed), [Foo.handle_spammed])
+        self.assertEqual(
+            list(Foo.spammed),
+            [Foo.spammed.wrap_callback(Foo.handle_spammed)]
+        )
         
         class Bar(Foo):
             
@@ -410,5 +413,8 @@ class EventTestCase(TestCase):
             def handle_spammed(cls):
                 pass
 
-        self.assertEqual(list(Bar.spammed), [Bar.handle_spammed])
+        self.assertEqual(
+            list(Bar.spammed),
+            [Bar.spammed.wrap_callback(Bar.handle_spammed)]
+        )
 
