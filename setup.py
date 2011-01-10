@@ -37,6 +37,7 @@ setup(
     install_requires = [
         "simplejson",
         "ZODB3>=3.10",
+        "zodbupdate",
         "zope.index>=3.6.1",
         "cherrypy==3.1.2",
         "buffet>=1.0",
