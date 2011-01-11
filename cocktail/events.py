@@ -2,6 +2,7 @@
 """
 An event mechanism for python.
 """
+from types import MethodType
 from weakref import ref, WeakKeyDictionary
 from cocktail.modeling import SynchronizedList
 from threading import Lock
@@ -161,6 +162,49 @@ class EventSlot(SynchronizedList):
             next_slot(_event_info = event_info)
 
         return event_info
+
+    def append(self, callback):
+        SynchronizedList.append(self, self.wrap_callback(callback))
+
+    def insert(self, position, callback):
+        SynchronizedList.insert(self, position, self.wrap_callback(callback))
+
+    def __setitem__(self, position, callback):
+        SynchronizedList.__setitem__(
+            self,
+            position,
+            self.wrap_callback(callback)
+        )
+
+    def extend(self, callback_sequence):
+        SynchronizedList.extend(
+            self,
+            (self.wrap_callback(callback) for callback in callback_sequence)
+        )
+
+    def wrap_callback(self, callback):
+        
+        # Transform methods bound to the target for the event slot into a
+        # callable that achieves the same effect without maintining a hard
+        # reference to the target object, which would keep the target object
+        # alive undefinitely 
+        if isinstance(callback, MethodType) \
+        and callback.im_self is self.target():
+            callback = BoundCallback(callback.im_func)
+
+        return callback
+
+
+class BoundCallback(object):
+
+    def __init__(self, func):
+        self._func = func
+
+    def __call__(self, event):
+        return self._func(event.source, event)
+
+    def __eq__(self, other):
+        return type(self) is type(other) and self._func is other._func
 
 
 class EventInfo(object):
