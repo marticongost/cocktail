@@ -256,7 +256,7 @@ cocktail.instantiate = function (modelId, params, initializer) {
     }
 
     // Behaviors
-    cocktail.init(instance);
+    cocktail.init();
 
     return instance;
 }
