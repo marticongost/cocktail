@@ -195,6 +195,7 @@ class TemplateCompiler(object):
         parent_id = self._get_current_element()
         with_element = None
         with_def = None
+        new_directive = False
 
         if len(name_parts) > 1:
             uri, tag = name_parts
@@ -262,7 +263,8 @@ class TemplateCompiler(object):
                     element_expr = with_element
 
             elif tag == "new":
-                
+                new_directive = True
+
                 element_expr = attributes.pop(
                     self.TEMPLATE_NS + ">element",
                     None)
@@ -448,6 +450,7 @@ class TemplateCompiler(object):
                         )
                 else:
                     element_factory = factory_expr \
+                                      or (new_directive and element_expr) \
                                       or "%s()" % elem_class_name
 
                 # Instantiation
