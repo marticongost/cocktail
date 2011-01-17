@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:py="http://www.whads.com/ns/cocktail/templates">
+
+    <?py-class
+    flash_width = 300
+    flash_height = 200
+    flash_file = None
+    flash_version = "9.0.0"
+    flash_express_install = None
+    flash_vars = {}
+    flash_params = {}
+    flash_attributes = {}
+    ?>
+
+    <?py
+    self.add_resource("/cocktail/scripts/swfobject.js")
+    self.flash_vars = self.flash_vars.copy()
+    self.flash_params = self.flash_params.copy()
+    self.flash_attributes = self.flash_attributes.copy()
+    ?>
+
+    <py:ready>
+        <?py
+        element.set_client_param("flashFile", self.flash_file)
+        element.set_client_param("flashWidth", self.flash_width)
+        element.set_client_param("flashHeight", self.flash_height)
+        element.set_client_param("flashVersion", self.flash_version)
+        element.set_client_param("flashExpressInstall", self.flash_express_install)
+        element.set_client_param("flashVars", self.flash_vars)
+        element.set_client_param("flashParams", self.flash_params)
+        element.set_client_param("flashAttributes", self.flash_attributes)
+        element.add_client_code("""
+            swfobject.embedSWF(
+                this.flashFile,
+                this.id,
+                this.flashWidth,
+                this.flashHeight,
+                this.flashVersion,
+                this.flashExpressInstall,
+                this.flashVars,
+                this.flashParams,
+                this.flashAttributes
+            )
+            """
+        )
+        ?>        
+    </py:ready>
+
+</div>
+
