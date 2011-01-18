@@ -26,6 +26,9 @@ from cocktail.schema.schemacollections import (
 from cocktail.schema.schemamappings import Mapping, RelationMapping
 from cocktail.schema.accessors import MemberAccessor
 
+# Extension property that allows members to normalize their values when changed
+Member.normalization = None
+
 # Extension property that allows members to knowingly shadow existing
 # class attributes
 Member.shadows_attribute = False
@@ -225,6 +228,7 @@ class SchemaClass(EventHub, Schema):
         def __init__(self, member):
             self.member = member
             self.normalization = lambda obj, member, value: value
+
             self.__priv_key = "_" + member.name
             self._bidirectional_reference = \
                 isinstance(member, Reference) and member.bidirectional
@@ -276,6 +280,9 @@ class SchemaClass(EventHub, Schema):
             # Value normalization and hooks
             if previous_value is undefined:
                 previous_value = getattr(target, self.__priv_key, None)
+
+            if member.normalization:
+                value = member.normalization(value)
 
             value = self.normalization(instance, member, value)
 
