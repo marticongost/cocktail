@@ -40,6 +40,7 @@ from cocktail.schema.schemadates import (
     Date,
     Time
 )
+from cocktail.schema.color import Color
 from cocktail.schema.errorlist import ErrorList
 from cocktail.schema.accessors import (
     get_accessor,
