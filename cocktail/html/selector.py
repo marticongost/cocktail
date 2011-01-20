@@ -84,7 +84,11 @@ class Selector(Element):
                     order = member.items.default_order
 
                 if order:
-                    items.add_order(order)
+                    if isinstance(order, (basestring, schema.Member)):
+                        items.add_order(order)
+                    else:
+                        for criteria in order:
+                            items.add_order(criteria)
 
                 return items
                 
