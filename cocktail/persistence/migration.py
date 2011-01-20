@@ -11,6 +11,7 @@ from cocktail.modeling import (
 )
 from cocktail.typemapping import TypeMapping
 from cocktail.events import EventHub, Event
+from cocktail.pkgutils import resolve, import_object
 from cocktail.persistence import datastore
 
 
@@ -122,6 +123,7 @@ class MigrationStep(object):
         self.__renamed_classes[old_name] = new_name
 
     def process_instances(self, cls, func):
+        cls = resolve(cls)
         class_processors = self.__class_processors.get(cls)
         if class_processors is None:
             class_processors = [func]
@@ -135,12 +137,35 @@ class MigrationStep(object):
             return func
         return decorator
 
-    def remove_member(self, cls, member_name, translated = False):
+    def _resolve_member(self, member):
         
+        if isinstance(member, basestring):
+            last_dot = member.rfind(".")
+            
+            if last_dot == -1:
+                raise ValueError("%s is not a valid member reference" % member)
+
+            class_name = member[:last_dot]
+            member_name = member[last_dot + 1:]
+            cls = import_object(class_name)
+            member = cls.get_member(member_name)
+
+            if member is None:
+                raise ValueError(
+                    "Can't find member %s in class %s"
+                    % (member_name, class_name)
+                )
+
+        return member
+
+    def remove_member(self, member, translated = False):
+        
+        member = self._resolve_member(member)
+
         if translated:
             @self.processor(member.schema)
             def process(instance):
-                key = "_" + member_name
+                key = "_" + member.name
                 for trans in instance.translations.itervalues():
                     try:
                         delattr(trans, key)
@@ -149,13 +174,15 @@ class MigrationStep(object):
         else:
             @self.processor(member.schema)
             def process(instance):
-                key = "_" + member_name
+                key = "_" + member.name
                 try:
                     delattr(instance, key)
                 except AttributeError:
                     pass
 
     def translate_member(self, member, languages):
+
+        member = self._resolve_member(member)
 
         @self.processor(member.schema)
         def process(instance):
@@ -171,6 +198,7 @@ class MigrationStep(object):
 
     def untranslate_member(self, member, prefered_languages):
         
+        member = self._resolve_member(member)
         undefined = object()
 
         @self.processor(member.schema)
