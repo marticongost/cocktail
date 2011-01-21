@@ -312,8 +312,11 @@ class SingleValueIndex(Index):
             return
 
         if value is undefined:
-            del self.__items[key]
-            del self.__descending_items[key]
+            try:
+                del self.__items[key]
+                del self.__descending_items[key]
+            except KeyError:
+                pass
 
     @overrides(Index.items)
     def items(self,
