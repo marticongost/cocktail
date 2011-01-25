@@ -256,7 +256,12 @@ cocktail.instantiate = function (modelId, params, initializer) {
     }
 
     // Behaviors
-    cocktail.init();
+    if (instance.parentNode) {
+        cocktail.init();
+    }
+    else {
+        cocktail.init(instance);
+    }
 
     return instance;
 }
