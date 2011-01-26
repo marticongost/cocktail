@@ -11,6 +11,7 @@ from xml.parsers import expat
 from cocktail.modeling import refine, extend, call_base, getter, DictWrapper
 from cocktail.translations import translations, get_language
 from cocktail.html.element import default, PlaceHolder
+from cocktail.html.overlay import register_overlay
 from cocktail.html.templates.sourcecodewriter import SourceCodeWriter
 
 WHITESPACE_EXPR = re.compile(r"\s*")
@@ -117,7 +118,8 @@ class TemplateCompiler(object):
             "get_language": get_language,
             "refine": refine, # obsolete; use extend/call_base instead
             "extend": extend,
-            "call_base": call_base
+            "call_base": call_base,
+            "register_overlay": register_overlay
         }
 
     def add_class_reference(self, reference):
@@ -220,8 +222,10 @@ class TemplateCompiler(object):
                 
                 if overlay_class:
                     self.__end_source_block.write(
-                        "%s.register(%s)"
-                        % (self.class_name, repr(overlay_class))
+                        "register_overlay(%r, %r)" % (
+                            overlay_class,
+                            self.pkg_name + "." + self.class_name
+                        )
                     )
 
             elif tag in ("ready", "binding"):

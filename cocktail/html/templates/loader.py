@@ -11,6 +11,7 @@ from pkg_resources import resource_filename
 from cocktail.modeling import extend
 from cocktail.cache import Cache
 from cocktail.pkgutils import import_object, set_full_name
+from cocktail.html.viewnames import split_view_name
 from cocktail.html.templates.compiler import TemplateCompiler
 
 
@@ -89,7 +90,7 @@ class TemplateLoader(object):
         return self.cache.request(name)()
 
     def compile(self, name, source):
-        pkg_name, class_name = self._split_name(name)
+        pkg_name, class_name = self._split_view_name(name)
         return self.Compiler(pkg_name, class_name, self, source)
 
     def iter_dependencies(self, name, recursive = True, include_self = False):
@@ -110,7 +111,7 @@ class TemplateLoader(object):
 
     def _load_template(self, name):
 
-        pkg_name, class_name = self._split_name(name)
+        pkg_name, class_name = split_view_name(name)
 
         # Try to obtain the template class from a template file
         try:
@@ -185,21 +186,6 @@ class TemplateLoader(object):
                 self.cache.pop(derivative, None)
             
             del self.__derivatives[name]
-
-    def _split_name(self, name):
-        
-        pos = name.rfind(".")
-
-        if pos == -1:
-            raise ValueError("Unqualified template name: " + name)
-
-        pkg_name = name[:pos]
-        item_name = name[pos + 1:]
-        
-        if not pkg_name or not item_name:
-            raise ValueError("Wrong template name: %s" % name)
-        
-        return pkg_name, item_name
 
     def _find_template(self, pkg_name, class_name):
         """Finds the source file for a template, given its package and name.

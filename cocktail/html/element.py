@@ -3,12 +3,15 @@ from time import time
 from warnings import warn
 from cocktail.modeling import (
     getter,
+    classgetter,
     empty_list,
     empty_dict,
     empty_set,
     OrderedSet
 )
 from cocktail.iteration import first
+from cocktail.pkgutils import get_full_name
+from cocktail.html.viewnames import get_view_full_name
 from cocktail.html import renderers
 from cocktail.html.rendering import (
     Rendering,
@@ -210,6 +213,14 @@ class Element(object):
                     css_classes.append(c.__name__)
 
             cls.class_css = css_classes and " ".join(css_classes) or None
+
+    _view_name = None
+
+    @classgetter
+    def view_name(cls):
+        if cls._view_name is None:
+            cls._view_name = get_view_full_name(get_full_name(cls))
+        return cls._view_name
 
     def __str__(self):
 
