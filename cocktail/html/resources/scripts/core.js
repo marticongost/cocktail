@@ -255,8 +255,17 @@ cocktail.instantiate = function (modelId, params, initializer) {
         }
     }
 
-    // Behaviors
-    cocktail.init();
+    // If the instance has been inserted into the document by the callback,
+    // page-wide bindings (note that IE creates new elements with a parentNode
+    // of type DOCUMENT_FRAGMENT!)
+    if (instance.parentNode && instance.parentNode.nodeType != 11) {
+        cocktail.init();
+    }
+    // If the instance hasn't been inserted yet, limit bindings to the 
+    // instances itself
+    else {
+        cocktail.init(instance);
+    }
 
     return instance;
 }

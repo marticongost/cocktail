@@ -321,9 +321,11 @@ class Form(Element, DataDisplay):
         input = HiddenInput()
         input.data = obj
         input.member = member
+        input.data_display = self
         
         value = self.get_member_value(obj, member)
-        value = member.serialize_request_value(value)
+        if value is not None:
+            value = member.serialize_request_value(value)
         input.value = value
         
         if member.translated:
