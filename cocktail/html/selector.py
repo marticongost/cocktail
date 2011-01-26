@@ -9,6 +9,8 @@ u"""
 from cocktail.modeling import ListWrapper, SetWrapper
 from cocktail.translations import translations
 from cocktail import schema
+from cocktail.schema import ValidationContext
+from cocktail.persistence import PersistentObject
 from cocktail.html import Element
 from cocktail.html.databoundcontrol import data_bound
 
@@ -59,7 +61,17 @@ class Selector(Element):
             enumeration = member.enumeration
         
         if enumeration is not None:
-            enumeration = member.resolve_constraint(enumeration, None)
+            # Create the validation context
+            if isinstance(self.persistent_object, PersistentObject):
+                context = ValidationContext(
+                    self.persistent_object.__class__, 
+                    self.persistent_object,
+                    persistent_object = self.persistent_object
+                )
+            else:
+                context = None
+
+            enumeration = member.resolve_constraint(enumeration, context)
             if enumeration is not None:
                 return enumeration
 
