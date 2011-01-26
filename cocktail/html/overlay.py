@@ -8,10 +8,51 @@ u"""
 """
 from inspect import getmro
 from types import FunctionType
-from cocktail.modeling import empty_list, extend, call_base
+from cocktail.modeling import (
+    classgetter,
+    extend, 
+    call_base, 
+    OrderedSet
+)
 from cocktail.pkgutils import get_full_name
 
 _overlays = {}
+
+
+def register_overlay(class_name, overlay_name):
+    """Installs an overlay on the indicated class. All new instances of
+    the modified class will reflect the changes introduced by the overlay
+    (existing instances will remain unchanged).
+
+    :param class_name: The name of the class to install the overlay on.
+    :type class_name: str
+
+    :param overlay_name: The name of the class that implements the overlay.
+    :type overlay_name: str
+    """
+    class_overlays = _overlays.get(class_name)
+
+    if not class_overlays:
+        _overlays[class_name] = class_overlays = OrderedSet()
+ 
+    class_overlays.append(overlay_name)
+
+def get_class_overlays(cls):
+    """Determine the overlayed classes that apply to the specified class.
+
+    :param cls: The class to determine the overlays for.
+    :type cls: `Element` class
+    
+    :return: An iterable sequence of overlay classes that apply to the
+        specified class.
+    :rtype: Iterable sequence of `Overlay` classes
+    """
+    if _overlays:
+        class_overlays = _overlays.get(cls.view_name)
+        if class_overlays:
+            from cocktail.html import templates
+            for overlay_name in class_overlays:
+                yield templates.get_class(overlay_name)
 
 def apply_overlays(element):
     """Initialize an element with the modifications provided by all matching
@@ -20,12 +61,8 @@ def apply_overlays(element):
     @param element: The element to apply the overlays to.
     @type element: L{Element<cocktail.html.element.Element>}
     """
-    if _overlays:
-        for cls in element.__class__._classes:
-            class_overlays = _overlays.get(get_full_name(cls))
-            if class_overlays:
-                for overlay in class_overlays:
-                    overlay.modify(element)
+    for overlay in get_class_overlays(element.__class__):
+        overlay.modify(element)
 
 
 # Declaration stub, required by the metaclass
@@ -42,40 +79,8 @@ class Overlay(object):
     and invoke the L{register} method on the new class. All methods and
     attributes defined by the overlay will be made available to its target.
     """
-    excluded_keys = set(["__module__", "_classes", "__doc__"])
+    excluded_keys = set(["__module__", "__doc__"])
 
-    class __metaclass__(type):
-        def __init__(cls, name, bases, members):
-            type.__init__(cls, name, bases, members)
-            cls._classes = [c
-                            for c in reversed(getmro(cls))
-                            if Overlay
-                            and c is not Overlay
-                            and issubclass(c, Overlay)]
-
-    @classmethod
-    def register(cls, target):
-        """Installs the overlay on the indicated class. All new instances of
-        the modified class will reflect the changes introduced by the overlay
-        (existing instances will remain unchanged).
-
-        @param target: The class to install the overlay on.
-        @type target: Class or str
-        """
-        if isinstance(target, basestring):
-            from cocktail.html import templates
-            target = templates.get_class(target)
-        
-        target_full_name = get_full_name(target)
-        
-        class_overlays = _overlays.get(target_full_name)
-
-        if not class_overlays:
-            class_overlays = []
-            _overlays[target_full_name] = class_overlays
-     
-        class_overlays.append(cls)
-       
     @classmethod
     def modify(cls, element):
 
@@ -88,4 +93,12 @@ class Overlay(object):
                 extend(element)(value)
             else:
                 setattr(element, key, value)
+
+    _view_name = None
+
+    @classgetter
+    def view_name(cls):
+        if cls._view_name is None:
+            cls._view_name = get_view_full_name(get_full_name(cls))
+        return cls._view_name
 
