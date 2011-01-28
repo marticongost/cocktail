@@ -185,7 +185,8 @@ class EventSlot(SynchronizedList):
         # reference to the target object, which would keep the target object
         # alive undefinitely 
         if isinstance(callback, MethodType) \
-        and callback.im_self is self.target():
+        and callback.im_self is self.target() \
+        and not isinstance(callback.im_self, type):
             callback = BoundCallback(callback.im_func)
 
         return callback
