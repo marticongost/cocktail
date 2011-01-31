@@ -98,6 +98,11 @@ class PersistentClass(SchemaClass):
 
     def _unique_validation_rule(cls, member, value, context):
 
+        # Make sure the member is still flagged as unique when the validation
+        # is performed
+        if not member.unique:
+            return
+
         if value is not None:
 
             validable = context.get("persistent_object", context.validable)
