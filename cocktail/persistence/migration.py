@@ -39,24 +39,35 @@ class Migration(object):
         self.__steps._items.append(step)
         return step
 
-    def execute(self, target_version = None, verbose = True):
-        version_key = "%s.schema_version" % self.id
-        current_version = datastore.root.get(version_key, 0)
+    @getter
+    def version_key(self):
+        return "%s.schema_version" % self.id
 
+    def _get_current_version(self):
+        return datastore.root.get(self.version_key, 0)
+
+    def _set_current_version(self, value):
+        datastore.root[self.version_key] = value
+
+    current_version = property(
+        _get_current_version, _set_current_version
+    )
+
+    def execute(self, target_version = None, verbose = True):
         if target_version is None:
             if self.__steps:
                 target_version = self.__steps[-1].id
             else:
                 target_version = 0
 
-        for step in self.__steps[current_version:target_version]:
+        for step in self.__steps[self.current_version:target_version]:
             if verbose:
                 print "Updating schema %s to version %s" % (
-                    version_key,
+                    self.version_key,
                     step.id
                 )
             step.executing(verbose = verbose)
-            datastore.root[version_key] = step.id
+            self.current_version = step.id
 
         datastore.commit()
 
