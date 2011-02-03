@@ -66,7 +66,7 @@ class Location(object):
         request = cherrypy.request
         query_string = get_state()
 
-        location = cls().get_current_host()
+        location = cls.get_current_host()
         location.relative = relative
         location.method = request.method
         location.path_info = try_decode(request.path_info)
