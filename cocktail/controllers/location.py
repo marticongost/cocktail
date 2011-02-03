@@ -169,6 +169,13 @@ class Location(object):
                 }
 
     @classmethod
+    def require_http(cls):
+        location = cls.get_current(relative = False)
+        if location.scheme != "http":
+            location.scheme = "http"
+            location.go()
+
+    @classmethod
     def require_https(cls):
         location = cls.get_current(relative = False)
         if location.scheme != "https":
