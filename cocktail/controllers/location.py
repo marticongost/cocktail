@@ -168,3 +168,10 @@ class Location(object):
                     "button": translations("Redirection button")
                 }
 
+    @classmethod
+    def require_https(cls):
+        location = cls.get_current(relative = False)
+        if location.scheme != "https":
+            location.scheme = "https"
+            location.go()
+
