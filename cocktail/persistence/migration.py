@@ -7,58 +7,33 @@ from zodbupdate.update import Updater
 from cocktail.modeling import (
     getter,
     ListWrapper,
-    SetWrapper
+    DictWrapper,
+    OrderedSet,
+    OrderedDict
 )
-from cocktail.typemapping import TypeMapping
 from cocktail.events import EventHub, Event
+from cocktail.typemapping import TypeMapping
 from cocktail.pkgutils import resolve, import_object
-from cocktail.persistence import datastore
+from cocktail.styled import styled
+from cocktail.persistence import PersistentSet, datastore
 
+migration_steps = DictWrapper()
 
-class Migration(object):
+def migrate(verbose = False):
+    """Executes all migration steps that haven't been executed yet, in the
+    correct order.
     
-    def __init__(self, migration_id):
-        self.__migration_id = migration_id
-        self.__step_id = 0
-        self.__steps = ListWrapper()
+    :param verbose: When set to True, migration steps will print out
+        informative messages of their progress.
+    :type verbose: bool
+    """
+    for step in migration_steps.itervalues():
+        step.execute(verbose = verbose)
 
-    def __repr__(self):
-        return "Migration(%r)" % self.__migration_id
-
-    @getter
-    def id(self):
-        return self.__migration_id
-
-    @getter
-    def steps(self):
-        return self.__steps
-
-    def step(self):
-        self.__step_id += 1
-        step = MigrationStep(self.__step_id)
-        self.__steps._items.append(step)
-        return step
-
-    def execute(self, target_version = None, verbose = True):
-        version_key = "%s.schema_version" % self.id
-        current_version = datastore.root.get(version_key, 0)
-
-        if target_version is None:
-            if self.__steps:
-                target_version = self.__steps[-1].id
-            else:
-                target_version = 0
-
-        for step in self.__steps[current_version:target_version]:
-            if verbose:
-                print "Updating schema %s to version %s" % (
-                    version_key,
-                    step.id
-                )
-            step.executing(verbose = verbose)
-            datastore.root[version_key] = step.id
-
-        datastore.commit()
+def mark_all_migrations_as_executed():
+    """Flags all migration steps as already executed."""
+    for step in migration_steps.itervalues():
+        step.mark_as_executed()
 
 
 class MigrationStep(object):
@@ -67,19 +42,119 @@ class MigrationStep(object):
 
     executing = Event()
 
+    step_styles = {"foreground": "bright_green"}
+    step_id_styles = {"style": "bold"}
+
     def __init__(self, id):
+        
+        if not id:
+            raise ValueError("MigrationStep instances require a non-empty id")
+
+        if id in migration_steps:
+            raise KeyError(
+                "The migration step id %r is already claimed by another step"
+                % id
+            )
+
+        migration_steps._items[id] = self
+
         self.__id = id
         self.__renamed_classes = {}
-        self.__class_processors = TypeMapping()        
-        self.executing.append(self.renaming_handler)
-        self.executing.append(self.instance_processing_handler)
+        self.__class_processors = OrderedDict()
+        self.__dependencies = ListWrapper(OrderedSet())
+        self.executing.append(self._renaming_handler)
+        self.executing.append(self._instance_processing_handler)
+
+    def __repr__(self):
+        return "MigrationStep(%r)" % self.__id
 
     @getter
     def id(self):
+        """A unique identifier for the migration step."""
         return self.__id
 
+    def execute(self, verbose = False):
+        """Executes the migration step on the current datastore.
+        
+        :param verbose: When set to True, the migration step will print out
+            informative messages of its progress.
+        :type verbose: bool
+
+        :return: Returns True if the step is actually executed, False if it had
+            already been executed and has been skipped.
+        :rtype: bool
+        """
+        
+        # Make sure the step is not executed twice
+        if not self.mark_as_executed():
+            return False
+        
+        # Execute dependencies first
+        for dependency in self.dependencies():
+            dependency.execute(verbose = verbose)
+
+        # Launch migration logic
+        if verbose:
+            print "%s%s" % (
+                styled("Executing migration step ", **self.step_styles),
+                styled(self.__id, **self.step_id_styles)
+            )
+
+        self.executing(verbose = verbose)
+
+        return True
+
+    def mark_as_executed(self):
+        """Flags the step as executed.
+
+        :return: True if the step had already been flagged as executed, False
+            otherwise.
+        :rtype: bool
+        """
+        key = "cocktail.persistence.migration_steps"
+        applied_steps = datastore.root.get(key)
+        
+        if applied_steps is None:
+            applied_steps = PersistentSet()
+            datastore.root[key] = applied_steps
+        elif self.__id in applied_steps:
+            return False
+        
+        applied_steps.add(self.__id)
+        return True
+
+    def dependencies(self, recursive = False):
+        """Iterates over the dependencies of the migration step.
+        
+        :param recursive: Set to True to calculate dependencies recursively;
+            False limits the return value to a shallow search.
+
+        :return: An iterable sequence of those `MigrationStep` instances that
+            must be executed before this step can be safely executed.
+        """ 
+        for dependency in self.__dependencies:
+            
+            if recursive:
+                for recursive_dependency in dependency.dependencies(True):
+                    yield recursive_dependency
+            
+            yield dependency
+
+    def require(self, dependency):
+        """Adds a dependency on another migration step.
+        
+        :param dependency: The migration step to add as a dependency. If given
+            as a string.
+
+        :type dependency: `MigrationStep` or str
+        """
+        if isinstance(dependency, basestring):
+            dependency = migration_steps[dependency]
+
+        self.__dependencies._items.append(dependency)
+
     @classmethod
-    def renaming_handler(cls, e):
+    def _renaming_handler(cls, e):
         step = e.source
 
         if step.__renamed_classes:
@@ -112,10 +187,11 @@ class MigrationStep(object):
                         del root[key]
     
     @classmethod
-    def instance_processing_handler(cls, e):        
+    def _instance_processing_handler(cls, e):        
         step = e.source
+        root = datastore.root
         for cls, processors in step.__class_processors.iteritems():
-            for instance in cls.select():
+            for instance in resolve(cls).select():
                 for processor in processors:
                     processor(instance)
 
@@ -123,7 +199,6 @@ class MigrationStep(object):
         self.__renamed_classes[old_name] = new_name
 
     def process_instances(self, cls, func):
-        cls = resolve(cls)
         class_processors = self.__class_processors.get(cls)
         if class_processors is None:
             class_processors = [func]
@@ -213,7 +288,4 @@ class MigrationStep(object):
                         break
             for trans in instance.translations.itervalues():
                 delattr(trans, key)
-
-cocktail_migration = Migration("cocktail.persistence")
-datastore.migrations.append(cocktail_migration)
 
