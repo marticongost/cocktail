@@ -29,7 +29,6 @@ class DataStore(object):
         self.__storage_lock = RLock()
         self.__db = None
         self.__storage = None
-        self.migrations = []
         self.storage = storage
 
     storage_changed = Event("""
@@ -75,11 +74,8 @@ class DataStore(object):
         if self.automatic_migration \
         and self.__storage is not None \
         and not isinstance(self.__storage, FunctionType):
-            self.migrate()
-
-    def migrate(self):
-        for migration in self.migrations:
-            migration.execute()
+            from cocktail.persistence.migration import migrate
+            migrate()
 
     @getter
     def db(self):
