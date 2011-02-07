@@ -346,6 +346,13 @@ class TemplateCompiler(object):
                 source.indent()
                 frame.close_actions.append(source.unindent)
 
+            where_expr = attributes.pop(self.TEMPLATE_NS + ">where", None)
+
+            if where_expr is not None:
+                source.write("if " + where_expr + ":")
+                source.indent()
+                frame.close_actions.append(source.unindent)
+
             # User defined names
             identifier = attributes.pop(self.TEMPLATE_NS + ">id", None)
             local_identifier = attributes.pop(self.TEMPLATE_NS + ">local_id", None)
