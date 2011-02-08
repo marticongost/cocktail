@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:py="http://www.whads.com/ns/cocktail/templates">
+
+    <?py-class
+    transition_duration = 250
+    wrap = True
+    ?>
+
+    <?py
+    self.add_resource("/cocktail/scripts/Slider.js")
+    ?>
+
+    <py:ready>
+        <?py
+        self.set_client_param("transitionDuration", self.transition_duration)
+        self.set_client_param("wrap", self.wrap)
+        ?>
+    </py:ready>
+
+    <div py:id="slider_frame">
+        <div py:id="slides"></div>
+    </div>
+
+    <button 
+        py:client_model="cocktail.html.Slider.previousButton"
+        py:id="previous_button">
+        ${translations("cocktail.html.Slider.previous_button")}
+    </button>
+
+    <button 
+        py:client_model="cocktail.html.Slider.nextButton"
+        py:id="next_button">
+        ${translations("cocktail.html.Slider.next_button")}
+    </button>
+
+</div>
+
