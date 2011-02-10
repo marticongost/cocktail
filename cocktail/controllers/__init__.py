@@ -22,7 +22,11 @@ from cocktail.controllers.dispatcher import (
     StopRequest,
     context
 )
-from cocktail.controllers.uriutils import make_uri, try_decode
+from cocktail.controllers.uriutils import (
+    make_uri, 
+    try_decode,
+    percent_encode_uri
+)
 from cocktail.controllers.location import Location
 from cocktail.controllers.viewstate import (
     get_state,
