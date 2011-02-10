@@ -3,6 +3,9 @@ u"""
 
 .. moduleauthor:: Jordi Fernández <jordi.fernandez@whads.com>
 """
+from decimal import Decimal
+from fractions import Fraction
+
 
 def make_uri(*args, **kwargs):
 
@@ -12,7 +15,13 @@ def make_uri(*args, **kwargs):
         params = []
 
         for pair in kwargs.iteritems():
-            if isinstance(pair[1], basestring):
+            if isinstance(pair[1], (
+                basestring,
+                int,
+                float,
+                Decimal,
+                Fraction
+            )):
                 params.append(pair)
             else:
                 for item in pair[1]:
