@@ -48,11 +48,14 @@ def get_class_overlays(cls):
     :rtype: Iterable sequence of `Overlay` classes
     """
     if _overlays:
-        class_overlays = _overlays.get(cls.view_name)
-        if class_overlays:
-            from cocktail.html import templates
-            for overlay_name in class_overlays:
-                yield templates.get_class(overlay_name)
+        for cls in reversed(cls.__mro__):
+            view_name = getattr(cls, "view_name", None)
+            if view_name:
+                class_overlays = _overlays.get(view_name)
+                if class_overlays:
+                    from cocktail.html import templates
+                    for overlay_name in class_overlays:
+                        yield templates.get_class(overlay_name)
 
 def apply_overlays(element):
     """Initialize an element with the modifications provided by all matching

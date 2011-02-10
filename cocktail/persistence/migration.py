@@ -233,6 +233,28 @@ class MigrationStep(object):
 
         return member
 
+    def rename_member(self, cls, old_name, new_name, translated = False):
+
+        old_key = "_" + old_name
+        new_key = "_" + new_name
+
+        def rename(obj):
+            try:
+                old_value = getattr(obj, old_key)
+            except AttributeError:
+                pass
+            else:
+                setattr(obj, new_key, old_value)
+                delattr(obj, old_key)
+
+        if translated:
+            @self.processor(cls)
+            def process(instance):
+                for trans in instance.translations.itervalues():
+                    rename(trans)
+        else:
+            self.process_instances(cls, rename)
+
     def remove_member(self, member, translated = False):
         
         member = self._resolve_member(member)
