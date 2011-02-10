@@ -14,6 +14,12 @@ class DropdownSelector(Selector):
 
     tag = "select"
 
+    def create_group(self, group, items):
+        container = Element("optgroup")
+        container["label"] = self.get_group_title(group, items)
+        self._create_entries(items, container)
+        return container
+
     def create_entry(self, value, label, selected):
         entry = Element("option")
         entry["value"] = value
