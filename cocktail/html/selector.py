@@ -24,6 +24,8 @@ class Selector(Element):
     empty_option_displayed = True
     empty_value = ""
     empty_label = None
+    grouping = None
+    grouped = False
    
     def __init__(self, *args, **kwargs):
         Element.__init__(self, *args, **kwargs)
@@ -39,6 +41,24 @@ class Selector(Element):
         
             if self.items is None:
                 self.items = self._get_items_from_member(self.member)
+
+            if self.grouping:
+                groups = []
+                group_map = {}
+
+                for item in self.items:
+                    group = self.grouping(item)
+                    group_items = group_map.get(group)
+
+                    if group_items is None:
+                        group_items = []
+                        groups.append((group, group_items))
+                        group_map[group] = group_items
+
+                    group_items.append(item)
+
+                self.grouped = True
+                self.items = groups
 
             if isinstance(self.member, schema.Collection):
                 if self.member.items:
@@ -129,17 +149,25 @@ class Selector(Element):
             )
             self.append(entry)
 
-        if hasattr(self.items, "iteritems"):
-            for value, label in self.items.iteritems():
+        if self.grouped:
+            for group, items in self.items:
+                self.append(self.create_group(group, items))
+        else:
+            self._create_entries(self.items, self)
+
+    def _create_entries(self, items, container):
+
+        if hasattr(items, "iteritems"):
+            for value, label in items.iteritems():
                 value = self.get_item_value(value)
                 entry = self.create_entry(
                     value,
                     label,
                     self._is_selected(value)
                 )
-                self.append(entry)
+                container.append(entry)
         else:
-            for item in self.items:
+            for item in items:
                 value = self.get_item_value(item)
                 label = self.get_item_label(item)
                 entry = self.create_entry(
@@ -147,7 +175,7 @@ class Selector(Element):
                     label,
                     self._is_selected(value)
                 )
-                self.append(entry)
+                container.append(entry)
     
     def get_item_value(self, item):
        
@@ -171,6 +199,27 @@ class Selector(Element):
     def get_item_label(self, item):
         return self._item_translator(item)
     
+    def create_group(self, group, items):
+
+        container = Element()
+        container.add_class("group")
+
+        container.label = self.create_group_label(group, items)
+        container.append(container.label)
+
+        self._create_entries(items, container)
+
+        return container
+
+    def create_group_label(self, group, items):
+        label = Element()
+        label.add_class("group_label")
+        label.append(self.get_group_title(group, items))
+        return label
+
+    def get_group_title(self, group, items):
+        return translations(group)
+
     def create_entry(self, value, label, selected):
         pass
 
