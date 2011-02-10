@@ -196,6 +196,7 @@ class Element(object):
 
         def __init__(cls, name, bases, members):
             type.__init__(cls, name, bases, members)
+            cls._view_name = None
          
             if "overlays_enabled" not in members:
                 cls.overlays_enabled = True
@@ -213,8 +214,6 @@ class Element(object):
                     css_classes.append(c.__name__)
 
             cls.class_css = css_classes and " ".join(css_classes) or None
-
-    _view_name = None
 
     @classgetter
     def view_name(cls):

@@ -1678,3 +1678,17 @@ translations.define("cocktail.html.Table remove grouping",
     en = u"Remove grouping"
 )
 
+# cocktail.html.Slider
+#------------------------------------------------------------------------------
+translations.define("cocktail.html.Slider.previous_button",
+    ca = u"Anterior",
+    es = u"Anterior",
+    en = u"Previous"
+)
+
+translations.define("cocktail.html.Slider.next_button",
+    ca = u"Següent",
+    es = u"Siguiente",
+    en = u"Next"
+)
+

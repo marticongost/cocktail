@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:py="http://www.whads.com/ns/cocktail/templates">
+
+    <?py-class
+    autoplay = True
+    interval = 3000
+    transition_duration = 500
+    slides_selector = ".slides > *"
+    ?>
+
+    <?py    
+    self.add_resource("/cocktail/scripts/SlideShow.js")
+    ?>
+
+    <py:ready>
+        <?py
+        self.set_client_param("autoplay", self.autoplay)
+        self.set_client_param("interval", self.interval)
+        self.set_client_param("transitionDuration", self.transition_duration)
+        self.set_client_param("slidesSelector", self.slides_selector)
+        ?>
+    </py:ready>
+
+    <div py:id="slides"></div>
+
+</div>
+
