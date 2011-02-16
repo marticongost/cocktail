@@ -106,9 +106,15 @@ class XHTMLRenderer(Renderer):
         out(key + u'="' + key + u'"')
 
 
+class XHTML5Renderer(XHTMLRenderer):
+    doctype = HTML5
+    html_version = 5
+
+
 html4_renderer = HTML4Renderer()
 html5_renderer = HTML5Renderer()
 xhtml_renderer = XHTMLRenderer()
+xhtml5_renderer = XHTML5Renderer()
 
 default_renderer = html4_renderer
 
