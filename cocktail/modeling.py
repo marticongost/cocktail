@@ -19,6 +19,10 @@ _undefined = object()
 _first_cap_re = re.compile('(.)([A-Z][a-z]+)')
 _all_cap_re = re.compile('([a-z0-9])([A-Z])')
 
+def underscore_to_capital(name):
+    """Converts an underscore_name to a CapitalizedName."""
+    return "".join(part.capitalize() for part in name.split("_"))
+
 def camel_to_underscore(name):
     """Converts a camelCaseName to an underscore_name."""
     s1 = _first_cap_re.sub(r'\1_\2', name)

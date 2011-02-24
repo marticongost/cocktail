@@ -12,13 +12,14 @@ from cocktail.schema.exceptions import ValidationError
 
 class ErrorList(ListWrapper):
 
-    def __init__(self, errors):
+    def __init__(self, errors = None):
     
         ListWrapper.__init__(self)
         self.__errors_by_member = {}
 
-        for error in errors:
-            self.add(error)
+        if errors is not None:
+            for error in errors:
+                self.add(error)
 
     def _normalize_member(self, member):
         if not isinstance(member, basestring):
