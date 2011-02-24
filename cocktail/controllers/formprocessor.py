@@ -81,8 +81,19 @@ class FormProcessor(object):
         for form in self.submitted_forms:
             form.submit()
 
+    @cached_getter
+    def errors(self):
+        errors = schema.ErrorList()
+
+        for form in self.submitted_forms:
+            for error in form.errors:
+                errors.add(error)
+
+        return errors
+
     def __handle_processed(self, event):
         self.output["forms"] = self.forms
+        self.output["form_errors"] = self.errors
 
 
 class Form(object):
@@ -105,6 +116,8 @@ class Form(object):
         if source_instance is not None \
         and isinstance(source_instance, schema.SchemaObject):
             return source_instance.__class__
+
+        return schema.Schema(self.__class__.__name__)
 
     @cached_getter
     def form_id(self):
