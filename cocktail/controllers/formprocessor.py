@@ -117,6 +117,8 @@ class Form(object):
         and isinstance(source_instance, schema.SchemaObject):
             return source_instance.__class__
 
+        return schema.Schema(self.__class__.__name__)
+
     @cached_getter
     def form_id(self):
         """The name given to the form by its `controller`."""
