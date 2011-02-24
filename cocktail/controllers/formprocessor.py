@@ -81,8 +81,19 @@ class FormProcessor(object):
         for form in self.submitted_forms:
             form.submit()
 
+    @cached_getter
+    def errors(self):
+        errors = schema.ErrorList()
+
+        for form in self.submitted_forms:
+            for error in form.errors:
+                errors.add(error)
+
+        return errors
+
     def __handle_processed(self, event):
         self.output["forms"] = self.forms
+        self.output["form_errors"] = self.errors
 
 
 class Form(object):
