@@ -69,7 +69,7 @@ class InsertionTestCase(TempStorageMixin, TestCase):
 
     def test_insert_related(self):
                 
-        instances = [self.test_type()  for i in range(6)]
+        instances = [self.test_type() for i in range(6)]
         
         instances[0].test_ref = instances[1]
         instances[1].test_ref = instances[0]
