@@ -151,7 +151,7 @@ class Table(Element, CollectionDisplay):
                     current_group = group
 
             row = self.create_row(i, item)
-            self.append(row)
+            self.body.append(row)
             self._add_split_rows(item, row)
             self._row_added(i, item, row)
 
