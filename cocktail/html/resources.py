@@ -83,4 +83,5 @@ Resource.extensions[".css"] = StyleSheet
 Resource.extensions[".sss"] = StyleSheet
 Resource.mime_types["text/javascript"] = Script
 Resource.mime_types["text/css"] = StyleSheet
+Resource.mime_types["text/switchcss"] = StyleSheet
 
