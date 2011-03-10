@@ -423,6 +423,12 @@ cocktail.prepareBackgroundSubmit = function (params) {
             });
         }
         iframe.parentNode.removeChild(iframe);
+
+        // Restore controls disabled by the 'disableForm' option
+        if (params.disabledControls) {
+            params.disabledControls.removeAttr("disabled");
+        }
+        
         if (params.callback) {
             params.callback.call(params.form, params, doc);
         }
@@ -437,6 +443,19 @@ cocktail.prepareBackgroundSubmit = function (params) {
 cocktail.submit = function (params) {
     cocktail.prepareBackgroundSubmit(params);
     params.form.submit();
+    
+    // Disable all form controls for the duration of the submit operation
+    if (params.disableForm) {
+        var $form = jQuery(params.form);
+        params.disabledControls = (
+            $form.find("input")
+            .add($form.find("button"))
+            .add($form.find("textarea"))
+            .add($form.find("select"))
+            .not("[disabled]")
+        );
+        params.disabledControls.attr("disabled", "disabled");
+    }
 }
 
 cocktail.__htmlBodyRegExp = /<body(\s[^>]*)?/;
