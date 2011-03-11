@@ -109,6 +109,9 @@ class TreeView(Element):
                 if not self.filter_item or self._is_accessible(child):
                     container.append(self.create_entry(child))
 
+    def get_parent_item(self, item):
+        return item.parent
+
     def get_child_items(self, parent):
         return parent.children
         
