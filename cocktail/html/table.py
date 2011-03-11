@@ -42,6 +42,7 @@ class Table(Element, CollectionDisplay):
     entry_selector = "tbody tr"
     checkbox_selector = "td.selection input"
     resizable_rows_selector = "tbody tr"
+    resizable = True
     __split_rows = None
 
     def __init__(self, *args, **kwargs):
@@ -53,7 +54,6 @@ class Table(Element, CollectionDisplay):
         self.__split_row_values = {}
         self.__split_row_iterators = {}
         Element.__init__(self, *args, **kwargs)
-        self.add_class("resizable")
 
     def _build(self):
 
@@ -69,19 +69,21 @@ class Table(Element, CollectionDisplay):
     def _ready(self):
                 
         Element._ready(self)
-        self.add_resource("/cocktail/scripts/jquery.cookie.js")
-        self.add_resource("/cocktail/scripts/jquery.tableresizer.js")
+
+        if self.resizable:
+            self.add_class("resizable")
+            self.add_resource("/cocktail/scripts/jquery.cookie.js")
+            self.add_resource("/cocktail/scripts/jquery.tableresizer.js")
+            self.set_client_param(
+                "resizableRowsSelector",
+                self.resizable_rows_selector
+            )
 
         selectable(
             self,
             mode = self.selection_mode,
             entry_selector = self.entry_selector,
             checkbox_selector = self.checkbox_selector
-        )
-
-        self.set_client_param(
-            "resizableRowsSelector",
-            self.resizable_rows_selector
         )
 
         self.set_client_param("persistencePrefix", self.persistence_prefix)
@@ -151,7 +153,7 @@ class Table(Element, CollectionDisplay):
                     current_group = group
 
             row = self.create_row(i, item)
-            self.append(row)
+            self.body.append(row)
             self._add_split_rows(item, row)
             self._row_added(i, item, row)
 

@@ -51,9 +51,11 @@ schema.Member.index = property(_get_index, _set_index, doc = """
 
 def _get_index_key(self):
     if self._index_key is not None:
-        return self._index_key
+        return self._index_key    
     elif isinstance(self, PersistentClass):
         return self.primary_member.index_key
+    elif self.copy_source:
+        return self.copy_source.index_key
     else:
         return (
             self.schema
@@ -269,7 +271,7 @@ def _handle_deleting(event):
 
         for member in obj.__class__.members().itervalues():
             
-            if member.indexed:
+            if member.indexed and obj._should_index_member(member):
                 if member.translated:
                     for language in languages:
                         remove_index_entry(

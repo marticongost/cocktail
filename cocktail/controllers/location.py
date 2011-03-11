@@ -116,8 +116,9 @@ class Location(object):
         else:
             return self.form_data
     
-    def go(self):        
-        if self.method == "POST":
+    def go(self, method = None):
+        method = method or self.method
+        if method == "POST":
             cherrypy.response.status = 200
             cherrypy.response.body = self.get_form()
             raise StopRequest()

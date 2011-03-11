@@ -111,6 +111,7 @@ class Form(Element, DataDisplay):
             self.schema = form.schema
             self.data = form.data
             self.errors = form.errors
+            self.persistent_object = form.instance
 
     form = property(_get_form, _set_form, doc = """
         A convenience property that sets up the form using information

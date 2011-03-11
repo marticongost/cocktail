@@ -20,7 +20,8 @@ from cocktail.html.renderers import (
     Renderer,
     html4_renderer,
     html5_renderer,
-    xhtml_renderer
+    xhtml_renderer,
+    xhtml5_renderer
 )
 from cocktail.html.rendering import Rendering
 from cocktail.html.element import (
