@@ -39,6 +39,7 @@ from cocktail.controllers.parameters import (
 from cocktail.controllers.pagination import Pagination
 from cocktail.controllers.usercollection import UserCollection
 from cocktail.controllers.fileupload import FileUpload
+from cocktail.controllers.sessions import session
 import cocktail.controllers.grouping
 import cocktail.controllers.erroremail
 import cocktail.controllers.handlerprofiler
