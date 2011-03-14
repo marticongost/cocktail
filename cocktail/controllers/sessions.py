@@ -54,6 +54,10 @@ class Session(DictWrapper):
     # Expose beaker session api
     #------------------------------------------------------------------------------
 
+    @property
+    def id(self):
+        return self._items.id
+
     def get_by_id(self, id):
         return self._items.get_by_id(id)
 
