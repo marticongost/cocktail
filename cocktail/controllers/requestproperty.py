@@ -10,6 +10,17 @@ def create_request_properties_container():
 
 cherrypy.request.hooks.attach("on_start_resource", create_request_properties_container)
 
+def clear_request_properties():
+    properties = getattr(
+        cherrypy, 
+        "request._cocktail_request_properties",
+        None
+    )
+
+    if properties:
+        properties.clear()
+
+
 class RequestProperty(object):
     """A decorator that allows controllers to define properties with a
     lifecycle bound to HTTP requests."""
