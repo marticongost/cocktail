@@ -6,14 +6,16 @@ u"""Provides the `FormProcessor` and `Form` classes.
 import cherrypy
 from cocktail.modeling import getter, cached_getter, camel_to_underscore
 from cocktail import schema
-from cocktail.persistence import PersistentClass
+from cocktail.persistence import PersistentClass, transactional
 from cocktail.controllers.parameters import get_parameter
+from cocktail.controllers.requestproperty import clear_request_properties
 
 
 class FormProcessor(object):
     """A mixin controller class that automates the processing of one or more
     forms.
     """
+    is_transactional = False
 
     def __init__(self):        
         self.processed.append(self.__handle_processed)
@@ -78,6 +80,23 @@ class FormProcessor(object):
             return forms
 
     def submit(self):
+
+        if self.is_transactional:
+            self._run_transaction()
+        else:
+            self.submit_forms()
+
+        for form in self.submitted_forms:
+            form.after_submit()
+
+    @transactional(before_retrying = clear_request_properties)
+    def _run_transaction(self):
+        self.transaction()
+
+    def transaction(self):
+        self.submit_forms()    
+
+    def submit_forms(self):
         for form in self.submitted_forms:
             form.submit()
 
@@ -135,6 +154,10 @@ class Form(object):
     def submit(self):
         """Load and handle form data when the form is submitted."""
         self.apply_form_data()
+
+    def after_submit(self):
+        """Perform additional actions after all forms have been submitted."""
+        pass
 
     @cached_getter
     def valid(self):
