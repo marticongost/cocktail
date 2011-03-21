@@ -455,6 +455,7 @@ class Member(Variable):
                     self.name,
                     class_name
                 ),
+                instance = error,
                 language = language,
                 **kwargs
             )
