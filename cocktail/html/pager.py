@@ -18,6 +18,8 @@ class Pager(Element):
     page = 0
     page_size = 15
     page_param_name = "page"
+    name_prefix = None
+    name_suffix = None
     hide_when_empty = True
     visible_pages = 10
 
@@ -61,7 +63,10 @@ class Pager(Element):
             self.page = self.pagination.current_page
             self.page_size = self.pagination.page_size
             self.page_param_name = \
-                self.pagination.__class__.page.get_parameter_name()
+                self.pagination.__class__.page.get_parameter_name(
+                    prefix = self.name_prefix,
+                    suffix = self.name_suffix
+                )
             self.item_count = self.pagination.item_count
 
         page_count = self.page_count
