@@ -152,6 +152,9 @@ class Pager(Element):
 
     @getter
     def page_count(self):
-        div, mod = divmod(self.item_count, self.page_size)
-        return div + 1 if mod else div
+        if self.page_size is None:
+            return 1
+        else:
+            div, mod = divmod(self.item_count, self.page_size)
+            return div + 1 if mod else div
 
