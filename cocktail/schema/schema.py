@@ -63,8 +63,11 @@ class Schema(Member):
         @type schema: L{Schema}
         """)
 
-    _special_copy_keys = Member._special_copy_keys \
-                         | set(["_Schema__bases", "_Schema__members"])
+    _special_copy_keys = Member._special_copy_keys | set([
+        "_Schema__bases",
+        "_Schema__members",
+        "_declared"
+    ])
 
     def __init__(self, *args, **kwargs):
 
@@ -87,12 +90,14 @@ class Schema(Member):
     def __deepcopy__(self, memo):
         schema_copy = Member.__deepcopy__(self, memo)
 
-        if self.__bases:
-            for base in self.__bases:
-                schema_copy.inherit(base)
+        if not isinstance(schema_copy, type):
+            if self.__bases:
+                for base in self.__bases:
+                    schema_copy.inherit(base)
 
-        for member in self.__members.itervalues():
-            schema_copy.add_member(deepcopy(member))
+        if self.__members:
+            for member in self.__members.itervalues():
+                schema_copy.add_member(deepcopy(member))
 
         return schema_copy
 

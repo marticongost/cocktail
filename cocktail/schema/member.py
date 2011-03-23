@@ -90,7 +90,16 @@ class Member(Variable):
 
     # Attributes that deserve special treatment when performing a deep copy
     _special_copy_keys = set([
-        "__class__", "_schema", "_validations_wrapper", "_validations"
+        "__module__",
+        "__class__",
+        "_schema",
+        "_validations_wrapper",
+        "_validations",
+        "translation",
+        "translation_source",
+        "original_member",
+        "copy_source",
+        "adaptation_source"
     ])
 
     def __init__(self, name = None, doc = None, **kwargs):
@@ -238,7 +247,7 @@ class Member(Variable):
         Keyword arguments are assigned as attributes of the new member. It is
         possible to use dotted names to set attributes of nested objects.
         """
-        member_copy = deepcopy(self)
+        member_copy = self.__deepcopy__({})
 
         for key, value in kwargs.iteritems():
             obj = member_copy
@@ -253,17 +262,31 @@ class Member(Variable):
         return member_copy
 
     def __deepcopy__(self, memo):
-
+        
+        # Custom class
         if self._copy_class:
             copy = self._copy_class()
+        
+        # Copying a SchemaObject
+        elif issubclass(self.__class__, type):
+            members = self.members()
+            copy = self.__class__(self.name, self.__bases__, dict(
+                (key, value)
+                for key, value in self.__dict__.iteritems()
+                if key not in self._special_copy_keys 
+                and key not in members
+            ))
+        
+        # Regular copy
         else:
             copy = self.__class__()
 
         memo[id(self)] = copy
 
-        for key, value in self.__dict__.iteritems():
-            if key not in self._special_copy_keys:
-                copy.__dict__[key] = deepcopy(value, memo)
+        if not isinstance(copy, type):
+            for key, value in self.__dict__.iteritems():
+                if key not in self._special_copy_keys:
+                    copy.__dict__[key] = deepcopy(value, memo)
         
         copy._validations = list(self._validations)
         memo[id(self._validations)] = copy._validations
@@ -272,6 +295,7 @@ class Member(Variable):
         memo[id(copy._validations_wrapper)] = copy._validations_wrapper
 
         copy.copy_source = self
+        copy.original_member = self.original_member
 
         return copy
 
