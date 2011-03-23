@@ -502,3 +502,56 @@ class TranslationTestCase(TestCase):
         assert event.previous_value is None
         assert event.language == "de"
 
+
+class CopyTestCase(TestCase):
+
+    def test_copying_schema_object_class_produces_new_class(self):
+        
+        from cocktail.schema import Schema, SchemaObject
+
+        class TestClass(SchemaObject):
+            pass
+
+        copy = TestClass.copy()
+        assert copy is not TestClass
+        assert isinstance(copy, type)
+        assert issubclass(copy, SchemaObject)
+        assert not issubclass(copy, type)
+
+    def test_copying_schema_object_class_preserves_inheritance(self):
+
+        from cocktail.schema import Schema, SchemaObject
+
+        class BaseClass(SchemaObject):
+            pass
+
+        class DerivedClass(BaseClass):
+            pass
+
+        copy = DerivedClass.copy()
+        assert issubclass(copy, BaseClass)
+
+    def test_copying_schema_object_class_copies_members(self):
+        
+        from cocktail.schema import Schema, SchemaObject, String
+
+        class TestClass(SchemaObject):            
+            member1 = String(required = True)
+            member2 = String(min = 3)
+
+        copy = TestClass.copy()
+        
+        assert copy.members().keys() == TestClass.members().keys()
+        
+        assert copy.member1 is not TestClass.member1
+        assert isinstance(copy.member1, String)
+        assert copy.member1.copy_source is TestClass.member1
+        assert copy.member1.original_member is TestClass.member1
+        assert copy.member1.required
+
+        assert copy.member2 is not TestClass.member2
+        assert isinstance(copy.member2, String)
+        assert copy.member2.copy_source is TestClass.member2
+        assert copy.member2.original_member is TestClass.member2
+        assert copy.member2.min == 3
+
