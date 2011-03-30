@@ -41,7 +41,8 @@ setup(
         "buffet>=1.0",
         "nose",
         "selenium",
-        "pyExcelerator"
+        "pyExcelerator",
+        "Beaker"
     ],
     packages = find_packages(),
     include_package_data = True,
