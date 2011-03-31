@@ -20,7 +20,8 @@ setup(
         "cherrypy>=3",
         "buffet>=1.0",
         "nose",
-        "selenium"
+        "selenium",
+        "Beaker"
     ],
     include_package_data = True,
     packages = find_packages(),
