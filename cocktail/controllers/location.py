@@ -13,6 +13,7 @@ from urlparse import urlparse
 import cherrypy
 from cocktail.modeling import getter
 from cocktail.translations import translations, get_language, language_context
+from cocktail.controllers.uriutils import try_decode
 from cocktail.controllers.viewstate import get_state
 from cocktail.controllers.dispatcher import StopRequest
 
@@ -67,7 +68,7 @@ class Location(object):
         location = cls().get_current_host()
         location.relative = relative
         location.method = request.method
-        location.path_info = request.path_info.decode("utf-8")
+        location.path_info = try_decode(request.path_info)
         location.query_string.update(query_string)
         location.form_data.update(
             (key, value)
@@ -87,22 +88,25 @@ class Location(object):
             for part in parts
         )
 
-    def __str__(self):
+    def __unicode__(self):
 
         if self.relative or self.host is None:
-            url = ""
+            url = u""
         else:
-            url = self.scheme + "://" + self.host
+            url = self.scheme + u"://" + self.host
 
             if self.port:
-                url += ":" + str(self.port)
+                url += u":" + unicode(self.port)
 
         url += self.path_info
 
         if self.query_string:
-            url += "?" + urlencode(self.query_string, True)
+            url += u"?" + urlencode(self.query_string, True)
 
         return url
+
+    def __str__(self):
+        return unicode(self).encode("utf-8")
 
     @getter
     def params(self):

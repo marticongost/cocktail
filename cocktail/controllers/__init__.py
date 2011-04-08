@@ -15,6 +15,7 @@ from cocktail.controllers.dispatcher import (
     StopRequest,
     context
 )
+from cocktail.controllers.uriutils import try_decode
 from cocktail.controllers.location import Location
 from cocktail.controllers.viewstate import (
     get_state,
