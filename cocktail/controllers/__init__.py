@@ -37,7 +37,8 @@ from cocktail.controllers.viewstate import (
     view_state_form
 )
 from cocktail.controllers.parameters import (
-    serialize_parameter, get_parameter, FormSchemaReader, CookieParameterSource
+    serialize_parameter, get_parameter, FormSchemaReader,
+    CookieParameterSource, SessionParameterSource
 )
 from cocktail.controllers.pagination import Pagination
 from cocktail.controllers.usercollection import UserCollection
