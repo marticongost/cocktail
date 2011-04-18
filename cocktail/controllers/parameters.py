@@ -249,10 +249,10 @@ schema.Reference.parse_request_value = parse_reference
 schema.Reference.serialize_request_value = serialize_reference
 
 def parse_collection(self, reader, value):
-        
+
     if not value:
-        if self.required:
-            return self.produce_default()
+        if self.required and reader.undefined != "set_default":
+            return (self.type or self.default_type)()
         else:
             return None
 
@@ -746,7 +746,7 @@ class FormSchemaReader(object):
 
         if member.parse_request_value:
             value = member.parse_request_value(self, value)
-            
+
         if value is None:
             if self.implicit_booleans \
             and member.required \
