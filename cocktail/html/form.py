@@ -268,7 +268,7 @@ class Form(Element, DataDisplay):
 
     def build_member_explanation(self, member, entry):
         explanation = member.get_member_explanation()
-        if explanation and not get_member_hidden(member):
+        if explanation and not self.get_member_hidden(member):
             entry.explanation = \
                 self.create_member_explanation(member, explanation)
 
