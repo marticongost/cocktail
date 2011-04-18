@@ -268,7 +268,7 @@ class Form(Element, DataDisplay):
 
     def build_member_explanation(self, member, entry):
         explanation = member.get_member_explanation()
-        if explanation:
+        if explanation and not self.get_member_hidden(member):
             entry.explanation = \
                 self.create_member_explanation(member, explanation)
 
@@ -293,8 +293,9 @@ class Form(Element, DataDisplay):
         field_instance.add_class("field_instance")
     
         # Label
-        field_instance.label = self.create_label(member, language)
-        field_instance.append(field_instance.label)
+        if not self.get_member_hidden(member):
+            field_instance.label = self.create_label(member, language)
+            field_instance.append(field_instance.label)
         
         # Control
         with language_context(language):

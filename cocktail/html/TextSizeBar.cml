@@ -13,8 +13,8 @@ from cocktail.schema import Integer
 
     <?py-class
     size = None
-    min_text_size = None
-    max_text_size = None
+    min_text_size = 0
+    max_text_size = 4
     param_name = "text_size"   
     ?>
 
