@@ -19,6 +19,7 @@ from cocktail.persistence import PersistentClass
 from cocktail.schema.schemadates import Date, DateTime, Time
 from cocktail.translations import get_language
 from cocktail.translations.translation import translations
+from cocktail.controllers.sessions import session
 from cocktail.controllers.fileupload import FileUpload
 
 # Extension property that allows members to override the key that identifies
@@ -922,6 +923,105 @@ class CookieParameterSource(object):
         if self.cookie_naming:
             prefix = self.cookie_prefix
             return self.cookie_naming % {
+                "prefix": prefix + "-" if prefix else "",
+                "name": param_name
+            }
+        else:
+            return param_name
+
+
+class SessionParameterSource(object):
+    """A session based source for parameters, used in conjunction
+    with L{get_parameter} or L{FormSchemaReader}.
+
+    @param source: The parameter source that provides updated values for
+        requested parameters. Defaults to X{cherrypy.request.params.get}.
+    @type source: callable
+
+    @param key_naming: A formatting string used to determine the key of
+        the session for a parameter.
+    @type key_naming: str
+
+    @param key_prefix: A string to prepend to parameter names when
+        determining the key of the session for a parameter. This is useful to
+        qualify parameters or constrain them to a certain context. If set to
+        None, session keys will be the same as the name of their parameter.
+    @type key_prefix: str
+
+    @param ignore_new_values: When set to True, updated values from the
+        L{source} callable will be ignored, and only existing values stored
+        on session will be taken into account. 
+    @type ignore_new_values: bool
+
+    @param update: Indicates if new values from the L{source} callable should
+        update the session for the parameter.
+    @type update: bool
+    """
+    source = None
+    key_naming = "%(prefix)s%(name)s"
+    key_prefix = None,
+    ignore_new_values = False
+    update = True
+
+    def __init__(self,
+        source = None,
+        key_naming = "%(prefix)s%(name)s",
+        key_prefix = None,
+        ignore_new_values = False,
+        update = True):
+
+        self.source = source
+        self.key_naming = key_naming
+        self.key_prefix = key_prefix
+        self.ignore_new_values = ignore_new_values
+        self.update = update
+
+    def __call__(self, param_name):
+        
+        if self.ignore_new_values:
+            param_value = None
+        else:
+            source = self.source
+            if source is None:
+                source = cherrypy.request.params.get
+            param_value = source(param_name)
+
+        key = self.get_key(param_name)
+        
+        # Persist a new value
+        if param_value:
+            if self.update:
+                if not isinstance(param_value, basestring):
+                    param_value = u",".join(param_value)
+
+                session[key] = param_value
+        else:
+            # Delete a persisted value
+            if param_value == "":
+                if self.update:
+                    try:
+                        del session[key]
+                    except KeyError:
+                        pass
+
+            # Restore a persisted value
+            else:
+                param_value = session.get(key)
+
+        return param_value
+
+    def get_key(self, param_name):
+        """Determines the name of the key used to persist a parameter.
+        
+        @param param_name: The name of the persistent parameter.
+        @type param_name: str
+
+        @return: The key.
+        @rtype: str
+        """        
+        if self.key_naming:
+            prefix = self.key_prefix
+            return self.key_naming % {
                 "prefix": prefix + "-" if prefix else "",
                 "name": param_name
             }
