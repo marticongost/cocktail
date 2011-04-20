@@ -16,6 +16,10 @@ class FileUpload(schema.Schema):
     chunk_size = 8192
     normalization = None
     hash_algorithm = None
+    meaningless_mime_types = (
+        "application/octet-stream",
+        "application/force-download"
+    )
 
     def __init__(self, *args, **kwargs):
 
@@ -63,7 +67,7 @@ class FileUpload(schema.Schema):
         }
 
         # Support per-extension MIME types
-        if value.type == "application/octet-stream":
+        if value.type in self.meaningless_mime_types:
             mime_type_guess = guess_type(file_name, strict = False)
             if mime_type_guess:
                 upload["mime_type"] = mime_type_guess[0]
