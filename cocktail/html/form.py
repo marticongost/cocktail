@@ -182,6 +182,7 @@ class Form(Element, DataDisplay):
                         container = fieldset
 
                     has_match = False
+                    all_fields_hidden = True
                     remaining_members = []
 
                     for member in members:
@@ -191,6 +192,8 @@ class Form(Element, DataDisplay):
                             self.build_member_explanation(member, field_entry)
                             setattr(self, member.name + "_field", field_entry)
                             has_match = True
+                            if not self.get_member_hidden(member.name):
+                                all_fields_hidden = False
                         else:
                             remaining_members.append(member)
 
@@ -198,6 +201,8 @@ class Form(Element, DataDisplay):
 
                     if self.hide_empty_fieldsets and not has_match:
                         fieldset.visible = False
+                    elif all_fields_hidden:
+                        fieldset.set_style("display", "none")
             else:
                 if self.table_layout:
                     self.fields.tag = "table"
