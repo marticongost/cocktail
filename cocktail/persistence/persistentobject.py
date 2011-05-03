@@ -14,7 +14,13 @@ from cocktail import schema
 from cocktail.modeling import getter, OrderedSet
 from cocktail.events import Event, event_handler
 from cocktail.translations import translations
-from cocktail.schema import SchemaClass, SchemaObject, Reference, Collection
+from cocktail.schema import (
+    SchemaClass, 
+    SchemaObject, 
+    Reference, 
+    Collection,
+    TranslationMapping
+)
 from cocktail.schema.exceptions import ValidationError
 from cocktail.schema.expressions import (
     Expression, CustomExpression, ExclusionExpression, Self
@@ -149,6 +155,12 @@ class PersistentClass(SchemaClass):
                 )
 
             return collection
+
+    def _create_translations_member(cls):
+        translations_member = SchemaClass._create_translations_member(cls)
+        translations_member.produce_default = lambda instance: \
+            PersistentMapping(items = TranslationMapping(instance))
+        return translations_member
 
 
 class PersistentObject(SchemaObject, Persistent):
