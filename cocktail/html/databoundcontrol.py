@@ -46,5 +46,9 @@ def bind_member(element, control = None):
                 name += "-" + element.language
 
         control = control or getattr(element, "binding_delegate", element)
-        control["name"] = name
+
+        if hasattr(control, "name"):
+            control.name = name
+        else:
+            control["name"] = name
 
