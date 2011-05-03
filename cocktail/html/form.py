@@ -182,6 +182,7 @@ class Form(Element, DataDisplay):
                         container = fieldset
 
                     has_match = False
+                    all_fields_hidden = True
                     remaining_members = []
 
                     for member in members:
@@ -191,6 +192,8 @@ class Form(Element, DataDisplay):
                             self.build_member_explanation(member, field_entry)
                             setattr(self, member.name + "_field", field_entry)
                             has_match = True
+                            if not self.get_member_hidden(member.name):
+                                all_fields_hidden = False
                         else:
                             remaining_members.append(member)
 
@@ -198,6 +201,8 @@ class Form(Element, DataDisplay):
 
                     if self.hide_empty_fieldsets and not has_match:
                         fieldset.visible = False
+                    elif all_fields_hidden:
+                        fieldset.set_style("display", "none")
             else:
                 if self.table_layout:
                     self.fields.tag = "table"
@@ -268,7 +273,7 @@ class Form(Element, DataDisplay):
 
     def build_member_explanation(self, member, entry):
         explanation = member.get_member_explanation()
-        if explanation:
+        if explanation and not self.get_member_hidden(member):
             entry.explanation = \
                 self.create_member_explanation(member, explanation)
 
@@ -293,8 +298,9 @@ class Form(Element, DataDisplay):
         field_instance.add_class("field_instance")
     
         # Label
-        field_instance.label = self.create_label(member, language)
-        field_instance.append(field_instance.label)
+        if not self.get_member_hidden(member):
+            field_instance.label = self.create_label(member, language)
+            field_instance.append(field_instance.label)
         
         # Control
         with language_context(language):

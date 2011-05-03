@@ -153,7 +153,7 @@ class Pager(Element):
         return self.name + "_" + param if self.name else param
 
     def _get_page_link(self, page_number):
-        return "?" + self._view_state(**{self.page_param_name: page_number})
+        return "?" + self._view_state(**{str(self.page_param_name): page_number})
 
     @getter
     def page_count(self):
