@@ -7,7 +7,7 @@ u"""
 @since:			November 2008
 """
 import sys
-from cocktail.modeling import refine, OrderedSet
+from cocktail.modeling import refine, OrderedSet, InstrumentedDict, DictWrapper
 from cocktail.events import Event, EventHub
 from cocktail.pkgutils import get_full_name
 from cocktail.translations import translations, require_language
@@ -141,22 +141,8 @@ class SchemaClass(EventHub, Schema):
  
             if cls.translated == False:
                 cls.translated = True
-
                 # Add a mapping to hold the translations defined by items
-                translations_member = Mapping(
-                    name = "translations",
-                    required = True,
-                    keys = String(
-                        required = True,
-                        format = "[a-z]{2}"
-                    ),
-                    values = cls.translation
-                )
-
-                @refine(translations_member)
-                def __translate__(self, language):
-                    return translations("Translations", language)
-
+                translations_member = cls._create_translations_member()
                 cls.add_member(translations_member)
 
             # Create the translated version of the member, and add it to the
@@ -165,6 +151,24 @@ class SchemaClass(EventHub, Schema):
             member.translation.translated = False
             member.translation.translation_source = member
             cls.translation.add_member(member.translation)
+
+    def _create_translations_member(cls):
+        translations_member = Mapping(
+            name = "translations",
+            required = True,
+            keys = String(
+                required = True,
+                format = "[a-z]{2}"
+            ),
+            values = cls.translation,
+            produce_default = TranslationMapping
+        )
+
+        @refine(translations_member)
+        def __translate__(self, language):
+            return translations("Translations", language)
+
+        return translations_member
 
     def _create_translation_schema(cls, members):
         
@@ -511,6 +515,24 @@ class SchemaObject(object):
             target.
         """)
 
+    adding_translation = Event(doc = """
+        An event triggered when a new translation is being added.
+
+        @ivar language: The language of the added translation
+        @type language: str
+
+        @ivar translation: The new value assigned to the translation.
+        """)
+
+    removing_translation = Event(doc = """
+        An event triggered when a translation is being removed.
+
+        @ivar language: The language of the removed translation
+        @type language: str
+
+        @ivar translation: The value of the translation.
+        """)
+
     def __init__(self, **values):
         self.__class__.init_instance(self, values, SchemaObjectAccessor)
         self.__class__.instantiated(instance = self, values = values)
@@ -670,3 +692,90 @@ class SchemaObjectAccessor(MemberAccessor):
 
 SchemaObjectAccessor.register()
 
+
+class TranslationMapping(DictWrapper):
+
+    def __init__(self, owner, items = None):
+        DictWrapper.__init__(self, items = items)
+        self.__owner = owner
+
+    def __setitem__(self, key, value):
+        prev_value = self._items.get(key, undefined)
+
+        self.__owner.adding_translation(
+            language = key,
+            translation = value
+        )
+
+        if prev_value is not undefined:
+            self.__owner.removing_translation(
+                language = key,
+                translation = prev_value
+            )
+
+        self._items.__setitem__(key, value)
+
+    def __delitem__(self, key):
+        prev_value = self._items.get(key, undefined)
+        if prev_value is not undefined:
+            self.__owner.removing_translation(
+                language = key,
+                translation = prev_value
+            )
+        self._items.__delitem__(key)
+
+    def clear(self):
+        for key, value in self._items.items():
+            self.__owner.removing_translation(
+                language = key,
+                translation = value
+            )
+            self.item_removed(item)
+
+        self._items.clear()
+
+    def pop(self, key, default = undefined):
+
+        value = self._items.get(key, undefined)
+
+        if value is undefined:
+            if default is undefined:
+                raise KeyError(key)
+            value = default
+        else:
+            self.__owner.removing_translation(
+                language = key,
+                translation = value
+            )
+            del self._items[key]
+
+        return value
+
+    def popitem(self):
+        key = self._items.keys()
+        if not keys:
+            raise KeyError('popitem(): dictionary is empty')
+
+        item = self._items[key]
+        self.removing_translation(
+            language = key,
+            translation = item
+        )
+        del self._items[key]
+
+        return item
+
+    def update(self, *args, **kwargs):
+        if args:
+            if len(args) != 1:
+                raise TypeError(
+                    "update expected at most 1 argument, got %d"
+                    % len(args)
+                )
+        
+            for key, value in args[0].iteritems():
+                self[key] = value
+
+        if kwargs:
+            for key, value in kwargs.iteritems():
+                self[key] = value
