@@ -20,6 +20,7 @@ class Selector(Element):
     name = None
     items = None
     __value = None
+    persistent_object = None
     
     empty_option_displayed = True
     empty_value = ""
