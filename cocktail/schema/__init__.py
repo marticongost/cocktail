@@ -53,7 +53,8 @@ from cocktail.schema.accessors import (
 from cocktail.schema.schemaobject import (
     SchemaObject,
     SchemaClass,
-    SchemaObjectAccessor
+    SchemaObjectAccessor,
+    TranslationMapping
 )
 from cocktail.schema.adapter import (
     reference, shallow, deep,

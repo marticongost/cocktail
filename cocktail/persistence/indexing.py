@@ -283,6 +283,25 @@ def _handle_deleting(event):
                 else:
                     remove_index_entry(obj, member, obj.get(member))
 
+@when(PersistentObject.removing_translation)
+def _handle_removing_translation(event):
+    obj = event.source
+    language = event.language
+    translation = event.translation
+
+    if obj.indexed:
+
+        for member in obj.__class__.members().itervalues():
+            if member.translated \
+            and member.indexed \
+            and obj._should_index_member(member):
+                remove_index_entry(
+                    obj,
+                    member,
+                    obj.get(member, language),
+                    language
+                )
+
 def add_index_entry(obj, member, value, language = None):
             
     k = member.get_index_value(value)

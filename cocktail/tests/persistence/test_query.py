@@ -1695,7 +1695,7 @@ class RelationalQueriesTestCase(TempStorageMixin, TestCase):
             orders = Collection(bidirectional = True)
 
             def __repr__(self):
-                return self.product_name
+                return self.product_name or PersistentObject.__repr__(self)
 
         class Order(PersistentObject):
             quantity = Integer()

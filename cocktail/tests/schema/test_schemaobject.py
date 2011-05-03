@@ -426,6 +426,45 @@ class TranslationTestCase(TestCase):
         assert event.previous_value == u"grün"
         assert event.language == "de"
 
+    def test_adding_translation_triggers_event(self):
+
+        from cocktail.schema import SchemaObject, String
+
+        class Foo(SchemaObject):
+            spam = String(translated = True)
+
+        foo = Foo()
+
+        events = EventLog()
+        events.listen(foo_adding_translation = foo.adding_translation)
+
+        foo.set("spam", u"green", "en")
+
+        event = events.pop(0)
+        assert event.slot is foo.adding_translation
+        assert event.translation == foo.translations["en"]
+        assert event.language == "en"
+
+    def test_removing_translation_triggers_event(self):
+        from cocktail.schema import SchemaObject, String
+
+        class Foo(SchemaObject):
+            spam = String(translated = True)
+
+        foo = Foo()
+        foo.set("spam", u"green", "en")
+
+        events = EventLog()
+        events.listen(foo_removing_translation = foo.removing_translation)
+
+        translation_object = foo.translations["en"]
+        del foo.translations["en"]
+
+        event = events.pop(0)
+        assert event.slot is foo.removing_translation
+        assert event.translation == translation_object
+        assert event.language == "en"
+
     def test_changing_translation_notifies_owner(self):
 
         from cocktail.schema import SchemaObject, String
