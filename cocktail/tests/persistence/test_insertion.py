@@ -25,6 +25,10 @@ class InsertionTestCase(TempStorageMixin, TestCase):
             )
             test_ref = Reference()
             test_collection = Collection()
+            test_translated_field = String(
+                indexed = True,
+                translated = True
+            )
         
         self.test_type = TestObject
     
@@ -60,12 +64,6 @@ class InsertionTestCase(TempStorageMixin, TestCase):
             list(self.test_type.test_field.index.items()),
             [("foo", instance.id)]
         )
-        
-        instance.test_field = "bar"
-        self.assertEquals(
-            list(self.test_type.test_field.index.items()),
-            [("bar", instance.id)]
-        )
 
     def test_insert_related(self):
                 
@@ -95,4 +93,15 @@ class InsertionTestCase(TempStorageMixin, TestCase):
         a.insert()
 
         self.assertFalse(c.is_inserted)
+
+    def test_creating_translation_updates_index(self):
+        instance = self.test_type()
+        instance.set("test_translated_field", "foo", "en")
+
+        assert not list(self.test_type.test_translated_field.index)
+
+        instance.insert()
+
+        assert list(self.test_type.test_translated_field.index.items()) == \
+            [(("en", "foo"), instance.id)]
 
