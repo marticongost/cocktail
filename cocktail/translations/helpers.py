@@ -38,6 +38,8 @@ en_join = create_join_function("en", u", ", u" and ")
 en_either = create_join_function("ca", u", ", u" or ")
 de_join = create_join_function("de", u", ", u" und ")
 de_either = create_join_function("ca", u", ", u" oder ")
+fr_join = create_join_function("fr", u", ", u" et ")
+fr_either = create_join_function("fr", u", ", u" ou ")
 
 def plural2(count, singular, plural):
     if count == 1:
