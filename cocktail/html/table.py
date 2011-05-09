@@ -32,6 +32,7 @@ class Table(Element, CollectionDisplay):
     
     tag = "table"
     sortable = False
+    column_groups_displayed = False
     ascending_order_image = "ascending.png"
     descending_order_image = "descending.png"
     base_image_url = None
@@ -59,6 +60,9 @@ class Table(Element, CollectionDisplay):
 
         self.head = Element("thead")
         self.append(self.head)
+
+        self.column_groups_row = Element("tr")
+        self.head.append(self.column_groups_row)
 
         self.head_row = Element("tr")
         self.head.append(self.head_row)
@@ -123,17 +127,28 @@ class Table(Element, CollectionDisplay):
             selection_header = Element("th")
             selection_header.add_class("selection")
             self.head_row.append(selection_header)
-        
+
+        # Column groups
+        if not self.column_groups_displayed:
+            self.column_groups_row.visible = False
+
         # Regular columns
-        for column in self.displayed_members:
-            if column.translated:
-                for language in self.translations or (get_language(),):
-                    header = self.create_header(column, language)
+        for group, columns in self.displayed_members_by_group:
+            
+            if self.column_groups_displayed:
+                self.column_groups_row.append(
+                    self.create_column_group_header(group, columns)
+                )
+
+            for column in columns:
+                if column.translated:
+                    for language in self.translations or (get_language(),):
+                        header = self.create_header(column, language)
+                        self.head_row.append(header)
+                else:
+                    header = self.create_header(column)
                     self.head_row.append(header)
-            else:
-                header = self.create_header(column)
-                self.head_row.append(header)
-    
+        
     def _fill_body(self):
 
         if self.grouping:
@@ -174,22 +189,23 @@ class Table(Element, CollectionDisplay):
             if i > 100:
                 raise Exception("Damn")
 
-            for column in self.displayed_members:
-                key = column.name
-                iterator = self.__split_row_iterators.get(key)
-                cell = None
+            for group, columns in self.displayed_members_by_group:
+                for column in columns:
+                    key = column.name
+                    iterator = self.__split_row_iterators.get(key)
+                    cell = None
 
-                if iterator is not None:
-                    try:
-                        self.__split_row_values[key] = iterator.next()
-                    except StopIteration:
-                        end = True
-                    else:
-                        cell = self.create_cell(item, column)
-                        has_content = True
-                
-                if cell is not None:
-                    extra_row.append(cell)
+                    if iterator is not None:
+                        try:
+                            self.__split_row_values[key] = iterator.next()
+                        except StopIteration:
+                            end = True
+                        else:
+                            cell = self.create_cell(item, column)
+                            has_content = True
+                    
+                    if cell is not None:
+                        extra_row.append(cell)
 
             if has_content:
                 self.append(extra_row)
@@ -251,29 +267,30 @@ class Table(Element, CollectionDisplay):
         if self.schema.primary_member:
             row["id"] = item.id
                     
-        for column in self.displayed_members:
-            if self.translations and column.translated:                
-                for language in self.translations:
-                    with language_context(language):
-                        cell = self.create_cell(item, column, language)
-                        row.append(cell)                
-            else:
-                key = column.name
-                sequence_factory = self.__split_rows.get(key)
+        for group, columns in self.displayed_members_by_group:
+            for column in columns:
+                if self.translations and column.translated:
+                    for language in self.translations:
+                        with language_context(language):
+                            cell = self.create_cell(item, column, language)
+                            row.append(cell)                
+                else:
+                    key = column.name
+                    sequence_factory = self.__split_rows.get(key)
 
-                if sequence_factory is not None:
-                    iterator = iter(sequence_factory(item))
-                    self.__split_row_iterators[key] = iterator
-                    
-                    try:
-                        value = iterator.next()
-                    except StopIteration:
-                        value = None
+                    if sequence_factory is not None:
+                        iterator = iter(sequence_factory(item))
+                        self.__split_row_iterators[key] = iterator
+                        
+                        try:
+                            value = iterator.next()
+                        except StopIteration:
+                            value = None
 
-                    self.__split_row_values[key] = value
+                        self.__split_row_values[key] = value
 
-                cell = self.create_cell(item, column)
-                row.append(cell)
+                    cell = self.create_cell(item, column)
+                    row.append(cell)
         
         return row
 
@@ -324,6 +341,19 @@ class Table(Element, CollectionDisplay):
         selection_control["checked"] = self.is_selected(item)
 
         return selection_control
+
+    def create_column_group_header(self, group, columns):
+        header = Element("th")
+        header.add_class("column_group")
+        header["colspan"] = len(columns)
+        header.append(self.get_column_group_header_label(group, columns))
+        return header
+
+    def get_column_group_header_label(self, group, columns):
+        if group and self.schema and self.schema.name:
+            return translations("%s.%s_group" % (self.schema.name, group))
+        else:
+            return ""    
 
     def create_header(self, column, language = None):
         
