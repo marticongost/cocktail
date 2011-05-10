@@ -9,5 +9,5 @@ from cocktail.schema.schemastrings import String
 
 class EmailAddress(String):
     
-    format = re.compile("^.*@.*$")
+    _format = re.compile("^.*@.*$")
 
