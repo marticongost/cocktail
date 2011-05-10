@@ -11,8 +11,6 @@ color_regexp = re.compile("^#[0-9a-f]{6}$")
 
 class Color(String):
 
-    edit_control = "cocktail.html.ColorPicker"
-
     def __init__(self, *args, **kwargs):
         kwargs.setdefault("format", color_regexp)
         String.__init__(self, *args, **kwargs)

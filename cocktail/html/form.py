@@ -11,7 +11,17 @@ from cocktail.translations import get_language, language_context
 from cocktail.modeling import getter, ListWrapper
 from cocktail.translations import translations
 from cocktail.schema import (
-    Member, Boolean, Reference, BaseDateTime, Decimal, Collection
+    Member,
+    Boolean,
+    Reference,
+    BaseDateTime,
+    Collection,
+    Number,
+    Decimal,
+    URL,
+    EmailAddress,
+    PhoneNumber,
+    Color
 )
 from cocktail.controllers.fileupload import FileUpload
 from cocktail.html import Element
@@ -95,6 +105,21 @@ class Form(Element, DataDisplay):
 
         self.set_member_type_display(
             Collection, "cocktail.html.CheckList")
+
+        self.set_member_type_display(
+            Number, "cocktail.html.NumberBox")
+
+        self.set_member_type_display(
+            PhoneNumber, "cocktail.html.PhoneNumberBox")
+
+        self.set_member_type_display(
+            URL, "cocktail.html.URLBox")
+
+        self.set_member_type_display(
+            EmailAddress, "cocktail.html.EmailAddressBox")
+
+        self.set_member_type_display(
+            Color, "cocktail.html.ColorPicker")
 
         self.__groups = []
         self.groups = ListWrapper(self.__groups)
