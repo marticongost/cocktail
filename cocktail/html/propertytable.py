@@ -56,6 +56,7 @@ class PropertyTable(Element, DataDisplay):
         th = Element("th")
         th["colspan"] = 2
         th.append(self.get_group_label(group))
+        row.header = th
         row.append(th)
         return row
     
