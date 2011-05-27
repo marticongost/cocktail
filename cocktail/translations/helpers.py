@@ -44,6 +44,6 @@ fr_either = create_join_function("fr", u", ", u" ou ")
 def plural2(count, singular, plural):
     if count == 1:
         return singular
-    elif count > 1:
+    else:
         return plural
 
