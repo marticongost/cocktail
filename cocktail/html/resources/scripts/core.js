@@ -338,7 +338,7 @@ cocktail.closeDialog = function () {
 
 cocktail.createElement = function (tag, name, type) {
 
-    if (jQuery.browser.msie) {
+    if (jQuery.browser.msie && Number(jQuery.browser.version) < 9) {
         var html = "<" + tag;
         if (name) {
             html += " name='" + name + "'";
