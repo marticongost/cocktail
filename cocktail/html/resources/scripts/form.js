@@ -57,7 +57,7 @@ cocktail.init(function (root) {
         });
 
         // Fix <button> tags in IE
-        if (jQuery.browser.msie) {
+        if (jQuery.browser.msie && Number(jQuery.browser.version) < 9) {
 
             var form = this;
             var hidden;
