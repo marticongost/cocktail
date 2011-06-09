@@ -89,6 +89,12 @@ class Location(object):
             for part in parts
         )
 
+    def pop_path(self):
+        steps = self.path_info.strip("/").split("/")
+        step = steps.pop()
+        self.path_info = "/" + "/".join(steps)
+        return step
+
     def __unicode__(self):
 
         if self.relative or self.host is None:
