@@ -85,7 +85,7 @@ class Location(object):
         parts.extend(args)
 
         self.path_info = "/" + "/".join(
-            part.strip("/")
+            unicode(part).strip("/")
             for part in parts
         )
 
