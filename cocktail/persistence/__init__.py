@@ -41,6 +41,7 @@ from cocktail.persistence.index import (
 )
 from cocktail.persistence import indexing
 from cocktail.persistence import fulltextsearch
+from cocktail.persistence.maxvalue import MaxValue
 from cocktail.persistence.query import Query
 from cocktail.persistence.pickling import dumps, loads
 

@@ -50,9 +50,9 @@ cocktail.bind("form", function ($form) {
     });
 });
 
-// Fix <button> tags in IE
-if (jQuery.browser.msie) {
-    
+// Fix <button> tags in IE < 9
+if (jQuery.browser.msie && Number(jQuery.browser.version) < 9) {
+
     cocktail.bind("form", function ($form) {
 
         var hidden;

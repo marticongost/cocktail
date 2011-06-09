@@ -9,6 +9,7 @@ from cocktail.html.element import Element, Content
 from cocktail.html.ieconditionalcomment import IEConditionalComment
 from cocktail.html.resources import Script, StyleSheet
 from cocktail.html.rendering import Rendering
+from cocktail.html.utils import rendering_html5
 from cocktail.html.documentmetadata import DocumentMetadata
 
 HTTP_EQUIV_KEYS = frozenset((
@@ -35,6 +36,7 @@ class HTMLDocument(Element):
     content = ""
     metadata = DocumentMetadata()
     rendering_options = {}
+    ie_html5_workaround = True
 
     def _render(self, rendering):
 
@@ -132,6 +134,23 @@ class HTMLDocument(Element):
             self.title.append(self.metadata.page_title)
 
     def _add_resources(self):
+    
+        if self.ie_html5_workaround and rendering_html5():
+            self.scripts_container.append(
+                IEConditionalComment("lt IE 9", children = [
+                    Element("script", children = [
+                        """
+                        (function(){    
+                            var html5Tags = "address|article|aside|audio|canvas|command|datalist|details|dialog|figure|figcaption|footer|header|hgroup|keygen|mark|meter|menu|nav|progress|ruby|section|time|video".split('|');
+                            for (var i = 0; i < html5Tags.length; i++){
+                                document.createElement(html5Tags[i]);
+                            }
+                        })();                        
+                        """
+                    ])
+                ])
+            )
+
         for resource in self.metadata.resources:
             self._add_resource(resource)
 
