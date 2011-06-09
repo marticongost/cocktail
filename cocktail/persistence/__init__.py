@@ -20,7 +20,11 @@ from cocktail.persistence.persistentrelations import (
     PersistentRelationMapping
 )
 from cocktail.persistence.persistentobject import (
-    PersistentClass, PersistentObject, UniqueValueError, NewObjectDeletedError
+    PersistentClass,
+    PersistentObject,
+    UniqueValueError,
+    InstanceNotFoundError,
+    NewObjectDeletedError
 )
 from cocktail.persistence.datastore import datastore
 from cocktail.persistence.transactional import transactional
