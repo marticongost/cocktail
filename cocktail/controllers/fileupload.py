@@ -41,8 +41,18 @@ class FileUpload(schema.Schema):
         self.add_member(schema.String("mime_type", **mime_type_kw))
 
     def parse_request_value(self, reader, value):       
+
+        file_name = value.filename
+
+        if isinstance(file_name, str):
+            file_name = file_name.decode("utf-8")
+
+        # IE insists in sending the full local path of uploaded files, which is
+        # completely absurd. Strip path information from the file name.
+        file_name = file_name.split("\\")[-1]
+
         upload = {            
-            "file_name": unicode(value.filename, 'utf-8'),
+            "file_name": file_name,
             "mime_type": value.type,
             "file_size": None,
             "file_hash": None
