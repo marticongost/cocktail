@@ -42,6 +42,9 @@ class FileUpload(schema.Schema):
 
     def parse_request_value(self, reader, value):       
 
+        if value is None or not value.filename:
+            return None
+
         file_name = value.filename
 
         if isinstance(file_name, str):
