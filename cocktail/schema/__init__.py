@@ -9,6 +9,7 @@ from cocktail.schema.member import (
 )
 from cocktail.schema.schema import Schema
 from cocktail.schema.rangedmember import RangedMember
+from cocktail.schema.schematuples import Tuple
 from cocktail.schema.schemacollections import (
     Collection, add, remove,
     RelationCollection,
