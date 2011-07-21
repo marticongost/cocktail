@@ -196,15 +196,8 @@ class Form(Element, DataDisplay):
 
                 for group in self.__groups:
 
-                    fieldset = self.create_fieldset(group)
-                    self.fields.append(fieldset)
-                    setattr(self, group.id + "_fieldset", fieldset)
-
-                    if self.table_layout:
-                        container = Element("table")
-                        fieldset.append(container)
-                    else:
-                        container = fieldset
+                    fieldset = self.request_fieldset(group.id)
+                    container = fieldset.fields
 
                     has_match = False
                     all_fields_hidden = True
@@ -238,9 +231,26 @@ class Form(Element, DataDisplay):
                     self.build_member_explanation(member, field_entry)
                     setattr(self, member.name + "_field", field_entry)
     
-    def create_fieldset(self, group):
+    def request_fieldset(self, group_id):
+        
+        key = group_id.replace(".", "_") + "_fieldset"
+        fieldset = getattr(self, key, None)
 
-        group_id = group.id
+        if fieldset is None:
+            parts = group_id.split(".")
+            if len(parts) == 1:
+                parent = self
+            else:
+                parts.pop()
+                parent = self.request_fieldset(".".join(parts))
+
+            fieldset = self.create_fieldset(group_id)
+            parent.fields.append(fieldset)            
+            setattr(self, key, fieldset)
+
+        return fieldset
+
+    def create_fieldset(self, group_id):
 
         fieldset = Element("fieldset") 
         fieldset.add_class(group_id)
@@ -253,6 +263,9 @@ class Form(Element, DataDisplay):
         else:
             fieldset.legend = None
             fieldset.add_class("anonymous")
+
+        fieldset.fields = Element("table" if self.table_layout else None)
+        fieldset.append(fieldset.fields)
 
         return fieldset
 
