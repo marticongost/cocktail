@@ -264,7 +264,8 @@ class Form(Element, DataDisplay):
             fieldset.legend = None
             fieldset.add_class("anonymous")
 
-        fieldset.fields = Element("table" if self.table_layout else None)
+        fieldset.fields = Element("table" if self.table_layout else "div")
+        fieldset.fields.add_class("fieldset_fields")
         fieldset.append(fieldset.fields)
 
         return fieldset
