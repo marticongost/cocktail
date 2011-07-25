@@ -12,6 +12,7 @@ from cocktail.modeling import getter, ListWrapper
 from cocktail.translations import translations
 from cocktail.schema import (
     Member,
+    Schema,
     Boolean,
     Reference,
     BaseDateTime,
@@ -25,7 +26,7 @@ from cocktail.schema import (
 )
 from cocktail.controllers.fileupload import FileUpload
 from cocktail.html import Element
-from cocktail.html.datadisplay import DataDisplay
+from cocktail.html.datadisplay import DataDisplay, display_factory
 from cocktail.html.hiddeninput import HiddenInput
 
 # Extension property that allows members to define their appearence in HTML
@@ -120,6 +121,8 @@ class Form(Element, DataDisplay):
 
         self.set_member_type_display(
             Color, "cocktail.html.ColorPicker")
+
+        self.set_member_type_display(Schema, embeded_form)
 
         self.__groups = []
         self.groups = ListWrapper(self.__groups)
@@ -461,6 +464,14 @@ class Form(Element, DataDisplay):
         key = self._normalize_member(member)
         self.__hidden_members[key] = hidden
 
+    def _get_value(self):
+        return self.data
+
+    def _set_value(self, value):
+        self.data = value
+
+    value = property(_get_value, _set_value)
+
 
 class FormGroup(object):
 
@@ -492,4 +503,12 @@ class FormGroup(object):
 
     def matches(self, member):
         return self.__match_expr(member)
+
+
+def embeded_form(parent_form, obj, member):
+    form = Form()
+    form.tag = "div"
+    form.embeded = True
+    form.schema = member
+    return form
 
