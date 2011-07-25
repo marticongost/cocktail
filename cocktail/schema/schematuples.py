@@ -9,6 +9,7 @@ from cocktail.schema.exceptions import MinItemsError, MaxItemsError
 
 class Tuple(Member):
 
+    type = tuple
     items = ()
 
     def __init__(self, *args, **kwargs):
