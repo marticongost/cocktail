@@ -450,13 +450,26 @@ class Member(Variable):
                     language = language,
                     **kwargs
                 )
-            else:
-                return translations(
+            else:                
+                translation = translations(
                     self.schema.name + "." + self.name,
                     language,
                     chain = self.copy_source,
                     **kwargs
                 )
+
+                if not translation:
+                    for cls in self.schema.__class__.__mro__:
+                        translation = translations(
+                            cls.__name__ + "." + self.name,
+                            language,
+                            chain = self.copy_source,
+                            **kwargs
+                        )
+                        if translation:
+                            break
+
+                return translation
 
     def translate_value(self, value, language = None, **kwargs):
         if value is None:
