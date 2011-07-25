@@ -306,6 +306,12 @@ class RelationConstraintError(ValidationError):
             % (ValidationError.__str__(self), self.constraint)
 
 
+class CreditCardChecksumError(ValidationError):
+    """A validation error produced for credit card numbers that have an
+    invalid control digit.
+    """
+
+
 class IntegralPartRelocationError(Exception):
     """An exception raised when trying to remove an integral part of a compound
     element to attach it to another container.
