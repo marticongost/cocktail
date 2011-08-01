@@ -256,7 +256,7 @@ class Form(Element, DataDisplay):
     def create_fieldset(self, group_id):
 
         fieldset = Element("fieldset") 
-        fieldset.add_class(group_id)
+        fieldset.add_class(group_id.replace(".", "-"))
 
         label = self.get_group_label(group_id)
         if label:            
