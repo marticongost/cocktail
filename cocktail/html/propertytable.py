@@ -7,6 +7,7 @@ u"""
 @since:			January 2009
 """
 from __future__ import with_statement
+from cocktail import schema
 from cocktail.html.element import Element
 from cocktail.html.datadisplay import DataDisplay
 from cocktail.translations import (
@@ -24,15 +25,36 @@ class PropertyTable(Element, DataDisplay):
     def __init__(self, *args, **kwargs):
         DataDisplay.__init__(self)
         Element.__init__(self, *args, **kwargs)
+        self.__flattened_members = {}
 
     def _ready(self):
         Element._ready(self)
 
         for group, members in self.displayed_members_by_group:
-            tbody = self.create_group(group, members)
+            tbody = self.create_group(group, self._flatten_members(members))
             if group:
                 setattr(self, group + "_group", tbody)
             self.append(tbody)
+
+    def should_flatten(self, member):
+        if isinstance(member, schema.BaseDateTime):
+            return False
+        member = self._normalize_member(member)
+        return self.__flattened_members.get(member, True)
+
+    def set_should_flatten_member(self, member, flattened):
+        member = self._normalize_member(member)
+        self.__flattened_members[member] = flattened
+
+    def _flatten_members(self, members):
+        for member in members:
+            if isinstance(member, schema.Schema) \
+            and self.should_flatten(member):
+                for descendant \
+                in self._flatten_members(member.members().itervalues()):
+                    yield descendant
+            else:
+                yield member
 
     def create_group(self, group, members):
         tbody = Element("tbody")
@@ -42,7 +64,7 @@ class PropertyTable(Element, DataDisplay):
             tbody.header_row = self.create_group_header(group)
             tbody.append(tbody.header_row)
         
-        for i, member in enumerate(members):            
+        for i, member in enumerate(members):
             member_row = self.create_member_row(member)
             member_row.add_class("even" if i % 2 else "odd")
             setattr(self, member.name + "_member", member_row)
