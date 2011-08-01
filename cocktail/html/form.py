@@ -365,6 +365,12 @@ class Form(Element, DataDisplay):
 
         return field_instance
 
+    def insert_into_form(self, form, field_instance):
+        label = getattr(field_instance, "label", None)
+        if label is not None:
+            label.tag = "legend"
+        field_instance.append(self)
+
     def create_hidden_input(self, obj, member):
 
         input = HiddenInput()
