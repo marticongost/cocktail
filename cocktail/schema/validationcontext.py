@@ -33,8 +33,9 @@ class ValidationContext(DictWrapper):
         DictWrapper.__init__(self, kwargs)
         self.__stack = [(member, validable, self._items)]
 
-    def get_value(self, key, default = None, language = None):
-        value = self.validable
+    def get_value(self, key, default = None, language = None, stack_node = -1):
+
+        value = self.__stack[stack_node][1]
 
         for part in key.split("."):
             value = get(value, part, undefined, language)
