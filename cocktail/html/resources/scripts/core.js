@@ -185,8 +185,13 @@ cocktail._clientModel = function (modelId, partId /* optional */) {
     return model;
 }
 
-cocktail.requireId = function () {
-    return "clientElement" + (this.__autoId++);
+cocktail.requireId = function (element) {
+    if (!element) {
+        return "clientElement" + (this.__autoId++);
+    }
+    else {
+        return element.id || (element.id = "clientElement" + (this.__autoId++));
+    }
 }
 
 cocktail.instantiate = function (modelId, params, initializer) {
