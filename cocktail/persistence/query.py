@@ -1209,9 +1209,30 @@ def _global_search_resolution(self, query):
             
             for language in self.languages:
                 index = query.type.get_full_text_index(language)
-                results = index.search(terms)
-                if results:
-                    subset.update(results.iterkeys())
+                
+                if self.logic == "and":                    
+                    language_subset = None
+                    
+                    for term in terms.split():                        
+                        results = index.search(term)
+                        if not results:
+                            language_subset = None
+                            break
+
+                        if language_subset is None:
+                            language_subset = set(results.iterkeys())
+                        else:
+                            language_subset.intersection_update(
+                                results.iterkeys()
+                            )
+
+                    if language_subset is not None:
+                        subset.update(language_subset)
+
+                elif self.logic == "or":
+                    results = index.search(terms)
+                    if results:
+                        subset.update(results.iterkeys())
             
             dataset.intersection_update(subset)
             return dataset
