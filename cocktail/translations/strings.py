@@ -1044,7 +1044,8 @@ translations.define("Decimal parser",
 translations.define("decimal.Decimal-instance",
     ca = lambda instance: _serialize_thousands(instance, ".", ","),
     es = lambda instance: _serialize_thousands(instance, ".", ","),
-    en = lambda instance: _serialize_thousands(instance, ",", ".")
+    en = lambda instance: _serialize_thousands(instance, ",", "."),
+    fr = lambda instance: _serialize_thousands(instance, ".", ",")
 )
 
 # Grouping
