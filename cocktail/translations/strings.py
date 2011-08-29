@@ -957,6 +957,19 @@ translations.define("cocktail.schema.exceptions.MaxItemsError-instance",
 )
 
 translations.define(
+    "cocktail.schema.exceptions.CreditCardChecksumError-instance",
+    ca = lambda instance:
+        u"El camp <em>%s</em> té un dígit de control incorrecte"
+        % member_identifier(instance),
+    es = lambda instance:
+        u"El camp <em>%s</em> tiene un dígito de control incorrecto"
+        % member_identifier(instance),
+    en = lambda instance:
+        u"The <em>%s</em> field has an invalid control digit"
+        % member_identifier(instance)
+)
+
+translations.define(
     "cocktail.persistence.persistentobject.UniqueValueError-instance",
     ca = lambda instance:
         u"El valor indicat pel camp <em>%s</em> ja existeix a la base de dades"
