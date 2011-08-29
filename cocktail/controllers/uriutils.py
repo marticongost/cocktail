@@ -27,7 +27,7 @@ def make_uri(*args, **kwargs):
                 for item in pair[1]:
                     params.append((pair[0], item))
 
-        uri += "?" + "&".join("%s=%s" % pair for pair in params)
+        uri += u"?" + u"&".join(u"%s=%s" % pair for pair in params)
 
     return uri
 

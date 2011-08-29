@@ -85,9 +85,15 @@ class Location(object):
         parts.extend(args)
 
         self.path_info = "/" + "/".join(
-            part.strip("/")
+            unicode(part).strip("/")
             for part in parts
         )
+
+    def pop_path(self):
+        steps = self.path_info.strip("/").split("/")
+        step = steps.pop()
+        self.path_info = "/" + "/".join(steps)
+        return step
 
     def __unicode__(self):
 
