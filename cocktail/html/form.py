@@ -12,6 +12,7 @@ from cocktail.modeling import getter, ListWrapper
 from cocktail.translations import translations
 from cocktail.schema import (
     Member,
+    Schema,
     Boolean,
     Reference,
     BaseDateTime,
@@ -25,7 +26,7 @@ from cocktail.schema import (
 )
 from cocktail.controllers.fileupload import FileUpload
 from cocktail.html import Element
-from cocktail.html.datadisplay import DataDisplay
+from cocktail.html.datadisplay import DataDisplay, display_factory
 from cocktail.html.hiddeninput import HiddenInput
 
 # Extension property that allows members to define their appearence in HTML
@@ -121,6 +122,8 @@ class Form(Element, DataDisplay):
         self.set_member_type_display(
             Color, "cocktail.html.ColorPicker")
 
+        self.set_member_type_display(Schema, embeded_form)
+
         self.__groups = []
         self.groups = ListWrapper(self.__groups)
         self.__hidden_members = {}
@@ -196,15 +199,8 @@ class Form(Element, DataDisplay):
 
                 for group in self.__groups:
 
-                    fieldset = self.create_fieldset(group)
-                    self.fields.append(fieldset)
-                    setattr(self, group.id + "_fieldset", fieldset)
-
-                    if self.table_layout:
-                        container = Element("table")
-                        fieldset.append(container)
-                    else:
-                        container = fieldset
+                    fieldset = self.request_fieldset(group.id)
+                    container = fieldset.fields
 
                     has_match = False
                     all_fields_hidden = True
@@ -238,12 +234,29 @@ class Form(Element, DataDisplay):
                     self.build_member_explanation(member, field_entry)
                     setattr(self, member.name + "_field", field_entry)
     
-    def create_fieldset(self, group):
+    def request_fieldset(self, group_id):
+        
+        key = group_id.replace(".", "_") + "_fieldset"
+        fieldset = getattr(self, key, None)
 
-        group_id = group.id
+        if fieldset is None:
+            parts = group_id.split(".")
+            if len(parts) == 1:
+                parent = self
+            else:
+                parts.pop()
+                parent = self.request_fieldset(".".join(parts))
+
+            fieldset = self.create_fieldset(group_id)
+            parent.fields.append(fieldset)            
+            setattr(self, key, fieldset)
+
+        return fieldset
+
+    def create_fieldset(self, group_id):
 
         fieldset = Element("fieldset") 
-        fieldset.add_class(group_id)
+        fieldset.add_class(group_id.replace(".", "-"))
 
         label = self.get_group_label(group_id)
         if label:            
@@ -253,6 +266,10 @@ class Form(Element, DataDisplay):
         else:
             fieldset.legend = None
             fieldset.add_class("anonymous")
+
+        fieldset.fields = Element("table" if self.table_layout else "div")
+        fieldset.fields.add_class("fieldset_fields")
+        fieldset.append(fieldset.fields)
 
         return fieldset
 
@@ -347,6 +364,12 @@ class Form(Element, DataDisplay):
             field_instance.label["for"] = field_instance.control.require_id()
 
         return field_instance
+
+    def insert_into_form(self, form, field_instance):
+        label = getattr(field_instance, "label", None)
+        if label is not None:
+            label.tag = "legend"
+        field_instance.append(self)
 
     def create_hidden_input(self, obj, member):
 
@@ -447,6 +470,14 @@ class Form(Element, DataDisplay):
         key = self._normalize_member(member)
         self.__hidden_members[key] = hidden
 
+    def _get_value(self):
+        return self.data
+
+    def _set_value(self, value):
+        self.data = value
+
+    value = property(_get_value, _set_value)
+
 
 class FormGroup(object):
 
@@ -478,4 +509,12 @@ class FormGroup(object):
 
     def matches(self, member):
         return self.__match_expr(member)
+
+
+def embeded_form(parent_form, obj, member):
+    form = Form()
+    form.tag = "div"
+    form.embeded = True
+    form.schema = member
+    return form
 

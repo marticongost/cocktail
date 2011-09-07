@@ -275,10 +275,37 @@ def serialize_collection(self, value):
         serialize_item = self.items \
             and self.items.serialize_request_value \
             or unicode
-        return ", ".join(serialize_item(item) for item in value)
+        glue = getattr(self, "request_value_separator", ",")
+        return glue.join(serialize_item(item) for item in value)
 
 schema.Collection.parse_request_value = parse_collection
 schema.Collection.serialize_request_value = serialize_collection
+
+def parse_tuple(self, reader, value):
+
+    if value is not None:
+        separator = getattr(self, "request_value_separator", ",")
+        chunks = value.split(separator)
+        value = tuple(
+            reader.process_value(member, chunk)
+            for chunk, member in zip(chunks, self.items)
+        )
+
+    return value
+
+def serialize_tuple(self, value):
+
+    if not value:
+        return ""
+    else:
+        glue = getattr(self, "request_value_separator", ",")
+        return glue.join(
+            (member.serialize_item or unicode)(item)
+            for member, item in zip(self.items, value)
+        )
+
+schema.Tuple.parse_request_value = parse_collection
+schema.Tuple.serialize_request_value = serialize_collection
 
 NORMALIZATION_DEFAULT = strip
 UNDEFINED_DEFAULT = "set_default"
@@ -646,7 +673,7 @@ class FormSchemaReader(object):
         target,
         languages,
         path):
-     
+
         if target is None:
             if isinstance(member, type):
                 target = member()
@@ -663,7 +690,7 @@ class FormSchemaReader(object):
                         member,
                         child_member,
                         target)
-                    schema.set(target, child_member.name, nested_target)
+                    schema.set(target, child_member.name, nested_target)                    
                 else:
                     nested_target = target
 
@@ -672,7 +699,7 @@ class FormSchemaReader(object):
                     nested_target,
                     languages if child_member.translated else None,
                     path)
-            
+                
             # Validate child members *after* all members have read their values
             # (this allows conditional validations based on other members in 
             # the schema)
@@ -765,7 +792,7 @@ class FormSchemaReader(object):
         return cherrypy.request.params
 
     def split_collection(self, member, value):
-        return value.split(",")
+        return value.split(getattr(member, "request_value_separator", ","))
 
     def create_nested_target(self, member, child_member, target):
         return {}

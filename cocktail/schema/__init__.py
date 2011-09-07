@@ -9,6 +9,7 @@ from cocktail.schema.member import (
 )
 from cocktail.schema.schema import Schema
 from cocktail.schema.rangedmember import RangedMember
+from cocktail.schema.schematuples import Tuple
 from cocktail.schema.schemacollections import (
     Collection, add, remove,
     RelationCollection,
@@ -44,6 +45,7 @@ from cocktail.schema.url import URL
 from cocktail.schema.emailaddress import EmailAddress
 from cocktail.schema.phonenumber import PhoneNumber
 from cocktail.schema.color import Color
+from cocktail.schema.creditcardnumber import CreditCardNumber
 from cocktail.schema.errorlist import ErrorList
 from cocktail.schema.accessors import (
     get_accessor,

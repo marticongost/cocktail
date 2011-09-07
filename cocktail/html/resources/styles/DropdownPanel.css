@@ -1,0 +1,84 @@
+
+.scripted .DropdownPanel .button {
+    cursor: pointer;
+    display: inline;
+    margin-left: 1px;
+    margin-top: 1px;
+    padding: 0.2em;
+    padding-bottom: 1px;
+    -webkit-border-top-left-radius: 3px;
+    -webkit-border-top-right-radius: 3px;
+}
+
+.scripted .DropdownPanel .button .label {
+    display: inline;
+}
+
+.scripted .DropdownPanel .button .bottom_border {
+    display: none;
+    position: absolute;
+    left: 0px;
+    bottom: -2px;
+    height: 2px;
+    background-color: white;
+    background-color: inherit;
+    width: 100%;
+}
+
+.scripted .DropdownPanel div.button:focus {
+    outline: none;
+}
+
+.scripted .DropdownPanel div.button:focus .label {
+    outline: 1px dotted #666;
+}
+
+.scripted .DropdownPanel .panel_wrapper {
+    height: 0;
+    overflow: hidden;
+    z-index: 1000;
+    position: relative;
+}
+
+.scripted .DropdownPanel .panel_wrapper .panel {
+    background-color: white;
+    border: 1px solid #ccc;
+    -webkit-border-bottom-left-radius: 3px;
+    -webkit-border-bottom-right-radius: 3px;
+    -webkit-border-top-right-radius: 3px;
+    -moz-box-shadow: 2px 2px 2px #aaa;
+    -webkit-box-shadow: 2px 2px 2px #aaa;
+    padding: 0.2em;
+}
+
+.scripted .DropdownPanel-expanded .button {
+    margin: 0;
+    background-color: white;
+    border: 1px solid #ccc;
+    z-index: 1001;
+    position: relative;
+}
+
+.scripted .DropdownPanel-expanded .button .bottom_border {
+    display: block;
+}
+
+.scripted .DropdownPanel-expanded .panel_wrapper {
+    overflow: visible;
+}
+
+
+/* To override the background and/or border color, use: */
+/*
+.scripted .DropdownPanel-expanded .button,
+.scripted .DropdownPanel-expanded .panel,
+.scripted .DropdownPanel-expanded .bottom_border {
+    background-color: ...;
+}
+
+.scripted .DropdownPanel-expanded .button,
+.scripted .DropdownPanel-expanded .panel {
+    border-color: ...;
+}
+*/
+
