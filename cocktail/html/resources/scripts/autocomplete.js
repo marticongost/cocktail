@@ -115,21 +115,21 @@ cocktail.autocomplete = function (input, params /* optional */) {
         $dropdown.empty();
         var query = input.value;
         if (query.length) {
-            input.autocomplete(query);
+            input._autocomplete(query);
         }
         else {
             setResultsDisplayed(false);
         }
     }
 
-    input.autocomplete = function (query) {
-        this.findAutocompleteResults(query, function (query, results, cached) {
+    input._autocomplete = function (query) {
+        this._findAutocompleteResults(query, function (query, results, cached) {
             if (!results.length || !focused) {
                 setResultsDisplayed(false);
             }
             else {
                 for (var i = 0; i < results.length; i++) {
-                    input.renderAutocompleteOption(results[i]);
+                    input._renderAutocompleteOption(results[i]);
                 }
                 setResultsDisplayed(true);
             }
@@ -140,7 +140,7 @@ cocktail.autocomplete = function (input, params /* optional */) {
         });
     }
 
-    input.renderAutocompleteOption = function (option) {
+    input._renderAutocompleteOption = function (option) {
         var optionEntry = document.createElement("div");
         optionEntry.innerHTML = option.label;
         optionEntry.autocompleteOption = option;
@@ -150,7 +150,7 @@ cocktail.autocomplete = function (input, params /* optional */) {
         dropdown.appendChild(optionEntry);
     }
 
-    input.findAutocompleteResults = function (query, resultsReady) {
+    input._findAutocompleteResults = function (query, resultsReady) {
 
         if (normalize) {
             query = normalize(query);
