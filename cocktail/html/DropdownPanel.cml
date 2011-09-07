@@ -6,7 +6,7 @@
 
     <?py
     self.add_resource("/cocktail/scripts/DropdownPanel.js")
-    self.add_resource("/cocktail/styles/DropdownPanel.sss")
+    self.add_resource("/cocktail/styles/DropdownPanel.css")
     ?>
 
     <div py:id="button">

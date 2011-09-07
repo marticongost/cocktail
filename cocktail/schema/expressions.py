@@ -338,7 +338,7 @@ class SearchExpression(NormalizableExpression):
 
 class GlobalSearchExpression(Expression):
 
-    def __init__(self, search, languages = None):
+    def __init__(self, search, languages = None, logic = "and"):
         Expression.__init__(self)
         self.search_query = search
         self.search_words = set(normalize(search).split())
@@ -352,6 +352,7 @@ class GlobalSearchExpression(Expression):
             languages.append(None)
         
         self.languages = languages
+        self.logic = logic
 
     def eval(self, context, accessor = None):        
         text = u" ".join(context.get_searchable_text(self.languages))
