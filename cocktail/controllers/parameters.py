@@ -686,7 +686,7 @@ class FormSchemaReader(object):
             for child_member in member.members().itervalues():
 
                 if self._is_schema(child_member):
-                    nested_target = schema.get(target, child_member)
+                    nested_target = schema.get(target, child_member, None)
                     if nested_target is None:
                         nested_target = self.create_nested_target(
                             member,
