@@ -686,11 +686,13 @@ class FormSchemaReader(object):
             for child_member in member.members().itervalues():
 
                 if self._is_schema(child_member):
-                    nested_target = self.create_nested_target(
-                        member,
-                        child_member,
-                        target)
-                    schema.set(target, child_member.name, nested_target)                    
+                    nested_target = schema.get(target, child_member)
+                    if nested_target is None:
+                        nested_target = self.create_nested_target(
+                            member,
+                            child_member,
+                            target)
+                        schema.set(target, child_member.name, nested_target)
                 else:
                     nested_target = target
 
@@ -699,7 +701,7 @@ class FormSchemaReader(object):
                     nested_target,
                     languages if child_member.translated else None,
                     path)
-                
+
             # Validate child members *after* all members have read their values
             # (this allows conditional validations based on other members in 
             # the schema)
