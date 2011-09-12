@@ -9,6 +9,7 @@ Provides classes to describe members that take dates and times as values.
 """
 import datetime
 from calendar import monthrange
+from cocktail.schema.member import Member
 from cocktail.schema.schema import Schema
 from cocktail.schema.rangedmember import RangedMember
 from cocktail.schema.schemanumbers import Integer
@@ -29,7 +30,8 @@ class BaseDateTime(Schema, RangedMember):
     _is_time = False
    
     def __init__(self, *args, **kwargs):
-        
+
+        kwargs.setdefault("default", None)
         Schema.__init__(self, *args, **kwargs)
         RangedMember.__init__(self)
 
