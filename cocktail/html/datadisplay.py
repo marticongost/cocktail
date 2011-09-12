@@ -81,7 +81,21 @@ class DataDisplay(object):
             return member
 
     def _normalize_member(self, member):
-        return member if isinstance(member, basestring) else member.name
+        if isinstance(member, basestring):
+            return member
+
+        if self.schema is None:
+            return member.name
+
+        name = member.name
+
+        if self.schema is not None:
+            while member.schema is not None \
+            and member.schema is not self.schema:
+                member = member.schema
+                name = member.name + "." + name
+
+        return name
 
     @getter
     def displayed_members(self):
@@ -284,9 +298,14 @@ class DataDisplay(object):
                 return expr(obj, language)
             else:
                 return expr(obj)
-        else:
+        else:            
             accessor = self.accessor or get_accessor(obj)
-            return accessor.get(obj, member.name, None, language)
+            value = obj            
+            for part in self._normalize_member(member).split("."):                
+                value = accessor.get(value, part, None, language)
+                if value is None:
+                    break
+            return value
 
     def translate_value(self, obj, member, value):
         return member.translate_value(value) or u"-"
