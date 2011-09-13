@@ -77,6 +77,8 @@ class BaseDateTime(Schema, RangedMember):
             self.add_member(Integer(**minute_kw))
             self.add_member(Integer(**second_kw))
 
+    def _create_default_instance(self):
+        return None
 
 class DateTime(BaseDateTime):
     type = datetime.datetime

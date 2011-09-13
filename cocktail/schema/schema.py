@@ -131,14 +131,19 @@ class Schema(Member):
     def produce_default(self, instance = None):
         default = Member.produce_default(self, instance)
         if default is None:
-            if self.type:
-                default = self.type()
-            elif isinstance(self, type):
-                default = self()
-            else:
-                default = {}
+            default = self._create_default_instance()
+        return default
 
-            self.init_instance(default)
+    def _create_default_instance(self):
+        if self.type:
+            default = self.type()
+        elif isinstance(self, type):
+            default = self()
+        else:
+            default = {}
+
+        self.init_instance(default)
+
         return default
 
     def inherit(self, *bases):
