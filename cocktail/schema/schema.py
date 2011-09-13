@@ -71,9 +71,6 @@ class Schema(Member):
 
     def __init__(self, *args, **kwargs):
 
-        if "default" not in kwargs:
-            kwargs["default"] = DynamicDefault(self._create_default_instance)
-
         members = kwargs.pop("members", None)
         Member.__init__(self, *args, **kwargs)
 
@@ -131,16 +128,17 @@ class Schema(Member):
 
             accessor.set(instance, name, value)
 
-    def _create_default_instance(self):
-        
-        if self.type:
-            default = self.type()
-        elif isinstance(self, type):
-            default = self()
-        else:
-            default = {}
+    def produce_default(self, instance = None):
+        default = Member.produce_default(self, instance)
+        if default is None:
+            if self.type:
+                default = self.type()
+            elif isinstance(self, type):
+                default = self()
+            else:
+                default = {}
 
-        self.init_instance(default)
+            self.init_instance(default)
         return default
 
     def inherit(self, *bases):
