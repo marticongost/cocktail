@@ -534,6 +534,14 @@ class SchemaObject(object):
         """)
 
     def __init__(self, **values):
+
+        # If supplied, the "bidirectional" attribute must be set before
+        # setting any other attribute, otherwise bidirectional relations may
+        # still be set!
+        bidirectional = values.pop("bidirectional", None)
+        if bidirectional is not None:
+            self.bidirectional = bidirectional
+
         self.__class__.init_instance(self, values, SchemaObjectAccessor)
         self.__class__.instantiated(instance = self, values = values)
         
