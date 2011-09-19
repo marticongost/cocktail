@@ -4,7 +4,6 @@ u"""
 .. moduleauthor:: Jordi Fernández <jordi.fernandez@whads.com>
 """
 from decimal import Decimal
-from fractions import Fraction
 
 
 def make_uri(*args, **kwargs):
@@ -19,8 +18,7 @@ def make_uri(*args, **kwargs):
                 basestring,
                 int,
                 float,
-                Decimal,
-                Fraction
+                Decimal
             )):
                 params.append(pair)
             else:
