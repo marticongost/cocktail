@@ -10,6 +10,7 @@ from inspect import isfunction, getargspec
 import cherrypy
 from cocktail.modeling import getter, ListWrapper, ContextualDict
 from cocktail.controllers.requesthandler import RequestHandler
+from cocktail.controllers.uriutils import try_decode
 
 context = ContextualDict()
 
@@ -145,9 +146,10 @@ class Dispatcher(object):
         
         # Path components
         if isinstance(path_info, basestring):
+            path_info = try_decode(path_info)
             parts = self.split(path_info)
         else:
-            parts = list(path_info)
+            parts = list(try_decode(step) for step in path_info)
 
         path = self.__class__.PathProcessor(parts)
 
@@ -288,4 +290,3 @@ if __name__ == "__main__":
             "request.dispatch": Dispatcher()
         }
     })
-
