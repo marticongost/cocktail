@@ -13,6 +13,7 @@ from urlparse import urlparse
 import cherrypy
 from cocktail.modeling import getter
 from cocktail.translations import translations, get_language, language_context
+from cocktail.controllers.uriutils import try_decode
 from cocktail.controllers.viewstate import get_state
 from cocktail.controllers.dispatcher import StopRequest
 
@@ -43,31 +44,43 @@ class Location(object):
     @classmethod
     def get_current_host(cls):
 
-        base = cherrypy.request.base
-
         location = cls()
         location.method = "GET"
-        scheme, rest = base.split("://")
-        location.scheme = scheme
-        pos = rest.find(":")
-        if pos == -1:
-            location.host = rest
-        else:
-            location.host = rest[:pos]
-            location.port = rest[pos+1:]
+        
+        headers = cherrypy.request.headers
+        base = cherrypy.request.base
+
+        if base:
+            scheme, rest = base.split("://")
+            location.scheme = headers.get('X-Forwarded-Scheme') or scheme
+            pos = rest.find(":")
+            if pos == -1:
+                location.host = rest
+            else:
+                location.host = rest[:pos]
+                location.port = rest[pos+1:]
+
+        elif cherrypy.server.socket_host:
+            location.scheme = headers.get('X-Forwarded-Scheme', 'http')
+            location.host = cherrypy.server.socket_host
+            port = cherrypy.server.socket_port
+            if port:
+                default_ports = {"http": 80, "https": 443}
+                if port != default_ports.get(location.scheme):
+                    location.port = port
 
         return location
 
     @classmethod
-    def get_current(cls):
+    def get_current(cls, relative = True):
         
         request = cherrypy.request
         query_string = get_state()
 
-        location = cls().get_current_host()
-        location.relative = True
+        location = cls.get_current_host()
+        location.relative = relative
         location.method = request.method
-        location.path_info = request.path_info        
+        location.path_info = try_decode(request.path_info)
         location.query_string.update(query_string)
         location.form_data.update(
             (key, value)
@@ -83,26 +96,35 @@ class Location(object):
         parts.extend(args)
 
         self.path_info = "/" + "/".join(
-            part.strip("/")
+            unicode(part).strip("/")
             for part in parts
         )
 
-    def __str__(self):
+    def pop_path(self):
+        steps = self.path_info.strip("/").split("/")
+        step = steps.pop()
+        self.path_info = "/" + "/".join(steps)
+        return step
 
-        if self.relative:
-            url = ""
+    def __unicode__(self):
+
+        if self.relative or self.host is None:
+            url = u""
         else:
-            url = self.scheme + "://" + self.host
+            url = self.scheme + u"://" + self.host
 
             if self.port:
-                url += ":" + str(self.port)
+                url += u":" + unicode(self.port)
 
         url += self.path_info
 
         if self.query_string:
-            url += "?" + urlencode(self.query_string, True)
+            url += u"?" + urlencode(self.query_string, True)
 
         return url
+
+    def __str__(self):
+        return unicode(self)
 
     @getter
     def params(self):
@@ -111,8 +133,9 @@ class Location(object):
         else:
             return self.form_data
     
-    def go(self):        
-        if self.method == "POST":
+    def go(self, method = None):
+        method = method or self.method
+        if method == "POST":
             cherrypy.response.status = 200
             cherrypy.response.body = self.get_form()
             raise StopRequest()
@@ -163,3 +186,16 @@ class Location(object):
                     "button": translations("Redirection button")
                 }
 
+    @classmethod
+    def require_http(cls):
+        location = cls.get_current(relative = False)
+        if location.scheme != "http":
+            location.scheme = "http"
+            location.go()
+
+    @classmethod
+    def require_https(cls):
+        location = cls.get_current(relative = False)
+        if location.scheme != "https":
+            location.scheme = "https"
+            location.go()
