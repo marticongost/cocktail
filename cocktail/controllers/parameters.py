@@ -300,12 +300,12 @@ def serialize_tuple(self, value):
     else:
         glue = getattr(self, "request_value_separator", ",")
         return glue.join(
-            (member.serialize_item or unicode)(item)
+            member.serialize_request_value(item)
             for member, item in zip(self.items, value)
         )
 
-schema.Tuple.parse_request_value = parse_collection
-schema.Tuple.serialize_request_value = serialize_collection
+schema.Tuple.parse_request_value = parse_tuple
+schema.Tuple.serialize_request_value = serialize_tuple
 
 NORMALIZATION_DEFAULT = strip
 UNDEFINED_DEFAULT = "set_default"
