@@ -40,6 +40,7 @@ class UserCollection(object):
     selection_mode = MULTIPLE_SELECTION
     available_languages = ()
     default_order = None
+    default_type = None
 
     allow_type_selection = True
     allow_member_selection = True
@@ -88,7 +89,11 @@ class UserCollection(object):
 
         if self.allow_type_selection:
             type = self.params.read(
-                schema.Reference("type", class_family = type, default = type)
+                schema.Reference("type",
+                    class_family = type,
+                    default =
+                    self.default_type or type
+                )
             )
 
         if type is None:
