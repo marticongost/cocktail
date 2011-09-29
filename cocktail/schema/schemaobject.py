@@ -227,6 +227,9 @@ class SchemaClass(EventHub, Schema):
                 for descendant in schema.derived_schemas(True):
                     yield descendant
 
+    def eval(cls, context, accessor = None):
+        return cls
+
     class MemberDescriptor(object):
 
         def __init__(self, member):
