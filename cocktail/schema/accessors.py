@@ -6,6 +6,8 @@ u"""
 @organization:	Whads/Accent SL
 @since:			October 2008
 """
+from cocktail.modeling import DictWrapper
+
 undefined = object()
 _accessors = []
 
@@ -142,7 +144,7 @@ class DictAccessor(MemberAccessor):
 
     @classmethod
     def can_handle(cls, obj):
-        return isinstance(obj, dict)
+        return isinstance(obj, (dict, DictWrapper))
 
     @classmethod
     def get(cls, obj, key, default = undefined, language = None):

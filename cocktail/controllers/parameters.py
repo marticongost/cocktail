@@ -300,12 +300,12 @@ def serialize_tuple(self, value):
     else:
         glue = getattr(self, "request_value_separator", ",")
         return glue.join(
-            (member.serialize_item or unicode)(item)
+            member.serialize_request_value(item)
             for member, item in zip(self.items, value)
         )
 
-schema.Tuple.parse_request_value = parse_collection
-schema.Tuple.serialize_request_value = serialize_collection
+schema.Tuple.parse_request_value = parse_tuple
+schema.Tuple.serialize_request_value = serialize_tuple
 
 NORMALIZATION_DEFAULT = strip
 UNDEFINED_DEFAULT = "set_default"
@@ -686,11 +686,13 @@ class FormSchemaReader(object):
             for child_member in member.members().itervalues():
 
                 if self._is_schema(child_member):
-                    nested_target = self.create_nested_target(
-                        member,
-                        child_member,
-                        target)
-                    schema.set(target, child_member.name, nested_target)                    
+                    nested_target = schema.get(target, child_member, None)
+                    if nested_target is None:
+                        nested_target = self.create_nested_target(
+                            member,
+                            child_member,
+                            target)
+                        schema.set(target, child_member.name, nested_target)
                 else:
                     nested_target = target
 
@@ -699,7 +701,7 @@ class FormSchemaReader(object):
                     nested_target,
                     languages if child_member.translated else None,
                     path)
-                
+
             # Validate child members *after* all members have read their values
             # (this allows conditional validations based on other members in 
             # the schema)

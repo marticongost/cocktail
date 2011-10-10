@@ -29,7 +29,7 @@ class Tuple(Member):
             elif value_length > expected_length:
                 yield MaxItemsError(self, value, context, expected_length)
 
-            for item, item_member in zip(self.items, value):
+            for item_member, item in zip(self.items, value):
                 try:
                     context.enter(item_member, item)
                     for error in item_member.get_errors(item, context):

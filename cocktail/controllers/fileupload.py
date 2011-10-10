@@ -120,3 +120,6 @@ class FileUpload(schema.Schema):
     def get_file_destination(self, upload):
         return None
 
+    def _create_default_instance(self):
+        return None
+

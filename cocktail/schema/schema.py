@@ -16,7 +16,7 @@ from cocktail.modeling import (
     OrderedSet
 )
 from cocktail.events import Event
-from cocktail.schema.member import Member
+from cocktail.schema.member import Member, DynamicDefault
 from cocktail.schema.accessors import get_accessor
 from cocktail.schema.exceptions import SchemaIntegrityError
 
@@ -127,6 +127,24 @@ class Schema(Member):
                 value = member.produce_default(instance)
 
             accessor.set(instance, name, value)
+
+    def produce_default(self, instance = None):
+        default = Member.produce_default(self, instance)
+        if default is None:
+            default = self._create_default_instance()
+        return default
+
+    def _create_default_instance(self):
+        if self.type:
+            default = self.type()
+        elif isinstance(self, type):
+            default = self()
+        else:
+            default = {}
+
+        self.init_instance(default)
+
+        return default
 
     def inherit(self, *bases):
         """Declare an inheritance relationship towards one or more base
