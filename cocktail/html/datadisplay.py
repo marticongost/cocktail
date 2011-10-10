@@ -7,7 +7,7 @@ Visual elements for data binding.
 @organization:	Whads/Accent SL
 @since:			July 2008
 """
-from cocktail.schema import Member, get_accessor
+from cocktail.schema import Member, Schema, get_accessor
 from cocktail.modeling import getter, ListWrapper, empty_list
 from cocktail.translations import (
     translations,
@@ -190,6 +190,9 @@ class DataDisplay(object):
 
         if self.schema:
             def get_label(cls):
+                if not isinstance(cls, Schema):
+                    return None
+
                 if cls.name:
                     label = translations(cls.name + "." + group)
                     if label:
