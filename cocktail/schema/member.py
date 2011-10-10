@@ -166,6 +166,16 @@ class Member(Variable):
         `exceptions.MemberRenamedError` exception).
         """)
 
+    def get_qualified_name(self, delimiter = "."):
+        member = self
+        names = []
+        while member is not None:
+            if member._name:
+                names.append(member._name)
+            member = member._schema
+        names.reverse()
+        return delimiter.join(names)
+
     def _get_schema(self):
         return self._schema
 
@@ -485,13 +495,9 @@ class Member(Variable):
                 class_name = get_full_name(error.__class__)
             except Exception, ex:
                 class_name = error.__class__.__name__
-
+            
             trans = translations(
-                    "%s.%s-error: %s" % (
-                    self.schema.name,
-                    self.name,
-                    class_name
-                ),
+                "%s-error: %s" % (self.get_qualified_name(), class_name),
                 instance = error,
                 language = language,
                 **kwargs
