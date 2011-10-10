@@ -44,19 +44,30 @@ class Location(object):
     @classmethod
     def get_current_host(cls):
 
-        base = cherrypy.request.base
-        headers = cherrypy.request.headers
-
         location = cls()
         location.method = "GET"
-        scheme, rest = base.split("://")
-        location.scheme = headers.get('X-Forwarded-Scheme') or scheme
-        pos = rest.find(":")
-        if pos == -1:
-            location.host = rest
-        else:
-            location.host = rest[:pos]
-            location.port = rest[pos+1:]
+        
+        headers = cherrypy.request.headers
+        base = cherrypy.request.base
+
+        if base:
+            scheme, rest = base.split("://")
+            location.scheme = headers.get('X-Forwarded-Scheme') or scheme
+            pos = rest.find(":")
+            if pos == -1:
+                location.host = rest
+            else:
+                location.host = rest[:pos]
+                location.port = rest[pos+1:]
+
+        elif cherrypy.server.socket_host:
+            location.scheme = headers.get('X-Forwarded-Scheme', 'http')
+            location.host = cherrypy.server.socket_host
+            port = cherrypy.server.socket_port
+            if port:
+                default_ports = {"http": 80, "https": 443}
+                if port != default_ports.get(location.scheme):
+                    location.port = port
 
         return location
 

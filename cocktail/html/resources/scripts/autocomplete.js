@@ -14,7 +14,11 @@ jQuery(function () {
 });
 
 cocktail.autocomplete = function (input, params /* optional */) {
-    
+
+    var KEY_ENTER = 13;
+    var KEY_UP = 38;
+    var KEY_DOWN = 40;
+
     var resultsContainer = document.createElement("div");
     resultsContainer.className = "autocomplete_results_container";
 
@@ -29,7 +33,7 @@ cocktail.autocomplete = function (input, params /* optional */) {
  
     $dropdown.mousedown(function () { return false; });
 
-    var delay = params && params.delay || 50;
+    var delay = params && params.delay || 100;
     var uri = params && params.uri;
     var options = params && params.options;
     var timeout = null;
@@ -39,7 +43,8 @@ cocktail.autocomplete = function (input, params /* optional */) {
 
     var htmlExp = /<[^>]+>/g;
     var focused = false;
-    
+    var lastQuery = null;
+
     if (normalize === undefined) {
         var normalizationMap = {
             "àáâä": "a",
@@ -86,7 +91,24 @@ cocktail.autocomplete = function (input, params /* optional */) {
         options = normalizedOptions;
     }
 
-    $input.keydown(function () {
+    $input.keydown(function (e) {
+
+        if (e.keyCode == KEY_UP) {
+            selectPreviousEntry();
+            return false;
+        }
+        else if (e.keyCode == KEY_DOWN) {
+            selectNextEntry();
+            return false;
+        }
+        else if (e.keyCode == KEY_ENTER) {
+            if ($dropdown.is(".unfolded") && $selectedEntry) {
+                chooseOption($selectedEntry.get(0).autocompleteOption);
+                setResultsDisplayed(false);
+                return false;
+            }
+        }
+
         if (timeout) {
             clearTimeout(timeout);
         }
@@ -100,48 +122,95 @@ cocktail.autocomplete = function (input, params /* optional */) {
 
     $input.click(update);
     $input.focus(function () { focused = true; });
-    $input.blur(function () { focused = false; });
-
-    $input.bind("optionSelected", function (e, option) {
-        selectOption(option);        
+    $input.blur(function () {
+        focused = false;
+        setResultsDisplayed(false);
     });
 
-    function selectOption(option) {
+    $input.bind("optionSelected", function (e, option) {
+        chooseOption(option);        
+    });
+
+    function chooseOption(option) {
         input.value = option.label.replace(htmlExp, "");
+        lastQuery = input.value;
         setResultsDisplayed(false);
     }
 
-    function update() {
-        $dropdown.empty();
+    var $selectedEntry = null;
+
+    function selectEntry(entry) {
+        $dropdown.find(".autocomplete_entry.selected").removeClass("selected");
+        if (entry) {
+            $selectedEntry = jQuery(entry);
+            $selectedEntry.addClass("selected");
+        }
+        else {
+            $selectedEntry = null;
+        }
+    }
+
+    function selectNextEntry() {
+        if ($selectedEntry) {
+            var $nextEntry = $selectedEntry.next(".autocomplete_entry");
+            if ($nextEntry.length) {
+                selectEntry($nextEntry);
+            }
+        }
+    }
+
+    function selectPreviousEntry() {
+        if ($selectedEntry) {
+            var $previousEntry = $selectedEntry.prev(".autocomplete_entry");
+            if ($previousEntry.length) {
+                selectEntry($previousEntry);
+            }
+        }
+    }
+
+    function selectFirstEntry() {
+        selectEntry($dropdown.find(".autocomplete_entry").first());
+    }
+
+    function update() {        
         var query = input.value;
         if (query.length) {
-            input.autocomplete(query);
+            if (query != lastQuery) {
+                lastQuery = query;
+                input._autocomplete(query);
+            }
         }
         else {
             setResultsDisplayed(false);
         }
     }
 
-    input.autocomplete = function (query) {
-        this.findAutocompleteResults(query, function (query, results, cached) {
+    input._autocomplete = function (query) {
+        this._findAutocompleteResults(query, function (query, results, alreadyCached) {
+
+            $dropdown.empty();
+            
             if (!results.length || !focused) {
                 setResultsDisplayed(false);
             }
             else {
                 for (var i = 0; i < results.length; i++) {
-                    input.renderAutocompleteOption(results[i]);
+                    input._renderAutocompleteOption(results[i]);
                 }
                 setResultsDisplayed(true);
             }
 
-            if (cache && !cached) {
+            selectFirstEntry();
+
+            if (cache && !alreadyCached) {
                 cache[query] = results;
             }
         });
     }
 
-    input.renderAutocompleteOption = function (option) {
+    input._renderAutocompleteOption = function (option) {
         var optionEntry = document.createElement("div");
+        optionEntry.className = "autocomplete_entry";
         optionEntry.innerHTML = option.label;
         optionEntry.autocompleteOption = option;
         jQuery(optionEntry).click(function () {
@@ -150,13 +219,13 @@ cocktail.autocomplete = function (input, params /* optional */) {
         dropdown.appendChild(optionEntry);
     }
 
-    input.findAutocompleteResults = function (query, resultsReady) {
+    input._findAutocompleteResults = function (query, resultsReady) {
 
         if (normalize) {
             query = normalize(query);
         }
         
-        var results = cache && cache[results];
+        var results = cache && cache[query];
 
         if (results) {
             resultsReady(query, results, true);
@@ -177,10 +246,18 @@ cocktail.autocomplete = function (input, params /* optional */) {
                     var requestURI = uri;
                 }
                 else {
-                    var requestURI = requestURI(query);
+                    var requestURI = uri(query);
                 }
                 jQuery.getJSON(requestURI, function (data) {
-                    resultsReady(query, data);
+                    var items = [];
+                    for (var i = 0; i < data.length; i++) {
+                        var item = data[i];
+                        if (typeof(item) == "string") {
+                            item = {label: item};
+                        }
+                        items.push(item);
+                    }
+                    resultsReady(query, items);
                 });
             }
         }
@@ -192,9 +269,10 @@ cocktail.autocomplete = function (input, params /* optional */) {
    
     function setResultsDisplayed(displayed) {
         if (displayed) {
+            jQuery(".autocomplete_dropdown").removeClass("unfolded");
             $dropdown.addClass("unfolded");
         }
-        else {
+        else {            
             $dropdown.removeClass("unfolded");
         }
     }
