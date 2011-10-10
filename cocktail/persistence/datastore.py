@@ -8,6 +8,7 @@ u"""
 """
 from types import FunctionType
 from threading import local, RLock
+from weakref import WeakKeyDictionary
 from ZODB import DB
 import transaction
 from cocktail.modeling import getter
@@ -137,6 +138,57 @@ class DataStore(object):
     def sync(self):
         self._thread_data.root = None
         self.connection.sync()
+
+    def _get_transaction_data(self, create_if_missing = False):
+
+        thread_transaction_data = getattr(
+            self._thread_data,
+            "transaction_data",
+            None
+        )
+
+        if thread_transaction_data is None:
+            thread_transaction_data = WeakKeyDictionary()
+            self._thread_data.transaction_data = thread_transaction_data
+
+        transaction = self.connection.transaction_manager.get()
+        transaction_data = thread_transaction_data.get(transaction)
+
+        if transaction_data is None and create_if_missing:
+            transaction_data = {}
+            thread_transaction_data[transaction] = transaction_data
+
+        return transaction_data
+
+    def get_transaction_value(self, key, default = None):
+
+        transaction_data = self._get_transaction_data()
+
+        if transaction_data is None:
+            return default
+
+        return transaction_data.get(key, default)
+
+    def set_transaction_value(self, key, value):
+        transaction_data = self._get_transaction_data(True)
+        transaction_data[key] = value
+
+    def unique_after_commit_hook(self, id, callback, *args, **kwargs):
+
+        key = "cocktail.persistence.unique_after_commit_hooks"
+        unique_after_commit_hooks = self.get_transaction_value(key)
+
+        if unique_after_commit_hooks is None:
+            unique_after_commit_hooks = set([id])
+            self.set_transaction_value(key, unique_after_commit_hooks)
+        elif id in unique_after_commit_hooks:
+            return False
+        else:
+            unique_after_commit_hooks.add(id)
+
+        transaction = self.connection.transaction_manager.get()
+        transaction.addAfterCommitHook(callback, args, kwargs)
+        return True
 
 datastore = DataStore()
 
