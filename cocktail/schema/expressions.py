@@ -123,8 +123,13 @@ class Expression(object):
     def match(self, expr):
         return MatchExpression(self, expr)
 
-    def search(self, expr):
-        return SearchExpression(self, expr)
+    def search(self, query, languages = None, logic = "and"):
+        return SearchExpression(
+            self,
+            query,
+            languages = languages,
+            logic = logic
+        )
 
     def translated_into(self, language):
         return TranslationExpression(self, language)
@@ -327,18 +332,94 @@ class EndsWithExpression(NormalizableExpression):
         return a.endswith(b)
 
 
-class SearchExpression(NormalizableExpression):
+class SearchExpression(Expression):
 
-    normalized_strings = True
+    __query = None
+    __tokens = frozenset()
 
-    def op(self, a, b):
-        a, b = self.normalize_operands(a, b)
-        return a and b and any((word in a) for word in b.split())
+    def __init__(self, subject, query, languages = None, logic = "and"):
+        Expression.__init__(self, subject, query, languages, logic)
+        self.subject = subject
+        self.query = query
+        self.languages = languages
+        self.logic = logic
+
+    def _get_query(self):
+        return self._query
+
+    def _set_query(self, query):
+        
+        if not isinstance(query, basestring):
+            raise TypeError(
+                'SearchExpression.query must be set to a string, '
+                'got %r instead'
+                % query
+            )
+
+        self.__query = query
+        self.__tokens = frozenset(self.tokenize(query))
+
+    query = property(_get_query, _set_query)
+
+    @property
+    def tokens(self):
+        return self.__tokens
+
+    def tokenize(self, text):
+        return (self.normalize(token) for token in text.split())
+
+    def normalize(self, word):
+        return normalize(word)
+
+    def eval(self, context, accessor = None):
+        
+        languages = self.languages
+        if languages is None:
+            languages = [get_language()]
+
+        added_language_neutral_text = False
+        text_body = []
+
+        for language in languages:
+            with language_context(language):
+                lang_text = self.subject.eval(context, accessor)
+                get_searchable_text = getattr(
+                    lang_text, "get_searchable_text", None
+                )
+                if get_searchable_text is not None:
+                    if not added_language_neutral_text:
+                        text_body.extend(get_searchable_text([None]))
+                        added_language_neutral_text = True
+                    text_body.extend(get_searchable_text([language]))
+                else:
+                    text_body.append(lang_text)
+
+        subject_tokens = self.tokenize(u" ".join(text_body))
+
+        if self.logic == "and":
+            return not (self.__tokens - frozenset(subject_tokens))
+        elif self.logic == "or":
+            return any(token in self.__tokens for token in subject_tokens)
+        else:
+            raise ValueError(
+                "Unknown logic for SearchExpression: "
+                "expected 'and' or 'or', got %r instead"
+                % self.logic
+            )
 
 
 class GlobalSearchExpression(Expression):
 
     def __init__(self, search, languages = None, logic = "and"):
+
+        warn(
+            "The cocktail.schema.expressions.GlobalSearchExpression "
+            "class has been deprecated in favor of "
+            "cocktail.schema.expressions.SearchExpression",
+            DeprecationWarning,
+            stacklevel = 2
+        )
+
         Expression.__init__(self)
         self.search_query = search
         self.search_words = set(normalize(search).split())
