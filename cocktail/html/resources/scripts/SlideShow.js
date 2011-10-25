@@ -52,8 +52,26 @@ cocktail.bind(".SlideShow", function ($slideShow) {
         return $slides.get(0);
     }
 
+    this.getPrevSlide = function () {
+        
+        var $slides = $slideShow.find(this.slidesSelector);
+
+        if (current) {
+            var index = $slides.index(current);
+            if (index != -1 && index - 1 > -1) {
+                return $slides.get(index - 1);
+            }
+        }
+
+        return $slides.get($slides.length-1);
+    }
+    
     this.selectNextSlide = function () {        
         this.selectSlide(this.getNextSlide());
+    }
+
+    this.selectPrevSlide = function () {        
+        this.selectSlide(this.getPrevSlide());
     }
 
     this.selectSlide = function (slide) {
