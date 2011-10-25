@@ -225,7 +225,13 @@ def _handle_inserting(event):
     
     for member in members:
         if obj._should_index_member_full_text(member):
+            
             if member.translated:
+                
+                # Non-translatable content of translated types
+                if isinstance(member, type):
+                    member.index_text(obj)
+
                 for language in obj.translations:
                     member.index_text(obj, language)
             else:
@@ -256,6 +262,7 @@ def _rebuild_full_text_index(self):
 
     for obj in persistent_type.select():
         if obj.__class__.translated:
+            self.index_text(obj)
             for language in obj.translations:
                 self.index_text(obj, language)
         else:
@@ -266,11 +273,10 @@ schema.String.rebuild_full_text_index = _rebuild_full_text_index
 
 def _rebuild_full_text_indexes(cls, recursive = False, verbose = True):
     
-    if cls.full_text_indexed:
-        if cls.full_text_indexed:
-            if verbose:
-                print "Rebuilding full text index for %s" % cls
-            cls.rebuild_full_text_index()
+    if cls.full_text_indexed:        
+        if verbose:
+            print "Rebuilding full text index for %s" % cls
+        cls.rebuild_full_text_index()
 
     classes = [cls]
     if recursive:

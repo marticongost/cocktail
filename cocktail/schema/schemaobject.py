@@ -627,7 +627,9 @@ class SchemaObject(object):
         # Yield all text fields, traversing selected relations
         for language in languages:
             for member in self.__class__.members().itervalues():
-                if getattr(member, "text_search", False):
+                if getattr(member, "text_search", False) \
+                and (member.translated == (language is not None)):
+
                     member_value = self.get(member, language)
                     if member_value:
 

@@ -26,7 +26,6 @@ from cocktail.schema.expressions import (
     Self,
     InclusionExpression,
     ExclusionExpression,
-    GlobalSearchExpression,
     DescendsFromExpression,
     normalize
 )
@@ -256,7 +255,7 @@ class GlobalSearchFilter(UserFilter):
         else:
             languages = self.available_languages
 
-        return GlobalSearchExpression(self.value, languages)
+        return Self.search(self.value, languages = languages)
 
 
 class CollectionFilter(BinaryFilter):

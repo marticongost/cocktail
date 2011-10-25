@@ -1168,36 +1168,73 @@ expressions.DescendsFromExpression.resolve_filter = _descends_from_resolution
 
 def _search_resolution(self, query):
 
-    member, index = _get_filter_info(self)
+    indexed_member = None
+    languages = None if self.languages is None else list(self.languages)
 
-    if member and member.full_text_indexed:
-        
+    # Searching over the whole text mass of the queried type
+    if isinstance(self.subject, expressions.SelfExpression) \
+    and query.type.full_text_indexed:        
+        indexed_member = query.type
+        if languages is None:
+            languages = [None, get_language()]
+        elif None not in languages:
+            languages.append(None)
+    
+    # Searching a specific text field
+    elif isinstance(self.subject, Member) and self.subject.full_text_indexed:
+        indexed_member = self.subject
+        if languages is None:
+            languages = [get_language() if self.subject.translated else None]
+
+    # No optimization available
+    if indexed_member is None:
+        return ((0, 0), None)
+
+    # Full text index available
+    else:
         def impl(dataset):
-            searched_text = self.operands[1]
-            if isinstance(searched_text, expressions.Expression):
-                searched_text = searched_text.eval({})
-            terms = expressions.normalize(searched_text)
-            languages = set([None])
-            if member.translated:
-                languages.add(get_language())
-
-            subset = set()
             
-            for language in languages:
-                index = member.get_full_text_index(language)
-                results = index.search(terms)
-                if results:
-                    subset.update(results.iterkeys())
+            if self.logic == "and":
 
-            dataset.intersection_update(subset)
+                for term in self.tokens:
+
+                    term_subset = None
+                    
+                    for language in languages:
+                        index = indexed_member.get_full_text_index(language)
+                        results = index.search(term)
+
+                        if results:
+                            if term_subset is None:
+                                term_subset = set(results.iterkeys())
+                            else:
+                                term_subset.update(results.iterkeys())
+
+                    if not term_subset:
+                        dataset = set()
+                        break
+
+                    dataset.intersection_update(term_subset)
+
+                    if not dataset:
+                        break
+
+            elif self.logic == "or":
+                subset = set()
+
+                for language in languages:
+                    index = indexed_member.get_full_text_index(language)
+                    results = index.search(self.tokens)
+                    if results:
+                        subset.update(results.iterkeys())
+            
+                dataset.intersection_update(subset)
+
             return dataset
 
-        return ((-1, 0), impl)
-    else:
-        return ((0, 0), None)    
+        return ((-1, 1), impl)
 
 expressions.SearchExpression.resolve_filter = _search_resolution
-
 
 def _global_search_resolution(self, query):
 
@@ -1206,14 +1243,14 @@ def _global_search_resolution(self, query):
         def impl(dataset):
             terms = expressions.normalize(self.search_query)            
             subset = set()
-            
+
             for language in self.languages:
                 index = query.type.get_full_text_index(language)
                 
-                if self.logic == "and":                    
+                if self.logic == "and":
                     language_subset = None
                     
-                    for term in terms.split():                        
+                    for term in terms.split():
                         results = index.search(term)
                         if not results:
                             language_subset = None
