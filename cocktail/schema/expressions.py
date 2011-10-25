@@ -332,6 +332,30 @@ class EndsWithExpression(NormalizableExpression):
         return a.endswith(b)
 
 
+class GlobalSearchExpression(Expression):
+
+    def __init__(self, search, languages = None, logic = "and"):
+        Expression.__init__(self)
+        self.search_query = search
+        self.search_words = set(normalize(search).split())
+        
+        if languages is None:
+            languages = [get_language()]
+        else:
+            languages = list(languages)
+
+        if None not in languages:
+            languages.append(None)
+        
+        self.languages = languages
+        self.logic = logic
+
+    def eval(self, context, accessor = None):        
+        text = u" ".join(context.get_searchable_text(self.languages))
+        text = normalize(text)
+        return any((word in text) for word in self.search_words)
+
+
 class SearchExpression(Expression):
 
     __query = None
@@ -406,39 +430,6 @@ class SearchExpression(Expression):
                 "expected 'and' or 'or', got %r instead"
                 % self.logic
             )
-
-
-class GlobalSearchExpression(Expression):
-
-    def __init__(self, search, languages = None, logic = "and"):
-
-        warn(
-            "The cocktail.schema.expressions.GlobalSearchExpression "
-            "class has been deprecated in favor of "
-            "cocktail.schema.expressions.SearchExpression",
-            DeprecationWarning,
-            stacklevel = 2
-        )
-
-        Expression.__init__(self)
-        self.search_query = search
-        self.search_words = set(normalize(search).split())
-        
-        if languages is None:
-            languages = [get_language()]
-        else:
-            languages = list(languages)
-
-        if None not in languages:
-            languages.append(None)
-        
-        self.languages = languages
-        self.logic = logic
-
-    def eval(self, context, accessor = None):        
-        text = u" ".join(context.get_searchable_text(self.languages))
-        text = normalize(text)
-        return any((word in text) for word in self.search_words)
 
 
 class AddExpression(Expression):
