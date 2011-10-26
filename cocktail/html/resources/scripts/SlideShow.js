@@ -16,21 +16,32 @@ cocktail.bind(".SlideShow", function ($slideShow) {
         return autoplayTimer != null;
     }
 
+    this.stop = function () {
+        if (autoplayTimer) {
+            clearInterval(autoplayTimer);
+        }
+    }
+
+    this.start = function () {
+        autoplayTimer = window.setInterval(
+            function () {                         
+                $slideShow.get(0).selectNextSlide();                         
+            },
+            this.interval
+        );        
+    }
+
+    this.restart = function () {
+        this.stop();
+        this.start();
+    }
+
     this.setAutoplay = function (autoplay) {
         if (autoplay) {
-            if (!autoplayTimer) {
-                autoplayTimer = window.setInterval(
-                    function () {                         
-                        $slideShow.get(0).selectNextSlide();                         
-                    },
-                    this.interval
-                );                
-            }
+            if (!autoplayTimer) this.start();                            
         }
         else {        
-            if (autoplayTimer) {
-                clearInterval(autoplayTimer);
-            }
+            this.stop();
         }
     }
 
