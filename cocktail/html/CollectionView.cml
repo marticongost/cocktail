@@ -146,10 +146,18 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
                         <py:cocktail.html.CheckList
                             py:id="members_selector"
                             py:name="members"
-                            py:items="@{self.user_collection.schema.ordered_members()}"
-                            py:value="@{self.user_collection.members}">
+                            py:items="@{self.user_collection.schema.grouped_members()}"
+                            py:value="@{self.user_collection.members}"
+                            py:grouped="${True}">
 
                             <?py
+                            @extend(element)
+                            def get_group_title(element, group, items):
+                                if group:
+                                    return self.collection_display.get_group_label(group)
+                                else:
+                                    return ""
+
                             @refine(element)
                             def get_item_value(self, item):
                                 if isinstance(item, basestring):
