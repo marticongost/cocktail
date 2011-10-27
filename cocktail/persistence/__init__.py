@@ -44,4 +44,5 @@ from cocktail.persistence import fulltextsearch
 from cocktail.persistence.maxvalue import MaxValue
 from cocktail.persistence.query import Query
 from cocktail.persistence.pickling import dumps, loads
+from cocktail.persistence.deletedryrun import delete_dry_run
 
