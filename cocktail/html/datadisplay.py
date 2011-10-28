@@ -203,30 +203,13 @@ class DataDisplay(object):
     def get_group_label(self, group):
 
         if self.schema:
-            def get_label(cls):
-                if not isinstance(cls, Schema):
-                    return None
+            label = self.schema.translate_group(group)
+            if label:
+                return label
 
-                if cls.name:
-                    label = translations(cls.name + "." + group)
-                    if label:
-                        return label
-
-                for base in cls.bases:
-                    label = get_label(base)
-                    if label:
-                        return label
-            
-            for cls in (
-                self.schema,
-                self.schema.adaptation_source,
-                self.persistent_object and self.persistent_object.__class__
-            ):
-                if cls:
-                    label = get_label(cls)
-                    if label:
-                        return label
-
+        if self.persistent_object:
+            return self.persistent_object.__class__.translate_group(group)
+        
     def get_member_editable(self, member):
         """Indicates if the given member should be editable by users. This
         affects the kind of display used by the member (for example, a text
