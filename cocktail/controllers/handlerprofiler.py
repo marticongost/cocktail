@@ -17,6 +17,11 @@ import cherrypy
 _lock = Lock()
 _request_id = 0
 
+try:
+    from pyprof2calltree import convert
+except ImportError:
+    convert = None
+
 def handler_profiler(stats_path = None):
 
     handler = cherrypy.request.handler
@@ -45,12 +50,13 @@ def handler_profiler(stats_path = None):
         # Run the handler for the current request through the profiler.
         # Profile data is either shown on standard output or stored on the
         # indicated file.
+        stats_file = join(stats_path, "%s.stats" % id) if stats_path else None
         try:
             runctx(
                 "rvalue = handler(*args, **kwargs)",
                 globals(),
                 local_context,
-                join(stats_path, "%s.stats" % id) if stats_path else None
+                stats_file
             )
 
         # Store request data, to match profiler stats against their context
@@ -68,6 +74,12 @@ def handler_profiler(stats_path = None):
                     f.write(dumps(request_context))
                 finally:
                     f.close()
+
+        # If pyprof2calltree is available, use it to export the profiler stats
+        # from Python's own format to 'calltree' (which can be parsed by
+        # kcachegrind and others)
+        if stats_file is not None and convert is not None:
+            convert(stats_file, join(stats_path, "%s.calltree" % id))
 
         return local_context["rvalue"]
 
