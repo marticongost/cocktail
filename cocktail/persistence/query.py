@@ -12,6 +12,7 @@ from BTrees.IOBTree import IOTreeSet, IOSet
 from BTrees.OOBTree import OOTreeSet, OOSet
 from cocktail.styled import styled
 from cocktail.modeling import getter, ListWrapper
+from cocktail.stringutils import normalize
 from cocktail.translations import get_language
 from cocktail.schema import Member, expressions, SchemaObjectAccessor
 from cocktail.schema.io import export_file
@@ -1171,7 +1172,7 @@ def _global_search_resolution(self, query):
     if query.type.full_text_indexed:
         
         def impl(dataset):
-            terms = expressions.normalize(self.search_query)            
+            terms = normalize(self.search_query)            
             subset = set()
 
             for language in self.languages:
