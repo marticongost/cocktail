@@ -16,6 +16,7 @@ from cocktail.modeling import (
     OrderedSet
 )
 from cocktail.events import Event
+from cocktail.translations import translations
 from cocktail.schema.member import Member, DynamicDefault
 from cocktail.schema.accessors import get_accessor
 from cocktail.schema.exceptions import SchemaIntegrityError
@@ -673,4 +674,30 @@ class Schema(Member):
             groups.insert(0, (None, ungroupped_members))
 
         return groups
+
+    def translate_group(self, group):
+
+        def get_label(schema):
+            if not isinstance(schema, Schema):
+                return None
+
+            if schema.name:
+                label = translations(schema.name + "." + group)
+                if label:
+                    return label
+
+            for base in schema.bases:
+                label = get_label(base)
+                if label:
+                    return label
+
+        label = get_label(self)
+        
+        if label:
+            return label
+        
+        if self.adaptation_source is not None:
+            label = get_label(self.adaptation_source)
+
+        return label
 
