@@ -460,13 +460,16 @@ class Member(Variable):
                     language = language,
                     **kwargs
                 )
-            else:                
-                translation = translations(
-                    self.schema.name + "." + self.name,
-                    language,
-                    chain = self.copy_source,
-                    **kwargs
-                )
+            else:
+                if self.schema.name:
+                    translation = translations(
+                        self.schema.name + "." + self.name,
+                        language,
+                        chain = self.copy_source,
+                        **kwargs
+                    )
+                else:
+                    translation = None
 
                 if not translation:
                     for cls in self.schema.__class__.__mro__:

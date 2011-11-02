@@ -154,7 +154,7 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
                             @extend(element)
                             def get_group_title(element, group, items):
                                 if group:
-                                    return self.collection_display.get_group_label(group)
+                                    return self.user_collection.schema.translate_group(group)
                                 else:
                                     return ""
 
