@@ -10,26 +10,7 @@ import re
 import operator
 from cocktail.translations import translations, get_language
 from cocktail.schema.accessors import get_accessor
-
-normalization_map = {}
-
-for repl, chars in (
-    (u"a", u"áàäâ"),
-    (u"e", u"éèëê"),
-    (u"i", u"íìïî"),
-    (u"o", u"óòöô"),
-    (u"u", u"úùüû")
-):
-    for c in chars:
-        normalization_map[ord(c)] = ord(repl)
-
-def normalize(string):
-    string = string.lower()
-    
-    if isinstance(string, unicode):
-        string = string.translate(normalization_map)
-
-    return string
+from cocktail.stringutils import normalize
 
 
 class Expression(object):

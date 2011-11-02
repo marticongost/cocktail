@@ -9,6 +9,7 @@ u"""
 
 from BTrees.IOBTree import IOBTree, IOTreeSet
 from BTrees.OOBTree import OOBTree, OOTreeSet
+from cocktail.stringutils import normalize
 from cocktail.modeling import getter
 from cocktail.events import when
 from cocktail import schema
@@ -331,7 +332,7 @@ schema.Member.get_index_value = _member_get_index_value
 
 def _string_get_index_value(self, value):
     if value is not None and self.normalized_index:
-        return schema.expressions.normalize(value)
+        return normalize(value)
     else:
         return value
 
