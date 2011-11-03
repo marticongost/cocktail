@@ -20,6 +20,10 @@ class FileUpload(schema.Schema):
         "application/octet-stream",
         "application/force-download"
     )
+    mime_type_corrections = {
+        "image/pjpeg": "image/jpeg",
+        "image/x-png": "image/png"
+    }
 
     def __init__(self, *args, **kwargs):
 
@@ -70,8 +74,13 @@ class FileUpload(schema.Schema):
         if value.type in self.meaningless_mime_types:
             mime_type_guess = guess_type(file_name, strict = False)
             if mime_type_guess:
-                upload["mime_type"] = mime_type_guess[0]
-        
+                upload["mime_type"] = mime_type_guess[0] 
+
+        # Map bad MIME types to their proper values
+        good_mime_type = self.mime_type_corrections.get(upload["mime_type"])
+        if good_mime_type:
+            upload["mime_type"] = good_mime_type
+
         dest = self.get_file_destination(upload)
         dest_file = None
         chunk_size = self.chunk_size
