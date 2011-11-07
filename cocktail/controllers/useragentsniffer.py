@@ -46,6 +46,10 @@ class UserAgentSniffer(object):
 
         return match
 
+    def __nonzero__(self):
+        return self.match_request()
+
+
 mobile_device = UserAgentSniffer(
     "Mobile",
     "Android",
