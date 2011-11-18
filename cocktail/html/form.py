@@ -25,7 +25,7 @@ from cocktail.schema import (
     Color
 )
 from cocktail.controllers.fileupload import FileUpload
-from cocktail.html import Element
+from cocktail.html import Element, templates
 from cocktail.html.datadisplay import DataDisplay, display_factory
 from cocktail.html.hiddeninput import HiddenInput
 
@@ -102,10 +102,18 @@ class Form(Element, DataDisplay):
             Decimal, "cocktail.html.DecimalBox")
 
         self.set_member_type_display(
-            FileUpload, "cocktail.html.FileUploadBox")
+            FileUpload, 
+            lambda form, obj, member:
+                templates.new(    
+                    "cocktail.html." + (
+                        "AsyncFileUploader" 
+                            if member.async 
+                            else "FileUploadBox"
+                    )
+                )
+        )
 
-        self.set_member_type_display(
-            Collection, "cocktail.html.CheckList")
+        self.set_member_type_display(Collection, _collection_display)
 
         self.set_member_type_display(
             Number, "cocktail.html.NumberBox")
@@ -517,4 +525,12 @@ def embeded_form(parent_form, obj, member):
     form.embeded = True
     form.schema = member
     return form
+
+def _collection_display(form, obj, member):
+    if isinstance(member.items, FileUpload) and member.items.async:
+        return templates.new("cocktail.html.AsyncFileUploader")
+    elif member.items.enumeration is not None:
+        return templates.new("cocktail.html.CheckList")
+    else:
+        return templates.new("cocktail.html.CollectionEditor")
 

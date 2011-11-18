@@ -16,10 +16,17 @@ class FileUpload(schema.Schema):
     chunk_size = 8192
     normalization = None
     hash_algorithm = None
+
+    async = False
+    async_uploader = None
+    async_upload_url = None
+    async_prefix = "async-"
+
     meaningless_mime_types = (
         "application/octet-stream",
         "application/force-download"
     )
+
     mime_type_corrections = {
         "image/pjpeg": "image/jpeg",
         "image/x-png": "image/png"
@@ -49,8 +56,29 @@ class FileUpload(schema.Schema):
         self.add_member(schema.Integer("file_size", **file_size_kw))
         self.add_member(schema.String("mime_type", **mime_type_kw))
 
-    def parse_request_value(self, reader, value):       
+    def parse_request_value(self, reader, value):
  
+        # Handle asynchronous uploads
+        async_upload = None
+        file = None
+
+        if isinstance(value, basestring):
+
+            if self.async \
+            and self.async_uploader is not None \
+            and value.startswith(self.async_prefix):
+                try:
+                    async_file_id = int(value[len(self.async_prefix):])
+                except:
+                    pass
+                else:
+                    async_upload = self.async_uploader.get(async_file_id)
+                
+            if async_upload is None:
+                value = None
+            else:
+                value = async_upload
+
         if value is None or not value.filename:
             return None
 
@@ -64,6 +92,7 @@ class FileUpload(schema.Schema):
         file_name = file_name.split("\\")[-1]
 
         upload = {
+            "id": async_upload.id if async_upload else None,
             "file_name": file_name,
             "mime_type": value.type,
             "file_size": None,
@@ -91,7 +120,12 @@ class FileUpload(schema.Schema):
         size = 0
 
         # Read a first chunk of the uploaded file
-        chunk = value.file.read(chunk_size)
+        if async_upload:
+            file = open(self.async_uploader.get_temp_path(async_upload), "r")
+        else:
+            file = value.file
+
+        chunk = file.read(chunk_size)
         
         # Don't write to the destination if no file has been uploaded
         if chunk and dest:
@@ -107,14 +141,14 @@ class FileUpload(schema.Schema):
                     hash.update(chunk)
 
                 size += len(chunk)
-                chunk = value.file.read(chunk_size)
+                chunk = file.read(chunk_size)
         finally:
             if dest_file:
                 dest_file.close()
 
         if not dest:
-            value.file.seek(0)
-            upload["file"] = value.file
+            file.seek(0)
+            upload["file"] = file
 
         if not size:
             upload = None
