@@ -33,15 +33,17 @@ def data_bound(element, control = None):
     
 def bind_member(element, control = None):
 
-    if element.member and element.member.name:
+    member = getattr(element, "collection", None) or element.member
+
+    if member and member.name:
 
         if element.data_display:
             name = element.data_display.get_member_name(
-                element.member,
+                member,
                 element.language
             )
         else:
-            name = element.member.name
+            name = member.name
             if element.language:
                 name += "-" + element.language
 
