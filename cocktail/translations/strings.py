@@ -1706,3 +1706,17 @@ translations.define("cocktail.html.Slider.next_button",
     en = u"Next"
 )
 
+# cocktail.html.AsyncFileUploader
+#------------------------------------------------------------------------------
+translations.define("cocktail.html.AsyncFileUploader.drop_area",
+    ca = u"Arrossega un fitxer aquí per pujar-lo",
+    es = u"Arrastra un fichero aquí para subirlo",
+    en = u"Drop a file here to upload it"
+)
+
+translations.define("cocktail.html.AsyncFileUploader.button",
+    ca = u"Pujar fitxer",
+    es = u"Subir fichero",
+    en = u"Upload file"
+)
+
