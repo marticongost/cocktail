@@ -22,7 +22,8 @@ from cocktail.schema import (
     URL,
     EmailAddress,
     PhoneNumber,
-    Color
+    Color,
+    CodeBlock
 )
 from cocktail.controllers.fileupload import FileUpload
 from cocktail.html import Element, templates
@@ -129,6 +130,8 @@ class Form(Element, DataDisplay):
 
         self.set_member_type_display(
             Color, "cocktail.html.ColorPicker")
+
+        self.set_member_type_display(CodeBlock, _code_block_display)
 
         self.set_member_type_display(Schema, embeded_form)
 
@@ -533,4 +536,11 @@ def _collection_display(form, obj, member):
         return templates.new("cocktail.html.CheckList")
     else:
         return templates.new("cocktail.html.CollectionEditor")
+
+def _code_block_display(form, obj, member):
+    display = templates.new("cocktail.html.CodeEditor")
+    display.syntax = member.language
+    if member.language == "python":
+        display.cols = 80
+    return display
 
