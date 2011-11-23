@@ -12,8 +12,6 @@ class CodeBlock(String):
     text_search = False
 
     def normalization(self, value):
-        from cocktail.styled import styled
-        print styled("normalizing code block", "yellow")
         if value:
             value = value.strip()
             if self.language == "python":
