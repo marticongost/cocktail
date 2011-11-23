@@ -532,7 +532,7 @@ def embeded_form(parent_form, obj, member):
 def _collection_display(form, obj, member):
     if isinstance(member.items, FileUpload) and member.items.async:
         return templates.new("cocktail.html.AsyncFileUploader")
-    elif member.items.enumeration is not None:
+    elif member.items.enumeration is not None or member.is_persistent_relation:
         return templates.new("cocktail.html.CheckList")
     else:
         return templates.new("cocktail.html.CollectionEditor")
