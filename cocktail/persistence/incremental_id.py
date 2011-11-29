@@ -17,7 +17,7 @@ ID_CONTAINER_KEY = "id_container"
 RETRY_INTERVAL = 0.1
 STEP = 10
 
-_acquired_ids = []
+_acquired_ids = {}
 _lock = RLock()
 
 @datastore.connection_opened.append
@@ -29,33 +29,22 @@ def create_container(event):
 
 @datastore.storage_changed.append
 def discard_acquired_ids(event):
-    global _acquired_ids
-    _lock.acquire()
-    try:
-        _acquired_ids = []
-    finally:
-        _lock.release()
+    with _lock:
+        _acquired_ids.clear()
 
 def incremental_id(key = "default"):
     
-    _lock.acquire()
+    with _lock:
+        key_acquired_ids = _acquired_ids.get(key)
 
-    try:
-        if not _acquired_ids:            
+        if not key_acquired_ids:
             acquire_id_range(STEP, key)
-    
-        return _acquired_ids.pop(0)
-    
-    finally:
-        _lock.release()
+        
+        return _acquired_ids[key].pop(0)
 
 def acquire_id_range(size, key = "default"):
 
-    global _acquired_ids
-
-    try:
-        _lock.acquire()
-
+    with _lock:
         tm = transaction.TransactionManager()
         conn = datastore.db.open(transaction_manager = tm)
 
@@ -73,6 +62,7 @@ def acquire_id_range(size, key = "default"):
                 top_id = base_id + STEP
 
                 container[key] = top_id
+
                 try:
                     tm.commit()
                 except ConflictError:
@@ -82,10 +72,17 @@ def acquire_id_range(size, key = "default"):
                     tm.abort()
                     raise
                 else:
-                    _acquired_ids = range(base_id + 1, top_id + 1)
-                    return _acquired_ids
+                    break
         finally:
             conn.close()
-    finally:
-        _lock.release()
+
+        id_range = range(base_id + 1, top_id + 1)
+        key_acquired_ids = _acquired_ids.get(key)
+
+        if key_acquired_ids is None:
+            _acquired_ids[key] = list(id_range)
+        else:
+            key_acquired_ids.extend(id_range)
+
+        return id_range
 
