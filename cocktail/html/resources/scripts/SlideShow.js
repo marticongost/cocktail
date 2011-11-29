@@ -86,7 +86,11 @@ cocktail.bind(".SlideShow", function ($slideShow) {
     }
 
     this.selectSlide = function (slide) {
-        
+
+        if (typeof(slide) == "number") {
+            slide = $slideShow.find(this.slidesSelector).get(slide);
+        }
+
         if (current) {
             this._hideSlide(current);
         }
