@@ -6,6 +6,7 @@ u"""
 @organization:	Whads/Accent SL
 @since:			July 2008
 """
+from warnings import warn
 from cocktail.translations import translations
 from cocktail.html import Element
 
@@ -16,12 +17,33 @@ ACCESSIBLE_DESCENDANTS = 2
 
 class TreeView(Element):
 
+    HIDDEN_ROOT = 0
+    SINGLE_ROOT = 1
+    MERGED_ROOT = 2
+
     tag = "ul"
     root = None
-    root_visible = True
+    root_visibility = SINGLE_ROOT
+    selection = None
+    expanded = True
+    max_depth = None
     create_empty_containers = False
     filter_item = None
     __item_access = None
+
+    def _get_root_visible(self):
+        return self.root_visibility != self.HIDDEN_ROOT
+
+    def _set_root_visible(self, value):
+        warn(
+            "The cocktail.html.TreeView.root_visible property has been "
+            "deprecated in favor of cocktail.html.TreeView.root_visibility",
+            DeprecationWarning,
+            stacklevel = 2
+        )
+        self.root_visibility = self.SINGLE_ROOT if value else self.HIDDEN_ROOT
+
+    root_visible = property(_get_root_visible, _set_root_visible)
 
     def _is_accessible(self, item):
         
@@ -47,18 +69,34 @@ class TreeView(Element):
         return accessibility
 
     def _ready(self):
+
         Element._ready(self)
-        
+ 
+        # Find the selected path
+        self._expanded = set()
+        item = self.selection
+
+        while item is not None:
+            self._expanded.add(item)
+            item = self.get_parent_item(item)
+
         if self.root is not None:
-            if self.root_visible:
+            if self.root_visibility == self.SINGLE_ROOT:
+                self._depth = 2
                 if not self.filter_item or self._is_accessible(self.root):
                     self.root_entry = self.create_entry(self.root)
                     self.append(self.root_entry)
             else:
+                self._depth = 1
+                children = self.get_child_items(self.root)
+
+                if self.root_visibility == self.MERGED_ROOT:
+                    children = [self.root] + list(children)
+
                 self._fill_children_container(
                     self,
                     self.root,
-                    self.get_child_items(self.root)
+                    children
                 )
 
         self.__item_access = None
@@ -66,7 +104,17 @@ class TreeView(Element):
     def create_entry(self, item):
         
         entry = Element("li")
-    
+ 
+        if (
+            not (
+                self.root_visibility == self.MERGED_ROOT 
+                and item is self.root
+                and self.selection is not self.root
+            )
+            and item in self._expanded
+        ):
+            entry.add_class("selected")
+
         entry.label = self.create_label(item)
         entry.append(entry.label)
 
@@ -104,17 +152,33 @@ class TreeView(Element):
         return container
 
     def _fill_children_container(self, container, item, children):
+        self._depth += 1
         if children:
             for child in children:
                 if not self.filter_item or self._is_accessible(child):
                     container.append(self.create_entry(child))
+        self._depth -= 1
 
     def get_parent_item(self, item):
-        return item.parent
-
+        return getattr(item, "parent", None)
+    
     def get_child_items(self, parent):
-        return parent.children
-        
+        if self.should_collapse(parent):
+            return []
+        else:
+            return getattr(parent, "children", [])
+
     def get_item_url(self, content_type):
         return None
+
+    def should_collapse(self, parent):
+        return (
+            (self.max_depth is not None and self._depth > self.max_depth)
+            or (
+                self.root_visibility == self.MERGED_ROOT 
+                and parent is self.root
+                and self._depth > 1
+            )
+            or (not self.expanded and parent not in self._expanded)
+        )
 
