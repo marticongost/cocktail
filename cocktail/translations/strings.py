@@ -1720,3 +1720,33 @@ translations.define("cocktail.html.AsyncFileUploader.button",
     en = u"Upload file"
 )
 
+# cocktail.html.TwitterTimeline
+#------------------------------------------------------------------------------
+translations.define("cocktail.html.TwitterTimeline.seconds",
+    en = u"less than a minute ago"
+)
+
+translations.define("cocktail.html.TwitterTimeline.minute",
+    en = u"about a minute ago"
+)
+
+translations.define("cocktail.html.TwitterTimeline.minutes",
+    en = u"%(minutes)s minutes ago"
+)
+
+translations.define("cocktail.html.TwitterTimeline.hour",
+    en = u"about an hour ago"
+)
+
+translations.define("cocktail.html.TwitterTimeline.hours",
+    en = u"about %(hours)s hours ago"
+)
+
+translations.define("cocktail.html.TwitterTimeline.day",
+    en = u"1 day ago"
+)
+
+translations.define("cocktail.html.TwitterTimeline.days",
+    en = u"about %(days)s ago"
+)
+
