@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:py="http://www.whads.com/ns/cocktail/templates">
+
+    <?py-class
+    account = None
+    max_tweets = 5
+    ?>
+
+    <?py
+    self.add_resource("/cocktail/scripts/TwitterTimeline.js")
+
+    self.add_client_translation("cocktail.html.TwitterTimeline.seconds")
+    self.add_client_translation("cocktail.html.TwitterTimeline.minute")
+    self.add_client_translation("cocktail.html.TwitterTimeline.minutes")
+    self.add_client_translation("cocktail.html.TwitterTimeline.hour")
+    self.add_client_translation("cocktail.html.TwitterTimeline.hours")
+    self.add_client_translation("cocktail.html.TwitterTimeline.day")
+    self.add_client_translation("cocktail.html.TwitterTimeline.days")
+    ?>
+
+    <py:ready>
+        <?py
+        if self.account is None or self.max_tweets < 1:
+            self.visible = False
+        else:
+            self.set_client_param("account", self.account)
+            self.set_client_param("maxTweets", self.max_tweets)
+        ?>
+    </py:ready>
+
+    <ul py:id="tweets"/>
+
+    <li
+        py:id="tweet"
+        py:client_model="cocktail.html.TwitterTimeline.entry">
+        <div py:local_id="tweet_body"/>
+        <div py:local_id="tweet_date"/>
+    </li>
+
+</div>
+
