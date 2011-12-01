@@ -711,7 +711,7 @@ jQuery(function () {
 // Allow AJAX calls to redirect the browser
 jQuery(function () {
     jQuery("body").bind("ajaxComplete", function (e, request, settings) {
-        var redirect = request.getResponseHeader("Ajax-Redirect");
+        var redirect = request && request.getResponseHeader("Ajax-Redirect");
         if (redirect) {
            window.location = redirect;
         };
