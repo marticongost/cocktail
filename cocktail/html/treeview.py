@@ -88,7 +88,7 @@ class TreeView(Element):
                     self.append(self.root_entry)
             else:
                 self._depth = 1
-                children = self.get_child_items(self.root)
+                children = self.get_expanded_children(self.root)
 
                 if self.root_visibility == self.MERGED_ROOT:
                     children = [self.root] + list(children)
@@ -118,7 +118,7 @@ class TreeView(Element):
         entry.label = self.create_label(item)
         entry.append(entry.label)
 
-        children = self.get_child_items(item)
+        children = self.get_expanded_children(item)
 
         if self.create_empty_containers or children:
             entry.container = self.create_children_container(item, children)
@@ -161,17 +161,20 @@ class TreeView(Element):
 
     def get_parent_item(self, item):
         return getattr(item, "parent", None)
-    
+  
     def get_child_items(self, parent):
-        if self.should_collapse(parent):
-            return []
-        else:
-            return getattr(parent, "children", [])
+        return getattr(parent, "children", [])
 
     def get_item_url(self, content_type):
         return None
 
-    def should_collapse(self, parent):
+    def get_expanded_children(self, parent):
+        if self.should_collapse(parent):
+            return []
+        else:
+            return self.get_child_items(parent)
+
+    def should_collapse(self, parent):        
         return (
             (self.max_depth is not None and self._depth > self.max_depth)
             or (
