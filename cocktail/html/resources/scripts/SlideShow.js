@@ -91,6 +91,10 @@ cocktail.bind(".SlideShow", function ($slideShow) {
             slide = $slideShow.find(this.slidesSelector).get(slide);
         }
 
+        if (slide == current) {
+            return;
+        }
+
         if (current) {
             this._hideSlide(current);
         }
