@@ -628,8 +628,10 @@ class SchemaObject(object):
         for language in languages:
             for member in self.__class__.members().itervalues():
                 if getattr(member, "text_search", False) \
-                and (member.translated == (language is not None)):
-
+                and (
+                    member.translated == (language is not None)
+                    or isinstance(member, (Reference, Collection))
+                ):
                     member_value = self.get(member, language)
                     if member_value:
 
