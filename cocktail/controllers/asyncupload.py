@@ -44,7 +44,11 @@ class AsyncUploader(object):
             if not file:
                 raise ValueError("File upload failed: empty request body")
         else:
-            upload_data = cherrypy.request.params["qqfile"]
+            try:
+                upload_data = cherrypy.request.params["qqfile"]
+            except KeyError:
+                raise cherrypy.HTTPError(400)
+
             upload.filename = upload_data.filename
             file = upload_data.file
 
