@@ -5,6 +5,7 @@ u"""
 """
 from decimal import Decimal
 from fractions import Fraction
+from urllib import quote
 
 
 def make_uri(*args, **kwargs):
@@ -27,7 +28,10 @@ def make_uri(*args, **kwargs):
                 for item in pair[1]:
                     params.append((pair[0], item))
 
-        uri += u"?" + u"&".join(u"%s=%s" % pair for pair in params)
+        uri += u"?" + u"&".join(
+            u"%s=%s" % (name, quote(unicode(value)))
+            for name, value in params
+        )
 
     return uri
 
