@@ -461,9 +461,11 @@ class Member(Variable):
                     **kwargs
                 )
             else:
+                suffix = kwargs.get("suffix", "")
+
                 if self.schema.name:
                     translation = translations(
-                        self.schema.name + "." + self.name,
+                        self.schema.name + "." + self.name + suffix,
                         language,
                         chain = self.copy_source,
                         **kwargs
@@ -472,9 +474,9 @@ class Member(Variable):
                     translation = None
 
                 if not translation:
-                    for cls in self.schema.__class__.__mro__:
+                    for cls in self.schema.__class__.__mro__:                        
                         translation = translations(
-                            cls.__name__ + "." + self.name,
+                            cls.__name__ + "." + self.name + suffix,
                             language,
                             chain = self.copy_source,
                             **kwargs
