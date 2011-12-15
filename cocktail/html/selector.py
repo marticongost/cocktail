@@ -156,28 +156,28 @@ class Selector(Element):
         else:
             self._create_entries(self.items, self)
 
-    def _create_entries(self, items, container):
-
-        if hasattr(items, "iteritems"):
-            for value, label in items.iteritems():
-                value = self.get_item_value(value)
-                entry = self.create_entry(
-                    value,
-                    label,
-                    self._is_selected(value)
-                )
-                container.append(entry)
+    def _iter_pairs(self):
+        if hasattr(self.items, "iteritems"):
+            return (
+                (self.get_item_value(value), label)
+                for value, label in self.items.iteritems()
+            )
         else:
-            for item in items:
-                value = self.get_item_value(item)
-                label = self.get_item_label(item)
-                entry = self.create_entry(
-                    value,
-                    label,
-                    self._is_selected(value)
-                )
-                container.append(entry)
+            return (
+                (self.get_item_value(item),
+                 self.get_item_label(item))
+                for item in self.items
+            )
     
+    def _create_entries(self, items, container):
+        for value, label in self._iter_pairs():
+            entry = self.create_entry(
+                value,
+                label,
+                self._is_selected(value)
+            )
+            container.append(entry)
+
     def get_item_value(self, item):
        
         member = (
