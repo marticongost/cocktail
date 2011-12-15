@@ -16,6 +16,7 @@ class CheckList(Selector):
 
     empty_option_displayed = False
     column_count = None
+    column_height = None
 
     def _ready(self):
 
@@ -28,17 +29,20 @@ class CheckList(Selector):
         Selector._ready(self)
  
     def _create_entries(self, items, container):
-        if self.column_count is None:
+        if self.column_count is None and self.column_height is None:
             Selector._create_entries(self, items, container)
         else:
             self.add_class("with_columns")
-
             pairs = list(self._iter_pairs(items))
-            column_height, remainder = divmod(len(pairs), self.column_count)
 
-            if remainder:
-                column_height += 1
-            
+            if self.column_height:
+                column_height = self.column_height
+                remainder = 0
+            else:
+                column_height, remainder = divmod(len(pairs), self.column_count)
+                if remainder:
+                    column_height += 1
+
             column = None
 
             for i, (value, label) in enumerate(pairs):
