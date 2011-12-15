@@ -33,7 +33,7 @@ class CheckList(Selector):
         else:
             self.add_class("with_columns")
 
-            pairs = list(self._iter_pairs())
+            pairs = list(self._iter_pairs(items))
             column_height, remainder = divmod(len(pairs), self.column_count)
 
             if remainder:
