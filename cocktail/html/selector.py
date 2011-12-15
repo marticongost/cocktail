@@ -156,21 +156,21 @@ class Selector(Element):
         else:
             self._create_entries(self.items, self)
 
-    def _iter_pairs(self):
-        if hasattr(self.items, "iteritems"):
+    def _iter_pairs(self, items):
+        if hasattr(items, "iteritems"):
             return (
                 (self.get_item_value(value), label)
-                for value, label in self.items.iteritems()
+                for value, label in items.iteritems()
             )
         else:
             return (
                 (self.get_item_value(item),
                  self.get_item_label(item))
-                for item in self.items
+                for item in items
             )
     
     def _create_entries(self, items, container):
-        for value, label in self._iter_pairs():
+        for value, label in self._iter_pairs(items):
             entry = self.create_entry(
                 value,
                 label,
