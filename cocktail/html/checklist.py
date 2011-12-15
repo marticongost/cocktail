@@ -15,6 +15,7 @@ CheckBox = templates.get_class("cocktail.html.CheckBox")
 class CheckList(Selector):
 
     empty_option_displayed = False
+    column_count = None
 
     def _ready(self):
 
@@ -25,7 +26,49 @@ class CheckList(Selector):
             )
 
         Selector._ready(self)
-    
+ 
+    def _create_entries(self, items, container):
+        if self.column_count is None:
+            Selector._create_entries(self, items, container)
+        else:
+            self.add_class("with_columns")
+
+            pairs = list(self._iter_pairs())
+            column_height, remainder = divmod(len(pairs), self.column_count)
+
+            if remainder:
+                column_height += 1
+            
+            column = None
+
+            for i, (value, label) in enumerate(pairs):
+                
+                if column is None or not column.capacity:
+
+                    column = self.create_column()
+                    column.capacity = column_height
+
+                    if remainder:
+                        remainder -= 1
+                        if not remainder:
+                            column_height -= 1
+
+                    container.append(column)
+
+                entry = self.create_entry(
+                    value,
+                    label,
+                    self._is_selected(value)
+                )
+
+                column.append(entry)
+                column.capacity -= 1
+
+    def create_column(self):
+        column = Element()
+        column.add_class("column")
+        return column
+
     def create_entry(self, value, label, selected):
 
         entry = Element()
