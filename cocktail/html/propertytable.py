@@ -60,7 +60,7 @@ class PropertyTable(Element, DataDisplay):
         tbody = Element("tbody")
         
         if group:
-            tbody.add_class(group + "_group")
+            tbody.add_class(group.replace(".", "_") + "_group")
             tbody.header_row = self.create_group_header(group)
             tbody.append(tbody.header_row)
         
