@@ -527,6 +527,8 @@ def embeded_form(parent_form, obj, member):
     form.tag = "div"
     form.embeded = True
     form.schema = member
+    form.name_prefix = parent_form.name_prefix
+    form.name_suffix = parent_form.name_suffix
     return form
 
 def _collection_display(form, obj, member):
