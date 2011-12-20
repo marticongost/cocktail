@@ -28,6 +28,7 @@ class TreeView(Element):
     expanded = True
     max_depth = None
     create_empty_containers = False
+    display_filtered_containers = True
     filter_item = None
     __item_access = None
 
@@ -45,7 +46,7 @@ class TreeView(Element):
 
     root_visible = property(_get_root_visible, _set_root_visible)
 
-    def _is_accessible(self, item):
+    def _is_accessible(self, item, depth = None):
         
         if self.__item_access is None:
             self.__item_access = {}
@@ -54,10 +55,17 @@ class TreeView(Element):
 
         if accessibility is None:
 
+            if depth is None:
+                depth = 0
+                node = item
+                while node is not None:
+                    depth += 1
+                    node = self.get_parent_item(node)
+
             if self.filter_item(item):
                 accessibility = ACCESSIBLE
-            elif any(
-                self._is_accessible(child)
+            elif (self.max_depth is None or self.max_depth > depth) and any(
+                self._is_accessible(child, depth + 1)
                 for child in self.get_child_items(item)
             ):
                 accessibility = ACCESSIBLE_DESCENDANTS
@@ -153,10 +161,22 @@ class TreeView(Element):
 
     def _fill_children_container(self, container, item, children):
         self._depth += 1
+
         if children:
             for child in children:
-                if not self.filter_item or self._is_accessible(child):
-                    container.append(self.create_entry(child))
+                if self.filter_item:
+                    accessibility = self._is_accessible(
+                        child, 
+                        depth = self._depth
+                    )
+                    if accessibility == NOT_ACCESSIBLE or (
+                        accessibility == ACCESSIBLE_DESCENDANTS
+                        and not self.display_filtered_containers
+                    ):
+                        continue
+
+                container.append(self.create_entry(child))
+
         self._depth -= 1
 
     def get_parent_item(self, item):
