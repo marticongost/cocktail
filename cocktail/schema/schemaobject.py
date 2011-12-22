@@ -73,7 +73,8 @@ class SchemaClass(EventHub, Schema):
 
         # Fill the schema with members declared as class attributes
         for name, member in members.iteritems():
-            if isinstance(member, Member):
+            if isinstance(member, Member) \
+            and not isinstance(member, SchemaClass):
                 member.name = name
                 cls.add_member(member)
 
