@@ -32,6 +32,7 @@ def deep(context, key, value):
 
 
 IMPLICIT_COPY_DEFAULT = True
+PRESERVE_ORDER_DEFAULT = True
 COPY_VALIDATIONS_DEFAULT = True
 COPY_MODE_DEFAULT = reference
 COLLECTION_COPY_MODE_DEFAULT = reference
@@ -134,6 +135,7 @@ class Adapter(object):
         source_accessor = None,
         target_accessor = None,
         implicit_copy = IMPLICIT_COPY_DEFAULT,
+        preserve_order = PRESERVE_ORDER_DEFAULT,
         copy_validations = COPY_VALIDATIONS_DEFAULT,
         copy_mode = COPY_MODE_DEFAULT,
         collection_copy_mode = COLLECTION_COPY_MODE_DEFAULT):
@@ -145,6 +147,7 @@ class Adapter(object):
         self.target_accessor = target_accessor
 
         self.implicit_copy = implicit_copy
+        self.preserve_order = preserve_order
         self.copy_validations = copy_validations
         self.copy_mode = copy_mode
         self.collection_copy_mode = collection_copy_mode
@@ -213,6 +216,27 @@ class Adapter(object):
         both of the adapter's import and export rule sets (but the opposite
         isn't true; setting X{collection_copy_mode} on either rule set won't
         affect the adapter).
+        
+        @type: bool
+        """)
+
+    def _get_preserve_order(self):
+        return self.__preserve_order
+
+    def _set_preserve_order(self, value):
+        self.__preserve_order = value
+        self.import_rules.preserve_order = value
+        self.export_rules.preserve_order = value
+
+    preserve_order = property(_get_preserve_order, _set_preserve_order,
+        doc = """Indicates if the schemas exported by the adapter attempt to
+        preserve the same relative ordering for their members and groups of
+        members defined by the source schema.
+        
+        Note that setting this property will alter the analogous attribute on
+        both of the adapter's import and export rule sets (but the opposite
+        isn't true; setting X{preserve_order} on either rule set won't affect
+        the adapter).
         
         @type: bool
         """)
@@ -375,6 +399,7 @@ class RuleSet(object):
     source_accessor = None
 
     implicit_copy = IMPLICIT_COPY_DEFAULT
+    preserve_order = PRESERVE_ORDER_DEFAULT
     copy_validations = COPY_VALIDATIONS_DEFAULT
     copy_mode = COPY_MODE_DEFAULT
     collection_copy_mode = COLLECTION_COPY_MODE_DEFAULT
@@ -402,7 +427,8 @@ class RuleSet(object):
 
         target_schema.adaptation_source = source_schema
         target_schema.original_member = source_schema.original_member
-        
+        target_schema.members_order = []
+
         for rule in self.__rules:
             rule.adapt_schema(context)
         
@@ -419,30 +445,31 @@ class RuleSet(object):
                     target_schema.add_validation(source_validation)
 
         # Preserve member order
-        target_members = target_schema.members()
-        members_order = []
-        ordered_members = set()
+        if self.preserve_order:
+            target_members = target_schema.members()
+            members_order = []
+            ordered_members = set()
 
-        for source_member in source_schema.ordered_members():
-            for target_member in target_members.itervalues():
-                if target_member.adaptation_source is source_member \
-                and target_member not in ordered_members:
-                    members_order.append(target_member.name)
-                    ordered_members.add(target_member)
+            for source_member in source_schema.ordered_members():
+                for target_member in target_members.itervalues():
+                    if target_member.adaptation_source is source_member \
+                    and target_member not in ordered_members:
+                        members_order.append(target_member.name)
+                        ordered_members.add(target_member)
 
-        target_schema.members_order = members_order
+            target_schema.members_order = members_order
 
-        # Preserve group order
-        target_groups = set(
-            target_member.member_group
-            for target_member in target_members.itervalues()
-            if target_member.member_group
-        )
-        target_schema.groups_order = [
-            group
-            for group in source_schema.ordered_groups()
-            if group in target_groups
-        ]
+            # Preserve group order
+            target_groups = set(
+                target_member.member_group
+                for target_member in target_members.itervalues()
+                if target_member.member_group
+            )
+            target_schema.groups_order = [
+                group
+                for group in source_schema.ordered_groups()
+                if group in target_groups
+            ]
 
     def adapt_object(self,
         source_object,
@@ -498,7 +525,7 @@ class Rule(object):
                 setattr(member, key, value)
 
         if not member.schema:
-            schema.add_member(member)
+            schema.add_member(member, append = True)
 
         return member
 
@@ -563,7 +590,10 @@ class Copy(Rule):
                             target_member.add_validation(source_validation)
 
                 if not target_member.schema:
-                    context.target_schema.add_member(target_member)
+                    context.target_schema.add_member(
+                        target_member,
+                        append = True
+                    )
 
     def adapt_object(self, context):
  
