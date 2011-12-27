@@ -34,7 +34,10 @@ from cocktail.controllers.location import Location
 from cocktail.controllers.viewstate import (
     get_state,
     view_state,
-    view_state_form
+    view_state_form,
+    save_view_state,
+    restore_view_state,
+    saved_query_string
 )
 from cocktail.controllers.parameters import (
     serialize_parameter, get_parameter, FormSchemaReader,

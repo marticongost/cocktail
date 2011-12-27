@@ -10,6 +10,7 @@ import cherrypy
 from cgi import parse_qs
 from urllib import urlencode
 from cocktail.html.utils import escape_attrib
+from cocktail.controllers.sessions import session
 
 def get_state(**kwargs):
     state = parse_qs(cherrypy.request.query_string)
@@ -50,4 +51,24 @@ def view_state_form(schema = None, **kwargs):
                 )
 
     return "\n".join(form)
+
+def _view_state_session_key(id):
+    if id is None:
+        id = cherrypy.request.path_info
+    return u"view_state:%s" % id
+
+def save_view_state(view_state_id = None):
+    session_key = _view_state_session_key(view_state_id)
+    session[session_key] = cherrypy.request.query_string
+
+def restore_view_state(view_state_id = None, **kwargs):
+    session_key = _view_state_session_key(view_state_id)    
+    qs = session.get(session_key)
+    state = parse_qs(qs) if qs else {}
+    state.update(kwargs)
+    return state
+
+def saved_query_string(view_state_id = None, **kwargs):
+    state = restore_view_state(view_state_id, **kwargs)
+    return u"?" + view_state(**state)
 
