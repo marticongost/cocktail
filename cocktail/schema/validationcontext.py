@@ -92,5 +92,5 @@ class ValidationContext(DictWrapper):
 
     def path(self):
         for member, validable, context_dict in self.__stack[1:]:
-            yield (member, validable)
+            yield (member, validable, context_dict.get("collection_index"))
 
