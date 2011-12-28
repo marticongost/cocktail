@@ -417,6 +417,8 @@ class Element(object):
                 for handler in self.__binding_handlers:
                     handler()
 
+            self.__is_bound = True
+
     def when_binding(self, handler):
         """Call the given function when the element reaches the `bind` stage.
 
