@@ -12,6 +12,17 @@ cocktail.bind(".SlideShow", function ($slideShow) {
     var current = null;
     var autoplayTimer = null;
 
+    // Create navigation controls
+    if (this.navigationControls) {
+        jQuery(cocktail.instantiate("cocktail.html.SlideShow.previousSlideButton"))
+            .appendTo($slideShow)
+            .click(function () { $slideShow.get(0).selectPreviousSlide(); });
+    
+        jQuery(cocktail.instantiate("cocktail.html.SlideShow.nextSlideButton"))
+            .appendTo($slideShow)
+            .click(function () { $slideShow.get(0).selectNextSlide(); });
+    }
+
     this.getAutoPlay = function () {
         return autoplayTimer != null;
     }
@@ -140,6 +151,6 @@ cocktail.bind(".SlideShow", function ($slideShow) {
 
     // Check the element's configuration to determine wether to start in
     // autoplay mode
-    this.setAutoplay(this.autoplay);   
+    this.setAutoplay(this.autoplay);
 });
 
