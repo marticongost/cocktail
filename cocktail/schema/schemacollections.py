@@ -226,7 +226,8 @@ class Collection(RelationMember):
                         self.relation_constraints, context)
             
                 if item_schema is not None or relation_constraints:
-                    for item in value:
+                    for i, item in enumerate(value):
+                        context["collection_index"] = i
 
                         if item_schema:
                             for error in item_schema.get_errors(item, context):

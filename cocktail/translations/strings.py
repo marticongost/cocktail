@@ -787,20 +787,25 @@ def member_identifier(error):
     
     from cocktail.schema import RelationMember
 
-    desc = [
-        translations(member).lower()
-        for member, validable in error.path
-        if isinstance(member, RelationMember)
-    ]
-    
-    if error.language:
-        desc.append("%s (%s)" % (
-            translations(error.member).lower(),
-            translations(error.language)
-        ))
-    else:
-        desc.append(translations(error.member).lower())
+    desc = []
+    path = error.path
 
+    for member, validable, index in path:
+        if isinstance(member, RelationMember):
+            label = translations(member).lower()
+            if index is not None:
+                label += " #%d" % (index + 1)
+            desc.append(label)
+    
+    if error.member is not path[-1][0]:
+        if error.language:
+            desc.append("%s (%s)" % (
+                translations(error.member).lower(),
+                translations(error.language)
+            ))
+        else:
+            desc.append(translations(error.member).lower())
+    
     return u" &gt; ".join(desc)
 
 translations.define("cocktail.schema.exceptions.ValidationError-instance",
