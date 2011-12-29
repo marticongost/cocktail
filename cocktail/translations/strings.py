@@ -797,7 +797,7 @@ def member_identifier(error):
                 label += " #%d" % (index + 1)
             desc.append(label)
     
-    if error.member is not path[-1][0]:
+    if not path or error.member is not path[-1][0]:
         if error.language:
             desc.append("%s (%s)" % (
                 translations(error.member).lower(),
