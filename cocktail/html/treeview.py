@@ -20,6 +20,7 @@ class TreeView(Element):
     HIDDEN_ROOT = 0
     SINGLE_ROOT = 1
     MERGED_ROOT = 2
+    ITERABLE_ROOT = 3
 
     tag = "ul"
     root = None
@@ -33,7 +34,10 @@ class TreeView(Element):
     __item_access = None
 
     def _get_root_visible(self):
-        return self.root_visibility != self.HIDDEN_ROOT
+        return self.root_visibility not in (
+            self.HIDDEN_ROOT,
+            self.ITERABLE_ROOT
+        )
 
     def _set_root_visible(self, value):
         warn(
@@ -96,7 +100,11 @@ class TreeView(Element):
                     self.append(self.root_entry)
             else:
                 self._depth = 1
-                children = self.get_expanded_children(self.root)
+
+                if self.root_visibility == self.ITERABLE_ROOT:
+                    children = self.root
+                else:
+                    children = self.get_expanded_children(self.root)
 
                 if self.root_visibility == self.MERGED_ROOT:
                     children = [self.root] + list(children)
