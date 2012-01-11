@@ -392,7 +392,9 @@ class CollectionDisplay(DataDisplay):
     selection_mode = NO_SELECTION
     selection = None
     grouping = None
-    
+
+    __user_collection = None
+
     def __init__(self):
         DataDisplay.__init__(self)
         self.__member_sortable = {}
