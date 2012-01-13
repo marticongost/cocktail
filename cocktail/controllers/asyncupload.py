@@ -62,7 +62,7 @@ class AsyncUploader(object):
 
         # Copy the uploaded file to a temporary location
         temp_path = self.get_temp_path(upload)
-        with open(temp_path, "w") as temp_file:
+        with open(temp_path, "wb") as temp_file:
             copyfileobj(file, temp_file)
 
         # Save the metadata for the upload into the current session
