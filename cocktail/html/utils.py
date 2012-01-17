@@ -31,6 +31,9 @@ def first_last_classes(element, first_class = "first", last_class = "last"):
                 child.add_class(last_class)
                 break
 
+def rendering_xml():
+    return get_current_rendering().renderer.outputs_xml
+
 def rendering_html5():
     html_version = getattr(
         get_current_rendering().renderer, 
