@@ -68,7 +68,7 @@ class FileUpload(schema.Schema):
             and self.async_uploader is not None \
             and value.startswith(self.async_prefix):
                 try:
-                    async_file_id = int(value[len(self.async_prefix):])
+                    async_file_id = value[len(self.async_prefix):]
                 except:
                     pass
                 else:
