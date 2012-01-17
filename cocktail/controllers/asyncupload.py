@@ -4,6 +4,8 @@ u"""
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
 import os
+from time import time
+from threading import Lock
 from shutil import copyfileobj
 from mimetypes import guess_type
 import cherrypy
@@ -31,6 +33,10 @@ class AsyncUploader(object):
 
     session_prefix = "cocktail.async_upload."
     temp_folder = None
+    upload_id = 0
+
+    def __init__(self):
+        self.lock = Lock()
 
     def process_request(self):
        
@@ -66,21 +72,20 @@ class AsyncUploader(object):
             copyfileobj(file, temp_file)
 
         # Save the metadata for the upload into the current session
-        session[self.session_prefix + str(id)] = upload
+        session[self.session_prefix + id] = upload
 
         return upload
 
     def get(self, upload_id):
-        return session.get(self.session_prefix + str(upload_id))
+        return session.get(self.session_prefix + upload_id)
 
     def get_temp_path(self, upload):
-        return os.path.join(self.temp_folder, str("async-%d" % upload.id))
+        return os.path.join(self.temp_folder, str("async-%s" % upload.id))
 
     def _acquire_upload_id(self):
-        key = self.session_prefix + "id"
-        session[key] = id = session.get(key, 0) + 1
-        return id
-
+        with self.lock:
+            self.upload_id += 1
+            return "%d-%d" % (time(), self.upload_id)
 
 
 class AsyncUpload(object):
