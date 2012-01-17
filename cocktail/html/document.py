@@ -9,7 +9,7 @@ from cocktail.html.element import Element, Content
 from cocktail.html.ieconditionalcomment import IEConditionalComment
 from cocktail.html.resources import Script, StyleSheet
 from cocktail.html.rendering import Rendering
-from cocktail.html.utils import rendering_html5
+from cocktail.html.utils import rendering_html5, rendering_xml
 from cocktail.html.documentmetadata import DocumentMetadata
 
 HTTP_EQUIV_KEYS = frozenset((
@@ -82,6 +82,9 @@ class HTMLDocument(Element):
 
     def _ready(self):
 
+        if rendering_xml():
+            self["xmlns"] = "http://www.w3.org/1999/xhtml"
+
         # Process client models first, to allow their content (which hasn't
         # been rendered yet) to supply metadata to the document
         self._add_client_models()
@@ -103,7 +106,8 @@ class HTMLDocument(Element):
         language = self.metadata.language or get_language()
         if language:
             self["lang"] = language
-            self["xml:lang"] = language
+            if rendering_xml():
+                self["xml:lang"] = language
 
     def _add_meta(self):
 
