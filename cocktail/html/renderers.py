@@ -32,6 +32,7 @@ class Renderer(object):
     doctype = None
     single_tags = "img", "link", "meta", "br", "hr", "input"
     flag_attributes = "selected", "checked", "autofocus"
+    outputs_xml = False
 
     def write_element(self, element, rendering):
 
@@ -101,6 +102,7 @@ class XHTMLRenderer(Renderer):
     doctype = XHTML1_STRICT
     single_tag_closure = u"/>"
     html_version = 4
+    outputs_xml = True
 
     def _write_flag(self, key, out):
         out(key + u'="' + key + u'"')
