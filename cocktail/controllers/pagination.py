@@ -21,7 +21,7 @@ class Pagination(schema.SchemaObject):
 
     page_size = schema.Integer(
         required = True,
-        min = 1,
+        min = 0,
         default = 10
     )
 
@@ -60,7 +60,7 @@ class Pagination(schema.SchemaObject):
     @getter
     def page_count(self):
         """The total number of pages needed to cover the full item count."""
-        if self.page_size is None:
+        if not self.page_size:
             return 1
         else:
             return -(-self.item_count / self.page_size) # Fast ceiling division trick
@@ -99,7 +99,7 @@ class Pagination(schema.SchemaObject):
         """The ordinal position in the item set where the selected page starts
         (inclusive).
         """
-        if self.page is None or self.page_size is None:
+        if self.page is None or not self.page_size:
             return 0
         else:
             return min(
@@ -112,7 +112,7 @@ class Pagination(schema.SchemaObject):
         """The ordinal position in the item set where the selected page ends
         (exclusive).
         """
-        if self.page_size is None:
+        if not self.page_size:
             return self.item_count
         else:
             return min((self.current_page + 1) * self.page_size, self.item_count)
@@ -133,6 +133,9 @@ class Pagination(schema.SchemaObject):
                 "Can't call Pagination.page_for() if the 'items' property has "
                 "not been set"
             )
+
+        if not self.page_size:
+            return 0
 
         for i, pagination_item in enumerate(self.items):
             if item == pagination_item:
