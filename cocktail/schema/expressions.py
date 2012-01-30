@@ -108,12 +108,18 @@ class Expression(object):
     def match(self, expr):
         return MatchExpression(self, expr)
 
-    def search(self, query, languages = None, logic = "and"):
+    def search(self,
+        query,
+        languages = None,
+        logic = "and",
+        partial_word_match = False
+    ):
         return SearchExpression(
             self,
             query,
             languages = languages,
-            logic = logic
+            logic = logic,
+            partial_word_match = partial_word_match
         )
 
     def translated_into(self, language):
@@ -345,13 +351,21 @@ class SearchExpression(Expression):
 
     __query = None
     __tokens = frozenset()
+    __logic = "and"
 
-    def __init__(self, subject, query, languages = None, logic = "and"):
+    def __init__(self,
+        subject,
+        query,
+        languages = None,
+        logic = "and",
+        partial_word_match = False
+    ):
         Expression.__init__(self, subject, query, languages, logic)
         self.subject = subject
         self.query = query
         self.languages = languages
-        self.logic = logic
+        self.__logic = logic
+        self.partial_word_match = partial_word_match
 
     def _get_query(self):
         return self._query
@@ -403,18 +417,46 @@ class SearchExpression(Expression):
                 else:
                     text_body.append(lang_text)
 
-        subject_tokens = self.tokenize(u" ".join(text_body))
-
-        if self.logic == "and":
-            return not (self.__tokens - frozenset(subject_tokens))
-        elif self.logic == "or":
-            return any(token in self.__tokens for token in subject_tokens)
+        # Accept partial word matches (ie. a text containing "John Sanderson"
+        # would match a query for "sand").
+        if self.partial_word_match:
+            searchable_text = normalize(u" ".join(text_body))
+            operator = all if self.logic == "and" else any
+            return operator(
+                (token in searchable_text) 
+                for token in self.__tokens
+            )
+        
+        # Match full words only (ie. a text containing "John Sanderson" would
+        # not match a query for "sand", but "John Sanderson walked across the
+        # sand" would).
         else:
+            subject_tokens = self.tokenize(u" ".join(text_body))
+
+            if self.logic == "and":
+                return not (self.__tokens - frozenset(subject_tokens))
+            else:
+                return any(token in self.__tokens for token in subject_tokens)
+
+    def _get_logic(self):
+        return self.__logic
+
+    def _set_logic(self, logic):
+        if logic not in ("and", "or"):
             raise ValueError(
                 "Unknown logic for SearchExpression: "
                 "expected 'and' or 'or', got %r instead"
-                % self.logic
+                % logic
             )
+        
+        self.__logic = logic
+
+    logic = property(_get_logic, _set_logic, doc = """
+        Gets or sets the behavior of the search expression when given a query
+        containing multiple words. Should be a string, indicating "and"
+        (matches must contain all the given words) or "or" (matches must
+        contain one or more of the given words).
+        """)
 
 
 class AddExpression(Expression):
