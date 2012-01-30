@@ -27,6 +27,7 @@ from cocktail.html.rendering import Rendering
 from cocktail.html.element import (
     Element,
     Content,
+    TranslatedValue,
     PlaceHolder
 )
 from cocktail.html.resources import (
