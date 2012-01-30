@@ -1216,6 +1216,10 @@ def _search_resolution(self, query):
     indexed_member = None
     languages = None if self.languages is None else list(self.languages)
 
+    # Can't use indexes if partial word matching is enabled
+    if self.partial_word_match:
+        return ((0, 0), None)
+
     # Searching over the whole text mass of the queried type
     if isinstance(self.subject, expressions.SelfExpression) \
     and query.type.full_text_indexed:        
