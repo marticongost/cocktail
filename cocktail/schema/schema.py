@@ -701,3 +701,29 @@ class Schema(Member):
 
         return label
 
+    def insert_group(self, group, before = None, after = None):
+
+        if before is None and after is None:
+            raise ValueError(
+                "insert_group() requires a value for either the 'after' or "
+                "'before' parameters"
+            )
+        elif before is not None and after is not None:
+            raise ValueError(
+                "insert_group() can't take both 'after' and 'before' "
+                "parameters at the same time"
+            )
+ 
+        anchor = before or after
+        if not isinstance(self.groups_order, list):
+            self.groups_order = list(self.groups_order)
+
+        try:
+            pos = self.groups_order.index(anchor)
+        except ValueError:
+            self.groups_order.append(group)
+        else:
+            if after:
+                pos += 1
+            self.groups_order.insert(pos, group)
+
