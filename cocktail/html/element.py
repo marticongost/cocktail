@@ -1359,17 +1359,6 @@ class Content(Element):
             rendering.write(unicode(self.value))
 
 
-class TranslatedValue(Content):
-    styled_class = False
-    overlays_enabled = False
-
-    def _render(self, rendering):
-        if self.member is not None:
-            rendering.write(
-                self.member.translate_value(self.value)
-            )
-
-
 class PlaceHolder(Content):
     """A blob of content that produces its value just before it's rendered.
     

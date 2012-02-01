@@ -15,7 +15,7 @@ from cocktail.translations import (
     get_language
 )
 from cocktail.typemapping import TypeMapping
-from cocktail.html import Element, Content, TranslatedValue
+from cocktail.html import Element, Content
 from cocktail.html import templates
 import cocktail.controllers.parameters
 
@@ -377,7 +377,7 @@ class DataDisplay(object):
     def set_member_type_display(self, member_type, display):
         self.__member_type_display[member_type] = display
 
-    default_display = TranslatedValue
+    default_display = Content
 
 
 NO_SELECTION = 0
