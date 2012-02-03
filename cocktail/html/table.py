@@ -38,7 +38,6 @@ class Table(Element, CollectionDisplay):
     base_image_url = None
     selection_parameter = "selection"
     nested_list_max_length = 5
-    translated_values = True
     persistence_prefix = None
     entry_selector = "tbody tr"
     checkbox_selector = "td.selection input"
