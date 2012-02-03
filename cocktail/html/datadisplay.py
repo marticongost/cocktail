@@ -15,7 +15,7 @@ from cocktail.translations import (
     get_language
 )
 from cocktail.typemapping import TypeMapping
-from cocktail.html import Element, Content
+from cocktail.html import Element, TranslatedValue
 from cocktail.html import templates
 import cocktail.controllers.parameters
 
@@ -56,7 +56,6 @@ class DataDisplay(object):
     schema = None
     editable = True
     translations = None
-    translated_values = False
     accessor = None    
     name_prefix = None
     name_suffix = None
@@ -360,10 +359,6 @@ class DataDisplay(object):
 
         if hasattr(display, "value"):
             value = self.get_member_value(obj, member)
-            
-            if self.translated_values:
-                value = self.translate_value(obj, member, value)
-
             display.value = value
 
         return display
@@ -377,7 +372,7 @@ class DataDisplay(object):
     def set_member_type_display(self, member_type, display):
         self.__member_type_display[member_type] = display
 
-    default_display = Content
+    default_display = TranslatedValue
 
 
 NO_SELECTION = 0

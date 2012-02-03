@@ -21,7 +21,6 @@ class PropertyTable(Element, DataDisplay):
 
     tag = "table"
     translations = None
-    translated_values = True
 
     def __init__(self, *args, **kwargs):
         DataDisplay.__init__(self)

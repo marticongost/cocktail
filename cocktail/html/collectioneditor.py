@@ -104,12 +104,6 @@ class CollectionEditor(Element):
         display.language = get_language()        
         
         if hasattr(display, "value"):
-            if self.data_display.translated_values:
-                item = self.data_display.translate_value(
-                    self.data_display.data,
-                    self.member, 
-                    item
-                )
             display.value = item
 
         return display
