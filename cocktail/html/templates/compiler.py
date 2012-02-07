@@ -401,7 +401,11 @@ class TemplateCompiler(object):
                 index = attributes.pop(self.TEMPLATE_NS + ">index", None)
                 after = attributes.pop(self.TEMPLATE_NS + ">after", None)
                 before = attributes.pop(self.TEMPLATE_NS + ">before", None)
-                
+                wrap = attributes.pop(self.TEMPLATE_NS + ">wrap", None)
+
+                if wrap:
+                    source.write("%s.wrap(%s)" % (id, wrap))
+
                 if parent and index:
                     source.write("%s.insert(%s, %s)" % (parent, index, id))
                 elif parent:
@@ -412,7 +416,7 @@ class TemplateCompiler(object):
                     source.write("%s.place_after(%s)" % (id, after))
                 elif before:
                     source.write("%s.place_before(%s)" % (id, before))
-                elif is_new:
+                elif is_new and not wrap:
                     source.write("%s.append(%s)" % (parent_id, id))
 
             # Elements with a user defined identifier get their own factory
