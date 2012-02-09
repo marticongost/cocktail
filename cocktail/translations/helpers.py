@@ -4,6 +4,7 @@ u"""Helper functions for translating strings into multiple languages.
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
 from cocktail.modeling import ListWrapper
+from cocktail.translations.translation import get_language
 
 CA_APOSTROPHE_LETTERS = u"haàeèéiíoòóuú"
 
@@ -40,6 +41,14 @@ de_join = create_join_function("de", u", ", u" und ")
 de_either = create_join_function("ca", u", ", u" oder ")
 fr_join = create_join_function("fr", u", ", u" et ")
 fr_either = create_join_function("fr", u", ", u" ou ")
+
+def join(sequence):
+    join_func = globals()[get_language() + "_join"]
+    return join_func(sequence)
+
+def either(sequence):
+    either_func = globals()[get_language() + "_join"]
+    return either_func(sequence)
 
 def plural2(count, singular, plural):
     if count == 1:

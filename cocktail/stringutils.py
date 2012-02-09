@@ -27,7 +27,8 @@ _normalization_map = create_translation_map({
     u"e": u"éèëê",
     u"i": u"íìïî",
     u"o": u"óòöô",
-    u"u": u"úùüû"
+    u"u": u"úùüû",
+    u" ": u"'\"\t\n\r(),.:;+-*/\\¡!¿?&|=[]{}~#¬<>"
 })
 
 def normalize(string):
@@ -35,6 +36,7 @@ def normalize(string):
     
     if isinstance(string, unicode):
         string = string.translate(_normalization_map)
+        string = u" ".join(string.split())
 
     return string
 

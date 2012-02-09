@@ -779,6 +779,18 @@ class Element(object):
 
         self.__parent = sibling.__parent
 
+    def wrap(self, wrapped_element):
+        """Positions the element before the given element, and relocates said
+        element inside it.
+
+        :param wrapped_element: The element that should be wrapped.
+        :type wrapped_element: `Element`
+
+        :raise: Raises `ElementTreeError` if the element to wrap has no parent.
+        """
+        self.place_before(wrapped_element)
+        self.append(wrapped_element)
+
     def empty(self):
         """Removes all children from the element."""
         if self.__children is not None:
@@ -1357,6 +1369,17 @@ class Content(Element):
     def _render(self, rendering):
         if self.value is not None:
             rendering.write(unicode(self.value))
+
+
+class TranslatedValue(Content):
+    styled_class = False
+    overlays_enabled = False
+
+    def _render(self, rendering):
+        if self.member is not None:
+            rendering.write(
+                self.member.translate_value(self.value)
+            )
 
 
 class PlaceHolder(Content):
