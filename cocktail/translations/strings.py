@@ -1001,6 +1001,31 @@ translations.define(
         %(error)
 )
 
+translations.define(
+    "cocktail.controllers.imageupload.ImageTooBigError-instance",
+    ca = lambda instance: 
+        u"El fitxer proporcionat pel camp <em>%s</em> és massa gran: la mida "
+        u"màxima permesa és de %sx%s pixels" % (
+            member_identifier(instance),
+            instance.max_width or u"∞",
+            instance.max_height or u"∞"
+        ),
+    es = lambda instance: 
+        u"El fichero proporcionado para el campo <em>%s</em> es demasiado "
+        u"grande: el tamaño máximo permitido es de %sx%s píxeles" % (         
+            member_identifier(instance),
+            instance.max_width or u"∞",
+            instance.max_height or u"∞"
+        ),
+    en = lambda instance:
+        u"The file given in field <em>%s</em> is too big: the maximum allowed "
+        u"size is %sx%s pixels"  % (
+            member_identifier(instance),
+            instance.max_width or u"∞",
+            instance.max_height or u"∞"
+        )
+)
+
 # Value parsing
 #------------------------------------------------------------------------------
 
