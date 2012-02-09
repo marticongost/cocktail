@@ -226,7 +226,7 @@ class Index(Persistent):
         """
         raise TypeError("Not implemented")
 
-    def min_key(self):
+    def min_key(self, exclude_none = False):
         """Obtains the smallest key defined by the index.
         
         :return: The smallest key defined by the index.
@@ -355,8 +355,13 @@ class SingleValueIndex(Index):
         return Descending(boundary) if descending else boundary
 
     @overrides(Index.min_key)
-    def min_key(self):
-        return self.__items.minKey()
+    def min_key(self, exclude_none = False):
+        if exclude_none:
+            for key in self.keys():
+                if key is not None:
+                    return key
+        else:
+            return self.__items.minKey()
 
     @overrides(Index.max_key)
     def max_key(self):
@@ -470,8 +475,13 @@ class MultipleValuesIndex(Index):
         return PairComparator(boundary, tie if excluded else -tie)
 
     @overrides(Index.min_key)
-    def min_key(self):
-        return self.__items.minKey()[0]
+    def min_key(self, exclude_none = False):
+        if exclude_none:
+            for key in self.keys():
+                if key is not None:
+                    return key
+        else:
+            return self.__items.minKey()[0]
 
     @overrides(Index.max_key)
     def max_key(self):
