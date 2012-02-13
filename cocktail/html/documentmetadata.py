@@ -84,19 +84,31 @@ class DocumentMetadata(object):
 
     def embedding_markup(self, renderer = None):
 
+        from cocktail.html import renderers
         from cocktail.html.document import HTMLDocument
+        from cocktail.html.rendering import Rendering, _thread_data
+
+        if renderer is None:
+            renderer = renderers.default_renderer
 
         document = HTMLDocument()
         document.metadata = self
-        document.ready()
-        document.title.visible = False
-        document.meta_tags.visible = False
 
-        return document.head.render(
-            renderer = renderer,
-            collect_metadata = False,
-            cache = None
-        )
+        prev_rendering = getattr(_thread_data, "rendering", None)
+        rendering = Rendering(renderer, document_metadata = self)
+        _thread_data.rendering = rendering
+
+        try:
+            document.ready()
+            document.title.visible = False
+            document.meta_container.visible = False
+            return document.head.render(
+                renderer = renderer,
+                collect_metadata = False,
+                cache = None
+            )
+        finally:
+            _thread_data.rendering = prev_rendering
 
     def collect(self, element, rendering_client_model = False):
 
