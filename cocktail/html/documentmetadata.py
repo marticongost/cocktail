@@ -26,6 +26,10 @@ class DocumentMetadata(object):
 
         The charset of the produced document.
 
+    .. attribute:: base_href
+
+        The default base URL for any relative URLs in the document.
+
     .. attribute:: meta
 
         A dicionary containing all the meta tags required by rendered elements.
@@ -73,6 +77,7 @@ class DocumentMetadata(object):
         self.language = None
         self.content_type = "text/html"
         self.charset = "utf-8"
+        self.base_href = None
         self.meta = {}
         self.resources = OrderedSet()
         self.document_ready_callbacks = []
@@ -128,6 +133,9 @@ class DocumentMetadata(object):
             if element.page_charset:
                 self.charset = element.page_charset
 
+            if element.page_base_href:
+                self.base_href = element.page_base_href
+
         self.meta.update(element.meta)
         self.resources.extend(element.resources)
         self.document_ready_callbacks.extend(element.document_ready_callbacks)
@@ -165,6 +173,9 @@ class DocumentMetadata(object):
 
         if metadata.charset:
             self.charset = metadata.charset
+
+        if metadata.base_href:
+            self.base_href = metadata.base_href
 
         self.meta.update(metadata.meta)
         self.resources.extend(metadata.resources)
