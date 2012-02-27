@@ -120,6 +120,12 @@ class HTMLDocument(Element):
         )
         self.meta_container.append(ct_meta)
 
+        # Document-wide default base URL for relative URLs
+        if self.metadata.base_href:
+            base = Element("base")
+            base["href"] = self.metadata.base_href
+            self.meta_container.append(base)
+
         # Other meta tags
         for key, value in self.metadata.meta.iteritems():
             meta = Element("meta")
