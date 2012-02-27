@@ -74,6 +74,10 @@ class Element(object):
         Sets the content type of the resulting document for
         a `full page rendering <render_page>` of the element.
 
+    .. attribute:: page_base_href
+
+        Sets the default base URL for any relative URLs inside the document.
+
     .. attribute:: styled_class
     
         Indicates if the element class should add its own name
@@ -136,6 +140,7 @@ class Element(object):
     page_title = None
     page_charset = None
     page_content_type = None
+    page_base_href = None
     styled_class = False
     visible = True
     collapsible = False
