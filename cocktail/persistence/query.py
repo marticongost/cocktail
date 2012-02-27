@@ -8,6 +8,8 @@ u"""
 """
 from time import time
 from itertools import chain, islice
+from BTrees.IIBTree import IIBTree
+from BTrees.OIBTree import OIBTree
 from BTrees.IOBTree import IOTreeSet, IOSet
 from BTrees.OOBTree import OOTreeSet, OOSet
 from cocktail.styled import styled
@@ -544,26 +546,32 @@ class Query(object):
             len(order) == 1
             or not index.accepts_multiple_values
         ):
-            if not isinstance(dataset, fast_membership_test_sequence_types):
-                dataset = set(dataset)
-
             desc = isinstance(order[0], expressions.NegativeExpression)
+            is_btree = isinstance(index, (IIBTree, OIBTree))
 
-            if isinstance(expr, Member) and expr.primary:
-                sequence = index.keys(descending = desc)
-            elif getattr(expr, "translated", False):
-                sequence = (id
-                            for key, id 
-                            in index.items(descending = desc)
-                            if key[0] == language)
-            else:
-                sequence = index.values(descending = desc)
+            # BTrees don't provide a means for efficient reverse iteration
+            if not (desc and is_btree):
+            
+                if not isinstance(dataset, fast_membership_test_sequence_types):
+                    dataset = set(dataset)
 
-            ordered_dataset = (id
-                       for id in sequence
-                       if id in dataset)
+                if isinstance(expr, Member) and expr.primary:
+                    sequence = index.keys(descending = desc)
+                elif getattr(expr, "translated", False):
+                    sequence = (id
+                                for key, id 
+                                in index.items(descending = desc)
+                                if key[0] == language)
+                elif is_btree:
+                    sequence = index.values()
+                else:
+                    sequence = index.values(descending = desc)
 
-            return ordered_dataset
+                ordered_dataset = (id
+                           for id in sequence
+                           if id in dataset)
+
+                return ordered_dataset
 
         # General case: mix indexes and brute force sorting as needed
         sorting_keys = {}
