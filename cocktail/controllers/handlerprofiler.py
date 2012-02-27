@@ -11,8 +11,11 @@ from cProfile import runctx
 from pstats import Stats
 from threading import Lock
 from pickle import dumps
+from subprocess import Popen
 from os.path import join
+import shlex
 import cherrypy
+from cocktail.controllers.static import serve_file
 
 _lock = Lock()
 _request_id = 0
@@ -22,7 +25,21 @@ try:
 except ImportError:
     convert = None
 
-def handler_profiler(stats_path = None):
+def handler_profiler(
+    stats_path = None,
+    trigger = None,
+    viewer = None
+):
+    profiler_action = None
+
+    if trigger:
+        profiler_action = cherrypy.request.params.get(trigger)
+
+        if profiler_action is None:
+            return
+
+        if not profiler_action:
+            profiler_action = "store"
 
     handler = cherrypy.request.handler
 
@@ -39,6 +56,9 @@ def handler_profiler(stats_path = None):
             finally:
                 _lock.release()
 
+        name = cherrypy.request.path_info.strip("/").replace("/", "-")
+        name += "." + str(id)
+
         # Create the execution context for the profiler
         local_context = {
             "handler": handler,
@@ -50,36 +70,42 @@ def handler_profiler(stats_path = None):
         # Run the handler for the current request through the profiler.
         # Profile data is either shown on standard output or stored on the
         # indicated file.
-        stats_file = join(stats_path, "%s.stats" % id) if stats_path else None
-        try:
-            runctx(
-                "rvalue = handler(*args, **kwargs)",
-                globals(),
-                local_context,
-                stats_file
-            )
-
-        # Store request data, to match profiler stats against their context
-        finally:
-            if stats_path:
-                f = open(join(stats_path, "%s.context" % id), "w")
-                try:
-                    request_context = {
-                        "path_info": cherrypy.request.path_info,
-                        "query_string": cherrypy.request.query_string,
-                        "headers": cherrypy.request.headers,
-                        "args": args,
-                        "kwargs": kwargs
-                    }
-                    f.write(dumps(request_context))
-                finally:
-                    f.close()
+        stats_file = join(stats_path, "%s.stats" % name) if stats_path else None
+        runctx(
+            "rvalue = handler(*args, **kwargs)",
+            globals(),
+            local_context,
+            stats_file
+        )
 
         # If pyprof2calltree is available, use it to export the profiler stats
         # from Python's own format to 'calltree' (which can be parsed by
         # kcachegrind and others)
+        calltree_file = None
+
         if stats_file is not None and convert is not None:
-            convert(stats_file, join(stats_path, "%s.calltree" % id))
+            calltree_file = join(stats_path, "%s.calltree" % name)
+            convert(stats_file, calltree_file)
+
+            if profiler_action == "view":
+                if not viewer:
+                    raise ValueError(
+                        "No value defined for the "
+                        "tools.handler_profiler.viewer setting; can't use the "
+                        "'view' profiler action"
+                    )
+
+                Popen(shlex.split(viewer % {
+                    "stats": stats_file,
+                    "calltree": calltree_file
+                }))
+
+        if profiler_action == "download":
+            return serve_file(
+                calltree_file or stats_file,
+                "application/octet-stream",
+                "attachment"
+            )
 
         return local_context["rvalue"]
 
