@@ -31,7 +31,11 @@ def get_image_size(path):
 
     raise IOError("Can't determine the image size for file '%s'" % path)
 
-def constrain_image_upload(member, max_width = None, max_height = None):
+def constrain_image_upload(member,
+    max_width = None,
+    max_height = None,
+    allow_rotation = False
+):
     """Validate certain properties of uploaded images.
 
     :param member: The upload member to constrain.
@@ -64,16 +68,27 @@ def constrain_image_upload(member, max_width = None, max_height = None):
                     except:
                         pass
                     else:
-                        width, height = image_size
-                        if (max_width and width > max_width) \
-                        or (max_height and height > max_height):
+                        if not (
+                            size_fits(image_size, (max_width, max_height)) \
+                            or (
+                                allow_rotation
+                                and size_fits(image_size, (max_height, max_width))
+                            )
+                        ):
                             yield ImageTooBigError(
                                 member,
                                 upload,
                                 ctx,
                                 max_width,
-                                max_height
+                                max_height,
+                                allow_rotation
                             )
+
+def size_fits(size, max_size):
+    width, height = size
+    max_width, max_height = max_size
+    return (not max_width or width <= max_width) \
+       and (not max_height or height <= max_height)
 
 
 class ImageTooBigError(ValidationError):
@@ -81,8 +96,16 @@ class ImageTooBigError(ValidationError):
     maximum width or height set by `constrain_image_upload`.
     """
 
-    def __init__(self, member, value, context, max_width, max_height):
+    def __init__(self,
+        member,
+        value,
+        context,
+        max_width,
+        max_height,
+        allow_rotation
+    ):
         ValidationError.__init__(self, member, value, context)
         self.max_width = max_width
         self.max_height = max_height
+        self.allow_rotation = allow_rotation
 
