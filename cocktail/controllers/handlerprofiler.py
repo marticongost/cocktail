@@ -12,6 +12,7 @@ from pstats import Stats
 from threading import Lock
 from pickle import dumps
 from subprocess import Popen
+import os
 from os.path import join
 import shlex
 import cherrypy
@@ -19,11 +20,17 @@ from cocktail.controllers.static import serve_file
 
 _lock = Lock()
 _request_id = 0
+default_viewer = None
 
 try:
     from pyprof2calltree import convert
 except ImportError:
     convert = None
+    default_viewer = None
+else:
+    if os.path.exists("/usr/bin/kcachegrind"):
+        default_viewer = "/usr/bin/dbus-launch " \
+                         "/usr/bin/kcachegrind %(calltree)s"
 
 def handler_profiler(
     stats_path = None,
@@ -42,6 +49,9 @@ def handler_profiler(
             profiler_action = "store"
 
     handler = cherrypy.request.handler
+
+    if viewer is None:
+        viewer = default_viewer
 
     def profiled_handler(*args, **kwargs):
         
@@ -87,18 +97,23 @@ def handler_profiler(
             calltree_file = join(stats_path, "%s.calltree" % name)
             convert(stats_file, calltree_file)
 
-            if profiler_action == "view":
-                if not viewer:
-                    raise ValueError(
-                        "No value defined for the "
-                        "tools.handler_profiler.viewer setting; can't use the "
-                        "'view' profiler action"
-                    )
+        if profiler_action == "view":
 
-                Popen(shlex.split(viewer % {
-                    "stats": stats_file,
-                    "calltree": calltree_file
-                }))
+            if not viewer:
+                raise ValueError(
+                    "No value defined for the "
+                    "tools.handler_profiler.viewer setting; can't use the "
+                    "'view' profiler action"
+                )
+
+            cmd = shlex.split(viewer % {
+                "stats": stats_file,
+                "calltree": calltree_file
+            })
+            env = os.environ.copy()
+            env.setdefault("DISPLAY", ":0")
+            err = open("/tmp/kcachegrinderrors", "w")
+            proc = Popen(cmd, env = env, stderr = err)
 
         if profiler_action == "download":
             return serve_file(
