@@ -112,8 +112,7 @@ def handler_profiler(
             })
             env = os.environ.copy()
             env.setdefault("DISPLAY", ":0")
-            err = open("/tmp/kcachegrinderrors", "w")
-            proc = Popen(cmd, env = env, stderr = err)
+            proc = Popen(cmd, env = env)
 
         if profiler_action == "download":
             return serve_file(
