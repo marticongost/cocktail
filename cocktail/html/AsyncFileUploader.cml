@@ -12,6 +12,13 @@ from cocktail.html.databoundcontrol import data_bound
     name = None
     value = None
     async_upload_url = None
+
+    def insert_into_form(self, form, field_instance):
+        # Overriden to automatically change the encoding of the enclosing form
+        # to multipart/form-data
+        if not form.embeded:
+            form["enctype"] = "multipart/form-data"
+        field_instance.append(self)
     ?>
 
     <?py
@@ -55,6 +62,12 @@ from cocktail.html.databoundcontrol import data_bound
             ?>
         </py:ready>
     </div>
+
+    <noscript>
+        <py:cocktail.html.FileUploadBox
+            py:id="synchronous_upload_box"
+            name="@{self.name}"/>
+    </noscript>
 
     <py:cocktail.html.UploadInfo
         py:def="upload_info"
