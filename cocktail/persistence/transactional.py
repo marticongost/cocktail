@@ -45,7 +45,7 @@ def transaction(
             if verbose:
                 print styled(
                     "Retrying transaction %s (%d/%d)" % (
-                        transactional_code,
+                        action,
                         i,
                         max_attempts - 1
                     ), 
