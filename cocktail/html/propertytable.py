@@ -51,7 +51,7 @@ class PropertyTable(Element, DataDisplay):
             if isinstance(member, schema.Schema) \
             and self.should_flatten(member):
                 for descendant \
-                in self._flatten_members(member.members().itervalues()):
+                in self._flatten_members(member.ordered_members()):
                     yield descendant
             else:
                 yield member
