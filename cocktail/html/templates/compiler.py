@@ -138,7 +138,7 @@ class TemplateCompiler(object):
                 while generated_name is None \
                 or generated_name in self.__class_names:
                     suffix_id += 1
-                    generated_name = "%s_%d" % (name + suffix_id)
+                    generated_name = "%s_%d" % (name, suffix_id)
 
                 name = generated_name
             
