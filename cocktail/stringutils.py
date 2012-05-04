@@ -33,7 +33,13 @@ _normalization_map = create_translation_map({
 
 def normalize(string):
     string = string.lower()
-    
+
+    if not isinstance(string, unicode):
+        try:
+	    string = unicode(string)
+	except:
+	    return string
+
     if isinstance(string, unicode):
         string = string.translate(_normalization_map)
         string = u" ".join(string.split())
