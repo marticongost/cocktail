@@ -360,7 +360,7 @@ class SearchExpression(Expression):
         logic = "and",
         partial_word_match = False
     ):
-        Expression.__init__(self, subject, query, languages, logic)
+        Expression.__init__(self, subject, query)
         self.subject = subject
         self.query = query
         self.languages = languages
