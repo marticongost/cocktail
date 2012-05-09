@@ -27,9 +27,16 @@ def make_uri(*args, **kwargs):
             else:
                 for item in pair[1]:
                     params.append((pair[0], item))
-
+        
         uri += u"?" + u"&".join(
-            u"%s=%s" % (name, quote(unicode(value)))
+            ("%s=%s" % (
+                name,
+                quote(
+                    value.encode("utf-8") 
+                    if isinstance(value, unicode) 
+                    else str(value)
+                )
+            )).decode("utf-8")
             for name, value in params
         )
 
