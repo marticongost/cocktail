@@ -8,6 +8,7 @@ Provides a member that handles textual values.
 @since:			March 2008
 """
 import re
+from cocktail.translations import translations
 from cocktail.schema.member import Member
 from cocktail.schema.exceptions import MinLengthError, \
                                        MaxLengthError, \
@@ -34,10 +35,18 @@ class String(Member):
     max = None
     text_search = True
     _format = None
+    translatable_enumeration = True
 
     def __init__(self, *args, **kwargs):
         Member.__init__(self, *args, **kwargs)
         self.add_validation(String.string_validation_rule)
+
+    def translate_value(self, value, language = None, **kwargs):
+
+        if value and self.translatable_enumeration and self.enumeration:
+            return translations(self, suffix = "=" + value)
+
+        return value or ""
 
     def _get_format(self):
         return self._format
