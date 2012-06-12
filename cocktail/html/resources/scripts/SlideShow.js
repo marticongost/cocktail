@@ -16,7 +16,7 @@ cocktail.bind(".SlideShow", function ($slideShow) {
     if (this.navigationControls) {
         jQuery(cocktail.instantiate("cocktail.html.SlideShow.previousSlideButton"))
             .appendTo($slideShow)
-            .click(function () { $slideShow.get(0).selectPreviousSlide(); });
+            .click(function () { $slideShow.get(0).selectPrevSlide(); });
     
         jQuery(cocktail.instantiate("cocktail.html.SlideShow.nextSlideButton"))
             .appendTo($slideShow)
