@@ -492,10 +492,15 @@ def _get_constraint_filters(self, parent):
     constraints = self.resolve_constraint(self.relation_constraints, context)
     
     if constraints:
-        for constraint in constraints:
-            if not isinstance(constraint, Expression):
-                constraint = CustomExpression(constraint)
-            yield constraint
+        if hasattr(constraints, "iteritems"):
+            get_related_member = self.related_type.get_member
+            for key, value in constraints.iteritems():
+                yield get_related_member(key).equal(value)
+        else:
+            for constraint in constraints:
+                if not isinstance(constraint, Expression):
+                    constraint = CustomExpression(constraint)
+                yield constraint
 
     # Prevent cycles in recursive relations
     excluded_items = set()
