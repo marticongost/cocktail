@@ -295,7 +295,19 @@ class PersistentObject(SchemaObject, Persistent):
         instance = cls.get_instance(id, **criteria)
 
         if instance is None:
-            raise InstanceNotFoundError()
+
+            if id is None:
+                for key, value in criteria.iteritems():
+                    break
+            else:
+                key = "id"
+                value = id
+
+            raise InstanceNotFoundError(
+                "Can't find an instance of %s with %s = %r" % (
+                    cls, key, value
+                )
+            )
 
         return instance
 
