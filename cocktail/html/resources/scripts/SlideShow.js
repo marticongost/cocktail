@@ -23,6 +23,26 @@ cocktail.bind(".SlideShow", function ($slideShow) {
             .click(function () { $slideShow.get(0).selectNextSlide(); });
     }
 
+    // Create bullets controls
+    if (this.bulletControls) {
+        
+        this.selectBullet = function () {
+            jQuery(".bullet",$slideShow).removeClass("selected");
+            var index = $slideShow.find(this.slidesSelector).index(current);
+            jQuery(jQuery(".bullet",$slideShow).get(index)).addClass("selected");
+        }
+
+        jQuery(cocktail.instantiate("cocktail.html.SlideShow.bulletSlideButtons"))
+            .appendTo($slideShow);
+
+        jQuery.each(jQuery(".bullet",$slideShow),function (index,bullet) {
+            jQuery(bullet).click(function () {
+                $slideShow.get(0).selectSlide(index);
+            });
+        });
+
+    }
+
     this.getAutoPlay = function () {
         return autoplayTimer != null;
     }
@@ -113,6 +133,10 @@ cocktail.bind(".SlideShow", function ($slideShow) {
         var previous = current;    
         current = slide;
         
+        if(this.bulletControls) {
+            $slideShow.get(0).selectBullet();
+        }
+
         if (slide) {
             this._showSlide(slide);
         }
@@ -139,7 +163,14 @@ cocktail.bind(".SlideShow", function ($slideShow) {
             .fadeIn(this.transitionDuration);
     }
 
-    $slideShow.css({"position": "relative"});
+    $slideShow
+        .css({"position": "relative"})
+        .mouseenter(function () {
+            this.stop();
+        })
+        .mouseleave(function () {
+            if(this.autoplay) this.start();
+        });
 
     // Hide all slides except the first one
     var $slides = $slideShow.find(this.slidesSelector);
@@ -148,6 +179,10 @@ cocktail.bind(".SlideShow", function ($slideShow) {
         .hide();
 
     current = $slides.get(0);
+    
+    if(this.bulletControls) {
+        $slideShow.get(0).selectBullet();
+    }
 
     // Check the element's configuration to determine wether to start in
     // autoplay mode
