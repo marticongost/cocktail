@@ -23,6 +23,11 @@ from cocktail.persistence.persistentobject import (
     PersistentClass, PersistentObject, UniqueValueError, NewObjectDeletedError
 )
 from cocktail.persistence.datastore import datastore
+from cocktail.persistence.transactional import (
+    transactional,
+    transaction,
+    desisted
+)
 from cocktail.persistence.incremental_id import incremental_id
 from cocktail.persistence.index import Index
 from cocktail.persistence import indexing
