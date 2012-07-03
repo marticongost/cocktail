@@ -186,7 +186,9 @@ class Form(Element, DataDisplay):
 
         elif self.default_button:
             hidden_button_block = Element()
-            hidden_button_block.set_style("display", "none")
+            hidden_button_block.set_style("position", "absolute")
+            hidden_button_block.set_style("left", "-1000px")
+            hidden_button_block.set_style("top", "-1000px")
             hidden_button = Element(self.default_button.tag)
             for key, value in self.default_button.attributes.iteritems():
                 hidden_button[key] = value
