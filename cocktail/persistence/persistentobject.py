@@ -413,16 +413,18 @@ class PersistentObject(SchemaObject, Persistent):
             if isinstance(member, schema.RelationMember):
 
                 # Cascade delete
-                if self._should_cascade_delete(member):
+                if self._should_cascade_delete_member(member):
                     value = self.get(member)
                     if value is not None:
                         if isinstance(member, schema.Reference):
-                            value.delete(deleted_objects)
+                            if value._included_in_cascade_delete(self, member):
+                                value.delete(deleted_objects)
                         else:
                             # Make a copy of the collection, since it may
                             # change during iteration
                             for item in list(value):
-                                item.delete(deleted_objects)
+                                if item._included_in_cascade_delete(self, member):
+                                    item.delete(deleted_objects)
 
                 # Remove all known references to the item (drop all its
                 # relations)
@@ -431,8 +433,11 @@ class PersistentObject(SchemaObject, Persistent):
 
         self.deleted(deleted_objects = deleted_objects)
 
-    def _should_cascade_delete(self, member):
+    def _should_cascade_delete_member(self, member):
         return member.cascade_delete
+
+    def _included_in_cascade_delete(self, parent, member):
+        return True
 
     def _should_erase_member(self, member):
 
