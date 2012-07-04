@@ -38,6 +38,10 @@ SchemaObject = None
 
 undefined = object()
 
+DO_NOT_COPY = 0
+SHALLOW_COPY = 2
+DEEP_COPY = 3
+
 
 class SchemaClass(EventHub, Schema):
 
@@ -667,6 +671,63 @@ class SchemaObject(object):
                             finally:
                                 stack.pop()
 
+    copy_excluded_members = frozenset()
+
+    def create_copy(self):
+        clone = self.__class__()
+        self.init_copy(clone)
+        return clone
+
+    def init_copy(self, copy):
+
+        for member in self.__class__.members().itervalues():
+            copy_mode = self.get_member_copy_mode(member)
+
+            if copy_mode == DO_NOT_COPY:
+                continue
+
+            deep = (copy_mode == DEEP_COPY)
+
+            if not member.translated:
+                languages = (None,)
+            else:
+                languages = list(self.translations)
+
+            for language in languages:
+                value = self.copy_value(member, language, deep)
+                copy.set(member, value, language)
+
+    def get_member_copy_mode(self, member):
+
+        if (
+            member.name == "translations"
+            or member.primary
+            or member in self.copy_excluded_members
+        ):
+            return DO_NOT_COPY
+        
+        if isinstance(member, (Reference, Collection)):
+
+            if member.anonymous:
+                return DO_NOT_COPY
+            
+            if member.integral:
+                return DEEP_COPY
+        
+        return SHALLOW_COPY
+
+    def copy_value(self, member, language, deep = False):
+        
+        value = self.get(member, language)
+
+        if value is not None and deep:            
+            if isinstance(member, Reference):
+                value = value.create_copy()
+            else:
+                value = [(None if item is None else item.create_copy())
+                        for item in value]
+
+        return value
 
 SchemaObject._translation_schema_metaclass = SchemaClass
 SchemaObject._translation_schema_base = SchemaObject
