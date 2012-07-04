@@ -60,7 +60,10 @@ from cocktail.schema.schemaobject import (
     SchemaObject,
     SchemaClass,
     SchemaObjectAccessor,
-    TranslationMapping
+    TranslationMapping,
+    DO_NOT_COPY,
+    SHALLOW_COPY,
+    DEEP_COPY
 )
 from cocktail.schema.adapter import (
     reference, shallow, deep,
