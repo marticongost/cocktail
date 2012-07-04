@@ -37,9 +37,9 @@ def delete_dry_run(item, visited = None):
                     node["blocking"][member] = value
 
             # Cascade delete
-            elif item._should_cascade_delete(member):
+            elif item._should_cascade_delete_member(member):
                 value = item.get(member)
-                
+
                 if value:
                     if isinstance(member, Reference):
                         value = (value,)                    
@@ -47,9 +47,10 @@ def delete_dry_run(item, visited = None):
                     cascade_nodes = []
                     
                     for descendant in value:
-                        cascade_node = delete_dry_run(descendant, visited)
-                        if cascade_node is not None:
-                            cascade_nodes.append(cascade_node)
+                        if descendant._included_in_cascade_delete(item, member):
+                            cascade_node = delete_dry_run(descendant, visited)
+                            if cascade_node is not None:
+                                cascade_nodes.append(cascade_node)
 
                     if cascade_nodes:
                         node["cascade"][member] = cascade_nodes
