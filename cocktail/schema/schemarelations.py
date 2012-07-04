@@ -112,6 +112,7 @@ class RelationMember(Member):
     _integral = None
     _many = False
     __related_end = None
+    __anonymous = False
 
     attached_as_orphan = Event(
         doc = """An event triggered when the relation end is attached to a
@@ -231,7 +232,12 @@ class RelationMember(Member):
                 self.__related_end = related_end
                 related_end.__related_end = self
                 related_end.attached_as_orphan(anonymous = anonymous)
+                related_end.__anonymous = anonymous
                 self.related_type.add_member(related_end)
+
+    @property
+    def anonymous(self):
+        return self.__anonymous
 
     @getter
     @abstractmethod
