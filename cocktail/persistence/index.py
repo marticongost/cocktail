@@ -14,6 +14,8 @@ undefined = object()
 class Index(Persistent):
     """Abstract base class for all indexes."""
 
+    accepts_repetition = False
+
     def __init__(self, pairs = None):
         """Initializes the index, optionally filling it with the given set of
         pairs.
