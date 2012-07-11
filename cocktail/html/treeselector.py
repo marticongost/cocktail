@@ -13,12 +13,15 @@ from cocktail.html.datadisplay import (
     MULTIPLE_SELECTION
 )
 
+uneligible = object()
+
 
 class TreeSelector(Selector):
 
     tag = "ul"
     selection_mode = SINGLE_SELECTION
     children_collection = "children"
+    eligible_folders = True
 
     def _ready(self):
 
@@ -33,8 +36,14 @@ class TreeSelector(Selector):
 
         Selector._ready(self)
 
+    def get_item_value(self, item):
+        if not self.eligible_folders and self.get_child_items(item):
+            return uneligible
+
+        return Selector.get_item_value(self, item)
+
     def get_child_items(self, item):
-        return item.get(self.children_collection) or ()
+        return getattr(item, self.children_collection, None) or ()
 
     def _fill_entries(self):
         
@@ -71,25 +80,32 @@ class TreeSelector(Selector):
     def create_entry(self, value, label, selected):
 
         entry = Element("li")
+        eligible = value is not uneligible
 
         # Control (checkbox or radio button)
-        entry.control = Element("input",
-            name = self.name,
-            value = value,
-            checked = selected
-        )
-    
-        if self.selection_mode == SINGLE_SELECTION:
-            entry.control["type"] = "radio"
+        if eligible:
+            entry.control = Element("input",
+                name = self.name,
+                value = value,
+                checked = selected
+            )
+        
+            if self.selection_mode == SINGLE_SELECTION:
+                entry.control["type"] = "radio"
 
-        elif self.selection_mode == MULTIPLE_SELECTION:
-            entry.control["type"] = "checkbox"
+            elif self.selection_mode == MULTIPLE_SELECTION:
+                entry.control["type"] = "checkbox"
 
-        entry.append(entry.control)
+            entry.append(entry.control)
 
         # Label
-        entry.label = Element("label")
-        entry.label["for"] = entry.control.require_id()
+        if eligible:
+            entry.label = Element("label")
+            entry.label["for"] = entry.control.require_id()
+        else:
+            entry.label = Element("span")
+            entry.add_class("uneligible")
+
         entry.label.append(label)
         entry.append(entry.label)
 
