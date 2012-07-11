@@ -32,14 +32,14 @@ def discard_acquired_ids(event):
     with _lock:
         _acquired_ids.clear()
 
-def incremental_id(key = "default"):
+def incremental_id(key = "default", step = None):
     
     with _lock:
         key_acquired_ids = _acquired_ids.get(key)
 
         if not key_acquired_ids:
-            acquire_id_range(STEP, key)
-        
+            acquire_id_range(STEP if step is None else step, key)
+
         return _acquired_ids[key].pop(0)
 
 def acquire_id_range(size, key = "default"):
@@ -59,7 +59,7 @@ def acquire_id_range(size, key = "default"):
                     root[ID_CONTAINER_KEY] = container
                 
                 base_id = container.get(key, 0)
-                top_id = base_id + STEP
+                top_id = base_id + size
 
                 container[key] = top_id
 
