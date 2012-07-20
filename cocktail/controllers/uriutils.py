@@ -16,7 +16,9 @@ def make_uri(*args, **kwargs):
         params = []
 
         for pair in kwargs.iteritems():
-            if isinstance(pair[1], (
+            if pair[1] is None:
+                continue
+            elif isinstance(pair[1], (
                 basestring,
                 int,
                 float,
@@ -27,7 +29,7 @@ def make_uri(*args, **kwargs):
             else:
                 for item in pair[1]:
                     params.append((pair[0], item))
-        
+
         uri += u"?" + u"&".join(
             ("%s=%s" % (
                 name,
