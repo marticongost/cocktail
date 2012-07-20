@@ -144,8 +144,8 @@ except ImportError:
 def parse_date(self, reader, value):
     
     if value is not None:
-        format = translations("date format")
-            
+        format = self.request_date_format or translations("date format")
+
         try:
             value = datetime.date(*time.strptime(value[:10], format)[0:3])
         except ValueError:
@@ -157,13 +157,14 @@ def serialize_date(self, value):
     format = translations("date format")    
     return value.strftime(format)
 
+Date.request_date_format = None
 Date.parse_request_value = parse_date
 Date.serialize_request_value = serialize_date
 
 def parse_datetime(self, reader, value):
     
     if value is not None:
-        date_format = translations("date format")
+        date_format = self.request_date_format or translations("date format")
         time_format = "%H:%M:%S"
         try:
             value = datetime.datetime.strptime(
@@ -182,6 +183,7 @@ def serialize_datetime(self, value):
     format = translations("date format") + " %H:%M:%S"
     return value.strftime(format)
 
+DateTime.request_date_format = None
 DateTime.parse_request_value = parse_datetime
 DateTime.serialize_request_value = serialize_datetime
 
