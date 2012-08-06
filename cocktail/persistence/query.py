@@ -427,6 +427,8 @@ class Query(object):
         type_index = self.type.index
         
         if self.verbose:
+            if not isinstance(dataset, set):
+                dataset = set(dataset)
             self._verbose_message("initial_dataset", dataset)
 
         for expr, custom_impl in self._get_execution_plan(self.__filters):
