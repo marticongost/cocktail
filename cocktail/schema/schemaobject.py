@@ -686,15 +686,13 @@ class SchemaObject(object):
             if copy_mode == DO_NOT_COPY:
                 continue
 
-            deep = (copy_mode == DEEP_COPY)
-
             if not member.translated:
                 languages = (None,)
             else:
                 languages = list(self.translations)
 
             for language in languages:
-                value = self.copy_value(member, language, deep)
+                value = self.copy_value(member, language, copy_mode)
                 copy.set(member, value, language)
 
     def get_member_copy_mode(self, member):
@@ -716,16 +714,28 @@ class SchemaObject(object):
         
         return SHALLOW_COPY
 
-    def copy_value(self, member, language, deep = False):
-        
+    def copy_value(self, member, language, mode = SHALLOW_COPY):
+
         value = self.get(member, language)
 
-        if value is not None and deep:            
+        if value is not None and mode != SHALLOW_COPY:
             if isinstance(member, Reference):
-                value = value.create_copy()
+                if mode == DEEP_COPY \
+                or (callable(mode) and mode(self, member, value)):
+                    value = value.create_copy()
             else:
-                value = [(None if item is None else item.create_copy())
-                        for item in value]
+                items = []
+
+                for item in value:
+                    if item is not None and (
+                        mode == DEEP_COPY
+                        or (callable(mode) and mode(self, member, item))
+                    ):
+                        item = item.create_copy()
+
+                    items.append(item)
+
+                value = items
 
         return value
 
