@@ -154,7 +154,7 @@ def parse_date(self, reader, value):
     return value
 
 def serialize_date(self, value):
-    format = translations("date format")    
+    format = self.request_date_format or translations("date format")
     return value.strftime(format)
 
 Date.request_date_format = None
@@ -180,7 +180,8 @@ def parse_datetime(self, reader, value):
     return value
 
 def serialize_datetime(self, value):
-    format = translations("date format") + " %H:%M:%S"
+    format = (self.request_date_format or translations("date format"))
+    format += " %H:%M:%S"
     return value.strftime(format)
 
 DateTime.request_date_format = None
