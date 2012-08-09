@@ -591,6 +591,12 @@ translations.define("cocktail.html.FilterBox remove filters",
     en = u"Remove filters"
 )
 
+translations.define("cocktail.html.FilterBox.delete_button",
+    ca = u"Treure el filtre",
+    es = u"Quitar el filtro",
+    en = u"Remove this filter"
+)
+
 translations.define("cocktail.html.FilterBox discard filters",
     ca = u"Descartar",
     es = u"Descartar",
