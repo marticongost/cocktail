@@ -33,15 +33,13 @@ cocktail.bind(".CompoundDateSelector", function ($selector) {
 
     if (value) {
 
-        var parts = [];
-        var partMap = {d: 'day', 'm': 'month', 'Y': 'year'};
-
-        for (var i = 0; i < dateFormat.length; i++) {
-            var part = partMap[dateFormat.charAt(i)];
-            if (part) {
-                parts.push(part);
-            }
+        var parts = ["day", "month", "year"];
+        var pos = {
+            day: dateFormat.indexOf("%d"),
+            month: dateFormat.indexOf("%m"),
+            year: dateFormat.indexOf("%Y")
         }
+        parts.sort(function (a, b) { return pos[a] - pos[b]; });;
 
         var numbers = [];
         var num = "";
@@ -65,7 +63,12 @@ cocktail.bind(".CompoundDateSelector", function ($selector) {
 
         if (parts.length == numbers.length) {
             for (var i = 0; i < parts.length; i++) {
-                $controls.find("." + parts[i] + "_selector option[value=" + numbers[i] + "]")
+                var part = parts[i];
+                var num = String(numbers[i]);
+                if (num.length < 2) {
+                    num = "0" + num;
+                }
+                $controls.find("." + part + "_selector option[value=" + num + "]")
                     .attr("selected", "selected");
             }
         }
