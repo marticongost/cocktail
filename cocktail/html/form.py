@@ -100,7 +100,7 @@ class Form(Element, DataDisplay):
             BaseDateTime, "cocktail.html.DatePicker")
 
         self.set_member_type_display(
-            Decimal, "cocktail.html.DecimalBox")
+            Decimal, "cocktail.html.TextBox")
 
         self.set_member_type_display(
             FileUpload, 
