@@ -123,7 +123,14 @@ def parse_decimal(self, reader, value):
 
     return value
 
+def serialize_decimal(self, value):
+    serialization = translations(value)
+    if serialization != "":
+        value = serialization
+    return value
+
 schema.Decimal.parse_request_value = parse_decimal
+schema.Decimal.serialize_request_value = serialize_decimal
 
 try:
     from fractions import Fraction
