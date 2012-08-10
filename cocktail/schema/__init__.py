@@ -30,6 +30,7 @@ from cocktail.schema.schemanumbers import (
     Decimal,
     Float
 )
+from cocktail.schema.money import Money
 try:
     from cocktail.schema.schemanumbers import Fraction
 except ImportError:
