@@ -93,7 +93,29 @@ class Selector(Element):
                 context = None
 
             enumeration = member.resolve_constraint(enumeration, context)
+
             if enumeration is not None:
+                
+                related_type = getattr(member, "related_type", None)
+
+                if related_type:
+                    if isinstance(member, schema.Reference):
+                        order = member.default_order
+                    elif isinstance(member, schema.Collection):
+                        order = member.items.default_order
+
+                    if order:
+                        sorted_items = member.related_type.select()
+                        sorted_items.base_collection = enumeration
+
+                        if isinstance(order, (basestring, schema.Member)):
+                            sorted_items.add_order(order)
+                        else:
+                            for criteria in order:
+                                sorted_items.add_order(criteria)
+
+                        return sorted_items
+
                 return enumeration
 
         if isinstance(member, schema.Boolean):
