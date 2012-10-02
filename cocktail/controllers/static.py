@@ -25,7 +25,7 @@ class FolderPublisher(object):
         self.path = path
 
     @cherrypy.expose
-    def __call__(self, *args):
+    def __call__(self, *args, **kwargs):
         
         requested_path = self.path
         
