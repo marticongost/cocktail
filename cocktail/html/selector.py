@@ -102,7 +102,7 @@ class Selector(Element):
                     if isinstance(member, schema.Reference):
                         order = member.default_order
                     elif isinstance(member, schema.Collection):
-                        order = member.items.default_order
+                        order = getattr(member.items, "default_order", None)
 
                     if order:
                         sorted_items = member.related_type.select()
