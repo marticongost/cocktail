@@ -1807,3 +1807,11 @@ translations.define("cocktail.html.TwitterTimeline.days",
     en = u"about %(days)s ago"
 )
 
+# cocktail.html.TweetButton
+#------------------------------------------------------------------------------
+translations.define("cocktail.html.TweetButton",
+    ca = u"Tuiteja",
+    es = u"Tuitea",
+    en = u"Tweet"
+)
+
