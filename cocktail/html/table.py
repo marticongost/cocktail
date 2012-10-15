@@ -163,7 +163,7 @@ class Table(Element, CollectionDisplay):
                 group = get_group(item)
                 if group != current_group:
                     group_row = self.create_group_row(group)
-                    self.append(group_row)
+                    self.body.append(group_row)
                     current_group = group
 
             row = self.create_row(i, item)
