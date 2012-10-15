@@ -36,9 +36,9 @@ def normalize(string):
 
     if not isinstance(string, unicode):
         try:
-	    string = unicode(string)
-	except:
-	    return string
+            string = unicode(string)
+        except:
+            return string
 
     if isinstance(string, unicode):
         string = string.translate(_normalization_map)
