@@ -129,6 +129,9 @@ class TemplateCompiler(object):
         if name is None:
             name = reference.split(".")[-1]
 
+            if name == self.class_name:
+                name = "Base" + name
+
             # Automatic class aliasing (avoid name collisions)
             if name in self.__class_names:
                 
