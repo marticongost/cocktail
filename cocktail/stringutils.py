@@ -105,6 +105,8 @@ class HTMLPlainTextExtractor(HTMLParser):
     def handle_starttag(self, tag, attributes):
         if tag == "p":
             self._break(2)
+        elif tag == "br":
+            self._break(1)
         elif tag == "li":
             self._break(2)
             self._push(self.bullet)
