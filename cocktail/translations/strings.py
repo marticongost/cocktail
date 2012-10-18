@@ -854,7 +854,7 @@ translations.define("cocktail.schema.exceptions.ValueRequiredError-instance",
         u"The <em>%s</em> field can't be empty"
         % member_identifier(instance),
     pt = lambda instance:
-        u"O campo <em>%s</em> é obrigatório"
+        u"O campo <em>%s</em> tem que ser preenchido"
         % member_identifier(instance),
     de = lambda instance:
         u"Das Feld <em>%s</em> muss ausgefüllt werden"
