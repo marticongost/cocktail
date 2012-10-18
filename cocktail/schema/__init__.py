@@ -47,6 +47,7 @@ from cocktail.schema.emailaddress import EmailAddress
 from cocktail.schema.phonenumber import PhoneNumber
 from cocktail.schema.color import Color
 from cocktail.schema.creditcardnumber import CreditCardNumber
+from cocktail.schema.bankaccountnumber import BankAccountNumber
 from cocktail.schema.codeblock import CodeBlock
 from cocktail.schema.errorlist import ErrorList
 from cocktail.schema.accessors import (
