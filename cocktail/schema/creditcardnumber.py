@@ -15,20 +15,21 @@ class CreditCardNumber(String):
     def __init__(self, *args, **kwargs):
         kwargs.setdefault("format", r"^\d{8,19}$")
         String.__init__(self, *args, **kwargs)
+        self.add_validation(CreditCardNumber.credit_card_validation_rule)
 
     def normalization(self, value):
         if isinstance(value, basestring):
             value = whitespace_expr.sub("", value)
         return value
 
-    def string_validation_rule(self, value, context):
+    def credit_card_validation_rule(self, value, context):
         """Validation rule for credit card numbers. Checks the control
         digit.
         """
         if isinstance(value, basestring) and not self.checksum(value):
             if min is not None and len(value) < min:
                 yield CreditCardChecksumError(
-                    self, value, context, min
+                    self, value, context
                 )
 
     @classmethod
