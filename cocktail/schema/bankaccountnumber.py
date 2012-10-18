@@ -41,7 +41,7 @@ class BankAccountNumber(String):
         def proc(digits):
             result = 11 - sum(int(d)*2**i for i,d in enumerate(digits)) % 11
             return result if result < 10 else 11 - result
-        return value[8:10] == '%d%d' % (proc('00'+value[0:7]), proc(value[9:20]))
+        return value[8:10] == '%d%d' % (proc('00'+value[0:8]), proc(value[10:20]))
 
     def translate_value(self, value, language = None, **kwargs):
         if value:
