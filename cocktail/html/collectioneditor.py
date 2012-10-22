@@ -88,7 +88,6 @@ class CollectionEditor(Element):
                 display = display(self.value, self.member.items)
             else:
                 display = display(
-                    self.data_display,
                     self.value,
                     self.member.items
                 )
