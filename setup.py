@@ -6,6 +6,7 @@ u"""
 @organization:	Whads/Accent SL
 @since:			December 2008
 """
+import sys
 from setuptools import setup, find_packages
 
 setup(
@@ -36,6 +37,7 @@ setup(
     ],
     install_requires = [
         "simplejson",
+        "transaction" + ("==" if sys.version.startswith("2.6") else ">=") + "1.1.1",
         "ZODB3>=3.10",
         "zodbupdate",
         "zope.index>=3.6.1",
