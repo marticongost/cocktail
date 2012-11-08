@@ -31,6 +31,7 @@ from cocktail.schema.schemanumbers import (
     Float
 )
 from cocktail.schema.money import Money
+from cocktail.schema.month import Month
 try:
     from cocktail.schema.schemanumbers import Fraction
 except ImportError:
