@@ -25,7 +25,7 @@ def get_image_size(path):
 
     while True:
         data = image_file.read(1024)
-        if data:
+        if not data:
             break
         image_parser.feed(data)
         if image_parser.image:
