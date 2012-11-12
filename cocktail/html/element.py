@@ -964,6 +964,11 @@ class Element(object):
         else:
             self["style"] = "%s: %s" % (property, value)
 
+    def update_style(self, styles):        
+        style = self.style.copy()
+        style.update(styles)
+        self["style"] = "; ".join("%s: %s" % i for i in style.iteritems())
+
     # Resources
     #--------------------------------------------------------------------------
     
