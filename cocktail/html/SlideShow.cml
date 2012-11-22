@@ -46,11 +46,13 @@
         py:id="bullets"
         py:visible="@{self.bullet_controls}"
         py:client_model="cocktail.html.SlideShow.bulletSlideButtons">
-        <py:ready>
-            <py:new
-                py:element="self.create_bullet(slide)"
-                py:for="slide in self.slides.children"/>
-        </py:ready>
+        <div py:id="bullets_layer">
+            <py:ready>
+                <py:new
+                    py:element="self.create_bullet(slide)"
+                    py:for="slide in self.slides.children"/>
+            </py:ready>
+        </div>
     </div>
 
     <button py:def="bullet" py:args="slide" type="button"></button>
