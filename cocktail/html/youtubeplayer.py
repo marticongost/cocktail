@@ -12,6 +12,7 @@ class YouTubePlayer(Element):
     video_id = None
     width = 480
     height = 385
+    enablejsapi = False
     allow_fullscreen = True
     autoplay = False
     show_info = False
@@ -22,10 +23,21 @@ class YouTubePlayer(Element):
         self["frameborder"] = "0"
 
     def _ready(self):
+
+        if self.enablejsapi:
+            self.add_class("scriptable_video_player")
+            self.add_resource("/cocktail/scripts/YouTubePlayer.js")
+            self.add_resource(
+                ("https" if self.https else "http") 
+                + "://youtube.com/player_api",
+                mime_type = "text/javascript"
+            )
+
         self["src"] = self.get_video_url()
         self["width"] = self.width
         self["height"] = self.height
         self["allowfullscreen"] = self.allow_fullscreen
+
         Element._ready(self)
 
     def get_video_url(self):
@@ -48,6 +60,9 @@ class YouTubePlayer(Element):
 
         if self.autoplay:
             params.append("autoplay=1")
+
+        if self.enablejsapi:
+            params.append("enablejsapi=1")
 
         if params:
             url += "?" + "&".join(params)
