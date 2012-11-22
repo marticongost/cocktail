@@ -130,15 +130,25 @@ cocktail.bind(".SlideShow", function ($slideShow) {
             this._hideSlide(current);
         }
         
-        var previous = current;    
+        var previous = current;
         current = slide;
         
+        $slideShow.trigger("beforeSlideChange", {
+            previous: previous,
+            current: slide
+        });
+
         if(this.bulletControls) {
             $slideShow.get(0).selectBullet();
         }
 
         if (slide) {
-            this._showSlide(slide);
+            this._showSlide(slide, function () {
+                $slideShow.trigger("afterSlideChange", {
+                    previous: previous,
+                    current: slide
+                });
+            });
         }
         
         $slideShow.trigger("slideSelected", {
@@ -149,18 +159,35 @@ cocktail.bind(".SlideShow", function ($slideShow) {
     
     this._hideSlide = function (slide) {
         jQuery(slide)
+            .addClass("loosingFocus")
             .css({
                 "position": "absolute",
                 "top": 0,
                 "left": 0
             })
-            .fadeOut(this.transitionDuration);
+            .fadeOut(
+                this.transitionDuration,
+                function () {
+                    jQuery(this).removeClass("loosingFocus");
+                }
+            );
     }
 
-    this._showSlide = function (slide) {
+    this._showSlide = function (slide, callback) {
+        $slideShow.addClass("inTransition");
         jQuery(slide)
+            .addClass("gainingFocus")
             .css({"position": "static"})
-            .fadeIn(this.transitionDuration);
+            .fadeIn(
+                this.transitionDuration,
+                function () {
+                    jQuery(this).removeClass("gainingFocus");
+                    $slideShow.removeClass("inTransition");
+                    if (callback) {
+                        callback();
+                    }
+                }
+            );
     }
 
     $slideShow
