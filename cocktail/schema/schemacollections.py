@@ -224,7 +224,15 @@ class Collection(RelationMember):
            
                 relation_constraints = self.resolve_constraint(
                         self.relation_constraints, context)
-            
+
+                if hasattr(relation_constraints, "iteritems"):
+                    constraints_mapping = relation_constraints
+                    get_related_member = self.related_type.get_member
+                    relation_constraints = (
+                        get_related_member(key).equal(value)
+                        for key, value in constraints_mapping.iteritems()
+                    )
+
                 if item_schema is not None or relation_constraints:
                     for i, item in enumerate(value):
                         context["collection_index"] = i
