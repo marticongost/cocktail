@@ -12,9 +12,6 @@ def make_uri(*args, **kwargs):
 
     uri = u"/".join(unicode(arg).strip(u"/") for arg in args)
 
-    if args and args[0].startswith("/"):
-        uri = u"/" + uri
-
     if kwargs:
         params = []
 
