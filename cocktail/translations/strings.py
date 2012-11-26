@@ -1741,13 +1741,17 @@ translations.define("cocktail.html.Slider.next_button",
 translations.define("cocktail.html.AsyncFileUploader.drop_area",
     ca = u"Arrossega un fitxer aquí per pujar-lo",
     es = u"Arrastra un fichero aquí para subirlo",
-    en = u"Drop a file here to upload it"
+    en = u"Drop a file here to upload it",
+    pt = u"Upload de arquivo",
+    de = u"Upload-Datei"
 )
 
 translations.define("cocktail.html.AsyncFileUploader.button",
     ca = u"Pujar fitxer",
     es = u"Subir fichero",
-    en = u"Upload file"
+    en = u"Upload file",
+    pt = u"Upload de arquivo",
+    de = u"Upload-Datei"
 )
 
 # cocktail.html.TwitterTimeline
