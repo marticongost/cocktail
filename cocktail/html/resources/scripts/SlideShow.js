@@ -138,7 +138,7 @@ cocktail.bind(".SlideShow", function ($slideShow) {
             current: slide
         });
 
-        if(this.bulletControls) {
+        if (this.bulletControls) {
             $slideShow.get(0).selectBullet();
         }
 
