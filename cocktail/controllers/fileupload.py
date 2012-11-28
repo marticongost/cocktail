@@ -12,7 +12,11 @@ from mimetypes import guess_type
 from cocktail import schema
 
 class FileUpload(schema.Schema):
-    
+ 
+    _special_copy_keys = (
+        schema.Schema._special_copy_keys | set(["async_uploader"])
+    )
+
     chunk_size = 8192
     normalization = None
     hash_algorithm = None
@@ -56,6 +60,11 @@ class FileUpload(schema.Schema):
         self.add_member(schema.Integer("file_size", **file_size_kw))
         self.add_member(schema.String("mime_type", **mime_type_kw))
 
+    def __deepcopy__(self, memo):
+        copy = schema.Schema.__deepcopy__(self, memo)
+        copy.async_uploader = self.async_uploader
+        return copy
+
     def parse_request_value(self, reader, value):
  
         # Handle asynchronous uploads
@@ -73,7 +82,7 @@ class FileUpload(schema.Schema):
                     pass
                 else:
                     async_upload = self.async_uploader.get(async_file_id)
-                
+
             if async_upload is None:
                 value = None
             else:
