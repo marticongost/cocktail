@@ -72,6 +72,17 @@ class Selector(Element):
             or (lambda item, **kw: translations(item, **kw))
         )
         
+        if self.value is None:
+            self._is_selected = lambda item: False
+        elif isinstance(
+            self.value, (list, tuple, set, ListWrapper, SetWrapper)
+        ) and not isinstance(self.member, schema.Tuple):
+            selection = set(self.get_item_value(item) for item in self.value)
+            self._is_selected = lambda item: item in selection
+        else:
+            selection = self.get_item_value(self.value)
+            self._is_selected = lambda item: item == selection
+
         self._fill_entries()
 
     def _get_items_from_member(self, member):
@@ -251,15 +262,6 @@ class Selector(Element):
 
     def _set_value(self, value):
         self.__value = value
-
-        if value is None:
-            self._is_selected = lambda item: False
-        elif isinstance(value, (list, tuple, set, ListWrapper, SetWrapper)):
-            selection = set(self.get_item_value(item) for item in value)
-            self._is_selected = lambda item: item in selection
-        else:
-            selection = self.get_item_value(value)
-            self._is_selected = lambda item: item == selection
 
     value = property(_get_value, _set_value, doc = """
         Gets or sets the active selection for the selector.

@@ -98,6 +98,23 @@ class Location(object):
 
         return location
 
+    def copy(self):
+        copy = self.__class__()
+        copy.method = self.method
+        copy.scheme = self.scheme
+        copy.host = self.host
+        copy.port = self.port
+        copy.path_info = self.path_info
+        copy.relative = self.relative
+
+        if self.query_string:
+            copy.query_string = self.query_string.copy()
+
+        if self.form_data:
+            copy.form_data = self.form_data.copy()
+
+        return copy
+
     def join_path(self, *args):
         
         parts = [self.path_info]
