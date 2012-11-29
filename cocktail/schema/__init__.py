@@ -32,6 +32,7 @@ from cocktail.schema.schemanumbers import (
 )
 from cocktail.schema.money import Money
 from cocktail.schema.month import Month
+from cocktail.schema.calendarpage import CalendarPage
 try:
     from cocktail.schema.schemanumbers import Fraction
 except ImportError:
