@@ -49,3 +49,52 @@ def add_time(value, time_fragment = None):
         value = datetime.datetime.combine(value, time_fragment)
     return value
 
+
+class CalendarPage(tuple):
+
+    def __new__(type, year, month):
+        return tuple.__new__(type, (year, month))
+
+    def __repr__(self):
+        return self.__class__.__name__ + tuple.__repr__(self)
+
+    @classmethod
+    def current(cls):
+        print cls
+        today = datetime.date.today()
+        return cls(today.year, today.month)
+
+    @property
+    def year(self):
+        return self[0]
+
+    @property
+    def month(self):
+        return self[1]
+
+    def __add__(self, n):
+        year, month = self
+        q, r = divmod(month + n, 12)
+        if not r:
+            r = 12
+            if q < 0:
+                q += 1
+            else:
+                q -= 1
+        return self.__class__(year + q, r)
+
+    def __sub__(self, n):
+        return self + (-n)
+
+    def start(self):
+        return datetime.date(self[0], self[1], 1)
+
+    def start_time(self):
+        return datetime.datetime(self[0], self[1], 1)
+
+    def date_range(self):
+        return (self.start(), (self + 1).start)
+
+    def time_range(self):
+        return (self.start_time(), (self + 1).start_time())
+

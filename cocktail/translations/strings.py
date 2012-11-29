@@ -424,6 +424,23 @@ translations.define("datetime-instance",
         _date_instance_pt(instance, style) + instance.strftime(" %H:%M:%S")
 )
 
+def _translate_calendar_page(instance, abbreviated = False):
+    return "%s %d" % (    
+        translations(
+            "month %d%s" % (
+                instance[1],
+                " abbr" if abbreviated else ""
+            )
+        ),
+        instance[0]
+    )
+
+translations.define("cocktail.dateutils.CalendarPage-instance",
+    ca = _translate_calendar_page,
+    es = _translate_calendar_page,
+    en = _translate_calendar_page
+)
+
 def _create_time_span_function(span_format, forms, join):
 
     def time_span(span):

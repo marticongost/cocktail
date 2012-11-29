@@ -317,6 +317,22 @@ def serialize_tuple(self, value):
 schema.Tuple.parse_request_value = parse_tuple
 schema.Tuple.serialize_request_value = serialize_tuple
 
+def parse_calendar_page(self, reader, value):
+
+    if value is not None:
+        separator = getattr(self, "request_value_separator", ",")
+        chunks = value.split(separator)
+        items = [reader.process_value(member, chunk)
+                for chunk, member in zip(chunks, self.items)]
+        try:
+            value = self.type(*items)
+        except TypeError:
+            pass
+
+    return value
+
+schema.CalendarPage.parse_request_value = parse_calendar_page
+
 NORMALIZATION_DEFAULT = strip
 UNDEFINED_DEFAULT = "set_default"
 ERRORS_DEFAULT = "set_none"
