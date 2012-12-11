@@ -417,6 +417,8 @@ class SearchExpression(Expression):
                 else:
                     text_body.append(lang_text)
 
+        text_body = filter(None, text_body)
+
         # Accept partial word matches (ie. a text containing "John Sanderson"
         # would match a query for "sand").
         if self.partial_word_match:
