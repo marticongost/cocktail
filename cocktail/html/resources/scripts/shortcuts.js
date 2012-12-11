@@ -23,17 +23,23 @@ cocktail.setShortcut = function (element, key, target /* optional */) {
 
                 var pos = text.toLowerCase().indexOf(lowerCaseKey);
 
-                var wrapper = document.createElement('span');
-                wrapper.appendChild(document.createTextNode(text.substring(0, pos)));
+                element.insertBefore(
+                    document.createTextNode(text.substring(0, pos)),
+                    node
+                );
 
-                var shortcutHighlight = document.createElement('span');
+                var shortcutHighlight = document.createElement('u');
                 shortcutHighlight.className = "shortcut";
                 shortcutHighlight.appendChild(document.createTextNode(text.charAt(pos)));
-                wrapper.appendChild(shortcutHighlight);
+                element.insertBefore(shortcutHighlight, node);
 
-                wrapper.appendChild(document.createTextNode(text.substring(pos + 1)));
+                element.insertBefore(
+                    document.createTextNode(text.substring(pos + 1)),
+                    node
+                );
 
-                jQuery(node).replaceWith(wrapper);
+                element.removeChild(node);
+                break;
             }
         }
     }

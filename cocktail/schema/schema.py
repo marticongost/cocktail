@@ -696,8 +696,10 @@ class Schema(Member):
         if label:
             return label
         
-        if self.adaptation_source is not None:
-            label = get_label(self.adaptation_source)
+        source_schema = self.adaptation_source
+        while source_schema is not None:
+            label = get_label(source_schema)
+            source_schema = source_schema.adaptation_source
 
         return label
 

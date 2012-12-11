@@ -30,6 +30,9 @@ from cocktail.schema.schemanumbers import (
     Decimal,
     Float
 )
+from cocktail.schema.money import Money
+from cocktail.schema.month import Month
+from cocktail.schema.calendarpage import CalendarPage
 try:
     from cocktail.schema.schemanumbers import Fraction
 except ImportError:
@@ -46,6 +49,7 @@ from cocktail.schema.emailaddress import EmailAddress
 from cocktail.schema.phonenumber import PhoneNumber
 from cocktail.schema.color import Color
 from cocktail.schema.creditcardnumber import CreditCardNumber
+from cocktail.schema.bankaccountnumber import BankAccountNumber
 from cocktail.schema.codeblock import CodeBlock
 from cocktail.schema.errorlist import ErrorList
 from cocktail.schema.accessors import (
@@ -60,7 +64,10 @@ from cocktail.schema.schemaobject import (
     SchemaObject,
     SchemaClass,
     SchemaObjectAccessor,
-    TranslationMapping
+    TranslationMapping,
+    DO_NOT_COPY,
+    SHALLOW_COPY,
+    DEEP_COPY
 )
 from cocktail.schema.adapter import (
     reference, shallow, deep,

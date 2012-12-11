@@ -19,11 +19,13 @@ from cocktail.stringutils import normalize
 
 class Expression(object):
     
-    op = None
     operands = ()
     
     def __init__(self, *operands):
         self.operands = tuple(self.wrap(operand) for operand in operands)
+
+    def op(self, *args):
+        raise TypeError("%s doesn't implement its op() method" % self)
 
     def __eq__(self, other):
         return type(self) is type(other) and self.operands == other.operands

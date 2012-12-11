@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:py="http://www.whads.com/ns/cocktail/templates">
+
+    <?py-class
+    url = None
+    via = None
+    text = None
+    related = None
+    size = "medium"
+    count = "horizontal"
+    counturl = None
+    hashtags = None
+    dnt = False
+    ?>
+
+    <?py
+    self.add_resource("//platform.twitter.com/widgets.js")
+    ?>
+
+    <a
+        href="https://twitter.com/share"
+        class="twitter-share-button"
+        data-url="@{self.url}"
+        data-via="@{self.via}"
+        data-text="@{self.text}"
+        data-related="@{self.related}"
+        data-lang="@{get_language()}"
+        data-size="@{self.size}"
+        data-count="@{self.count}"
+        data-counturl="@{self.counturl}"
+        data-hashtags="@{self.hashtags}"
+        data-dnt="@{'true' if self.dnt else 'false'}">
+        ${translations("cocktail.html.TweetButton")}
+    </a>
+
+</div>
+

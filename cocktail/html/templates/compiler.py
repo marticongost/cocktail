@@ -129,6 +129,9 @@ class TemplateCompiler(object):
         if name is None:
             name = reference.split(".")[-1]
 
+            if name == self.class_name:
+                name = "Base" + name
+
             # Automatic class aliasing (avoid name collisions)
             if name in self.__class_names:
                 
@@ -205,6 +208,15 @@ class TemplateCompiler(object):
             uri = None
             tag = name
         
+        # Strip empty text nodes
+        strip_whitespace = attributes.pop(
+            self.TEMPLATE_NS + ">strip_whitespace",
+            None
+        )
+
+        if strip_whitespace and strip_whitespace.lower() == "true":
+            frame.strip_whitespace = True
+
         # Template/custom tag
         if uri == self.TEMPLATE_NS:
 
@@ -530,7 +542,8 @@ class TemplateCompiler(object):
 
             # White space
             if not data.strip():
-                if self.__whitespace_stack \
+                if not self.__stack[-1].strip_whitespace \
+                and self.__whitespace_stack \
                 and self.__whitespace_stack[-1] is not None:
                     self.__whitespace_stack[-1] += data
             else:
@@ -729,6 +742,8 @@ class TemplateCompiler(object):
 
 
 class Frame(object):
+
+    strip_whitespace = False
 
     def __init__(self, element = None):
         self.element = element

@@ -123,7 +123,14 @@ def parse_decimal(self, reader, value):
 
     return value
 
+def serialize_decimal(self, value):
+    serialization = translations(value)
+    if serialization != "":
+        value = serialization
+    return value
+
 schema.Decimal.parse_request_value = parse_decimal
+schema.Decimal.serialize_request_value = serialize_decimal
 
 try:
     from fractions import Fraction
@@ -144,8 +151,8 @@ except ImportError:
 def parse_date(self, reader, value):
     
     if value is not None:
-        format = translations("date format")
-            
+        format = self.request_date_format or translations("date format")
+
         try:
             value = datetime.date(*time.strptime(value[:10], format)[0:3])
         except ValueError:
@@ -154,16 +161,17 @@ def parse_date(self, reader, value):
     return value
 
 def serialize_date(self, value):
-    format = translations("date format")    
+    format = self.request_date_format or translations("date format")
     return value.strftime(format)
 
+Date.request_date_format = None
 Date.parse_request_value = parse_date
 Date.serialize_request_value = serialize_date
 
 def parse_datetime(self, reader, value):
     
     if value is not None:
-        date_format = translations("date format")
+        date_format = self.request_date_format or translations("date format")
         time_format = "%H:%M:%S"
         try:
             value = datetime.datetime.strptime(
@@ -179,9 +187,11 @@ def parse_datetime(self, reader, value):
     return value
 
 def serialize_datetime(self, value):
-    format = translations("date format") + " %H:%M:%S"
+    format = (self.request_date_format or translations("date format"))
+    format += " %H:%M:%S"
     return value.strftime(format)
 
+DateTime.request_date_format = None
 DateTime.parse_request_value = parse_datetime
 DateTime.serialize_request_value = serialize_datetime
 
@@ -306,6 +316,22 @@ def serialize_tuple(self, value):
 
 schema.Tuple.parse_request_value = parse_tuple
 schema.Tuple.serialize_request_value = serialize_tuple
+
+def parse_calendar_page(self, reader, value):
+
+    if value is not None:
+        separator = getattr(self, "request_value_separator", ",")
+        chunks = value.split(separator)
+        items = [reader.process_value(member, chunk)
+                for chunk, member in zip(chunks, self.items)]
+        try:
+            value = self.type(*items)
+        except TypeError:
+            pass
+
+    return value
+
+schema.CalendarPage.parse_request_value = parse_calendar_page
 
 NORMALIZATION_DEFAULT = strip
 UNDEFINED_DEFAULT = "set_default"
