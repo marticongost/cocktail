@@ -17,6 +17,7 @@ class YouTubePlayer(Element):
     autoplay = False
     show_info = False
     show_related_videos = False
+    show_player_controls = True
     https = True
 
     def _build(self):
@@ -63,6 +64,9 @@ class YouTubePlayer(Element):
 
         if self.enablejsapi:
             params.append("enablejsapi=1")
+
+        if not self.show_player_controls:
+            params.append("controls=0")
 
         if params:
             url += "?" + "&".join(params)
