@@ -115,22 +115,39 @@ translations.define("Filters",
     en = u"Filters"
 )
 
-translations.define("Redirecting",
+translations.define(
+    "cocktail.controllers.Location.client_redirect_title",
     ca = u"Redirecció",
     es = u"Redirección",
     en = u"Redirecting"
 )
 
-translations.define("Redirection explanation",
+translations.define(
+    "cocktail.controllers.Location.client_redirect_explanation",
     ca = u"S'està redirigint la petició. Si no ets automàticament redirigit, "
-         u"prem el botó per continuar navegant pel web.",
+         u"prem %(control)s per continuar navegant pel web.",
     es = u"Se está redirigiendo la petición. Si no eres automáticamente "
-         u"redirigido pulsa el botón para proseguir con la navegación.",
+         u"redirigido pulsa %(control)s para proseguir con la navegación.",
     en = u"Redirection in process. If you aren't redirected automatically "
-         u"press the button to proceed."
+         u"press %(control)s to proceed."
 )
 
-translations.define("Redirection button",
+translations.define(
+    "cocktail.controllers.Location.client_redirect_control-GET",
+    ca = u"el botó",
+    es = u"el botón",
+    en = u"the button"
+)
+
+translations.define(
+    "cocktail.controllers.Location.client_redirect_control-POST",
+    ca = u"l'enllaç",
+    es = u"el enlace",
+    en = u"the link"
+)
+
+translations.define(
+    "cocktail.controllers.Location.client_redirect_control",
     ca = u"Continuar",
     es = u"Continuar",
     en = u"Continue"
@@ -407,6 +424,23 @@ translations.define("datetime-instance",
         _date_instance_pt(instance, style) + instance.strftime(" %H:%M:%S")
 )
 
+def _translate_calendar_page(instance, abbreviated = False):
+    return "%s %d" % (    
+        translations(
+            "month %d%s" % (
+                instance[1],
+                " abbr" if abbreviated else ""
+            )
+        ),
+        instance[0]
+    )
+
+translations.define("cocktail.dateutils.CalendarPage-instance",
+    ca = _translate_calendar_page,
+    es = _translate_calendar_page,
+    en = _translate_calendar_page
+)
+
 def _create_time_span_function(span_format, forms, join):
 
     def time_span(span):
@@ -572,6 +606,12 @@ translations.define("cocktail.html.FilterBox remove filters",
     ca = u"Treure filtres",
     es = u"Quitar filtros",
     en = u"Remove filters"
+)
+
+translations.define("cocktail.html.FilterBox.delete_button",
+    ca = u"Treure el filtre",
+    es = u"Quitar el filtro",
+    en = u"Remove this filter"
 )
 
 translations.define("cocktail.html.FilterBox discard filters",
@@ -831,7 +871,7 @@ translations.define("cocktail.schema.exceptions.ValueRequiredError-instance",
         u"The <em>%s</em> field can't be empty"
         % member_identifier(instance),
     pt = lambda instance:
-        u"O campo <em>%s</em> é obrigatório"
+        u"O campo <em>%s</em> tem que ser preenchido"
         % member_identifier(instance),
     de = lambda instance:
         u"Das Feld <em>%s</em> muss ausgefüllt werden"
@@ -1742,15 +1782,15 @@ translations.define("cocktail.html.AsyncFileUploader.drop_area",
     ca = u"Arrossega un fitxer aquí per pujar-lo",
     es = u"Arrastra un fichero aquí para subirlo",
     en = u"Drop a file here to upload it",
-    pt = u"Drop a file here to upload it",
-    de = u"Drop a file here to upload it"
+    pt = u"Upload de arquivo",
+    de = u"Upload-Datei"
 )
 
 translations.define("cocktail.html.AsyncFileUploader.button",
     ca = u"Pujar fitxer",
     es = u"Subir fichero",
     en = u"Upload file",
-    pt = u"Anexar documento",
+    pt = u"Upload de arquivo",
     de = u"Upload-Datei"
 )
 
@@ -1782,5 +1822,13 @@ translations.define("cocktail.html.TwitterTimeline.day",
 
 translations.define("cocktail.html.TwitterTimeline.days",
     en = u"about %(days)s ago"
+)
+
+# cocktail.html.TweetButton
+#------------------------------------------------------------------------------
+translations.define("cocktail.html.TweetButton",
+    ca = u"Tuiteja",
+    es = u"Tuitea",
+    en = u"Tweet"
 )
 

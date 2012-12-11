@@ -18,6 +18,12 @@ from cocktail.controllers.viewstate import get_state
 from cocktail.controllers.dispatcher import StopRequest
 
 
+class URLEmptyHash(object):
+
+    def __nonzero__(self):
+        return False
+
+
 class Location(object):
 
     method = "GET"
@@ -28,6 +34,8 @@ class Location(object):
     query_string = None
     form_data = None
     relative = False
+    hash = None
+    empty_hash = URLEmptyHash()
 
     def __init__(self, url = None):
         self.query_string = {}
@@ -90,6 +98,23 @@ class Location(object):
 
         return location
 
+    def copy(self):
+        copy = self.__class__()
+        copy.method = self.method
+        copy.scheme = self.scheme
+        copy.host = self.host
+        copy.port = self.port
+        copy.path_info = self.path_info
+        copy.relative = self.relative
+
+        if self.query_string:
+            copy.query_string = self.query_string.copy()
+
+        if self.form_data:
+            copy.form_data = self.form_data.copy()
+
+        return copy
+
     def join_path(self, *args):
         
         parts = [self.path_info]
@@ -106,7 +131,7 @@ class Location(object):
         self.path_info = "/" + "/".join(steps)
         return step
 
-    def __unicode__(self):
+    def get_url(self, force_empty_hash = False):
 
         if self.relative or self.host is None:
             url = u""
@@ -121,7 +146,15 @@ class Location(object):
         if self.query_string:
             url += u"?" + urlencode(self.query_string, True)
 
+        if self.hash:
+            url += "#" + self.hash
+        elif force_empty_hash and self.hash is self.empty_hash:
+            url += "# "
+
         return url
+
+    def __unicode__(self):
+        return self.get_url()
 
     def __str__(self):
         return unicode(self).encode("utf-8")
@@ -132,59 +165,89 @@ class Location(object):
             return self.query_string
         else:
             return self.form_data
-    
-    def go(self, method = None):
+ 
+    def go(self, method = None, client_redirect = False):
         method = method or self.method
-        if method == "POST":
+        if method == "POST" or client_redirect:
             cherrypy.response.status = 200
-            cherrypy.response.body = self.get_form()
+            cherrypy.response.body = self.get_client_redirect_html()
             raise StopRequest()
         else:
-            raise cherrypy.HTTPRedirect(str(self))
+            raise cherrypy.HTTPRedirect(
+                self.get_url(force_empty_hash = True).encode("utf-8")
+            )
 
-    def get_form(self):
-        with language_context(get_language() or "en"):
-            return """
-    <html>	
-        <head>
-            <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-            <title>%(title)s</title>
-            <script type="text/javascript">
-                <!--
-                onload = function () {
-                    try {
-                        var form = document.getElementById("redirectionForm");
-                        form.submit();
-                    }
-                    catch (ex) {}
-                }
-                //-->
-            </script>
-        </head>
-        
-        <body>
-            <p>
-                %(explanation)s
-            </p>
-            <form id="redirectionForm" method="%(method)s" action="%(action)s">
-                %(data)s
-                <input type="submit" value="%(button)s">
-            </form>
-        </body>
+    def get_client_redirect_html(self, method = None):
 
-    </html>
-                """ % {
-                    "title": translations("Redirecting"),
-                    "explanation": translations("Redirection explanation"),
-                    "method": self.method,
-                    "action": str(self),
-                    "data": "\n".join(
-                        """<input type="hidden" name="%s" value="%s">"""
-                        % (key, value)
-                        for key, value in self.form_data.iteritems()
-                    ),
-                    "button": translations("Redirection button")
-                }
+        html = []
+        url = unicode(self)
+
+        if not method:
+            method = self.method
+
+        with language_context(get_language() or "en"):        
+            trans_prefix = "cocktail.controllers.Location.client_redirect"
+            title = translations(trans_prefix + "_title")
+            control_label = translations(trans_prefix + "_control")
+            explanation = translations(
+                trans_prefix + "_explanation",
+                control = translations(trans_prefix + "_control-" + method)
+            )
+
+        if method == "GET":
+            javascript = u"""document.location.href = "%s";""" % url
+            content = u"""<noscript><p>%s</p><a href="%s">%s</a></noscript>""" % (
+                explanation,
+                url,
+                control_label
+            )
+        elif method == "POST":
+            javascript = u"""document.getElementById("redirectionForm").submit();"""
+            content = u"""
+                <form id="redirectionForm" method="%(method)s" action="%(action)s">
+                    %(data)s
+                    <noscript>
+                        <p>%(explanation)s</p>
+                        <input type="submit" value="%(control_label)s">
+                    </noscript>
+                </form>
+            """ % {
+                "method": method,
+                "action": url,
+                "data": "\n".join(
+                    """<input type="hidden" name="%s" value="%s">"""
+                    % (key, value)
+                    for key, value in self.form_data.iteritems()
+                ),
+                "explanation": explanation,
+                "control_label": control_label
+            }
+
+        return u"""
+<html>	
+    <head>
+        <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+        <title>%(title)s</title>
+        <script type="text/javascript">
+            <!--
+            onload = function () {
+                try {%(javascript)s}
+                catch (ex) {}
+            }
+            //-->
+        </script>
+    </head>        
+    <body>
+        %(content)s
+    </body>
+</html>""" % {
+            "title": title,
+            "javascript": javascript,
+            "content": content
+        }
+
+    # Deprecated
+    get_form = get_client_redirect_html
 
     @classmethod
     def require_http(cls):

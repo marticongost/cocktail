@@ -317,3 +317,8 @@ class IntegralPartRelocationError(Exception):
     element to attach it to another container.
     """
 
+
+class BankAccountChecksumError(ValidationError):
+    """A validation error produced for bank account numbers that have an
+    invalid format.
+    """

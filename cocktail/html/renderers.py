@@ -31,7 +31,7 @@ class Renderer(object):
 
     doctype = None
     single_tags = "img", "link", "meta", "br", "hr", "input"
-    flag_attributes = "selected", "checked", "autofocus"
+    flag_attributes = "selected", "checked", "autofocus", "allowfullscreen"
     outputs_xml = False
 
     def write_element(self, element, rendering):

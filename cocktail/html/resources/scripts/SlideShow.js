@@ -23,6 +23,26 @@ cocktail.bind(".SlideShow", function ($slideShow) {
             .click(function () { $slideShow.get(0).selectNextSlide(); });
     }
 
+    // Create bullets controls
+    if (this.bulletControls) {
+        
+        this.selectBullet = function () {
+            jQuery(".bullet",$slideShow).removeClass("selected");
+            var index = $slideShow.find(this.slidesSelector).index(current);
+            jQuery(jQuery(".bullet",$slideShow).get(index)).addClass("selected");
+        }
+
+        jQuery(cocktail.instantiate("cocktail.html.SlideShow.bulletSlideButtons"))
+            .appendTo($slideShow);
+
+        jQuery.each(jQuery(".bullet",$slideShow),function (index,bullet) {
+            jQuery(bullet).click(function () {
+                $slideShow.get(0).selectSlide(index);
+            });
+        });
+
+    }
+
     this.getAutoPlay = function () {
         return autoplayTimer != null;
     }
@@ -110,11 +130,25 @@ cocktail.bind(".SlideShow", function ($slideShow) {
             this._hideSlide(current);
         }
         
-        var previous = current;    
+        var previous = current;
         current = slide;
         
+        $slideShow.trigger("beforeSlideChange", {
+            previous: previous,
+            current: slide
+        });
+
+        if (this.bulletControls) {
+            $slideShow.get(0).selectBullet();
+        }
+
         if (slide) {
-            this._showSlide(slide);
+            this._showSlide(slide, function () {
+                $slideShow.trigger("afterSlideChange", {
+                    previous: previous,
+                    current: slide
+                });
+            });
         }
         
         $slideShow.trigger("slideSelected", {
@@ -125,21 +159,45 @@ cocktail.bind(".SlideShow", function ($slideShow) {
     
     this._hideSlide = function (slide) {
         jQuery(slide)
+            .addClass("loosingFocus")
             .css({
                 "position": "absolute",
                 "top": 0,
                 "left": 0
             })
-            .fadeOut(this.transitionDuration);
+            .fadeOut(
+                this.transitionDuration,
+                function () {
+                    jQuery(this).removeClass("loosingFocus");
+                }
+            );
     }
 
-    this._showSlide = function (slide) {
+    this._showSlide = function (slide, callback) {
+        $slideShow.addClass("inTransition");
         jQuery(slide)
+            .addClass("gainingFocus")
             .css({"position": "static"})
-            .fadeIn(this.transitionDuration);
+            .fadeIn(
+                this.transitionDuration,
+                function () {
+                    jQuery(this).removeClass("gainingFocus");
+                    $slideShow.removeClass("inTransition");
+                    if (callback) {
+                        callback();
+                    }
+                }
+            );
     }
 
-    $slideShow.css({"position": "relative"});
+    $slideShow
+        .css({"position": "relative"})
+        .mouseenter(function () {
+            this.stop();
+        })
+        .mouseleave(function () {
+            if(this.autoplay) this.start();
+        });
 
     // Hide all slides except the first one
     var $slides = $slideShow.find(this.slidesSelector);
@@ -148,6 +206,10 @@ cocktail.bind(".SlideShow", function ($slideShow) {
         .hide();
 
     current = $slides.get(0);
+    
+    if(this.bulletControls) {
+        $slideShow.get(0).selectBullet();
+    }
 
     // Check the element's configuration to determine wether to start in
     // autoplay mode

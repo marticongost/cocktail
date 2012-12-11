@@ -114,7 +114,7 @@ class HTMLDocument(Element):
         # Content type and charset should always go first
         ct_meta = Element("meta")
         ct_meta["http-equiv"] = "Content-Type"
-        ct_meta["content"] = "%s;%s" % (
+        ct_meta["content"] = "%s; charset=%s" % (
             self.metadata.content_type or "text/html",
             self.metadata.charset or "utf-8"
         )

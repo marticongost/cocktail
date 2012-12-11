@@ -295,7 +295,19 @@ class PersistentObject(SchemaObject, Persistent):
         instance = cls.get_instance(id, **criteria)
 
         if instance is None:
-            raise InstanceNotFoundError()
+
+            if id is None:
+                for key, value in criteria.iteritems():
+                    break
+            else:
+                key = "id"
+                value = id
+
+            raise InstanceNotFoundError(
+                "Can't find an instance of %s with %s = %r" % (
+                    cls, key, value
+                )
+            )
 
         return instance
 
@@ -401,16 +413,18 @@ class PersistentObject(SchemaObject, Persistent):
             if isinstance(member, schema.RelationMember):
 
                 # Cascade delete
-                if self._should_cascade_delete(member):
+                if self._should_cascade_delete_member(member):
                     value = self.get(member)
                     if value is not None:
                         if isinstance(member, schema.Reference):
-                            value.delete(deleted_objects)
+                            if value._included_in_cascade_delete(self, member):
+                                value.delete(deleted_objects)
                         else:
                             # Make a copy of the collection, since it may
                             # change during iteration
                             for item in list(value):
-                                item.delete(deleted_objects)
+                                if item._included_in_cascade_delete(self, member):
+                                    item.delete(deleted_objects)
 
                 # Remove all known references to the item (drop all its
                 # relations)
@@ -419,8 +433,11 @@ class PersistentObject(SchemaObject, Persistent):
 
         self.deleted(deleted_objects = deleted_objects)
 
-    def _should_cascade_delete(self, member):
+    def _should_cascade_delete_member(self, member):
         return member.cascade_delete
+
+    def _included_in_cascade_delete(self, parent, member):
+        return True
 
     def _should_erase_member(self, member):
 
@@ -480,10 +497,15 @@ def _get_constraint_filters(self, parent):
     constraints = self.resolve_constraint(self.relation_constraints, context)
     
     if constraints:
-        for constraint in constraints:
-            if not isinstance(constraint, Expression):
-                constraint = CustomExpression(constraint)
-            yield constraint
+        if hasattr(constraints, "iteritems"):
+            get_related_member = self.related_type.get_member
+            for key, value in constraints.iteritems():
+                yield get_related_member(key).equal(value)
+        else:
+            for constraint in constraints:
+                if not isinstance(constraint, Expression):
+                    constraint = CustomExpression(constraint)
+                yield constraint
 
     # Prevent cycles in recursive relations
     excluded_items = set()

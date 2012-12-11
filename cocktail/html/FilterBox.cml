@@ -86,7 +86,7 @@ from cocktail.controllers import get_state, view_state, serialize_parameter
             params["filter"] = filter_param or ""
             element["href"] = "?" + view_state(**params)
             ?>
-            <img src="/resources/images/delete_small.png"/>
+            ${translations("cocktail.html.FilterBox.delete_button")}
         </a>
     </div>
 

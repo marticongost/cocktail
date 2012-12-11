@@ -15,13 +15,34 @@ cocktail.bind(".DropdownPanel", function ($dropdown) {
 
     this.setCollapsed = function (collapsed) {
         $dropdown[collapsed ? "removeClass" : "addClass"]("DropdownPanel-expanded");
-        if (!collapsed) {
-            $dropdown.find(".panel *").first(function () { return this.focus; }).focus();
+        if (collapsed) {
+            disableTabIndex();
+        }
+        else {
+            restoreTabIndex();
+            $dropdown.find(".panel *").filter(function () {
+                return this.focus && this.tabIndex >= 0;
+            }).first().focus();
         }
     }
 
     this.toggleCollapsed = function () {
         this.setCollapsed(!this.getCollapsed());
+    }
+
+    function restoreTabIndex() {
+        $dropdown.find(".panel *").each(function () {
+            this.tabIndex = this.DropdownPanel_tabIndex;
+        });
+    }
+
+    disableTabIndex();
+
+    function disableTabIndex() {
+        $dropdown.find(".panel *").each(function () {
+            this.DropdownPanel_tabIndex = this.tabIndex;
+            this.tabIndex = -1;
+        });
     }
 
     $dropdown

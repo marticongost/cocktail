@@ -85,7 +85,7 @@ class CascadeDeleteTestCase(TempStorageMixin, TestCase):
         class TestObject(PersistentObject):
             ref = Reference(cascade_delete = True)
 
-            def _should_cascade_delete(self, member):
+            def _should_cascade_delete_member(self, member):
                 return True
 
         a = TestObject(ref = TestObject())
@@ -103,7 +103,7 @@ class CascadeDeleteTestCase(TempStorageMixin, TestCase):
         class TestObject(PersistentObject):
             ref = Reference(cascade_delete = True)
 
-            def _should_cascade_delete(self, member):
+            def _should_cascade_delete_member(self, member):
                 return False
 
         a = TestObject()
@@ -199,7 +199,7 @@ class CascadeDeleteTestCase(TempStorageMixin, TestCase):
         class TestObject(PersistentObject):
             collection = Collection(cascade_delete = True)
 
-            def _should_cascade_delete(self, member):
+            def _should_cascade_delete_member(self, member):
                 return True
 
         a = TestObject(collection = [TestObject(), TestObject()])
@@ -216,7 +216,7 @@ class CascadeDeleteTestCase(TempStorageMixin, TestCase):
         class TestObject(PersistentObject):
             collection = Collection(cascade_delete = True)
 
-            def _should_cascade_delete(self, member):
+            def _should_cascade_delete_member(self, member):
                 return False
 
         a = TestObject()

@@ -427,6 +427,8 @@ class Query(object):
         type_index = self.type.index
         
         if self.verbose:
+            if not isinstance(dataset, set):
+                dataset = set(dataset)
             self._verbose_message("initial_dataset", dataset)
 
         for expr, custom_impl in self._get_execution_plan(self.__filters):
@@ -498,7 +500,10 @@ class Query(object):
         if index is None and member is not None:
             index = self._get_member_index(member)
 
-        return index
+        # Keyword arguments to pass to the index
+        index_kw = getattr(expr, "index_kwargs", None) or {}
+
+        return index, index_kw
 
     def _get_member_index(self, member):
 
@@ -540,9 +545,9 @@ class Query(object):
             language = expr.operands[1].eval(None)
             expr = expr.operands[0]
 
-        index = self._get_expression_index(expr)
+        index, index_kw = self._get_expression_index(expr)
 
-        if index is not None and (
+        if index is not None and not index.accepts_repetition and (
             len(order) == 1
             or not index.accepts_multiple_values
         ):
@@ -556,16 +561,16 @@ class Query(object):
                     dataset = set(dataset)
 
                 if isinstance(expr, Member) and expr.primary:
-                    sequence = index.keys(descending = desc)
+                    sequence = index.keys(descending = desc, **index_kw)
                 elif getattr(expr, "translated", False):
                     sequence = (id
                                 for key, id 
-                                in index.items(descending = desc)
+                                in index.items(descending = desc, **index_kw)
                                 if key[0] == language)
                 elif is_btree:
-                    sequence = index.values()
+                    sequence = index.values(**index_kw)
                 else:
-                    sequence = index.values(descending = desc)
+                    sequence = index.values(descending = desc, **index_kw)
 
                 ordered_dataset = (id
                            for id in sequence
@@ -576,14 +581,24 @@ class Query(object):
         # General case: mix indexes and brute force sorting as needed
         sorting_keys = {}
 
-        def add_sorting_key(item_id, key):
+        def add_sorting_key(c, item_id, key):
             item_keys = sorting_keys.get(item_id)
+
             if item_keys is None:
-                sorting_keys[item_id] = [key]
-            else:
+                sorting_keys[item_id] = item_keys = []
+
+            count = len(item_keys)
+
+            if count == c:
+                item_keys.append(key)
+            elif count == c + 1:
+                pass # Keep the first value
+            elif count < c:
+                while len(item_keys) != c:
+                    item_keys.append(None)
                 item_keys.append(key)
 
-        for criteria in order:
+        for c, criteria in enumerate(order):
             expr = criteria.operands[0]
 
             if isinstance(expr, TranslationExpression):
@@ -592,7 +607,7 @@ class Query(object):
             else:
                 language = None
 
-            index = self._get_expression_index(expr)            
+            index, index_kw = self._get_expression_index(expr)            
             desc = isinstance(criteria, expressions.NegativeExpression)
             
             # Sort using an index
@@ -605,32 +620,33 @@ class Query(object):
                 # Index with duplicates
                 if index.accepts_multiple_values:
                     pos = 0
-                    prev_key = None
-                    for key, id in index.items(descending = desc):
+                    prev_key = None                    
+                    for key, id in index.items(descending = desc, **index_kw):
                         # Skip entries in non-active languages
-                        if not expr.translated or key[0] == language:
+                        if not getattr(expr, "translated", False) \
+                        or key[0] == language:
                             if id in dataset:
                                 if key != prev_key:
                                     pos += 1
                                     prev_key = key
 
-                                add_sorting_key(id, pos)
+                                add_sorting_key(c, id, pos)
 
                 # Index without duplicates
                 else:
                     if isinstance(expr, Member) and expr.primary:
-                        sequence = index.keys(descending = desc)
+                        sequence = index.keys(descending = desc, **index_kw)
                     else:
                         if expr.translated:
                             sequence = (id
-                                for key, id in index.items(descending = desc)
+                                for key, id in index.items(descending = desc, **index_kw)
                                 if key[0] == language)
                         else:
-                            sequence = index.values(descending = desc)
+                            sequence = index.values(descending = desc, **index_kw)
 
                     for pos, id in enumerate(sequence):
                         if id in dataset:
-                            add_sorting_key(id, pos)
+                            add_sorting_key(c, id, pos)
 
             # Brute force
             else:
@@ -645,7 +661,7 @@ class Query(object):
                     if hasattr(value, "get_ordering_key"):
                         value = value.get_ordering_key()
 
-                    add_sorting_key(id, Comparator(value, desc))
+                    add_sorting_key(c, id, Comparator(value, desc))
 
         return sorted(dataset, key = sorting_keys.__getitem__)
 
