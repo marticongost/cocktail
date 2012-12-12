@@ -118,7 +118,7 @@ class DocumentMetadata(object):
     def collect(self, element, rendering_client_model = False):
 
         if not rendering_client_model:
-            if element.page_doctype:
+            if element.page_doctype is not None:
                 self.doctype = element.page_doctype
 
             if element.page_title:

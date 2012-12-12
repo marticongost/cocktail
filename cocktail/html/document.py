@@ -40,8 +40,10 @@ class HTMLDocument(Element):
 
     def _render(self, rendering):
 
-        doctype = self.metadata.doctype or rendering.renderer.doctype
-        
+        doctype = self.metadata.doctype
+        if doctype is None:
+            doctype = rendering.renderer.doctype
+
         if doctype:
             rendering.write(doctype.strip())
             rendering.write("\n")
