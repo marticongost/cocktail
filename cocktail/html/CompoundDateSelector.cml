@@ -30,7 +30,8 @@ from cocktail.html.databoundcontrol import data_bound
         )
 
         if self.member and self.value:
-            self.text_box.value = self.member.serialize_request_value(self.value)
+            if isinstance(self.value, date):
+                self.text_box.value = self.member.serialize_request_value(self.value)
         ?>
     </py:ready>
 
