@@ -20,10 +20,20 @@ cocktail.bind(".CompoundDateSelector", function ($selector) {
     // Update the value of the hidden textbox when a value is chosen in the
     // month/year dropdown selectors        
     $controls.find("select").change(function () {
-        var dateString = dateFormat;
-        var dateString = dateString.replace(/%d/, $controls.find(".day_selector").val());
-        var dateString = dateString.replace(/%m/, $controls.find(".month_selector").val());
-        var dateString = dateString.replace(/%Y/, $controls.find(".year_selector").val());
+        var day = $controls.find(".day_selector").val();
+        var month = $controls.find(".month_selector").val();
+        var year = $controls.find(".year_selector").val();
+
+        if (day && month && year) {
+            var dateString = dateFormat;
+            var dateString = dateString.replace(/%d/, day);
+            var dateString = dateString.replace(/%m/, month);
+            var dateString = dateString.replace(/%Y/, year);
+        }
+        else {
+            var dateString = "";
+        }
+
         $textBox.val(dateString);
     });
 
