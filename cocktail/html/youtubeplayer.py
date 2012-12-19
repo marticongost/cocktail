@@ -19,6 +19,7 @@ class YouTubePlayer(Element):
     show_related_videos = False
     show_player_controls = True
     https = True
+    wmode = 'opaque'
 
     def _build(self):
         self["frameborder"] = "0"
@@ -48,7 +49,7 @@ class YouTubePlayer(Element):
             self.video_id
         )
 
-        params = []
+        params = ["wmode=%s" % (self.wmode,)]
 
         if not self.show_info:
             params.append("showinfo=0")
