@@ -38,7 +38,7 @@ setup(
     install_requires = [
         "simplejson",
         "transaction" + ("==" if sys.version.startswith("2.6") else ">=") + "1.1.1",
-        "ZODB3>=3.10",
+        "ZODB3==3.10.5",
         "zodbupdate",
         "zope.index>=3.6.1",
         "cherrypy==3.1.2",
