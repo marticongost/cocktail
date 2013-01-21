@@ -1797,30 +1797,44 @@ translations.define("cocktail.html.AsyncFileUploader.button",
 # cocktail.html.TwitterTimeline
 #------------------------------------------------------------------------------
 translations.define("cocktail.html.TwitterTimeline.seconds",
+    ca = u"fa menys d'un minut",
+    es = u"hace menos de un minuto",
     en = u"less than a minute ago"
 )
 
 translations.define("cocktail.html.TwitterTimeline.minute",
+    ca = u"fa un minut",
+    es = u"hace un minuto",
     en = u"about a minute ago"
 )
 
 translations.define("cocktail.html.TwitterTimeline.minutes",
+    ca = u"fa %(minutes)s minuts",
+    es = u"hace %(minutes)s minutos",
     en = u"%(minutes)s minutes ago"
 )
 
 translations.define("cocktail.html.TwitterTimeline.hour",
+    ca = u"fa una hora",
+    es = u"hace una hora",
     en = u"about an hour ago"
 )
 
 translations.define("cocktail.html.TwitterTimeline.hours",
+    ca = u"fa %(hours)s hores",
+    es = u"hace %(hours)s horas",
     en = u"about %(hours)s hours ago"
 )
 
 translations.define("cocktail.html.TwitterTimeline.day",
+    ca = u"fa un dia",
+    es = u"hacen un día",
     en = u"1 day ago"
 )
 
 translations.define("cocktail.html.TwitterTimeline.days",
+    ca = u"fa %(days)s dies",
+    es = u"hace %(days)s días",
     en = u"about %(days)s ago"
 )
 

@@ -177,7 +177,7 @@ cocktail.bind(".SlideShow", function ($slideShow) {
         $slideShow.addClass("inTransition");
         jQuery(slide)
             .addClass("gainingFocus")
-            .css({"position": "static"})
+            .css({"position": "relative"})
             .fadeIn(
                 this.transitionDuration,
                 function () {
