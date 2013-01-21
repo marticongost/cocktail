@@ -16,9 +16,9 @@ cocktail.bind(".TwitterTimeline", function ($timeline) {
         $tweets.empty();
         $timeline.addClass("loading");
         
-        var url = "http://twitter.com/statuses/user_timeline/" + this.account + ".json?callback=?";
+        var url = "http://api.twitter.com/1/statuses/user_timeline.json?callback=?";
 
-        jQuery.getJSON(url, {count: this.maxTweets}, function (tweets) {
+        jQuery.getJSON(url, {screen_name: this.account, count: this.maxTweets}, function (tweets) {
             
             var timeline = $timeline.get(0);
 
