@@ -338,6 +338,8 @@ UNDEFINED_DEFAULT = "set_default"
 ERRORS_DEFAULT = "set_none"
 IMPLICIT_BOOLEANS_DEFAULT = True
 
+schema.Boolean.can_submit_false = False
+
 def get_parameter(
     member,
     target = None,
@@ -806,7 +808,8 @@ class FormSchemaReader(object):
         if value is None:
             if self.implicit_booleans \
             and member.required \
-            and isinstance(member, schema.Boolean):
+            and isinstance(member, schema.Boolean) \
+            and not member.can_submit_false:
                 value = False
             elif self.undefined == "set_default":
                 value = member.produce_default()
