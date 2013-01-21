@@ -299,7 +299,10 @@ class SchemaClass(EventHub, Schema):
             value = self.normalization(instance, member, value)
 
             try:
-                changed = (value != previous_value)
+                changed = (
+                    type(value) is not type(previous_value)
+                    or (value != previous_value)
+                )
             except TypeError:
                 changed = True
 
