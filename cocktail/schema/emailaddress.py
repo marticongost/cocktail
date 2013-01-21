@@ -10,4 +10,5 @@ from cocktail.schema.schemastrings import String
 class EmailAddress(String):
     
     _format = re.compile("^.*@.*$")
+    display = "cocktail.html.MailToLink"
 
