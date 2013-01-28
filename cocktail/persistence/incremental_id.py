@@ -86,3 +86,36 @@ def acquire_id_range(size, key = "default"):
 
         return id_range
 
+def reset_incremental_id(value = 0, key = "default"):
+
+    with _lock:
+        tm = transaction.TransactionManager()
+        conn = datastore.db.open(transaction_manager = tm)
+
+        try:
+            while True:
+                conn.sync()
+                root = conn.root()
+                container = root.get(ID_CONTAINER_KEY)
+
+                if container is None:
+                    container = PersistentMapping()
+                    root[ID_CONTAINER_KEY] = container
+
+                container[key] = value
+
+                try:
+                    tm.commit()
+                except ConflictError:
+                    sleep(RETRY_INTERVAL)
+                    tm.abort()
+                except:
+                    tm.abort()
+                    raise
+                else:
+                    break
+        finally:
+            conn.close()
+
+        _acquired_ids[key] = None
+
