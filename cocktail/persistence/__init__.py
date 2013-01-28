@@ -37,7 +37,10 @@ from cocktail.persistence.migration import (
     mark_all_migrations_as_executed,
     MigrationStep
 )
-from cocktail.persistence.incremental_id import incremental_id
+from cocktail.persistence.incremental_id import (
+    incremental_id,
+    acquire_id_range
+)
 from cocktail.persistence.index import (
     Index,
     SingleValueIndex,
