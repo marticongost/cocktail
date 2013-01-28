@@ -39,7 +39,8 @@ from cocktail.persistence.migration import (
 )
 from cocktail.persistence.incremental_id import (
     incremental_id,
-    acquire_id_range
+    acquire_id_range,
+    reset_incremental_id
 )
 from cocktail.persistence.index import (
     Index,
