@@ -791,6 +791,13 @@ translations.define("pt",
     pt = u"Português"
 )
 
+translations.define("it",
+    ca = u"Italià",
+    es = u"Italiano",
+    en = u"Italian",
+    it = u"Italiano"
+)
+
 translations.define("translated into",
     ca = lambda lang: "en " + translations(lang),
     es = lambda lang: "en " + translations(lang),
