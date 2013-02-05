@@ -33,7 +33,7 @@ else:
                          "/usr/bin/kcachegrind %(calltree)s"
 
 def handler_profiler(
-    stats_path = None,
+    stats_path = "/tmp",
     trigger = None,
     viewer = None
 ):
@@ -58,13 +58,12 @@ def handler_profiler(
         global _request_id
 
         # Acquire a unique identifier for the request
-        if stats_path:
-            _lock.acquire()
-            try:
-                _request_id += 1
-                id = _request_id
-            finally:
-                _lock.release()
+        _lock.acquire()
+        try:
+            _request_id += 1
+            id = _request_id
+        finally:
+            _lock.release()
 
         name = cherrypy.request.path_info.strip("/").replace("/", "-")
         name += "." + str(id)
