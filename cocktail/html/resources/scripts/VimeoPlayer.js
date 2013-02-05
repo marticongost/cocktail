@@ -8,22 +8,30 @@
 -----------------------------------------------------------------------------*/
 
 cocktail.bind(".VimeoPlayer.scriptable_video_player", function ($player) {
-    
-    var ctl = null;
+
     var playerReady = false;
-    
+    var ctl = Froogaloop(this);
+
+    ctl.addEvent("ready", function () {
+
+        ctl.addEvent("play", function () {
+            $player.addClass("prevent_autoplay");
+        });
+
+        ctl.addEvent("finish", function () {
+            $player.removeClass("prevent_autoplay");        
+        });
+
+        playerReady = true;
+        $player.trigger("playerReady");
+    });
+
     this.vimeoAPI = function (callback) {
         if (playerReady) {
             callback(ctl);
         }
         else {
-            if (!ctl) {
-                ctl = Froogaloop(this);
-            }
-            ctl.addEvent("ready", function () {
-                playerReady = true;
-                callback(ctl);
-            });
+            $player.one("playerReady", function () { callback(ctl); });
         }
     }
 

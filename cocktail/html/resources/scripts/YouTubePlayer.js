@@ -16,29 +16,39 @@ cocktail.bind(".YouTubePlayer.scriptable_video_player", function ($player) {
 
     var api = null;
 
-    this.youTubeAPI = function (callback) {
+    function createPlayer() {
+        new YT.Player($player[0], {
+            events: {
+                onReady: function (e) {
+                    api = e.target;
+                    $player.trigger("playerReady");
+                },
+                onStateChange: function (e) {
+                    var state = e.data;
+                    if (state == YT.PlayerState.PLAYING) {
+                        $player.addClass("prevent_autoplay");
+                    }
+                    else if (state == YT.PlayerState.ENDED) {
+                        $player.removeClass("prevent_autoplay");
+                    }
+                }
+            }
+        });
+    }
 
+    if (cocktail.youTubeAPIReady) {
+        createPlayer();
+    }
+    else {
+        jQuery(document).one("youTubeAPIReady", createPlayer);
+    }
+
+    this.youTubeAPI = function (callback) {
         if (api) {
             callback(api);
         }
         else {
-            function createPlayer() {
-                new YT.Player($player[0], {
-                    events: {
-                        onReady: function (e) {
-                            api = e.target;
-                            callback(api);
-                        }
-                    }
-                });
-            }
-
-            if (cocktail.youTubeAPIReady) {
-                createPlayer();
-            }
-            else {
-                jQuery(document).one("youTubeAPIReady", createPlayer);
-            }
+            $player.one("playerReady", function () { callback(api); });
         }
     }
 
