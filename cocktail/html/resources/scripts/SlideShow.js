@@ -55,11 +55,18 @@ cocktail.bind(".SlideShow", function ($slideShow) {
 
     this.start = function () {
         autoplayTimer = window.setInterval(
-            function () {                         
-                $slideShow.get(0).selectNextSlide();                         
+            function () {
+                var slideShow = $slideShow.get(0);
+                if (!slideShow.contentStatePreventsAutoplay()) {
+                    slideShow.selectNextSlide();
+                }
             },
             this.interval
-        );        
+        );
+    }
+
+    this.contentStatePreventsAutoplay = function () {
+        return $slideShow.find(".prevent_autoplay").length > 0;
     }
 
     this.restart = function () {
