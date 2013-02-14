@@ -335,12 +335,14 @@ class Adapter(object):
         import_transform = None,
         import_condition = None,
         export_condition = None,
-        rule_position = None):
+        rule_position = None,
+        properties = None):
         
         export_rule = Copy(
                         mapping,
                         transform = export_transform,
-                        condition = export_condition)
+                        condition = export_condition,
+                        properties = properties)
 
         import_rule = Copy(
                         dict((value, key)
