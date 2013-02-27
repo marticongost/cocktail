@@ -663,7 +663,7 @@ class Query(object):
 
                     add_sorting_key(c, id, Comparator(value, desc))
 
-        return sorted(dataset, key = sorting_keys.__getitem__)
+        return sorted(dataset, key = sorting_keys.get)
 
     def _apply_range(self, dataset):
 
