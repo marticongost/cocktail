@@ -63,7 +63,7 @@ class CollectionEditor(Element):
         default_value = self.member.items.produce_default()
         new_entry = self.create_entry(default_value)
         new_entry.client_model = \
-            "cocktail.html.CollectionEditor.new_entry"
+            "cocktail.html.CollectionEditor.new_entry-" + self.require_id()
         return new_entry
 
     def create_control(self, item):
