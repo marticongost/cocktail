@@ -39,6 +39,10 @@ from cocktail.persistence.persistentrelations import (
     PersistentRelationMapping
 )
 
+# Add an extension property to allow relations to block a delete operation if
+# the relation is not empty
+schema.RelationMember.block_delete = False
+
 # Class stub
 PersistentObject = None
 
