@@ -802,7 +802,7 @@ translations.define("ru",
     ca = u"Rus",
     es = u"Ruso",
     en = u"Russian",
-    ru = u"русский"
+    ru = u"РУССКИЙ ЯЗЫК"
 )
 
 translations.define("translated into",
