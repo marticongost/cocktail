@@ -798,6 +798,13 @@ translations.define("it",
     it = u"Italiano"
 )
 
+translations.define("ru",
+    ca = u"Rus",
+    es = u"Ruso",
+    en = u"Russian",
+    ru = u"РУССКИЙ ЯЗЫК"
+)
+
 translations.define("translated into",
     ca = lambda lang: "en " + translations(lang),
     es = lambda lang: "en " + translations(lang),

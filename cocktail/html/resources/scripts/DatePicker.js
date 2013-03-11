@@ -43,7 +43,7 @@ cocktail.bind(".DatePicker", function ($datePicker) {
 
     // Masked input for time boxes
     if (timeBox) {
-        jQuery(timeBox).mask("99:99:99", {fullfilled: true, maskedtype: "time"});
+        jQuery(timeBox).mask("99:99:99", {fullfilled: false, maskedtype: "time"});
     }
 });
 

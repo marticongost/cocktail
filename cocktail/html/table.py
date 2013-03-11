@@ -41,8 +41,6 @@ class Table(Element, CollectionDisplay):
     persistence_prefix = None
     entry_selector = "tbody tr"
     checkbox_selector = "td.selection input"
-    resizable_rows_selector = "tbody tr"
-    resizable = True
     __split_rows = None
 
     def __init__(self, *args, **kwargs):
@@ -72,15 +70,6 @@ class Table(Element, CollectionDisplay):
     def _ready(self):
                 
         Element._ready(self)
-
-        if self.resizable:
-            self.add_class("resizable")
-            self.add_resource("/cocktail/scripts/jquery.cookie.js")
-            self.add_resource("/cocktail/scripts/jquery.tableresizer.js")
-            self.set_client_param(
-                "resizableRowsSelector",
-                self.resizable_rows_selector
-            )
 
         selectable(
             self,

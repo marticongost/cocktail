@@ -93,7 +93,7 @@ class CalendarPage(tuple):
         return datetime.datetime(self[0], self[1], 1)
 
     def date_range(self):
-        return (self.start(), (self + 1).start)
+        return (self.start(), (self + 1).start())
 
     def time_range(self):
         return (self.start_time(), (self + 1).start_time())

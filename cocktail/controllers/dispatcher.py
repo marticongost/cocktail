@@ -6,6 +6,7 @@ u"""
 @organization:	Whads/Accent SL
 @since:			December 2008
 """
+import sys
 from inspect import isfunction, getargspec
 import cherrypy
 from cocktail.modeling import getter, ListWrapper, ContextualDict
@@ -234,8 +235,9 @@ class Dispatcher(object):
                 raise cherrypy.NotFound()
 
         except Exception, error:
+            exc_info = sys.exc_info()
             def handler(*args, **kwargs):
-                raise error
+                raise exc_info[0], exc_info[1], exc_info[2]
             chain.append(handler)
         
         request.handler = HandlerActivator(handler, *path)
