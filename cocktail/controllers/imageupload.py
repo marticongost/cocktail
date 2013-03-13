@@ -36,7 +36,9 @@ def get_image_size(path):
 def constrain_image_upload(member,
     max_width = None,
     max_height = None,
-    allow_rotation = False
+    allow_rotation = False,
+    min_width = None,
+    min_height = None
 ):
     """Validate certain properties of uploaded images.
 
@@ -58,6 +60,22 @@ def constrain_image_upload(member,
         Passing None to this parameter will disable this validation.
 
     :type max_height: int
+
+    :param min_width: The minimum accepted width of images uploaded into this
+        member, in pixels. Images with a lower width will yield an error of
+        type `ImageTooSmallError` during validation.
+        
+        Passing None to this parameter will disable this validation.
+
+    :type min_width: int
+
+    :param min_height: The minimum accepted height of images uploaded into this
+        member, in pixels. Images with a lower height will yield an error of
+        type `ImageTooSmallError` during validation.
+        
+        Passing None to this parameter will disable this validation.
+
+    :type min_height: int
     """
     if max_width or max_height:
         @member.add_validation
@@ -86,6 +104,33 @@ def constrain_image_upload(member,
                                 allow_rotation
                             )
 
+    if min_width or min_height:
+        @member.add_validation
+        def image_size_validation(member, upload, ctx):
+            if upload:
+                upload_path = member.get_file_destination(upload)
+                if upload_path:
+                    try:
+                        image_size = get_image_size(upload_path)
+                    except:
+                        pass
+                    else:
+                        if (
+                            size_fits(image_size, (min_width, min_height)) \
+                            or (
+                                allow_rotation
+                                and size_fits(image_size, (min_height, min_width))
+                            )
+                        ):
+                            yield ImageTooSmallError(
+                                member,
+                                upload,
+                                ctx,
+                                min_width,
+                                min_height,
+                                allow_rotation
+                            )
+
 def size_fits(size, max_size):
     width, height = size
     max_width, max_height = max_size
@@ -109,5 +154,24 @@ class ImageTooBigError(ValidationError):
         ValidationError.__init__(self, member, value, context)
         self.max_width = max_width
         self.max_height = max_height
+        self.allow_rotation = allow_rotation
+
+
+class ImageTooSmallError(ValidationError):
+    """A validation error yielded when uploading an image file that is inferior the
+    minimum width or height set by `constrain_image_upload`.
+    """
+
+    def __init__(self,
+        member,
+        value,
+        context,
+        min_width,
+        min_height,
+        allow_rotation
+    ):
+        ValidationError.__init__(self, member, value, context)
+        self.min_width = min_width
+        self.min_height = min_height
         self.allow_rotation = allow_rotation
 

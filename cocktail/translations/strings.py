@@ -1056,6 +1056,31 @@ translations.define(
 )
 
 translations.define(
+    "cocktail.controllers.imageupload.ImageTooSmallError-instance",
+    ca = lambda instance: 
+        u"El fitxer proporcionat pel camp <em>%s</em> és massa petit: la mida "
+        u"mínima permesa és de %sx%s pixels" % (
+            member_identifier(instance),
+            instance.min_width or u"∞",
+            instance.min_height or u"∞"
+        ),
+    es = lambda instance: 
+        u"El fichero proporcionado para el campo <em>%s</em> es demasiado "
+        u"pequeño: el tamaño mínimo permitido es de %sx%s píxeles" % (         
+            member_identifier(instance),
+            instance.min_width or u"∞",
+            instance.min_height or u"∞"
+        ),
+    en = lambda instance:
+        u"The file given in field <em>%s</em> is too small: the minimum allowed "
+        u"size is %sx%s pixels"  % (
+            member_identifier(instance),
+            instance.min_width or u"∞",
+            instance.min_height or u"∞"
+        )
+)
+
+translations.define(
     "cocktail.controllers.imageupload.ImageTooBigError-instance",
     ca = lambda instance: 
         u"El fitxer proporcionat pel camp <em>%s</em> és massa gran: la mida "
