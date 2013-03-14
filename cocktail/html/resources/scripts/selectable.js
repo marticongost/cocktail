@@ -223,13 +223,6 @@
     jQuery(function () {
         jQuery(document).keydown(function (e) {
             
-            if (!focusedSelectable) {
-                jQuery("body").enableTextSelect();
-                return true;
-            }
-            
-            jQuery("body").disableTextSelect();
-
             var key = e.charCode || e.keyCode;
             var multipleSelection = (focusedSelectable.selectionMode == cocktail.MULTIPLE_SELECTION);
 
