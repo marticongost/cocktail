@@ -98,6 +98,21 @@ class Location(object):
 
         return location
 
+    @classmethod
+    def get_current_scheme(cls):
+
+        request = cherrypy.request
+        scheme = request.headers.get('X-Forwarded-Scheme')
+
+        if scheme:
+            return scheme
+
+        base = request.base
+        if base:
+            return base.split("://")[0]
+
+        return "http"
+
     def copy(self):
         copy = self.__class__()
         copy.method = self.method
