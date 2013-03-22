@@ -9,6 +9,8 @@ from cocktail.html import Element
 class MediaElementVideo(Element):
 
     tag = "video"
+    width = None
+    height = None
     autoplay = False
     show_player_controls = True
     media_element_defaults = {}
@@ -22,6 +24,12 @@ class MediaElementVideo(Element):
         self.add_resource("/cocktail/scripts/MediaElementVideo.js")
 
     def _ready(self):
+
+        if self.width:
+            self["width"] = self.width
+
+        if self.height:
+            self["height"] = self.height
 
         if self.autoplay:
             self["autoplay"] = "autoplay"
