@@ -17,7 +17,7 @@ from cocktail.pkgutils import resolve, import_object
 from cocktail.styled import styled
 from cocktail.persistence import PersistentSet, datastore
 
-migration_steps = DictWrapper()
+migration_steps = DictWrapper(OrderedDict())
 
 def migrate(verbose = False):
     """Executes all migration steps that haven't been executed yet, in the
