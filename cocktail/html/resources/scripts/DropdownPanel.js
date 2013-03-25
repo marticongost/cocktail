@@ -14,41 +14,21 @@ cocktail.bind(".DropdownPanel", function ($dropdown) {
     }
 
     this.setCollapsed = function (collapsed) {
+        if (!collapsed) {
+            jQuery(".DropdownPanel-expanded").each(function () {
+                this.setCollapsed(true);
+            });
+        }
         $dropdown[collapsed ? "removeClass" : "addClass"]("DropdownPanel-expanded");
-        if (collapsed) {
-            disableTabIndex();
-        }
-        else {
-            restoreTabIndex();
-            $dropdown.find(".panel *").filter(function () {
-                return this.focus && this.tabIndex >= 0;
-            }).first().focus();
-        }
     }
 
     this.toggleCollapsed = function () {
         this.setCollapsed(!this.getCollapsed());
     }
 
-    function restoreTabIndex() {
-        $dropdown.find(".panel *").each(function () {
-            this.tabIndex = this.DropdownPanel_tabIndex;
-        });
-    }
-
-    disableTabIndex();
-
-    function disableTabIndex() {
-        $dropdown.find(".panel *").each(function () {
-            this.DropdownPanel_tabIndex = this.tabIndex;
-            this.tabIndex = -1;
-        });
-    }
-
     $dropdown
         .click(function (e) { e.stopPropagation(); })
-        .find(".button")
-            .attr("tabindex", "0")
+        .find(".button").not($dropdown.find(".panel .button"))
             .click(function () { $dropdown.get(0).toggleCollapsed(); })
             .keydown(function (e) {
                 if (e.keyCode == 13) {
