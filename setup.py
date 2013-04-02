@@ -46,7 +46,8 @@ setup(
         "nose",
         "selenium",
         "pyExcelerator",
-        "Beaker"
+        "Beaker",
+        "BeautifulSoup"
     ],
     packages = find_packages(),
     include_package_data = True,
