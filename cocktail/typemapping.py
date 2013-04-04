@@ -49,4 +49,9 @@ class TypeMapping(dict):
         else:
             return default
 
+    def iter_by_type(self, cls):
+        for cls in getmro(cls):
+            value = dict.get(self, cls, _undefined)
+            if value is not _undefined:
+                yield (cls, value)
 

@@ -262,14 +262,19 @@ class SchemaClass(EventHub, Schema):
                 value = getattr(target, self.__priv_key, undefined)
 
                 if value is undefined:
-                    value = self.member.produce_default(instance)
-                    self.__set__(
-                        instance,
-                        value,
-                        language = language,
-                        previous_value = None
-                    )
-                    return self.__get__(instance, type, language)
+                    was_producing_default = getattr(instance, "_v_is_producing_default", False)
+                    instance._v_is_producing_default = True
+                    try:
+                        value = self.member.produce_default(instance)
+                        self.__set__(
+                            instance,
+                            value,
+                            language = language,
+                            previous_value = None
+                        )
+                        return self.__get__(instance, type, language)
+                    finally:
+                        instance._v_is_producing_default = was_producing_default
                 
                 return value
 
