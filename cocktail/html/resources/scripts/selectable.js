@@ -8,8 +8,28 @@
 -----------------------------------------------------------------------------*/
 
 (function () {
-    
+ 
     var focusedSelectable = null;
+
+    function disableTextSelection(element) {
+        if (!element._hasTextSelectionDisabler) {
+            element._hasTextSelectionDisabler = true;
+            jQuery(element).bind('selectstart', function () {
+                if (this.getAttribute("unselectable") == "on") {
+                    return false;
+                }
+            });
+        }
+        jQuery(element)
+            .attr('unselectable', 'on')
+            .css('user-select', 'none');
+    }
+
+    function restoreTextSelection(element) {
+        jQuery(element)
+            .attr('unselectable', 'off')
+            .css("user-select", "");
+    }
 
     cocktail.selectable = function (params) {
 
@@ -211,6 +231,14 @@
                 // Togle entry selection when clicking an entry
                 .bind("click", selectable.clickEntryEvent)
                 
+                .mousedown(function () {
+                    disableTextSelection($selectable.get(0));
+                })
+
+                .click(function() {
+                    restoreTextSelection($selectable.get(0));
+                })
+
                 // Highlight selected entries
                 .each(function () {
                     if (jQuery(checkboxSelector + ":checked", this).length) {
@@ -222,13 +250,6 @@
 
     jQuery(function () {
         jQuery(document).keydown(function (e) {
-            
-            if (!focusedSelectable) {
-                jQuery("body").enableTextSelect();
-                return true;
-            }
-            
-            jQuery("body").disableTextSelect();
 
             var key = e.charCode || e.keyCode;
             var multipleSelection = (focusedSelectable.selectionMode == cocktail.MULTIPLE_SELECTION);
