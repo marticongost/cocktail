@@ -115,11 +115,11 @@ def constrain_image_upload(member,
                     except:
                         pass
                     else:
-                        if (
-                            size_fits(image_size, (min_width, min_height)) \
+                        if not (
+                            size_exceeds(image_size, (min_width, min_height)) \
                             or (
                                 allow_rotation
-                                and size_fits(image_size, (min_height, min_width))
+                                and size_exceeds(image_size, (min_height, min_width))
                             )
                         ):
                             yield ImageTooSmallError(
@@ -136,6 +136,12 @@ def size_fits(size, max_size):
     max_width, max_height = max_size
     return (not max_width or width <= max_width) \
        and (not max_height or height <= max_height)
+
+def size_exceeds(size, max_size):
+    width, height = size
+    max_width, max_height = max_size
+    return (not max_width or width > max_width) \
+       and (not max_height or height > max_height)
 
 
 class ImageTooBigError(ValidationError):
