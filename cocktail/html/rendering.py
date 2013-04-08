@@ -169,10 +169,20 @@ class Rendering(object):
         """
         self.__content.extend(rendering.__content)
         self.document_metadata.update(rendering.document_metadata)
-        
+
     def markup(self):
         """Returns the accumulated markup text from write operations."""
-        return u"".join(self.__content)
+        try:
+            return u"".join(self.__content)
+        except TypeError:
+            for i, chunk in enumerate(self.__content):
+                if chunk is None:
+                    raise TypeError(
+                        "Rendering chunk #%d contains a None value (%s)"
+                        % (i, self.__content[max(0, i - 10):i + 1])
+                    )
+            else:
+                raise
 
 
 class IdGenerationError(Exception):
