@@ -148,7 +148,7 @@ class Controller(RequestHandler):
             return self.rendering_engine.render(
                             output,
                             format = self.rendering_format,
-                            template = view_class)
+                            template = view_class.encode("utf-8"))
         else:
             return ""
 
