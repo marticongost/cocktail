@@ -685,6 +685,15 @@ class Element(object):
         else:
             return self.__children
     
+    def descend(self, include_self = True):
+        if include_self:
+            yield self
+
+        if self.__children is not None:
+            for child in self.__children:
+                for descendant in child.descend(True):
+                    yield descendant
+
     def append(self, child):
         """Attach another element as the last child of the element.
 
