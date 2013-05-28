@@ -43,7 +43,7 @@ def get_previous_month(month_tuple):
     return year, month
 
 def add_time(value, time_fragment = None):
-    if isinstance(value, datetime.date):
+    if not isinstance(value, datetime.datetime):
         if time_fragment is None:
             time_fragment = datetime.time()
         value = datetime.datetime.combine(value, time_fragment)
