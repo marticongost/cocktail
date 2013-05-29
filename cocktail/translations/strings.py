@@ -336,6 +336,12 @@ translations.define("weekday 4", ca = u"Divendres", es = u"Viernes", en = u"Frid
 translations.define("weekday 5", ca = u"Dissabte", es = u"Sábado", en = u"Saturday")
 translations.define("weekday 6", ca = u"Diumenge", es = u"Domingo", en = u"Sunday")
 
+translations.define("today",
+    ca = u"Avui",
+    es = u"Hoy",
+    en = u"Today"
+)
+
 DATE_STYLE_NUMBERS = 1
 DATE_STYLE_ABBR = 2
 DATE_STYLE_TEXT = 3
