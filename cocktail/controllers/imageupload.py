@@ -3,7 +3,7 @@ u"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
-import ImageFile
+from PIL import ImageFile
 from cocktail.schema.exceptions import ValidationError
 
 def get_image_size(path):
