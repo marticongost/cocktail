@@ -11,7 +11,7 @@ from BTrees.IOBTree import IOBTree, IOTreeSet
 from BTrees.OOBTree import OOBTree, OOTreeSet
 from cocktail.stringutils import normalize
 from cocktail.modeling import getter
-from cocktail.events import when
+from cocktail.events import when, Event
 from cocktail import schema
 from cocktail.persistence.datastore import datastore
 from cocktail.persistence.index import SingleValueIndex, MultipleValuesIndex
@@ -176,7 +176,11 @@ def _rebuild_indexes(cls, recursive = False, verbose = True):
             for subclass in cls.derived_schemas():
                 subclass.rebuild_indexes(True)
 
+        cls.rebuilding_indexes(recursive = recursive, verbose = verbose)
+
 PersistentClass.rebuild_indexes = _rebuild_indexes
+
+PersistentClass.rebuilding_indexes = Event()
 
 @when(PersistentObject.declared)
 def _handle_declared(event):
