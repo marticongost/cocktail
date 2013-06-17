@@ -41,7 +41,10 @@ class TypeMapping(dict):
         
         return value
 
-    def get(self, cls, default = None):
+    def get(self, cls, default = None, recursive = True):
+        if not recursive:
+            return dict.get(self, cls, default)
+
         for cls in getmro(cls):
             value = dict.get(self, cls, _undefined)
             if value is not _undefined:
