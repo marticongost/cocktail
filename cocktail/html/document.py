@@ -173,6 +173,10 @@ class HTMLDocument(Element):
             script = Element("script")
             script["type"] = resource.mime_type
             script["src"] = resource.uri
+
+            if resource.async:
+                script["async"] = "true"
+
             script = self._apply_ie_condition(resource, script)
             self.scripts_container.append(script)
 
