@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:py="http://www.whads.com/ns/cocktail/templates">
+
+    <?py-class
+    config_id = None
+    width = None
+    height = None
+    page_number = None
+    ?>
+
+    <py:ready>
+        <?py
+        if self.page_number:
+            self.set_client_param("pageNumber", self.page_number)
+            self.set_client_param("configId", self.config_id)
+            self.add_resource("/cocktail/scripts/IssuuViewer.js")
+        ?>
+    </py:ready>
+
+    <div data-configid="@{self.config_id}" style="width: @{str(self.width)}px; height: @{str(self.height)}px;" class="issuuembed"/>
+    <script type="text/javascript" src="http://e.issuu.com/embed.js" async="true"></script>
+
+</div>
