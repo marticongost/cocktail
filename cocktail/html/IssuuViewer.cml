@@ -11,6 +11,10 @@
     page_number = None
     ?>
 
+    <?py
+    self.add_resource("http://e.issuu.com/embed.js", async = True)
+    ?>
+
     <py:ready>
         <?py
         if self.page_number:
@@ -21,6 +25,4 @@
     </py:ready>
 
     <div data-configid="@{self.config_id}" style="width: @{str(self.width)}px; height: @{str(self.height)}px;" class="issuuembed"/>
-    <script type="text/javascript" src="http://e.issuu.com/embed.js" async="true"></script>
-
 </div>
