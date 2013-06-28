@@ -811,6 +811,20 @@ translations.define("ru",
     ru = u"Ру́сский язы́к"
 )
 
+translations.define("pl",
+    ca = u"Polac",
+    es = u"Polaco",
+    en = u"Polish",
+    pl = u"Polski"
+)
+
+translations.define("nl",
+    ca = u"Holandès",
+    es = u"Holandés",
+    en = u"Dutch",
+    nl = u"Nederlands"
+)
+
 translations.define("translated into",
     ca = lambda lang: "en " + translations(lang),
     es = lambda lang: "en " + translations(lang),
