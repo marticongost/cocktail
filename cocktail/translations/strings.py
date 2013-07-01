@@ -1180,13 +1180,16 @@ def _serialize_thousands(value, thousands_sep, fraction_sep):
 translations.define("Decimal parser",
     ca = lambda: _thousands_parser(".", ","),
     es = lambda: _thousands_parser(".", ","),
-    en = lambda: _thousands_parser(",", ".")
+    en = lambda: _thousands_parser(",", "."),
+    de = lambda: _thousands_parser(".", ","),
+    fr = lambda: _thousands_parser(".", ",")
 )
 
 translations.define("decimal.Decimal-instance",
     ca = lambda instance: _serialize_thousands(instance, ".", ","),
     es = lambda instance: _serialize_thousands(instance, ".", ","),
     en = lambda instance: _serialize_thousands(instance, ",", "."),
+    de = lambda instance: _serialize_thousands(instance, ".", ","),
     fr = lambda instance: _serialize_thousands(instance, ".", ",")
 )
 
