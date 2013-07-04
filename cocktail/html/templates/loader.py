@@ -20,9 +20,13 @@ class TemplateLoaderCache(Cache):
     checks_modification_time = True
     expiration = None
 
-    def _is_current(self, entry, invalidation = None):
+    def _is_current(self, entry, invalidation = None, verbose = False):
         
-        if not Cache._is_current(self, entry, invalidation = invalidation):
+        if not Cache._is_current(self,
+            entry,
+            invalidation = invalidation,
+            verbose = verbose
+        ):
             return False
 
         # Reload templates if their source file has been modified since
