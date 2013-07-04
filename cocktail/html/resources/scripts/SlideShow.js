@@ -7,10 +7,39 @@
 @since:			February 2011
 -----------------------------------------------------------------------------*/
 
+cocktail.slideShowTransitions = {
+    fade: {
+        show: function (slideShow, slide, callback) {
+            jQuery(slide).fadeIn(slideShow.transitionDuration, callback);
+        },
+        hide: function (slideShow, slide, callback) {
+            jQuery(slide).fadeOut(slideShow.transitionDuration, callback);
+        }
+    },
+    topBottomSlide: {
+        show: function (slideShow, slide, callback) {
+            jQuery(slide)
+                .hide()
+                .css({zIndex: 2})
+                .slideDown(slideShow.transitionDuration, callback);
+        },
+        hide: function (slideShow, slide, callback) {
+            slide.style.zIndex = 1;
+            if (callback) {
+                callback.call(slide);
+            }
+        }
+    }
+}
+
 cocktail.bind(".SlideShow", function ($slideShow) {
  
     var current = null;
     var autoplayTimer = null;
+
+    if (!this.transitionEffect) {
+        this.transitionEffect = "fade";
+    }
 
     // Create navigation controls
     if (this.navigationControls) {
@@ -171,30 +200,35 @@ cocktail.bind(".SlideShow", function ($slideShow) {
                 "position": "absolute",
                 "top": 0,
                 "left": 0
-            })
-            .fadeOut(
-                this.transitionDuration,
-                function () {
-                    jQuery(this).removeClass("loosingFocus");
-                }
-            );
+            });
+
+        cocktail.slideShowTransitions[this.transitionEffect].hide(
+            this,
+            slide,
+            function () {
+                jQuery(this).removeClass("loosingFocus");
+            }
+        );
     }
 
     this._showSlide = function (slide, callback) {
         $slideShow.addClass("inTransition");
+
         jQuery(slide)
             .addClass("gainingFocus")
-            .css({"position": "relative"})
-            .fadeIn(
-                this.transitionDuration,
-                function () {
-                    jQuery(this).removeClass("gainingFocus");
-                    $slideShow.removeClass("inTransition");
-                    if (callback) {
-                        callback();
-                    }
+            .css({"position": "relative"});
+
+        cocktail.slideShowTransitions[this.transitionEffect].show(
+            this,
+            slide,
+            function () {
+                jQuery(this).removeClass("gainingFocus");
+                $slideShow.removeClass("inTransition");
+                if (callback) {
+                    callback();
                 }
-            );
+            }
+        );
     }
 
     $slideShow
