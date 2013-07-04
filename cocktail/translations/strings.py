@@ -811,6 +811,20 @@ translations.define("ru",
     ru = u"Ру́сский язы́к"
 )
 
+translations.define("pl",
+    ca = u"Polac",
+    es = u"Polaco",
+    en = u"Polish",
+    pl = u"Polski"
+)
+
+translations.define("nl",
+    ca = u"Holandès",
+    es = u"Holandés",
+    en = u"Dutch",
+    nl = u"Nederlands"
+)
+
 translations.define("translated into",
     ca = lambda lang: "en " + translations(lang),
     es = lambda lang: "en " + translations(lang),
@@ -1166,13 +1180,16 @@ def _serialize_thousands(value, thousands_sep, fraction_sep):
 translations.define("Decimal parser",
     ca = lambda: _thousands_parser(".", ","),
     es = lambda: _thousands_parser(".", ","),
-    en = lambda: _thousands_parser(",", ".")
+    en = lambda: _thousands_parser(",", "."),
+    de = lambda: _thousands_parser(".", ","),
+    fr = lambda: _thousands_parser(".", ",")
 )
 
 translations.define("decimal.Decimal-instance",
     ca = lambda instance: _serialize_thousands(instance, ".", ","),
     es = lambda instance: _serialize_thousands(instance, ".", ","),
     en = lambda instance: _serialize_thousands(instance, ",", "."),
+    de = lambda instance: _serialize_thousands(instance, ".", ","),
     fr = lambda instance: _serialize_thousands(instance, ".", ",")
 )
 

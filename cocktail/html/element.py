@@ -994,7 +994,12 @@ class Element(object):
         else:
             return self.__resources
 
-    def add_resource(self, resource, mime_type = None, ie_condition = None):
+    def add_resource(self,
+        resource,
+        mime_type = None,
+        ie_condition = None,
+        **kwargs
+    ):
         """Links a `resource <resources>` to the element.
 
         Resources are `indexed by their URI<resource_uris>`, allowing only one
@@ -1015,11 +1020,14 @@ class Element(object):
             <http://msdn.microsoft.com/en-us/library/ms537512(VS.85).aspx>`
             with the specified expression.
         :type ie_condition: str
+
+        :param kwargs: Additional keyword arguments supplied to the
+            instantiated L{Resource}.
         """
         # Normalize the resource
         if isinstance(resource, basestring):
             uri = resource
-            resource = Resource.from_uri(uri, mime_type, ie_condition)
+            resource = Resource.from_uri(uri, mime_type, ie_condition, **kwargs)
         else:
             if mime_type or ie_condition:
                 raise ValueError(
