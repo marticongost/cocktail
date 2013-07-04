@@ -20,7 +20,7 @@ class Resource(object):
         self.__ie_condition = ie_condition
            
     @classmethod
-    def from_uri(cls, uri, mime_type = None, ie_condition = None):
+    def from_uri(cls, uri, mime_type = None, ie_condition = None, **kwargs):
 
         resource_type = None
 
@@ -45,7 +45,8 @@ class Resource(object):
         return resource_type(
             uri, 
             mime_type = mime_type,
-            ie_condition = ie_condition
+            ie_condition = ie_condition,
+            **kwargs
         )
 
     @getter
@@ -72,6 +73,19 @@ class Resource(object):
 
 class Script(Resource):
     default_mime_type = "text/javascript"
+
+    def __init__(self,
+        uri,
+        mime_type = None,
+        ie_condition = None, 
+        async = False
+    ):
+        Resource.__init__(self,
+            uri,
+            mime_type = mime_type,
+            ie_condition = ie_condition
+        )
+        self.async = async
 
 
 class StyleSheet(Resource):
