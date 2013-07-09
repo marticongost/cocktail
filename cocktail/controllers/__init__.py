@@ -50,6 +50,7 @@ from cocktail.controllers.sessions import session
 import cocktail.controllers.grouping
 import cocktail.controllers.erroremail
 import cocktail.controllers.handlerprofiler
+import cocktail.controllers.zodbdebuggertool
 import cocktail.controllers.switchhandler
 
 
