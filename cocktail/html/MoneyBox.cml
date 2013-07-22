@@ -22,6 +22,22 @@
         self.input.value = value
 
     value = property(_get_value, _set_value)
+
+    def _get_data_display(self):
+        return self.input.data_display
+
+    def _set_data_display(self, data_display):
+        self.input.data_display = data_display
+
+    data_display = property(_get_data_display, _set_data_display)
+
+    def _get_collection(self):
+        return self.input.collection
+
+    def _set_collection(self, collection):
+        self.input.collection = collection
+
+    collection = property(_get_collection, _set_collection)
     ?>
 
     <py:ready>
