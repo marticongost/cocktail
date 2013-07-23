@@ -150,16 +150,7 @@ class HTMLDocument(Element):
         if self.ie_html5_workaround and rendering_html5():
             self.scripts_container.append(
                 IEConditionalComment("lt IE 9", children = [
-                    Element("script", children = [
-                        """
-                        (function(){    
-                            var html5Tags = "address|article|aside|audio|canvas|command|datalist|details|dialog|figure|figcaption|footer|header|hgroup|keygen|mark|meter|menu|nav|progress|ruby|section|time|video".split('|');
-                            for (var i = 0; i < html5Tags.length; i++){
-                                document.createElement(html5Tags[i]);
-                            }
-                        })();                        
-                        """
-                    ])
+                    Element("script", src = "/cocktail/scripts/html5shiv-printshiv.js")
                 ])
             )
 
@@ -173,6 +164,10 @@ class HTMLDocument(Element):
             script = Element("script")
             script["type"] = resource.mime_type
             script["src"] = resource.uri
+
+            if resource.async:
+                script["async"] = "true"
+
             script = self._apply_ie_condition(resource, script)
             self.scripts_container.append(script)
 

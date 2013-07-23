@@ -7,6 +7,7 @@
     <?py-class
     autoplay = True
     interval = 3000
+    transition_effect = "fade"
     transition_duration = 500
     slides_selector = ".slides > *"
     navigation_controls = False
@@ -21,6 +22,7 @@
         <?py
         self.set_client_param("autoplay", self.autoplay)
         self.set_client_param("interval", self.interval)
+        self.set_client_param("transitionEffect", self.transition_effect)
         self.set_client_param("transitionDuration", self.transition_duration)
         self.set_client_param("slidesSelector", self.slides_selector)
         self.set_client_param("navigationControls", self.navigation_controls)

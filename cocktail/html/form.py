@@ -18,6 +18,7 @@ from cocktail.schema import (
     BaseDateTime,
     Collection,
     Number,
+    Money,
     Decimal,
     URL,
     EmailAddress,
@@ -118,6 +119,9 @@ class Form(Element, DataDisplay):
 
         self.set_member_type_display(
             Number, "cocktail.html.NumberBox")
+
+        self.set_member_type_display(
+            Money, "cocktail.html.MoneyBox")
 
         self.set_member_type_display(
             PhoneNumber, "cocktail.html.PhoneNumberBox")
