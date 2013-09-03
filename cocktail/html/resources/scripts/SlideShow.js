@@ -255,5 +255,15 @@ cocktail.bind(".SlideShow", function ($slideShow) {
     // Check the element's configuration to determine wether to start in
     // autoplay mode
     this.setAutoplay(this.autoplay);
+
+    // Automatically hide navigation and bullet controls if there aren't
+    // multiple slides
+    this._toggleControls = function () {
+        var method = ($slideShow.find(this.slidesSelector).length < 2) ? "hide" : "show";
+        $slideShow.find(".navigation_button")[method]();
+        $slideShow.find(".bullets")[method]();
+    }
+
+    this._toggleControls();
 });
 
