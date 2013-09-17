@@ -17,6 +17,7 @@ from cocktail.controllers import Location
     font = "arial"
     colorscheme = "light"
     ref = None
+    locale = 'ca_ES'
     ?>
 
     <?py
@@ -29,13 +30,16 @@ from cocktail.controllers import Location
 
     <py:block py:def="fbml_block">
         <div id="fb-root"></div>
-        <script>(function(d, s, id) {
-          var js, fjs = d.getElementsByTagName(s)[0];
-          if (d.getElementById(id)) return;
-          js = d.createElement(s); js.id = id;
-          js.src = "//connect.facebook.net/ca_ES/all.js#xfbml=1";
-          fjs.parentNode.insertBefore(js, fjs);
-        }(document, 'script', 'facebook-jssdk'));</script>
+        <?py
+        script = """<script>(function(d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) return;
+            js = d.createElement(s); js.id = id;
+            js.src = "//connect.facebook.net/%s/all.js#xfbml=1";
+            fjs.parentNode.insertBefore(js, fjs);
+            }(document, 'script', 'facebook-jssdk'));</script>""" % (self.locale,)
+        element.append(script)
+        ?>
     </py:block>
 
     <div

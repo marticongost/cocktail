@@ -61,7 +61,9 @@ translations.define("Submit",
     es = u"Confirmar",
     en = u"Submit",
     pt = u"Enviar",
-    de = u"Abschicken"
+    de = u"Abschicken",
+    pl = u"Zatwierdź",
+    nl = u"Bevestig"
 )
 
 translations.define("Item count",
@@ -305,18 +307,125 @@ translations.define("month 12 abbr",
 )
 
 # -------- FULLTEXT TRANSLATIONS OF MONTHS
-translations.define("month 1", ca = u"Gener", es = u"Enero", en = u"January", pt = u"Janeiro")
-translations.define("month 2", ca = u"Febrer", es = u"Febrero", en = u"February", pt = u"Fevereiro")
-translations.define("month 3", ca = u"Març", es = u"Marzo", en = u"March", pt = u"Março")
-translations.define("month 4", ca = u"Abril", es = u"Abril", en = u"April", pt = u"Abril")
-translations.define("month 5", ca = u"Maig", es = u"Mayo", en = u"May", pt = u"Maio")
-translations.define("month 6", ca = u"Juny", es = u"Junio", en = u"June", pt = u"Junho")
-translations.define("month 7", ca = u"Juliol", es = u"Julio", en = u"July", pt = u"Julho")
-translations.define("month 8", ca = u"Agost", es = u"Agosto", en = u"August", pt = u"Agosto")
-translations.define("month 9", ca = u"Setembre", es = u"Septiembre", en = u"September", pt = u"Setembro")
-translations.define("month 10", ca = u"Octubre", es = u"Octubre", en = u"October", pt = u"Outubro")
-translations.define("month 11", ca = u"Novembre", es = u"Noviembre", en = u"November", pt = u"Novembro")
-translations.define("month 12", ca = u"Desembre", es = u"Diciembre", en = u"December", pt = u"Dezembro")
+translations.define("month 1",
+    ca = u"Gener",
+    es = u"Enero",
+    en = u"January",
+    pt = u"Janeiro",
+    de = u"Januar",
+    pl = u"Styczeń",
+    nl = u"januari"
+)
+
+translations.define("month 2",
+    ca = u"Febrer",
+    es = u"Febrero",
+    en = u"February",
+    pt = u"Fevereiro",
+    de = u"Februar",
+    pl = u"Luty",
+    nl = u"februari"
+)
+
+translations.define("month 3",
+    ca = u"Març",
+    es = u"Marzo",
+    en = u"March",
+    pt = u"Março",
+    de = u"März",
+    pl = u"Marzec",
+    nl = u"maart"
+)
+
+translations.define("month 4",
+    ca = u"Abril",
+    es = u"Abril",
+    en = u"April",
+    pt = u"Abril",
+    de = u"April",
+    pl = u"Kwiecień",
+    nl = u"april"
+)
+
+translations.define("month 5",
+    ca = u"Maig",
+    es = u"Mayo",
+    en = u"May",
+    pt = u"Maio",
+    de = u"Mai",
+    pl = u"Maj",
+    nl = u"mei"
+)
+
+translations.define("month 6",
+    ca = u"Juny",
+    es = u"Junio",
+    en = u"June",
+    pt = u"Junho",
+    de = u"Juni",
+    pl = u"Czerwiec",
+    nl = u"juni"
+)
+
+translations.define("month 7",
+    ca = u"Juliol",
+    es = u"Julio",
+    en = u"July",
+    pt = u"Julho",
+    de = u"Juli",
+    pl = u"Lipiec",
+    nl = u"juli"
+)
+
+translations.define("month 8",
+    ca = u"Agost",
+    es = u"Agosto",
+    en = u"August",
+    pt = u"Agosto",
+    de = u"August",
+    pl = u"Sierpień",
+    nl = u"augustus"
+)
+
+translations.define("month 9",
+    ca = u"Setembre",
+    es = u"Septiembre",
+    en = u"September",
+    pt = u"Setembro",
+    de = u"September",
+    pl = u"Wrzesień",
+    nl = u"september"
+)
+
+translations.define("month 10",
+    ca = u"Octubre",
+    es = u"Octubre",
+    en = u"October",
+    pt = u"Outubro",
+    de = u"Oktober",
+    pl = u"Październik",
+    nl = u"oktober"
+)
+
+translations.define("month 11",
+    ca = u"Novembre",
+    es = u"Noviembre",
+    en = u"November",
+    pt = u"Novembro",
+    de = u"November",
+    pl = u"Listopad",
+    nl = u"november"
+)
+
+translations.define("month 12",
+    ca = u"Desembre",
+    es = u"Diciembre",
+    en = u"December",
+    pt = u"Dezembro",
+    de = u"Dezember",
+    pl = u"Grudzień",
+    nl = u"december"
+)
 
 # -------- ABBREVIATED TRANSLATIONS OF WEEKDAYS
 translations.define("weekday 0 abbr", ca = u"Dl", es = u"Lun", en = u"Mon")
