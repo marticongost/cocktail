@@ -750,8 +750,123 @@ class SchemaObject(object):
 
         return value
 
+    @classmethod
+    def observe_relation_changes(cls, relation_path, members = None):
+
+        def decorator(change_handler):
+
+            # Observe relate / unrelate operations at any point of the relation
+            # chain. The RelationObserver class is used to propagate them
+            # upwards towards the root of the chain and finally trigger the
+            # decorated callback.
+            model = cls
+            current_path = []
+
+            for rel_name in relation_path.split("."):
+                relation = model.get_member(rel_name)
+
+                if relation is None:
+                    raise ValueError(
+                        "Can't observe the relation path %s: %s doesn't contain a "
+                        "%s relation"
+                        % (relation_path, model, rel_name)
+                    )
+
+                current_path.append(relation)
+                observer = RelationObserver(list(current_path), change_handler)
+                model.related.append(observer)
+                model.unrelated.append(observer)
+                model = relation.related_type
+
+            # Observe changes in certain fields of the objects at the end of the
+            # relation chain (optional).
+            if members:
+
+                # Normalize the subset of members to observe (if any)
+                member_subset = set()
+
+                for member in members:
+                    if isinstance(member, basestring):
+                        member_name = member
+                        member = model.get_member(member_name)
+                    else:
+                        member_name = member.name
+
+                    if member is None or not issubclass(model, member.schema):
+                        raise ValueError(
+                            "Error while setting up a relation observer "
+                            "for %s: can't find member '%s' in %s"
+                            % (relation_path, member_name, model)
+                        )
+
+                    member_subset.add(member)
+
+                # Observe changes to the member subset
+                observer = RelationObserver(
+                    current_path,
+                    change_handler,
+                    member_subset
+                )
+                model.changed.append(observer)
+
+            return change_handler
+
+        return decorator
+
+
 SchemaObject._translation_schema_metaclass = SchemaClass
 SchemaObject._translation_schema_base = SchemaObject
+
+
+class RelationObserver(object):
+
+    def __init__(self, path, handler, observed_members = None):
+        self.path = path
+        self.handler = handler
+        self.observed_members = observed_members
+
+    def __call__(self, e):
+
+        event = e.slot.event
+
+        if event is SchemaObject.related.event \
+        or event is SchemaObject.unrelated.event:
+
+            if e.member is not self.path[-1]:
+                return
+
+            obj = e.related_object
+            rel_value = e.source
+
+        elif event is SchemaObject.changed.event:
+
+            if (
+                self.observed_members is not None
+                and e.member not in self.observed_members
+            ):
+                return
+
+            obj = e.source
+            rel_value = None
+
+        self._propagate_change(e, obj, len(self.path) - 1, rel_value)
+
+    def _propagate_change(self, e, obj, index, rel_value = None):
+
+        if index >= 0:
+            relation = self.path[index].related_end
+
+            if rel_value is None:
+                rel_value = obj.get(relation)
+
+            if rel_value is not None:
+                if isinstance(rel_value, SchemaObject):
+                    self._propagate_change(e, rel_value, index - 1)
+                elif hasattr(rel_value, "__iter__"):
+                    for rel_item in rel_value:
+                        self._propagate_change(e, rel_item, index - 1)
+        else:
+            self.handler(obj, self.path, e)
 
 
 class SchemaObjectAccessor(MemberAccessor):
