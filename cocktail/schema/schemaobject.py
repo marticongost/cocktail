@@ -341,6 +341,7 @@ class SchemaClass(EventHub, Schema):
                 if previous_value is None \
                 or not isinstance(previous_value, RelationCollection):
                     value = self.instrument_collection(value, target, member)
+                    setattr(target, self.__priv_key, value)
 
                     if value:
                         for item in value:
@@ -352,6 +353,7 @@ class SchemaClass(EventHub, Schema):
                 else:                    
                     changed = value != previous_value
                     if value is None:
+                        setattr(target, self.__priv_key, value)
                         # Set an existing collection to None: unrelate all
                         # its items
                         if previous_value is not None:
@@ -367,7 +369,7 @@ class SchemaClass(EventHub, Schema):
                         preserve_value = True
             
             # Set the value
-            if not preserve_value:
+            else:
                 setattr(target, self.__priv_key, value)
 
             # Update the opposite end of a bidirectional reference
