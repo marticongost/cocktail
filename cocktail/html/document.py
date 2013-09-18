@@ -16,8 +16,8 @@ HTTP_EQUIV_KEYS = frozenset((
     "content-type",
     "expires",
     "refresh",
-    "set-cookie"
-    "X-UA-Compatible"
+    "set-cookie",
+    "x-ua-compatible"
 ))
 
 
