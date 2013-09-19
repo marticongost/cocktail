@@ -240,15 +240,21 @@ cocktail.bind(".SlideShow", function ($slideShow) {
             if(this.autoplay) this.start();
         });
 
-    // Hide all slides except the first one
+    // Show the starting slide, hide the rest
     var $slides = $slideShow.find(this.slidesSelector);
-    $slides.filter(":not(:first-child)")
+
+    if (this.startingSlide == "random") {
+        current = $slides.get(Math.floor(Math.random() * $slides.length));
+    }
+    else {
+        current = $slides.get(0);
+    }
+
+    $slides.not(current)
         .css({"position": "absolute"})
         .hide();
 
-    current = $slides.get(0);
-    
-    if(this.bulletControls) {
+    if (this.bulletControls) {
         $slideShow.get(0).selectBullet();
     }
 

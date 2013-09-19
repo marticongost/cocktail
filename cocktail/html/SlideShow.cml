@@ -12,6 +12,7 @@
     slides_selector = ".slides > *"
     navigation_controls = False
     bullet_controls = False
+    starting_slide = "first"
     ?>
 
     <?py    
@@ -27,6 +28,7 @@
         self.set_client_param("slidesSelector", self.slides_selector)
         self.set_client_param("navigationControls", self.navigation_controls)
         self.set_client_param("bulletControls", self.bullet_controls)
+        self.set_client_param("startingSlide", self.starting_slide)
         ?>
     </py:ready>
 
