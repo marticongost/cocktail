@@ -9,14 +9,17 @@
     width = None
     height = None
     page_number = None
-    ?>
-
-    <?py
-    self.add_resource("http://e.issuu.com/embed.js", async = True)
+    https = True
     ?>
 
     <py:ready>
         <?py
+        self.add_resource(
+            ("https" if self.https else "http") 
+            + "://e.issuu.com/embed.js", 
+            async = True
+        )
+
         if self.page_number:
             self.set_client_param("pageNumber", self.page_number)
             self.set_client_param("configId", self.config_id)
