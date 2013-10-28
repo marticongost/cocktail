@@ -211,7 +211,7 @@ class Dispatcher(object):
                 if path:
                     child_name = path[0]
                     if not child_name[0] == "_":
-                        child = getattr(handler, child_name, None)
+                        child = getattr(handler, child_name.replace(".", "_"), None)
                         if child:
                             if getattr(child, "exposed", False):
                                 path.pop(0)
