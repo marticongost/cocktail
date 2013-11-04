@@ -1947,6 +1947,32 @@ translations.define("cocktail.html.Slider.next_button",
     en = u"Next"
 )
 
+# cocktail.html.Pager
+#------------------------------------------------------------------------------
+translations.define("cocktail.html.Pager.first_button",
+    ca = u"Primera pàgina",
+    es = u"Primera página",
+    en = u"First page"
+)
+
+translations.define("cocktail.html.Pager.last_button",
+    ca = u"Última pàgina",
+    es = u"Última página",
+    en = u"Last page"
+)
+
+translations.define("cocktail.html.Pager.next_button",
+    ca = u"Pàgina següent",
+    es = u"Página siguiente",
+    en = u"Next page"
+)
+
+translations.define("cocktail.html.Pager.previous_button",
+    ca = u"Pàgina anterior",
+    es = u"Página anterior",
+    en = u"Previous page"
+)
+
 # cocktail.html.AsyncFileUploader
 #------------------------------------------------------------------------------
 translations.define("cocktail.html.AsyncFileUploader.drop_area",
