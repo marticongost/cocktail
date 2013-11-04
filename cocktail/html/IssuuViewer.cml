@@ -27,5 +27,16 @@
         ?>
     </py:ready>
 
-    <div data-configid="@{self.config_id}" style="width: @{str(self.width)}px; height: @{str(self.height)}px;" class="issuuembed"/>
+    <div data-configid="@{self.config_id}" class="issuuembed">
+        <py:ready>
+            <?py
+            if self.width and self.height:
+                element["style"] = "width: %spx; height: %spx;" % (str(self.width), str(self.height))
+            elif self.width:
+                element["style"] = "width: %spx;" % (str(self.width),)
+            elif self.height:
+                element["style"] = "height: %spx;" % (str(self.height),)
+            ?>
+        </py:ready>
+    </div>
 </div>
