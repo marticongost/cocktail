@@ -14,6 +14,8 @@ class Month(Integer):
     max = 12
 
     def translate_value(self, value, language = None, **kwargs):
-        return translations("month %d" % (value,))
-
+        if not value:
+            return ""
+        else:
+            return translations("month %d" % (value,))
 
