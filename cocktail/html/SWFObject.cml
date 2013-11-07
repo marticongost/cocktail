@@ -32,20 +32,6 @@
         element.set_client_param("flashVars", self.flash_vars)
         element.set_client_param("flashParams", self.flash_params)
         element.set_client_param("flashAttributes", self.flash_attributes)
-        element.add_client_code("""
-            swfobject.embedSWF(
-                this.flashFile,
-                this.id,
-                this.flashWidth,
-                this.flashHeight,
-                this.flashVersion,
-                this.flashExpressInstall,
-                this.flashVars,
-                this.flashParams,
-                this.flashAttributes
-            )
-            """
-        )
         ?>        
     </py:ready>
 
