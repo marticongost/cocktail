@@ -165,7 +165,7 @@ class FileUpload(schema.Schema):
             upload["file_size"] = size
 
             if hash is not None:
-                upload["file_hash"] = hash.digest()
+                upload["file_hash"] = hash.hexdigest()
 
         return upload
 
