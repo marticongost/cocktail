@@ -317,6 +317,11 @@ def serialize_tuple(self, value):
 schema.Tuple.parse_request_value = parse_tuple
 schema.Tuple.serialize_request_value = serialize_tuple
 
+def serialize_regular_expression(self, value):
+    return value.pattern if value else value
+
+schema.RegularExpression.serialize_request_value = serialize_regular_expression
+
 def parse_calendar_page(self, reader, value):
 
     if value is not None:
