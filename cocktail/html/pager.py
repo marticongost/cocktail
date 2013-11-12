@@ -24,7 +24,7 @@ class Pager(Element):
     hide_when_empty = True
     visible_pages = 10
 
-    button_style = "icons"
+    button_style = "characters"
     button_characters = {
         "first": u"«",
         "last": u"»",
