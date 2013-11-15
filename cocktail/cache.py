@@ -7,8 +7,9 @@ u"""
 @since:			February 2008
 """
 from time import time, mktime
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from cocktail.modeling import DictWrapper, getter
+from cocktail.styled import styled
 
 missing = object()
 
@@ -18,6 +19,7 @@ class Cache(DictWrapper):
     entries = None
     enabled = True
     updatable = True
+    verbose = False
 
     def __init__(self, load = None):
         entries = {}
@@ -37,13 +39,16 @@ class Cache(DictWrapper):
                 if entry.creation < oldest_creation_time:
                     del self[key]
 
-    def request(self, key, expiration = None, invalidation = None):
+    def request(self, key, expiration = None, invalidation = None):        
         try:
             return self.get_value(key, invalidation = invalidation)
         except KeyError:
+            if self.verbose:
+                print styled("CACHE: Generating", "white", "red", "bold"),
+                print key
             value = self.load(key)
             if self.enabled:
-                self.__entries[key] = CacheEntry(key, value, expiration)
+                self.set_value(key, value, expiration)                
             return value
 
     def get_value(self, key, default = missing, invalidation = None):
@@ -53,10 +58,13 @@ class Cache(DictWrapper):
             if entry is not None:
         
                 if self.updatable \
-                and not self._is_current(entry, invalidation):
+                and not self._is_current(entry, invalidation, self.verbose):
                     if default is missing:
                         raise ExpiredEntryError(entry)
                 else:
+                    if self.verbose:
+                        print styled("CACHE: Recovering", "white", "green", "bold"),
+                        print key
                     return entry.value 
 
         if default is missing:
@@ -65,6 +73,13 @@ class Cache(DictWrapper):
         return default
 
     def set_value(self, key, value, expiration = None):
+        if self.verbose:
+            print styled("CACHE: Storing", "white", "pink", "bold"),
+            print key,
+            if expiration is None:
+                print
+            else:
+                print styled("expiration:", "pink"), expiration
         self.__entries[key] = CacheEntry(key, value, expiration)
 
     def load(self, key):
@@ -94,23 +109,33 @@ class Cache(DictWrapper):
         for entry in entries:
             self._entry_removed(entry)
 
-    def _is_current(self, entry, invalidation = None):
-        
-        expiration = entry.expiration
-        
-        if expiration is None:
-            expiration = self.expiration
+    def _is_current(self, entry, invalidation = None, verbose = False):
+
+        # Expiration
+        if entry.has_expired(default_expiration = self.expiration):
+            if verbose:
+                print styled("CACHE: Entry expired", "white", "brown", "bold"), entry.key,
+                if entry.expiration is None:
+                    print self.expiration
+                else:
+                    print entry.expiration
+            
+            return False
+
+        # Invalidation
+        if callable(invalidation):
+            invalidation = invalidation()
         
         if invalidation is not None:
-            if callable(invalidation):
-                invalidation = invalidation()
             if isinstance(invalidation, datetime):
                 invalidation = mktime(invalidation.timetuple())
+            if invalidation > entry.creation:
+                if verbose:
+                    print styled("CACHE: Entry invalidated", "white", "brown", "bold"),
+                    print entry.key, invalidation
+                return False
 
-        return (
-            (expiration is None or time() - entry.creation < expiration)
-            and (invalidation is None or entry.creation >= invalidation)
-        )
+        return True
 
     def _entry_removed(self, entry):
         pass
@@ -123,6 +148,28 @@ class CacheEntry(object):
         self.value = value
         self.creation = time()
         self.expiration = expiration
+
+    def has_expired(self, default_expiration = None):
+
+        expiration = self.expiration
+
+        if expiration is None:
+            expiration = default_expiration
+
+        if expiration is None:
+            return False
+
+        elif isinstance(expiration, int):
+            return time() - self.creation >= expiration
+
+        elif isinstance(expiration, datetime):
+            return datetime.now() >= expiration
+
+        elif isinstance(expiration, date):
+            return date.today() >= expiration
+
+        elif isinstance(expiration, timedelta):
+            return time() - self.creation >= expiration.total_seconds()
 
 
 class ExpiredEntryError(KeyError):

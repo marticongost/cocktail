@@ -70,6 +70,7 @@ class Member(Variable):
     required = False
     require_none = False
     enumeration = None
+    normalization = None
 
     # Instance data layout
     accessor = None
@@ -247,10 +248,10 @@ class Member(Variable):
             default = self.default
 
         if isinstance(default, DynamicDefault):
-            return default()
-        else:
-            return default
-    
+            default = default()
+
+        return self.normalization(default) if self.normalization else default
+
     def copy(self, **kwargs):
         """Creates a deep, unbound copy of the member.
 

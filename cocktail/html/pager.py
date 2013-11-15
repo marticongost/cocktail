@@ -7,6 +7,7 @@ u"""
 @since:			September 2008
 """
 from cocktail.modeling import getter
+from cocktail.translations import translations
 from cocktail.html import Element
 from cocktail.controllers.viewstate import view_state
 
@@ -22,6 +23,14 @@ class Pager(Element):
     name_suffix = None
     hide_when_empty = True
     visible_pages = 10
+
+    button_style = "characters"
+    button_characters = {
+        "first": u"«",
+        "last": u"»",
+        "previous": u"&lt;",
+        "next": u"&gt;"
+    }
 
     pagination = None
     user_collection = None
@@ -122,7 +131,20 @@ class Pager(Element):
         button = Element("a")
         button.add_class("button")
         button.add_class(name)
-        button.icon = Element("img", src = "/resources/images/%s.png" % name)
+        button.icon = Element("img",
+            src = "/resources/images/%s.png" % name,
+            alt = translations("cocktail.html.Pager.%s_button" % name)
+        )
+        button.icon["title"] = button.icon["alt"]
+
+        @button.icon.when_ready
+        def set_button_style():
+            if self.button_style == "characters":
+                button.icon.tag = "span"
+                button.icon["src"] = None
+                button.icon["alt"] = None
+                button.icon.append(self.button_characters[name])
+
         button.append(button.icon)
         return button
 
