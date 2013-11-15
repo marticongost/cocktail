@@ -173,6 +173,28 @@ class GenericMethod(object):
         impl = self.implementations.get(instance.__class__, self.default)
         return impl(instance, *args, **kwargs)
 
+    def implementation_for(self, cls):
+        def decorator(function):
+            self.implementations[cls] = function
+            return function
+        return decorator
+
+
+class GenericClassMethod(object):
+
+    def __init__(self, default):
+        self.default = default
+        self.implementations = TypeMapping()
+
+    def __call__(self, cls, *args, **kwargs):
+        impl = self.implementations.get(cls, self.default)
+        return impl(cls, *args, **kwargs)
+
+    def implementation_for(self, cls):
+        def decorator(function):
+            self.implementations[cls] = function
+            return function
+        return decorator
 
 # Read-only collection wrappers
 #------------------------------------------------------------------------------ 
