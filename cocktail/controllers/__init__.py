@@ -54,7 +54,14 @@ from cocktail.controllers.sessions import session
 import cocktail.controllers.grouping
 import cocktail.controllers.erroremail
 import cocktail.controllers.handlerprofiler
-import cocktail.controllers.zodbdebuggertool
+
+# The ZODB debugger needs collections.Counter, and therefore is not available
+# under Python 2.6
+try:    
+    import cocktail.controllers.zodbdebuggertool
+except ImportError:
+    pass
+
 import cocktail.controllers.switchhandler
 
 
