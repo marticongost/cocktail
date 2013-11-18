@@ -40,8 +40,12 @@ from cocktail.controllers.viewstate import (
     saved_query_string
 )
 from cocktail.controllers.parameters import (
-    serialize_parameter, get_parameter, FormSchemaReader,
-    CookieParameterSource, SessionParameterSource
+    serialize_parameter,
+    get_parameter,
+    resolve_object_ref,
+    FormSchemaReader,
+    CookieParameterSource,
+    SessionParameterSource
 )
 from cocktail.controllers.pagination import Pagination
 from cocktail.controllers.usercollection import UserCollection

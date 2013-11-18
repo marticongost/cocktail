@@ -13,6 +13,7 @@ import cgi
 import cherrypy
 from cherrypy.lib import http
 from string import strip
+from cocktail.modeling import GenericClassMethod
 from cocktail.iteration import first
 from cocktail import schema
 from cocktail.persistence import PersistentClass
@@ -237,13 +238,15 @@ def parse_reference(self, reader, value):
                 if cls.full_name == value:
                     value = cls
                     break
-
-        # TODO: make this extensible to other types?
-        elif isinstance(related_type, PersistentClass) \
-        and related_type.indexed:
-            value = related_type.index.get(int(value))
+        # Object references        
+        else:
+            value = resolve_object_ref(related_type, value)
     
     return value
+
+resolve_object_ref = GenericClassMethod(
+    lambda cls, ref: cls.get_instance(int(ref))
+)
 
 def serialize_reference(self, value):
 
@@ -316,6 +319,11 @@ def serialize_tuple(self, value):
 
 schema.Tuple.parse_request_value = parse_tuple
 schema.Tuple.serialize_request_value = serialize_tuple
+
+def serialize_regular_expression(self, value):
+    return value.pattern if value else value
+
+schema.RegularExpression.serialize_request_value = serialize_regular_expression
 
 def parse_calendar_page(self, reader, value):
 
