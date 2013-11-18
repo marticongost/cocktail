@@ -51,6 +51,7 @@ from cocktail.schema.color import Color
 from cocktail.schema.creditcardnumber import CreditCardNumber
 from cocktail.schema.bankaccountnumber import BankAccountNumber
 from cocktail.schema.codeblock import CodeBlock
+from cocktail.schema.regularexpression import RegularExpression
 from cocktail.schema.errorlist import ErrorList
 from cocktail.schema.accessors import (
     get_accessor,

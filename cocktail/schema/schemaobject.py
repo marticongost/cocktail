@@ -26,9 +26,6 @@ from cocktail.schema.schemacollections import (
 from cocktail.schema.schemamappings import Mapping, RelationMapping
 from cocktail.schema.accessors import MemberAccessor
 
-# Extension property that allows members to normalize their values when changed
-Member.normalization = None
-
 # Extension property that allows members to knowingly shadow existing
 # class attributes
 Member.shadows_attribute = False

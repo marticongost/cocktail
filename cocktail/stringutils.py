@@ -224,3 +224,9 @@ def clean_html(html):
     cleaner = HTMLCleaner(html)
     return cleaner.get_clean_html()
 
+def decapitalize(string):
+    if len(string) >= 2 and string[1] == string[1].lower():
+        return string[0].lower() + string[1:]
+    else:
+        return string
+
