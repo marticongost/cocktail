@@ -10,6 +10,7 @@ import decimal
 import time
 import datetime
 import cgi
+import urllib
 import cherrypy
 from cherrypy.lib import http
 from string import strip
@@ -928,7 +929,7 @@ class CookieParameterSource(object):
         self.update = update
 
     def __call__(self, param_name):
-        
+
         if self.ignore_new_values:
             param_value = None
         else:
@@ -936,7 +937,7 @@ class CookieParameterSource(object):
             if source is None:
                 source = cherrypy.request.params.get
             param_value = source(param_name)
-        
+
         cookie_name = self.get_cookie_name(param_name)
 
         # Persist a new value
@@ -970,11 +971,11 @@ class CookieParameterSource(object):
 
                 # Restore a persisted value
                 else:
-                    param_value = request_cookie.value
+                    param_value = urllib.unquote(request_cookie.value)
 
                     if param_value and self.cookie_encoding:
                         param_value = param_value.decode(self.cookie_encoding)
-                
+        
         return param_value
 
     def get_cookie_name(self, param_name):
@@ -1043,7 +1044,7 @@ class SessionParameterSource(object):
         self.update = update
 
     def __call__(self, param_name):
-        
+
         if self.ignore_new_values:
             param_value = None
         else:
@@ -1053,7 +1054,7 @@ class SessionParameterSource(object):
             param_value = source(param_name)
 
         key = self.get_key(param_name)
-        
+
         # Persist a new value
         if param_value:
             if self.update:
