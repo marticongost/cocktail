@@ -130,12 +130,22 @@ def _persistent_class_index_text(self, obj, language = None):
     chunks = []
     
     for chunk in obj.get_searchable_text([language]):
+
+        if not isinstance(chunk, basestring):
+            raise TypeError(
+                "Object %r produced the non-string value %r during text "
+                "collection for full text indexing. Check the implementation "
+                "of its get_searchable_text() method."
+                % (obj, chunk)
+            )
+
         # Ignore non-unicode strings
         if isinstance(chunk, str):
             try:
                 chunk = unicode(chunk)
             except UnicodeDecodeError:
                 continue
+
         chunks.append(chunk)
     
     text = normalize(u" ".join(chunks))
