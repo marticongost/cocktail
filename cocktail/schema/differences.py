@@ -14,7 +14,8 @@ def diff(
     target,
     schema = None,
     source_accessor = None,
-    target_accessor = None):
+    target_accessor = None,
+    exclude = None):
     """Obtains the set of members that differ between two items.
 
     @param source: The first item to compare.
@@ -56,8 +57,8 @@ def diff(
                     "instances of the same SchemaObject derived class")
 
     for member in schema.members().itervalues():
-        
-        if not member.editable:
+     
+        if exclude and exclude(member):
             continue
         
         key = member.name
