@@ -86,23 +86,30 @@ def error_email(
         receivers = receivers.split(",")
     receivers = set([receiver.strip() for receiver in receivers])
 
-    html = template % {
-        "base": unicode(cherrypy.request.base, encoding, errors='replace'),
-        "path_info": unicode(cherrypy.request.path_info, encoding, errors='replace'),
-        "query_string": unicode(cherrypy.request.query_string, encoding, errors='replace'),
-        "headers": u"".join(header_template % (k, v)
-                            for k, v in cherrypy.request.header_list),
-        "params": u"".join(
-            param_template % (
-                k,
-                # Don't include the whole datastream of FieldStorage instances
-                # on error emails
-                v if not isinstance(v, FieldStorage) else "FieldStorage"
-            )
-            for k, v in cherrypy.request.params.iteritems()
-        ),
-        "traceback": _cperror.format_exc()
-    }
+    def encode(value):
+        if isinstance(value, unicode):
+            return value
+
+        return unicode(value, encoding, errors='replace')
+
+    tpl_params = {}
+    tpl_params["base"] = encode(cherrypy.request.base)
+    tpl_params["path_info"] = encode(cherrypy.request.path_info)
+    tpl_params["query_string"] = encode(cherrypy.request.query_string)
+    tpl_params["headers"] = u"".join(header_template % (encode(k), encode(v))
+                                     for k, v in cherrypy.request.header_list)
+    tpl_params["params"] = u"".join(
+        param_template % (
+            encode(k),
+            # Don't include the whole datastream of FieldStorage instances
+            # on error emails
+            encode(v) if not isinstance(v, FieldStorage) else "FieldStorage"
+        )
+        for k, v in cherrypy.request.params.iteritems()
+    )
+    tpl_params["traceback"] = _cperror.format_exc()
+
+    html = template % tpl_params
  
     message = MIMEText(html.encode(encoding), _subtype = mime_type, _charset = encoding)
     message["Subject"] = subject
