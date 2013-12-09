@@ -196,7 +196,7 @@ cocktail.bind(".SlideShow", function ($slideShow) {
     this._hideSlide = function (slide) {
 
         var $slide = jQuery(slide);
-        $slide.parent().height($slide.height());
+        $slide.parent().height($slide.parent().height());
 
         $slide
             .addClass("loosingFocus")
