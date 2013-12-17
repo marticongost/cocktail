@@ -69,15 +69,16 @@ class Event(object):
     life cycle.
     """
 
-    def __init__(self, doc = None):
+    def __init__(self, doc = None, event_info_class = None):
         self.__doc__ = doc
         self.__slots = WeakKeyDictionary()
         self.__lock = Lock()
+        self.event_info_class = event_info_class or EventInfo
 
     def __get__(self, instance, type = None):
-        
+
         self.__lock.acquire()
-                
+
         try:
             if instance is None:
                 return self.__get_slot(type)
@@ -141,9 +142,9 @@ class EventSlot(SynchronizedList):
         # self.target is a weakref, so the object may have expired
         if target is None:
             return
-       
+
         if _event_info is None:
-            event_info = EventInfo(kwargs)
+            event_info = self.event.event_info_class(kwargs)
             event_info.source = target
         else:
             event_info = _event_info
@@ -151,7 +152,7 @@ class EventSlot(SynchronizedList):
         event_info.slot = self
         event_info.target = target
         event_info.consumed = False
-        
+
         for callback in self:
             callback(event_info)
 
