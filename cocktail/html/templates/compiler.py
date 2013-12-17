@@ -488,32 +488,25 @@ class TemplateCompiler(object):
                     source.write("return %s" % id)
                     source.unindent()
             
-            # Cache key
+            # Add cache key and tags information based on the element's
+            # identifier
             if identifier:
-                cache_key = "%s.%s.%s" % (
-                    self.pkg_name,
-                    self.class_name,
-                    identifier
-                )
-
-                cache_key_qualifier = \
-                    attributes.pop(self.TEMPLATE_NS + ">cache_key", None)
-
-                if cache_key_qualifier is None:
-                    cache_key = repr(cache_key)
-                else:
-                    cache_key = "(%r, %s)" % (cache_key, cache_key_qualifier)
-
-                source.write("%s.get_cache_key = lambda: %s" % (id, cache_key))
-
-            # Cache invalidation
-            cache_invalidation = \
-                attributes.pop(self.TEMPLATE_NS + ">cache_invalidation", None)
-
-            if cache_invalidation:
-                source.write("%s.get_cache_invalidation = lambda: %s" 
-                    % (id, cache_invalidation)
-                )
+                source.write("%s.cache_key = %r" % (
+                    identifier,
+                    self.pkg_name + "." + self.class_name + "." + identifier
+                ))
+                source.write("%s.cache_tags.add(%r)" % (
+                    identifier,
+                    self.pkg_name
+                ))
+                source.write("%s.cache_tags.add(%r)" % (
+                    identifier,
+                    self.pkg_name + "." + self.class_name
+                ))
+                source.write("%s.cache_tags.add(%r)" % (
+                    identifier,
+                    self.pkg_name + "." + self.class_name + "." + identifier
+                ))
 
             # Attributes and properties
             if elem_tag is not default:

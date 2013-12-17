@@ -11,7 +11,7 @@ from cocktail.modeling import (
 )
 from cocktail.iteration import first
 from cocktail.pkgutils import get_full_name
-from cocktail.html.viewnames import get_view_full_name
+from cocktail.html.viewnames import get_view_full_name, split_view_name
 from cocktail.html import renderers
 from cocktail.html.rendering import (
     Rendering,
@@ -214,6 +214,9 @@ class Element(object):
             if "styled_class" not in members:
                 cls.styled_class = True
 
+            if "class_provides_cache_tag" not in members:
+                cls.class_provides_cache_tag = True
+
             for c in cls._classes:
                 if getattr(c, "styled_class", False):
                     css_classes.append(c.__name__)
@@ -283,7 +286,7 @@ class Element(object):
             by those elements with `caching enabled <cached>`. Setting this
             parameter to None disables use of the cache for this rendering
             operation.
-        :type cache: `~cocktail.cache.Cache`
+        :type cache: `~cocktail.caching.Cache`
 
         :return: The HTML code for the element, embeded within a full HTML
             page.
@@ -521,13 +524,56 @@ class Element(object):
     # Cached content
     #--------------------------------------------------------------------------
     cached = False
+    __cache_key = None
+    __cache_key_qualifiers = None
+    __cache_tags = None
     cache_expiration = None
+    class_provides_cache_tag = False
 
-    def get_cache_key(self):
-        raise KeyError("%s doesn't define a cache key" % self)
+    def _get_cache_key(self):
+        cache_key = self.__cache_key
 
-    def get_cache_invalidation(self):
-        return None
+        if cache_key is None:
+            cache_key = self.view_name
+
+        if self.__cache_key_qualifiers:
+            cache_key = (cache_key,) + self.__cache_key_qualifiers
+
+        return cache_key
+
+    def _set_cache_key(self, cache_key):
+        self.__cache_key = cache_key
+
+    cache_key = property(_get_cache_key, _set_cache_key)
+
+    def qualify_cache_key(self, qualifier):
+        if self.__cache_key_qualifiers is None:
+            self.__cache_key_qualifiers = (qualifier,)
+        else:
+            self.__cache_key_qualifiers += (qualifier,)
+
+    def _get_cache_tags(self):
+        if self.__cache_tags is None:
+            self.__cache_tags = set()
+
+            for cls in self.__class__.__mro__:
+                if cls is Element:
+                    break
+                if cls.class_provides_cache_tag:
+                    self.__cache_tags.add(cls.view_name)
+                    self.__cache_tags.add(split_view_name(cls.view_name)[0])
+
+            self.__cache_tags.add("cocktail.html")
+
+        return self.__cache_tags
+
+    def _set_cache_tags(self, tags):
+        if tags is not None:
+            tags = set(tags)
+            tags.add(self.view_name)
+        self.__cache_tags = tags
+
+    cache_tags = property(_get_cache_tags, _set_cache_tags)
 
     # Attributes
     #--------------------------------------------------------------------------
