@@ -242,3 +242,7 @@ class EventInfo(object):
         for key, value in params.iteritems():
             setattr(self, key, value)
 
+    @property
+    def event(self):
+        return self.slot.event
+
