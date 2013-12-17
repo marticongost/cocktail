@@ -6,7 +6,7 @@ u"""Defines the `DocumentMetadata` class.
 from time import time
 from threading import local
 from cocktail.modeling import getter, OrderedSet
-from cocktail.cache import Cache
+from cocktail.caching import Cache, CacheKeyError
 from cocktail.html.documentmetadata import DocumentMetadata
 
 rendering_cache = Cache()
@@ -32,6 +32,7 @@ def generate_id():
         incremental_id
     )
 
+
 class Rendering(object):
     """A rendering operation, used to incrementally produce the markup for one
     or more elements.
@@ -54,7 +55,7 @@ class Rendering(object):
 
     .. attribute:: cache
 
-        A `cache <cocktail.cache.Cache>` of rendered content.
+        A `cache <cocktail.caching.Cache>` of rendered content.
     """
 
     def __init__(self,
@@ -69,8 +70,10 @@ class Rendering(object):
         self.document_metadata = document_metadata or DocumentMetadata()
         self.cache = cache
         self.__content = []
-        self.write = self.__content.append
         self.rendered_client_model = rendered_client_model
+
+    def write(self, chunk):
+        self.__content.append(chunk)
 
     def render_element(self, element):
  
@@ -92,15 +95,13 @@ class Rendering(object):
                 element.bind()
 
                 if element.cached and element.rendered:
-                    cache_key = (self.get_cache_key(), element.get_cache_key())
-                    cached_rendering = self.cache.get_value(
-                        cache_key,
-                        default = None,
-                        invalidation = element.get_cache_invalidation
-                    )
+                    cache_key = (self.get_cache_key(), element.cache_key)
 
-                    # Cached rendering
-                    if cached_rendering is not None:
+                    try:
+                        cached_rendering = self.cache.retrieve(cache_key)
+                    except CacheKeyError:
+                        pass
+                    else:
                         self.update(cached_rendering)
                         return
 
@@ -118,20 +119,17 @@ class Rendering(object):
                             .client_models[element.client_model] = element
                     return
 
+                cached = cache_key and element.cached
+
                 # Set up a separate rendering context for cached elements, and
                 # add it to the cache
-                if cache_key and element.cached:
-                    target_rendering = self.__class__(                    
+                if cached:
+                    target_rendering = self.__class__(
                         renderer = self.renderer,
                         collect_metadata = self.collect_metadata,
                         cache = self.cache,
                         rendered_client_model = self.rendered_client_model
-                    )
-                    self.cache.set_value(
-                        cache_key,
-                        target_rendering,
-                        element.cache_expiration
-                    )
+                    )                    
                 else:
                     target_rendering = self
 
@@ -144,19 +142,28 @@ class Rendering(object):
                         self.rendered_client_model is not None
                     )
 
-                # After rendering to the cache, render to the main stream as well
-                if target_rendering is not self:
+                # Store the rendered result
+                if cached:
+                    self.cache.store(
+                        cache_key,
+                        target_rendering,
+                        expiration = element.cache_expiration,
+                        tags = element.cache_tags
+                    )
+
+                    # After rendering to the cache, replicate the result on the
+                    # main stream as well
                     self.update(target_rendering)
 
         finally:
             if setup_id:
                 del _thread_data.prefix
                 del _thread_data.generated_id
-            
+
             _thread_data.rendering = prev_rendering
 
     def get_cache_key(self):
-        return self.renderer.__class__
+        return self.renderer.__class__.__name__
 
     def update(self, rendering):
         """Extend the rendering state with data from another rendering.

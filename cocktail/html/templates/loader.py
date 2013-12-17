@@ -9,21 +9,22 @@ u"""
 import os
 from pkg_resources import resource_filename
 from cocktail.modeling import extend
-from cocktail.cache import Cache
+from cocktail.resourceloader import ResourceLoader
 from cocktail.pkgutils import import_object, set_full_name
+from cocktail.html.rendering import rendering_cache
 from cocktail.html.viewnames import split_view_name
 from cocktail.html.templates.compiler import TemplateCompiler
 
 
-class TemplateLoaderCache(Cache):
+class TemplateLoaderCache(ResourceLoader):
 
     checks_modification_time = True
     expiration = None
 
-    def _is_current(self, entry, invalidation = None, verbose = False):
+    def _is_current(self, resource, invalidation = None, verbose = False):
         
-        if not Cache._is_current(self,
-            entry,
+        if not ResourceLoader._is_current(self,
+            resource,
             invalidation = invalidation,
             verbose = verbose
         ):
@@ -32,28 +33,33 @@ class TemplateLoaderCache(Cache):
         # Reload templates if their source file has been modified since
         # they were loaded
         if self.checks_modification_time:
-            template = entry.value
+            template = resource.value
             if template.source_file \
-            and entry.creation < os.stat(template.source_file).st_mtime:
+            and resource.creation < os.stat(template.source_file).st_mtime:
                 return False
  
         # Reload templates if their dependencies need to be reloaded
         return all(
             self._is_current(self[dependency], invalidation = invalidation)
-            for dependency in self._loader.iter_dependencies(entry.key)
+            for dependency in self._loader.iter_dependencies(resource.key)
         )
+
+    def _resource_expired(self, resource):
+        from cocktail.styled import styled
+        print styled("Template expired", "brown"), resource.value
+        rendering_cache.clear(scope = [resource.value.view_name])
 
 
 class TemplateLoader(object):
     """A class that loads template classes from their source files.
 
     @var cache: The cache used by the loader to store requested templates.
-    @type: L{Cache<cocktail.cache.Cache>}
+    @type: L{ResourceLoader<cocktail.resourceloader.ResourceLoader>}
     """
     extension = ".cml"
     Compiler = TemplateCompiler
     Cache = TemplateLoaderCache
-    
+
     def __init__(self):
         self.__dependencies = {}
         self.__derivatives = {}
@@ -62,8 +68,8 @@ class TemplateLoader(object):
         self.cache._loader = self
 
         @extend(self.cache)
-        def _entry_removed(cache, entry):
-            self._forget_template(entry.key)
+        def _resource_removed(cache, resource):
+            self._forget_template(resource.key)
 
     def get_class(self, name):
         """Obtains a python class from the specified template.
