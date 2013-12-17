@@ -90,7 +90,7 @@ class MemoryCacheStorage(CacheStorage):
             # Expired key
             expiration = entry.expiration
             if expiration is not None and expiration <= time():
-                self.remove(key)
+                self.__remove_entry(entry)
                 raise CacheKeyError(key)
 
             return entry
