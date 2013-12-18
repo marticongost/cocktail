@@ -546,11 +546,11 @@ class Element(object):
 
     cache_key = property(_get_cache_key, _set_cache_key)
 
-    def qualify_cache_key(self, qualifier):
+    def qualify_cache_key(self, *args):
         if self.__cache_key_qualifiers is None:
-            self.__cache_key_qualifiers = (qualifier,)
+            self.__cache_key_qualifiers = args
         else:
-            self.__cache_key_qualifiers += (qualifier,)
+            self.__cache_key_qualifiers += args
 
     def _get_cache_tags(self):
         if self.__cache_tags is None:
