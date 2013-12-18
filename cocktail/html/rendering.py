@@ -98,11 +98,13 @@ class Rendering(object):
                     cache_key = (self.get_cache_key(), element.cache_key)
 
                     try:
-                        cached_rendering = self.cache.retrieve(cache_key)
+                        cached_content, cached_metadata = \
+                            self.cache.retrieve(cache_key)
                     except CacheKeyError:
                         pass
                     else:
-                        self.update(cached_rendering)
+                        self.__content.extend(cached_content)
+                        self.document_metadata.update(cached_metadata)
                         return
 
             element.ready()
@@ -146,7 +148,7 @@ class Rendering(object):
                 if cached:
                     self.cache.store(
                         cache_key,
-                        target_rendering,
+                        (self.__content, self.document_metadata),
                         expiration = element.cache_expiration,
                         tags = element.cache_tags
                     )
