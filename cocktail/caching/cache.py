@@ -8,6 +8,7 @@ from calendar import timegm
 from datetime import date, datetime, timedelta
 from cocktail.styled import styled
 from cocktail.modeling import OrderedSet, SetWrapper, ListWrapper, DictWrapper
+from cocktail.dateutils import add_time
 from .scope import whole_cache, normalize_scope
 from .exceptions import CacheKeyError
 
