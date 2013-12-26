@@ -33,7 +33,13 @@ class RESTCacheStorage(object):
         return self.__serializer
 
     def _key_request(self, key, *args, **kwargs):
+        
         url = self.__address + "/keys/" + quote(key, safe = "")
+        
+        extra_path = kwargs.pop("extra_path", None)
+        if extra_path:
+            url += "/" + extra_path
+
         http = Http()
         response, content = http.request(url, *args, **kwargs)
 
@@ -76,7 +82,7 @@ class RESTCacheStorage(object):
 
     @overrides(CacheStorage.get_expiration)
     def get_expiration(self, key):
-        return self._key_request(key + "/expiration", "GET")
+        return self._key_request(key, "GET", extra_path = "expiration")
 
     @overrides(CacheStorage.set_expiration)
     def set_expiration(self, key, expiration):
