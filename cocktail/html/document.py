@@ -95,9 +95,7 @@ class HTMLDocument(Element):
         self._add_meta()
         self._add_title()
         self._add_resources()
-        self._add_client_params()
         self._add_client_variables()
-        self._add_client_code()
         self._add_client_translations()
         self._add_content()
 
@@ -213,33 +211,6 @@ class HTMLDocument(Element):
                 "\t\tjQuery(function () { cocktail.init(); });\n"
             )
 
-    def _add_client_params(self):
-
-        if self.metadata.client_params:
-            self._add_core_scripts()
-
-            for id, values in self.metadata.client_params.iteritems():
-                js = "\t\tcocktail.__clientParams['%s'] = %s;\n" % (
-                    id,
-                    dumps(values)
-                )
-                self.client_setup_container.append(js)
-
-    def _add_client_code(self):
-
-        if self.metadata.client_code:
-            self._add_core_scripts()
-            
-            for id,code_snippets in self.metadata.client_code.iteritems():
-                js = "\t\tcocktail.__clientCode['%s'] = [%s];\n" % (
-                    id,
-                    ", ".join(
-                        "function () { %s }" % snippet
-                        for snippet in code_snippets
-                    )
-                )
-                self.client_setup_container.append(js)
-
     def _add_client_variables(self):
 
         if self.metadata.client_variables:
@@ -282,60 +253,22 @@ class HTMLDocument(Element):
                 client_models = self.metadata.client_models.items()
                 self.metadata.client_models = {}
 
-                for model_id, element in client_models:
+                for model_id, model_data in client_models:
                     
-                    all_client_models[model_id] = element
-
-                    cm_rendering = Rendering(
-                        rendered_client_model = element,
-                        **self.rendering_options
-                    )
-                    cm_metadata = cm_rendering.document_metadata
-                    cm_rendering.render_element(element)
+                    all_client_models[model_id] = model_data
+                    (cm_content, cm_metadata) = model_data
 
                     # Serialize the client model content as a javascript string
-                    cm_str = "'" + element.client_model + "'"
                     self.client_setup_container.append(
                         "\t\tcocktail._clientModel(%s).html = '%s';\n" % (
-                            cm_str,
-                            cm_rendering
-                                .markup()
+                            dumps(model_id),
+                            cm_content
                                 .replace("'", "\\'")
                                 .replace("\n", "\\n")
                                 .replace("&", "\\x26")
                                 .replace("<", "\\x3C")
                         )
                     )
-
-                    # Declare client side parameters and initialization code for
-                    # the client model and its nested content. This special
-                    # treatment is necessary to allow client models to apply this
-                    # initialization each time they are instantiated.
-                    cm_id = element["id"]
-                    for id, values in cm_metadata.client_params.iteritems():
-                        self.client_setup_container.append(
-                            "\t\tcocktail._clientModel(%s).params = %s;\n" % (
-                                cm_str 
-                                    if id == cm_id
-                                    else cm_str + ", '%s'" % id,
-                                dumps(values)
-                            )
-                        )
-
-                    for id, snippets in cm_metadata.client_code.iteritems():
-                        self.client_setup_container.append(
-                            "\t\tcocktail._clientModel(%s).code = %s;\n" % (
-                                cm_str
-                                    if id == cm_id
-                                    else cm_str + ", '%s'" % id,
-                                dumps(snippets)
-                            )
-                        )
-
-                    # Apply any remaining metadata supplied by the client model or
-                    # its content to the document.
-                    cm_metadata.client_params = {}
-                    cm_metadata.client_code = {}            
                     self.metadata.update(cm_metadata)
 
             self.metadata.client_models = all_client_models

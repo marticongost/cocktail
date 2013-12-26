@@ -1,6 +1,7 @@
 #-*- coding: utf-8 -*-
 from time import time
 from warnings import warn
+from simplejson import dumps
 from cocktail.modeling import (
     getter,
     classgetter,
@@ -488,12 +489,11 @@ class Element(object):
                 for handler in self.__ready_handlers:
                     handler()
 
-            if self.__client_params or self.__client_code:
-                self.require_id()
-
             if self.member: 
                 self.add_class(self.member.__class__.__name__)
 
+            self.__transmit_client_params()
+            self.__transmit_client_code()
             self.__is_ready = True
 
     def when_ready(self, handler):
@@ -559,11 +559,8 @@ class Element(object):
             for cls in self.__class__.__mro__:
                 if cls is Element:
                     break
-                if cls.class_provides_cache_tag:
+                if getattr(cls, "class_provides_cache_tag", False):
                     self.__cache_tags.add(cls.view_name)
-                    self.__cache_tags.add(split_view_name(cls.view_name)[0])
-
-            self.__cache_tags.add("cocktail.html")
 
         return self.__cache_tags
 
@@ -1211,16 +1208,16 @@ class Element(object):
 
     # Client side element parameters
     #--------------------------------------------------------------------------
-    
+    def __transmit_client_params(self):
+        if self.__client_params is not None:
+            self["data-cocktail-params"] = dumps(self.__client_params)
+
     @getter
     def client_params(self):
         """A dictionary with the client side parameters for the element.
     
         Each parameter in this dictionary will be relayed client side as an
         attribute of the element's DOM element, using a JSON encoder.
-
-        Client side parameters will only be rendered if a
-        `full page rendering <render_page>` is requested.
         """
         if self.__client_params is None:
             return empty_dict
@@ -1277,10 +1274,13 @@ class Element(object):
     
     # Client side element initialization code
     #--------------------------------------------------------------------------
-    
+    def __transmit_client_code(self):
+        if self.__client_code is not None:
+            self["data-cocktail-code"] = "".join(self.__client_code)
+
     @getter
     def client_code(self):
-        """A dictionary containing the snippets of javascript code attached to
+        """A list containing the snippets of javascript code attached to
         the element.
 
         Code attached using this mechanism will be executed as soon as the DOM
@@ -1420,6 +1420,7 @@ class Content(Element):
         as an unicode string.
     """
     styled_class = False
+    class_provides_cache_tag = False
     value = None
     overlays_enabled = False
 
@@ -1462,6 +1463,8 @@ class PlaceHolder(Content):
         
         A callable that produces the content for the placeholder.    
     """
+    class_provides_cache_tag = False
+
     def __init__(self, expression):
         Content.__init__(self)
         self.expression = expression
