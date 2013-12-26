@@ -559,15 +559,27 @@ class SchemaObject(object):
 
         self.__class__.init_instance(self, values, SchemaObjectAccessor)
         self.__class__.instantiated(instance = self, values = values)
-        
+
     def __repr__(self):
+        label = self.__class__.__name__
         
-        if self.__class__.primary_member:
-            id = getattr(self, self.__class__.primary_member.name, None)
+        primary_member = self.__class__.primary_member
+        if primary_member:
+            id = getattr(self, primary_member.name, None)
             if id is not None:
-                return "%s #%s" % (self.__class__.full_name, self.id)
-        
-        return self.__class__.full_name + " instance"
+                label += " #%s" % id
+
+        try:
+            trans = translations(self, discard_generic_translation = True)
+            if trans:
+                label += " (%s)" % trans
+        except NoActiveLanguageError:
+            pass
+
+        if isinstance(label, unicode):
+            label = label.encode("utf-8")
+
+        return label
 
     def __translate__(self, language, **kwargs):
         
