@@ -7,6 +7,7 @@ from sys import getsizeof
 from time import time
 from threading import RLock
 from cocktail.modeling import overrides
+from cocktail.styled import styled
 from .scope import whole_cache, normalize_scope
 from .cachestorage import CacheStorage
 from .exceptions import CacheKeyError
@@ -17,6 +18,7 @@ class MemoryCacheStorage(CacheStorage):
 
     __memory_limit = None
     __memory_usage = 0
+    verbose_invalidation = False
 
     def __init__(self):
         self.__lock = RLock()
@@ -96,6 +98,9 @@ class MemoryCacheStorage(CacheStorage):
             return entry
 
     def __remove_entry(self, entry):
+
+        if self.verbose_invalidation:
+            print styled("  " + entry.key, "red")
 
         self.__memory_usage -= entry.size
 
