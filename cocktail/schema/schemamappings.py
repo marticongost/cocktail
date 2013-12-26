@@ -7,7 +7,7 @@ Provides a class to describe members that handle sets of values.
 @organization:	Whads/Accent SL
 @since:			July 2008
 """
-from cocktail.modeling import getter, InstrumentedDict
+from cocktail.modeling import getter, InstrumentedDict, DictWrapper
 from cocktail.schema.schemacollections import (
     Collection, RelationCollection, add, remove
 )
@@ -29,6 +29,7 @@ class Mapping(Collection):
     keys = None
     values = None
     default_type = dict
+    get_item_key = None
     
     @getter
     def related_type(self):
@@ -80,10 +81,14 @@ class RelationMapping(RelationCollection, InstrumentedDict):
     def __init__(self, items = None, owner = None, member = None):
         self.owner = owner
         self.member = member
-        InstrumentedDict.__init__(self)
-        if items:
-            for item in items:
-                self.add(item)
+
+        if items is not None and not isinstance(items, (dict, DictWrapper)):
+            items = dict(
+                (self.get_item_key(item), item)
+                for item in items
+            )
+
+        InstrumentedDict.__init__(self, items)
 
     def get_item_key(self, item):
         if self.member.get_item_key:
@@ -110,11 +115,14 @@ class RelationMapping(RelationCollection, InstrumentedDict):
         if new_content is None:
             self.clear()
         else:
-            new_content = set(
-                (self.get_item_key(item), item)
-                for item in new_content
-            )
-            
+            if isinstance(new_content, (dict, DictWrapper)):
+                new_content = set(new_content.iteritems())
+            else:
+                new_content = set(
+                    (self.get_item_key(item), item)
+                    for item in new_content
+                )
+
             previous_content = set(self._items.iteritems())
             self._items = dict(new_content)
 
