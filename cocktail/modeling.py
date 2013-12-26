@@ -689,32 +689,45 @@ class InstrumentedCollection(object):
     def item_removed(self, item):
         pass
 
+    def changed(self):
+        pass
+
 
 class InstrumentedList(ListWrapper, InstrumentedCollection):
 
     def __init__(self, items = None):
         ListWrapper.__init__(self, items)
 
-    def append(self, item):
+    def append(self, item, _trigger_changed = True):
         self._items.append(item)
         self.item_added(item)
+
+        if _trigger_changed:
+            self.changed()
 
     def insert(self, index, item):
         self._items.insert(index, item)
         self.item_added(item)
+        self.changed()
 
     def extend(self, items):
         self._items.extend(items)
         for item in items:
             self.item_added(item)
+        self.changed()
 
     def remove(self, item):
         self._items.remove(item)
         self.item_removed(item)
+        self.changed()
     
-    def pop(self, index):
+    def pop(self, index, _trigger_changed = True):
         item = self._items.pop(index)
         self.item_removed(item)
+
+        if _trigger_changed:
+            self.changed()
+
         return item
 
     def __setitem__(self, index, item):
@@ -725,6 +738,7 @@ class InstrumentedList(ListWrapper, InstrumentedCollection):
             self._items[index] = item
             self.item_removed(prev_item)
             self.item_added(item)
+            self.changed()
 
     def __delitem__(self, index):
         
@@ -734,8 +748,10 @@ class InstrumentedList(ListWrapper, InstrumentedCollection):
             for item in items:
                 self.item_removed(item)
         else:
-            item = self._items.pop(index)
+            item = self._items.pop(index, _trigger_changed = False)
             self.item_removed(item)
+
+        self.changed()
 
 
 class InstrumentedOrderedSet(ListWrapper, InstrumentedCollection):
@@ -748,25 +764,35 @@ class InstrumentedOrderedSet(ListWrapper, InstrumentedCollection):
             )
         ListWrapper.__init__(self, items or OrderedSet())
 
-    def append(self, item, relocate = False):
+    def append(self, item, relocate = False, _trigger_changed = True):
         if self._items.append(item, relocate):
             self.item_added(item)
+
+        if _trigger_changed:
+            self.changed()
 
     def insert(self, index, item, relocate = False):
         if self._items.insert(index, item, relocate):
             self.item_added(item)
+        self.changed()
 
     def extend(self, items, relocate = False):
         for item in items:
-            self.append(item, relocate)
+            self.append(item, relocate, _trigger_changed = False)
+        self.changed()
 
     def remove(self, item):
         self._items.remove(item)
         self.item_removed(item)
+        self.changed()
     
-    def pop(self, index):
+    def pop(self, index, _trigger_changed = True):
         item = self._items.pop(index)
         self.item_removed(item)
+
+        if _trigger_changed:
+            self.changed()
+
         return item
 
     def __setitem__(self, index, item):
@@ -776,6 +802,7 @@ class InstrumentedOrderedSet(ListWrapper, InstrumentedCollection):
             self._items[index] = item
             self.item_removed(prev_item)
             self.item_added(item)
+            self.changed()
 
     def __delitem__(self, index):
         
@@ -785,8 +812,10 @@ class InstrumentedOrderedSet(ListWrapper, InstrumentedCollection):
             for item in items:
                 self.item_removed(item)
         else:
-            item = self._items.pop(index)
+            item = self._items.pop(index, _trigger_changed = False)
             self.item_removed(item)
+
+        self.changed()
 
 
 class InstrumentedSet(SetWrapper, InstrumentedCollection):
@@ -798,41 +827,54 @@ class InstrumentedSet(SetWrapper, InstrumentedCollection):
         if item not in self._items:
             self._items.add(item)
             self.item_added(item)
+            self.changed()
 
     def clear(self):
         items = list(self._items)
         self._items.clear()
 
-        for item in items:
-            self.item_removed(item)
+        if items:
+            for item in items:
+                self.item_removed(item)
+
+            self.changed()
 
     def difference_update(self, other_set):
         items = self._items & other_set
         self._items.difference_update(other_set)
 
-        for item in items:
-            self.item_removed(item)
+        if items:
+            for item in items:
+                self.item_removed(item)
+
+            self.changed()
 
     def discard(self, item):
         if item in self._items:
             self._items.remove(item)
             self.item_removed(item)
+            self.changed()        
 
     def intersection_update(self, other_set):
         items = self._items - other_set
         self._items.intersection_update(other_set)
 
-        for item in items:
-            self.item_removed(item)
+        if items:
+            for item in items:
+                self.item_removed(item)
+
+            self.changed()
 
     def pop(self):
         item = self._items.pop()
         self.item_removed(item)
+        self.changed()
         return item
 
     def remove(self, item):
         self._items.remove(item)
         self.item_removed(item)
+        self.changed()
         
     def symmetric_difference_update(self, other_set):
         
@@ -847,12 +889,18 @@ class InstrumentedSet(SetWrapper, InstrumentedCollection):
         for item in added_items:
             self.item_added(item)
 
+        if removed_items or added_items:
+            self.changed()
+
     def update(self, other_set):
         items = other_set - self._items
         self._items.update(items)
 
-        for item in items:
-            self.item_added(item)
+        if items:
+            for item in items:
+                self.item_added(item)
+            
+            self.changed()
 
 
 class InstrumentedDict(DictWrapper, InstrumentedCollection):
@@ -860,7 +908,7 @@ class InstrumentedDict(DictWrapper, InstrumentedCollection):
     def __init__(self, items = None):
         DictWrapper.__init__(self, items)
 
-    def __setitem__(self, key, value):
+    def __set_key(self, key, value):
         prev_value = self._items.get(key, _undefined)
         self._items.__setitem__(key, value)
 
@@ -870,17 +918,28 @@ class InstrumentedDict(DictWrapper, InstrumentedCollection):
                 self.item_removed((key, prev_value))
             
             self.item_added((key, value))
+            return True
+        
+        return False
+
+    def __setitem__(self, key, value):
+        if self.__set_key(key, value):
+            self.changed()
 
     def __delitem__(self, key):
         value = self._items.pop(key)
         self.item_removed((key, value))
+        self.changed()
 
     def clear(self):
         items = self._items.items()
         self._items.clear()
 
-        for item in items:
-            self.item_removed(item)
+        if items:
+            for item in items:
+                self.item_removed(item)
+
+            self.changed()
 
     def pop(self, key, default = _undefined):
 
@@ -893,15 +952,20 @@ class InstrumentedDict(DictWrapper, InstrumentedCollection):
         else:
             del self._items[key]
             self.item_removed((key, value))
+            self.changed()
 
         return value
 
     def popitem(self):
         item = self._items.popitem()
         self.item_removed(item)
+        self.changed()
         return item
 
     def update(self, *args, **kwargs):
+        
+        changed = False
+        
         if args:
             if len(args) != 1:
                 raise TypeError(
@@ -910,11 +974,14 @@ class InstrumentedDict(DictWrapper, InstrumentedCollection):
                 )
         
             for key, value in args[0].iteritems():
-                self[key] = value
+                changed = changed or self.__set_key(key, value)
 
         if kwargs:
             for key, value in kwargs.iteritems():
-                self[key] = value
+                changed = changed or self.__set_key(key, value)
+
+        if changed:
+            self.changed()
  
 
 # Thread safe collections
