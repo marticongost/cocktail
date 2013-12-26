@@ -133,7 +133,7 @@ class Cache(object):
             if tags is not None:
                 lines.append(
                     styled("  Tags:", "light_gray", style = "bold")
-                    + " " + str(tags)
+                    + " " + str(sorted(tags))
                 )
             lines.append("")
             print "\n".join(lines)
