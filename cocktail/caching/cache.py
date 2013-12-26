@@ -3,12 +3,9 @@ u"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
-from time import time
-from calendar import timegm
-from datetime import date, datetime, timedelta
 from cocktail.styled import styled
 from cocktail.modeling import OrderedSet, SetWrapper, ListWrapper, DictWrapper
-from cocktail.dateutils import add_time
+from .utils import normalize_expiration
 from .scope import whole_cache, normalize_scope
 from .exceptions import CacheKeyError
 
@@ -108,8 +105,8 @@ class Cache(object):
         :param value: The value to associate to this key.
         :param expiration: An optional parameter that limits the maximum
             life span of the key in the storage. See the
-            `.normalize_expiration` method for a detailed explanation of all
-            the forms the parameter can take.
+            `~cocktail.caching.utils.normalize_expiration` function for a
+            detailed explanation of all the forms the parameter can take.
         :param tags: An optional set of tags to attach to this key. If given,
             it should be expressed as a collection of strings, each one
             representing a single tag.
@@ -139,7 +136,7 @@ class Cache(object):
             print "\n".join(lines)
 
         if expiration is not None:
-            expiration = self.normalize_expiration(expiration)
+            expiration = normalize_expiration(expiration)
         
         self.storage.store(
             norm_key,
@@ -169,8 +166,8 @@ class Cache(object):
         :param key: The key to update the expiration for.        
         :param expiration: The new expiration date for the key. Can be set to
             None to disable time based expiration for the key; otherwise, check
-            the `.normalize_expiration` method for all the possible ways of
-            specifying the expiration date for the key.
+            the `~cocktail.caching.utils.normalize_expiration` function for all
+            the possible ways of specifying the expiration date for the key.
         :raises cocktail.caching.CacheKeyError: Raised if the key is not
             contained in the storage or has already expired.
         :raises ValueError: Raised if the given expiration key is not valid
@@ -192,7 +189,7 @@ class Cache(object):
             )
 
         if expiration is not None:
-            expiration = self.normalize_expiration(expiration)
+            expiration = normalize_expiration(expiration)
 
         self.storage.set_expiration(norm_key, expiration)
 
@@ -371,45 +368,6 @@ class Cache(object):
             )
         else:
             return key
-
-    @classmethod
-    def normalize_expiration(cls, expiration):
-        """Obtains a normalized representation of an expiration date.
-
-        This method takes an expiration date expressed in any of several
-        possible forms, and normalizes it to an integer timestamp.
-
-        :param expiration: The value to normalize. Can take any of the
-            following forms:
-
-                - An integer will be interpreted as a timestamp.
-                - A floating point number will be floored to an integer and
-                  treated as a timestamp.
-                - A ``timedelta`` object will be added to the current time
-                  to obtain the timestamp.
-                - A ``datetime`` object will be transformed into a timestamp.
-                - A ``date`` object will be be transformed into a timestamp,
-                  assuming a time of 00:00:00.
-        
-        :raises TypeError: Raised if the given value doesn't match any of the
-            acceptable types.
-        """
-        if isinstance(expiration, int):
-            return expiration
-        elif isinstance(expiration, float):
-            return int(expiration)
-        elif isinstance(expiration, timedelta):
-            return int(time() + expiration.total_seconds())
-        elif isinstance(expiration, datetime):
-            return timegm(expiration.utctimetuple())
-        elif isinstance(expiration, date):
-            return timegm(add_time(expiration).utctimetuple())
-        else:
-            raise TypeError(
-                "Invalid expiration: %r. Expected a value of type int, float, "
-                "timedelta, datetime or datetime."
-                % expiration
-            )
 
 
 def _cache_invalidation_commit_handler(success, cache):
