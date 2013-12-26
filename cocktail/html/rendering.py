@@ -5,6 +5,7 @@ u"""Defines the `DocumentMetadata` class.
 """
 from time import time
 from threading import local
+from cocktail.translations import get_language
 from cocktail.modeling import getter, OrderedSet
 from cocktail.caching import Cache, CacheKeyError
 from cocktail.html.documentmetadata import DocumentMetadata
@@ -88,74 +89,110 @@ class Rendering(object):
             _thread_data.generated_id = 0
         
         try:
-            cache_key = None
+            # Bring the element to the 'binding' stage
+            element.bind()
 
-            if self.cache is not None and self.cache.enabled:
+            # Skip hidden elements
+            if not element.visible:
+                return
 
-                element.bind()
+            # Determine if the element needs to be rendered apart, to be
+            # included as a client model
+            rendered_as_client_model = (
+                element.client_model
+                and element.client_model != self.rendered_client_model
+            )
+            if rendered_as_client_model:
+                rendering = self.__class__(
+                    renderer = self.renderer,
+                    cache = self.cache,
+                    rendered_client_model = element
+                )
+            else:
+                rendering = self
 
-                if element.cached and element.rendered:
-                    cache_key = (self.get_cache_key(), element.cache_key)
+            # Possibly render the element from the cache
+            rendered_from_cache = False
 
-                    try:
-                        cached_content, cached_metadata = \
-                            self.cache.retrieve(cache_key)
-                    except CacheKeyError:
-                        pass
-                    else:
-                        self.__content.extend(cached_content)
-                        self.document_metadata.update(cached_metadata)
-                        return
+            if rendering.cache is not None and element.cached:
+                cache_key = (rendering.get_cache_key(), element.cache_key)
+            else:
+                cache_key = None
 
-            element.ready()
+            if cache_key:
+                try:
+                    cached_content, cached_metadata = \
+                        rendering.cache.retrieve(cache_key)
+                except CacheKeyError:
+                    pass
+                else:
+                    rendering.__content.extend(cached_content)
+                    rendering.document_metadata.update(cached_metadata)
+                    rendered_from_cache = True
 
-            # Skip invisible elements
-            if element.rendered:
-            
-                # Delay rendering of client models, unless they are being 
-                # rendered explicitly
-                if element.client_model \
-                and element is not self.rendered_client_model:
-                    if self.collect_metadata:
-                        self.document_metadata \
-                            .client_models[element.client_model] = element
+            # Otherwise, render the element from scratch
+            if not rendered_from_cache:
+                
+                # Bring the element to the 'ready' stage
+                element.ready()
+
+                # Skip hidden elements
+                if not element.rendered:
                     return
 
-                cached = cache_key and element.cached
-
-                # Set up a separate rendering context for cached elements, and
-                # add it to the cache
-                if cached:
-                    target_rendering = self.__class__(
-                        renderer = self.renderer,
-                        collect_metadata = self.collect_metadata,
-                        cache = self.cache,
-                        rendered_client_model = self.rendered_client_model
-                    )                    
-                else:
-                    target_rendering = self
-
-                # Render the element and collect metadata
-                element._render(target_rendering)
-
-                if target_rendering.collect_metadata:
-                    target_rendering.document_metadata.collect(
-                        element,
-                        self.rendered_client_model is not None
+                # Cached elements are rendered using a separate rendering
+                # buffer, which is stored in the rendering cache first and then
+                # replicated to the main rendering buffer.
+                if cache_key:
+                    cache_rendering = rendering.__class__(
+                        renderer = rendering.renderer,
+                        collect_metadata = rendering.collect_metadata,
+                        cache = rendering.cache,
+                        rendered_client_model = rendering.rendered_client_model
                     )
 
-                # Store the rendered result
-                if cached:
-                    self.cache.store(
+                    element._render(cache_rendering)
+
+                    if cache_rendering.collect_metadata:
+                        cache_rendering.document_metadata.collect(
+                            element,
+                            self.rendered_client_model is not None
+                        )
+
+                    tags = element.cache_tags
+                    language = get_language()
+                    if language:
+                        tags.add("lang-" + language)
+
+                    rendering.cache.store(
                         cache_key,
-                        (self.__content, self.document_metadata),
+                        (
+                            cache_rendering.__content,
+                            cache_rendering.document_metadata
+                        ),
                         expiration = element.cache_expiration,
-                        tags = element.cache_tags
+                        tags = tags
                     )
+                    rendering.update(cache_rendering)
+                
+                # Non cached elements are rendered directly onto the main
+                # rendering buffer.
+                else:
+                    element._render(rendering)
 
-                    # After rendering to the cache, replicate the result on the
-                    # main stream as well
-                    self.update(target_rendering)
+                    if rendering.collect_metadata:
+                        rendering.document_metadata.collect(
+                            element,
+                            self.rendered_client_model is not None
+                        )
+
+            # Store the markup and metadata for client models, they will be
+            # included in the document by the HTMLDocument class
+            if rendered_as_client_model and self.collect_metadata:
+                self.document_metadata.client_models[element.client_model] = (
+                    rendering.markup(),
+                    rendering.document_metadata
+                )
 
         finally:
             if setup_id:
