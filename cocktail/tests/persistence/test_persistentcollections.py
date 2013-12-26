@@ -15,18 +15,22 @@ class PersistentCollectionTestCase(TempStorageMixin, TestCase):
     def test_non_bidirectional_default(self):
 
         from cocktail.schema import Collection
-        from cocktail.persistence import PersistentObject, PersistentList
+        from cocktail.persistence import (
+            PersistentObject, PersistentRelationList
+        )
 
         class Foo(PersistentObject):
             bar = Collection()
         
         foo = Foo()
-        self.assertTrue(isinstance(foo.bar, PersistentList))
+        assert isinstance(foo.bar, PersistentRelationList)
 
     def test_non_bidirectional_assignment(self):
 
         from cocktail.schema import Collection
-        from cocktail.persistence import PersistentObject, PersistentList
+        from cocktail.persistence import (
+            PersistentObject, PersistentRelationList
+        )
 
         class Foo(PersistentObject):
             bar = Collection()
@@ -34,7 +38,7 @@ class PersistentCollectionTestCase(TempStorageMixin, TestCase):
         foo = Foo()
         value = [Foo(), Foo()]
         foo.bar = value
-        self.assertTrue(isinstance(foo.bar, PersistentList))
+        assert isinstance(foo.bar, PersistentRelationList)
         self.assertEqual(list(foo.bar), value)
 
     def test_bidirectional_default(self):

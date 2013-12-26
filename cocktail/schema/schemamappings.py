@@ -125,10 +125,16 @@ class RelationMapping(RelationCollection, InstrumentedDict):
 
             previous_content = set(self._items.iteritems())
             self._items = dict(new_content)
+            changed = False
 
             for pair in previous_content - new_content:
+                changed = True
                 self.item_removed(pair)
 
             for pair in new_content - previous_content:
+                changed = True
                 self.item_added(pair)
+
+            if changed:
+                self.changed()
 

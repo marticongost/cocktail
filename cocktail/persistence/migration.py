@@ -11,7 +11,7 @@ from cocktail.modeling import (
     OrderedSet,
     OrderedDict
 )
-from cocktail.events import EventHub, Event
+from cocktail.events import EventHub, Event, when
 from cocktail.typemapping import TypeMapping
 from cocktail.pkgutils import resolve, import_object
 from cocktail.styled import styled
@@ -310,4 +310,40 @@ class MigrationStep(object):
                         break
             for trans in instance.translations.itervalues():
                 delattr(trans, key)
+
+
+step = MigrationStep("Instrument non relational collections")
+
+@when(step.executing)
+def instrument_non_relational_collections(self):
+    
+    from cocktail.modeling import InstrumentedCollection
+    from cocktail import schema
+    from cocktail.persistence import PersistentObject
+
+    for cls in PersistentObject.derived_schemas(recursive = False):
+
+        if not cls.indexed:
+            continue
+
+        for instance in cls.select():
+            for member in instance.__class__.iter_members():
+                if (
+                    isinstance(member, schema.Collection)
+                    and member.name != "translations"
+                ):
+                    value = getattr(instance, "_" + member.name, None)
+                    
+                    if value is not None \
+                    and not isinstance(value, InstrumentedCollection):
+
+                        while True:
+                            wrapped_value = getattr(value, "_items", None)
+                            if wrapped_value is None:
+                                break
+                            else:
+                                value = wrapped_value
+
+                        delattr(instance, "_" + member.name)
+                        instance.set(member, value)
 
