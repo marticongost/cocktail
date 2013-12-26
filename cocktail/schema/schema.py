@@ -322,24 +322,34 @@ class Schema(Member):
         @rtype: (str, L{Member<members.Member>}) read only dict
         """
         if recursive and self.__bases:
-
-            members = {}
-
-            def descend(schema):
-
-                if schema.__bases:
-                    for base in schema.__bases:
-                        descend(base)
-
-                if schema.__members:
-                    for name, member in schema.__members.iteritems():
-                        members[name] = member
-
-            descend(self)
-            return DictWrapper(members)
-
+            return dict(
+                (member.name, member)
+                for member in self.iter_members()
+            )
         else:
             return DictWrapper(self.__members or empty_dict)
+
+    def iter_members(self, recursive = True):
+        """Iterates over all the members defined by the schema and its bases.
+
+        @param recursive: Indicates if the returned dictionary should contain
+            members defined by the schema's bases. This is the default
+            behavior; Setting this parameter to False will exclude all
+            inherited members.
+        @type recursive: False
+
+        @return: An iterable sequence containing the members for the schema and
+            its bases. No guarantees are made about their order.
+        @rtype: L{Member<members.Member>} iterator
+        """
+        if recursive and self.__bases:
+            for base in self.__bases:
+                for member in base.iter_members():
+                    yield member
+
+        if self.__members:
+            for member in self.__members.itervalues():
+                yield member
 
     def get_member(self, name):
         """Obtains one of the schema's members given its name.
