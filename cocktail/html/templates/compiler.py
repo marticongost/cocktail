@@ -495,18 +495,6 @@ class TemplateCompiler(object):
                     identifier,
                     self.pkg_name + "." + self.class_name + "." + identifier
                 ))
-                source.write("%s.cache_tags.add(%r)" % (
-                    identifier,
-                    self.pkg_name
-                ))
-                source.write("%s.cache_tags.add(%r)" % (
-                    identifier,
-                    self.pkg_name + "." + self.class_name
-                ))
-                source.write("%s.cache_tags.add(%r)" % (
-                    identifier,
-                    self.pkg_name + "." + self.class_name + "." + identifier
-                ))
 
             # Attributes and properties
             if elem_tag is not default:
