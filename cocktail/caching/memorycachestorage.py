@@ -8,7 +8,7 @@ from time import time
 from threading import RLock
 from cocktail.modeling import overrides
 from cocktail.styled import styled
-from cocktail.memoryutils import parse_bytes
+from cocktail.memoryutils import parse_bytes, format_bytes
 from .scope import whole_cache, normalize_scope
 from .cachestorage import CacheStorage
 from .exceptions import CacheKeyError
@@ -20,6 +20,7 @@ class MemoryCacheStorage(CacheStorage):
     __memory_limit = None
     __memory_usage = 0
     verbose_invalidation = False
+    verbose_memory_usage = False
 
     def __init__(self):
         self.__lock = RLock()
@@ -49,7 +50,9 @@ class MemoryCacheStorage(CacheStorage):
             not self.__memory_limit
             or memory_limit < self.__memory_limit
         )
+        
         self.__memory_limit = memory_limit
+
         if reducing_size:
             self._apply_memory_limit()
 
@@ -86,6 +89,45 @@ class MemoryCacheStorage(CacheStorage):
     def _get_value_memory_usage(self, value):
         return getsizeof(value)
 
+    memory_usage_bar_width = 50
+
+    memory_usage_colors = [
+        (90, "red"),
+        (70, "brown"),
+        (50, "yellow"),
+        (0, "green")
+    ]
+
+    def print_memory_usage(self):
+
+        if self.memory_limit:            
+            usage = self.memory_usage
+            limit = self.memory_limit
+            ratio = usage / limit
+            percent = int(ratio * 100)
+
+            bar = (
+                "%s / %s" % (
+                    format_bytes(usage),
+                    format_bytes(limit)
+                )
+            ).rjust(self.memory_usage_bar_width)
+
+            for threshold, bar_color in self.memory_usage_colors:
+                if percent >= threshold:
+                    break
+
+            bar_width = int(ratio * self.memory_usage_bar_width)
+
+            info = (
+                styled(bar[:bar_width], "white", bar_color)
+              + styled(bar[bar_width:], "white", "dark_gray")
+            )
+        else:
+            info = format_bytes(self.memory_usage)
+            
+        print "Memory usage: %s\n" % info
+
     def __require_entry(self, key):
         with self.__lock:
             entry = self.__dict.get(key)
@@ -108,6 +150,9 @@ class MemoryCacheStorage(CacheStorage):
             print styled("  " + entry.key, "red")
 
         self.__memory_usage -= entry.size
+
+        if self.verbose_memory_usage:
+            self.print_memory_usage()
 
         del self.__dict[entry.key]
         self.__release(entry)
@@ -187,6 +232,9 @@ class MemoryCacheStorage(CacheStorage):
                     if tag_entries is None:
                         self.__entries_by_tag[tag] = tag_entries = set()
                     tag_entries.add(entry)
+
+            if self.verbose_memory_usage:
+                self.print_memory_usage()
 
             self._apply_memory_limit()
 
