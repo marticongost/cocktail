@@ -9,6 +9,7 @@ u"""
 from threading import RLock
 from time import sleep
 import transaction
+from cocktail.events import when
 from cocktail.persistence.datastore import datastore
 from cocktail.persistence.persistentmapping import PersistentMapping
 from ZODB.POSException import ConflictError
@@ -20,14 +21,15 @@ STEP = 10
 _acquired_ids = {}
 _lock = RLock()
 
-@datastore.connection_opened.append
+@when(datastore.connection_opened)
 def create_container(event):
     root = event.source.root
     if ID_CONTAINER_KEY not in root:
         root[ID_CONTAINER_KEY] = PersistentMapping()
         datastore.commit()
 
-@datastore.storage_changed.append
+@when(datastore.storage_changed)
+@when(datastore.cleared)
 def discard_acquired_ids(event):
     with _lock:
         _acquired_ids.clear()
