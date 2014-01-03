@@ -6,6 +6,7 @@ u"""
 @organization:	Whads/Accent SL
 @since:			November 2007
 """
+from cocktail.caching.utils import nearest_expiration
 from cocktail.html.utils import escape_attrib
 
 XHTML1_STRICT = u"""<!DOCTYPE html
@@ -73,6 +74,13 @@ class Renderer(object):
         
         for child in element.children:
             rendering.render_element(child)
+            
+            # Inherit cache information
+            element.cache_tags.update(child.cache_tags)
+            element.cache_expiration = nearest_expiration(
+                element.cache_expiration,
+                child.cache_expiration
+            )
 
         if tag:
             out(u"</" + tag + u">")

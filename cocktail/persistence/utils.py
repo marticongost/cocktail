@@ -6,6 +6,15 @@ u"""
 from cocktail import schema
 from .datastore import datastore
 
+def solidify_defaults(cls):
+    for instance in cls.select():
+        for member in cls.members().itervalues():
+            if member.translated:
+                for language in instance.translations:
+                    instance.get(member, language)
+            else:
+                instance.get(member)
+
 def is_broken(obj):
     return hasattr(obj, "__Broken_Persistent__")
 
