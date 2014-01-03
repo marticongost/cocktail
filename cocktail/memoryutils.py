@@ -7,11 +7,11 @@ u"""
 # Adapted from a script by Martin Pool, original found at
 # http://mail.python.org/pipermail/python-list/1999-December/018519.html
 _size_suffixes = [
-    (1<<50L, 'Pb'),
-    (1<<40L, 'Tb'), 
-    (1<<30L, 'Gb'), 
-    (1<<20L, 'Mb'), 
-    (1<<10L, 'Kb'),
+    (1<<50L, 'PB'),
+    (1<<40L, 'TB'), 
+    (1<<30L, 'GB'), 
+    (1<<20L, 'MB'), 
+    (1<<10L, 'KB'),
     (1, 'bytes')
 ]
 
