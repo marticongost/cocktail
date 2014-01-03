@@ -6,7 +6,7 @@ http://mail.python.org/pipermail/python-list/1999-December/018519.html
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
-from decimal import Decimal
+from decimal import Decimal, ROUND_DOWN
 import re
 
 _memory_expr = re.compile(
@@ -43,7 +43,7 @@ for base, sizes in _suffixes_by_base.iteritems():
 for size, suffix in _suffixes_by_base[2]:
     _sizes_by_suffix[suffix[0]] = size
 
-def format_bytes(n, base = 10):
+def format_bytes(n, base = 10, decimals_threshold = 10 ** 6):
     """Return a string representing the greek/metric suffix of an amount of
     bytes.
     
@@ -65,7 +65,15 @@ def format_bytes(n, base = 10):
         if n > factor:
             break
 
-    return str(int(n/factor)) + suffix
+    if n >= decimals_threshold:
+        amount = (Decimal(n) / factor).quantize(
+            Decimal('.01'),
+            rounding = ROUND_DOWN
+        )
+    else:
+        amount = int(n / factor)
+
+    return str(amount) + suffix
 
 def parse_bytes(string):
     """Return the number of bytes indicated by the given string."""
