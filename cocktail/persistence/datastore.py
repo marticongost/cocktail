@@ -37,6 +37,10 @@ class DataStore(object):
         datastore.
         """)
 
+    cleared = Event("""
+        An event triggered when all data in the storage is completely cleared.
+        """)
+
     connection_opened = Event("""
         An event triggered when the datastore spawns a new thread-bound
         connection.
@@ -97,7 +101,7 @@ class DataStore(object):
         if root is None:
             root = self.connection.root()
             self._thread_data.root = root
-
+        
         return root
 
     @getter
@@ -134,6 +138,12 @@ class DataStore(object):
         if connection is not None:
             self._thread_data.connection.close()
             self._thread_data.connection = None
+
+    def clear(self):
+        """Clears all the data in the storage."""
+        self.root.clear()
+        self.cleared()
+        self.commit()
 
     def sync(self):
         self._thread_data.root = None
