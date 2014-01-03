@@ -8,6 +8,7 @@ from time import time
 from threading import RLock
 from cocktail.modeling import overrides
 from cocktail.styled import styled
+from cocktail.memoryutils import parse_bytes
 from .scope import whole_cache, normalize_scope
 from .cachestorage import CacheStorage
 from .exceptions import CacheKeyError
@@ -40,6 +41,10 @@ class MemoryCacheStorage(CacheStorage):
         return self.__memory_limit
 
     def _set_memory_limit(self, memory_limit):
+
+        if isinstance(memory_limit, basestring):
+            memory_limit = parse_bytes(memory_limit)
+
         reducing_size = memory_limit and (
             not self.__memory_limit
             or memory_limit < self.__memory_limit
