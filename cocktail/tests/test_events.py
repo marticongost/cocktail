@@ -418,3 +418,24 @@ class EventTestCase(TestCase):
             [Bar.spammed.wrap_callback(Bar.handle_spammed)]
         )
 
+    def test_can_customize_event_info_class(self):
+
+        from cocktail.events import Event, EventInfo, when
+
+        class SpammedEventInfo(EventInfo):
+
+            def bar(self):
+                pass
+
+        class Foo(object):
+            spammed = Event(event_info_class = SpammedEventInfo)
+
+        @when(Foo.spammed)
+        def test(event):
+            assert event.x
+            assert isinstance(event, SpammedEventInfo)
+            event.bar()
+
+        foo = Foo()
+        foo.spammed(x = 1)
+

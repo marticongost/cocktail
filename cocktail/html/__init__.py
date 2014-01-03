@@ -23,7 +23,10 @@ from cocktail.html.renderers import (
     xhtml_renderer,
     xhtml5_renderer
 )
-from cocktail.html.rendering import Rendering
+from cocktail.html.rendering import (
+    Rendering,
+    rendering_cache
+)
 from cocktail.html.element import (
     Element,
     Content,
