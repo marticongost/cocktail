@@ -16,6 +16,7 @@ from cocktail.typemapping import TypeMapping
 from cocktail.pkgutils import resolve, import_object
 from cocktail.styled import styled
 from cocktail.persistence import PersistentSet, datastore
+from cocktail.persistence.utils import is_broken
 
 migration_steps = DictWrapper(OrderedDict())
 
@@ -327,6 +328,10 @@ def instrument_non_relational_collections(self):
             continue
 
         for instance in cls.select():
+            
+            if is_broken(instance):
+                continue
+
             for member in instance.__class__.iter_members():
                 if (
                     isinstance(member, schema.Collection)
