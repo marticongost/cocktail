@@ -45,8 +45,6 @@ class TemplateLoaderCache(ResourceLoader):
         )
 
     def _resource_expired(self, resource):
-        from cocktail.styled import styled
-        print styled("Template expired", "brown"), resource.value
         rendering_cache.clear(scope = [resource.value.view_name])
 
 
