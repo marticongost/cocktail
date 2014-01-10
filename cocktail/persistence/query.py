@@ -188,7 +188,7 @@ class Query(object):
 
     def extend_filters(self, filters):
         self.discard_results()
-        self.__fitlers += self._normalize_filters(filters)
+        self.__filters += self._normalize_filters(filters)
 
     def _get_order(self):
         return self.__order or []
