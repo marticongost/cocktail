@@ -22,7 +22,7 @@ def nearest_expiration(*args):
     for value in args:
         if value is not None:
             value = normalize_expiration(value)
-            if value > now and (expiration is None or value > expiration):
+            if value > now and (expiration is None or value < expiration):
                 expiration = value
 
     return expiration
