@@ -84,6 +84,10 @@ class IBAN(String):
 
     edit_control = "cocktail.html.IBANEntry"
 
+    # Special treatment for the 'reg_expr' attribute (regular expressions don't
+    # support deep copying)
+    _special_copy_keys = String._special_copy_keys | set(["reg_expr"])
+
     def __init__(self, *args, **kwargs):
         String.__init__(self, *args, **kwargs)
         self.add_validation(IBAN.iban_validation_rule)
@@ -94,7 +98,7 @@ class IBAN(String):
 
     @classmethod
     def validate_iban_format(cls, value):
-        value = cls.normalize(value)
+        value = cls.normalization(value)
         from cocktail.styled import styled
 
         # Validate the overall format
@@ -123,7 +127,7 @@ class IBAN(String):
         return True
 
     @classmethod
-    def normalize(cls, value):
+    def normalization(cls, value):
         return value and (
             value
                 .strip()
