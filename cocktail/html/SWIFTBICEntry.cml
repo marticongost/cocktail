@@ -7,12 +7,16 @@ from cocktail.html.databoundcontrol import data_bound
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:py="http://www.whads.com/ns/cocktail/templates">
 
+    <?py-class
+    value = None
+    ?>
+
     <?py
     self.add_resource("/cocktail/styles/SWIFTBICEntry.css")
     self.add_resource("/cocktail/scripts/SWIFTBICEntry.js")
     ?>
 
-    <py:cocktail.html.TextBox py:id="swiftbic_box"/>
+    <py:cocktail.html.TextBox py:id="swiftbic_box" py:value="@{self.value}"/>
 
     <details py:id="swiftbic_explanation">
         <summary>
