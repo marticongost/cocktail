@@ -12,6 +12,7 @@ from cocktail.modeling import (
 )
 from cocktail.iteration import first
 from cocktail.pkgutils import get_full_name
+from cocktail.caching.utils import nearest_expiration
 from cocktail.html.viewnames import get_view_full_name, split_view_name
 from cocktail.html import renderers
 from cocktail.html.rendering import (
@@ -571,6 +572,12 @@ class Element(object):
         self.__cache_tags = tags
 
     cache_tags = property(_get_cache_tags, _set_cache_tags)
+
+    def update_cache_expiration(self, expiration):
+        self.cache_expiration = nearest_expiration(
+            self.cache_expiration,
+            expiration
+        )
 
     # Attributes
     #--------------------------------------------------------------------------
