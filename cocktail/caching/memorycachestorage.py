@@ -212,6 +212,13 @@ class MemoryCacheStorage(CacheStorage):
             self.__update_last_access(entry)
             return entry.value
 
+    @overrides(CacheStorage.retrieve_with_metadata)
+    def retrieve_with_metadata(self, key):
+        with self.__lock:
+            entry = self.__require_entry(key)
+            self.__update_last_access(entry)
+            return (entry.value, entry.expiration, entry.tags)
+
     @overrides(CacheStorage.store)
     def store(self, key, value, expiration = None, tags = None):
         with self.__lock:

@@ -46,7 +46,7 @@ class RESTCacheStorage(object):
         if (400 <= response.status < 500):
             raise CacheKeyError(key)
         
-        if content and response.get("Content-Type") == "application/json":
+        if content and response.get("content-type") == "application/json":
             content = loads(content)
 
         return content
@@ -62,8 +62,17 @@ class RESTCacheStorage(object):
 
     @overrides(CacheStorage.retrieve)
     def retrieve(self, key):
-        value = self._key_request(key, "GET")
+        value = self._key_request(key, "GET", extra_path = "value")
         return self.serializer.unserialize(value)
+
+    @overrides(CacheStorage.retrieve_with_metadata)
+    def retrieve_with_metadata(self, key):
+        data = self._key_request(key, "GET")
+        return (
+            self.serializer.unserialize(data["value"]),
+            data["expiration"],
+            data["tags"]
+        )
 
     @overrides(CacheStorage.store)
     def store(self, key, value, expiration = None, tags = None):

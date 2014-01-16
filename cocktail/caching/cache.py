@@ -94,6 +94,42 @@ class Cache(object):
         else:
             return self.storage.retrieve(norm_key)
 
+    def retrieve_with_metadata(self, key):
+        """Obtains the value, expiration and tags for the given key.
+
+        :param key: The key to retrieve.
+        :return: A tuple containing the value, expiration and tags associated
+            with the indicated key.
+        :raises cocktail.caching.CacheKeyError: Raised if the key is not
+            present in the `.storage` for the cache, or if it has expired.
+        """
+        if not self.enabled or self.storage is None:
+            raise CacheKeyError(key)
+
+        norm_key = self.normalize_key(key)
+
+        if self.verbose:
+            try:
+                value = self.storage.retrieve_with_metadata(norm_key)
+            except CacheKeyError:
+                print (
+                    styled("CACHE", "white", "dark_gray")
+                    + " " + styled("Miss", "red", style = "bold") + "\n"
+                    + styled("  Key:", "light_gray", style = "bold")
+                    + " " + norm_key + "\n"
+                )
+                raise
+            else:
+                print (
+                    styled("CACHE", "white", "dark_gray")
+                    + " " + styled("Hit", "bright_green", style = "bold") + "\n"
+                    + styled("  Key:", "light_gray", style = "bold")
+                    + " " + norm_key + "\n"
+                )
+                return value
+        else:
+            return self.storage.retrieve(norm_key)
+
     def store(self, key, value, expiration = None, tags = None):
         """Inserts or updates a value in the storage.
 
