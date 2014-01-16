@@ -121,14 +121,20 @@ class Rendering(object):
 
             if cache_key:
                 try:
-                    cached_content, cached_metadata = \
-                        rendering.cache.retrieve(cache_key)
+                    cached_value, cached_expiration, cached_tags = \
+                        rendering.cache.retrieve_with_metadata(cache_key)
                 except CacheKeyError:
                     pass
                 else:
+                    cached_content, cached_metadata = cached_value
                     rendering.__content.extend(cached_content)
                     rendering.document_metadata.update(cached_metadata)
                     rendered_from_cache = True
+
+                    if cached_tags:
+                        element.cache_tags.update(cached_tags)
+
+                    element.update_cache_expiration(cached_expiration)
 
             # Otherwise, render the element from scratch
             if not rendered_from_cache:
