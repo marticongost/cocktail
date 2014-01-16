@@ -38,6 +38,19 @@ class CacheStorage(object):
             "%s doesn't implement the retrieve() method" % self
         )
 
+    def retrieve_with_metadata(self, key):
+        """Obtains the value, expiration and tags for the given key.
+
+        :param key: The key to retrieve.
+        :return: A tuple containing the value, expiration and tags associated
+            with the indicated key.
+        :raises cocktail.caching.CacheKeyError: Raised if the key is not
+            present in the storage, or if it has expired.
+        """
+        raise TypeError(
+            "%s doesn't implement the retrieve_with_metadata() method" % self
+        )
+
     def store(self, key, value, expiration = None, tags = None):
         """Inserts or updates a value in the storage.
 

@@ -90,8 +90,12 @@ class KeyController(Controller):
                 raise CacheKeyError(key)
 
         elif method == "GET":
-            cherrypy.response.headers["Content-Type"] = "text/plain"
-            return self.cache.retrieve(self.key)
+            value, expiration, tags = self.cache.retrieve_with_metadata(self.key)
+            return dumps({
+                "value": value,
+                "expiration": expiration,
+                "tags": tags
+            })
 
         elif method == "POST":
             record = loads(cherrypy.request.body.read())
@@ -107,6 +111,11 @@ class KeyController(Controller):
                 raise CacheKeyError(key)
             else:
                 return dumps(True)
+
+    @cherrypy.expose
+    def value(self):
+        cherrypy.response.headers["Content-Type"] = "text/plain"
+        return self.cache.retrieve(self.key)        
 
     @cherrypy.expose
     def expiration(self):
