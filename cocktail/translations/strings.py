@@ -212,7 +212,10 @@ translations.define("Translations",
 translations.define("date format",
     ca = "%d/%m/%Y",
     es = "%d/%m/%Y",
-    en = "%m/%d/%Y"
+    en = "%m/%d/%Y",
+    de = "%d/%m/%Y",
+    fr = "%d/%m/%Y",
+    pt = "%d/%m/%Y"
 )
 
 translations.define("jquery_date format",
