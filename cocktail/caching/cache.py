@@ -128,7 +128,7 @@ class Cache(object):
                 )
                 return value
         else:
-            return self.storage.retrieve(norm_key)
+            return self.storage.retrieve_with_metadata(norm_key)
 
     def store(self, key, value, expiration = None, tags = None):
         """Inserts or updates a value in the storage.
