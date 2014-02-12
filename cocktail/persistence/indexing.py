@@ -263,7 +263,11 @@ def _handle_inserting(event):
         if cls.indexed and cls is not PersistentObject:
             keys = cls.keys
             if id in keys:
-                raise IdCollisionError()
+                raise IdCollisionError(
+                    "Can't insert %r, an object of that type with the same ID "
+                    "already exists"
+                    % obj
+                )
             keys.insert(id)
 
     # Regular indexes

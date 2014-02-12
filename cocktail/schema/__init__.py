@@ -50,6 +50,8 @@ from cocktail.schema.phonenumber import PhoneNumber
 from cocktail.schema.color import Color
 from cocktail.schema.creditcardnumber import CreditCardNumber
 from cocktail.schema.bankaccountnumber import BankAccountNumber
+from cocktail.schema.iban import IBAN
+from cocktail.schema.swiftbic import SWIFTBIC
 from cocktail.schema.codeblock import CodeBlock
 from cocktail.schema.regularexpression import RegularExpression
 from cocktail.schema.errorlist import ErrorList

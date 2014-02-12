@@ -37,6 +37,10 @@ class DataStore(object):
         datastore.
         """)
 
+    cleared = Event("""
+        An event triggered when all data in the storage is completely cleared.
+        """)
+
     connection_opened = Event("""
         An event triggered when the datastore spawns a new thread-bound
         connection.
@@ -97,7 +101,7 @@ class DataStore(object):
         if root is None:
             root = self.connection.root()
             self._thread_data.root = root
-
+        
         return root
 
     @getter
@@ -135,6 +139,12 @@ class DataStore(object):
             self._thread_data.connection.close()
             self._thread_data.connection = None
 
+    def clear(self):
+        """Clears all the data in the storage."""
+        self.root.clear()
+        self.cleared()
+        self.commit()
+
     def sync(self):
         self._thread_data.root = None
         self.connection.sync()
@@ -151,7 +161,10 @@ class DataStore(object):
             thread_transaction_data = WeakKeyDictionary()
             self._thread_data.transaction_data = thread_transaction_data
 
-        transaction = self.connection.transaction_manager.get()
+        transaction = getattr(self._thread_data, "transaction", None)
+        if transaction is None:
+            transaction = self.connection.transaction_manager.get()
+
         transaction_data = thread_transaction_data.get(transaction)
 
         if transaction_data is None and create_if_missing:
@@ -186,8 +199,15 @@ class DataStore(object):
         else:
             unique_after_commit_hooks.add(id)
 
+        def callback_wrapper(success, *args, **kwargs):
+            try:
+                self._thread_data.transaction = transaction
+                return callback(success, *args, **kwargs)                
+            finally:
+                self._thread_data.transaction = None
+
         transaction = self.connection.transaction_manager.get()
-        transaction.addAfterCommitHook(callback, args, kwargs)
+        transaction.addAfterCommitHook(callback_wrapper, args, kwargs)
         return True
 
 datastore = DataStore()

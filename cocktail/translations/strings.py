@@ -213,7 +213,10 @@ translations.define("Translations",
 translations.define("date format",
     ca = "%d/%m/%Y",
     es = "%d/%m/%Y",
-    en = "%m/%d/%Y"
+    en = "%m/%d/%Y",
+    de = "%d/%m/%Y",
+    fr = "%d/%m/%Y",
+    pt = "%d/%m/%Y"
 )
 
 translations.define("jquery_date format",
@@ -2082,3 +2085,89 @@ translations.define(
         % translations("locale", locale = source_locale)
 )
 
+# IBANEntry
+#------------------------------------------------------------------------------
+translations.define("cocktail.html.IBANEntry.iban_explanation.summary",
+    ca = u"Què és l'IBAN?",
+    es = u"¿Qué es el IBAN?",
+    en = u"About IBAN codes"
+)
+
+translations.define("cocktail.html.IBANEntry.iban_explanation",
+    ca = u"""
+        <p>
+            L'IBAN és un format internacional per indicar comptes bancaris,
+            que substitueix els formats nacionals tradicionals. Està suportat
+            a múltiples països, i des del febrer de 2014 el seu ús és
+            obligatori a tot el territori de la Unió Europea.
+        </p>
+        <p>
+            Normalment, <strong>el codi IBAN apareix a la llibreta o a
+            extractes bancaris</strong>. En cas contrari, posi's en contacte amb
+            l'entitat bancària.
+        </p>
+        """,
+    es = u"""
+        <p>
+            IBAN es un formato internacional para números de cuenta bancaria,
+            que sustituye los formatos nacionales tradicionales. Está
+            soportado en múltiples países, y desde febrero de 2014 su uso es
+            obligatorio en todo el territorio de la Unión Europea.
+        </p>
+        <p>
+            Normalmente, <strong>el código IBAN consta en la libreta o
+            extractos bancarios</strong>. De no ser así, póngase en contacto
+            con la entidad bancaria.
+        </p>
+        """,
+    en = u"""
+        <p>
+            IBAN is an international format for bank account identifiers that
+            replaces the old, national formats. It is used in many countries,
+            and from february 2014 its use is mandatory throughout the European
+            Union.
+        </p>
+        <p>
+            Tipically <strong>IBAN codes can be fond on bankbooks or bank
+            statements</strong>. Otherwise, please contact the bank.
+        </p>
+        """
+)
+
+# SWIFTBICEntry
+#------------------------------------------------------------------------------
+translations.define("cocktail.html.SWIFTBICEntry.swiftbic_explanation.summary",
+    ca = u"Què és el BIC?",
+    es = u"¿Qué es el BIC?",
+    en = u"About BIC codes"
+)
+
+translations.define("cocktail.html.SWIFTBICEntry.swiftbic_explanation",
+    ca = u"""
+        <p>
+            BIC és un format internacional per identificar entitats
+            bancàries. A vegades també s'anomena <em>codi SWIFT</em>.        
+            Normalment, <strong>el codi BIC apareix a la llibreta o a extractes
+            bancaris</strong>. En cas contrari, posi's en contacte amb
+            l'entitat bancària.
+        </p>
+        """,
+    es = u"""
+        <p>
+            BIC es un formato internacional para identificar entidades
+            bancarias. A veces también se conoce como <em>código SWIFT</em>.
+            Normalmente <strong>el código BIC aparece en la libreta o en
+            extractos bancarios</strong>. De no ser así, póngase en contacto
+            la entidad bancaria.
+        </p>
+        """,
+    en = u"""
+        <p>
+            BIC is an international format used to specify financial and
+            banking entities. The term <em>SWIFT code</em> is sometimes used
+            interchangeably. Usually <strong>BIC codes can be found on
+            bankbooks or on bank statements</strong>. Otherwise, please contact
+            the bank to request it.
+        </p>
+        """
+)

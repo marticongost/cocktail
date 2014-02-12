@@ -688,3 +688,90 @@ class CopyTestCase(TestCase):
         assert copy.member2.original_member is TestClass.member2
         assert copy.member2.min == 3
 
+
+class CollectionChangeEventsTestCase(TestCase):
+
+    def test_reordering_collection_fires_change_events(self):
+
+        from cocktail.tests.utils import EventLog
+        from cocktail.schema import SchemaObject, Collection
+        
+        class TestClass(SchemaObject):
+            member1 = Collection()
+
+        foo = TestClass()
+        foo.member1 = [1, 2]
+
+        events = EventLog()
+        events.listen(foo_changed = foo.changed)
+
+        foo.member1 = [2, 1]
+        
+        event = events.pop(0)
+        assert event.slot is foo.changed
+        assert event.member is TestClass.member1
+        assert event.value == [2, 1]
+
+    def test_appending_fires_change_events(self):
+
+        from cocktail.tests.utils import EventLog
+        from cocktail.schema import SchemaObject, Collection
+
+        class TestClass(SchemaObject):
+            member1 = Collection()
+
+        foo = TestClass()
+        foo.member1 = [1, 2]
+
+        events = EventLog()
+        events.listen(foo_changed = foo.changed)
+
+        foo.member1.append(3)
+        
+        event = events.pop(0)
+        assert event.slot is foo.changed
+        assert event.member is TestClass.member1
+        assert event.value == [1, 2, 3]
+
+    def test_removing_fires_change_events(self):
+
+        from cocktail.tests.utils import EventLog
+        from cocktail.schema import SchemaObject, Collection
+
+        class TestClass(SchemaObject):
+            member1 = Collection()
+
+        foo = TestClass()
+        foo.member1 = [1, 2, 3]
+
+        events = EventLog()
+        events.listen(foo_changed = foo.changed)
+
+        foo.member1.remove(2)
+
+        event = events.pop(0)
+        assert event.slot is foo.changed
+        assert event.member is TestClass.member1
+        assert event.value == [1, 3]
+
+    def test_inserting_fires_change_events(self):
+
+        from cocktail.tests.utils import EventLog
+        from cocktail.schema import SchemaObject, Collection
+
+        class TestClass(SchemaObject):
+            member1 = Collection()
+
+        foo = TestClass()
+        foo.member1 = [1, 2, 3]
+
+        events = EventLog()
+        events.listen(foo_changed = foo.changed)
+
+        foo.member1.insert(1, 0)
+
+        event = events.pop(0)
+        assert event.slot is foo.changed
+        assert event.member is TestClass.member1
+        assert event.value == [1, 0, 2, 3]
+

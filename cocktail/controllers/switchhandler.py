@@ -12,30 +12,30 @@ else:
     from mimetypes import add_type
     import cherrypy
     from cherrypy.lib import cptools, http
-    from cocktail.cache import Cache
+    from cocktail.resourceloader import ResourceLoader
     from cocktail.controllers.static import handles_content_type
 
     add_type("text/switchcss", ".sss")
 
-    class SSSCache(Cache):
+    class SSSLoader(ResourceLoader):
 
         def load(self, key):
             return SSSStyleSheet(key)
 
-        def _is_current(self, entry, invalidation = None, verbose = False):
+        def _is_current(self, resource, invalidation = None, verbose = False):
 
-            if not Cache._is_current(
-                self, entry, invalidation = invalidation, verbose = verbose
+            if not ResourceLoader._is_current(
+                self, resource, invalidation = invalidation, verbose = verbose
             ):
                 return False
 
             # Reprocess modified files
             try:
-                return entry.creation >= entry.value.get_last_update()
+                return resource.creation >= resource.value.get_last_update()
             except OSError, IOError:
                 return False
 
-    cache = SSSCache()
+    cache = SSSLoader()
 
     @handles_content_type("text/switchcss")
     def switch_css_handler(path, content_type):
