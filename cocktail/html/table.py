@@ -364,7 +364,7 @@ class Table(Element, CollectionDisplay):
     def create_translation_label(self, language):
         label = Element("span")
         label.add_class("translation")
-        label.append(u"(" + translations(language) + u")")
+        label.append(u"(" + translations("locale", locale = language) + u")")
         return label
 
     def add_header_ui(self, header, column, language):

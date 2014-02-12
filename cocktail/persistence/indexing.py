@@ -12,6 +12,7 @@ from BTrees.OOBTree import OOBTree, OOTreeSet
 from cocktail.stringutils import normalize
 from cocktail.modeling import getter
 from cocktail.events import when, Event
+from cocktail.translations import descend_language_tree
 from cocktail import schema
 from cocktail.persistence.datastore import datastore
 from cocktail.persistence.index import SingleValueIndex, MultipleValuesIndex
@@ -155,9 +156,14 @@ def _rebuild_index(self):
     for obj in self.schema.select():
         if obj.indexed and obj._should_index_member(self):
             if self.translated:
+                indexed_languages = set()
                 for language in obj.translations:
-                    value = obj.get(self, language)
-                    add_index_entry(obj, self, value, language)
+                    for lang in descend_language_tree(language):
+                        if lang in indexed_languages:
+                            continue
+                        indexed_languages.add(lang)
+                        value = obj.get(self, lang)
+                        add_index_entry(obj, self, value, lang)
             else:            
                 add_index_entry(obj, self, obj.get(self))
 
@@ -209,21 +215,41 @@ def _handle_declared(event):
 
 @when(PersistentObject.changed)
 def _handle_changed(event):
-    if event.source._should_index_member(event.member) \
-    and event.source.is_inserted \
-    and event.previous_value != event.value:
-        remove_index_entry(
-            event.source,
-            event.member,
-            event.previous_value,
-            event.language
-        )
-        add_index_entry(
-            event.source,
-            event.member,
-            event.value,
-            event.language
-        )
+    obj = event.source
+    if (
+        obj._should_index_member(event.member)
+        and obj.is_inserted
+        and event.previous_value != event.value
+    ):
+        if event.member.translated:
+            for lang in descend_language_tree(event.language):
+                if (
+                    lang == event.language
+                    or lang not in obj.translations
+                ):
+                    remove_index_entry(
+                        event.source,
+                        event.member,
+                        event.previous_value,
+                        lang
+                    )
+                    add_index_entry(
+                        event.source,
+                        event.member,
+                        event.value,
+                        lang
+                    )
+        else:
+            remove_index_entry(
+                event.source,
+                event.member,
+                event.previous_value
+            )
+            add_index_entry(
+                event.source,
+                event.member,
+                event.value
+            )
 
 @when(PersistentObject.inserting)
 def _handle_inserting(event):
@@ -247,9 +273,14 @@ def _handle_inserting(event):
         if obj._should_index_member(member):
 
             if member.translated:
+                indexed_languages = set()
                 for language in obj.translations:
-                    value = obj.get(member, language)
-                    add_index_entry(obj, member, value, language)
+                    for lang in descend_language_tree(language):
+                        if lang in indexed_languages:
+                            continue
+                        indexed_languages.add(lang)
+                        value = obj.get(member, lang)
+                        add_index_entry(obj, member, value, lang)
             else:            
                 add_index_entry(obj, member, obj.get(member))
 
@@ -272,7 +303,10 @@ def _handle_deleting(event):
 
         # Remove the item from the rest of indexes
         if obj.__class__.translated:
-            languages = obj.translations.keys()
+            languages = set()
+            for language in obj.translations:
+                for lang in descend_language_tree(language):
+                    languages.add(lang)
 
         for member in obj.__class__.members().itervalues():
             
@@ -295,17 +329,23 @@ def _handle_removing_translation(event):
     translation = event.translation
 
     if obj.indexed:
+        languages = [
+            lang
+            for lang in descend_language_tree(language)
+            if lang == language or lang not in obj.translations
+        ]
 
         for member in obj.__class__.members().itervalues():
             if member.translated \
             and member.indexed \
             and obj._should_index_member(member):
-                remove_index_entry(
-                    obj,
-                    member,
-                    obj.get(member, language),
-                    language
-                )
+                for lang in languages:
+                    remove_index_entry(
+                        obj,
+                        member,
+                        obj.get(member, lang),
+                        lang
+                    )
 
 def add_index_entry(obj, member, value, language = None):
             
