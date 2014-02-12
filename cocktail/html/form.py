@@ -446,7 +446,7 @@ class Form(Element, DataDisplay):
     def create_language_label(self, member, language):
         label = Element("span")
         label.add_class("language")
-        label.append("(" + translations(language) + ")")
+        label.append("(" + translations("locale", locale = language) + ")")
         return label
 
     def create_required_mark(self, member):

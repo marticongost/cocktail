@@ -13,6 +13,7 @@ from cocktail.pkgutils import get_full_name
 from cocktail.translations.translation import translations
 from cocktail.translations.helpers import (
     ca_possessive,
+    ca_possessive_with_article,
     ca_join,
     ca_either,
     es_join,
@@ -867,6 +868,25 @@ translations.define("DescendsFromFilter.include_self",
 
 # Languages
 #------------------------------------------------------------------------------
+def _translate_locale(locale):
+    trans = translations(locale)
+    if not trans:
+        parts = locale.split("-")
+        if len(parts) == 2:
+            trans = translations(parts[0])
+            if trans:
+                trans += " - %s" % parts[1].upper()
+
+    return trans
+
+translations.define("locale",
+    ca = _translate_locale,
+    es = _translate_locale,
+    en = _translate_locale,
+    fr = _translate_locale,
+    de = _translate_locale
+)
+
 translations.define("ca",
     ca = u"Català",
     es = u"Catalán",
@@ -935,9 +955,11 @@ translations.define("nl",
 )
 
 translations.define("translated into",
-    ca = lambda lang: "en " + translations(lang),
-    es = lambda lang: "en " + translations(lang),
-    en = lambda lang: "in " + translations(lang)
+    ca = lambda lang: "en " + translations("locale", locale = lang),
+    es = lambda lang: "en " + translations("locale", locale = lang),
+    en = lambda lang: "in " + translations("locale", locale = lang),
+    fr = lambda lang: "en " + translations("locale", locale = lang),
+    de = lambda lang: "auf " + translations("locale", locale = lang)
 )
 
 translations.define("cocktail.schema.Member qualified",
@@ -2041,5 +2063,22 @@ translations.define("cocktail.html.TweetButton",
     ca = u"Tuiteja",
     es = u"Tuitea",
     en = u"Tweet"
+)
+
+# html.TranslationDisplay
+#------------------------------------------------------------------------------
+translations.define(
+    "cocktail.html.TranslationDisplay.translation_inheritance_remark",
+    ca = lambda source_locale:
+        u"Traducció heretada %s" 
+        % ca_possessive_with_article(
+            translations("locale", locale = source_locale)
+        ),
+    es = lambda source_locale:
+        u"Traducción heredada de %s"
+        % translations("locale", locale = source_locale),
+    en = lambda source_locale:
+        u"Translation inherited from %s"
+        % translations("locale", locale = source_locale)
 )
 

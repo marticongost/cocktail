@@ -17,6 +17,12 @@ def ca_possessive(text):
     else:
         return u"de " + text
 
+def ca_possessive_with_article(text):
+    if ca_apostrophe(text):
+        return u"de l'" + text
+    else:
+        return u"del " + text
+
 def create_join_function(language, sep1, sep2):
 
     def join(sequence):

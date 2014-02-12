@@ -10,7 +10,11 @@ import sys
 from cocktail.modeling import refine, OrderedSet, InstrumentedDict, DictWrapper
 from cocktail.events import Event, EventHub
 from cocktail.pkgutils import get_full_name
-from cocktail.translations import translations, require_language
+from cocktail.translations import (
+    translations,
+    require_language,
+    iter_language_chain
+)
 from cocktail.schema.schema import Schema
 from cocktail.schema.member import Member
 from cocktail.schema.schemareference import Reference
@@ -249,9 +253,11 @@ class SchemaClass(EventHub, Schema):
                 return self.member
             else:
                 if self.member.translated:
-                    language = require_language(language)
-                    target = instance.translations.get(language)
-                    if target is None:
+                    for language in iter_language_chain(language):
+                        target = instance.translations.get(language)
+                        if target is not None:
+                            break
+                    else:
                         return None
                 else:
                     target = instance
@@ -430,7 +436,8 @@ def _init_translation(cls,
     instance,
     values = None,
     accessor = None,
-    excluded_members = None):
+    excluded_members = None,
+    copy_from_fallback = True):
 
     # Set 'translated_object' and 'language' first, so events for changes in
     # all other members are relayed to the translation owner
@@ -449,6 +456,23 @@ def _init_translation(cls,
         else:
             excluded_members = \
                 set([cls.translated_object, cls.language]) + set(excluded_members)
+
+        # Copy values from the first available fallback translation
+        if (
+            copy_from_fallback
+            and language is not None
+            and translated_object is not None
+        ):
+            languages = iter_language_chain(language)
+            languages.next()
+            get_translation = translated_object.translations.get
+            for lang in languages:
+                base_translation = get_translation(lang)
+                if base_translation is not None:
+                    for key, member in cls.members().iteritems():
+                        if member not in excluded_members:
+                            values.setdefault(key, base_translation.get(key))
+                    break
 
     Schema.init_instance(cls, instance, values, accessor, excluded_members)
 
@@ -618,6 +642,18 @@ class SchemaObject(object):
             language = language)
         self.translations[language] = translation
         return translation
+
+    def get_full_translation_set(self):
+        translations = set()
+        for language in self.translations:
+            translations.update(descend_language_tree(language))
+        return translations
+
+    def get_source_locale(self, locale):
+        translations = self.translations
+        for locale in iter_language_chain(locale):
+            if locale in translations:
+                return locale
 
     def get_searchable_text(self,
         languages, 
