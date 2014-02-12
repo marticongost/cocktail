@@ -8,23 +8,24 @@ u"""
 """
 from time import time, mktime
 from datetime import datetime, date, timedelta
-from cocktail.modeling import DictWrapper, getter
+from cocktail.modeling import DictWrapper
 from cocktail.styled import styled
 
 missing = object()
 
-class Cache(DictWrapper):
+
+class ResourceLoader(DictWrapper):
     
     expiration = None
-    entries = None
+    resources = None
     enabled = True
     updatable = True
     verbose = False
 
     def __init__(self, load = None):
-        entries = {}
-        DictWrapper.__init__(self, entries)
-        self.__entries = entries
+        resources = {}
+        DictWrapper.__init__(self, resources)
+        self.__resources = resources
 
         if load is not None:
             self.load = load
@@ -35,8 +36,8 @@ class Cache(DictWrapper):
             
             oldest_creation_time = time() - self.expiration
 
-            for key, entry in self.__entries.items():
-                if entry.creation < oldest_creation_time:
+            for key, resource in self.__resources.items():
+                if resource.creation < oldest_creation_time:
                     del self[key]
 
     def request(self, key, expiration = None, invalidation = None):        
@@ -44,7 +45,7 @@ class Cache(DictWrapper):
             return self.get_value(key, invalidation = invalidation)
         except KeyError:
             if self.verbose:
-                print styled("CACHE: Generating", "white", "red", "bold"),
+                print styled("ResourceLoader: Generating", "white", "red", "bold"),
                 print key
             value = self.load(key)
             if self.enabled:
@@ -53,19 +54,20 @@ class Cache(DictWrapper):
 
     def get_value(self, key, default = missing, invalidation = None):
         if self.enabled:
-            entry = self.__entries.get(key, None)
+            resource = self.__resources.get(key, None)
 
-            if entry is not None:
+            if resource is not None:
         
                 if self.updatable \
-                and not self._is_current(entry, invalidation, self.verbose):
+                and not self._is_current(resource, invalidation, self.verbose):
                     if default is missing:
-                        raise ExpiredEntryError(entry)
+                        self._resource_expired(resource)
+                        raise ResourceExpired(resource)
                 else:
                     if self.verbose:
-                        print styled("CACHE: Recovering", "white", "green", "bold"),
+                        print styled("ResourceLoader: Recovering", "white", "green", "bold"),
                         print key
-                    return entry.value 
+                    return resource.value 
 
         if default is missing:
             raise KeyError("Undefined cache key: %s" % repr(key))
@@ -74,51 +76,54 @@ class Cache(DictWrapper):
 
     def set_value(self, key, value, expiration = None):
         if self.verbose:
-            print styled("CACHE: Storing", "white", "pink", "bold"),
+            print styled("ResourceLoader: Storing", "white", "pink", "bold"),
             print key,
             if expiration is None:
                 print
             else:
                 print styled("expiration:", "pink"), expiration
-        self.__entries[key] = CacheEntry(key, value, expiration)
+        self.__resources[key] = Resource(key, value, expiration)
 
     def load(self, key):
         pass
 
     def __delitem__(self, key):
-        entry = self.__entries.get(key)
-        if entry:
-            self._entry_removed(entry)
+        resource = self.__resources.get(key)
+        if resource:
+            self._resource_removed(resource)
         else:
             raise KeyError(key)
     
     def pop(self, key, default = missing):
-        entry = self.__entries.get(key)
-        if entry is None:
+        resource = self.__resources.get(key)
+        if resource is None:
             if default is missing:
                 raise KeyError(key)
             return default
         else:
-            del self.__entries[key]
-            self._entry_removed(entry)
-            return entry
+            del self.__resources[key]
+            self._resource_removed(resource)
+            return resource
 
     def clear(self):
-        entries = self.__entries.values()
-        self.__entries.clear()
-        for entry in entries:
-            self._entry_removed(entry)
+        resources = self.__resources.values()
+        self.__resources.clear()
+        for resource in resources:
+            self._resource_removed(resource)
 
-    def _is_current(self, entry, invalidation = None, verbose = False):
+    def _is_current(self, resource, invalidation = None, verbose = False):
 
         # Expiration
-        if entry.has_expired(default_expiration = self.expiration):
+        if resource.has_expired(default_expiration = self.expiration):
             if verbose:
-                print styled("CACHE: Entry expired", "white", "brown", "bold"), entry.key,
-                if entry.expiration is None:
+                print styled(
+                    "ResourceLoader: Resource expired",
+                    "white", "brown", "bold"
+                ), resource.key,
+                if resource.expiration is None:
                     print self.expiration
                 else:
-                    print entry.expiration
+                    print resource.expiration
             
             return False
 
@@ -129,19 +134,25 @@ class Cache(DictWrapper):
         if invalidation is not None:
             if isinstance(invalidation, datetime):
                 invalidation = mktime(invalidation.timetuple())
-            if invalidation > entry.creation:
+            if invalidation > resource.creation:
                 if verbose:
-                    print styled("CACHE: Entry invalidated", "white", "brown", "bold"),
-                    print entry.key, invalidation
+                    print styled(
+                        "ResourceLoader: Resource invalidated",
+                        "white", "brown", "bold"
+                    ),
+                    print resource.key, invalidation
                 return False
 
         return True
 
-    def _entry_removed(self, entry):
+    def _resource_removed(self, resource):
+        pass
+
+    def _resource_expired(self, resource):
         pass
 
 
-class CacheEntry(object):
+class Resource(object):
     
     def __init__(self, key, value, expiration = None):
         self.key = key
@@ -172,9 +183,9 @@ class CacheEntry(object):
             return time() - self.creation >= expiration.total_seconds()
 
 
-class ExpiredEntryError(KeyError):
+class ResourceExpired(KeyError):
 
-    def __init__(self, entry):
-        KeyError.__init__(self, "Cache key expired: %s" % entry.key)
-        self.entry = entry
+    def __init__(self, resource):
+        KeyError.__init__(self, "Resource expired: %s" % resource.key)
+        self.resource = resource
 

@@ -6,8 +6,6 @@ cocktail.__autoId = 0;
 cocktail.__iframeId = 0;
 cocktail.__bindings = [];
 cocktail.__bindingId = 0;
-cocktail.__clientParams = {};
-cocktail.__clientCode = {};
 
 cocktail.init = function (root) {
     
@@ -17,42 +15,6 @@ cocktail.init = function (root) {
     }
     
     root = root || document.body;
-
-    // Set server supplied parameters
-    var remainingParams = {};
-
-    for (var id in cocktail.__clientParams) {
-        var target = cocktail._findById(root, id);
-        var params = cocktail.__clientParams[id];
-        if (target) {
-            for (var key in params) {
-                target[key] = params[key];
-            }
-        }
-        else {
-            remainingParams[id] = params;
-        }
-    }
-
-    cocktail.__clientParams = remainingParams;
-
-    // Apply server supplied code
-    var remainingCode = {};
-
-    for (var id in cocktail.__clientCode) {
-        var target = cocktail._findById(root, id);
-        var code = cocktail.__clientCode[id];
-        if (target) {
-            for (var i = 0; i < code.length; i++) {
-                code[i].call(target);
-            }
-        }
-        else {
-            remainingCode[id] = code;
-        }
-    }
-
-    cocktail.__clientCode = remainingCode;
 
     // Apply bindings
     for (var i = 0; i < cocktail.__bindings.length; i++) {
@@ -159,6 +121,20 @@ cocktail.bind = function (/* varargs */) {
     }
     return binding;
 }
+
+cocktail.bind("[data-cocktail-params]", function ($element) {
+    var json = this.getAttribute("data-cocktail-params");
+    var params = jQuery.parseJSON(json);
+    for (var key in params) {
+        this[key] = params[key];
+    }
+});
+
+cocktail.bind("[data-cocktail-code]", function ($element) {
+    var code = this.getAttribute("data-cocktail-code");
+    var func = new Function(code);
+    func.call(this);
+});
 
 cocktail._clientModel = function (modelId, partId /* optional */) {
     var model = this.__clientModels[modelId];

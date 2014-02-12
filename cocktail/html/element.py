@@ -1,6 +1,7 @@
 #-*- coding: utf-8 -*-
 from time import time
 from warnings import warn
+from simplejson import dumps
 from cocktail.modeling import (
     getter,
     classgetter,
@@ -11,7 +12,8 @@ from cocktail.modeling import (
 )
 from cocktail.iteration import first
 from cocktail.pkgutils import get_full_name
-from cocktail.html.viewnames import get_view_full_name
+from cocktail.caching.utils import nearest_expiration
+from cocktail.html.viewnames import get_view_full_name, split_view_name
 from cocktail.html import renderers
 from cocktail.html.rendering import (
     Rendering,
@@ -214,6 +216,9 @@ class Element(object):
             if "styled_class" not in members:
                 cls.styled_class = True
 
+            if "class_provides_cache_tag" not in members:
+                cls.class_provides_cache_tag = True
+
             for c in cls._classes:
                 if getattr(c, "styled_class", False):
                     css_classes.append(c.__name__)
@@ -283,7 +288,7 @@ class Element(object):
             by those elements with `caching enabled <cached>`. Setting this
             parameter to None disables use of the cache for this rendering
             operation.
-        :type cache: `~cocktail.cache.Cache`
+        :type cache: `~cocktail.caching.Cache`
 
         :return: The HTML code for the element, embeded within a full HTML
             page.
@@ -485,12 +490,11 @@ class Element(object):
                 for handler in self.__ready_handlers:
                     handler()
 
-            if self.__client_params or self.__client_code:
-                self.require_id()
-
             if self.member: 
                 self.add_class(self.member.__class__.__name__)
 
+            self.__transmit_client_params()
+            self.__transmit_client_code()
             self.__is_ready = True
 
     def when_ready(self, handler):
@@ -521,13 +525,59 @@ class Element(object):
     # Cached content
     #--------------------------------------------------------------------------
     cached = False
+    __cache_key = None
+    __cache_key_qualifiers = None
+    __cache_tags = None
     cache_expiration = None
+    class_provides_cache_tag = False
 
-    def get_cache_key(self):
-        raise KeyError("%s doesn't define a cache key" % self)
+    def _get_cache_key(self):
+        cache_key = self.__cache_key
 
-    def get_cache_invalidation(self):
-        return None
+        if cache_key is None:
+            cache_key = self.view_name
+
+        if self.__cache_key_qualifiers:
+            cache_key = (cache_key,) + self.__cache_key_qualifiers
+
+        return cache_key
+
+    def _set_cache_key(self, cache_key):
+        self.__cache_key = cache_key
+
+    cache_key = property(_get_cache_key, _set_cache_key)
+
+    def qualify_cache_key(self, *args):
+        if self.__cache_key_qualifiers is None:
+            self.__cache_key_qualifiers = args
+        else:
+            self.__cache_key_qualifiers += args
+
+    def _get_cache_tags(self):
+        if self.__cache_tags is None:
+            self.__cache_tags = set()
+
+            for cls in self.__class__.__mro__:
+                if cls is Element:
+                    break
+                if getattr(cls, "class_provides_cache_tag", False):
+                    self.__cache_tags.add(cls.view_name)
+
+        return self.__cache_tags
+
+    def _set_cache_tags(self, tags):
+        if tags is not None:
+            tags = set(tags)
+            tags.add(self.view_name)
+        self.__cache_tags = tags
+
+    cache_tags = property(_get_cache_tags, _set_cache_tags)
+
+    def update_cache_expiration(self, expiration):
+        self.cache_expiration = nearest_expiration(
+            self.cache_expiration,
+            expiration
+        )
 
     # Attributes
     #--------------------------------------------------------------------------
@@ -1165,16 +1215,16 @@ class Element(object):
 
     # Client side element parameters
     #--------------------------------------------------------------------------
-    
+    def __transmit_client_params(self):
+        if self.__client_params is not None:
+            self["data-cocktail-params"] = dumps(self.__client_params)
+
     @getter
     def client_params(self):
         """A dictionary with the client side parameters for the element.
     
         Each parameter in this dictionary will be relayed client side as an
         attribute of the element's DOM element, using a JSON encoder.
-
-        Client side parameters will only be rendered if a
-        `full page rendering <render_page>` is requested.
         """
         if self.__client_params is None:
             return empty_dict
@@ -1231,10 +1281,13 @@ class Element(object):
     
     # Client side element initialization code
     #--------------------------------------------------------------------------
-    
+    def __transmit_client_code(self):
+        if self.__client_code is not None:
+            self["data-cocktail-code"] = "".join(self.__client_code)
+
     @getter
     def client_code(self):
-        """A dictionary containing the snippets of javascript code attached to
+        """A list containing the snippets of javascript code attached to
         the element.
 
         Code attached using this mechanism will be executed as soon as the DOM
@@ -1374,6 +1427,7 @@ class Content(Element):
         as an unicode string.
     """
     styled_class = False
+    class_provides_cache_tag = False
     value = None
     overlays_enabled = False
 
@@ -1416,6 +1470,8 @@ class PlaceHolder(Content):
         
         A callable that produces the content for the placeholder.    
     """
+    class_provides_cache_tag = False
+
     def __init__(self, expression):
         Content.__init__(self)
         self.expression = expression

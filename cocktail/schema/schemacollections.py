@@ -279,10 +279,20 @@ class RelationCollection(object):
     member = None
 
     def item_added(self, item):
-        _update_relation("relate", self.owner, item, self.member)
+        if self.member.related_end:
+            _update_relation("relate", self.owner, item, self.member)
         
     def item_removed(self, item):
-        _update_relation("unrelate", self.owner, item, self.member)
+        if self.member.related_end:
+            _update_relation("unrelate", self.owner, item, self.member)
+
+    def changed(self):
+        self.owner.changed(
+            member = self.member,
+            previous_value = None,
+            language = None,
+            value = self
+        )
 
 
 class RelationList(RelationCollection, InstrumentedList):
@@ -297,9 +307,12 @@ class RelationList(RelationCollection, InstrumentedList):
 
     def set_content(self, new_content):
 
+        changed = False
+
         if not new_content:
             while self._items:
-                self.pop(0)
+                changed = True
+                self.pop(0, _trigger_changed = False)
         else:
             if not hasattr(new_content, "__iter__") \
             or not hasattr(new_content, "__getitem__"):
@@ -311,8 +324,10 @@ class RelationList(RelationCollection, InstrumentedList):
             diff = SequenceMatcher(None, self._items, new_content)
             previous_content = self._items
             self._items = new_content
-            
+            changed = False
+
             for tag, alo, ahi, blo, bhi in diff.get_opcodes():
+                changed = True
                 if tag == "replace":
                     for item in previous_content[alo:ahi]:
                         self.item_removed(item)
@@ -326,6 +341,9 @@ class RelationList(RelationCollection, InstrumentedList):
                         self.item_added(item)
                 elif tag == "equal":
                     pass
+
+        if changed:
+            self.changed()
 
 
 class RelationSet(RelationCollection, InstrumentedSet):
@@ -345,12 +363,18 @@ class RelationSet(RelationCollection, InstrumentedSet):
             
             previous_content = self._items
             self._items = new_content
+            changed = False
 
             for item in previous_content - new_content:
+                changed = True
                 self.item_removed(item)
 
             for item in new_content - previous_content:
+                changed = True
                 self.item_added(item)
+
+            if changed:
+                self.changed()
 
 
 class RelationOrderedSet(RelationCollection, InstrumentedOrderedSet):
@@ -365,9 +389,12 @@ class RelationOrderedSet(RelationCollection, InstrumentedOrderedSet):
 
     def set_content(self, new_content):
 
+        changed = False
+
         if new_content is None:
             while self._items:
-                self.pop(0)
+                changed = True
+                self.pop(0, _trigger_changed = False)
         else:
             previous_set = set(self._items)
             new_set = set(new_content)
@@ -378,8 +405,13 @@ class RelationOrderedSet(RelationCollection, InstrumentedOrderedSet):
             self._items = new_content
 
             for item in previous_set - new_set:
+                changed = True
                 self.item_removed(item)
 
             for item in new_set - previous_set:
+                changed = True
                 self.item_added(item)
+
+        if changed:
+            self.changed()
 

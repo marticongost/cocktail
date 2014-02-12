@@ -13,7 +13,8 @@ from cocktail.pkgutils import get_full_name
 from cocktail.translations import (
     translations,
     require_language,
-    iter_language_chain
+    iter_language_chain,
+    NoActiveLanguageError
 )
 from cocktail.schema.schema import Schema
 from cocktail.schema.member import Member
@@ -245,8 +246,15 @@ class SchemaClass(EventHub, Schema):
             self.__priv_key = "_" + member.name
             self._bidirectional_reference = \
                 isinstance(member, Reference) and member.bidirectional
+            self._is_collection = isinstance(member, Collection)
             self._bidirectional_collection = \
-                isinstance(member, Collection) and member.bidirectional
+                self._is_collection and member.bidirectional
+            self._translations_collection = (
+                self._is_collection
+                and member.schema
+                and member.schema.translated
+                and member is member.schema.get_member("translations")
+            )
 
         def __get__(self, instance, type = None, language = None):
             if instance is None:
@@ -336,8 +344,8 @@ class SchemaClass(EventHub, Schema):
             
             preserve_value = False
 
-            # Bidirectional collections require special treatment:
-            if self._bidirectional_collection:
+            # Collections require special treatment:
+            if self._is_collection and not self._translations_collection:
                 
                 # When setting the collection for the first time, wrap it with an
                 # instrumented instance of the appropiate type
@@ -346,7 +354,7 @@ class SchemaClass(EventHub, Schema):
                     value = self.instrument_collection(value, target, member)
                     setattr(target, self.__priv_key, value)
 
-                    if value:
+                    if self._bidirectional_collection and value:
                         for item in value:
                             _update_relation("relate", instance, item, member)
 
@@ -359,7 +367,8 @@ class SchemaClass(EventHub, Schema):
                         setattr(target, self.__priv_key, value)
                         # Set an existing collection to None: unrelate all
                         # its items
-                        if previous_value is not None:
+                        if self._bidirectional_collection \
+                        and previous_value is not None:
                             for previously_related_item in previous_value:
                                 _update_relation(
                                     "unrelate",
@@ -370,7 +379,7 @@ class SchemaClass(EventHub, Schema):
                     else:
                         previous_value.set_content(value)
                         preserve_value = True
-            
+
             # Set the value
             else:
                 setattr(target, self.__priv_key, value)
@@ -583,15 +592,27 @@ class SchemaObject(object):
 
         self.__class__.init_instance(self, values, SchemaObjectAccessor)
         self.__class__.instantiated(instance = self, values = values)
-        
+
     def __repr__(self):
+        label = self.__class__.__name__
         
-        if self.__class__.primary_member:
-            id = getattr(self, self.__class__.primary_member.name, None)
+        primary_member = self.__class__.primary_member
+        if primary_member:
+            id = getattr(self, primary_member.name, None)
             if id is not None:
-                return "%s #%s" % (self.__class__.full_name, self.id)
-        
-        return self.__class__.full_name + " instance"
+                label += " #%s" % id
+
+        try:
+            trans = translations(self, discard_generic_translation = True)
+            if trans:
+                label += " (%s)" % trans
+        except NoActiveLanguageError:
+            pass
+
+        if isinstance(label, unicode):
+            label = label.encode("utf-8")
+
+        return label
 
     def __translate__(self, language, **kwargs):
         
@@ -1025,3 +1046,4 @@ class TranslationMapping(DictWrapper):
         if kwargs:
             for key, value in kwargs.iteritems():
                 self[key] = value
+
