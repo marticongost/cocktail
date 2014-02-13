@@ -14,6 +14,7 @@ from cocktail.translations import (
     translations,
     require_language,
     iter_language_chain,
+    descend_language_tree,
     NoActiveLanguageError
 )
 from cocktail.schema.schema import Schema
@@ -295,20 +296,37 @@ class SchemaClass(EventHub, Schema):
             
             member = self.member
 
-            # For translated members, make sure the translation for the specified
-            # language exists, and then resolve the assignment against it
-            if member.translated:
+            if member.translated:               
+
                 language = require_language(language)
+
+                # Determine which translations are affected by the change, by
+                # following the language fallback tree. This is recorded and
+                # supplied to the changing / changed events. The main use case for
+                # this information is field indexing.
+                translation_changes = {}
+
+                for derived_lang \
+                in instance.iter_derived_translations(language):
+                    translation_changes[derived_lang] = \
+                        instance.get(member, language = derived_lang)
+
+                # For translated members, make sure the translation for the specified
+                # language exists, and then resolve the assignment against it
                 target = instance.translations.get(language)
                 if target is None:
                     target = instance.new_translation(language)
             else:
                 target = instance
+                translation_changes = None
 
-            # Value normalization and hooks
             if previous_value is undefined:
                 previous_value = getattr(target, self.__priv_key, None)
 
+            if translation_changes is not None:
+                translation_changes[language] = previous_value
+
+            # Value normalization and hooks
             if member.normalization:
                 value = member.normalization(value)
 
@@ -327,7 +345,8 @@ class SchemaClass(EventHub, Schema):
                     member = member.translation_source or member,
                     language = language,
                     value = value,
-                    previous_value = previous_value
+                    previous_value = previous_value,
+                    translation_changes = translation_changes
                 )
 
                 value = event.value
@@ -337,7 +356,8 @@ class SchemaClass(EventHub, Schema):
                         member = member.translation_source,
                         language = instance.language,
                         value = value,
-                        previous_value = previous_value
+                        previous_value = previous_value,
+                        translation_changes = translation_changes
                     )
 
                 value = event.value
@@ -408,7 +428,8 @@ class SchemaClass(EventHub, Schema):
                     member = member.translation_source or member,
                     language = language,
                     value = value,
-                    previous_value = previous_value
+                    previous_value = previous_value,
+                    translation_changes = translation_changes
                 )
 
                 if member.translation_source:
@@ -416,7 +437,8 @@ class SchemaClass(EventHub, Schema):
                         member = member.translation_source,
                         language = instance.language,
                         value = value,
-                        previous_value = previous_value
+                        previous_value = previous_value,
+                        translation_changes = translation_changes
                     )
 
         def instrument_collection(self, collection, owner, member):
@@ -524,6 +546,11 @@ class SchemaObject(object):
 
         @ivar previous_value: The current value for the affected member, before
             any change takes place.
+
+        @ivar translation_changes: A dictionary indicating the translations
+            that will be affected by this change, and their respective values
+            before the change takes effect. Will be None if the changed member
+            is not translatable.
         """)
 
     changed = Event(doc = """
@@ -540,6 +567,11 @@ class SchemaObject(object):
 
         @ivar previous_value: The value that the member had before the current
             change.
+
+        @ivar translation_changes: A dictionary indicating the translations
+            that will be affected by this change, and their respective values
+            before the change took effect. Will be None if the changed member
+            is not translatable.
         """)
 
     related = Event(doc = """
@@ -664,11 +696,18 @@ class SchemaObject(object):
         self.translations[language] = translation
         return translation
 
-    def get_full_translation_set(self):
-        translations = set()
-        for language in self.translations:
-            translations.update(descend_language_tree(language))
-        return translations
+    def iter_derived_translations(self, language = None, include_self = False):
+        language = require_language(language)
+        for derived_lang in descend_language_tree(
+            language,
+            include_self = include_self
+        ):
+            for chain_lang in iter_language_chain(derived_lang):
+                if chain_lang == language:
+                    yield derived_lang
+                    break
+                elif chain_lang in self.translations:
+                    break
 
     def get_source_locale(self, locale):
         translations = self.translations

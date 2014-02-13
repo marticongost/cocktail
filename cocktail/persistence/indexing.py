@@ -12,7 +12,7 @@ from BTrees.OOBTree import OOBTree, OOTreeSet
 from cocktail.stringutils import normalize
 from cocktail.modeling import getter
 from cocktail.events import when, Event
-from cocktail.translations import descend_language_tree
+from cocktail.translations import iter_language_chain, descend_language_tree
 from cocktail import schema
 from cocktail.persistence.datastore import datastore
 from cocktail.persistence.index import SingleValueIndex, MultipleValuesIndex
@@ -222,23 +222,19 @@ def _handle_changed(event):
         and event.previous_value != event.value
     ):
         if event.member.translated:
-            for lang in descend_language_tree(event.language):
-                if (
-                    lang == event.language
-                    or lang not in obj.translations
-                ):
-                    remove_index_entry(
-                        event.source,
-                        event.member,
-                        event.previous_value,
-                        lang
-                    )
-                    add_index_entry(
-                        event.source,
-                        event.member,
-                        event.value,
-                        lang
-                    )
+            for lang, previous_value in event.translation_changes.iteritems():
+                remove_index_entry(
+                    event.source,
+                    event.member,
+                    previous_value,
+                    lang
+                )
+                add_index_entry(
+                    event.source,
+                    event.member,
+                    event.value,
+                    lang
+                )
         else:
             remove_index_entry(
                 event.source,
@@ -329,27 +325,41 @@ def _handle_deleting(event):
 @when(PersistentObject.removing_translation)
 def _handle_removing_translation(event):
     obj = event.source
-    language = event.language
+    removed_language = event.language
     translation = event.translation
 
     if obj.indexed:
-        languages = [
-            lang
-            for lang in descend_language_tree(language)
-            if lang == language or lang not in obj.translations
-        ]
+        for member in obj.__class__.iter_members():
+            if (
+                member.translated
+                and member.indexed
+                and obj._should_index_member(member)
+            ):
+                value = obj.get(member, removed_language)
 
-        for member in obj.__class__.members().itervalues():
-            if member.translated \
-            and member.indexed \
-            and obj._should_index_member(member):
-                for lang in languages:
-                    remove_index_entry(
-                        obj,
-                        member,
-                        obj.get(member, lang),
-                        lang
-                    )
+                # Remove index entries for the removed language and all its
+                # derived translations
+                for lang in obj.iter_derived_translations(
+                    removed_language,
+                    include_self = True
+                ):
+                    remove_index_entry(obj, member, value, lang)
+                    
+                    # Add index entries for derived translations that now
+                    # inherit their values from a different fallback language.
+                    if lang != removed_language:
+                        for fallback in iter_language_chain(lang):
+                            if (
+                                fallback != removed_language
+                                and fallback in obj.translations
+                            ):
+                                add_index_entry(
+                                    obj,
+                                    member,
+                                    obj.get(member, fallback),
+                                    lang
+                                )
+                                break
 
 def add_index_entry(obj, member, value, language = None):
             

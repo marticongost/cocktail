@@ -76,6 +76,8 @@ def fallback_languages_context(fallback_chains):
     prev_fallback = getattr(_thread_data, "fallback", None)
     prev_derived = getattr(_thread_data, "derived", None)
     try:
+        _thread_data.fallback = {}
+        _thread_data.derived = {}
         for language, chain in fallback_chains.iteritems():
             set_fallback_languages(language, chain)
         yield None
@@ -84,33 +86,30 @@ def fallback_languages_context(fallback_chains):
         _thread_data.derived = prev_derived
 
 def set_fallback_languages(language, fallback_languages):
+
     fallback_map = getattr(_thread_data, "fallback", None)
     if fallback_map is None:
-        _thread_data.fallback = fallback_map = {
-            language: OrderedSet(fallback_languages)
-        }
+        _thread_data.fallback = fallback_map = {}
+
+    derived_map = getattr(_thread_data, "derived", None)
+    if derived_map is None:
+        _thread_data.derived = derived_map = {}
     else:
-        derived_map = getattr(_thread_data, "derived", None)
+        prev_fallback_languages = fallback_map.get(language)
+        if prev_fallback_languages:
+            for prev_fallback_language in prev_fallback_languages:
+                derived_languages = derived_map.get(prev_fallback_language)
+                if derived_languages is not None:
+                    derived_languages.remove(language)
 
-        if derived_map is not None:
-            prev_fallback_languages = fallback_map.get(language)
-            if prev_fallback_languages:
-                for prev_fallback_language in prev_fallback_languages:
-                    derived_languages = derived_map.get(prev_fallback_language)
-                    if derived_languages is not None:
-                        derived_languages.remove(language)
+    fallback_map[language] = OrderedSet(fallback_languages)
 
-        fallback_map[language] = OrderedSet(fallback_languages)
-
-        if derived_map is None:
-            _thread_data.derived = derived_map = {}
-        
-        for fallback_language in fallback_languages:
-            derived_languages = derived_map.get(fallback_language)
-            if derived_languages is None:
-                derived_map[fallback_language] = OrderedSet([language])
-            else:
-                derived_languages.append(language)
+    for fallback_language in fallback_languages:
+        derived_languages = derived_map.get(fallback_language)
+        if derived_languages is None:
+            derived_map[fallback_language] = OrderedSet([language])
+        else:
+            derived_languages.append(language)
 
 def add_fallback_language(language, fallback_language):
     fallback_languages = []
@@ -197,8 +196,6 @@ class TranslationsRepository(DictWrapper):
                         
                 for lang in iter_language_chain(language):
                     value = self(type_key, lang, instance = obj, **kwargs)
-                    from cocktail.styled import styled
-                    print type_key, styled(lang, "brown"), styled(value, "yellow")
                     if value:
                         return value
         
