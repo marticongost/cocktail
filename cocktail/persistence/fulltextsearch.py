@@ -10,6 +10,7 @@ from zope.index.text.lexicon import StopWordRemover
 from zope.index.text.okapiindex import OkapiIndex
 from cocktail.events import when
 from cocktail import schema
+from cocktail.translations import iter_language_chain
 from cocktail.schema.expressions import normalize
 from cocktail.persistence.datastore import datastore
 from cocktail.persistence.persistentmapping import PersistentMapping
@@ -122,11 +123,9 @@ def _create_full_text_index(self):
 
 PersistentClass.create_full_text_index = _create_full_text_index
 schema.String.create_full_text_index = _create_full_text_index
-    
-def _persistent_class_index_text(self, obj, language = None):
-    index = self.get_full_text_index(language)
-    index.unindex_doc(obj.id)
-    
+
+def _get_object_text(obj, language = None):
+
     chunks = []
     
     for chunk in obj.get_searchable_text([language]):
@@ -148,19 +147,45 @@ def _persistent_class_index_text(self, obj, language = None):
 
         chunks.append(chunk)
     
-    text = normalize(u" ".join(chunks))
+    return normalize(u" ".join(chunks))
 
-    if text:        
-        index.index_doc(obj.id, text)
+def _persistent_class_index_text(self, obj, language = None):
+
+    text = _get_object_text(obj, language)
+
+    if language is None:
+        translations = (None,)
+    else:
+        translations = obj.iter_derived_translations(
+            language,
+            include_self = True
+        )
+    
+    for lang in translations:
+        index = self.get_full_text_index(lang)
+        index.unindex_doc(obj.id)
+        if text:
+            index.index_doc(obj.id, text)
 
 PersistentClass.index_text = _persistent_class_index_text
 
 def _string_index_text(self, obj, language = None):
-    index = self.get_full_text_index(language)    
-    index.unindex_doc(obj.id)
+
+    if language is None:
+        translations = (None,)
+    else:
+        translations = obj.iter_derived_translations(
+            language,
+            include_self = True
+        )
+
     text = obj.get(self, language)
     if text:
         text = normalize(text)
+
+    for lang in translations:
+        index = self.get_full_text_index(lang)
+        index.unindex_doc(obj.id)
         if text:            
             index.index_doc(obj.id, text)
 
@@ -246,6 +271,54 @@ def _handle_inserting(event):
                     member.index_text(obj, language)
             else:
                 member.index_text(obj)
+
+@when(PersistentObject.removing_translation)
+def _handle_translation_removed(event):
+
+    obj = event.source
+    id = obj.id
+    removed_language = event.language
+    
+    translated_members = []
+
+    if obj._should_index_member_full_text(obj.__class__):
+        translated_members.append(obj.__class__)
+
+    translated_members.extend(
+        member
+        for member in obj.__class__.iter_members()
+        if member.translated
+        and obj._should_index_member_full_text(member)
+    )
+
+    for lang in obj.iter_derived_translations(
+        removed_language,
+        include_self = True
+    ):
+        for member in translated_members:
+            index = member.get_full_text_index(lang)
+            index.unindex_doc(id)
+
+        if lang != removed_language:
+            for chain_lang in iter_language_chain(lang):
+                if (
+                    chain_lang != removed_language
+                    and chain_lang in obj.translations
+                ):
+                    for member in translated_members:
+
+                        if isinstance(member, type):
+                            text = _get_object_text(obj, chain_lang)
+                        else:
+                            text = obj.get(member, chain_lang)
+                            if text:
+                                text = normalize(text)
+
+                        if text:
+                            index = member.get_full_text_index(lang)
+                            index.index_doc(id, text)
+                        
+                    break
 
 @when(PersistentObject.deleting)
 def _handle_deleting(event):
