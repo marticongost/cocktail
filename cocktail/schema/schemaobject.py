@@ -296,9 +296,16 @@ class SchemaClass(EventHub, Schema):
             
             member = self.member
 
-            if member.translated:               
+            if member.translated or member.translation_source:
 
-                language = require_language(language)
+                if member.translation_source:
+                    translated_member = member.translation_source
+                    translated_object = instance.translated_object
+                    language = instance.language
+                else:
+                    translated_member = member
+                    translated_object = instance
+                    language = require_language(language)
 
                 # Determine which translations are affected by the change, by
                 # following the language fallback tree. This is recorded and
@@ -307,15 +314,21 @@ class SchemaClass(EventHub, Schema):
                 translation_changes = {}
 
                 for derived_lang \
-                in instance.iter_derived_translations(language):
+                in translated_object.iter_derived_translations(language):
                     translation_changes[derived_lang] = \
-                        instance.get(member, language = derived_lang)
+                        translated_object.get(
+                            translated_member,
+                            language = derived_lang
+                        )
 
                 # For translated members, make sure the translation for the specified
                 # language exists, and then resolve the assignment against it
-                target = instance.translations.get(language)
-                if target is None:
-                    target = instance.new_translation(language)
+                if member.translated:
+                    target = instance.translations.get(language)
+                    if target is None:
+                        target = instance.new_translation(language)
+                else:
+                    target = instance
             else:
                 target = instance
                 translation_changes = None
