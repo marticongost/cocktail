@@ -254,6 +254,10 @@
     jQuery(function () {
         jQuery(document).keydown(function (e) {
 
+            if (!focusedSelectable) {
+                return;
+            }
+
             var key = e.charCode || e.keyCode;
             var multipleSelection = (focusedSelectable.selectionMode == cocktail.MULTIPLE_SELECTION);
 
