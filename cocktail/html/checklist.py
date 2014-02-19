@@ -76,6 +76,7 @@ class CheckList(Selector):
     def create_entry(self, value, label, selected):
 
         entry = Element()
+        entry.add_class("entry")
 
         entry.check = CheckBox()
         entry.check["name"] = self.name
