@@ -164,11 +164,16 @@ class SchemaClass(EventHub, Schema):
         translations_member = Mapping(
             name = "translations",
             required = True,
-            keys = String(
-                required = True,
-                format = "[a-z]{2}"
+            keys = String(required = True),
+            values = Reference(
+                type = cls.translation,
+                translate_value = lambda value, language = None, **kwargs:
+                    "" if not value else translations("locale",
+                        locale = value,
+                        language = language,
+                        **kwargs
+                    )   
             ),
-            values = cls.translation,
             produce_default = TranslationMapping
         )
 
