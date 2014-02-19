@@ -8,6 +8,7 @@ u"""
 """
 from cocktail.html import Element, templates
 from cocktail.html.selector import Selector
+from cocktail.html.selectable import selectable, MULTIPLE_SELECTION
 
 CheckBox = templates.get_class("cocktail.html.CheckBox")
 
@@ -17,6 +18,11 @@ class CheckList(Selector):
     empty_option_displayed = False
     column_count = None
     column_height = None
+    name = None
+
+    def _build(self):
+        Selector._build(self)
+        selectable(self, mode = MULTIPLE_SELECTION, exclusive = False)
 
     def _ready(self):
 
