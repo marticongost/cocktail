@@ -7,6 +7,7 @@ u"""
 @since:			November 2008
 """
 from itertools import islice
+from cocktail import schema
 from cocktail.html import Element
 from cocktail.translations import translations
 
@@ -44,8 +45,16 @@ class List(Element):
         return entry
     
     def create_entry_content(self, item):
+        if self.member:
+            if isinstance(self.member, schema.Mapping):
+                if self.member.values:
+                    return self.member.values.translate_value(item)
+            elif isinstance(self.member, schema.Collection):
+                if self.member.items:
+                    return self.member.items.translate_value(item)
+
         return translations(item, default = item)
-    
+
     def create_ellipsis(self, ellipsis_size):
         ellipsis = Element("span")
         ellipsis.append(translations("List ellipsis", size = ellipsis_size))
