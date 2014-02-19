@@ -39,6 +39,7 @@
         }
 
         var selectionMode = getParam("mode", cocktail.SINGLE_SELECTION);
+        var exclusiveSelection = getParam("exclusive", true);
 
         if (selectionMode == cocktail.NO_SELECTION) {
             return;
@@ -208,14 +209,16 @@
                 ) {
                     // Range selection (shift + click)
                     if (multipleSelection && e.shiftKey) {
-                        selectable.clearSelection();
+                        if (exclusiveSelection) {
+                            selectable.clearSelection();
+                        }
                         selectable.setRangeSelected(selectable._selectionStart || selectable._getEntries()[0], this, true);
                     }
-                    // Cumulative selection (control + click)
-                    else if (multipleSelection && e.ctrlKey) {
+                    // Cumulative selection (control + click, or selector in non exclusive mode)
+                    else if (multipleSelection && (e.ctrlKey || !exclusiveSelection)) {
                         selectable.setEntrySelected(this, !selectable.entryIsSelected(this));
                     }
-                    // Replacing selection (regular click)
+                    // Select an element (regular click)
                     else {
                         selectable.clearSelection();
                         selectable.setEntrySelected(this, true);
