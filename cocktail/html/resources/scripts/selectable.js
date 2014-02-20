@@ -167,6 +167,14 @@
                 });
             }
 
+            selectable.selectEntries = function (selector) {
+                batchSelection(function () {
+                    selectable.getEntries().filter(selector).each(function () {
+                        selectable.setEntrySelected(this, true);
+                    });
+                });
+            }
+
             selectable.setRangeSelected = function (firstEntry, lastEntry, selected) {
                 
                 var entries = selectable.getEntries();
