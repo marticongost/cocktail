@@ -115,14 +115,12 @@ cocktail.bind(".SearchableCheckList.search_enabled", function ($control) {
         $entries.filter(".match").each(function () {
             $checkList.get(0).setEntrySelected(this, true);
         });
-        toggleSelectionLinks();
     });
 
     $emptySelectionLink.click(function () {
         $entries.filter(".match").each(function () {
             $checkList.get(0).setEntrySelected(this, false);
         });
-        toggleSelectionLinks();
     });
 
     function toggleSelectionLinks() {
@@ -148,13 +146,14 @@ cocktail.bind(".SearchableCheckList.search_enabled", function ($control) {
     $checkList.get(0).topControl = $searchBox.get(0);
 
     $entries.find("input[type=checkbox]")
-        .change(toggleSelectionLinks)
         .keydown(function (e) {
             if (e.keyCode == 191) {
                 $searchBox.focus();
                 return false;
             }
         });
+
+    $checkList.on("selectionChanged", toggleSelectionLinks);
 
     this.applySearch();
 });
