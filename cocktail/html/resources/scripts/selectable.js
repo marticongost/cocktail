@@ -247,10 +247,20 @@
                     }
                 });
 
+            var focusedCheckbox = null;
+
             $selectable.find(entrySelector + " " + checkboxSelector)
                 .focus(function (e) {
+                    focusedCheckbox = this;
                     var entry = jQuery(this).closest(entrySelector).get(0);
                     selectable._selectionEnd = entry;
+                    $selectable.addClass("focused");
+                })
+                .blur(function (e) {
+                    if (focusedCheckbox == this) {
+                        focusedCheckbox = null;
+                        $selectable.removeClass("focused");
+                    }
                 })
                 .keydown(function (e) {
 
