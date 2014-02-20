@@ -42,6 +42,7 @@ class Table(Element, CollectionDisplay):
     entry_selector = "tbody tr"
     checkbox_selector = ".row_selection_control"
     use_separate_selection_column = True
+    exclusive_selection = True
     __split_rows = None
 
     def __init__(self, *args, **kwargs):
@@ -76,7 +77,8 @@ class Table(Element, CollectionDisplay):
             self,
             mode = self.selection_mode,
             entry_selector = self.entry_selector,
-            checkbox_selector = self.checkbox_selector
+            checkbox_selector = self.checkbox_selector,
+            exclusive = self.exclusive_selection
         )
 
         self.set_client_param("persistencePrefix", self.persistence_prefix)
