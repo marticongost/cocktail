@@ -103,8 +103,7 @@ cocktail.bind(".SearchableCheckList.search_enabled", function ($control) {
 
             // Down key
             if (e.keyCode == 40) {
-                var checkList = $checkList.get(0);
-                checkList.focusEntry(checkList.getEntries()[0]);
+                $checkList.get(0).focusContent();
                 return false;
             }
         });
