@@ -19,12 +19,14 @@ class CheckList(Selector):
     column_count = None
     column_height = None
     name = None
-
-    def _build(self):
-        Selector._build(self)
-        selectable(self, mode = MULTIPLE_SELECTION, exclusive = False)
+    exclusive_selection = False
 
     def _ready(self):
+        selectable(
+            self,
+            mode = MULTIPLE_SELECTION,
+            exclusive = self.exclusive_selection
+        )
 
         if not self.name and self.data_display:
             self.name = self.data_display.get_member_name(
