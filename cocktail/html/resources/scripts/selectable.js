@@ -262,6 +262,12 @@
                         return false;
                     }
 
+                    // ctrl + a: select all visible entries
+                    if (key == 65 && e.ctrlKey) {
+                        selectable.selectEntries(":visible");
+                        return false;
+                    }
+
                     var entry = null;
 
                     // Home key
