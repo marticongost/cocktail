@@ -84,11 +84,11 @@
 
             selectable.focusContent = function () {
                 var entry = (this._selectionEnd || this._selectionStart);
-                if (entry) {
+                if (entry && jQuery(entry).is(":visible")) {
                     this.focusEntry(entry);
                 }
                 else {
-                    var firstEntry = this.getEntries()[0];
+                    var firstEntry = jQuery(this.getEntries()).filter(":visible:first")[0];
                     if (exclusiveSelection) {
                         this.setEntrySelected(firstEntry, true, true);
                     }
