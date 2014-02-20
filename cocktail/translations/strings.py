@@ -2171,3 +2171,20 @@ translations.define("cocktail.html.SWIFTBICEntry.swiftbic_explanation",
         </p>
         """
 )
+
+# SearchableCheckList
+#------------------------------------------------------------------------------
+translations.define(
+    "cocktail.html.SearchableCheckList.search_controls.select_all_link",
+    ca = u"Seleccionar-ho tot",
+    es = u"Seleccionarlo todo",
+    en = u"Select all"
+)
+
+translations.define(
+    "cocktail.html.SearchableCheckList.search_controls.empty_selection_link",
+    ca = u"Buidar la selecció",
+    es = u"Vaciar la selección",
+    en = u"Empty the selection"
+)
+
