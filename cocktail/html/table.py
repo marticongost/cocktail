@@ -40,7 +40,8 @@ class Table(Element, CollectionDisplay):
     nested_list_max_length = 5
     persistence_prefix = None
     entry_selector = "tbody tr"
-    checkbox_selector = "td.selection input"
+    checkbox_selector = ".row_selection_control"
+    use_separate_selection_column = True
     __split_rows = None
 
     def __init__(self, *args, **kwargs):
@@ -111,7 +112,10 @@ class Table(Element, CollectionDisplay):
                 sorted_columns[(member, language)] = sign
 
         # Selection column
-        if self.selection_mode != NO_SELECTION:
+        if (
+            self.selection_mode != NO_SELECTION
+            and self.use_separate_selection_column
+        ):
             selection_header = Element("th")
             selection_header.add_class("selection")
             self.head_row.append(selection_header)
@@ -249,7 +253,10 @@ class Table(Element, CollectionDisplay):
         row = Element("tr")
         row.add_class(index % 2 == 0 and "odd" or "even")
         
-        if self.selection_mode != NO_SELECTION:
+        if (
+            self.selection_mode != NO_SELECTION
+            and self.use_separate_selection_column
+        ):
             row.append(self.create_selection_cell(item))
 
         if self.schema.primary_member:
@@ -280,6 +287,12 @@ class Table(Element, CollectionDisplay):
                     cell = self.create_cell(item, column)
                     row.append(cell)
         
+        if (
+            self.selection_mode != NO_SELECTION
+            and not self.use_separate_selection_column
+        ):
+            row.children[0].insert(0, self.create_selection_control(item))
+
         return row
 
     def split_rows(self, member, sequence_factory, parent = None):
@@ -320,6 +333,7 @@ class Table(Element, CollectionDisplay):
         selection_control["id"] = "selection_" + str(id)
         selection_control["value"] = id
         selection_control["autocomplete"] = "off"
+        selection_control.add_class("row_selection_control")
 
         if self.selection_mode == SINGLE_SELECTION:
             selection_control["type"] = "radio"
