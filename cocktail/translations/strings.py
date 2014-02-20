@@ -100,16 +100,28 @@ translations.define("cocktail.html.CollectionView no results",
     en = u"The current view has no matching items."
 )
 
-translations.define("Visible members",
+translations.define("cocktail.html.CollectionView.members_dropdown",
     ca = u"Camps",
     es = u"Campos",
     en = u"Fields"
 )
 
-translations.define("Visible languages",
+translations.define("cocktail.html.CollectionView.members_dropdown.shortcut",
+    ca = u"c",
+    es = u"c",
+    en = u"f"
+)
+
+translations.define("cocktail.html.CollectionView.languages_dropdown",
     ca = u"Idiomes",
     es = u"Idiomas",
     en = u"Languages"
+)
+
+translations.define("cocktail.html.CollectionView.languages_dropdown.shortcut",
+    ca = u"i",
+    es = u"i",
+    en = u"l"
 )
 
 translations.define("Filters",
@@ -955,6 +967,34 @@ translations.define("nl",
     es = u"Holandés",
     en = u"Dutch",
     nl = u"Nederlands"
+)
+
+translations.define("tr",
+    ca = u"Turc",
+    es = u"Turco",
+    en = u"Turkish",
+    tr = u"Türkçe"
+)
+
+translations.define("ko",
+    ca = u"Coreà",
+    es = u"Coreano",
+    en = u"Korean",
+    ko = u"Hanguk"
+)
+
+translations.define("jp",
+    ca = u"Japonès",
+    es = u"Japonés",
+    en = u"Japanese",
+    jp = u"日本語"
+)
+
+translations.define("cn",
+    ca = u"Xinès",
+    es = u"Chino",
+    en = u"Chinese",
+    cn = u"汉语"
 )
 
 translations.define("translated into",

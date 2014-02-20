@@ -48,6 +48,76 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
         ?>
     </py:ready>
 
+    <!-- Collection settings -->
+    <div py:id="collection_settings">
+
+        <!-- Visible languages -->
+        <py:cocktail.html.DropdownPanel py:id="languages_dropdown">
+            <py:with
+                py:element="element.label"
+                accesskey="${translations('cocktail.html.CollectionView.languages_dropdown.shortcut')}">
+                ${translations("cocktail.html.CollectionView.languages_dropdown")}
+            </py:with>
+            <py:with py:element="element.panel">
+                <py:cocktail.html.SearchableCheckList
+                    py:id="languages_selector"
+                    py:name="language"
+                    py:items="@{self.available_languages}"
+                    py:value="@{self.user_collection.languages}">
+                    <?py
+                    @extend(element.check_list)
+                    def get_item_label(languages_selector, item):
+                        return translations("locale", locale = item)
+                    ?>
+                </py:cocktail.html.SearchableCheckList>
+                <div py:local_id="box_buttons">
+                    <button py:local_id="apply_button" type="submit">${translations("Submit")}</button>
+                </div>
+            </py:with>
+        </py:cocktail.html.DropdownPanel>
+
+        <py:cocktail.html.DropdownPanel
+            py:id="members_dropdown">
+            <py:with
+                py:element="element.label"
+                accesskey="${translations('cocktail.html.CollectionView.members_dropdown.shortcut')}">
+                ${translations("cocktail.html.CollectionView.members_dropdown")}
+            </py:with>
+            <py:with py:element="element.panel">
+                <py:cocktail.html.SearchableCheckList
+                    py:id="members_selector"
+                    py:name="members"
+                    py:items="@{self.user_collection.schema.grouped_members()}"
+                    py:value="@{self.user_collection.members}">
+                    <?py
+                    element.check_list.grouped = True
+
+                    @extend(element.check_list)
+                    def get_group_title(element, group, items):
+                        if group:
+                            return self.user_collection.schema.translate_group(group)
+                        else:
+                            return ""
+
+                    @refine(element.check_list)
+                    def get_item_value(self, item):
+                        if isinstance(item, basestring):
+                            return item
+                        else:
+                            return item.name
+
+                    @refine(element.check_list)
+                    def get_item_label(self, member):
+                        return translations(member)
+                    ?>
+                </py:cocktail.html.SearchableCheckList>
+                <div py:local_id="box_buttons">
+                    <button py:local_id="apply_button" type="submit">${translations("Submit")}</button>
+                </div>
+            </py:with>
+        </py:cocktail.html.DropdownPanel>
+    </div>
+
     <!-- Filters -->
     <div py:id="filters">
         <py:ready>
@@ -80,20 +150,7 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
         ${translations("cocktail.html.ContentView search results")}
     </div>
 
-    <!-- Data controls -->
-    <button
-        py:def="toolbar_button"
-        py:args="action"
-        class="toolbar_button ${action}"
-        name="action"
-        type="submit"
-        value="${action}">
-        <?py
-        set_translated_shortcut(element, "action " + action)
-        ?>
-        ${translations("Action " + action)}
-    </button>
-
+    <!-- Toolbar -->
     <div py:id="toolbar_box" py:collapsible="${True}">
         <py:ready><?py self.toolbar.ready() ?></py:ready>
         <div py:id="toolbar" py:collapsible="${True}">
@@ -111,80 +168,19 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
         </div>
     </div>
 
+    <button
+        py:def="toolbar_button"
+        py:args="action"
+        class="toolbar_button ${action}"
+        name="action"
+        type="submit"
+        value="${action}"
+        accesskey="${translations('cocktail.actions.' + action + '.shortcut')}">
+        ${translations("cocktail.actions." + action)}
+    </button>
+
     <!-- Data -->
     <div py:id="collection_display_container">
-        
-        <!-- Data settings -->
-        <div py:id="settings_box" class="selector"
-            py:visible="@{self.user_collection.allow_language_selection or self.user_collection.allow_member_selection}">
-                
-            <span class="label">
-                <img src="/cocktail/images/collection_settings.png"/>
-            </span>
-            <div class="selector_content">
-               
-                <!-- Visible languages -->
-                <div py:id="languages_box" py:visible="@{self.user_collection.allow_language_selection}">
-                    <span class="box_label">
-                        ${translations("Visible languages")}
-                    </span>
-                    <div class="box_items">
-                        <py:cocktail.html.CheckList
-                            py:id="languages_selector"
-                            py:name="language"
-                            py:items="@{self.available_languages}"
-                            py:value="@{self.user_collection.languages}">
-                            <?py
-                            @extend(element)
-                            def get_item_label(languages_selector, item):
-                                return translations("locale", locale = item)
-                            ?>
-                        </py:cocktail.html.CheckList>
-                    </div>
-                </div>
-
-                <!-- Visible members  -->
-                <div py:id="members_box" py:visible="@{self.user_collection.allow_member_selection}">
-                    <span class="box_label">
-                        ${translations("Visible members")}
-                    </span>
-                    <div class="box_items">
-                        <py:cocktail.html.CheckList
-                            py:id="members_selector"
-                            py:name="members"
-                            py:items="@{self.user_collection.schema.grouped_members()}"
-                            py:value="@{self.user_collection.members}"
-                            py:grouped="${True}">
-
-                            <?py
-                            @extend(element)
-                            def get_group_title(element, group, items):
-                                if group:
-                                    return self.user_collection.schema.translate_group(group)
-                                else:
-                                    return ""
-
-                            @refine(element)
-                            def get_item_value(self, item):
-                                if isinstance(item, basestring):
-                                    return item
-                                else:
-                                    return item.name
-
-                            @refine(element)
-                            def get_item_label(self, member):
-                                return translations(member)
-                            ?>
-                        </py:cocktail.html.CheckList>
-                    </div>
-                </div>
-
-                <div class="box_buttons">
-                    <button type="submit">${translations("Submit")}</button>
-                </div>
-            </div>        
-        </div>
-
         <!-- Data display -->
         <py:cocktail.html.Table py:id="collection_display"/>
     </div>
@@ -200,7 +196,6 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
         self.no_results.visible = not self.visible_results
 
         if not self.visible_results:
-            self.settings_box.visible = False
             self.data_controls.visible = False
 
         self.fields.visible = False
