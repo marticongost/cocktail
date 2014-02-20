@@ -9,11 +9,10 @@
     self.add_resource("/cocktail/styles/DropdownPanel.css")
     ?>
 
-    <div py:id="button">
+    <button py:id="button" type="button">
         <div py:id="label"></div>
         <img py:id="dropdown_arrow" src="/cocktail/images/dropdown.png" alt=""/>
-        <div py:id="bottom_border"></div>
-    </div>
+    </button>
 
     <div py:id="panel_wrapper">
         <div py:id="panel"></div>
