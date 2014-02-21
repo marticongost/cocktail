@@ -12,7 +12,7 @@ from cocktail.pkgutils import get_full_name
     errors = ()
 
     def translate_error(self, error):
-        member = getattr(error, "member")
+        member = getattr(error, "member", None)
         return member.translate_error(error) if member else translations(error)
     ?>
 
