@@ -125,7 +125,7 @@ cocktail.bind(".SearchableCheckList.search_enabled", function ($control) {
 
     function toggleSelectionLinks() {
 
-        var $allEntries = $entries.filter(".match");
+        var $allEntries = jQuery($checkList.get(0).getEntries(":selectable-entry.match"));
         var $checkedEntries = $allEntries.filter(":has(input[type=checkbox]:checked)");
 
         if ($allEntries.length > $checkedEntries.length) {
