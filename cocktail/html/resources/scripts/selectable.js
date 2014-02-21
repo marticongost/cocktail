@@ -314,9 +314,15 @@
                         return false;
                     }
 
-                    // ctrl + a: select all visible entries
-                    if (key == 65 && e.ctrlKey) {                        
-                        selectable.selectEntries(":selectable-entry");
+                    if (key == 65 && e.ctrlKey) {
+                        // ctrl + shift + a: empty the selection
+                        if (e.shiftKey) {
+                            selectable.clearSelection();
+                        }
+                        // ctrl + a: select all visible entries
+                        else {
+                            selectable.selectEntries(":selectable-entry");
+                        }
                         return false;
                     }
 
