@@ -49,7 +49,8 @@ class AdaptationContext(object):
         target_accessor = None,
         copy_mode = None,
         collection_copy_mode = None,
-        copy_validations = None):
+        copy_validations = None,
+        languages = None):
 
         self.source_object = source_object
         self.target_object = target_object
@@ -61,6 +62,7 @@ class AdaptationContext(object):
         self.copy_mode = copy_mode
         self.collection_copy_mode = collection_copy_mode
         self.copy_validations = copy_validations
+        self.languages = languages
 
     def get(self, key, default = undefined, language = None):
         """Gets a key from the source object.
@@ -104,9 +106,13 @@ class AdaptationContext(object):
 
     def iter_languages(self, source_key):
         if self.source_schema and self.source_schema[source_key].translated:
-            return self.source_accessor.languages(
-                self.source_object,
-                source_key)
+            if self.languages:
+                return self.languages
+            else:
+                return self.source_accessor.languages(
+                    self.source_object,
+                    source_key
+                )
         else:
             return (None,)
 
@@ -174,7 +180,8 @@ class Adapter(object):
         source_schema = None,
         target_schema = None,
         source_accessor = None,
-        target_accessor = None):
+        target_accessor = None,
+        languages = None):
         
         self.import_rules.adapt_object(
             source_object,
@@ -182,7 +189,8 @@ class Adapter(object):
             source_accessor or self.source_accessor,
             target_accessor or self.target_accessor,
             source_schema,
-            target_schema)
+            target_schema,
+            languages = languages)
 
     def export_object(self,
         source_object,
@@ -190,7 +198,8 @@ class Adapter(object):
         source_schema = None,
         target_schema = None,
         source_accessor = None,
-        target_accessor = None):
+        target_accessor = None,
+        languages = None):
         
         self.export_rules.adapt_object(
             source_object,
@@ -198,7 +207,8 @@ class Adapter(object):
             source_accessor or self.source_accessor,
             target_accessor or self.target_accessor,
             source_schema,
-            target_schema)
+            target_schema,
+            languages = languages)
 
     def _get_implicit_copy(self):
         return self.__implicit_copy
@@ -479,8 +489,9 @@ class RuleSet(object):
         source_accessor = None,
         target_accessor = None,
         source_schema = None,
-        target_schema = None):
-        
+        target_schema = None,
+        languages = None):
+
         context = AdaptationContext(
             source_object = source_object,
             target_object = target_object,
@@ -493,7 +504,8 @@ class RuleSet(object):
             source_schema = source_schema,
             target_schema = target_schema,
             copy_mode = self.copy_mode,
-            collection_copy_mode = self.collection_copy_mode
+            collection_copy_mode = self.collection_copy_mode,
+            languages = languages
         )
       
         for rule in self.__rules:
