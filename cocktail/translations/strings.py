@@ -1049,7 +1049,7 @@ def member_identifier(error):
         if error.language:
             desc.append("%s (%s)" % (
                 translations(error.member).lower(),
-                translations(error.language)
+                translations("locale", locale = error.language)
             ))
         else:
             desc.append(translations(error.member).lower())
