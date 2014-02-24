@@ -92,9 +92,11 @@ from cocktail.controllers import get_state, view_state, serialize_parameter
 
     <div py:id="buttons">
 
-        <div py:id="new_filter_selector" class="selector">
-            <span class="label">${translations("cocktail.html.FilterBox add filter")}</span>
-            <div class="selector_content">
+        <py:cocktail.html.DropdownPanel py:id="new_filter_selector">
+            <py:with py:element="element.label">
+                ${translations("cocktail.html.FilterBox add filter")}
+            </py:with>
+            <py:with py:element="element.panel">
                 <py:ready>
                     <?py
                     chosen = set(filter.id for filter in self.filters)
@@ -117,8 +119,8 @@ from cocktail.controllers import get_state, view_state, serialize_parameter
                         ?>
                     </a>
                 </py:ready>
-            </div>
-        </div>
+            </py:with>
+        </py:cocktail.html.DropdownPanel>
 
         <a py:id="discard_button" href="@{'?' + view_state(**self.get_discard_filters_state())}">
             ${translations("cocktail.html.FilterBox remove filters")}
