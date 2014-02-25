@@ -16,18 +16,18 @@ class VimeoPlayer(Element):
     video_id = None
     vimeo_autoplay = False
     vimeo_loop = False
-    vimeo_api = False
     vimeo_title = True
     vimeo_byline = True
     vimeo_portrait = True
     vimeo_color = None
+    javascript_api = True
 
     def _build(self):
         self["frameborder"] = "0"
 
     def _ready(self):
 
-        if self.vimeo_api:
+        if self.javascript_api:
             self.require_id()
             self.add_class("scriptable_video_player")
             self.add_resource("/cocktail/scripts/froogaloop2.min.js")
@@ -52,7 +52,7 @@ class VimeoPlayer(Element):
         params = [
             "autoplay=%d" % self.vimeo_autoplay,
             "loop=%d" % self.vimeo_loop,
-            "api=%d" % self.vimeo_api,
+            "api=%d" % self.javascript_api,
             "title=%d" % self.vimeo_title,
             "byline=%d" % self.vimeo_byline,
             "portrait=%d" % self.vimeo_portrait
