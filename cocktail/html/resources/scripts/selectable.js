@@ -193,9 +193,10 @@
                 }
             }
 
-            selectable.clearSelection = function () {
+            selectable.clearSelection = function (selector /* = null */) {
+                var subset = (selector || "") + ".selected";
                 batchSelection(function () {
-                    selectable.getEntries().filter(".selected").each(function () {
+                    selectable.getEntries(subset).each(function () {
                         selectable.setEntrySelected(this, false);
                     });
                 });
@@ -317,7 +318,7 @@
                     if (key == 65 && e.ctrlKey) {
                         // ctrl + shift + a: empty the selection
                         if (e.shiftKey) {
-                            selectable.clearSelection();
+                            selectable.clearSelection(":selectable-entry");
                         }
                         // ctrl + a: select all visible entries
                         else {
