@@ -73,8 +73,13 @@ class Form(Element, DataDisplay):
         behavior; When set to False, only groups explicitly defined by the
         client code will be taken into account.
     @type generate_groups: bool
-    """
 
+    @var redundant_translation_labels: When True, the labels for translated
+        fields include a combination of member and language. When False, a
+        single label is used to denote the member for all languages, and each
+        instance of the field includes only a label indicating its language.
+    @type redundant_translation_labels: bool
+    """
     tag = "form"
     translations = None
     hide_empty_fieldsets = True
@@ -86,6 +91,7 @@ class Form(Element, DataDisplay):
     default_button = None
     generate_fields = True
     generate_groups = True
+    redundant_translation_labels = True
     __form = None
 
     def __init__(self, *args, **kwargs):
@@ -181,6 +187,12 @@ class Form(Element, DataDisplay):
         self.default_button = self.submit_button
 
     def _ready(self):
+
+        if self.redundant_translation_labels:
+            self.add_class("redundant_translation_labels")
+        else:
+            self.add_class("grouped_translation_labels")
+
         self._fill_fields()
 
         if self.embeded:
@@ -317,8 +329,12 @@ class Form(Element, DataDisplay):
 
         if member.translated:
             entry.add_class("translated")
+
+            if not hidden and not self.redundant_translation_labels:
+                entry.append(self.create_label(member))
+
             for language in (
-                self.translations 
+                self.translations
                 if self.translations is not None 
                 else (get_language(),)
             ):
@@ -358,8 +374,14 @@ class Form(Element, DataDisplay):
     
         # Label
         if not self.get_member_hidden(member):
-            field_instance.label = self.create_label(member, language)
-            field_instance.append(field_instance.label)
+
+            if member.translated and not self.redundant_translation_labels:
+                label = self.create_language_label(member, language)
+            else:
+                label = self.create_label(member, language)
+
+            field_instance.label = label
+            field_instance.append(label)
         
         # Control
         with language_context(language):
@@ -410,17 +432,16 @@ class Form(Element, DataDisplay):
         label = Element("label")
         label.add_class("field_label")
         text = self.get_member_label(member)
-        
+
         if text:
-            label.label_title = self.create_label_title(member, text)
+            label.label_title = self.create_label_title(member, text)            
             label.append(label.label_title)
-            
-            if language:
-                
+
+            if language and self.redundant_translation_labels:
                 label.label_language = self.create_language_label(
                     member,
-                    language)
-
+                    language
+                )
                 label.append(label.label_language)
 
             if self.required_marks:
@@ -446,7 +467,12 @@ class Form(Element, DataDisplay):
     def create_language_label(self, member, language):
         label = Element("span")
         label.add_class("language")
-        label.append("(" + translations("locale", locale = language) + ")")
+        text = translations("locale", locale = language) 
+
+        if self.redundant_translation_labels:
+            text = "(" + text + ")"
+
+        label.append(text)
         return label
 
     def create_required_mark(self, member):
