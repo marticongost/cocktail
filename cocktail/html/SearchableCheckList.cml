@@ -33,13 +33,14 @@ from cocktail.html.databoundcontrol import data_bound
 
     <?py
     data_bound(self)
+    self.add_resource("/cocktail/scripts/searchable.js")
     self.add_resource("/cocktail/scripts/SearchableCheckList.js")
     ?>
 
     <py:ready>
         <?py
         if self.should_enable_search:
-            self.add_class("search_enabled")                        
+            self.add_class("search_enabled")
         ?>
     </py:ready>
 
