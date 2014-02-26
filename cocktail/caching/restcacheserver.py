@@ -3,6 +3,7 @@ u"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
+from base64 import urlsafe_b64decode
 from simplejson import loads, dumps
 import cherrypy
 from cocktail.events import event_handler
@@ -28,7 +29,7 @@ class CacheController(Controller):
         if len(path) >= 2 and path[0] == "keys":
             path.pop(0)
             key = path.pop(0)
-            return KeyController(self, key)
+            return KeyController(self, urlsafe_b64decode(key))
         else:
             return self
 
