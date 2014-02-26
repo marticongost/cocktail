@@ -4,7 +4,7 @@ u"""
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
 from httplib2 import Http
-from urllib import quote
+from base64 import urlsafe_b64encode
 from simplejson import loads, dumps
 from cocktail.modeling import overrides
 from .exceptions import CacheKeyError
@@ -34,7 +34,7 @@ class RESTCacheStorage(object):
 
     def _key_request(self, key, *args, **kwargs):
         
-        url = self.__address + "/keys/" + quote(key, safe = "")
+        url = self.__address + "/keys/" + urlsafe_b64encode(key)
         
         extra_path = kwargs.pop("extra_path", None)
         if extra_path:
