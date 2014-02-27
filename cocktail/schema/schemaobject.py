@@ -279,7 +279,9 @@ class SchemaClass(EventHub, Schema):
                 value = getattr(target, self.__priv_key, undefined)
 
                 if value is undefined:
-                    was_producing_default = getattr(instance, "_v_is_producing_default", False)
+                    if getattr(instance, "_v_is_producing_default", False):
+                        return None
+
                     instance._v_is_producing_default = True
                     try:
                         value = self.member.produce_default(instance)
@@ -291,7 +293,7 @@ class SchemaClass(EventHub, Schema):
                         )
                         return self.__get__(instance, type, language)
                     finally:
-                        instance._v_is_producing_default = was_producing_default
+                        instance._v_is_producing_default = False
                 
                 return value
 
