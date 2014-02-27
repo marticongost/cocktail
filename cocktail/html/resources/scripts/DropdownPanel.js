@@ -48,7 +48,6 @@ cocktail.bind(".DropdownPanel", function ($dropdown) {
 
     $button
         .click(function () { $dropdown.get(0).toggleCollapsed(true); })
-        .attr("tabindex", "0")
         .keydown(function (e) {
             if (e.keyCode == 13) {
                 $dropdown.get(0).toggleCollapsed(true);
