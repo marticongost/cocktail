@@ -108,6 +108,8 @@ cocktail.searchable = function (searchable, params /* = null */) {
                 return false;
             }
         });
+
+    searchable.searchBox = $searchBox.get(0);
 }
 
 cocktail.latinNormalization = {
