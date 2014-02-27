@@ -15,6 +15,7 @@ from cocktail.modeling import (
     OrderedSet
 )
 from cocktail.pkgutils import get_full_name
+from cocktail.html.viewnames import get_view_full_name
 
 _overlays = {}
 
