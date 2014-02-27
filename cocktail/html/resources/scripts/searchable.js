@@ -25,7 +25,7 @@ cocktail.searchable = function (searchable, params /* = null */) {
     }
 
     searchable.tokenizeText = function (text) {
-        return text.split();
+        return text.split(/\s+/);
     }
 
     searchable.applySearch = function (query) {
