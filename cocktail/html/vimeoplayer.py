@@ -58,7 +58,7 @@ class VimeoPlayer(Element):
             "portrait=%d" % self.vimeo_portrait
         ]
 
-        if self.vimeo_api:
+        if self.javascript_api:
             params.append("player_id=" + self["id"])
 
         if self.vimeo_color:
