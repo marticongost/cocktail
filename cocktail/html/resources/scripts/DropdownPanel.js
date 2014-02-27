@@ -27,7 +27,7 @@ cocktail.bind(".DropdownPanel", function ($dropdown) {
                 $button.focus();
             }
             else {
-                $dropdown.find(".panel :input, .panel a").first().focus();
+                $dropdown.find(".panel :input:visible[tabindex!='-1'], .panel a:visible[tabindex!='-1']").first().focus();
             }
         }
         $dropdown.trigger(collapsed ? "collapsed" : "expanded");
