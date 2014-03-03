@@ -466,7 +466,7 @@ class Form(Element, DataDisplay):
 
     def create_language_label(self, member, language):
         label = Element("span")
-        label.add_class("language")
+        label.add_class("field_language")
         text = translations("locale", locale = language) 
 
         if self.redundant_translation_labels:
