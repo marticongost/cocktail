@@ -49,7 +49,7 @@
         ?>
     </py:ready>
 
-    <py:cocktail.html.NumberBox py:id="input"/>
+    <py:cocktail.html.TextBox py:id="input"/>
 
     <span py:id="currency_label">
         <py:ready>
