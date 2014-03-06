@@ -46,7 +46,12 @@ class String(Member):
         if value and self.translatable_enumeration and self.enumeration:
             return translations(self, suffix = "=" + value)
 
-        return value or ""
+        return Member.translate_value(
+            self,
+            value,
+            language = language,
+            **kwargs
+        )
 
     def _get_format(self):
         return self._format
