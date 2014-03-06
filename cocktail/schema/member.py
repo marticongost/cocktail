@@ -489,7 +489,12 @@ class Member(Variable):
 
     def translate_value(self, value, language = None, **kwargs):
         if value is None:
-            return u""
+            return translations(
+                self,
+                language = language,
+                suffix = "=none",
+                **kwargs
+            )
         else:
             return unicode(value)
 
