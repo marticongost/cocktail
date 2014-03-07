@@ -21,6 +21,7 @@ class TranslationDisplay(Element):
 
             if (
                 self.language
+                and self.member.translated
                 and isinstance(self.data, SchemaObject)
                 and self.data.__class__.translated
             ):
