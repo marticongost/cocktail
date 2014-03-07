@@ -542,6 +542,100 @@ class TranslationTestCase(TestCase):
         assert event.language == "de"
 
 
+class TranslationInheritanceTestCase(TestCase):
+
+    def test_translations_can_be_inherited(self):
+
+        from cocktail.translations import (
+            translations,
+            fallback_languages_context
+        )
+        from cocktail import schema
+
+        class TestObject(schema.SchemaObject):
+            test_field = schema.String(
+                translated = True
+            )
+
+        obj = TestObject()
+
+        with fallback_languages_context({
+            "en-CA": ["en"],
+            "fr-CA": ["fr", "en-CA"]
+        }):
+            obj.set("test_field", u"I'm full", "en")
+            assert obj.get("test_field", "en-CA") == u"I'm full"
+            assert obj.get("test_field", "fr-CA") == u"I'm full"
+
+            obj.set("test_field", u"j'ai trop mangé", "fr")
+            assert obj.get("test_field", "fr-CA") == u"j'ai trop mangé"
+
+            obj.set("test_field", u"je suis plein", "fr-CA")
+            assert obj.get("test_field", "fr-CA") == u"je suis plein"
+
+            del obj.translations["fr-CA"]
+            assert obj.get("test_field", "fr-CA") == u"j'ai trop mangé"
+
+            del obj.translations["fr"]
+            assert obj.get("test_field", "fr-CA") == u"I'm full"
+
+    def test_new_translations_inherit_values(self):
+
+        from cocktail.translations import (
+            translations,
+            fallback_languages_context
+        )
+        from cocktail import schema
+
+        class TestObject(schema.SchemaObject):
+            test_field = schema.String(
+                translated = True
+            )
+
+        obj = TestObject()
+        obj.set("test_field", u"I'm full", "en")
+        obj.set("test_field", u"j'ai trop mangé", "fr")
+
+        with fallback_languages_context({
+            "en-CA": ["en"],
+            "fr-CA": ["fr", "en-CA"]
+        }):
+            obj.new_translation("en-CA")
+            assert obj.get("test_field", "en-CA") == u"I'm full"
+            
+            obj.new_translation("fr-CA")
+            assert obj.get("test_field", "fr-CA") == u"j'ai trop mangé"
+
+    def test_changing_the_language_chain_affects_translation_inheritance(self):
+
+        from cocktail.translations import (
+            translations,
+            fallback_languages_context
+        )
+        from cocktail import schema
+
+        class TestObject(schema.SchemaObject):
+            test_field = schema.String(
+                translated = True
+            )
+
+        obj = TestObject()
+        obj.set("test_field", u"I'm full", "en")
+        obj.set("test_field", u"j'ai trop mangé", "fr")
+
+        with fallback_languages_context({
+            "en-CA": ["en"],
+            "fr-CA": ["fr", "en-CA"]
+        }):
+            assert obj.get("test_field", "fr-CA") == u"j'ai trop mangé"
+
+        with fallback_languages_context({
+            "en-CA": ["en"],
+            "fr-CA": ["en-CA"]
+        }):
+            assert obj.get("test_field", "fr-CA") == u"I'm full"
+
+
 class CopyTestCase(TestCase):
 
     def test_copying_schema_object_class_produces_new_class(self):

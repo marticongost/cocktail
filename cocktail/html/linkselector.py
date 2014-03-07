@@ -18,6 +18,7 @@ class LinkSelector(Selector):
     def create_entry(self, value, label, selected):
         
         entry = Element()
+        entry.add_class("entry")
 
         if selected:
             entry.add_class("selected")
@@ -29,6 +30,7 @@ class LinkSelector(Selector):
     def create_entry_link(self, value, label):
 
         link = Element("a")
+        link.add_class("entry_link")
         link["href"] = self.get_entry_url(value)
         link.append(label)
         return link

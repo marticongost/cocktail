@@ -12,7 +12,8 @@ from contextlib import contextmanager
 from cocktail.modeling import (
     getter,
     DictWrapper,
-    ListWrapper
+    ListWrapper,
+    OrderedSet
 )
 from cocktail.pkgutils import get_full_name
 
@@ -45,6 +46,82 @@ def require_language(language = None):
         raise NoActiveLanguageError()
 
     return language
+
+def iter_language_chain(language = None, include_self = True):
+    language = require_language(language)
+    if include_self:
+        yield language
+    fallback_map = getattr(_thread_data, "fallback", None)
+    if fallback_map is not None:
+        base_languages = fallback_map.get(language)
+        if base_languages is not None:
+            for base in base_languages:
+                for ancestor in iter_language_chain(base):
+                    yield ancestor
+
+def descend_language_tree(language = None, include_self = True):
+    language = require_language(language)
+    if include_self:
+        yield language
+    derived_map = getattr(_thread_data, "derived", None)
+    if derived_map is not None:
+        derived_languages = derived_map.get(language)
+        if derived_languages is not None:
+            for derived in derived_languages:
+                for descendant in descend_language_tree(derived):
+                    yield descendant
+
+@contextmanager
+def fallback_languages_context(fallback_chains):
+    prev_fallback = getattr(_thread_data, "fallback", None)
+    prev_derived = getattr(_thread_data, "derived", None)
+    try:
+        _thread_data.fallback = {}
+        _thread_data.derived = {}
+        for language, chain in fallback_chains.iteritems():
+            set_fallback_languages(language, chain)
+        yield None
+    finally:
+        _thread_data.fallback = prev_fallback
+        _thread_data.derived = prev_derived
+
+def set_fallback_languages(language, fallback_languages):
+
+    fallback_map = getattr(_thread_data, "fallback", None)
+    if fallback_map is None:
+        _thread_data.fallback = fallback_map = {}
+
+    derived_map = getattr(_thread_data, "derived", None)
+    if derived_map is None:
+        _thread_data.derived = derived_map = {}
+    else:
+        prev_fallback_languages = fallback_map.get(language)
+        if prev_fallback_languages:
+            for prev_fallback_language in prev_fallback_languages:
+                derived_languages = derived_map.get(prev_fallback_language)
+                if derived_languages is not None:
+                    derived_languages.remove(language)
+
+    fallback_map[language] = OrderedSet(fallback_languages)
+
+    for fallback_language in fallback_languages:
+        derived_languages = derived_map.get(fallback_language)
+        if derived_languages is None:
+            derived_map[fallback_language] = OrderedSet([language])
+        else:
+            derived_languages.append(language)
+
+def add_fallback_language(language, fallback_language):
+    fallback_languages = []
+    language_chain = iter_language_chain(language)
+    language_chain.next()
+    fallback_languages.extend(language_chain)
+    fallback_languages.append(fallback_language)
+    set_fallback_languages(language, fallback_language)
+
+def clear_fallback_languages():
+    _thread_data.fallback = {}
+    _thread_data.derived = {}
 
 
 class TranslationsRepository(DictWrapper):
@@ -89,25 +166,27 @@ class TranslationsRepository(DictWrapper):
         chain = None,
         **kwargs):
         
-        value = ""
         language = require_language(language)
 
         # Translation method
         translation_method = getattr(obj, "__translate__", None)
 
         if translation_method:
-            value = translation_method(language, **kwargs)
+            for lang in iter_language_chain(language):
+                value = translation_method(lang, **kwargs)
+                if value:
+                    return value
         
         # Translation key
-        if not value:
-            translation = self.__translations.get(language, None)
+        for lang in iter_language_chain(language):
+            translation = self.__translations.get(lang, None)
             if translation is not None:
                 value = translation(obj, **kwargs)
+                if value:
+                    return value
 
         # Per-type translation
-        if not value \
-        and not isinstance(obj, basestring) \
-        and hasattr(obj.__class__, "mro"):
+        if not isinstance(obj, basestring) and hasattr(obj.__class__, "mro"):
 
             for cls in obj.__class__.mro():
                 try:
@@ -115,26 +194,26 @@ class TranslationsRepository(DictWrapper):
                 except:
                     type_key = cls.__name__ + "-instance"
                         
-                value = self(type_key, language, instance = obj, **kwargs)
-                
-                if value:
-                    break
+                for lang in iter_language_chain(language):
+                    value = self(type_key, lang, instance = obj, **kwargs)
+                    if value:
+                        return value
         
         # Custom translation chain
-        if not value and chain is not None:
+        if chain is not None:
             value = self(chain, language, default, **kwargs)
+            if value:
+                return value
 
         # Object specific translation chain
-        if not value:
-            object_chain = getattr(obj, "translation_chain", None)
-            if object_chain is not None:
-                value = self(object_chain, language, default, **kwargs)
+        object_chain = getattr(obj, "translation_chain", None)
+        if object_chain is not None:
+            value = self(object_chain, language, default, **kwargs)
+            if value:
+                return value
 
         # Explicit default
-        if not value and default != "":
-            value = unicode(default)
-
-        return value
+        return unicode(default) if default != "" else ""
 
 translations = TranslationsRepository()
 

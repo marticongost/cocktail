@@ -13,6 +13,8 @@ from cocktail.pkgutils import get_full_name
 from cocktail.translations import (
     translations,
     require_language,
+    iter_language_chain,
+    descend_language_tree,
     NoActiveLanguageError
 )
 from cocktail.schema.schema import Schema
@@ -162,11 +164,16 @@ class SchemaClass(EventHub, Schema):
         translations_member = Mapping(
             name = "translations",
             required = True,
-            keys = String(
-                required = True,
-                format = "[a-z]{2}"
+            keys = String(required = True),
+            values = Reference(
+                type = cls.translation,
+                translate_value = lambda value, language = None, **kwargs:
+                    "" if not value else translations("locale",
+                        locale = value,
+                        language = language,
+                        **kwargs
+                    )   
             ),
-            values = cls.translation,
             produce_default = TranslationMapping
         )
 
@@ -260,9 +267,11 @@ class SchemaClass(EventHub, Schema):
                 return self.member
             else:
                 if self.member.translated:
-                    language = require_language(language)
-                    target = instance.translations.get(language)
-                    if target is None:
+                    for language in iter_language_chain(language):
+                        target = instance.translations.get(language)
+                        if target is not None:
+                            break
+                    else:
                         return None
                 else:
                     target = instance
@@ -270,7 +279,9 @@ class SchemaClass(EventHub, Schema):
                 value = getattr(target, self.__priv_key, undefined)
 
                 if value is undefined:
-                    was_producing_default = getattr(instance, "_v_is_producing_default", False)
+                    if getattr(instance, "_v_is_producing_default", False):
+                        return None
+
                     instance._v_is_producing_default = True
                     try:
                         value = self.member.produce_default(instance)
@@ -282,7 +293,7 @@ class SchemaClass(EventHub, Schema):
                         )
                         return self.__get__(instance, type, language)
                     finally:
-                        instance._v_is_producing_default = was_producing_default
+                        instance._v_is_producing_default = False
                 
                 return value
 
@@ -292,20 +303,50 @@ class SchemaClass(EventHub, Schema):
             
             member = self.member
 
-            # For translated members, make sure the translation for the specified
-            # language exists, and then resolve the assignment against it
-            if member.translated:
-                language = require_language(language)
-                target = instance.translations.get(language)
-                if target is None:
-                    target = instance.new_translation(language)
+            if member.translated or member.translation_source:
+
+                if member.translation_source:
+                    translated_member = member.translation_source
+                    translated_object = instance.translated_object
+                    language = instance.language
+                else:
+                    translated_member = member
+                    translated_object = instance
+                    language = require_language(language)
+
+                # Determine which translations are affected by the change, by
+                # following the language fallback tree. This is recorded and
+                # supplied to the changing / changed events. The main use case for
+                # this information is field indexing.
+                translation_changes = {}
+
+                for derived_lang \
+                in translated_object.iter_derived_translations(language):
+                    translation_changes[derived_lang] = \
+                        translated_object.get(
+                            translated_member,
+                            language = derived_lang
+                        )
+
+                # For translated members, make sure the translation for the specified
+                # language exists, and then resolve the assignment against it
+                if member.translated:
+                    target = instance.translations.get(language)
+                    if target is None:
+                        target = instance.new_translation(language)
+                else:
+                    target = instance
             else:
                 target = instance
+                translation_changes = None
 
-            # Value normalization and hooks
             if previous_value is undefined:
                 previous_value = getattr(target, self.__priv_key, None)
 
+            if translation_changes is not None:
+                translation_changes[language] = previous_value
+
+            # Value normalization and hooks
             if member.normalization:
                 value = member.normalization(value)
 
@@ -324,7 +365,8 @@ class SchemaClass(EventHub, Schema):
                     member = member.translation_source or member,
                     language = language,
                     value = value,
-                    previous_value = previous_value
+                    previous_value = previous_value,
+                    translation_changes = translation_changes
                 )
 
                 value = event.value
@@ -334,7 +376,8 @@ class SchemaClass(EventHub, Schema):
                         member = member.translation_source,
                         language = instance.language,
                         value = value,
-                        previous_value = previous_value
+                        previous_value = previous_value,
+                        translation_changes = translation_changes
                     )
 
                 value = event.value
@@ -405,7 +448,8 @@ class SchemaClass(EventHub, Schema):
                     member = member.translation_source or member,
                     language = language,
                     value = value,
-                    previous_value = previous_value
+                    previous_value = previous_value,
+                    translation_changes = translation_changes
                 )
 
                 if member.translation_source:
@@ -413,7 +457,8 @@ class SchemaClass(EventHub, Schema):
                         member = member.translation_source,
                         language = instance.language,
                         value = value,
-                        previous_value = previous_value
+                        previous_value = previous_value,
+                        translation_changes = translation_changes
                     )
 
         def instrument_collection(self, collection, owner, member):
@@ -442,7 +487,8 @@ def _init_translation(cls,
     instance,
     values = None,
     accessor = None,
-    excluded_members = None):
+    excluded_members = None,
+    copy_from_fallback = True):
 
     # Set 'translated_object' and 'language' first, so events for changes in
     # all other members are relayed to the translation owner
@@ -461,6 +507,23 @@ def _init_translation(cls,
         else:
             excluded_members = \
                 set([cls.translated_object, cls.language]) + set(excluded_members)
+
+        # Copy values from the first available fallback translation
+        if (
+            copy_from_fallback
+            and language is not None
+            and translated_object is not None
+        ):
+            languages = iter_language_chain(language)
+            languages.next()
+            get_translation = translated_object.translations.get
+            for lang in languages:
+                base_translation = get_translation(lang)
+                if base_translation is not None:
+                    for key, member in cls.members().iteritems():
+                        if member not in excluded_members:
+                            values.setdefault(key, base_translation.get(key))
+                    break
 
     Schema.init_instance(cls, instance, values, accessor, excluded_members)
 
@@ -503,6 +566,11 @@ class SchemaObject(object):
 
         @ivar previous_value: The current value for the affected member, before
             any change takes place.
+
+        @ivar translation_changes: A dictionary indicating the translations
+            that will be affected by this change, and their respective values
+            before the change takes effect. Will be None if the changed member
+            is not translatable.
         """)
 
     changed = Event(doc = """
@@ -519,6 +587,11 @@ class SchemaObject(object):
 
         @ivar previous_value: The value that the member had before the current
             change.
+
+        @ivar translation_changes: A dictionary indicating the translations
+            that will be affected by this change, and their respective values
+            before the change took effect. Will be None if the changed member
+            is not translatable.
         """)
 
     related = Event(doc = """
@@ -642,6 +715,25 @@ class SchemaObject(object):
             language = language)
         self.translations[language] = translation
         return translation
+
+    def iter_derived_translations(self, language = None, include_self = False):
+        language = require_language(language)
+        for derived_lang in descend_language_tree(
+            language,
+            include_self = include_self
+        ):
+            for chain_lang in iter_language_chain(derived_lang):
+                if chain_lang == language:
+                    yield derived_lang
+                    break
+                elif chain_lang in self.translations:
+                    break
+
+    def get_source_locale(self, locale):
+        translations = self.translations
+        for locale in iter_language_chain(locale):
+            if locale in translations:
+                return locale
 
     def get_searchable_text(self,
         languages, 
