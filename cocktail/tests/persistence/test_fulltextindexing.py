@@ -274,6 +274,29 @@ class FullTextIndexingTranslationsTestCase(TempStorageMixin, TestCase):
         assert not index1_ca.search(u"gos")
         assert not index_ca.search(u"gat")
 
+    def test_unindexes_objects_when_translation_is_removed(self):
+
+        obj = self.test_type()
+        obj.set("field1", u"dog", "en")
+        obj.set("field1", u"gos", "ca")
+        obj.set("field2", u"cat", "en")
+        obj.set("field2", u"gat", "ca")
+        obj.insert()
+        del obj.translations["ca"]
+        
+        index_en = self.test_type.get_full_text_index("en")
+        index1_en = self.test_type.get_full_text_index("en")
+        index_ca = self.test_type.get_full_text_index("ca")
+        index1_ca = self.test_type.get_full_text_index("ca")        
+        
+        assert index_en.search(u"dog")
+        assert index1_en.search(u"dog")
+        assert index_en.search(u"cat")
+
+        assert not index_ca.search(u"gos")
+        assert not index1_ca.search(u"gos")
+        assert not index_ca.search(u"gat")
+
 
 class FullTextIndexingRelationsTestCase(TempStorageMixin, TestCase):
     
@@ -582,4 +605,107 @@ class FullTextIndexingRelationsTestCase(TempStorageMixin, TestCase):
         assert a.id in index_a.search("xxx")
         assert b.id in index_b.search("xxx")
         assert c.id in index_c.search("xxx")
+
+
+class FullTextIndexingTranslationInheritanceTestCase(TempStorageMixin, TestCase):
+
+    def setUp(self):
+
+        TempStorageMixin.setUp(self)
+
+        from cocktail.schema import String
+        from cocktail.persistence import PersistentObject
+
+        class TestObject(PersistentObject):
+
+            full_text_indexed = True
+
+            test_field = String(
+                translated = True,
+                full_text_indexed = True
+            )
+
+        self.test_type = TestObject
+
+    def must_match(self, query, obj, lang):
+
+        type_index = self.test_type.get_full_text_index(lang)
+        assert obj.id in type_index.search(query)
+
+        field_index = self.test_type.test_field.get_full_text_index(lang)
+        assert obj.id in field_index.search(query)
+
+    def must_not_match(self, query, obj, lang):
+
+        type_index = self.test_type.get_full_text_index(lang)
+        assert obj.id not in type_index.search(query)
+
+        field_index = self.test_type.test_field.get_full_text_index(lang)
+        assert obj.id not in field_index.search(query)
+
+    def test_full_text_indexing_works_across_derived_translations(self):
+        
+        from cocktail.translations import fallback_languages_context
+
+        obj = self.test_type()
+        obj.insert()
+
+        with fallback_languages_context({
+            "en-CA": ["en"],
+            "fr-CA": ["fr", "en-CA"]
+        }):
+            obj.set("test_field", u"foo", "en")
+            self.must_match(u"foo", obj, "en")
+            self.must_match(u"foo", obj, "en-CA")
+            self.must_not_match(u"foo", obj, "fr")
+            self.must_match(u"foo", obj, "fr-CA")
+
+            obj.set("test_field", u"bar", "fr")
+            self.must_match(u"foo", obj, "en")
+            self.must_match(u"foo", obj, "en-CA")
+            self.must_not_match(u"foo", obj, "fr-CA")
+            self.must_not_match(u"foo", obj, "fr")
+            self.must_match(u"bar", obj, "fr")
+            self.must_match(u"bar", obj, "fr-CA")
+
+            del obj.translations["fr"]
+            self.must_match(u"foo", obj, "en")
+            self.must_match(u"foo", obj, "en-CA")
+            self.must_match(u"foo", obj, "fr-CA")
+            self.must_not_match(u"bar", obj, "fr-CA")
+            self.must_not_match(u"foo", obj, "fr")
+            self.must_not_match(u"bar", obj, "fr")
+
+    def test_no_automatic_full_text_reindexing_if_the_language_chain_changes(self):
+        
+        from cocktail.translations import fallback_languages_context
+
+        obj = self.test_type()
+        obj.insert()
+
+        with fallback_languages_context({
+            "en-CA": ["en"],
+            "fr-CA": ["fr", "en-CA"]
+        }):
+            obj.set("test_field", u"foo", "en")
+            obj.set("test_field", u"bar", "fr")
+            self.must_match(u"foo", obj, "en")
+            self.must_match(u"foo", obj, "en-CA")
+            self.must_match(u"bar", obj, "fr")
+            self.must_not_match(u"foo", obj, "fr")
+            self.must_match(u"bar", obj, "fr-CA")
+            self.must_not_match(u"foo", obj, "fr-CA")
+
+        with fallback_languages_context({
+            "en-CA": ["en"],
+            "fr-CA": ["en-CA"]
+        }):
+            obj.set("test_field", u"foo", "en")
+            obj.set("test_field", u"bar", "fr")
+            self.must_match(u"foo", obj, "en")
+            self.must_match(u"foo", obj, "en-CA")
+            self.must_match(u"bar", obj, "fr")
+            self.must_not_match(u"foo", obj, "fr")
+            self.must_match(u"bar", obj, "fr-CA")
+            self.must_not_match(u"foo", obj, "fr-CA")
 

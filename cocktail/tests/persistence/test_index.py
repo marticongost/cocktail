@@ -4,6 +4,7 @@ u"""
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
 from unittest import TestCase
+from cocktail.tests.persistence.tempstoragemixin import TempStorageMixin
 
 
 class MultipleValuesIndexTestCase(TestCase):
@@ -258,4 +259,88 @@ class SingleValueIndexTestCase(TestCase):
         self.index.remove(self.keys[0])
         assert self.keys[0] not in list(self.index.keys())
         assert self.values[0] not in list(self.index.values())
+
+
+class TranslationInheritanceIndexingTestCase(TempStorageMixin, TestCase):
+
+    def test_indexing_works_across_derived_translations(self):
+        
+        from cocktail.translations import fallback_languages_context
+        from cocktail import schema
+        from cocktail.persistence import PersistentObject
+
+        class TestObject(PersistentObject):
+
+            test_field = schema.String(
+                translated = True,
+                indexed = True
+            )
+
+        obj = TestObject()
+        obj.insert()
+
+        with fallback_languages_context({
+            "en-CA": ["en"],
+            "fr-CA": ["fr", "en-CA"]
+        }):
+            obj.set("test_field", u"foo", "en")
+            assert set(TestObject.test_field.index.items()) == set([
+                (("en", u"foo"), obj.id),
+                (("en-CA", u"foo"), obj.id),
+                (("fr-CA", u"foo"), obj.id)
+            ])
+
+            obj.set("test_field", u"bar", "fr")
+            assert set(TestObject.test_field.index.items()) == set([
+                (("en", u"foo"), obj.id),
+                (("en-CA", u"foo"), obj.id),
+                (("fr", u"bar"), obj.id),
+                (("fr-CA", u"bar"), obj.id)
+            ])
+
+            del obj.translations["fr"]
+            print list(TestObject.test_field.index.items())
+            assert set(TestObject.test_field.index.items()) == set([
+                (("en", u"foo"), obj.id),
+                (("en-CA", u"foo"), obj.id),
+                (("fr-CA", u"foo"), obj.id)
+            ])
+
+    def test_no_automatic_reindexing_if_the_language_chain_changes(self):
+
+        from cocktail.translations import fallback_languages_context
+        from cocktail import schema
+        from cocktail.persistence import PersistentObject
+
+        class TestObject(PersistentObject):
+
+            test_field = schema.String(
+                translated = True,
+                indexed = True
+            )
+
+        obj = TestObject()
+        obj.insert()
+
+        with fallback_languages_context({
+            "en-CA": ["en"],
+            "fr-CA": ["fr", "en-CA"]
+        }):
+            obj.set("test_field", u"foo", "en")
+            assert set(TestObject.test_field.index.items()) == set([
+                (("en", u"foo"), obj.id),
+                (("en-CA", u"foo"), obj.id),
+                (("fr-CA", u"foo"), obj.id)
+            ])
+
+        with fallback_languages_context({
+            "en-CA": ["en"],
+            "fr-CA": ["fr"]
+        }):
+            obj.set("test_field", u"foo", "en")
+            assert set(TestObject.test_field.index.items()) == set([
+                (("en", u"foo"), obj.id),
+                (("en-CA", u"foo"), obj.id),
+                (("fr-CA", u"foo"), obj.id)
+            ])
 

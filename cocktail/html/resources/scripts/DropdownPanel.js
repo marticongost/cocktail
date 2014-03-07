@@ -9,37 +9,51 @@
 
 cocktail.bind(".DropdownPanel", function ($dropdown) {
 
+    var $button = $dropdown.children(".button");
+
     this.getCollapsed = function () {
         return !$dropdown.hasClass("DropdownPanel-expanded");
     }
 
-    this.setCollapsed = function (collapsed) {
+    this.setCollapsed = function (collapsed, focus /* = false */) {
         if (!collapsed) {
             jQuery(".DropdownPanel-expanded").each(function () {
                 this.setCollapsed(true);
             });
         }
         $dropdown[collapsed ? "removeClass" : "addClass"]("DropdownPanel-expanded");
+        if (focus) {
+            if (collapsed) {
+                $button.focus();
+            }
+            else {
+                $dropdown.find(".panel :input:visible[tabindex!='-1'], .panel a:visible[tabindex!='-1']").first().focus();
+            }
+        }
+        $dropdown.trigger(collapsed ? "collapsed" : "expanded");
     }
 
-    this.toggleCollapsed = function () {
-        this.setCollapsed(!this.getCollapsed());
+    this.toggleCollapsed = function (focus /* = false */) {
+        this.setCollapsed(!this.getCollapsed(), focus);
     }
 
     $dropdown
         .click(function (e) { e.stopPropagation(); })
-        .find(".button").not($dropdown.find(".panel .button"))
-            .click(function () { $dropdown.get(0).toggleCollapsed(); })
-            .keydown(function (e) {
-                if (e.keyCode == 13) {
-                    $dropdown.get(0).toggleCollapsed();
-                    return false;
-                }
-                else if (e.keyCode == 27) {
-                    $dropdown.get(0).setCollapsed(true);
-                    return false;
-                }
-            });
+        .keydown(function (e) {
+            if (e.keyCode == 27) {
+                $dropdown.get(0).setCollapsed(true, true);
+                return false;
+            }
+        });
+
+    $button
+        .click(function () { $dropdown.get(0).toggleCollapsed(true); })
+        .keydown(function (e) {
+            if (e.keyCode == 13) {
+                $dropdown.get(0).toggleCollapsed(true);
+                return false;
+            }
+        });
 });
 
 jQuery(function () {

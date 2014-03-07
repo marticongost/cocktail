@@ -694,3 +694,40 @@ jQuery(function () {
     });
 });
 
+// Highlight keyboard shortcuts
+cocktail.bind("[accesskey]", function () {
+
+    var key = this.accessKey.toLowerCase();
+
+    for (var i = 0; i < this.childNodes.length; i++) {
+
+        var node = this.childNodes[i];
+        
+        if (node.nodeType == 3) {
+            var text = node.nodeValue;
+            var pos = text.toLowerCase().indexOf(key);
+
+            if (pos != -1) {
+
+                this.insertBefore(
+                    document.createTextNode(text.substring(0, pos)),
+                    node
+                );
+
+                var shortcutHighlight = document.createElement('u');
+                shortcutHighlight.className = "shortcut";
+                shortcutHighlight.appendChild(document.createTextNode(text.charAt(pos)));
+                this.insertBefore(shortcutHighlight, node);
+
+                this.insertBefore(
+                    document.createTextNode(text.substring(pos + 1)),
+                    node
+                );
+
+                this.removeChild(node);
+                break;
+            }
+        }
+    }
+});
+

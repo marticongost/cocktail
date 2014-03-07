@@ -13,6 +13,7 @@ from cocktail.pkgutils import get_full_name
 from cocktail.translations.translation import translations
 from cocktail.translations.helpers import (
     ca_possessive,
+    ca_possessive_with_article,
     ca_join,
     ca_either,
     es_join,
@@ -99,16 +100,28 @@ translations.define("cocktail.html.CollectionView no results",
     en = u"The current view has no matching items."
 )
 
-translations.define("Visible members",
+translations.define("cocktail.html.CollectionView.members_dropdown",
     ca = u"Camps",
     es = u"Campos",
     en = u"Fields"
 )
 
-translations.define("Visible languages",
+translations.define("cocktail.html.CollectionView.members_dropdown.shortcut",
+    ca = u"c",
+    es = u"c",
+    en = u"f"
+)
+
+translations.define("cocktail.html.CollectionView.languages_dropdown",
     ca = u"Idiomes",
     es = u"Idiomas",
     en = u"Languages"
+)
+
+translations.define("cocktail.html.CollectionView.languages_dropdown.shortcut",
+    ca = u"i",
+    es = u"i",
+    en = u"l"
 )
 
 translations.define("Filters",
@@ -870,6 +883,25 @@ translations.define("DescendsFromFilter.include_self",
 
 # Languages
 #------------------------------------------------------------------------------
+def _translate_locale(locale):
+    trans = translations(locale)
+    if not trans:
+        parts = locale.split("-")
+        if len(parts) == 2:
+            trans = translations(parts[0])
+            if trans:
+                trans += " - %s" % parts[1].upper()
+
+    return trans
+
+translations.define("locale",
+    ca = _translate_locale,
+    es = _translate_locale,
+    en = _translate_locale,
+    fr = _translate_locale,
+    de = _translate_locale
+)
+
 translations.define("ca",
     ca = u"Català",
     es = u"Catalán",
@@ -937,10 +969,40 @@ translations.define("nl",
     nl = u"Nederlands"
 )
 
+translations.define("tr",
+    ca = u"Turc",
+    es = u"Turco",
+    en = u"Turkish",
+    tr = u"Türkçe"
+)
+
+translations.define("ko",
+    ca = u"Coreà",
+    es = u"Coreano",
+    en = u"Korean",
+    ko = u"Hanguk"
+)
+
+translations.define("jp",
+    ca = u"Japonès",
+    es = u"Japonés",
+    en = u"Japanese",
+    jp = u"日本語"
+)
+
+translations.define("cn",
+    ca = u"Xinès",
+    es = u"Chino",
+    en = u"Chinese",
+    cn = u"汉语"
+)
+
 translations.define("translated into",
-    ca = lambda lang: "en " + translations(lang),
-    es = lambda lang: "en " + translations(lang),
-    en = lambda lang: "in " + translations(lang)
+    ca = lambda lang: "en " + translations("locale", locale = lang),
+    es = lambda lang: "en " + translations("locale", locale = lang),
+    en = lambda lang: "in " + translations("locale", locale = lang),
+    fr = lambda lang: "en " + translations("locale", locale = lang),
+    de = lambda lang: "auf " + translations("locale", locale = lang)
 )
 
 translations.define("cocktail.schema.Member qualified",
@@ -987,7 +1049,7 @@ def member_identifier(error):
         if error.language:
             desc.append("%s (%s)" % (
                 translations(error.member).lower(),
-                translations(error.language)
+                translations("locale", locale = error.language)
             ))
         else:
             desc.append(translations(error.member).lower())
@@ -2046,6 +2108,23 @@ translations.define("cocktail.html.TweetButton",
     en = u"Tweet"
 )
 
+# html.TranslationDisplay
+#------------------------------------------------------------------------------
+translations.define(
+    "cocktail.html.TranslationDisplay.translation_inheritance_remark",
+    ca = lambda source_locale:
+        u"Traducció heretada %s" 
+        % ca_possessive_with_article(
+            translations("locale", locale = source_locale)
+        ),
+    es = lambda source_locale:
+        u"Traducción heredada de %s"
+        % translations("locale", locale = source_locale),
+    en = lambda source_locale:
+        u"Translation inherited from %s"
+        % translations("locale", locale = source_locale)
+)
+
 # IBANEntry
 #------------------------------------------------------------------------------
 translations.define("cocktail.html.IBANEntry.iban_explanation.summary",
@@ -2131,5 +2210,21 @@ translations.define("cocktail.html.SWIFTBICEntry.swiftbic_explanation",
             the bank to request it.
         </p>
         """
+)
+
+# SearchableCheckList
+#------------------------------------------------------------------------------
+translations.define(
+    "cocktail.html.SearchableCheckList.search_controls.select_all_link",
+    ca = u"Seleccionar-ho tot",
+    es = u"Seleccionarlo todo",
+    en = u"Select all"
+)
+
+translations.define(
+    "cocktail.html.SearchableCheckList.search_controls.empty_selection_link",
+    ca = u"Buidar la selecció",
+    es = u"Vaciar la selección",
+    en = u"Empty the selection"
 )
 
