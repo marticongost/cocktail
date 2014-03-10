@@ -1,0 +1,4 @@
+syntax: glob
+cocktail.egg-info
+build
+dist

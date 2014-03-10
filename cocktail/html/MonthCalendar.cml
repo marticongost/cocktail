@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?py
+import calendar
+from datetime import date, timedelta
+?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:py="http://www.whads.com/ns/cocktail/templates">
+
+    <?py-class
+    year = None
+    month = None
+    abbreviated_headers = True
+
+    def _get_month_dates(self):
+        
+        month_cal = calendar.monthcalendar(self.year, self.month)
+ 
+        # Fix the first row in the calendar
+        first_week = []
+        weeks = [first_week]
+        one_day = timedelta(days = 1)
+        current_date = None
+
+        for day in reversed(month_cal[0]):
+            if day:
+                current_date = date(self.year, self.month, day)
+            else:
+                current_date = current_date - one_day
+            first_week.append(current_date)
+
+        first_week.reverse()
+
+        # Leave the middle rows untouched
+        for week in month_cal[1:-1]:
+            weeks.append([date(self.year, self.month, day) for day in week])
+
+        # Fix the last row
+        current_date = None
+        last_week = []
+        weeks.append(last_week)
+
+        for day in month_cal[-1]:
+            if day:
+                current_date = date(self.year, self.month, day)
+            else:
+                current_date = current_date + one_day
+            last_week.append(current_date)
+        
+        return weeks
+    ?>
+
+    <py:binding>
+        <?py        
+        self._today = date.today()
+        
+        if self.year is None:
+            self.year = self._today.year
+
+        if self.month is None:
+            self.month = self._today.month
+        ?>
+    </py:binding>
+
+    <table py:id="calendar_grid">
+        <thead py:local_id="thead">
+            <tr>
+                <py:ready>
+                    <?py
+                    header_style = " abbr" if self.abbreviated_headers else ""
+                    ?>
+                    <th py:for="week_day in range(7)">
+                        ${translations("weekday %d%s" % (week_day, header_style))}
+                    </th>
+                </py:ready>
+            </tr>
+        </thead>
+        <tbody py:local_id="tbody">
+            <py:ready>
+                <py:new
+                    py:element="self.create_week_row(i, days)"
+                    py:for="i, days in enumerate(self._get_month_dates())"/>
+            </py:ready>
+        </tbody>
+    </table>
+
+    <tr py:def="week_row" py:args="index, days">
+        <?py
+        element.add_class("week%d" % index)                    
+        ?>
+        <py:new
+            py:element="self.create_day_cell(day)"
+            py:for="day in days"/>
+    </tr>
+
+    <td py:def="day_cell" py:args="day">
+        <?py
+        if day.month != self.month:
+            element.add_class("other_month")
+        if day == self._today:
+            element.add_class("today")
+        ?>
+        <span py:local_id="label">${day.day}</span>
+    </td>
+
+</div>
+

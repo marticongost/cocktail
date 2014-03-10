@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?py
+from cocktail.controllers import Location
+?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:py="http://www.whads.com/ns/cocktail/templates">
+
+    <?py-class
+    href = None
+    send = False
+    layout = "standard"
+    show_faces = False
+    width = 450
+    action = "like"
+    font = "arial"
+    colorscheme = "light"
+    ref = None
+    locale = None
+
+    locales_by_language = {
+        "ca": "ca_ES",
+        "es": "es_ES",
+        "en": "en_US",
+        "pl": "pl_PL",
+        "de": "de_DE",
+        "nl": "nl_NL"
+    }
+    ?>
+
+    <?py
+    @self.when_document_ready
+    def include_fbml(document):
+        if not hasattr(document, "fbml_block"):
+            document.fbml_block = self.create_fbml_block()
+            document.body.append(document.fbml_block)
+    ?>
+
+    <py:block py:def="fbml_block">
+        <div id="fb-root"></div>
+        <?py
+        locale = self.locale
+        if not locale:
+            locale = self.locales_by_language.get(get_language(), "en_US")
+
+        script = """<script>(function(d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) return;
+            js = d.createElement(s); js.id = id;
+            js.src = "//connect.facebook.net/%s/all.js#xfbml=1";
+            fjs.parentNode.insertBefore(js, fjs);
+            }(document, 'script', 'facebook-jssdk'));</script>""" % locale
+        element.append(script)
+        ?>
+    </py:block>
+
+    <div
+        class="fb-like"
+        data-href="@{self.href or unicode(Location.get_current(relative = False))}"
+        data-send="@{'true' if self.send else 'false'}"
+        data-layout="@{self.layout}"
+        data-show-faces="@{'true' if self.show_faces else 'false'}"
+        data-width="@{self.width}"
+        data-action="@{self.action}"
+        data-font="@{self.font}"
+        data-colorscheme="@{self.colorscheme}"
+        data-ref="@{self.ref}"></div>
+
+</div>
+

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?py
+from cocktail.controllers import (
+    get_parameter,
+    CookieParameterSource
+)
+from cocktail.schema import Integer
+?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:py="http://www.whads.com/ns/cocktail/templates">
+
+    <?py-class
+    size = None
+    min_text_size = 0
+    max_text_size = 4
+    param_name = "text_size"   
+    ?>
+
+    <?py
+    self.add_resource("/cocktail/scripts/jquery.cookie.js")
+    self.add_resource("/cocktail/scripts/TextSizeBar.js")
+
+    @self.when_document_ready
+    def modify_document_size(document):
+        size = self.size
+        document.body.add_class("text_size-%d" % size)
+        document.body.set_style("font-size", "%d%%" % (100 + size * 10))
+    ?>
+
+    <py:ready>
+        <?py
+        cookie_source = CookieParameterSource()
+
+        if self.size is None:
+            self.size = get_parameter(
+                Integer(
+                    self.param_name,
+                    default = 0,
+                    max = self.max_text_size,
+                    min = self.min_text_size
+                ),
+                source = cookie_source,
+                errors = "set_default",
+                undefined = "set_default"
+            )
+
+        self.set_client_param("textSize", self.size)
+        self.set_client_param("minTextSize", self.min_text_size)
+        self.set_client_param("maxTextSize", self.max_text_size)
+        self.set_client_param(
+            "textSizeCookie", 
+            cookie_source.get_cookie_name(self.param_name)
+        )
+        ?>
+    </py:ready>
+
+    <form method="GET">
+        <input type="hidden" name="@{self.param_name}" value="@{self.size - 1}"/>
+        <button py:id="decrease_size_button" 
+            type="submit"
+            disabled="@{self.min_text_size is not None and self.size &lt;= self.min_text_size}">A<sup>-</sup>
+        </button>
+    </form>
+
+    <form method="GET">
+        <input type="hidden" name="@{self.param_name}" value="@{self.size + 1}"/>
+        <button py:id="increase_size_button"
+            type="submit"
+            disabled="@{self.max_text_size is not None and self.size &gt;= self.max_text_size}">A<sup>+</sup></button>
+    </form>
+
+</div>
+

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?py
+from cocktail import schema
+from cocktail.html.databoundcontrol import data_bound
+?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:py="http://www.whads.com/ns/cocktail/templates">
+
+    <?py-class
+    name = None
+    value = None
+    async_upload_url = None
+
+    def insert_into_form(self, form, field_instance):
+        # Overriden to automatically change the encoding of the enclosing form
+        # to multipart/form-data
+        if not form.embeded:
+            form["enctype"] = "multipart/form-data"
+        field_instance.append(self)
+    ?>
+
+    <?py
+    self.add_resource("/cocktail/valums-ajax-upload/fileuploader.css")
+    self.add_resource("/cocktail/styles/AsyncFileUploader.css")
+    self.add_resource("/cocktail/valums-ajax-upload/fileuploader.js")
+    self.add_resource("/cocktail/scripts/AsyncFileUploader.js")
+
+    data_bound(self)
+    ?>
+
+    <py:ready>
+        <?py
+        upload_member = None
+        if self.member:
+            if isinstance(self.member, schema.Collection):
+                upload_member = self.member.items
+                self._multiple_files = True
+            else:
+                upload_member = self.member
+                self._multiple_files = False
+
+        self.set_client_param("multipleFiles", self._multiple_files)
+        
+        self._async_prefix = upload_member and upload_member.async_prefix or "async-"
+        self.set_client_param("asyncPrefix", self._async_prefix)        
+        
+        self.set_client_param("asyncUploadUrl", 
+            self.async_upload_url or upload_member and upload_member.async_upload_url
+        )
+        ?>
+    </py:ready>
+
+    <div py:id="uploaded_files">
+        <py:ready>
+            <?py
+            if self.value:
+                uploads = self.value if self._multiple_files else (self.value,)
+                for upload in uploads:
+                    element.append(self.create_upload_info(upload))
+            ?>
+        </py:ready>
+    </div>
+
+    <noscript>
+        <py:cocktail.html.FileUploadBox
+            py:id="synchronous_upload_box"
+            name="@{self.name}"/>
+    </noscript>
+
+    <py:cocktail.html.UploadInfo
+        py:def="upload_info"
+        py:args="upload = None"
+        py:value="${upload}">
+        <?py
+        upload_id = None
+        if upload:
+            upload_id = upload.get("id")
+            if upload_id:
+                upload_id = self._async_prefix + str(upload_id)        
+        ?>
+        <button 
+            py:local_id="remove_button"
+            type="button"
+            py:visible="@{self._multiple_files}">
+            ✖
+        </button>
+        <input type="hidden" name="@{self.name}" value="${upload_id}"/>
+    </py:cocktail.html.UploadInfo>
+
+    <py:new 
+        py:element="self.create_upload_info()"
+        py:client_model="cocktail.html.AsyncFileUploader.upload_info"/>
+    
+    <div
+        py:id="uploader"
+        py:client_model="cocktail.html.AsyncFileUploader.uploader">
+        <div py:id="drop_area">
+            ${translations("cocktail.html.AsyncFileUploader.drop_area")}
+        </div>
+        <div py:id="button">${translations('cocktail.html.AsyncFileUploader.button')}</div>
+        <div py:id="progress_bar_frame">
+            <span py:id="progress_label"></span>
+            <div py:id="progress_bar"></div>
+        </div>
+    </div>
+
+</div>
+

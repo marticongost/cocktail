@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?py
+from cocktail.pkgutils import get_full_name
+?>
+
+<ul
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:py="http://www.whads.com/ns/cocktail/templates"
+    py:collapsible="${True}">
+    
+    <?py-class
+    errors = ()
+
+    def translate_error(self, error):
+        member = getattr(error, "member")
+        return member.translate_error(error) if member else translations(error)
+    ?>
+
+    <py:ready>
+        <py:new py:element="self.create_entry(error)"
+            py:for="error in self.errors"/>
+    </py:ready>
+
+    <li py:def="entry" py:args="error">
+        ${self.translate_error(error)}
+    </li>
+
+</ul>
+

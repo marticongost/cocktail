@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<a
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:py="http://www.whads.com/ns/cocktail/templates"
+    class="twitter-timeline">
+
+    <?py-class
+    widget_id = None
+    theme = None
+    link_color = None
+    width = None
+    height = None
+    related = None
+    ?>
+
+    <py:ready>
+        <?py
+        self["data-widget-id"] = self.widget_id
+
+        if self.theme:
+            self["data-theme"] = self.theme
+
+        if self.link_color:
+            self["data-link-color"] = self.link_color
+
+        if self.width:
+            self["width"] = self.width
+
+        if self.height:
+            self["height"] = self.height
+
+        if self.related:
+            self["data-related"] = self.related
+        ?>
+    </py:ready>
+
+    <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+
+</a>
+
