@@ -894,13 +894,25 @@ def _translate_locale(locale):
 
     return trans
 
-translations.define("locale",
-    ca = _translate_locale,
-    es = _translate_locale,
-    en = _translate_locale,
-    fr = _translate_locale,
-    de = _translate_locale
-)
+translations.define("locale", **dict(
+    (lang, _translate_locale)
+    for lang in (
+        "ca",
+        "cn",
+        "de",
+        "en",
+        "es",
+        "fr",
+        "it",
+        "jp",
+        "ko",
+        "nl",
+        "pl",
+        "pt",
+        "ru",
+        "tr"
+    )
+))
 
 translations.define("ca",
     ca = u"Català",
