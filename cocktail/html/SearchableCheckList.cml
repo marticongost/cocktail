@@ -60,6 +60,9 @@ from cocktail.html.databoundcontrol import data_bound
 
     <py:cocktail.html.CheckList
         py:id="check_list"
+        py:member="@{self.member}"
+        py:data_display="@{self.data_display}"
+        py:language="@{self.language}"
         py:name="@{self.name}"
         py:items="@{self.items}"
         py:value="@{self.value}"/>
