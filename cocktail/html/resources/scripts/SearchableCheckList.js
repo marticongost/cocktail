@@ -80,6 +80,7 @@ cocktail.bind(".SearchableCheckList.search_enabled", function ($control) {
 
     $checkList.on("selectionChanged", toggleSelectionLinks);
     $control.on("searched", toggleSelectionLinks);
+    $control.on("containingDropdownExpanded", toggleSelectionLinks);
 
     this.applySearch($searchBox.val());
 });
