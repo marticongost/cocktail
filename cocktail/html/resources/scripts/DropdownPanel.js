@@ -31,6 +31,7 @@ cocktail.bind(".DropdownPanel", function ($dropdown) {
             }
         }
         $dropdown.trigger(collapsed ? "collapsed" : "expanded");
+        $dropdown.find("*").trigger("containingDropdown" + (collapsed ? "Collapsed" : "Expanded"))
     }
 
     this.toggleCollapsed = function (focus /* = false */) {
