@@ -2,3 +2,4 @@ syntax: glob
 cocktail.egg-info
 build
 dist
+cocktail/html/resources/scripts/tinymce

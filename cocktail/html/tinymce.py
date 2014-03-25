@@ -21,17 +21,11 @@ class TinyMCE(Element):
             if "tinymce_params" not in members:
                 cls.tinymce_params = {}
 
-    default_tinymce_params = {} # deprecated
     tinymce_params = {}
 
     def __init__(self, *args, **kwargs):
         self.tinymce_params = {}
         Element.__init__(self, *args, **kwargs)
-        data_bound(self)
-        self.add_resource(
-            "/cocktail/scripts/TinyMCE.js")
-        self.add_resource(
-            "/resources/scripts/tinymce/jscripts/tiny_mce/tiny_mce_src.js")
 
     def aggregate_tinymce_params(self):
 
@@ -42,19 +36,13 @@ class TinyMCE(Element):
             if class_params:
                 params.update(class_params)
 
-        if self.default_tinymce_params:
-            warn(
-                "TinyMCE.default_tinymce_params is deprecated, use "
-                "TinyMCE.tinymce_params instead",
-                DeprecationWarning,
-                stacklevel = 2
-            )
-            params.update(self.default_tinymce_params)
-
         params.update(self.tinymce_params)
         return params
 
     def _build(self):
+        data_bound(self)
+        self.add_resource("/cocktail/scripts/tinymce/js/tinymce/tinymce.min.js")
+        self.add_client_code("tinymce.init(this.tinymceSettings);")
         self.textarea = templates.new("cocktail.html.TextArea")
         self.append(self.textarea)
         self.binding_delegate = self.textarea
