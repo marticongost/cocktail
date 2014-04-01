@@ -26,6 +26,7 @@ from cocktail.schema import (
     Color,
     CodeBlock
 )
+from cocktail.persistence import PersistentObject
 from cocktail.controllers.fileupload import FileUpload
 from cocktail.html import Element, templates
 from cocktail.html.datadisplay import DataDisplay, display_factory
@@ -160,7 +161,8 @@ class Form(Element, DataDisplay):
             self.schema = form.schema
             self.data = form.data
             self.errors = form.errors
-            self.persistent_object = form.instance
+            if isinstance(form.instance, PersistentObject):
+                self.persistent_object = form.instance
 
     form = property(_get_form, _set_form, doc = """
         A convenience property that sets up the form using information
