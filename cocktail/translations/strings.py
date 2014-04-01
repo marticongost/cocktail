@@ -10,6 +10,7 @@ import re
 from datetime import datetime
 from decimal import Decimal
 from cocktail.pkgutils import get_full_name
+from cocktail.stringutils import decapitalize
 from cocktail.translations.translation import translations
 from cocktail.translations.helpers import (
     ca_possessive,
@@ -1052,7 +1053,7 @@ def member_identifier(error):
 
     for member, validable, index in path:
         if isinstance(member, RelationMember):
-            label = translations(member).lower()
+            label = decapitalize(translations(member))
             if index is not None:
                 label += " #%d" % (index + 1)
             desc.append(label)
@@ -1060,11 +1061,11 @@ def member_identifier(error):
     if not path or error.member is not path[-1][0]:
         if error.language:
             desc.append("%s (%s)" % (
-                translations(error.member).lower(),
+                decapitalize(translations(error.member)),
                 translations("locale", locale = error.language)
             ))
         else:
-            desc.append(translations(error.member).lower())
+            desc.append(decapitalize(translations(error.member)))
     
     return u" &gt; ".join(desc)
 
