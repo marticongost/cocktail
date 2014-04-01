@@ -697,7 +697,7 @@ jQuery(function () {
 // Highlight keyboard shortcuts
 cocktail.bind("[accesskey]", function () {
 
-    var key = this.accessKey.toLowerCase();
+    var key = this.getAttribute("accesskey").toLowerCase();
 
     for (var i = 0; i < this.childNodes.length; i++) {
 
