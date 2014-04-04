@@ -115,8 +115,7 @@ schema.String.full_text_index_key = property(
 def _create_full_text_index(self):
     lexicon = Lexicon(
         Splitter(),
-        CaseNormalizer(),
-        StopWordRemover()
+        CaseNormalizer()
     )
     return OkapiIndex(lexicon)
 
