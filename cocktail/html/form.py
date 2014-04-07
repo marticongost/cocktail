@@ -289,20 +289,24 @@ class Form(Element, DataDisplay):
         fieldset = Element("fieldset") 
         fieldset.add_class(group_id.replace(".", "-"))
 
-        label = self.get_group_label(group_id)
-        if label:            
-            fieldset.legend = Element("legend")
-            fieldset.legend.append(label)
-            fieldset.append(fieldset.legend)
-        else:
-            fieldset.legend = None
+        fieldset.legend = self.create_fieldset_legend(group_id)
+        if fieldset.legend is None:
             fieldset.add_class("anonymous")
+        else:
+            fieldset.append(fieldset.legend)
 
         fieldset.fields = Element("table" if self.table_layout else "div")
         fieldset.fields.add_class("fieldset_fields")
         fieldset.append(fieldset.fields)
 
         return fieldset
+
+    def create_fieldset_legend(self, group_id):
+        label = self.get_group_label(group_id)
+        if label:
+            legend = Element("legend")
+            legend.append(label)
+            return legend
 
     def create_field(self, member):
 
