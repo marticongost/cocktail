@@ -29,10 +29,14 @@ def create_join_function(language, sep1, sep2):
         if not isinstance(sequence, (list, ListWrapper)):
             sequence = list(sequence)
 
-        if len(sequence) > 1:
+        count = len(sequence)
+
+        if count > 1:
             return sep1.join(sequence[:-1]) + sep2 + sequence[-1]
-        else:
+        elif count == 1:
             return sequence[0]
+        else:
+            return ""
 
     join.func_name = language + "_join"
     return join
