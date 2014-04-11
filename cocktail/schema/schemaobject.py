@@ -501,6 +501,9 @@ def _init_translation(cls,
         translated_object = values.pop("translated_object")
         if translated_object is not None:
             instance.translated_object = translated_object
+            
+        if language is not None and translated_object is not None:
+            translated_object.translations[language] = instance
 
         if excluded_members is None:
             excluded_members = (cls.translated_object, cls.language)
@@ -710,11 +713,10 @@ class SchemaObject(object):
         setter(self, value, language)
 
     def new_translation(self, language):
-        translation = self.translation(
+        return self.translation(
             translated_object = self,
-            language = language)
-        self.translations[language] = translation
-        return translation
+            language = language
+        )
 
     def iter_derived_translations(self, language = None, include_self = False):
         language = require_language(language)
