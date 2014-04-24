@@ -1047,7 +1047,6 @@ class Element(object):
     def add_resource(self,
         resource,
         mime_type = None,
-        ie_condition = None,
         **kwargs
     ):
         """Links a `resource <resources>` to the element.
@@ -1065,19 +1064,13 @@ class Element(object):
             that can't be accomplished by looking at their file extension.
         :type mime_type: str
 
-        :param ie_condition: Indicates that the linked resource should be
-            wrapped in an Internet Explorer `conditional comment 
-            <http://msdn.microsoft.com/en-us/library/ms537512(VS.85).aspx>`
-            with the specified expression.
-        :type ie_condition: str
-
         :param kwargs: Additional keyword arguments supplied to the
             instantiated L{Resource}.
         """
         # Normalize the resource
         if isinstance(resource, basestring):
             uri = resource
-            resource = Resource.from_uri(uri, mime_type, ie_condition, **kwargs)
+            resource = Resource.from_uri(uri, mime_type, **kwargs)
         else:
             if mime_type or ie_condition:
                 raise ValueError(

@@ -31,3 +31,36 @@ class IEConditionalComment(Element):
             if condition:
                 rendering.write(u"<![endif]-->")
 
+
+class IEWrapper(Element):
+
+    styled_class = False
+    ie_versions = [6, 7, 8, 9]
+
+    def _render(self, rendering):
+        if self.rendered:
+
+            if not self.ie_versions:
+                Element._render(self, rendering)
+                return
+
+            css_class = self["class"] or ""
+
+            for version in self.ie_versions:
+                rendering.write(u"<!--[if IE %d]>" % version)
+                self["class"] = (css_class + " IE IE%d" % version).lstrip()
+                rendering.renderer.write_element_opening(self, rendering)
+                rendering.write(u"<![endif]-->")
+
+            rendering.write(u"<!--[if !IE]> -->")
+            self["class"] = (css_class + " not_IE").lstrip()
+            should_write_content = \
+                rendering.renderer.write_element_opening(self, rendering)
+            rendering.write(u"<!-- <![endif]-->")
+
+            self["class"] = css_class
+
+            if should_write_content:
+                rendering.renderer.write_element_content(self, rendering)
+                rendering.renderer.write_element_closure(self, rendering)
+
