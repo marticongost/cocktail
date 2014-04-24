@@ -36,9 +36,15 @@ from cocktail.html.element import (
 from cocktail.html.resources import (
     Resource, 
     Script,
-    StyleSheet
+    StyleSheet,
+    resource_repositories,
+    LinkedResources,
+    EmbeddedResources,
+    ScriptBundle,
+    StyleBundle
 )
 from cocktail.html.documentmetadata import DocumentMetadata
+from cocktail.html.document import HTMLDocument
 from cocktail.html.overlay import Overlay
 from cocktail.html.utils import (
     alternate_classes,

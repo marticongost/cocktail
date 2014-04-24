@@ -6,7 +6,7 @@ u"""Defines the `HTMLDocument` class.
 from simplejson import dumps
 from cocktail.translations import translations, get_language
 from cocktail.html.element import Element, Content
-from cocktail.html.ieconditionalcomment import IEConditionalComment
+from cocktail.html.ieconditionalcomment import IEConditionalComment, IEWrapper
 from cocktail.html.resources import Script, StyleSheet
 from cocktail.html.rendering import Rendering
 from cocktail.html.utils import rendering_html5, rendering_xml
@@ -27,8 +27,8 @@ class HTMLDocument(Element):
     """
     __core_scripts_added = False
     core_scripts = [
-        "/cocktail/scripts/jquery.js",
-        "/cocktail/scripts/core.js"
+        Script("/cocktail/scripts/jquery.js"),
+        Script("/cocktail/scripts/core.js")
     ]
 
     tag = "html"
@@ -37,6 +37,7 @@ class HTMLDocument(Element):
     metadata = DocumentMetadata()
     rendering_options = {}
     ie_html5_workaround = True
+    resource_sets = []
 
     def _render(self, rendering):
 
@@ -73,13 +74,12 @@ class HTMLDocument(Element):
         
         self.client_setup = Element("script")
         self.client_setup["type"] = "text/javascript"
-        self.client_setup.append("// cocktail.html client-side setup\n")
         self.head.append(self.client_setup)
-        
+
         self.client_setup_container = Element(None)
         self.client_setup.append(self.client_setup_container)
 
-        self.body = Element("body")
+        self.body = IEWrapper("body")
         self.append(self.body)
 
     def _ready(self):
@@ -152,54 +152,52 @@ class HTMLDocument(Element):
                 ])
             )
 
-        for resource in self.metadata.resources:
-            self._add_resource(resource)
+        resource_sets = self.create_resource_sets()
 
-    def _add_resource(self, resource):
+        if resource_sets:
+            remaining_resources = []
 
-        if isinstance(resource, Script):
-            self._add_core_scripts()
-            script = Element("script")
-            script["type"] = resource.mime_type
-            script["src"] = resource.uri
-
-            if resource.async:
-                script["async"] = "true"
-
-            script = self._apply_ie_condition(resource, script)
-            self.scripts_container.append(script)
-
-        elif isinstance(resource, StyleSheet):
-            style_sheet = Element("link")
-            style_sheet["rel"] = "Stylesheet"
-            style_sheet["type"] = resource.mime_type
-            style_sheet["href"] = resource.uri
-            style_sheet = self._apply_ie_condition(resource, style_sheet)
-            self.styles_container.append(style_sheet)
-
+            for resource in self.metadata.resources:
+                for resource_set in resource_sets:
+                    if resource_set.matches(resource):
+                        resource_set.append(resource)
+                        break
+                else:
+                    remaining_resources.append(resource)
+            
+            for resource_set in resource_sets:
+                resource_set.insert_into_document(self)
         else:
-            raise TypeError(
-                "%s is not capable of rendering %s, unknown resource type."
-                % (self, resource)
-            )
+            remaining_resources = self.metadata.resources
 
-    def _apply_ie_condition(self, resource, element):
-        if resource.ie_condition:
-            comment = IEConditionalComment(resource.ie_condition)
-            comment.append(element)
-            return comment
-        else:
-            return element
+        for resource in remaining_resources:
+            resource.link(self)
+
+    def create_resource_sets(self):
+        resource_sets = []
+
+        for resource_set_spec in self.resource_sets:
+            if isinstance(resource_set_spec, tuple):
+                resource_set = resource_set_spec[0](**resource_set_spec[1])
+            elif callable(resource_set_spec):
+                resource_set = resource_set_spec()
+            else:
+                raise TypeError(
+                    "Bad resource set spec: %s. Expected a callable, or a "
+                    "callable/kwargs tuple."
+                    % resource_set_spec
+                )
+            resource_sets.append(resource_set)
+
+        return resource_sets
 
     def _add_core_scripts(self):
         
         if not self.__core_scripts_added:
             self.__core_scripts_added = True
-            
-            for uri in self.core_scripts:
-                script = Script(uri)
-                if script not in self.metadata.resources:
-                    self._add_resource(script)
+
+            for uri in reversed(self.core_scripts):
+                self.metadata.resources.insert(0, uri)
 
             language = self.metadata.language or get_language()
             self.client_setup.append(

@@ -37,6 +37,12 @@ class Renderer(object):
 
     def write_element(self, element, rendering):
 
+        if self.write_element_opening(element, rendering):
+            self.write_element_content(element, rendering)
+            self.write_element_closure(element, rendering)
+
+    def write_element_opening(self, element, rendering):
+
         tag = element.tag
         out = rendering.write
 
@@ -66,11 +72,15 @@ class Renderer(object):
                         "Children not allowed on <%s> tags" % tag)
 
                 out(self.single_tag_closure)
-                return
+                return False
 
             # Beginning of tag content
             else:
                 out(u">")
+
+        return True
+
+    def write_element_content(self, element, rendering):
         
         for child in element.children:
             rendering.render_element(child)
@@ -82,8 +92,10 @@ class Renderer(object):
                 child.cache_expiration
             )
 
+    def write_element_closure(self, element, rendering):        
+        tag = element.tag
         if tag:
-            out(u"</" + tag + u">")
+            rendering.write(u"</" + tag + u">")
 
 
 class HTMLRenderer(Renderer):
