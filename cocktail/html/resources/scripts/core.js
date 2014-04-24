@@ -474,7 +474,7 @@ cocktail._updateElement = function (params) {
         var scriptStart = params.data.indexOf(cocktail.CLIENT_ASSETS_MARK)
         if (scriptStart != -1) {
             scriptStart += cocktail.CLIENT_ASSETS_MARK.length;
-            var scriptEnd = params.data.indexOf("</script>", scriptStart);
+            var scriptEnd = params.data.indexOf("<" + "/script>", scriptStart);
             if (scriptEnd != -1) {
                 clientAssets = params.data.substring(scriptStart, scriptEnd);
             }
