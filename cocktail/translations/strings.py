@@ -1369,7 +1369,8 @@ translations.define("Decimal parser",
     es = lambda: _thousands_parser(".", ","),
     en = lambda: _thousands_parser(",", "."),
     de = lambda: _thousands_parser(".", ","),
-    fr = lambda: _thousands_parser(".", ",")
+    fr = lambda: _thousands_parser(".", ","),
+    pt = lambda: _thousands_parser(".", ",")
 )
 
 translations.define("decimal.Decimal-instance",
@@ -1377,7 +1378,8 @@ translations.define("decimal.Decimal-instance",
     es = lambda instance: _serialize_thousands(instance, ".", ","),
     en = lambda instance: _serialize_thousands(instance, ",", "."),
     de = lambda instance: _serialize_thousands(instance, ".", ","),
-    fr = lambda instance: _serialize_thousands(instance, ".", ",")
+    fr = lambda instance: _serialize_thousands(instance, ".", ","),
+    pt = lambda instance: _serialize_thousands(instance, ".", ",")
 )
 
 # Grouping
