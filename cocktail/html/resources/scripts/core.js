@@ -698,6 +698,9 @@ jQuery(function () {
 cocktail.bind("[accesskey]", function () {
 
     var key = this.getAttribute("accesskey").toLowerCase();
+    if (!key) {
+        return;
+    }
 
     for (var i = 0; i < this.childNodes.length; i++) {
 
