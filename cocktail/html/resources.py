@@ -327,6 +327,7 @@ class ResourceAggregator(ResourceSet):
     
     read_chunk_size = 1024 * 4
     source_encoding = "utf-8"
+    file_glue = "\n"
 
     def matches(self, resource):
         return (
@@ -357,7 +358,7 @@ class ResourceAggregator(ResourceSet):
     def write_source(self, dest):
         for resource in self:
             self.write_resource_source(resource, dest)
-            dest.write("\n")
+            dest.write(self.file_glue)
 
     def write_resource_source(self, resource, dest):
         chunk_size = self.read_chunk_size
@@ -494,6 +495,7 @@ class ResourceBundle(ResourceAggregator):
 
 class ScriptBundle(ResourceBundle):
     file_extension = ".js"
+    file_glue = "\n;\n"
     _default_mime_type = "text/javascript"
 
 
