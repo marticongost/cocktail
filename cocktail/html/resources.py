@@ -357,6 +357,7 @@ class ResourceAggregator(ResourceSet):
     def write_source(self, dest):
         for resource in self:
             self.write_resource_source(resource, dest)
+            dest.write("\n")
 
     def write_resource_source(self, resource, dest):
         chunk_size = self.read_chunk_size
