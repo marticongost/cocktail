@@ -689,8 +689,12 @@ class Query(object):
             return len(self.execute(_sorted = False))
 
     def __nonzero__(self):
+        if self.cached and self.__cached_length is not None:
+            return bool(self.__cached_length)
+
         for id in self.execute(_sorted = False, _sliced = False):
             return True
+
         return False
 
     def __contains__(self, item):
