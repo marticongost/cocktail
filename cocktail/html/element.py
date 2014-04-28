@@ -1072,7 +1072,7 @@ class Element(object):
             uri = resource
             resource = Resource.from_uri(uri, mime_type, **kwargs)
         else:
-            if mime_type or ie_condition:
+            if mime_type:
                 raise ValueError(
                     "Element.add_resource() should receive a reference to a "
                     "Resource object or values for creating a new Resource "
