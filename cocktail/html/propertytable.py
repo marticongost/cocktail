@@ -37,7 +37,8 @@ class PropertyTable(Element, DataDisplay):
         if group:
             tbody.add_class(group + "_group")
             tbody.header_row = self.create_group_header(group)
-            tbody.append(tbody.header_row)
+            if tbody.header_row:
+                tbody.append(tbody.header_row)
         
         for i, member in enumerate(members):            
             member_row = self.create_member_row(member)
@@ -48,13 +49,16 @@ class PropertyTable(Element, DataDisplay):
         return tbody
 
     def create_group_header(self, group):
-        row = Element("tr")
-        row.add_class("group_header")
-        th = Element("th")
-        th["colspan"] = 2
-        th.append(self.get_group_label(group))
-        row.append(th)
-        return row
+        label = self.get_group_label(group)
+        if label:
+            row = Element("tr")
+            row.add_class("group_header")
+            th = Element("th")
+            th["colspan"] = 2
+            th.append(label)
+            row.header = th
+            row.append(th)
+            return row
     
     def create_member_row(self, member):
 
