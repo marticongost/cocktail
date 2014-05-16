@@ -144,7 +144,9 @@ class Controller(RequestHandler):
                 "%s can't render its response in '%s' format" % (self, format))
 
         return renderer()
-           
+
+    render_as_fragment = False
+
     def _render_template(self):
 
         view_class = self.view_class
@@ -156,6 +158,7 @@ class Controller(RequestHandler):
             return self.rendering_engine.render(
                             output,
                             format = self.rendering_format,
+                            fragment = self.render_as_fragment,
                             template = view_class)
         else:
             return ""
