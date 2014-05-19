@@ -90,8 +90,19 @@ class Resource(object):
            and self.ie_condition == other.ie_condition
 
     @abstractmethod
-    def link(self, document):
+    def link(self, document, url_processor = None):
         pass
+
+    def _process_url(self, url, url_processor):
+        if url_processor is not None:
+            if isinstance(url_processor, basestring):
+                url = url_processor % url
+            elif callable(url_processor):
+                url = url_processor(url)
+            else:
+                raise ValueError("Bad URL processor: %r" % url_processor)
+
+        return url
 
     @abstractmethod
     def embed(self, document):
@@ -116,12 +127,12 @@ class Script(Resource):
         )
         self.async = async
 
-    def link(self, document):
+    def link(self, document, url_processor = None):
         from cocktail.html.element import Element
 
         link = Element("script")
         link["type"] = self.mime_type
-        link["src"] = self.uri
+        link["src"] = self._process_url(self.uri, url_processor)
 
         if self.async:
             link["async"] = "true"
@@ -150,13 +161,13 @@ class Script(Resource):
 class StyleSheet(Resource):
     default_mime_type = "text/css"
 
-    def link(self, document):
+    def link(self, document, url_processor = None):
         from cocktail.html.element import Element
 
         link = Element("link")
         link["rel"] = "Stylesheet"
         link["type"] = self.mime_type
-        link["href"] = self.uri
+        link["href"] = self._process_url(self.uri, url_processor)
 
         if self.ie_condition:
             from cocktail.html.ieconditionalcomment import IEConditionalComment
@@ -312,7 +323,7 @@ class ResourceSet(InstrumentedOrderedSet):
     def mime_type(self):
         return self.__mime_type
 
-    def matches(self, resource):        
+    def matches(self, resource):
         return (
             self._match_mime_type(resource.mime_type)
             and (not resource.set or resource.set == self.__name)
@@ -324,10 +335,12 @@ class ResourceSet(InstrumentedOrderedSet):
 
 
 class LinkedResources(ResourceSet):
-    
+
+    url_processor = None
+
     def insert_into_document(self, document):        
         for resource in self:
-            resource.link(document)
+            resource.link(document, url_processor = self.url_processor)
 
 
 class ResourceAggregator(ResourceSet):
