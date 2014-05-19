@@ -146,10 +146,12 @@ class HTMLDocument(Element):
     def _add_resources(self):
     
         if self.ie_html5_workaround and rendering_html5():
-            self.scripts_container.append(
-                IEConditionalComment("lt IE 9", children = [
-                    Element("script", src = "/cocktail/scripts/html5shiv-printshiv.js")
-                ])
+            self.metadata.resources.insert(
+                0, 
+                Script(
+                    "/cocktail/scripts/html5shiv-printshiv.js",
+                    ie_condition = "lt IE 9"
+                )
             )
 
         resource_sets = self.create_resource_sets()
