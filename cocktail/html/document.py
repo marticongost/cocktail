@@ -112,13 +112,13 @@ class HTMLDocument(Element):
     def _add_meta(self):
 
         # Content type and charset should always go first
-        ct_meta = Element("meta")
-        ct_meta["http-equiv"] = "Content-Type"
-        ct_meta["content"] = "%s; charset=%s" % (
+        self.content_type_metatag = Element("meta")
+        self.content_type_metatag["http-equiv"] = "Content-Type"
+        self.content_type_metatag["content"] = "%s; charset=%s" % (
             self.metadata.content_type or "text/html",
             self.metadata.charset or "utf-8"
         )
-        self.meta_container.append(ct_meta)
+        self.meta_container.append(self.content_type_metatag)
 
         # Document-wide default base URL for relative URLs
         if self.metadata.base_href:
