@@ -265,8 +265,12 @@ class ResourceSet(InstrumentedOrderedSet):
     __name = None
     _default_mime_type = None
 
-    def __init__(self, resources = None, name = None, mime_type = default):
-
+    def __init__(self,
+        resources = None,
+        name = None,
+        mime_type = default,
+        **kwargs
+    ):
         self.__name = name
 
         if mime_type is default:
@@ -290,6 +294,9 @@ class ResourceSet(InstrumentedOrderedSet):
             )
 
         InstrumentedOrderedSet.__init__(self, resources)
+
+        for key, value in kwargs.iteritems():
+            setattr(self, key, value)
 
     @classmethod
     def with_config(cls, **kwargs):
@@ -389,22 +396,6 @@ class ResourceBundle(ResourceAggregator):
     base_uri = None
     __base_path = None
     expiration_check = True
-
-    def __init__(self,
-        resources = None,
-        name = None,
-        mime_type = default,
-        **kwargs
-    ):
-        ResourceAggregator.__init__(
-            self,
-            resources = None,
-            name = None,
-            mime_type = mime_type
-        )
-
-        for key, value in kwargs.iteritems():
-            setattr(self, key, value)
 
     def matches(self, resource):
         return (
