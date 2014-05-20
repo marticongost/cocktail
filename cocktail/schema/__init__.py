@@ -40,6 +40,8 @@ from cocktail.schema.schemadates import (
     Date,
     Time
 )
+from cocktail.schema.iban import IBAN
+from cocktail.schema.swiftbic import SWIFTBIC
 from cocktail.schema.errorlist import ErrorList
 from cocktail.schema.accessors import (
     get_accessor,
