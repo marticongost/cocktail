@@ -41,7 +41,8 @@ from cocktail.html.resources import (
     LinkedResources,
     EmbeddedResources,
     ScriptBundle,
-    StyleBundle
+    StyleBundle,
+    ExcludedResources
 )
 from cocktail.html.documentmetadata import DocumentMetadata
 from cocktail.html.document import HTMLDocument

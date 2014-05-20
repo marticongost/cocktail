@@ -507,3 +507,9 @@ class StyleBundle(ResourceBundle):
     file_extension = ".css"
     _default_mime_type = "text/css"
 
+
+class ExcludedResources(ResourceSet):
+
+    def insert_into_document(self, document):
+        pass
+
