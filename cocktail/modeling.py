@@ -48,7 +48,7 @@ def abstractmethod(func):
     def wrapper(self, *args, **kwargs):
         raise TypeError(
             "Calling abstract method %s on %s"
-            % func.func_name, self
+            % (func.func_name, self)
         )
 
     wrap(func, wrapper)
