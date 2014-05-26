@@ -1144,6 +1144,9 @@ translations.define("cocktail.schema.exceptions.MinLengthError-instance",
         % (member_identifier(instance), instance.min),
     en = lambda instance:
         u"The <em>%s</em> field must be at least %d characters long"
+        % (member_identifier(instance), instance.min),
+    pt = lambda instance: 
+        u"O campo <em>%s</em> deve ter pelo menos %d caracteres"
         % (member_identifier(instance), instance.min)
 )
 
@@ -1156,6 +1159,9 @@ translations.define("cocktail.schema.exceptions.MaxLengthError-instance",
         % (member_identifier(instance), instance.max),
     en = lambda instance:
         u"The <em>%s</em> field can't be more than %d characters long"
+        % (member_identifier(instance), instance.max),
+    pt = lambda instance: 
+        u"O campo <em>%s</em> deve ter um máximo de %d caracteres"
         % (member_identifier(instance), instance.max)
 )
 
@@ -1171,6 +1177,9 @@ translations.define("cocktail.schema.exceptions.FormatError-instance",
         % member_identifier(instance),
     de = lambda instance:
         u"Das Feld <em>%s</em> hat ein falsches Format"
+        % member_identifier(instance),
+    pt = lambda instance:
+        u"O formato do campo <em>%s</em> é incorreto"
         % member_identifier(instance)
 )
 
