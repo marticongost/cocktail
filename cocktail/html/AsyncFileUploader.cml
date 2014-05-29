@@ -49,6 +49,8 @@ from cocktail.html.databoundcontrol import data_bound
         self.set_client_param("asyncUploadUrl", 
             self.async_upload_url or upload_member and upload_member.async_upload_url
         )
+
+        self.set_client_param("fieldName", self.name)
         ?>
     </py:ready>
 
@@ -91,7 +93,7 @@ from cocktail.html.databoundcontrol import data_bound
 
     <py:new 
         py:element="self.create_upload_info()"
-        py:client_model="cocktail.html.AsyncFileUploader.upload_info"/>
+        py:client_model="cocktail.html.AsyncFileUploader.upload_info-@{self.require_id()}"/>
     
     <div
         py:id="uploader"
