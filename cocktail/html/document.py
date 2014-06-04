@@ -154,6 +154,11 @@ class HTMLDocument(Element):
                 )
             )
 
+        for resource in self.metadata.resources:
+            if resource.mime_type == "text/javascript":
+                self._add_core_scripts()
+                break
+
         resource_sets = self.create_resource_sets()
 
         if resource_sets:
