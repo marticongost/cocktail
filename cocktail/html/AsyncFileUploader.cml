@@ -32,6 +32,8 @@ from cocktail.html.databoundcontrol import data_bound
 
     <py:ready>
         <?py
+        self.require_id()
+
         upload_member = None
         if self.member:
             if isinstance(self.member, schema.Collection):
@@ -93,7 +95,7 @@ from cocktail.html.databoundcontrol import data_bound
 
     <py:new 
         py:element="self.create_upload_info()"
-        py:client_model="cocktail.html.AsyncFileUploader.upload_info-@{self.require_id()}"/>
+        py:client_model="cocktail.html.AsyncFileUploader.upload_info-@{self['id']}"/>
     
     <div
         py:id="uploader"
