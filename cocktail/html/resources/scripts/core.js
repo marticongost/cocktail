@@ -11,9 +11,8 @@ cocktail.init = function (root) {
     
     if (!cocktail.__initialized) {
         cocktail.__initialized = true;
-        jQuery(document.body).addClass("scripted");
     }
-    
+
     root = root || document.body;
 
     // Apply bindings

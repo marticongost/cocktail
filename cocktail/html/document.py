@@ -82,6 +82,13 @@ class HTMLDocument(Element):
         self.body = IEWrapper("body")
         self.append(self.body)
 
+        self.javascript_enabled_script = Element("script")
+        self.javascript_enabled_script["type"] = "text/javascript"
+        self.javascript_enabled_script.append(
+            "document.body.className += ' scripted';"
+        )
+        self.body.append(self.javascript_enabled_script)
+
     def _ready(self):
 
         if rendering_xml():
