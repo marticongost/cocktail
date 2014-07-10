@@ -300,6 +300,31 @@ class Element(object):
         if document_metadata is None:
             document_metadata = DocumentMetadata()
 
+        document = self.create_html_document(
+            renderer,
+            document_metadata,
+            collect_metadata,
+            cache
+        )
+
+        return document.render(
+            renderer = renderer,
+            collect_metadata = False,
+            cache = None
+        )
+
+    def create_html_document(self,
+        renderer = None,
+        document_metadata = None,
+        collect_metadata = True,
+        cache = rendering_cache
+    ):
+        if renderer is None:
+            renderer = renderers.default_renderer
+
+        if document_metadata is None:
+            document_metadata = DocumentMetadata()
+
         content = self.render(
             renderer = renderer,
             document_metadata = document_metadata,
@@ -316,11 +341,7 @@ class Element(object):
             "cache": cache
         }
 
-        return document.render(
-            renderer = renderer,
-            collect_metadata = False,
-            cache = None
-        )
+        return document
 
     def render(self,
         renderer = None,
