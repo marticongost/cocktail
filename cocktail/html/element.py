@@ -410,7 +410,7 @@ class Element(object):
 
         :param rendering: The rendering buffer where the element should be
             written.
-        :type renderer: `Rendering`
+        :type rendering: `Rendering`
         """
         rendering.renderer.write_element(self, rendering)
 
