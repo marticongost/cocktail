@@ -47,7 +47,8 @@ setup(
         "selenium",
         "pyExcelerator",
         "Beaker",
-        "BeautifulSoup",
+        "BeautifulSoup4",
+        "lxml",
         "httplib2"
     ],
     packages = find_packages(),

@@ -8,7 +8,7 @@ from random import choice
 from string import letters, digits
 from HTMLParser import HTMLParser
 from htmlentitydefs import name2codepoint
-import BeautifulSoup
+import bs4
 
 normalization_map = {}
 
@@ -167,17 +167,17 @@ class HTMLCleaner(object):
     }
 
     def __init__(self, html):
-        self.__html_tree = BeautifulSoup.BeautifulSoup(html)
+        self.__html_tree = bs4.BeautifulSoup(html, "lxml")
         self.clean_tree(self.__html_tree)
         self.clean_tree(self.__html_tree, trim = self.TRIM_LEFT)
         self.clean_tree(self.__html_tree, trim = self.TRIM_RIGHT)
 
     def get_clean_html(self):
-        return unicode(self.__html_tree)
+        return u"".join(unicode(child) for child in self.__html_tree.body)
 
     def clean_tree(self, node, trim = None):
 
-        if node.__class__ is BeautifulSoup.NavigableString:
+        if node.__class__ is bs4.NavigableString:
             if trim:
                 if not self.has_weight(node):
                     node.extract()
@@ -187,7 +187,7 @@ class HTMLCleaner(object):
                     stripped_text = whitespace.sub("", node)
                     node.replaceWith(stripped_text)
 
-        elif isinstance(node, BeautifulSoup.Tag):
+        elif isinstance(node, bs4.Tag):
             children = list(node.contents)
             if trim == self.TRIM_RIGHT:
                 children.reverse()
@@ -212,7 +212,7 @@ class HTMLCleaner(object):
 
     def has_weight(self, node):
 
-        if node.__class__ is BeautifulSoup.NavigableString \
+        if node.__class__ is bs4.NavigableString \
         and not self.start_whitespace.sub("", node):
             return False
 
