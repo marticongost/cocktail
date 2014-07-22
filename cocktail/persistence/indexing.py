@@ -164,10 +164,23 @@ def _rebuild_index(self):
                         indexed_languages.add(lang)
                         value = obj.get(self, lang)
                         add_index_entry(obj, self, value, lang)
-            else:            
+            else:
                 add_index_entry(obj, self, obj.get(self))
 
 schema.Member.rebuild_index = _rebuild_index
+
+def _rebuild_collection_index(self):
+
+    self.create_index()
+
+    for obj in self.schema.select():
+        if obj.indexed and obj._should_index_member(self):
+            value = obj.get(self)
+            if value is not None:
+                for item in value:
+                    add_index_entry(obj, self, item)
+
+schema.Collection.rebuild_index = _rebuild_collection_index
 
 def _rebuild_indexes(cls, recursive = False, verbose = True):
     
@@ -219,6 +232,7 @@ def _handle_changed(event):
     if (
         obj._should_index_member(event.member)
         and obj.is_inserted
+        and not isinstance(event.member, schema.Collection)
         and event.previous_value != event.value
     ):
         if event.member.translated:
@@ -246,6 +260,18 @@ def _handle_changed(event):
                 event.member,
                 event.value
             )
+
+@when(PersistentObject.collection_item_added)
+def _handle_collection_item_added(event):
+    obj = event.source
+    if obj._should_index_member(event.member) and obj.is_inserted:
+        add_index_entry(obj, event.member, event.item)
+
+@when(PersistentObject.collection_item_removed)
+def _handle_collection_item_removed(event):
+    obj = event.source
+    if obj._should_index_member(event.member) and obj.is_inserted:
+        remove_index_entry(obj, event.member, event.item)
 
 @when(PersistentObject.inserting)
 def _handle_inserting(event):
@@ -281,8 +307,14 @@ def _handle_inserting(event):
                         indexed_languages.add(lang)
                         value = obj.get(member, lang)
                         add_index_entry(obj, member, value, lang)
-            else:            
-                add_index_entry(obj, member, obj.get(member))
+            else:
+                value = obj.get(member)
+                if isinstance(member, schema.Collection):
+                    if value is not None:
+                        for item in value:
+                            add_index_entry(obj, member, item)
+                else:
+                    add_index_entry(obj, member, value)
 
 @when(PersistentObject.deleting)
 def _handle_deleting(event):
@@ -320,7 +352,13 @@ def _handle_deleting(event):
                             language
                         )
                 else:
-                    remove_index_entry(obj, member, obj.get(member))
+                    value = obj.get(member)
+                    if isinstance(member, schema.Collection):
+                        if value is not None:
+                            for item in value:
+                                remove_index_entry(obj, member, item)
+                    else:
+                        remove_index_entry(obj, member, value)
 
 @when(PersistentObject.removing_translation)
 def _handle_removing_translation(event):
@@ -441,6 +479,11 @@ def _reference_get_index_value(self, value):
     return value
 
 schema.Reference.get_index_value = _reference_get_index_value
+
+def _collection_get_index_value(self, value):
+    return self.items.get_index_value(value)
+
+schema.Collection.get_index_value = _collection_get_index_value
 
 
 class IdCollisionError(Exception):
