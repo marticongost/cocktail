@@ -2252,3 +2252,33 @@ translations.define(
     en = u"Empty the selection"
 )
 
+# SplitSelector
+#------------------------------------------------------------------------------
+translations.define(
+    "cocktail.html.SplitSelector.selected_items_panel.heading",
+    ca = u"Seleccionats",
+    es = u"Seleccionados",
+    en = u"Selected"
+)
+
+translations.define(
+    "cocktail.html.SplitSelector.selected_items_panel.toggle_button",
+    ca = u"Treure",
+    es = u"Quitar",
+    en = u"Remove"
+)
+
+translations.define(
+    "cocktail.html.SplitSelector.eligible_items_panel.heading",
+    ca = u"No seleccionats",
+    es = u"No seleccionados",
+    en = u"Not selected"
+)
+
+translations.define(
+    "cocktail.html.SplitSelector.eligible_items_panel.toggle_button",
+    ca = u"Afegir",
+    es = u"Añadir",
+    en = u"Add"
+)
+
