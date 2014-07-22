@@ -193,12 +193,16 @@
                 }
             }
 
-            selectable.clearSelection = function (selector /* = null */) {
+            selectable.clearSelection = function (selector /* = null */, resetCursors /* = false */) {
                 var subset = (selector || "") + ".selected";
                 batchSelection(function () {
                     selectable.getEntries(subset).each(function () {
                         selectable.setEntrySelected(this, false);
                     });
+                    if (resetCursors) {
+                        selectable._selectionStart = null;
+                        selectable._selectionEnd = null;
+                    }
                 });
             }
 
