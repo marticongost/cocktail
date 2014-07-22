@@ -1668,6 +1668,254 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
         assert [e, a, f, d, c, b] == results
 
 
+class StringCollectionQueriesTestCase(TempStorageMixin, TestCase):
+
+    def setUp(self):
+        
+        TempStorageMixin.setUp(self)
+
+        from cocktail import schema
+        from cocktail.persistence import PersistentObject
+
+        class TestObject(PersistentObject):
+
+            test_collection = schema.Collection(
+                items = schema.String(),
+                indexed = True
+            )
+
+        self.TestObject = TestObject
+
+    def test_can_select_collections_containing_an_item(self):
+
+        T = self.TestObject
+
+        a = T()
+        a.test_collection.append("foo")
+        a.test_collection.append("bar")
+        a.test_collection.append("spam")
+        a.insert()
+
+        b = T()
+        b.test_collection.append("foo")
+        b.test_collection.append("bar")
+        b.insert()
+
+        c = T()
+        c.test_collection.append("foo")
+        c.insert()
+
+        assert set(T.select(T.test_collection.contains("foo"))) == set([a, b, c])
+        assert set(T.select(T.test_collection.contains("bar"))) == set([a, b])
+        assert set(T.select(T.test_collection.contains("spam"))) == set([a])
+        assert set(T.select(T.test_collection.contains("scrum"))) == set()
+
+    def test_can_select_collections_containing_one_or_more_items_from_a_subset(self):
+
+        T = self.TestObject
+
+        a = T()
+        a.test_collection.append("a")
+        a.test_collection.append("x")
+        a.insert()
+
+        b = T()
+        b.test_collection.append("b")
+        b.test_collection.append("x")
+        b.insert()
+
+        c = T()
+        c.test_collection.append("c")
+        c.test_collection.append("y")
+        c.insert()
+
+        assert set(T.select(T.test_collection.contains_any(["x", "y"]))) == set([a, b, c])
+        assert set(T.select(T.test_collection.contains_any(["a"]))) == set([a])
+        assert set(T.select(T.test_collection.contains_any(["b", "c"]))) == set([b, c])
+        assert set(T.select(T.test_collection.contains_any(["N", "M"]))) == set()
+
+    def test_can_select_collections_containing_all_items_from_a_subset(self):
+
+        T = self.TestObject
+
+        a = T()
+        a.test_collection.append("a")
+        a.test_collection.append("x")
+        a.test_collection.append("y")
+        a.insert()
+
+        b = T()
+        b.test_collection.append("b")
+        b.test_collection.append("x")
+        b.test_collection.append("y")
+        b.insert()
+
+        c = T()
+        c.test_collection.append("c")
+        c.test_collection.append("y")
+        c.insert()
+
+        assert set(T.select(T.test_collection.contains_all(["x", "y"]))) == set([a, b])
+        assert set(T.select(T.test_collection.contains_all(["a", "x", "y"]))) == set([a])
+        assert set(T.select(T.test_collection.contains_all(["y"]))) == set([a, b, c])
+        assert set(T.select(T.test_collection.contains_all(["x", "Z"]))) == set()
+
+    def test_can_select_collections_lacking_an_item(self):
+
+        T = self.TestObject
+
+        a = T()
+        a.test_collection.append("foo")
+        a.test_collection.append("bar")
+        a.test_collection.append("spam")
+        a.insert()
+
+        b = T()
+        b.test_collection.append("foo")
+        b.test_collection.append("bar")
+        b.insert()
+
+        c = T()
+        c.test_collection.append("foo")
+        c.insert()
+
+        assert set(T.select(T.test_collection.lacks("foo"))) == set()
+        assert set(T.select(T.test_collection.lacks("bar"))) == set([c])
+        assert set(T.select(T.test_collection.lacks("spam"))) == set([b, c])
+        assert set(T.select(T.test_collection.lacks("scrum"))) == set([a, b, c])
+
+
+class ReferenceCollectionQueriesTestCase(TempStorageMixin, TestCase):
+
+    def setUp(self):
+
+        TempStorageMixin.setUp(self)
+
+        from cocktail import schema
+        from cocktail.persistence import PersistentObject
+
+        class Document(PersistentObject):
+            pass
+
+        class Tag(PersistentObject):
+
+            documents = schema.Collection(
+                items = schema.Reference(type = Document),
+                related_end = schema.Collection("tags",
+                    indexed = True
+                ),
+                indexed = True
+            )
+
+        self.Document = Document
+        self.Tag = Tag
+
+    def test_can_select_collections_containing_an_item(self):
+
+        Doc = self.Document
+        Tag = self.Tag
+
+        d1 = Doc(); d1.insert()
+        d2 = Doc(); d2.insert()
+        d3 = Doc(); d3.insert()
+        d4 = Doc(); d4.insert()
+
+        t1 = Tag(); t1.insert()
+        t2 = Tag(); t2.insert()
+        t3 = Tag(); t3.insert()
+        t4 = Tag(); t4.insert()
+
+        d1.tags = [t1, t2]
+        d2.tags = [t2, t3]
+        d3.tags = [t2, t3]
+
+        assert set(Doc.select(Doc.tags.contains(t1))) == set([d1])
+        assert set(Doc.select(Doc.tags.contains(t2))) == set([d1, d2, d3])
+        assert set(Doc.select(Doc.tags.contains(t3))) == set([d2, d3])
+        assert set(Doc.select(Doc.tags.contains(t4))) == set()
+
+    def test_can_select_collections_containing_one_or_more_items_from_a_subset(self):
+
+        Doc = self.Document
+        Tag = self.Tag
+
+        d1 = Doc(); d1.insert()
+        d2 = Doc(); d2.insert()
+        d3 = Doc(); d3.insert()
+        d4 = Doc(); d4.insert()
+
+        t1 = Tag(); t1.insert()
+        t2 = Tag(); t2.insert()
+        t3 = Tag(); t3.insert()
+        t4 = Tag(); t4.insert()
+        t5 = Tag(); t5.insert()
+        t6 = Tag(); t6.insert()
+
+        d1.tags = [t1, t2]
+        d2.tags = [t1, t3]
+        d3.tags = [t4]
+
+        assert set(Doc.select(Doc.tags.contains_any([t3, t4]))) == set([d2, d3])
+        assert set(Doc.select(Doc.tags.contains_any([t1, t4]))) == set([d1, d2, d3])
+        assert set(Doc.select(Doc.tags.contains_any([t2, t5]))) == set([d1])
+        assert set(Doc.select(Doc.tags.contains_any([t5, t6]))) == set()
+
+    def test_can_select_collections_containing_all_items_from_a_subset(self):
+
+        Doc = self.Document
+        Tag = self.Tag
+
+        d1 = Doc(); d1.insert()
+        d2 = Doc(); d2.insert()
+        d3 = Doc(); d3.insert()
+        d4 = Doc(); d4.insert()
+
+        t1 = Tag(); t1.insert()
+        t2 = Tag(); t2.insert()
+        t3 = Tag(); t3.insert()
+        t4 = Tag(); t4.insert()
+        t5 = Tag(); t5.insert()
+        t6 = Tag(); t6.insert()
+
+        d1.tags = [t1, t2, t5]
+        d2.tags = [t1, t3, t5]
+        d3.tags = [t2]
+
+        assert set(Doc.select(Doc.tags.contains_all([t1, t5]))) == set([d1, d2])
+        assert set(Doc.select(Doc.tags.contains_all([t1]))) == set([d1, d2])
+        assert set(Doc.select(Doc.tags.contains_all([t2, t5]))) == set([d1])
+        assert set(Doc.select(Doc.tags.contains_all([t4]))) == set()
+        assert set(Doc.select(Doc.tags.contains_all([t4, t1]))) == set()
+
+    def test_can_select_collections_lacking_an_item(self):
+
+        Doc = self.Document
+        Tag = self.Tag
+
+        d1 = Doc(); d1.insert()
+        d2 = Doc(); d2.insert()
+        d3 = Doc(); d3.insert()
+        d4 = Doc(); d4.insert()
+
+        t1 = Tag(); t1.insert()
+        t2 = Tag(); t2.insert()
+        t3 = Tag(); t3.insert()
+        t4 = Tag(); t4.insert()
+        t5 = Tag(); t5.insert()
+        t6 = Tag(); t6.insert()
+
+        d1.tags = [t1, t2, t5]
+        d2.tags = [t1, t3, t5]
+        d3.tags = [t2]
+
+        assert set(Doc.select(Doc.tags.lacks(t1))) == set([d3, d4])
+        assert set(Doc.select(Doc.tags.lacks(t2))) == set([d2, d4])
+        assert set(Doc.select(Doc.tags.lacks(t3))) == set([d1, d3, d4])
+        assert set(Doc.select(Doc.tags.lacks(t4))) == set([d1, d2, d3, d4])
+        assert set(Doc.select(Doc.tags.lacks(t5))) == set([d3, d4])
+        assert set(Doc.select(Doc.tags.lacks(t6))) == set([d1, d2, d3, d4])
+
+
 class RelationalQueriesTestCase(TempStorageMixin, TestCase):
            
     def setUp(self):

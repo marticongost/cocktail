@@ -16,7 +16,12 @@ from cocktail.styled import styled
 from cocktail.modeling import getter, ListWrapper
 from cocktail.stringutils import normalize
 from cocktail.translations import get_language
-from cocktail.schema import Member, expressions, SchemaObjectAccessor
+from cocktail.schema import (
+    Member,
+    Collection,
+    expressions,
+    SchemaObjectAccessor
+)
 from cocktail.schema.io import export_file
 from cocktail.schema.expressions import TranslationExpression
 
@@ -980,8 +985,89 @@ expressions.StartsWithExpression.resolve_filter = \
 expressions.EndsWithExpression.resolve_filter = \
     lambda self, query: ((0, -1), None)
 
-expressions.ContainsExpression.resolve_filter = \
-    lambda self, query: ((0, -2), None)
+def _contains_resolution(self, query):
+
+    if isinstance(self.operands[0], Collection):
+        index, index_kw = query._get_expression_index(self)
+        if index is not None:
+            def impl(dataset):
+                item = self.operands[1].eval()
+                k = self.operands[0].get_index_value(item)
+                dataset.intersection_update(
+                    index.values(key = k, **index_kw)
+                )
+                return dataset
+
+            return ((-1, 0), impl)
+
+    return ((0, -2), None)
+
+expressions.ContainsExpression.resolve_filter = _contains_resolution
+
+def _contains_any_resolution(self, query):
+
+    if isinstance(self.operands[0], Collection):
+        index, index_kw = query._get_expression_index(self)
+        if index is not None:
+            def impl(dataset):
+                subset = set()
+                
+                for items in self.operands[1].eval():
+                    k = self.operands[0].get_index_value(item)
+                    subset.update(index.values(key = k, **index_kw))
+
+                dataset.intersection_update(subset)
+                return dataset
+
+            return ((-1, 1), impl)
+
+    return ((0, -3), None)
+
+expressions.ContainsAnyExpression.resolve_filter = _contains_any_resolution
+
+def _contains_all_resolution(self, query):
+
+    if isinstance(self.operands[0], Collection):
+        index, index_kw = query._get_expression_index(self)
+        if index is not None:
+            def impl(dataset):
+                subset = None
+                
+                for items in self.operands[1].eval():
+                    k = self.operands[0].get_index_value(item)
+                    k_items = index.values(key = k, **index_kw)
+                    if subset is None:
+                        subset = set(k_items)
+                    else:
+                        subset.intersection_update(k_items)
+
+                dataset.intersection_update(subset)
+                return dataset
+
+            return ((-1, 1), impl)
+
+    return ((0, -3), None)
+
+expressions.ContainsAllExpression.resolve_filter = _contains_all_resolution
+
+def _lacks_resolution(self, query):
+
+    if isinstance(self.operands[0], Collection):
+        index, index_kw = query._get_expression_index(self)
+        if index is not None:
+            def impl(dataset):
+                item = self.operands[1].eval()
+                k = self.operands[0].get_index_value(item)
+                dataset.difference_update(
+                    index.values(key = k, **index_kw)
+                )
+                return dataset
+
+            return ((-1, 0), impl)
+
+    return ((0, -2), None)
+
+expressions.LacksExpression.resolve_filter = _lacks_resolution
 
 expressions.MatchExpression.resolve_filter = \
     lambda self, query: ((0, -3), None)
