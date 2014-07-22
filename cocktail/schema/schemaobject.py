@@ -597,6 +597,30 @@ class SchemaObject(object):
             is not translatable.
         """)
 
+    collection_item_added = Event(doc = """
+        An event triggered after an item is added to one of the object's
+        collections.
+
+        @ivar member: The collection that the item has been added to.
+        @type member: L{Collection<cocktail.schema.schemacollections.Collection>}
+
+        @ivar item: The item added to the collection.
+        @type item: obj
+        """
+    )
+
+    collection_item_removed = Event(doc = """
+        An event triggered after an item is removed from one of the object's
+        collections.
+
+        @ivar member: The collection that the item has been removed from.
+        @type member: L{Collection<cocktail.schema.schemacollections.Collection>}
+
+        @ivar item: The item removed from the collection.
+        @type item: obj
+        """
+    )
+
     related = Event(doc = """
         An event triggered after establishing a relationship between objects.
         If both ends of the relation are instances of L{SchemaObject}, this
