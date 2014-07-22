@@ -107,6 +107,15 @@ class Expression(object):
     def contains(self, expr):
         return ContainsExpression(self, expr)
 
+    def contains_any(self, expr):
+        return ContainsAnyExpression(self, expr)
+
+    def contains_all(self, expr):
+        return ContainsAllExpression(self, expr)
+
+    def lacks(self, expr):
+        return LacksExpression(self, expr)
+
     def match(self, expr):
         return MatchExpression(self, expr)
 
@@ -527,6 +536,24 @@ class ExclusionExpression(Expression):
 
 class ContainsExpression(Expression):
     op = operator.contains    
+
+
+class ContainsAnyExpression(Expression):
+
+    def op(self, a, b):
+        return any((item in a) for item in b)
+
+
+class ContainsAllExpression(Expression):
+
+    def op(self, a, b):
+        return all((item in a) for item in b)
+
+
+class LacksExpression(Expression):
+
+    def op(self, a, b):
+        return b not in a
 
 
 class MatchExpression(Expression):
