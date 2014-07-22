@@ -120,7 +120,7 @@
                 $selectable.trigger("activated");
             }
 
-            selectable.getEntries().bind("dblclick", selectable.dblClickEntryEvent);
+            $selectable.on("dblclick", entrySelector, selectable.dblClickEntryEvent);
 
             selectable.getNextEntry = function (entry, selector /* = null */) {
 
@@ -271,41 +271,41 @@
                 }
             }
 
-            selectable.getEntries()
+            $selectable
                 // Togle entry selection when clicking an entry
-                .bind("click", selectable.clickEntryEvent)
+                .on("click", entrySelector, selectable.clickEntryEvent)
                 
-                .mousedown(function () {
+                .on("mousedown", entrySelector, function () {
                     disableTextSelection(selectable);
                 })
 
-                .click(function() {
+                .on("click", entrySelector, function() {
                     restoreTextSelection(selectable);
-                })
-
-                // Highlight selected entries
-                .each(function () {
-                    if (jQuery(checkboxSelector + ":checked", this).length) {
-                        jQuery(this).addClass("selected");
-                    }
                 });
+
+            // Highlight selected entries
+            selectable.getEntries().each(function () {
+                if (jQuery(checkboxSelector + ":checked", this).length) {
+                    jQuery(this).addClass("selected");
+                }
+            });
 
             var focusedCheckbox = null;
 
-            $selectable.find(entrySelector + " " + checkboxSelector)
-                .focus(function (e) {
+            $selectable
+                .on("focus", entrySelector + " " + checkboxSelector, function (e) {
                     focusedCheckbox = this;
                     var entry = jQuery(this).closest(entrySelector).get(0);
                     selectable._selectionEnd = entry;
                     $selectable.addClass("focused");
                 })
-                .blur(function (e) {
+                .on("blur", entrySelector + " " + checkboxSelector, function (e) {
                     if (focusedCheckbox == this) {
                         focusedCheckbox = null;
                         $selectable.removeClass("focused");
                     }
                 })
-                .keydown(function (e) {
+                .on("keydown", entrySelector + " " + checkboxSelector, function (e) {
 
                     var key = e.charCode || e.keyCode;
 
