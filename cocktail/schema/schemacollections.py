@@ -279,10 +279,18 @@ class RelationCollection(object):
     member = None
 
     def item_added(self, item):
+        self.owner.collection_item_added(
+            member = self.member,
+            item = item
+        )
         if self.member.related_end:
             _update_relation("relate", self.owner, item, self.member)
         
     def item_removed(self, item):
+        self.owner.collection_item_removed(
+            member = self.member,
+            item = item
+        )
         if self.member.related_end:
             _update_relation("unrelate", self.owner, item, self.member)
 
