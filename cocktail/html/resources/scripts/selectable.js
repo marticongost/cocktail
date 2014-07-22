@@ -215,8 +215,9 @@
             }
 
             selectable.selectEntries = function (selector) {
+                var $entries = selector instanceof jQuery ? selector : selectable.getEntries(selector);
                 batchSelection(function () {
-                    selectable.getEntries(selector).each(function () {
+                    $entries.each(function () {
                         selectable.setEntrySelected(this, true);
                     });
                 });
