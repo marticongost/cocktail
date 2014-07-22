@@ -71,6 +71,14 @@ def descend_language_tree(language = None, include_self = True):
                 for descendant in descend_language_tree(derived):
                     yield descendant
 
+def iter_derived_languages(language):
+    derived_map = getattr(_thread_data, "derived", None)
+    if derived_map is not None:
+        derived_languages = derived_map.get(language)
+        if derived_languages is not None:
+            for derived in derived_languages:
+                yield derived
+
 @contextmanager
 def fallback_languages_context(fallback_chains):
     prev_fallback = getattr(_thread_data, "fallback", None)

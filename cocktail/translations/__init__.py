@@ -15,6 +15,7 @@ from cocktail.translations.translation import (
     set_language,
     require_language,
     iter_language_chain,
+    iter_derived_languages,
     descend_language_tree,
     fallback_languages_context,
     clear_fallback_languages,
