@@ -224,7 +224,7 @@
 
             selectable.setRangeSelected = function (firstEntry, lastEntry, selected) {
                 
-                var entries = selectable.getEntries();
+                var entries = selectable.getEntries(":visible");
                 var i = entries.index(firstEntry);
                 var j = entries.index(lastEntry);
                 
