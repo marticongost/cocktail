@@ -33,8 +33,14 @@ from cocktail.html.databoundcontrol import data_bound
     def get_selected_items_heading(self):
         return translations("cocktail.html.SplitSelector.selected_items_panel.heading")
 
+    def get_selected_items_toggle_button_label(self):
+        return translations("cocktail.html.SplitSelector.selected_items_panel.toggle_button")
+
     def get_eligible_items_heading(self):
         return translations("cocktail.html.SplitSelector.eligible_items_panel.heading")
+            
+    def get_eligible_items_toggle_button_label(self):
+        return translations("cocktail.html.SplitSelector.eligible_items_panel.toggle_button")
     ?>
 
     <?py
@@ -76,7 +82,7 @@ from cocktail.html.databoundcontrol import data_bound
             <py:with py:element="element.split_panel_toolbar.toggle_button">
                 <py:with py:element="element.button_icon" src="/cocktail/images/right.png"/>
                 <py:with py:element="element.button_label">
-                    ${translations("cocktail.html.SplitSelector.selected_items_panel.toggle_button")}
+                    @{self.get_selected_items_toggle_button_label()}
                 </py:with>
             </py:with>
         </py:new>
@@ -89,7 +95,7 @@ from cocktail.html.databoundcontrol import data_bound
             <py:with py:element="element.split_panel_toolbar.toggle_button">
                 <py:with py:element="element.button_icon" src="/cocktail/images/left.png"/>
                 <py:with py:element="element.button_label">
-                    ${translations("cocktail.html.SplitSelector.eligible_items_panel.toggle_button")}
+                    @{self.get_eligible_items_toggle_button_label()}
                 </py:with>
             </py:with>
         </py:new>
