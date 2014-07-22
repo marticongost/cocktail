@@ -19,14 +19,16 @@ class CheckList(Selector):
     column_count = None
     column_height = None
     name = None
-    exclusive_selection = False
+    apply_selectable_behavior = True
+    exclusive_selection = False    
 
     def _ready(self):
-        selectable(
-            self,
-            mode = MULTIPLE_SELECTION,
-            exclusive = self.exclusive_selection
-        )
+        if self.apply_selectable_behavior:
+            selectable(
+                self,
+                mode = MULTIPLE_SELECTION,
+                exclusive = self.exclusive_selection
+            )
 
         if not self.name and self.data_display:
             self.name = self.data_display.get_member_name(
