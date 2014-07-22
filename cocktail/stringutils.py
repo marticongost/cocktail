@@ -8,7 +8,6 @@ from random import choice
 from string import letters, digits
 from HTMLParser import HTMLParser
 from htmlentitydefs import name2codepoint
-import bs4
 
 normalization_map = {}
 
@@ -140,89 +139,6 @@ def html_to_plain_text(html):
     extractor = HTMLPlainTextExtractor()
     extractor.feed(html)
     return extractor.get_text()
-
-
-class HTMLCleaner(object):
-
-    content_tags = set([
-        "img",
-        "hr",
-        "br",
-        "iframe",
-        "object",
-        "embed",
-        "audio",
-        "video"
-    ])
-
-    TRIM_LEFT = -1
-    TRIM_RIGHT = 1
-
-    start_whitespace = re.compile("^(\\s|&nbsp;|\xa0)+")
-    end_whitespace = re.compile("(\\s|&nbsp;|\xa0)+$")
-
-    trim_whitespace = {
-        TRIM_LEFT: start_whitespace,
-        TRIM_RIGHT: end_whitespace
-    }
-
-    def __init__(self, html):
-        self.__html_tree = bs4.BeautifulSoup(html, "lxml")
-        self.clean_tree(self.__html_tree)
-        self.clean_tree(self.__html_tree, trim = self.TRIM_LEFT)
-        self.clean_tree(self.__html_tree, trim = self.TRIM_RIGHT)
-
-    def get_clean_html(self):
-        return u"".join(unicode(child) for child in self.__html_tree.body)
-
-    def clean_tree(self, node, trim = None):
-
-        if node.__class__ is bs4.NavigableString:
-            if trim:
-                if not self.has_weight(node):
-                    node.extract()
-                    return True
-                else:
-                    whitespace = self.trim_whitespace[trim]
-                    stripped_text = whitespace.sub("", node)
-                    node.replaceWith(stripped_text)
-
-        elif isinstance(node, bs4.Tag):
-            children = list(node.contents)
-            if trim == self.TRIM_RIGHT:
-                children.reverse()
-
-            for child in children:
-                child_removed = self.clean_tree(child, trim)
-                if not child_removed and trim:
-                    break
-
-            if node.name == "br":
-                if trim:
-                    node.extract()
-                    return True
-            elif (
-                node.name not in self.content_tags
-                and not any(self.has_weight(child) for child in node.contents)
-            ):
-                node.extract()
-                return True
-
-        return False
-
-    def has_weight(self, node):
-
-        if node.__class__ is bs4.NavigableString \
-        and not self.start_whitespace.sub("", node):
-            return False
-
-        return True
-
-
-def clean_html(html):
-    """Clean an HTML snippet, removing excessive whitespace and empty tags."""
-    cleaner = HTMLCleaner(html)
-    return cleaner.get_clean_html()
 
 def decapitalize(string):
     if len(string) >= 2 and string[1] == string[1].lower():
