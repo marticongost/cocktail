@@ -138,6 +138,9 @@ class IBAN(String):
 
     def translate_value(self, value, language = None, **kwargs):        
 
+        if not value:
+            return ""
+
         value = value.upper()
         chunks = []
 
