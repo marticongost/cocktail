@@ -35,7 +35,9 @@ class Reference(RelationMember):
 
     def translate_value(self, value, language = None, **kwargs):
         if value is None:
-            return u""
+            return RelationMember.translate_value(
+                self, value, language, **kwargs
+            )
         elif isinstance(value, Schema) and value.name:
             return translations(value.name, language, **kwargs)
         else:
