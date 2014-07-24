@@ -32,6 +32,7 @@ class Table(Element, CollectionDisplay):
     
     tag = "table"
     sortable = False
+    show_language_headers = True
     column_groups_displayed = False
     ascending_order_image = "ascending.png"
     descending_order_image = "descending.png"
@@ -370,7 +371,7 @@ class Table(Element, CollectionDisplay):
         header.append(header.label)
         
         # Translation label
-        if language:
+        if self.show_language_headers and language:
             header.translation_label = self.create_translation_label(language)
             header.append(header.translation_label)
         
