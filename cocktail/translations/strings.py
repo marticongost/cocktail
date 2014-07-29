@@ -1010,6 +1010,30 @@ translations.define("cn",
     cn = u"汉语"
 )
 
+translations.define("cz",
+    ca = u"Txec",
+    es = u"Checo",
+    en = u"Czech"
+)
+
+translations.define("hu",
+    ca = u"Húngar",
+    es = u"Húngaro",
+    en = u"Hungarian"
+)
+
+translations.define("kr",
+    ca = u"Coreà",
+    es = u"Coreano",
+    en = u"Korean"
+)
+
+translations.define("gr",
+    ca = u"Grec",
+    es = u"Griego",
+    en = u"Greek"
+)
+
 translations.define("translated into",
     ca = lambda lang: "en " + translations("locale", locale = lang),
     es = lambda lang: "en " + translations("locale", locale = lang),

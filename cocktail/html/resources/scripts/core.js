@@ -1,4 +1,10 @@
 
+if (!jQuery.browser) {
+    jQuery.browser = {
+        msie: navigator.userAgent.toLowerCase().indexOf("msie") != 1
+    };
+}
+
 var cocktail = {};
 cocktail.__initialized = false;
 cocktail.__clientModels = {};
