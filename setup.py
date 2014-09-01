@@ -11,7 +11,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = "cocktail",
-    version = "0.6",
+    version = "damassine",
     author = "Whads/Accent SL",
     author_email = "tech@whads.com",
     description = """A tasty mix of python web development utilities.""",
