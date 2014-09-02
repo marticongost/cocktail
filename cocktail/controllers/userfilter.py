@@ -251,6 +251,9 @@ class GlobalSearchFilter(UserFilter):
     @getter
     def expression(self):
 
+        if not self.value:
+            return None
+
         if self.language:
             languages = self.language,
         else:
