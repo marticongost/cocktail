@@ -98,6 +98,7 @@ class MemberFilter(UserFilter):
         value_member = source_member.copy()
         value_member.name = "value"
         value_member.translated = False
+        value_member.default = None
 
         # Remove the bidirectional flag from relations
         if isinstance(value_member, RelationMember):
