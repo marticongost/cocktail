@@ -188,8 +188,8 @@ class UserCollection(object):
     def available_user_filters(self):
         return user_filters_registry.get(self.type)
 
-    def should_ignore_filter(self, filter):
-        return False
+    def should_ignore_filter(self, user_filter):
+        return not user_filter.schema.validate(user_filter)
 
     @cached_getter
     def user_filters(self):
@@ -248,8 +248,7 @@ class UserCollection(object):
                             suffix = (self.params.suffix or "") + str(i),
                             errors = "ignore"
                         )
-                        if not self.should_ignore_filter(filter):
-                            user_filters.append(filter)
+                        user_filters.append(filter)
 
         return ListWrapper(user_filters)
 
@@ -408,7 +407,7 @@ class UserCollection(object):
             subset.add_filter(expression)
 
         for user_filter in self.user_filters:
-            if user_filter.schema.validate(user_filter):
+            if not self.should_ignore_filter(user_filter):
                 expression = user_filter.expression
                 if expression is not None:
                     subset.add_filter(expression)
