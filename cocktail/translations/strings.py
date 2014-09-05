@@ -28,6 +28,12 @@ from cocktail.schema.expressions import (
     PositiveExpression
 )
 
+translations.define("PersistentObject",
+    ca = u"Objecte",
+    es = u"Objeto",
+    en = u"Object"
+)
+
 translations.define("bool-instance",
     ca = lambda instance: u"Sí" if instance else u"No",
     es = lambda instance: u"Sí" if instance else u"No",
