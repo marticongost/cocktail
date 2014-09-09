@@ -281,6 +281,25 @@ class MaxItemsError(ValidationError):
             % (ValidationError.__str__(self), self.max)
 
 
+class InternationalPhoneNumbersNotAllowedError(ValidationError):
+    """A validation error produced when a phone field that doesn't accept
+    international numbers validates a number containing a country prefix.
+    """
+
+
+class InvalidPhoneCountryError(ValidationError):
+    """A validation error produced when a phone field validates a number from
+    a country that is outside the subset established by
+    the `cocktail.schema.phonenumber.PhoneNumber.accepted_countries` constraint.
+    """
+
+
+class PhoneFormatError(ValidationError):
+    """A validation error produced when a phone field is set to a value that
+    doesn't comply with the expected format for its country.
+    """
+
+
 class RelationCycleError(ValidationError):
     """A validation error produced when a recursive relation attempts to form a
     cycle.

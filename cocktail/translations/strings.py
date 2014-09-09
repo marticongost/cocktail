@@ -1183,6 +1183,50 @@ translations.define("cocktail.schema.exceptions.FormatError-instance",
         % member_identifier(instance)
 )
 
+translations.define(
+    "cocktail.schema.exceptions.PhoneFormatError-instance",
+    ca = lambda instance:
+        u"El valor indicat pel camp <em>%s</em> no és un número de telèfon "
+        u"vàlid."
+        % member_identifier(instance),
+    es = lambda instance:
+        u"El valor indicado para el campo <em>%s</em> no es un número de "
+        u"teléfono válido."
+        % member_identifier(instance),
+    en = lambda instance:
+        u"The value for the <em>%s</em> field is not a valid phone number."
+        % member_identifier(instance)
+)
+
+translations.define(
+    "cocktail.schema.exceptions.InternationalPhoneNumbersNotAllowedError-instance",
+    ca = lambda instance:
+        u"El camp <em>%s</em> conté un telèfon internacional: només "
+        u"s'accepten números locals."
+        % member_identifier(instance),
+    es = lambda instance:
+        u"El campo <em>%s</em> contiene un teléfono internacional: solo "
+        u"se aceptan números locales."
+        % member_identifier(instance),
+    en = lambda instance:
+        u"The <em>%s</em> field only allows local phone numbers."
+        % member_identifier(instance)
+)
+
+translations.define(
+    "cocktail.schema.exceptions.InvalidPhoneCountryError-instance",
+    ca = lambda instance:
+        u"El camp <em>%s</em> no accepta números del país indicat."
+        % member_identifier(instance),
+    es = lambda instance:
+        u"El campo <em>%s</em> no acepta números del país indicado."
+        % member_identifier(instance),
+    en = lambda instance:
+        u"The <em>%s</em> field doesn't allow numbers from the indicated "
+        u"country."
+        % member_identifier(instance)
+)
+
 translations.define("cocktail.schema.exceptions.MinValueError-instance",
     ca = lambda instance:
         u"El camp <em>%s</em> ha de ser igual o superior a %s"
