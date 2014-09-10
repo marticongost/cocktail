@@ -51,6 +51,9 @@ class PhoneNumber(String):
     def normalization(self, value):
 
         if value:
+            
+            value = value.replace("(", " ")
+            value = value.replace(")", " ")
             value = value.strip()
 
             if value.startswith("00"):
