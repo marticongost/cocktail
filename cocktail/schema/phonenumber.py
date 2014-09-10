@@ -66,21 +66,30 @@ class PhoneNumber(String):
                 except:
                     pass
                 else:
-                    value = number.replace(" ", "")
                     if (
-                        self.prefix_normalization != "strip_local"
-                        or not self.local_country
-                        or self.get_country_from_prefix(int(prefix))
-                           != self.local_country
+                        self.prefix_normalization == "strip_local"
+                        and self.local_country
+                        and self.get_country_from_prefix(prefix)
+                           == self.local_country
                     ):
-                        value = "+" + str(prefix) + " " + value
+                        prefix = None                        
             else:
-                value = value.replace(" ", "")
+                number = value
                 if self.prefix_normalization == "add_local" and self.local_country:
-                    value = "+%d %s" % (
-                        self.get_prefix_for_country(self.local_country),
-                        value
-                    )
+                    prefix = self.get_prefix_for_country(self.local_country)
+                else:
+                    prefix = None
+
+            number = number.replace(" ", "")
+            number, ext = self.split_extension(number)
+            ext = ext.replace(";", "; ")
+            ext = ext.replace(",", ", ")
+
+            value = (
+                ("+%d " % prefix if prefix is not None else "")
+                + self.group_digits(number)
+                + ext or ""
+            )
 
         return value
 
@@ -94,9 +103,9 @@ class PhoneNumber(String):
             value = value.strip()
             if value.startswith("00"):
                 value = value[2:].lstrip()
-            
+
             # Obtain the country code
-            if value.startswith("+"):               
+            if value.startswith("+"):
                 try:
                     prefix, value = value.split(" ", 1)
                     prefix.lstrip("+")
@@ -146,6 +155,9 @@ class PhoneNumber(String):
                                 context
                             )
 
+                # Ignore extensions
+                value = self.split_extension(value)[0]
+
                 # Validate the country specific format
                 value = value.replace(" ", "")
 
@@ -168,6 +180,42 @@ class PhoneNumber(String):
 
             if not valid:
                 yield PhoneFormatError(self, value, context)
+
+    @classmethod
+    def split_extension(cls, number):
+
+        comma = number.find(",")
+        semicolon = number.find(";")
+
+        if semicolon != -1 and (comma == -1 or semicolon < comma):
+            return number[:semicolon], number[semicolon:]
+        elif comma != -1:
+            return number[:comma], number[comma:]
+
+        return number, ""
+
+    @classmethod
+    def group_digits(self, number):
+
+        number = number.replace(" ", "")
+
+        count = len(number)        
+        if count < 5:
+            return number
+
+        groups = []
+        i = 0
+        n = 3
+
+        while i < count:            
+            groups.append(number[i:i + n])
+            i += n
+            if n == 3:
+                r = (count - i)
+                if r < 5 and r != 3:
+                    n = 2
+
+        return " ".join(groups)
 
 
 PhoneNumber.set_country_info("ad", 376, re.compile(r"^\d{6}(\d{3})?$"))
