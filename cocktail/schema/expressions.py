@@ -15,6 +15,7 @@ from cocktail.translations import (
 )
 from cocktail.schema.accessors import get_accessor
 from cocktail.stringutils import normalize
+from zope.index.text.lexicon import Splitter
 
 
 class Expression(object):
@@ -349,6 +350,8 @@ class GlobalSearchExpression(Expression):
         return any((word in text) for word in self.search_words)
 
 
+_splitter = Splitter()
+
 class SearchExpression(Expression):
 
     __query = None
@@ -391,7 +394,7 @@ class SearchExpression(Expression):
         return self.__tokens
 
     def tokenize(self, text):
-        return (self.normalize(token) for token in text.split())
+        return _splitter.process([self.normalize(text)])
 
     def normalize(self, word):
         return normalize(word)
