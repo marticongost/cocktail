@@ -11,10 +11,20 @@ class Tuple(Member):
 
     type = tuple
     items = ()
+    glue = ", "
 
     def __init__(self, *args, **kwargs):
         Member.__init__(self, *args, **kwargs)
         self.add_validation(self.__class__.tuple_validation_rule)
+
+    def translate_value(self, value):
+        if not value:
+            return Member.translate_value(self, value)
+        else:
+            return self.glue.join(
+                member.translate_value(item)
+                for member, item in zip(self.items, value)
+            )
 
     def tuple_validation_rule(self, value, context):
 
