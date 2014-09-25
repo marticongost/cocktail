@@ -49,7 +49,8 @@ setup(
         "Beaker",
         "BeautifulSoup4",
         "lxml",
-        "httplib2"
+        "httplib2",
+        "PyStemmer"
     ],
     packages = find_packages(),
     include_package_data = True,

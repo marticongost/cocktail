@@ -15,7 +15,7 @@ from BTrees.OOBTree import OOTreeSet, OOSet
 from cocktail.styled import styled
 from cocktail.modeling import getter, ListWrapper
 from cocktail.stringutils import normalize
-from cocktail.translations import get_language
+from cocktail.translations import get_language, words
 from cocktail.schema import (
     Member,
     Collection,
@@ -1281,58 +1281,13 @@ def _descends_from_resolution(self, query):
 
 expressions.DescendsFromExpression.resolve_filter = _descends_from_resolution
 
-def _global_search_resolution(self, query):
-
-    if query.type.full_text_indexed:
-        
-        def impl(dataset):
-            terms = normalize(self.search_query)            
-            subset = set()
-
-            for language in self.languages:
-                index = query.type.get_full_text_index(language)
-                
-                if self.logic == "and":
-                    language_subset = None
-                    
-                    for term in terms.split():
-                        results = index.search(term)
-                        if not results:
-                            language_subset = None
-                            break
-
-                        if language_subset is None:
-                            language_subset = set(results.iterkeys())
-                        else:
-                            language_subset.intersection_update(
-                                results.iterkeys()
-                            )
-
-                    if language_subset is not None:
-                        subset.update(language_subset)
-
-                elif self.logic == "or":
-                    results = index.search(terms)
-                    if results:
-                        subset.update(results.iterkeys())
-            
-            dataset.intersection_update(subset)
-            return dataset
-
-        return ((-1, 1), impl)
-    else:
-        return ((0, 0), None)    
-
-expressions.GlobalSearchExpression.resolve_filter = _global_search_resolution
-
 def _search_resolution(self, query):
 
     indexed_member = None
     languages = None if self.languages is None else list(self.languages)
 
-    # Can't use indexes if partial word matching is enabled
-    if self.partial_word_match:
-        return ((0, 0), None)
+    # TODO: use the new text reduction API to tokenize / normalize / stem the
+    # query
 
     # Searching over the whole text mass of the queried type
     if isinstance(self.subject, expressions.SelfExpression) \
@@ -1361,11 +1316,12 @@ def _search_resolution(self, query):
 
             for language in languages:
                 index = indexed_member.get_full_text_index(language)
+                query_tokens = words.get_unique_stems(self.query, language)
 
                 if self.logic == "and":
                     language_subset = None
                     
-                    for term in self.tokens:
+                    for term in query_tokens:
                         results = index.search(term)
                         if not results:
                             language_subset = None
@@ -1382,10 +1338,10 @@ def _search_resolution(self, query):
                         subset.update(language_subset)
 
                 elif self.logic == "or":
-                    results = index.search(self.tokens)
+                    results = index.search(query_tokens)
                     if results:
                         subset.update(results.iterkeys())
-            
+
             dataset.intersection_update(subset)
             return dataset
 

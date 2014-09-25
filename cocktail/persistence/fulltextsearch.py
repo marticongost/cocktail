@@ -3,14 +3,14 @@ u"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
-from zope.index.text.lexicon import CaseNormalizer
+from zope.interface import implements
+from zope.index.text.interfaces import IPipelineElement
 from zope.index.text.lexicon import Lexicon
-from zope.index.text.lexicon import Splitter
-from zope.index.text.lexicon import StopWordRemover
 from zope.index.text.okapiindex import OkapiIndex
 from cocktail.events import when
 from cocktail import schema
 from cocktail.translations import iter_language_chain
+from cocktail.translations import words
 from cocktail.schema.expressions import normalize
 from cocktail.persistence.datastore import datastore
 from cocktail.persistence.persistentmapping import PersistentMapping
@@ -18,6 +18,17 @@ from cocktail.persistence.persistentobject import (
     PersistentObject,
     PersistentClass
 )
+
+
+class FullTextIndexProcessor(object):
+    implements(IPipelineElement)
+
+    def __init__(self, locale):
+        self.locale = locale
+
+    def process(self, sequence):
+        return words.get_stems(sequence, self.locale)
+
 
 schema.Member.full_text_indexed = False
 PersistentObject.full_text_indexed = False
@@ -59,7 +70,7 @@ def _get_full_text_index(self, language = None):
     if indexes is not None:
         index = indexes.get(language)
         if index is None:
-            index = self.create_full_text_index()
+            index = self.create_full_text_index(language)
             indexes[language] = index
 
     return index
@@ -113,11 +124,8 @@ schema.String.full_text_index_key = property(
     _set_full_text_index_key
 )
 
-def _create_full_text_index(self):
-    lexicon = Lexicon(
-        Splitter(),
-        CaseNormalizer()
-    )
+def _create_full_text_index(self, language):
+    lexicon = Lexicon(FullTextIndexProcessor(language))
     return OkapiIndex(lexicon)
 
 PersistentClass.create_full_text_index = _create_full_text_index
