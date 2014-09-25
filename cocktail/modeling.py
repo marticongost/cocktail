@@ -502,6 +502,9 @@ class SetWrapper(object):
     def union(self, other):
         return self._items.union(other)
 
+    def is_disjoint(self, other):
+        return self._items.is_disjoint(other)
+
 empty_dict = DictWrapper({})
 empty_list = ListWrapper([])
 empty_set = SetWrapper(set())
