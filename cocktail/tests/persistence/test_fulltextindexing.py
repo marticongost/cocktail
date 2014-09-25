@@ -178,11 +178,11 @@ class FullTextIndexingTranslationsTestCase(TempStorageMixin, TestCase):
 
         obj = self.test_type()
         obj.set("field1", u"dog", "en")
-        obj.set("field2", u"cat", "en")
+        obj.set("field2", u"pig", "en")
         obj.set("field1", u"gos", "ca")
-        obj.set("field2", u"gat", "ca")
+        obj.set("field2", u"porc", "ca")
         obj.set("field1", u"perro", "es")
-        obj.set("field2", u"gato", "es")
+        obj.set("field2", u"cerdo", "es")
         obj.insert()
 
         index_en = self.test_type.get_full_text_index("en")
@@ -196,22 +196,22 @@ class FullTextIndexingTranslationsTestCase(TempStorageMixin, TestCase):
         assert not index_en.search("perro")
         assert not index1_en.search("gos")
         assert not index1_en.search("perro")
-        assert not index_en.search("gat")
-        assert not index_en.search("gato")
+        assert not index_en.search("porc")
+        assert not index_en.search("cerdo")
 
         assert not index_ca.search("dog")
         assert not index_ca.search("perro")
         assert not index1_ca.search("dog")
         assert not index1_ca.search("perro")
-        assert not index_ca.search("cat")
-        assert not index_ca.search("gato")
+        assert not index_ca.search("pig")
+        assert not index_ca.search("cerdo")
 
         assert not index_es.search("dog")
         assert not index_es.search("gos")
         assert not index1_es.search("dog")
         assert not index1_es.search("gos")
-        assert not index_es.search("cat")
-        assert not index_es.search("gat")
+        assert not index_es.search("pig")
+        assert not index_es.search("porc")
 
     def test_reindexes_objects_when_modified(self):
         

@@ -11,11 +11,11 @@ import operator
 from cocktail.translations import (
     translations,
     get_language,
-    language_context
+    language_context,
+    words
 )
 from cocktail.schema.accessors import get_accessor
 from cocktail.stringutils import normalize
-from zope.index.text.lexicon import Splitter
 
 
 class Expression(object):
@@ -123,15 +123,13 @@ class Expression(object):
     def search(self,
         query,
         languages = None,
-        logic = "and",
-        partial_word_match = False
+        logic = "and"
     ):
         return SearchExpression(
             self,
             query,
             languages = languages,
-            logic = logic,
-            partial_word_match = partial_word_match
+            logic = logic
         )
 
     def translated_into(self, language):
@@ -335,144 +333,71 @@ class EndsWithExpression(NormalizableExpression):
         return a.endswith(b)
 
 
-class GlobalSearchExpression(Expression):
-
-    def __init__(self, search, languages = None, logic = "and"):
-        Expression.__init__(self)
-        self.search_query = search
-        self.search_words = set(normalize(search).split())
-        
-        if languages is None:
-            languages = [get_language()]
-        else:
-            languages = list(languages)
-
-        if None not in languages:
-            languages.append(None)
-        
-        self.languages = languages
-        self.logic = logic
-
-    def eval(self, context, accessor = None):        
-        text = u" ".join(context.get_searchable_text(self.languages))
-        text = normalize(text)
-        return any((word in text) for word in self.search_words)
-
-
-_splitter = Splitter()
-
 class SearchExpression(Expression):
 
-    __query = None
-    __tokens = frozenset()
-    __logic = "and"
+    query = None
+    logic = "and"
 
     def __init__(self,
         subject,
         query,
         languages = None,
-        logic = "and",
-        partial_word_match = False
+        logic = "and"
     ):
         Expression.__init__(self, subject, query)
         self.subject = subject
         self.query = query
         self.languages = languages
-        self.__logic = logic
-        self.partial_word_match = partial_word_match
-
-    def _get_query(self):
-        return self._query
-
-    def _set_query(self, query):
-        
-        if not isinstance(query, basestring):
-            raise TypeError(
-                'SearchExpression.query must be set to a string, '
-                'got %r instead'
-                % query
-            )
-
-        self.__query = query
-        self.__tokens = frozenset(self.tokenize(query))
-
-    query = property(_get_query, _set_query)
-
-    @property
-    def tokens(self):
-        return self.__tokens
-
-    def tokenize(self, text):
-        return _splitter.process([self.normalize(text)])
-
-    def normalize(self, word):
-        return normalize(word)
+        self.logic = logic
 
     def eval(self, context, accessor = None):
-        
+
         languages = self.languages
         if languages is None:
             languages = [get_language()]
 
         added_language_neutral_text = False
-        text_body = []
+        subject_tokens = set()
 
         for language in languages:
+
             with language_context(language):
+
                 lang_text = self.subject.eval(context, accessor)
+
+                if not lang_text:
+                    continue
+
                 get_searchable_text = getattr(
                     lang_text, "get_searchable_text", None
                 )
+
                 if get_searchable_text is not None:
+
+                    def add_searchable_text(language):
+                        for chunk in get_searchable_text([language]):
+                            if chunk:
+                                subject_tokens.update(
+                                    words.iter_stems(chunk, language)
+                                )
+
                     if not added_language_neutral_text:
-                        text_body.extend(get_searchable_text([None]))
+                        add_searchable_text(None)
                         added_language_neutral_text = True
-                    text_body.extend(get_searchable_text([language]))
+
+                    add_searchable_text(language)
                 else:
-                    text_body.append(lang_text)
+                    subject_tokens.update(
+                        words.iter_stems(lang_text, language)
+                    )
 
-        text_body = filter(None, text_body)
+        for language in languages:
+            query_tokens = words.get_unique_stems(self.query, language)
 
-        # Accept partial word matches (ie. a text containing "John Sanderson"
-        # would match a query for "sand").
-        if self.partial_word_match:
-            searchable_text = normalize(u" ".join(text_body))
-            operator = all if self.logic == "and" else any
-            return operator(
-                (token in searchable_text) 
-                for token in self.__tokens
-            )
-        
-        # Match full words only (ie. a text containing "John Sanderson" would
-        # not match a query for "sand", but "John Sanderson walked across the
-        # sand" would).
+        if self.logic == "and":
+            return subject_tokens.issuperset(query_tokens)
         else:
-            subject_tokens = self.tokenize(u" ".join(text_body))
-
-            if self.logic == "and":
-                return not (self.__tokens - frozenset(subject_tokens))
-            else:
-                return any(token in self.__tokens for token in subject_tokens)
-
-    def _get_logic(self):
-        return self.__logic
-
-    def _set_logic(self, logic):
-        if logic not in ("and", "or"):
-            raise ValueError(
-                "Unknown logic for SearchExpression: "
-                "expected 'and' or 'or', got %r instead"
-                % logic
-            )
-        
-        self.__logic = logic
-
-    logic = property(_get_logic, _set_logic, doc = """
-        Gets or sets the behavior of the search expression when given a query
-        containing multiple words. Should be a string, indicating "and"
-        (matches must contain all the given words) or "or" (matches must
-        contain one or more of the given words).
-        """)
+            return not query_tokens.isdisjoint(subject_tokens)
 
 
 class AddExpression(Expression):

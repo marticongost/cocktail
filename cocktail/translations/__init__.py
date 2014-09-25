@@ -24,6 +24,7 @@ from cocktail.translations.translation import (
     NoActiveLanguageError,
     translations
 )
+from cocktail.translations.wordprocessing import words
 from cocktail.translations.strings import (
     DATE_STYLE_NUMBERS,
     DATE_STYLE_ABBR,
