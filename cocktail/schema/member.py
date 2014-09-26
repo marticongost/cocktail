@@ -547,6 +547,9 @@ class Member(Variable):
 
         return explanation
 
+    def extract_searchable_text(self, extractor):
+        extractor.feed(self.translate_value(extractor.current.value))
+
 
 class DynamicDefault(object):
 

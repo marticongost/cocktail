@@ -31,6 +31,7 @@ from cocktail.schema.schemacollections import (
 )
 from cocktail.schema.schemamappings import Mapping, RelationMapping
 from cocktail.schema.accessors import MemberAccessor
+from cocktail.schema.textextractor import TextExtractor
 
 # Extension property that allows members to knowingly shadow existing
 # class attributes
@@ -761,65 +762,10 @@ class SchemaObject(object):
             if locale in translations:
                 return locale
 
-    def get_searchable_text(self,
-        languages, 
-        visited_objects = None,
-        stack = None):
-        
-        if stack is None:
-            stack = []
-
-        if visited_objects is None:
-            visited_objects = set()
-        elif self in visited_objects:
-            return []
-        
-        visited_objects.add(self)
-        return self._get_searchable_text(languages, visited_objects, stack)
-    
-    def _get_searchable_text(self, languages, visited_objects, stack):
-
-        # Yield all text fields, traversing selected relations
-        for language in languages:
-            for member in self.__class__.members().itervalues():
-                if getattr(member, "text_search", False) \
-                and (
-                    member.translated == (language is not None)
-                    or isinstance(member, (Reference, Collection))
-                ):
-                    member_value = self.get(member, language)
-                    if member_value:
-
-                        # Yield strings
-                        if isinstance(member, String):
-                            yield member_value
-                        
-                        # Recurse into selected references
-                        elif isinstance(member, Reference):
-                            stack.append(self)
-                            try:
-                                for text in member_value.get_searchable_text(
-                                    languages,
-                                    visited_objects,
-                                    stack
-                                ):
-                                    yield text
-                            finally:
-                                stack.pop()
-
-                        # Recurse into selected collections
-                        elif isinstance(member, Collection):
-                            stack.append(self)
-                            try:
-                                for child in member_value:
-                                    for text in child.get_searchable_text(
-                                        languages,
-                                        visited_objects,
-                                        stack
-                                    ):
-                                        yield text
-                            finally:
-                                stack.pop()
+    def get_searchable_text(self, languages = None):
+        extractor = TextExtractor(languages)
+        extractor.extract(self.__class__, self)
+        return unicode(extractor)
 
     copy_excluded_members = frozenset()
 

@@ -133,3 +133,6 @@ class Reference(RelationMember):
                             yield RelationConstraintError(
                                 self, value, context, constraint)
 
+    def extract_searchable_text(self, extractor):
+        self.type.extract_searchable_text(extractor)
+

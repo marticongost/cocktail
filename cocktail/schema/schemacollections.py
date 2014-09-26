@@ -106,6 +106,11 @@ class Collection(RelationMember):
         if member.items is None:
             member.items = Reference(type = member.related_end.schema)
 
+    def extract_searchable_text(self, extractor):
+        if self.items:
+            for item in extractor.current.value:
+                extractor.extract(self.items, item)
+
     # Relational operators
     #--------------------------------------------------------------------------
     def any(self, *args, **kwargs):

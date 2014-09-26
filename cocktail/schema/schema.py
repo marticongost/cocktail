@@ -18,7 +18,7 @@ from cocktail.modeling import (
 from cocktail.events import Event
 from cocktail.translations import translations
 from cocktail.schema.member import Member, DynamicDefault
-from cocktail.schema.accessors import get_accessor
+from cocktail.schema.accessors import get_accessor, get
 from cocktail.schema.exceptions import SchemaIntegrityError
 
 default = object()
@@ -49,6 +49,7 @@ class Schema(Member):
     members_order = None
     groups_order = []
     integral = False
+    text_search = True
 
     member_added = Event("""
         An event triggered when a member is added to the schema.
@@ -738,4 +739,15 @@ class Schema(Member):
             if after:
                 pos += 1
             self.groups_order.insert(pos, group)
+
+    def extract_searchable_text(self, extractor):
+        
+        obj = extractor.current.value
+
+        for member in self.iter_members():
+            if member.text_search:
+                for language in extractor.languages:
+                    if member.translated == (language is not None):
+                        value = get(obj, member, language = language)
+                        extractor.extract(member, value, language)
 
