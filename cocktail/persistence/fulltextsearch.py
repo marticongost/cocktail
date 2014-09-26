@@ -131,34 +131,9 @@ def _create_full_text_index(self, language):
 PersistentClass.create_full_text_index = _create_full_text_index
 schema.String.create_full_text_index = _create_full_text_index
 
-def _get_object_text(obj, language = None):
-
-    chunks = []
-    
-    for chunk in obj.get_searchable_text([language]):
-
-        if not isinstance(chunk, basestring):
-            raise TypeError(
-                "Object %r produced the non-string value %r during text "
-                "collection for full text indexing. Check the implementation "
-                "of its get_searchable_text() method."
-                % (obj, chunk)
-            )
-
-        # Ignore non-unicode strings
-        if isinstance(chunk, str):
-            try:
-                chunk = unicode(chunk)
-            except UnicodeDecodeError:
-                continue
-
-        chunks.append(chunk)
-    
-    return normalize(u" ".join(chunks))
-
 def _persistent_class_index_text(self, obj, language = None):
 
-    text = _get_object_text(obj, language)
+    text = obj.get_searchable_text([language])
 
     if language is None:
         translations = (None,)
@@ -167,7 +142,7 @@ def _persistent_class_index_text(self, obj, language = None):
             language,
             include_self = True
         )
-    
+
     for lang in translations:
         index = self.get_full_text_index(lang)
         index.unindex_doc(obj.id)
@@ -315,7 +290,7 @@ def _handle_translation_removed(event):
                     for member in translated_members:
 
                         if isinstance(member, type):
-                            text = _get_object_text(obj, chain_lang)
+                            text = obj.get_searchable_text([chain_lang])
                         else:
                             text = obj.get(member, chain_lang)
                             if text:

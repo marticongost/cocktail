@@ -117,3 +117,6 @@ class String(Member):
         copy.format = self.format
         return copy
 
+    def extract_searchable_text(self, extractor):
+        extractor.feed(extractor.current.value)
+
