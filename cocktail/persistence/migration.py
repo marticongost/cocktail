@@ -352,3 +352,10 @@ def instrument_non_relational_collections(self):
                         delattr(instance, "_" + member.name)
                         instance.set(member, value)
 
+step = MigrationStep("Stemming and new searchable text extraction semantics")
+
+@when(step.executing)
+def rebuild_full_text_indexes(e):
+    from cocktail.persistence import PersistentObject
+    PersistentObject.rebuild_full_text_indexes(True)
+
