@@ -762,8 +762,12 @@ class SchemaObject(object):
             if locale in translations:
                 return locale
 
-    def get_searchable_text(self, languages = None):
+    def get_searchable_text(self, languages = None, verbose = None):
         extractor = TextExtractor(languages)
+
+        if verbose is not None:
+            extractor.verbose = verbose
+        
         extractor.extract(self.__class__, self)
         return unicode(extractor)
 
