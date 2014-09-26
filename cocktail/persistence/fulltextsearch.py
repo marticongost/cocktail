@@ -362,22 +362,25 @@ PersistentClass.rebuild_full_text_index = _rebuild_full_text_index
 schema.String.rebuild_full_text_index = _rebuild_full_text_index
 
 def _rebuild_full_text_indexes(cls, recursive = False, verbose = True):
-    
-    if cls.full_text_indexed:        
+
+    if cls.full_text_indexed and not any(
+        isinstance(base, PersistentClass) and base.full_text_indexed
+        for base in cls.bases
+    ):
         if verbose:
             print "Rebuilding full text index for %s" % cls
         cls.rebuild_full_text_index()
 
-    classes = [cls]
-    if recursive:
-        classes += list(cls.derived_schemas())
+    for member in cls.iter_members(recursive = False):
+        if member.full_text_indexed:
+            if verbose:
+                print "Rebuilding full text index for %s" % member
+            member.rebuild_full_text_index()
 
-    for cls in classes:
-        for member in cls.members(recursive = False).itervalues():
-            if member.full_text_indexed:
-                if verbose:
-                    print "Rebuilding full text index for %s" % member
-                member.rebuild_full_text_index()
+    if recursive:
+        for derived in cls.derived_schemas():
+            if derived.translation_source is None:
+                derived.rebuild_full_text_indexes(True, verbose)
 
 PersistentClass.rebuild_full_text_indexes = _rebuild_full_text_indexes
 
