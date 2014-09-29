@@ -4,6 +4,7 @@ u"""
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
 from abc import ABCMeta, abstractmethod
+from warnings import warn
 import re
 import collections
 from Stemmer import Stemmer
@@ -139,5 +140,10 @@ for language in (
     "sv",
     "tr"
 ):
-    words[language] = LocaleWordProcessor(Stemmer(language))
+    try:
+        stemmer = Stemmer(language)
+    except:
+        warn("Couldn't create stemmer for language %r" % language)        
+    else:
+        words[language] = LocaleWordProcessor(stemmer)
 
