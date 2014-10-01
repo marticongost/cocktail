@@ -297,11 +297,18 @@ class TemplateCompiler(object):
             self.__root_element_found = True
             
             if self.__is_overlay:
-                base_name = "Overlay"
+                overlay_base = attributes.pop(
+                    self.TEMPLATE_NS + ">overlay_base",
+                    "cocktail.html.Overlay"
+                )
                 self.__global_source_block.write(
                     "from cocktail.modeling import call_base")
+
+                base_pkg, base_name = overlay_base.rsplit(".", 1)
+
                 self.__global_source_block.write(
-                    "from cocktail.html import Overlay")
+                    "from %s.%s import %s" % (base_pkg, base_name.lower(), base_name)
+                )
             else:
                 base_name = elem_class_name
 
