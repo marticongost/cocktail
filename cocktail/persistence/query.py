@@ -1313,17 +1313,17 @@ def _search_resolution(self, query):
 
             for language in languages:
                 index = indexed_member.get_full_text_index(language)
-                query_tokens = words.get_unique_stems(self.query, language)
+                terms = words.split(self.query)
 
                 if self.logic == "and":
                     language_subset = None
                     
-                    for term in query_tokens:
-                        results = index.search(term)
+                    for term in terms:
+                        results = index.search(self.query)
                         if not results:
                             language_subset = None
                             break
-
+                        
                         if language_subset is None:
                             language_subset = set(results.iterkeys())
                         else:
@@ -1335,9 +1335,10 @@ def _search_resolution(self, query):
                         subset.update(language_subset)
 
                 elif self.logic == "or":
-                    results = index.search(query_tokens)
-                    if results:
-                        subset.update(results.iterkeys())
+                    for term in terms:
+                        results = index.search(term)
+                        if results:
+                            subset.update(results.iterkeys())
 
             dataset.intersection_update(subset)
             return dataset
