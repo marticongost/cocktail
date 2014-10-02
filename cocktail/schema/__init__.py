@@ -84,6 +84,7 @@ from cocktail.schema.adapter import (
     Join
 )
 from cocktail.schema.textextractor import TextExtractor
+from cocktail.schema.searchhighlighter import SearchHighlighter
 from cocktail.schema.validationcontext import ValidationContext
 from cocktail.schema.differences import diff
 
