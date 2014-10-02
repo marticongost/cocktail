@@ -88,6 +88,7 @@ class Member(Variable):
 
     # Wether the member is included in full text searches
     text_search = False
+    language_agnostic_text_extraction = False
 
     # Attributes that deserve special treatment when performing a deep copy
     _special_copy_keys = set([
