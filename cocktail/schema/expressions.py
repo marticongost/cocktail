@@ -373,19 +373,15 @@ class SearchExpression(Expression):
                 )
 
                 if get_searchable_text is not None:
-
-                    def add_searchable_text(language):
-                        for chunk in get_searchable_text([language]):
-                            if chunk:
-                                subject_tokens.update(
-                                    words.iter_stems(chunk, language)
-                                )
-
                     if not added_language_neutral_text:
-                        add_searchable_text(None)
+                        subject_tokens.update(
+                            words.iter_stems(get_searchable_text([None]), None)
+                        )
                         added_language_neutral_text = True
 
-                    add_searchable_text(language)
+                    subject_tokens.update(
+                        words.iter_stems(get_searchable_text([language]), language)
+                    )
                 else:
                     subject_tokens.update(
                         words.iter_stems(lang_text, language)
