@@ -80,6 +80,10 @@ class BaseDateTime(Schema, RangedMember):
     def _create_default_instance(self):
         return None
 
+    def extract_searchable_text(self, extractor):
+        pass
+
+
 class DateTime(BaseDateTime):
     type = datetime.datetime
     _is_date = True
