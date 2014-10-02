@@ -1286,9 +1286,6 @@ def _search_resolution(self, query):
     indexed_member = None
     languages = None if self.languages is None else list(self.languages)
 
-    # TODO: use the new text reduction API to tokenize / normalize / stem the
-    # query
-
     # Searching over the whole text mass of the queried type
     if isinstance(self.subject, expressions.SelfExpression) \
     and query.type.full_text_indexed:        
