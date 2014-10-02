@@ -134,5 +134,6 @@ class Reference(RelationMember):
                                 self, value, context, constraint)
 
     def extract_searchable_text(self, extractor):
-        self.type.extract_searchable_text(extractor)
+        item = extractor.current.value.__class__
+        return item.extract_searchable_text(extractor)
 
