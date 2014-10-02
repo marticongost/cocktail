@@ -3,7 +3,7 @@ u"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
-from cocktail.translations import words
+from cocktail.translations import words, get_language
 from .textextractor import TextExtractor
 import re
 
