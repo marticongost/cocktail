@@ -756,6 +756,23 @@ class SchemaObject(object):
                 elif chain_lang in self.translations:
                     break
 
+    def iter_translations(self, include_derived = True, languages = None):
+
+        for language in self.translations:
+
+            if languages is not None and language not in languages:
+                continue
+
+            yield language
+
+            if include_derived:
+                for derived_language in descend_language_tree(
+                    language,
+                    include_self = False
+                ):
+                    if derived_language not in self.translations:
+                        yield derived_language
+
     def get_source_locale(self, locale):
         translations = self.translations
         for locale in iter_language_chain(locale):
