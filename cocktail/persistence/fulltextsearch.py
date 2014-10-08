@@ -9,7 +9,7 @@ from zope.index.text.lexicon import Lexicon
 from zope.index.text.okapiindex import OkapiIndex
 from cocktail.events import when
 from cocktail import schema
-from cocktail.translations import iter_language_chain
+from cocktail.translations import iter_language_chain, descend_language_tree
 from cocktail.translations import words
 from cocktail.schema.expressions import normalize
 from cocktail.persistence.datastore import datastore
@@ -133,18 +133,24 @@ schema.String.create_full_text_index = _create_full_text_index
 
 def _persistent_class_index_text(self, obj, language = None):
 
-    text = obj.get_searchable_text([language])
+    languages = None if language is None else (language,)
 
-    if language is None:
-        translations = (None,)
-    else:
-        translations = obj.iter_derived_translations(
-            language,
-            include_self = True
-        )
+    extractor = obj.create_text_extractor(
+        languages = languages,
+        include_derived_languages = True
+    )
+    text_by_language = extractor.get_text_by_language()
 
-    for lang in translations:
-        index = self.get_full_text_index(lang)
+    # Some of the requested languages may have no text; they should still be
+    # removed from the index, so we select them explicitly.
+    if languages is not None:
+        for language in languages:
+            if language not in text_by_language:
+                for language in descend_language_tree(language):
+                    text_by_language[language] = ""
+
+    for language, text in text_by_language.iteritems():
+        index = self.get_full_text_index(language)
         index.unindex_doc(obj.id)
         if text:
             index.index_doc(obj.id, text)
@@ -153,22 +159,20 @@ PersistentClass.index_text = _persistent_class_index_text
 
 def _string_index_text(self, obj, language = None):
 
-    if language is None:
-        translations = (None,)
+    if self.translated:
+        if language is None:
+            languages = obj.iter_translations(include_derived = True)
+        else:
+            languages = descend_language_tree(language, include_self = True)
     else:
-        translations = obj.iter_derived_translations(
-            language,
-            include_self = True
-        )
+        languages = (None,)
 
-    text = obj.get(self, language)
-    if text:
-        text = normalize(text)
-
-    for lang in translations:
-        index = self.get_full_text_index(lang)
+    for language in languages:
+        index = self.get_full_text_index(language)
         index.unindex_doc(obj.id)
-        if text:            
+        text = obj.get(self, language)
+        if text:
+            text = normalize(text)
             index.index_doc(obj.id, text)
 
 schema.String.index_text = _string_index_text
@@ -183,27 +187,11 @@ def _handle_changed(event):
         # Reindex this specific member
         if obj._should_index_member_full_text(event.member):
             event.member.index_text(obj, event.language)
-        
+
         # Only reindex whole objects when modifying a member included in the
         # object's text body (signaled by the 'text_search' attribute)
         if event.member.text_search:
             _cascade_index(obj, event.language, set())
-
-@when(PersistentObject.related)
-def _handle_related(event):
-
-    obj = event.source
-
-    if obj.is_inserted and event.member.text_search:
-        _cascade_index(obj, None, set())
-
-@when(PersistentObject.unrelated)
-def _handle_unrelated(event):
-
-    obj = event.source
-
-    if obj.is_inserted and event.member.text_search:
-        _cascade_index(obj, None, set())
 
 def _cascade_index(obj, language, visited):
 
@@ -238,21 +226,13 @@ def _cascade_index(obj, language, visited):
 def _handle_inserting(event):
 
     obj = event.source
-    members = [obj.__class__] + obj.__class__.members().values()
-    
-    for member in members:
-        if obj._should_index_member_full_text(member):
-            
-            if member.translated:
-                
-                # Non-translatable content of translated types
-                if isinstance(member, type):
-                    member.index_text(obj)
 
-                for language in obj.translations:
-                    member.index_text(obj, language)
-            else:
-                member.index_text(obj)
+    if obj._should_index_member_full_text(obj.__class__):
+        obj.__class__.index_text(obj)
+
+    for member in obj.__class__.iter_members():
+        if obj._should_index_member_full_text(member):
+            member.index_text(obj)
 
 @when(PersistentObject.removing_translation)
 def _handle_translation_removed(event):
@@ -290,7 +270,9 @@ def _handle_translation_removed(event):
                     for member in translated_members:
 
                         if isinstance(member, type):
-                            text = obj.get_searchable_text([chain_lang])
+                            text = obj.get_searchable_text(
+                                languages = (chain_lang,)
+                            )
                         else:
                             text = obj.get(member, chain_lang)
                             if text:
@@ -307,7 +289,7 @@ def _handle_deleting(event):
 
     obj = event.source
     id = obj.id
-    members = [obj.__class__] + obj.__class__.members().values()
+    members = [obj.__class__] + list(obj.__class__.iter_members())
 
     for member in members:
         if isinstance(member, (schema.String, PersistentClass)):
@@ -326,12 +308,7 @@ def _rebuild_full_text_index(self):
         persistent_type = self.schema
 
     for obj in persistent_type.select():
-        if obj.__class__.translated:
-            self.index_text(obj)
-            for language in obj.translations:
-                self.index_text(obj, language)
-        else:
-            self.index_text(obj)
+        self.index_text(obj)
 
 PersistentClass.rebuild_full_text_index = _rebuild_full_text_index
 schema.String.rebuild_full_text_index = _rebuild_full_text_index

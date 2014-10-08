@@ -5,7 +5,7 @@ u"""
 """
 from cocktail.styled import styled
 from collections import namedtuple
-from cocktail.translations import get_language
+from cocktail.translations import get_language, descend_language_tree
 from cocktail.schema.schema import Schema
 
 
@@ -13,23 +13,35 @@ class TextExtractor(object):
 
     verbose = False
 
-    def __init__(self, languages = None):
-
-        if languages is None:
-            current_language = get_language()
-            if current_language is None:
-                languages = (None,)
-            else:
-                languages = (None, current_language) 
-
+    def __init__(self, languages = None, include_derived_languages = False):
         self.__languages = languages
+        self.__include_derived_languages = include_derived_languages
         self.__stack = []
         self.__visited = set()
         self.__nodes = []
  
+    def iter_node_languages(self):
+
+        try:
+            obj = self.__stack[-1].value
+        except IndexError:
+            raise ValueError("The text extraction stack is empty")
+
+        if obj.__class__.translated:
+            return obj.iter_translations(
+                include_derived = self.__include_derived_languages,
+                languages = self.__languages
+            )
+        else:
+            return (None,)
+
     @property
     def languages(self):
         return self.__languages
+
+    @property
+    def include_derived_languages(self):
+        return self.__include_derived_languages
 
     @property
     def stack(self):
@@ -117,6 +129,21 @@ class TextExtractor(object):
         return u" ".join(
             u" ".join(chunk for chunk in node.text)
             for node in self.__nodes
+        )
+
+    def get_text_by_language(self):
+
+        buffers = {}
+
+        for node in self.__nodes:
+            lang_buffer = buffers.get(node.language)
+            if lang_buffer is None:
+                buffers[node.language] = lang_buffer = []
+            lang_buffer.extend(node.text)
+
+        return dict(
+            (lang, u" ".join(buffer))
+            for lang, buffer in buffers.iteritems()
         )
 
 

@@ -751,7 +751,7 @@ class Schema(Member):
                     value = get(obj, member)
                     extractor.extract(member, value)
                 else:
-                    for language in extractor.languages:
+                    for language in extractor.iter_node_languages():
                         if member.translated == (language is not None):
                             value = get(obj, member, language = language)
                             extractor.extract(member, value, language)
