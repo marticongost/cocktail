@@ -779,14 +779,13 @@ class SchemaObject(object):
             if locale in translations:
                 return locale
 
-    def get_searchable_text(self, languages = None, verbose = None):
-        extractor = TextExtractor(languages)
-
-        if verbose is not None:
-            extractor.verbose = verbose
-        
+    def create_text_extractor(self, **kwargs):
+        extractor = TextExtractor(**kwargs)
         extractor.extract(self.__class__, self)
-        return unicode(extractor)
+        return extractor
+
+    def get_searchable_text(self, **kwargs):
+        return unicode(self.create_text_extractor(**kwargs))
 
     copy_excluded_members = frozenset()
 

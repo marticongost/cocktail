@@ -101,7 +101,7 @@ class FullTextIndexingTestCase(TempStorageMixin, TestCase):
         obj.field2 = u"bbb"        
         obj.insert()
         obj.delete()
-        
+
         index = self.test_type.get_full_text_index()
         index1 = self.test_type.field1.get_full_text_index()
         

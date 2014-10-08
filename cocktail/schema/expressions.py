@@ -375,12 +375,18 @@ class SearchExpression(Expression):
                 if get_searchable_text is not None:
                     if not added_language_neutral_text:
                         subject_tokens.update(
-                            words.iter_stems(get_searchable_text([None]), None)
+                            words.iter_stems(
+                                get_searchable_text(languages = (None,)),
+                                None
+                            )
                         )
                         added_language_neutral_text = True
 
                     subject_tokens.update(
-                        words.iter_stems(get_searchable_text([language]), language)
+                        words.iter_stems(
+                            get_searchable_text(languages = (language,)),
+                            language
+                        )
                     )
                 else:
                     subject_tokens.update(
