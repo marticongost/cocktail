@@ -13,12 +13,19 @@ class TextExtractor(object):
 
     verbose = False
 
-    def __init__(self, languages = None, include_derived_languages = False):
+    def __init__(self,
+        languages = None,
+        include_derived_languages = False,
+        verbose = None
+    ):
         self.__languages = languages
         self.__include_derived_languages = include_derived_languages
         self.__stack = []
         self.__visited = set()
         self.__nodes = []
+
+        if verbose is not None:
+            self.verbose = verbose
  
     def iter_node_languages(self):
 
