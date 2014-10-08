@@ -81,7 +81,7 @@ class TextExtractor(object):
             else:
                 print
 
-        is_object = issubclass(type(value), Schema)
+        is_object = isinstance(type(value), Schema)
 
         if is_object:
             if value in self.__visited:
