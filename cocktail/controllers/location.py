@@ -48,6 +48,7 @@ class Location(object):
             self.port = parts.port
             self.path_info = parts.path
             self.query_string = parse_qs(parts.query)
+            self.hash = parts.fragment
 
     @classmethod
     def get_current_host(cls):
