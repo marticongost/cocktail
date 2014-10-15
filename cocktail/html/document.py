@@ -34,6 +34,7 @@ class HTMLDocument(Element):
     tag = "html"
     styled_class = False
     content = ""
+    root_element_id = None
     metadata = DocumentMetadata()
     rendering_options = {}
     ie_html5_workaround = True
@@ -219,8 +220,16 @@ class HTMLDocument(Element):
                 % dumps(language)
             )
 
+            init_code = "cocktail.init();"
+
+            if self.root_element_id:
+                init_code = (
+                    "cocktail.rootElement =  document.getElementById(%s); "
+                    % dumps(self.root_element_id)                    
+                ) + init_code
+
             self.client_setup.append(
-                "\t\tjQuery(function () { cocktail.init(); });\n"
+                "\t\tjQuery(function () { %s });\n" % init_code
             )
 
     def _add_client_variables(self):

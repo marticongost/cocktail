@@ -325,6 +325,8 @@ class Element(object):
         if document_metadata is None:
             document_metadata = DocumentMetadata()
 
+        self.when_ready(self.require_id)
+
         content = self.render(
             renderer = renderer,
             document_metadata = document_metadata,
@@ -334,6 +336,7 @@ class Element(object):
 
         from cocktail.html.document import HTMLDocument
         document = HTMLDocument()
+        document.root_element_id = self["id"]
         document.content = content
         document.metadata = document_metadata
         document.rendering_options = {
