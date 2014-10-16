@@ -313,12 +313,17 @@ cocktail.showDialog = function (content) {
 
         jQuery(cocktail.__dialogBackground).click(cocktail.closeDialog);
     }
+    var $content = jQuery(content);
+    var $dialogElements = jQuery(cocktail.__dialogBackground).add($content);
+    $dialogElements.removeClass("dialog_ready");
     cocktail.rootElement.appendChild(cocktail.__dialogBackground);
 
-    var $content = jQuery(content);
     $content.addClass("dialog");
     jQuery(document.body).addClass("modal");
     cocktail.rootElement.appendChild($content.get(0));
+    setTimeout(function () {
+        $dialogElements.addClass("dialog_ready");
+    }, 100);
 }
 
 cocktail.center = function (element) {
