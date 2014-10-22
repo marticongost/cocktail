@@ -9,7 +9,7 @@ from cocktail.schema.schemastrings import String
 
 class HTML(String):
 
-    edit_control = "cocktail.html.RichTextEditor"
+    edit_control = "cocktail.html.TinyMCE"
 
     def extract_searchable_text(self, extractor):
         text = html_to_plain_text(extractor.current.value)

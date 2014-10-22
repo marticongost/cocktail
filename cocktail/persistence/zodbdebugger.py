@@ -3,7 +3,11 @@ u"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
-from collections import Counter
+try:
+    from collections import Counter
+except ImportError:
+    from backport_collections import Counter
+
 from threading import local
 from contextlib import contextmanager
 from ZODB.Connection import Connection
