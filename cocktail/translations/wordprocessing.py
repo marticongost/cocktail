@@ -36,7 +36,7 @@ class PerLocaleWordProcessing(dict):
         return self.require_processor_for_locale(locale).normalize(text)
 
     def split(self, text, locale = None):
-        return self.require_processor_for_locale(locale).normalize(text)
+        return self.require_processor_for_locale(locale).split(text)
 
     def get_stem(self, word, locale = None):
         return self.require_processor_for_locale(locale).get_stem(word)

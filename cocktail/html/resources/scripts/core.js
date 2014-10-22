@@ -313,13 +313,17 @@ cocktail.showDialog = function (content) {
 
         jQuery(cocktail.__dialogBackground).click(cocktail.closeDialog);
     }
-    document.body.appendChild(cocktail.__dialogBackground);
-    
     var $content = jQuery(content);
+    var $dialogElements = jQuery(cocktail.__dialogBackground).add($content);
+    $dialogElements.removeClass("dialog_ready");
+    cocktail.rootElement.appendChild(cocktail.__dialogBackground);
+
     $content.addClass("dialog");
-    jQuery(document.body)
-        .addClass("modal")
-        .append($content);
+    jQuery(document.body).addClass("modal");
+    cocktail.rootElement.appendChild($content.get(0));
+    setTimeout(function () {
+        $dialogElements.addClass("dialog_ready");
+    }, 100);
 }
 
 cocktail.center = function (element) {
@@ -333,8 +337,8 @@ cocktail.closeDialog = function () {
     // We use a custom remove function because jQuery.remove()
     // clears event handlers
     function remove() { this.parentNode.removeChild(this); };
-    jQuery("body > .dialog-background").each(remove);
-    jQuery("body > .dialog")
+    jQuery(".dialog-background").each(remove);
+    jQuery(".dialog")
         .each(remove)
         .trigger("dialogClosed");
     jQuery(document.body).removeClass("modal");

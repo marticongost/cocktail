@@ -1319,7 +1319,7 @@ def _search_resolution(self, query):
                     language_subset = None
                     
                     for term in terms:
-                        results = index.search(self.query)
+                        results = index.search(term)
                         if not results:
                             language_subset = None
                             break

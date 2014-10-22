@@ -130,6 +130,8 @@ class TreeView(Element):
             and item in self._expanded
         ):
             entry.add_class("selected")
+            if item is self.selection:
+                entry.add_class("active")
 
         entry.label = self.create_label(item)
         entry.append(entry.label)
