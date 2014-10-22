@@ -89,7 +89,13 @@ class TextExtractor(object):
             else:
                 self.__visited.add(value)
 
-        node = TextExtractorNode(member, language, value, [])
+        node = TextExtractorNode(
+            member,
+            language,
+            value,
+            [],
+            self.__stack[-1] if self.__stack else None
+        )
         self.__stack.append(node)
 
         try:
@@ -158,6 +164,7 @@ TextExtractorNode = namedtuple("TextExtractorNode", [
     "member",
     "language",
     "value",
-    "text"
+    "text",
+    "parent"
 ])
 
