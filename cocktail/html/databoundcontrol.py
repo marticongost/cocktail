@@ -54,3 +54,25 @@ def bind_member(element, control = None):
         else:
             control["name"] = name
 
+def delegate_control(element, control):
+
+    # TODO: provide a proper fix for this messy API?
+
+    @element.when_ready
+    def propagate_attributes():
+
+        if hasattr(element, "name"):
+            name = element.name
+        else:
+            name = element["name"]
+
+        if hasattr(control, "name"):
+            control.name = name
+        else:
+            control["name"] = name
+
+        control.member = element.member
+        control.value = element.value
+        control.data_display = element.data_display
+        control.language = element.language
+
