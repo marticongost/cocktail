@@ -91,6 +91,9 @@ class FormProcessor(object):
 
         self.after_submit()
 
+    def after_submit(self):
+        pass
+
     @transactional(before_retrying = (lambda *args, **kawrgs: clear_request_properties()))
     def _run_transaction(self):
         self.transaction()
