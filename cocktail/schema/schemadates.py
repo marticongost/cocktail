@@ -17,12 +17,13 @@ from cocktail.translations import translations
 
 def get_max_day(context):
 
-    date = context.validable
+    date = context.value
 
     if date.year is not None and (0 < date.month <= 12):
         return monthrange(date.year, date.month)[1]
 
     return None
+
 
 class BaseDateTime(Schema, RangedMember):
     """Base class for all members that handle date and/or time values."""
@@ -77,6 +78,14 @@ class BaseDateTime(Schema, RangedMember):
             self.add_member(Integer(**hour_kw))
             self.add_member(Integer(**minute_kw))
             self.add_member(Integer(**second_kw))
+
+    def _default_validation(self, context):
+
+        for error in Schema._default_validation(self, context):
+            yield error
+
+        for error in self._range_validation(context):
+            yield error
 
     def _create_default_instance(self):
         return None

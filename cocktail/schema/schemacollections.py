@@ -54,8 +54,6 @@ class Collection(RelationMember):
     def __init__(self, *args, **kwargs):
         self.__items = None
         RelationMember.__init__(self, *args, **kwargs)
-        self.add_validation(self.__class__.collection_validation_rule)
-        self.add_validation(self.__class__.items_validation_rule)
 
     def translate_value(self, value, language = None, **kwargs):
         if not value:
@@ -198,65 +196,66 @@ class Collection(RelationMember):
         @type: collection class
         """)
 
-    def collection_validation_rule(self, value, context):
+    def _default_validation(self, context):
         """Validation rule for collections. Checks the L{min}, L{max} and
         L{items} constraints."""
 
-        if value is not None:
-            
-            size = len(value)
+        for error in RelationMember._default_validation(self, context):
+            yield error
+
+        if context.value is not None:
+
+            size = len(context.value)
             min = self.resolve_constraint(self.min, context)
             max = self.resolve_constraint(self.max, context)
 
             if min is not None and size < min:
-                yield MinItemsError(self, value, context, min)
+                yield MinItemsError(context, min)
 
             elif max is not None and size > max:
-                yield MaxItemsError(self, value, context, max)
+                yield MaxItemsError(context, max)
 
-    def items_validation_rule(self, value, context):
+            for error in self._items_validation(context):
+                yield error
+
+    def _items_validation(self, context):
         """Validation rule for collection items. Checks the L{items}
         constraint."""    
         
-        if value is not None:
-            
-            item_schema = self.items
-            validable = context.validable
-            context.enter(self, value)
-            
-            try:
-                context.setdefault("relation_parent", context.validable)
-           
-                relation_constraints = self.resolve_constraint(
-                        self.relation_constraints, context)
+        relation_constraints = self.resolve_constraint(
+            self.relation_constraints, context
+        )
 
-                if hasattr(relation_constraints, "iteritems"):
-                    constraints_mapping = relation_constraints
-                    get_related_member = self.related_type.get_member
-                    relation_constraints = (
-                        get_related_member(key).equal(value)
-                        for key, value in constraints_mapping.iteritems()
-                    )
+        if hasattr(relation_constraints, "iteritems"):
+            constraints_mapping = relation_constraints
+            get_related_member = self.related_type.get_member
+            relation_constraints = (
+                get_related_member(key).equal(value)
+                for key, value in constraints_mapping.iteritems()
+            )
 
-                if item_schema is not None or relation_constraints:
-                    for i, item in enumerate(value):
-                        context["collection_index"] = i
+        if relation_constraints:
+            owner = context.get_object()
 
-                        if item_schema:
-                            for error in item_schema.get_errors(item, context):
-                                yield error
+        if self.items is not None or relation_constraints:
+            for i, item in enumerate(context.value):
 
-                        if relation_constraints and item is not None:
-                            for constraint in relation_constraints:
-                                if not self.validate_relation_constraint(
-                                    constraint,
-                                    context.validable,
-                                    item
-                                ):
-                                    yield RelationConstraintError(
-                                        self, item, context, constraint)
-            finally:
-                context.leave()
+                if self.items:
+                    for error in self.items.get_errors(
+                        item,
+                        parent_context = context,
+                        collection_index = i
+                    ):
+                        yield error
+
+                if relation_constraints and item is not None:
+                    for constraint in relation_constraints:
+                        if not self.validate_relation_constraint(
+                            constraint,
+                            owner,
+                            item
+                        ):
+                            yield RelationConstraintError(context, constraint)
 
 
 # Generic add/remove methods
