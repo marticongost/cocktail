@@ -119,6 +119,9 @@ class ValidationContext(DictWrapper):
                 return context.value
             context = context.__parent_context
 
+    def __nonzero__(self):
+        return True
+
     def __setitem__(self, key, value):
         self._items[key] = value
 
