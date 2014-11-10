@@ -17,9 +17,9 @@ from cocktail.translations import translations
 
 def get_max_day(context):
 
-    date = context.value
-
-    if date.year is not None and (0 < date.month <= 12):
+    date = context.parent_context and context.parent_context.value
+    
+    if date and date.year is not None and (0 < date.month <= 12):
         return monthrange(date.year, date.month)[1]
 
     return None
