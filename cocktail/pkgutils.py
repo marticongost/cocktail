@@ -100,32 +100,38 @@ def get_full_name(obj):
             if obj.__name__ == "__main__":
                 name = get_path_name(sys.argv[0])                
             else:
-                name = get_path_name(obj.__file__)
+                try:
+                    name = get_path_name(obj.__file__)
+                except:
+                    name = obj.__name__
         else:
             module_name = getattr(obj, "__module__", None)
             
+            if module_name == "__builtin__":
+                prefix = ""
+            else:
+                prefix = get_full_name(sys.modules[module_name]) + "."
+
             if module_name:
-                base_name = get_full_name(sys.modules[module_name])
 
                 # Classes
                 if isinstance(obj, type):
-                    name = base_name + "." + obj.__name__
-
+                    name = prefix + obj.__name__
                 else:                
                     # Methods
                     im_func = getattr(obj, "im_func", None)
                     im_class = getattr(obj, "im_class", None)
 
                     if im_func and im_class:
-                        name = "%s.%s.%s" \
-                            % (base_name, im_class.__name__, im_func.func_name)                    
+                        name = "%s%s.%s" \
+                            % (prefix, im_class.__name__, im_func.func_name)                    
                     else:
                         # Functions
                         func_name = getattr(obj, "func_name", None)
 
                         if func_name:
-                            name = base_name + "." + func_name
-            
+                            name = prefix + func_name
+
         # Store the name for future requests
         if name:
             _full_names[obj] = name
