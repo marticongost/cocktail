@@ -28,7 +28,8 @@ class BaseDateTime(Schema, RangedMember):
     """Base class for all members that handle date and/or time values."""
     _is_date = False
     _is_time = False
-   
+    language_agnostic_text_extraction = False
+
     def __init__(self, *args, **kwargs):
 
         kwargs.setdefault("default", None)
