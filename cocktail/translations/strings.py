@@ -538,14 +538,14 @@ def _date_instance_pt(instance, style = DATE_STYLE_NUMBERS):
             instance.year
         )
 
-translations.define("date-instance",
+translations.define("datetime.date-instance",
     ca = _date_instance_ca,
     es = _date_instance_es,
     en = _date_instance_en,
     pt = _date_instance_pt
 )
 
-translations.define("datetime-instance",
+translations.define("datetime.datetime-instance",
     ca = lambda instance, style = DATE_STYLE_NUMBERS:
         _date_instance_ca(instance, style) + instance.strftime(" %H:%M:%S"),
     es = lambda instance, style = DATE_STYLE_NUMBERS:
