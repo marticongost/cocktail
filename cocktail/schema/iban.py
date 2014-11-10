@@ -88,13 +88,13 @@ class IBAN(String):
     # support deep copying)
     _special_copy_keys = String._special_copy_keys | set(["reg_expr"])
 
-    def __init__(self, *args, **kwargs):
-        String.__init__(self, *args, **kwargs)
-        self.add_validation(IBAN.iban_validation_rule)
+    def _default_validation(self, context):
 
-    def iban_validation_rule(self, value, context):
-        if value and not self.validate_iban_format(value):
-            yield FormatError(self, value, context, format)
+        for error in String._default_validation(self, context):
+            yield error
+
+        if value and not self.validate_iban_format(context.value):
+            yield FormatError(context, "IBAN")
 
     @classmethod
     def validate_iban_format(cls, value):

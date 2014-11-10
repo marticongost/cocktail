@@ -29,10 +29,6 @@ class Reference(RelationMember):
     cycles_allowed = True
     default_order = None
 
-    def __init__(self, *args, **kwargs):
-        RelationMember.__init__(self, *args, **kwargs)
-        self.add_validation(self.__class__.reference_validation_rule)
-
     def translate_value(self, value, language = None, **kwargs):
         if value is None:
             return RelationMember.translate_value(
@@ -89,26 +85,29 @@ class Reference(RelationMember):
         @type type: type or str
         """)
 
-    def reference_validation_rule(self, value, context):
+    def _default_validation(self, context):
 
-        if value is not None:
+        for error in RelationMember._default_validation(self, context):
+            yield error
+
+        if context.value is not None:
  
             # Apply the 'class_family' constraint
             class_family = \
                 self.resolve_constraint(self.class_family, context)
             
             if class_family:
-                if not isinstance(value, type):
-                    yield TypeCheckError(self, value, context, type)
-                elif not issubclass(value, class_family):
-                    yield ClassFamilyError(self, value, context, class_family)
+                if not isinstance(context.value, type):
+                    yield TypeCheckError(context, type)
+                elif not issubclass(context.value, class_family):
+                    yield ClassFamilyError(context, class_family)
             else:
                 # Apply the 'cycles_allowed' constraint
                 if not self.cycles_allowed:
-                    obj = get(value, self.name, None)
+                    obj = get(context.value, self.name, None)
                     while obj:
-                        if obj is value:
-                            yield RelationCycleError(self, value, context)
+                        if obj is context.value:
+                            yield RelationCycleError(context)
                             break
                         obj = get(obj, self.name, None)
 
@@ -124,14 +123,14 @@ class Reference(RelationMember):
                     )
 
                 if relation_constraints:
+                    owner = context.get_object()
                     for constraint in relation_constraints:
                         if not self.validate_relation_constraint(
                             constraint,
-                            context.validable,
-                            value
+                            owner,
+                            context.value
                         ):
-                            yield RelationConstraintError(
-                                self, value, context, constraint)
+                            yield RelationConstraintError(context, constraint)
 
     def extract_searchable_text(self, extractor):
         item = extractor.current.value.__class__

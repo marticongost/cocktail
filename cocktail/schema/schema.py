@@ -77,8 +77,6 @@ class Schema(Member):
         members = kwargs.pop("members", None)
         Member.__init__(self, *args, **kwargs)
 
-        self.add_validation(Schema.schema_validation_rule)
-
         self.__bases = None
         self.bases = ListWrapper(empty_list)
 
@@ -448,73 +446,50 @@ class Schema(Member):
         else:
             return empty_list
 
-    def schema_validation_rule(self, validable, context):
+    def _default_validation(self, context):
         """Validation rule for schemas. Applies the validation rules defined by
         all members in the schema, propagating their errors."""
 
-        accessor = self.accessor \
-            or context.get("accessor", None) \
-            or get_accessor(validable)
+        for error in Member._default_validation(self, context):
+            yield error
 
-        context.enter(self, validable)
+        accessor = (
+            self.accessor
+            or context.get("accessor", None)
+            or get_accessor(context.value)
+        )
+        languages = context.get("languages")
 
-        try:
-            for member in self.ordered_members():
+        for member in self.ordered_members():
+            key = member.name
 
-                if member.translated:
-
-                    for value in self.translated_member_values(
-                        member,
-                        validable,
-                        context,
-                        accessor):
-
-                        for error in member.get_errors(value, context):
-                            yield error
-                else:
+            if member.translated:
+                for language in (
+                    languages or accessor.languages(context.value, key)
+                ):
                     value = accessor.get(
-                        validable,
-                        member.name,
-                        default = None
+                        context.value,
+                        key,
+                        language = language
                     )
-
-                    for error in member.get_errors(value, context):
+                    for error in member.get_errors(
+                        value,
+                        parent_context = context,
+                        language = language
+                    ):
                         yield error
-        finally:
-            context.leave()
-
-    def translated_member_values(
-        self,
-        member,
-        validable,
-        context,
-        accessor = None):
-
-        accessor = accessor \
-            or self.accessor \
-            or context.get("accessor", None) \
-            or get_accessor(validable)
-
-        context_languages = context.get("languages")
-        prev_language = context.get("language")
-        key = member.name
-
-        try:
-            for language in (
-                context_languages
-                or accessor.languages(validable, key)
-            ):
-                context["language"] = language
-
+            else:
                 value = accessor.get(
-                    validable,
+                    context.value,
                     key,
-                    language = language,
-                    default = None)
+                    default = None
+                )
 
-                yield value
-        finally:
-            context["language"] = prev_language
+                for error in member.get_errors(
+                    value,
+                    parent_context = context
+                ):
+                    yield error
 
     def ordered_members(self, recursive = True):
         """Gets a list containing all the members defined by the schema, in

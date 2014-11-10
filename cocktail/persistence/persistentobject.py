@@ -102,36 +102,11 @@ class PersistentClass(SchemaClass):
 
         # Unique values restriction
         if member.unique:
-            if cls._unique_validation_rule \
-            not in member.validations(recursive = False):
-                member.add_validation(cls._unique_validation_rule)
-
-    def _unique_validation_rule(cls, member, value, context):
-
-        # Make sure the member is still flagged as unique when the validation
-        # is performed
-        if not member.unique:
-            return
-
-        if value is not None:
-
-            validable = context.get("persistent_object", context.validable)
-
-            if isinstance(validable, PersistentObject):
-                pschema = member.original_member.schema
-                if member.translated:
-                    duplicates = list(pschema.select(
-                        validable.__class__.get_member(member.name)
-                        .translated_into(context["language"])
-                        .equal(value)
-                    ))
-                    duplicate = duplicates[0] if duplicates else None
-                else:
-                    params = {member.name: value}
-                    duplicate = pschema.get_instance(**params)
-
-                if duplicate and duplicate._counts_as_duplicate(validable):
-                    yield UniqueValueError(member, value, context)
+            if (
+                unique_validation_rule 
+                not in member.validations(recursive = False)
+            ):
+                member.add_validation(unique_validation_rule)
 
     class MemberDescriptor(SchemaClass.MemberDescriptor):
 
@@ -478,6 +453,33 @@ PersistentObject._translation_schema_metaclass = PersistentClass
 PersistentObject._translation_schema_base = PersistentObject
 
 
+def unique_validation_rule(context):
+
+    # Make sure the member is still flagged as unique when the validation
+    # is performed
+    if not context.member.unique:
+        return
+
+    if context.value is not None:
+
+        obj = context.get("persistent_object") or context.get_object()
+
+        if isinstance(obj, PersistentObject):
+            pschema = context.member.original_member.schema
+            if context.member.translated:
+                duplicates = list(pschema.select(
+                    obj.__class__.get_member(context.member.name)
+                        .translated_into(context["language"])
+                        .equal(context.value)
+                ))
+                duplicate = duplicates[0] if duplicates else None
+            else:
+                params = {context.member.name: context.value}
+                duplicate = pschema.get_instance(**params)
+
+            if duplicate and duplicate._counts_as_duplicate(obj):
+                yield UniqueValueError(context)
+
 def _select_constraint_instances(self, *args, **kwargs):
 
     parent = kwargs.pop("parent", None)
@@ -496,10 +498,9 @@ schema.RelationMember.select_constraint_instances = \
 
 def _get_constraint_filters(self, parent):
     
-    context = schema.ValidationContext(self, parent)
-    context["relation_parent"] = parent
+    context = schema.ValidationContext(self, parent, relation_parent = parent)
     constraints = self.resolve_constraint(self.relation_constraints, context)
-    
+
     if constraints:
         if hasattr(constraints, "iteritems"):
             get_related_member = self.related_type.get_member

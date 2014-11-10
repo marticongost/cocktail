@@ -21,20 +21,23 @@ class BankAccountNumber(String):
     def __init__(self, *args, **kwargs):
         kwargs.setdefault("format", r"^\d{20}$")
         String.__init__(self, *args, **kwargs)
-        self.add_validation(BankAccountNumber.bank_account_validation_rule)
 
     def normalization(self, value):
         if isinstance(value, basestring):
             value = divider_expr.sub("", value)
         return value
 
-    def bank_account_validation_rule(self, value, context):
+    def _default_validation(self, context):
         """Validation rule for european bank account numbers."""
-        
-        if isinstance(value, basestring) and not self.checksum(value):
-            yield BankAccountChecksumError(
-                self, value, context
-            )
+
+        for error in String._default_validation(self, context):
+            yield error
+
+        if (
+            isinstance(context.value, basestring)
+            and not self.checksum(context.value)
+        ):
+            yield BankAccountChecksumError(context)
 
     @classmethod
     def checksum(cls, value):
