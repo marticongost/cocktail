@@ -8,7 +8,7 @@ u"""
 """
 from operator import getitem, setitem
 from copy import copy, deepcopy
-from cocktail.modeling import ListWrapper
+from cocktail.modeling import ListWrapper, OrderedDict
 from cocktail.schema.schema import Schema
 from cocktail.schema.schemastrings import String
 from cocktail.schema.schemacollections import Collection
@@ -567,7 +567,7 @@ class Copy(Rule):
             self.__mapping = mapping
         else:
             try:
-                self.__mapping = dict((entry, entry) for entry in mapping)
+                self.__mapping = OrderedDict((entry, entry) for entry in mapping)
             except TypeError:
                 raise TypeError(
                     "Expected a string, string sequence or mapping")
