@@ -166,17 +166,23 @@ class PersistentObject(SchemaObject, Persistent):
         """)
 
     def __init__(self, *args, **kwargs):
-
-        # Generate an incremental ID for the object
-        if self.__class__._generated_id:
-            pk = self.__class__.primary_member.name
-            id = kwargs.get(pk)
-            if id is None:
-                kwargs[pk] = incremental_id()
-
         self._v_initializing = True
         SchemaObject.__init__(self, *args, **kwargs)
         self._v_initializing = False
+
+    def require_id(self):
+        
+        if not self.__class__._generated_id:
+            return None
+
+        primary = self.__class__.primary_member
+        id = self.get(primary)
+        
+        if id is None:
+            id = incremental_id()
+            self.set(primary, id)
+
+        return id
 
     @classmethod
     def get_instance(cls, id = None, **criteria):
@@ -335,7 +341,7 @@ class PersistentObject(SchemaObject, Persistent):
         
         if self.__inserted:
             return False
-        
+     
         if inserted_objects is None:
             inserted_objects = set()
             inserted_objects.add(self)
@@ -345,6 +351,7 @@ class PersistentObject(SchemaObject, Persistent):
             else:
                 inserted_objects.add(self)
 
+        self.require_id()
         self.inserting(inserted_objects = inserted_objects)
         self.__inserted = True
 

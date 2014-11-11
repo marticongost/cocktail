@@ -50,6 +50,7 @@ class InsertionTestCase(TempStorageMixin, TestCase):
 
     def test_id_acquisition(self):
         instance = self.test_type()
+        instance.insert()
         self.assertTrue(isinstance(instance.id, int))
 
     def test_indexing(self):
