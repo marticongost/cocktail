@@ -262,6 +262,18 @@ class AttributeTestCase(TestCase):
         assert bar.x == "bar"
         assert bar.y == "bar!"
 
+    def test_can_delay_default_assignment(self):
+
+        from cocktail.schema import SchemaObject, String, undefined
+
+        class Foo(SchemaObject):
+            spam = String(default = "foo")
+
+        foo = Foo(spam = undefined)
+        assert not hasattr(foo, "_spam")
+        assert foo.spam == "foo"
+        assert hasattr(foo, "_spam")
+
     def test_get_set(self):
 
         from cocktail.schema import Schema, SchemaObject, String, Integer

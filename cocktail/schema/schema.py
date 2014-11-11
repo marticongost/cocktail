@@ -18,7 +18,7 @@ from cocktail.modeling import (
 from cocktail.events import Event
 from cocktail.translations import translations
 from cocktail.schema.member import Member, DynamicDefault
-from cocktail.schema.accessors import get_accessor, get
+from cocktail.schema.accessors import get_accessor, get, undefined
 from cocktail.schema.exceptions import SchemaIntegrityError
 
 default = object()
@@ -119,6 +119,9 @@ class Schema(Member):
                 continue
 
             value = default if values is None else values.get(name, default)
+
+            if value is undefined:
+                continue
 
             if value is default:
 
