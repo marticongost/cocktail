@@ -26,7 +26,6 @@ from cocktail.schema.expressions import (
     Expression, CustomExpression, ExclusionExpression, Self
 )
 from cocktail.persistence.datastore import datastore
-from cocktail.persistence.incremental_id import incremental_id
 from cocktail.persistence.query import Query
 from cocktail.persistence.persistentlist import PersistentList
 from cocktail.persistence.persistentmapping import PersistentMapping
@@ -92,8 +91,7 @@ class PersistentClass(SchemaClass):
 
     # Avoid creating a duplicate persistent class when copying the class
     _copy_class = schema.Schema
-    _generated_id = False
-    
+
     @event_handler
     def handle_member_added(metacls, event):
         
@@ -166,14 +164,6 @@ class PersistentObject(SchemaObject, Persistent):
         """)
 
     def __init__(self, *args, **kwargs):
-
-        # Generate an incremental ID for the object
-        if self.__class__._generated_id:
-            pk = self.__class__.primary_member.name
-            id = kwargs.get(pk)
-            if id is None:
-                kwargs[pk] = incremental_id()
-
         self._v_initializing = True
         SchemaObject.__init__(self, *args, **kwargs)
         self._v_initializing = False

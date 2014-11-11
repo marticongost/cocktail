@@ -19,6 +19,7 @@ from cocktail.persistence.index import SingleValueIndex, MultipleValuesIndex
 from cocktail.persistence.persistentobject import (
     PersistentObject, PersistentClass
 )
+from cocktail.persistence.incremental_id import incremental_id
 
 # Index properties
 #------------------------------------------------------------------------------
@@ -216,13 +217,13 @@ def _handle_declared(event):
     # own primary member explicitly. Will be initialized to an
     # incremental integer.
     elif cls.indexed:
-        cls._generated_id = True
         cls.id = schema.Integer(
             name = "id",
             primary = True,
             unique = True,
             required = True,
-            indexed = True
+            indexed = True,
+            default = schema.DynamicDefault(incremental_id)
         )
         cls.add_member(cls.id)
 
