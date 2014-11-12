@@ -439,7 +439,6 @@ class RuleSet(object):
 
         target_schema.adaptation_source = source_schema
         target_schema.original_member = source_schema.original_member
-        target_schema.members_order = []
 
         for rule in self.__rules:
             rule.adapt_schema(context)
