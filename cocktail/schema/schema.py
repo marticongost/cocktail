@@ -224,14 +224,14 @@ class Schema(Member):
             elif not isinstance(self.members_order, list):
                 self.members_order = list(self.members_order)
 
-            if append:
-                self.members_order.append(member)
+            if append:                
+                self.members_order.append(member.name)
             elif after:
                 pos = self.members_order.index(after)
-                self.members_order.insert(pos + 1, member)
+                self.members_order.insert(pos + 1, member.name)
             else:
                 pos = self.members_order.index(before)
-                self.members_order.insert(pos, member)
+                self.members_order.insert(pos, member.name)
 
         self._add_member(member)
         member.attached()
