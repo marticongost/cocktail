@@ -207,7 +207,6 @@ class Schema(Member):
             member to the schema. All members must have a unique name.
         """
         self._check_member(member)
-        self._add_member(member)
 
         if append or after or before:
 
@@ -234,6 +233,7 @@ class Schema(Member):
                 pos = self.members_order.index(before)
                 self.members_order.insert(pos, member)
 
+        self._add_member(member)
         member.attached()
         self.member_added(member = member)
 
