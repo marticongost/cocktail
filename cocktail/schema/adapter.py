@@ -8,6 +8,7 @@ u"""
 """
 from operator import getitem, setitem
 from copy import copy, deepcopy
+from cocktail.events import when, Event
 from cocktail.modeling import ListWrapper, OrderedDict
 from cocktail.schema.schema import Schema
 from cocktail.schema.schemastrings import String
@@ -41,6 +42,7 @@ COLLECTION_COPY_MODE_DEFAULT = reference
 class AdaptationContext(object):
 
     def __init__(self,
+        adapter = None,
         source_object = None,
         target_object = None,
         source_schema = None,
@@ -53,6 +55,7 @@ class AdaptationContext(object):
         languages = None,
         parent_context = None
     ):
+        self.adapter = adapter
         self.source_object = source_object
         self.target_object = target_object
         self.source_accessor = source_accessor
@@ -69,6 +72,12 @@ class AdaptationContext(object):
             self._consumed_keys = parent_context._consumed_keys
         else:
             self._consumed_keys = set()
+
+    def member_created(self, target_member, source_member):
+        target_member.adaptation_source = source_member
+        target_member.original_member = source_member.original_member
+        if self.adapter:
+            self.adapter.member_created(member = target_member)
 
     def get(self, key, default = undefined, language = None):
         """Gets a key from the source object.
@@ -143,6 +152,15 @@ class AdaptationContext(object):
 
 class Adapter(object):
 
+    member_created = Event(
+        """An event triggered when the adapter generates a new member on a
+        target schema.
+        
+        :param member: The new member.
+        :type member: `~cocktail.schema.Member`
+        """
+    )
+
     def __init__(self,
         source_accessor = None,
         target_accessor = None,
@@ -153,7 +171,10 @@ class Adapter(object):
         collection_copy_mode = COLLECTION_COPY_MODE_DEFAULT):
 
         self.import_rules = RuleSet()
-        self.export_rules = RuleSet()        
+        self.import_rules.adapter = self
+
+        self.export_rules = RuleSet()
+        self.export_rules.adapter = self
 
         self.source_accessor = source_accessor
         self.target_accessor = target_accessor
@@ -435,6 +456,7 @@ class Adapter(object):
 
 class RuleSet(object):
 
+    adapter = None
     target_accessor = None
     source_accessor = None
 
@@ -464,6 +486,7 @@ class RuleSet(object):
         parent_context = None
     ):
         context = AdaptationContext(
+            adapter = self.adapter,
             source_schema = source_schema,
             target_schema = target_schema,
             copy_validations = self.copy_validations,
@@ -526,6 +549,7 @@ class RuleSet(object):
         parent_context = None
     ):
         context = AdaptationContext(
+            adapter = self.adapter,
             source_object = source_object,
             target_object = target_object,
             source_accessor = source_accessor
@@ -642,6 +666,7 @@ class Copy(Rule):
                         target_member,
                         append = True
                     )
+                    context.member_created(target_member, source_member)
 
     def adapt_object(self, context):
  
@@ -738,8 +763,7 @@ class Split(Rule):
                     target
                 )
                 source_member = context.source_schema[self.source]
-                target_member.adaptation_source = source_member
-                target_member.original_member = source_member.original_member
+                context.member_created(target_member, source_member)
 
     def adapt_object(self, context):
 
@@ -774,8 +798,7 @@ class Join(Rule):
                 self.target
             )
             source_member = context.source_schema[self.sources[0]]
-            target_member.adaptation_source = source_member
-            target_member.original_member = source_member.original_member
+            context.member_created(target_member, source_member)
 
     def adapt_object(self, context):
 
