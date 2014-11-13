@@ -74,7 +74,7 @@ class AdaptationContext(object):
             self._consumed_keys = set()
 
     def member_created(self, target_member, source_member):
-        target_member.adaptation_source = source_member
+        target_member.source_member = source_member
         target_member.original_member = source_member.original_member
         if self.adapter:
             self.adapter.member_created(member = target_member)
