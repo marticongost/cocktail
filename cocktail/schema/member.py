@@ -434,7 +434,6 @@ class Member(Variable):
             if isinstance(expr, Expression):
                 return expr.eval(context.get_object())
             elif callable(expr):
-                print expr, context, expr(context)
                 return expr(context)
 
         return expr
