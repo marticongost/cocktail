@@ -58,6 +58,18 @@ class Member(Variable):
         doc = """An event triggered when the member is added to a schema."""
     )
 
+    validating = Event(
+        doc = """An event triggered when a validation of the member begins.
+
+        The main purpose of this event is to modify the parameters of its
+        validation context. To implement actual validation rules, check out the
+        `_default_validation` and `add_validation` methods.
+
+        :param context: The validation context representing the validation
+            process that is about to start.
+        """
+    )
+
     # Groupping and sorting
     member_group = None
     before_member = None
