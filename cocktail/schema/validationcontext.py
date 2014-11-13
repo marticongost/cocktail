@@ -51,6 +51,12 @@ class ValidationContext(DictWrapper):
             
         self._items.update(member.validation_parameters)
         self._items.update(parameters)
+        self.__trigger_validating_event(member)
+
+    def __trigger_validating_event(self, event_target):
+        if event_target.source_member:
+            self.__trigger_validating_event(event_target.source_member)
+        event_target.validating(context = self)
 
     @property
     def member(self):
