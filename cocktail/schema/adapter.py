@@ -421,6 +421,18 @@ class Adapter(object):
         self.import_rules.add_rule(exclusion, rule_position)
         self.export_rules.add_rule(exclusion, rule_position)
     
+    def expand(self, member, related_object, adapter, rule_position = None):
+
+        self.export_rules.add_rule(
+            Expansion(member, related_object, adapter),
+            rule_position
+        )
+
+        self.import_rules.add_rule(
+            Contraction(member, related_object, adapter),
+            rule_position
+        )
+
     def split(self,
         source_member,
         separator,
@@ -828,4 +840,60 @@ class Join(Rule):
             else:
                 value = self.glue.join(unicode(part) for part in parts)
                 context.set(self.target["name"], value)
+
+
+class Expansion(Rule):
+
+    def __init__(self, member, related_object, adapter):
+        self.member = member
+        self.related_object = related_object
+        self.adapter = adapter
+
+    def adapt_schema(self, context):
+
+        names = self.member.split(".")
+        
+        if len(names) > 1 or context.consume(names[0]):
+
+            # Set the persistent object that applies to each adapted member
+            # (this is necessary to make validations of the 'unique'
+            # constraint work)
+            @when(self.adapter.member_created)
+            def modify_adapted_member(e):
+                e.member.validation_parameters["persistent_object"] = \
+                    self.related_object
+
+            self.adapter.export_schema(
+                self.related_object.__class__,
+                context.target_schema,
+                parent_context = context
+            )
+
+    def adapt_object(self, context):
+
+        names = self.member.split(".")
+
+        if len(names) > 1 or context.consume(names[0]):
+            self.adapter.export_object(
+                self.related_object,
+                context.target_object,
+                parent_context = context
+            )
+
+
+class Contraction(Rule):
+
+    def __init__(self, member, related_object, adapter):
+        self.member = member
+        self.related_object = related_object
+        self.adapter = adapter
+
+    def adapt_object(self, context):        
+        self.adapter.import_object(
+            context.source_object,
+            self.related_object,
+            source_schema = context.source_schema,
+            target_schema = self.related_object.__class__,
+            parent_context = context
+        )
 
