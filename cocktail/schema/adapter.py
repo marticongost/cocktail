@@ -493,7 +493,7 @@ class RuleSet(object):
             parent_context = parent_context
         )
 
-        target_schema.adaptation_source = source_schema
+        target_schema.source_member = source_schema
         target_schema.original_member = source_schema.original_member
 
         for rule in self.__rules:
@@ -519,7 +519,7 @@ class RuleSet(object):
 
             for source_member in source_schema.ordered_members():
                 for target_member in target_members.itervalues():
-                    if target_member.adaptation_source is source_member \
+                    if target_member.source_member is source_member \
                     and target_member not in ordered_members:
                         members_order.append(target_member.name)
                         ordered_members.add(target_member)
@@ -648,7 +648,7 @@ class Copy(Rule):
                     target_member = source_member.copy()
                     target_member.name = target_name
                 
-                target_member.adaptation_source = source_member
+                target_member.source_member = source_member
                 target_member.original_member = source_member.original_member
 
                 if self.properties:
