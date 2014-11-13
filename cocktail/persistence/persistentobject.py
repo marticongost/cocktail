@@ -476,7 +476,7 @@ def unique_validation_rule(context):
             if context.member.translated:
                 duplicates = list(pschema.select(
                     obj.__class__.get_member(context.member.name)
-                        .translated_into(context["language"])
+                        .translated_into(context.language)
                         .equal(context.value)
                 ))
                 duplicate = duplicates[0] if duplicates else None
