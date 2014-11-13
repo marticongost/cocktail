@@ -77,8 +77,7 @@ class Member(Variable):
 
     # Copying and adaptation
     _copy_class = None
-    copy_source = None
-    adaptation_source = None
+    source_member = None
     original_member = None
 
     # Translation
@@ -100,8 +99,7 @@ class Member(Variable):
         "translation",
         "translation_source",
         "original_member",
-        "copy_source",
-        "adaptation_source"
+        "source_member"
     ])
 
     def __init__(self, name = None, doc = None, **kwargs):
@@ -306,7 +304,7 @@ class Member(Variable):
         copy._validations_wrapper = ListWrapper(copy._validations)
         memo[id(copy._validations_wrapper)] = copy._validations_wrapper
 
-        copy.copy_source = self
+        copy.source_member = self
         copy.original_member = self.original_member
 
         return copy
@@ -478,7 +476,7 @@ class Member(Variable):
                     translation = translations(
                         self.schema.name + "." + self.name + suffix,
                         language,
-                        chain = self.copy_source,
+                        chain = self.source_member,
                         **kwargs
                     )
                 else:
@@ -489,7 +487,7 @@ class Member(Variable):
                         translation = translations(
                             cls.__name__ + "." + self.name + suffix,
                             language,
-                            chain = self.copy_source,
+                            chain = self.source_member,
                             **kwargs
                         )
                         if translation:
@@ -528,8 +526,8 @@ class Member(Variable):
 
         # If the member is a copy of another member, inherit its custom
         # translations
-        if self.copy_source:
-            return self.copy_source.translate_error(
+        if self.source_member:
+            return self.source_member.translate_error(
                 error, 
                 language = language,
                 **kwargs
@@ -549,8 +547,8 @@ class Member(Variable):
                 **kwargs
             )
 
-        if not explanation and self.copy_source:
-            explanation = self.copy_source.get_member_explanation(
+        if not explanation and self.source_member:
+            explanation = self.source_member.get_member_explanation(
                 language,
                 **kwargs
             )

@@ -42,7 +42,7 @@ class DeclarationTestCase(TestCase):
         self.assertRaises(AttributeError, Foo.add_member, String("spam"))
 
         for name in (
-            "name", "schema", "adaptation_source", "translated", "translation",
+            "name", "schema", "source_member", "translated", "translation",
             "required", "require_none", "enumeration", "type"
         ):
             self.assertRaises(AttributeError, Foo.add_member, String(name))
@@ -690,13 +690,13 @@ class CopyTestCase(TestCase):
         
         assert copy.member1 is not TestClass.member1
         assert isinstance(copy.member1, String)
-        assert copy.member1.copy_source is TestClass.member1
+        assert copy.member1.source_member is TestClass.member1
         assert copy.member1.original_member is TestClass.member1
         assert copy.member1.required
 
         assert copy.member2 is not TestClass.member2
         assert isinstance(copy.member2, String)
-        assert copy.member2.copy_source is TestClass.member2
+        assert copy.member2.source_member is TestClass.member2
         assert copy.member2.original_member is TestClass.member2
         assert copy.member2.min == 3
 
