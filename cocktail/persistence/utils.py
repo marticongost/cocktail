@@ -6,6 +6,11 @@ u"""
 from cocktail import schema
 from .datastore import datastore
 
+def undo_last_transaction():
+    db = datastore.db
+    db.undo(db.undoInfo()[0]["id"])
+    datastore.commit()
+
 def solidify_defaults(cls):
     for instance in cls.select():
         for member in cls.members().itervalues():
