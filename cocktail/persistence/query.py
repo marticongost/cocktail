@@ -7,6 +7,7 @@ u"""
 @since:			July 2008
 """
 from time import time
+from warnings import warn
 from itertools import chain, islice
 from BTrees.IIBTree import IIBTree
 from BTrees.OIBTree import OIBTree
@@ -20,7 +21,8 @@ from cocktail.schema import (
     Member,
     Collection,
     expressions,
-    SchemaObjectAccessor
+    SchemaObjectAccessor,
+    RelationMember
 )
 from cocktail.schema.io import export_file
 from cocktail.schema.expressions import TranslationExpression
@@ -942,20 +944,46 @@ expressions.LowerEqualExpression.resolve_filter = _lower_resolution
 
 def _inclusion_resolution(self, query):
 
-    if self.operands and self.operands[0] is expressions.Self:
-        
-        subset = self.operands[1].eval(None)
+    subject = self.operands[0]
+    subset = self.operands[1].eval()
 
-        if not self.by_key:
-            subset = set(item.id for item in subset)
+    if isinstance(subset, Query):
+        ids = subset.execute()
+    elif self.by_key:
+        ids = subset
+    else:
+        warn(
+            "Using InclusionExpression with a collection of PersistentObject "
+            "instances is discouraged, as the full state for those objects "
+            "will have to be fetched, just to obtain their IDs. If possible, "
+            "try to use ID collections or subqueries instead."
+        )
+        ids = (item.id for item in subset)
+
+    if subject is expressions.Self:
 
         def impl(dataset):
-            dataset.intersection_update(subset)
+            dataset.intersection_update(ids)
             return dataset
-        
+
         return ((-3, 0), impl)
-    else:
-        return ((0, 0), None)
+
+    elif isinstance(subject, RelationMember) and subject.schema is query.type:
+
+        index, index_kw = query._get_expression_index(self, subject)
+
+        if index is not None:
+
+            def impl(dataset):
+                matches = set()
+                for id in ids:
+                    matches.update(index.values(key = id, **index_kw))
+                dataset.intersection_update(matches)
+                return dataset
+
+            return ((-1, 0), impl)
+
+    return ((0, 0), None)
 
 expressions.InclusionExpression.resolve_filter = _inclusion_resolution
 
