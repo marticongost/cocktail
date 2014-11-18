@@ -1299,34 +1299,37 @@ def _descends_from_resolution(self, query):
 
     if self.operands[0] is expressions.Self:
 
-        def impl(dataset):
-            subset = set()
-            root = self.operands[1].eval(None)
-            relation = self.relation
+        relation = self.relation
 
-            if relation._many:
-                def descend(item, include_self):
-                    if include_self:
-                        subset.add(item.id)
-                    children = item.get(relation)
-                    if children:                
-                        for child in children:
-                            descend(child, True)
-                descend(root, self.include_self)
-            else:
-                item = root if self.include_self else root.get(relation)
+        if relation.related_end is not None:
+            index, index_kw = \
+                query._get_expression_index(self, relation.related_end)
 
-                while item is not None:
-                    subset.add(item.id)
-                    item = item.get(relation)
-        
-            dataset.intersection_update(subset)
-            return dataset
-        
-        return ((-3, 0), impl)
-    
-    else:
-        return ((0, 0), None)
+            if index is not None:
+                def impl(dataset):
+                    descendants = set()
+                    root_ids = ids_from_subset(self.operands[1].eval(None))
+
+                    if self.include_self:
+                        descendants.update(root_ids)
+
+                    def descend(parent_id):
+                        for child_id in index.values(
+                            key = parent_id,
+                            **index_kw
+                        ):
+                            descendants.add(child_id)
+                            descend(child_id)
+                    
+                    for root_id in root_ids:
+                        descend(root_id)
+
+                    dataset.intersection_update(descendants)
+                    return dataset        
+
+                return ((-1, 0), impl)
+
+    return ((0, 0), None)
 
 expressions.DescendsFromExpression.resolve_filter = _descends_from_resolution
 
