@@ -93,11 +93,11 @@ class Expression(object):
     def positive(self):
         return PositiveExpression(self)
 
-    def one_of(self, expr):
-        return InclusionExpression(self, expr)
+    def one_of(self, expr, by_key = False):
+        return InclusionExpression(self, expr, by_key = by_key)
     
-    def not_one_of(self, expr):
-        return ExclusionExpression(self, expr)
+    def not_one_of(self, expr, by_key = False):
+        return ExclusionExpression(self, expr, by_key = by_key)
 
     def startswith(self, expr):
         return StartsWithExpression(self, expr)
@@ -445,7 +445,11 @@ class PositiveExpression(Expression):
 class InclusionExpression(Expression):
 
     by_key = False
-    
+
+    def __init__(self, subject, subset, by_key = False):
+        Expression.__init__(self, subject, subset)
+        self.by_key = by_key
+
     def op(self, a, b):
         if self.by_key:
             return a.id in b
@@ -454,8 +458,12 @@ class InclusionExpression(Expression):
 
 
 class ExclusionExpression(Expression):
- 
+
     by_key = False
+
+    def __init__(self, subject, subset, by_key = False):
+        Expression.__init__(self, subject, subset)
+        self.by_key = by_key
 
     def op(self, a, b):
         if self.by_key:
