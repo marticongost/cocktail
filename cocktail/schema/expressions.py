@@ -626,11 +626,11 @@ class IsNotInstanceExpression(IsInstanceExpression):
 class DescendsFromExpression(Expression):
 
     # The relation parameter always is the children relation.
+
     def __init__(self, a, b, relation, include_self = True):
         Expression.__init__(self, a, b)
         self.relation = relation
         self.include_self = include_self
-
 
     def op(self, a, b):
 
@@ -681,5 +681,4 @@ class DescendsFromExpression(Expression):
                         return False
 
             return find(b, a, self.relation, self.include_self)
-
 
