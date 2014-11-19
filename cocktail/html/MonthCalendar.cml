@@ -9,9 +9,24 @@ from datetime import date, timedelta
     xmlns:py="http://www.whads.com/ns/cocktail/templates">
 
     <?py-class
+    __calendar_page = None
     year = None
     month = None
     abbreviated_headers = True
+
+    def _get_calendar_page(self):
+        return self.__calendar_page
+
+    def _set_calendar_page(self, page):
+        self.__calendar_page = page
+        if page is None:
+            self.year = None
+            self.month = None
+        else:
+            self.year = page.year
+            self.month = page.month
+
+    calendar_page = property(_get_calendar_page, _set_calendar_page)
 
     def _get_month_dates(self):
         
