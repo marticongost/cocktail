@@ -11,6 +11,7 @@ from cgi import parse_qs
 from urllib import urlencode
 from cocktail.html.utils import escape_attrib
 from cocktail.controllers.sessions import session
+from cocktail.controllers.parameters import serialize_parameter
 
 def get_state(**kwargs):
     state = parse_qs(cherrypy.request.query_string)
@@ -22,7 +23,12 @@ def get_state(**kwargs):
 
     return state
 
-def view_state(**kwargs):
+def view_state(*args, **kwargs):
+
+    for member, value in args:
+        kwargs[member.get_parameter_name()] = \
+            serialize_parameter(member, value)
+
     return urlencode(get_state(**kwargs), True)
 
 def view_state_form(schema = None, **kwargs):
