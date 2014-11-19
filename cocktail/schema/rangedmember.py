@@ -25,26 +25,23 @@ class RangedMember(object):
     min = None
     max = None
 
-    def __init__(self):
-        self.add_validation(RangedMember.range_validation_rule)
-
-    def range_validation_rule(self, value, context):
+    def _range_validation(self, context):
         """Validation rule for value ranges. Checks the L{min} and L{max}
         constraints."""
 
-        if value is not None:
+        if context.value is not None:
 
             type = self.resolve_constraint(self.type, context)
 
-            if type is None or isinstance(value, type):
+            if type is None or isinstance(context.value, type):
 
                 min = self.resolve_constraint(self.min, context)
 
-                if min is not None and value < min:
-                    yield MinValueError(self, value, context, min)
+                if min is not None and context.value < min:
+                    yield MinValueError(context, min)
                 else:
                     max = self.resolve_constraint(self.max, context)
 
-                    if max is not None and value > max:
-                        yield MaxValueError(self, value, context, max)
+                    if max is not None and context.value > max:
+                        yield MaxValueError(context, max)
 

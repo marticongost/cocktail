@@ -12,28 +12,26 @@ class Tuple(Member):
     type = tuple
     items = ()
 
-    def __init__(self, *args, **kwargs):
-        Member.__init__(self, *args, **kwargs)
-        self.add_validation(self.__class__.tuple_validation_rule)
+    def _default_validation(self, context):
 
-    def tuple_validation_rule(self, value, context):
+        for error in Member._default_validation(self, context):
+            yield error
 
-        if value is not None:
+        if context.value is not None:
             
-            value_length = len(value)
+            value_length = len(context.value)
             expected_length = len(self.items)
 
             if value_length < expected_length:
-                yield MinItemsError(self, value, context, expected_length)
+                yield MinItemsError(context, expected_length)
 
             elif value_length > expected_length:
-                yield MaxItemsError(self, value, context, expected_length)
+                yield MaxItemsError(context, expected_length)
 
-            for item_member, item in zip(self.items, value):
-                try:
-                    context.enter(item_member, item)
-                    for error in item_member.get_errors(item, context):
-                        yield error
-                finally:
-                    context.leave()
+            for item_member, item in zip(self.items, context.value):
+                for error in item_member.get_errors(
+                    item,
+                    parent_context = context
+                ):
+                    yield error
 

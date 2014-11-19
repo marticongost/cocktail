@@ -140,8 +140,8 @@ class RelationMember(Member):
         if self.__related_end:
             return self.__related_end
         
-        if self.adaptation_source:
-            return self.adaptation_source.related_end
+        if self.source_member:
+            return self.source_member.related_end
 
         related_end = None
         related_type = self.related_type
@@ -217,7 +217,7 @@ class RelationMember(Member):
         if related_end \
         and related_end.schema is None \
         and self.schema is not None \
-        and self.adaptation_source is None:
+        and self.source_member is None:
 
             if related_end.name is None:
                 if self.schema.name:

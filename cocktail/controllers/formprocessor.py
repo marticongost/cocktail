@@ -177,7 +177,7 @@ class Form(object):
         return schema.ErrorList(
             self.schema.get_errors(
                 self.data,
-                **self.validation_context
+                **self.validation_parameters
             )
             if self.submitted
             else ()
@@ -311,7 +311,7 @@ class Form(object):
         )
 
     @cached_getter
-    def validation_context(self):
+    def validation_parameters(self):
         """Context supplied to the form validation process."""
         context = {}
 

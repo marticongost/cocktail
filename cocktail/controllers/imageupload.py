@@ -79,7 +79,8 @@ def constrain_image_upload(member,
     """
     if max_width or max_height:
         @member.add_validation
-        def image_size_validation(member, upload, ctx):
+        def image_size_validation(context):
+            upload = context.value
             if upload:
                 upload_path = member.get_file_destination(upload)
                 if upload_path:
@@ -96,9 +97,7 @@ def constrain_image_upload(member,
                             )
                         ):
                             yield ImageTooBigError(
-                                member,
-                                upload,
-                                ctx,
+                                context,
                                 max_width,
                                 max_height,
                                 allow_rotation
@@ -106,7 +105,8 @@ def constrain_image_upload(member,
 
     if min_width or min_height:
         @member.add_validation
-        def image_size_validation(member, upload, ctx):
+        def image_size_validation(context):
+            upload = context.value
             if upload:
                 upload_path = member.get_file_destination(upload)
                 if upload_path:
@@ -123,9 +123,7 @@ def constrain_image_upload(member,
                             )
                         ):
                             yield ImageTooSmallError(
-                                member,
-                                upload,
-                                ctx,
+                                context,
                                 min_width,
                                 min_height,
                                 allow_rotation
@@ -150,14 +148,12 @@ class ImageTooBigError(ValidationError):
     """
 
     def __init__(self,
-        member,
-        value,
         context,
         max_width,
         max_height,
         allow_rotation
     ):
-        ValidationError.__init__(self, member, value, context)
+        ValidationError.__init__(context)
         self.max_width = max_width
         self.max_height = max_height
         self.allow_rotation = allow_rotation
@@ -169,14 +165,12 @@ class ImageTooSmallError(ValidationError):
     """
 
     def __init__(self,
-        member,
-        value,
         context,
         min_width,
         min_height,
         allow_rotation
     ):
-        ValidationError.__init__(self, member, value, context)
+        ValidationError.__init__(self, context)
         self.min_width = min_width
         self.min_height = min_height
         self.allow_rotation = allow_rotation

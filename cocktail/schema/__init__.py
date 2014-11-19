@@ -62,7 +62,8 @@ from cocktail.schema.accessors import (
     set,
     MemberAccessor,
     AttributeAccessor,
-    DictAccessor
+    DictAccessor,
+    undefined
 )
 from cocktail.schema.schemaobject import (
     SchemaObject,

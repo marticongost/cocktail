@@ -44,10 +44,6 @@ class PhoneNumber(String):
         cls.__prefixes_by_country[country] = prefix
         cls.__country_formats[country] = format
 
-    def __init__(self, *args, **kwargs):
-        String.__init__(self, *args, **kwargs)
-        self.add_validation(PhoneNumber.phone_number_validation)
-
     def normalization(self, value):
 
         if value:
@@ -93,7 +89,12 @@ class PhoneNumber(String):
 
         return value
 
-    def phone_number_validation(self, value, context):
+    def _default_validation(self, context):
+
+        for error in String._default_validation(self, context):
+            yield error
+
+        value = context.value
 
         if isinstance(value, basestring):
 
@@ -132,8 +133,6 @@ class PhoneNumber(String):
                     if international_numbers == "reject":
                         if country is None or country != self.local_country:
                             yield InternationalPhoneNumbersNotAllowedError(
-                                self,
-                                value,
                                 context
                             )
                     # - just a subset
@@ -149,11 +148,7 @@ class PhoneNumber(String):
                                 or country not in accepted_countries
                             )
                         ):
-                            yield InvalidPhoneCountryError(
-                                self,
-                                value,
-                                context
-                            )
+                            yield InvalidPhoneCountryError(context)
 
                 # Ignore extensions
                 value = self.split_extension(value)[0]
@@ -179,7 +174,7 @@ class PhoneNumber(String):
                     )
 
             if not valid:
-                yield PhoneFormatError(self, value, context)
+                yield PhoneFormatError(context)
 
     @classmethod
     def split_extension(cls, number):
