@@ -749,12 +749,7 @@ class FormSchemaReader(object):
                     error_member = error.member
                     if error_member not in invalid_members:
                         invalid_members.add(error_member)
-
-                        if error.path:
-                            error_target = error.path[-1][1]
-                        else:
-                            error_target = target
-
+                        error_target = error.context.get_object()
                         fixed_value = self._fix_value(
                             error_target, 
                             error_member,

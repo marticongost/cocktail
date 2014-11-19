@@ -57,19 +57,32 @@ class MemberReacquiredError(SchemaIntegrityError):
 class ValidationError(Exception):
     """Base class for all exceptions produced during a schema validation."""
 
-    def __init__(self, member, value, context):
-        self.member = member
-        self.value = value
-        self.language = context.get("language")
-        self.path = list(context.path())
+    def __init__(self, context):
+        Exception.__init__(self)
+        self.context = context
+
+    @property
+    def value(self):
+        return self.context.value
+
+    @property
+    def member(self):
+        return self.context.member
+
+    @property
+    def language(self):
+        return self.context.language
 
     def __str__(self):
 
-        desc = "%s: %s is not a valid value for %s" \
-            % (self.__class__.__name__, self.value, self.member)
-        
-        if self.language:
-            desc = "%s [%s]" % (desc, self.language)
+        desc = "%s: %s is not a valid value for %s" % (
+            self.__class__.__name__,
+            self.context.value,
+            self.context.member
+        )
+
+        if self.context.language:
+            desc = "%s [%s]" % (desc, self.context.language)
 
         return desc
 
@@ -110,8 +123,8 @@ class TypeCheckError(ValidationError):
     @ivar type: The type accepted by the field, at the time of validation.
     """
 
-    def __init__(self, member, value, context, type):
-        ValidationError.__init__(self, member, value, context)
+    def __init__(self, context, type):
+        ValidationError.__init__(self, context)
         self.type = type
 
     def __str__(self):
@@ -130,8 +143,8 @@ class ClassFamilyError(ValidationError):
         the time of validation.
     """
 
-    def __init__(self, member, value, context, class_family):
-        ValidationError.__init__(self, member, value, context)
+    def __init__(self, context, class_family):
+        ValidationError.__init__(self, context)
         self.class_family = class_family
 
     def __str__(self):
@@ -149,8 +162,8 @@ class EnumerationError(ValidationError):
         validation.
     """
 
-    def __init__(self, member, value, context, enumeration):
-        ValidationError.__init__(self, member, value, context)
+    def __init__(self, context, enumeration):
+        ValidationError.__init__(self, context)
         self.enumeration = enumeration
 
     def __str__(self):
@@ -167,8 +180,8 @@ class MinLengthError(ValidationError):
     @type max: int
     """
 
-    def __init__(self, member, value, context, min):
-        ValidationError.__init__(self, member, value, context)
+    def __init__(self, context, min):
+        ValidationError.__init__(self, context)
         self.min = min
 
     def __str__(self):
@@ -185,8 +198,8 @@ class MaxLengthError(ValidationError):
     @type max: int
     """
 
-    def __init__(self, member, value, context, max):
-        ValidationError.__init__(self, member, value, context)
+    def __init__(self, context, max):
+        ValidationError.__init__(self, context)
         self.max = max
 
     def __str__(self):
@@ -202,8 +215,8 @@ class FormatError(ValidationError):
     @type format: Regular Expression
     """
 
-    def __init__(self, member, value, context, format):
-        ValidationError.__init__(self, member, value, context)
+    def __init__(self, context, format):
+        ValidationError.__init__(self, context)
         self.format = format
 
     def __str__(self):
@@ -220,8 +233,8 @@ class MinValueError(ValidationError):
         validation.
     """
 
-    def __init__(self, member, value, context, min):
-        ValidationError.__init__(self, member, value, context)
+    def __init__(self, context, min):
+        ValidationError.__init__(self, context)
         self.min = min
 
     def __str__(self):
@@ -237,8 +250,8 @@ class MaxValueError(ValidationError):
         validation.
     """
 
-    def __init__(self, member, value, context, max):
-        ValidationError.__init__(self, member, value, context)
+    def __init__(self, context, max):
+        ValidationError.__init__(self, context)
         self.max = max
 
     def __str__(self):
@@ -255,8 +268,8 @@ class MinItemsError(ValidationError):
     @type min: int
     """
 
-    def __init__(self, member, value, context, min):
-        ValidationError.__init__(self, member, value, context)
+    def __init__(self, context, min):
+        ValidationError.__init__(self, context)
         self.min = min
 
     def __str__(self):
@@ -272,8 +285,8 @@ class MaxItemsError(ValidationError):
     @type max: int
     """
 
-    def __init__(self, member, value, context, max):
-        ValidationError.__init__(self, member, value, context)
+    def __init__(self, context, max):
+        ValidationError.__init__(self, context)
         self.max = max
 
     def __str__(self):
@@ -316,8 +329,8 @@ class RelationConstraintError(ValidationError):
     @type constraint: callable or L{Expression<cocktail.schema.expressions.Expression>}
     """
     
-    def __init__(self, member, value, context, constraint):
-        ValidationError.__init__(self, member, value, context)
+    def __init__(self, context, constraint):
+        ValidationError.__init__(self, context)
         self.constraint = constraint
 
     def __str__(self):
