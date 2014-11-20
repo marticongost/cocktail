@@ -50,7 +50,6 @@
         var elementSelector = getParam("element");
         var entrySelector = getParam("entrySelector", ".entry");
         var checkboxSelector = getParam("checkboxSelector", "input[type=checkbox]");
-        var selectableEntryFilter = ":visible:has(" + checkboxSelector + ":enabled)";
         var entryCheckboxSelector = entrySelector + " " + checkboxSelector;
 
         jQuery(elementSelector).each(function () {
@@ -60,11 +59,11 @@
             selectable.entrySelector = entrySelector;
 
             selectable.getEntries = function (subset /* = null */) {
-                var query = entrySelector;
+                var $entries = $selectable.find(entrySelector)
                 if (subset) {
-                    query += normalizeEntrySelector(subset);
+                    $entries = applySubset($entries, subset);
                 }
-                return $selectable.find(query);
+                return $entries;
             }
 
             selectable._selectionStart = null;
@@ -87,8 +86,15 @@
                 $selectable.trigger("selectionChanged");
             }
 
-            function normalizeEntrySelector(selector) {
-                return selector.replace(/:selectable-entry\b/g, selectableEntryFilter);
+            function applySubset($entries, subset) {
+                var normSubset = subset.replace(/:selectable-entry\b/g, ":visible");
+                if (normSubset != subset) {
+                    $entries = $entries.filter($selectable.find(checkboxSelector + ":enabled").closest(entrySelector));
+                }
+                if (normSubset) {
+                    $entries = $entries.filter(normSubset);
+                }
+                return $entries;
             }
 
             selectable.focusEntry = function (entry) {
@@ -134,7 +140,7 @@
                 $entries = $entries.slice(i + 1);
 
                 if (selector) {
-                    $entries = $entries.filter(normalizeEntrySelector(selector));
+                    $entries = applySubset($entries, selector);
                 }
 
                 return $entries.get(0);
@@ -152,7 +158,7 @@
                 $entries = $entries.slice(0, i);
 
                 if (selector) {
-                    $entries = $entries.filter(normalizeEntrySelector(selector));
+                    $entries = applySubset($entries, selector);
                 }
 
                 return $entries.get(-1);
