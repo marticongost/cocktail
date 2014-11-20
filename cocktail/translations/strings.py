@@ -544,22 +544,26 @@ def _date_instance_pt(instance, style = DATE_STYLE_NUMBERS):
             instance.year
         )
 
-translations.define("date-instance",
+translations.define("datetime.date-instance",
     ca = _date_instance_ca,
     es = _date_instance_es,
     en = _date_instance_en,
     pt = _date_instance_pt
 )
 
-translations.define("datetime-instance",
-    ca = lambda instance, style = DATE_STYLE_NUMBERS:
-        _date_instance_ca(instance, style) + instance.strftime(" %H:%M:%S"),
-    es = lambda instance, style = DATE_STYLE_NUMBERS:
-        _date_instance_es(instance, style) + instance.strftime(" %H:%M:%S"),
-    en = lambda instance, style = DATE_STYLE_NUMBERS:
-        _date_instance_en(instance, style) + instance.strftime(" %H:%M:%S"),
-    pt = lambda instance, style = DATE_STYLE_NUMBERS:
-        _date_instance_pt(instance, style) + instance.strftime(" %H:%M:%S")
+translations.define("datetime.datetime-instance",
+    ca = lambda instance, style = DATE_STYLE_NUMBERS, include_seconds = True:
+        _date_instance_ca(instance, style)
+        + instance.strftime(" %H:%M" + (":%S" if include_seconds else "")),
+    es = lambda instance, style = DATE_STYLE_NUMBERS, include_seconds = True:
+        _date_instance_es(instance, style)
+        + instance.strftime(" %H:%M" + (":%S" if include_seconds else "")),
+    en = lambda instance, style = DATE_STYLE_NUMBERS, include_seconds = True:
+        _date_instance_en(instance, style)
+        + instance.strftime(" %H:%M" + (":%S" if include_seconds else "")),
+    pt = lambda instance, style = DATE_STYLE_NUMBERS, include_seconds = True:
+        _date_instance_pt(instance, style)
+        + instance.strftime(" %H:%M" + (":%S" if include_seconds else ""))
 )
 
 def _translate_calendar_page(instance, abbreviated = False):
