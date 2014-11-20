@@ -895,18 +895,51 @@ translations.define("DescendsFromFilter.include_self",
 # Languages
 #------------------------------------------------------------------------------
 def _translate_locale(locale):
-    trans = translations(locale)
-    if not trans:
-        parts = locale.split("-")
-        if len(parts) == 2:
-            trans = translations(parts[0])
-            if trans:
-                trans += " - %s" % parts[1].upper()
 
-    return trans
+    trans = translations(locale)
+    if trans:
+        return trans
+
+    return u"".join(
+        translations("locale_component." + component,
+            locale = locale,
+            index = index
+        )
+        or translations("locale_component",
+            locale = locale,
+            component = component,
+            index = index
+        )
+        or (u" - " if index else u"") + component
+        for index, component in enumerate(locale.split("-"))
+    )
+
+def translate_locale_component(locale, component, index):
+    if index == 0:
+        return translations(component)
 
 translations.define("locale", **dict(
     (lang, _translate_locale)
+    for lang in (
+        "ca",
+        "cn",
+        "de",
+        "en",
+        "es",
+        "fr",
+        "it",
+        "jp",
+        "ko",
+        "nl",
+        "pl",
+        "pt",
+        "ru",
+        "tr"
+    )
+))
+
+translations.define("locale_component", **dict(
+    (lang, translate_locale_component)
     for lang in (
         "ca",
         "cn",
