@@ -79,8 +79,10 @@ cocktail.bind(".SearchableCheckList.search_enabled", function ($control) {
         });
 
     $checkList.on("selectionChanged", toggleSelectionLinks);
-    $control.on("searched", toggleSelectionLinks);
-    $control.on("containingDropdownExpanded", toggleSelectionLinks);
+    $control
+        .on("searched", toggleSelectionLinks)
+        .addClass("exposable")
+        .on("exposed", toggleSelectionLinks);
 
     this.applySearch($searchBox.val());
 });
