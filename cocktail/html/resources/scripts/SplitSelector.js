@@ -202,8 +202,10 @@ cocktail.bind(".SplitSelector.search_enabled", function ($control) {
 
     $selectedItemsContainer.on("selectionChanged", toggleButtons);
     $eligibleItemsContainer.on("selectionChanged", toggleButtons);
-    $control.on("searched", toggleButtons);
-    $control.on("containingDropdownExpanded", toggleButtons);
+    $control
+        .on("searched", toggleButtons)
+        .addClass("exposable")
+        .on("exposed", toggleButtons);
 
     this.applySearch($searchBox.val());
 });
