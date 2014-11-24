@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <?py
 import calendar
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 ?>
 
 <div
@@ -9,9 +9,25 @@ from datetime import date, timedelta
     xmlns:py="http://www.whads.com/ns/cocktail/templates">
 
     <?py-class
+    __calendar_page = None
+    __cells = None
     year = None
     month = None
     abbreviated_headers = True
+
+    def _get_calendar_page(self):
+        return self.__calendar_page
+
+    def _set_calendar_page(self, page):
+        self.__calendar_page = page
+        if page is None:
+            self.year = None
+            self.month = None
+        else:
+            self.year = page.year
+            self.month = page.month
+
+    calendar_page = property(_get_calendar_page, _set_calendar_page)
 
     def _get_month_dates(self):
         
@@ -49,6 +65,15 @@ from datetime import date, timedelta
             last_week.append(current_date)
         
         return weeks
+    
+    def get_cell(self, day):
+        if isinstance(day, datetime):
+            day = day.date()
+        return self.__cells.get(day)
+    ?>
+
+    <?py
+    self.__cells = {}
     ?>
 
     <py:binding>
@@ -76,14 +101,16 @@ from datetime import date, timedelta
                 </py:ready>
             </tr>
         </thead>
-        <tbody py:local_id="tbody">
-            <py:ready>
-                <py:new
-                    py:element="self.create_week_row(i, days)"
-                    py:for="i, days in enumerate(self._get_month_dates())"/>
-            </py:ready>
-        </tbody>
+        <tbody py:local_id="tbody"/>
     </table>
+
+    <py:ready>
+        <py:with py:element="self.calendar_grid.tbody">
+            <py:new
+                py:element="self.create_week_row(i, days)"
+                py:for="i, days in enumerate(self._get_month_dates())"/>
+        </py:with>
+    </py:ready>
 
     <tr py:def="week_row" py:args="index, days">
         <?py
@@ -100,6 +127,7 @@ from datetime import date, timedelta
             element.add_class("other_month")
         if day == self._today:
             element.add_class("today")
+        self.__cells[day] = element
         ?>
         <span py:local_id="label">${day.day}</span>
     </td>
