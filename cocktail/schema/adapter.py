@@ -877,6 +877,7 @@ class Expansion(Rule):
             self.adapter.export_object(
                 self.related_object,
                 context.target_object,
+                source_schema = self.related_object.__class__,
                 parent_context = context
             )
 
