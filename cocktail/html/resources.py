@@ -20,7 +20,6 @@ from cocktail.modeling import (
     InstrumentedOrderedSet,
     DictWrapper
 )
-from cocktail.controllers.location import Location
 
 
 class Resource(object):
@@ -412,6 +411,7 @@ class ResourceAggregator(ResourceSet):
             if "://" not in url:
                 base_url = self.base_url
                 if not base_url:
+                    from cocktail.controllers.location import Location
                     base_url = unicode(Location.get_current_host())
                 url = base_url + url
             return urlopen(url)
