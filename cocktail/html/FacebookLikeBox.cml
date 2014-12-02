@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?py
+from cocktail.controllers import Location
+?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:py="http://www.whads.com/ns/cocktail/templates">
+
+    <?py-class
+    href = None
+    show_faces = True
+    stream = False
+    header = False
+    width = 292
+    height = None
+    border_color = None
+    colorscheme = "light"
+    locale = "ca_ES"
+    ?>
+
+    <?py
+    @self.when_document_ready
+    def include_fbml(document):
+        if not hasattr(document, "fbml_block"):
+            document.fbml_block = self.create_fbml_block()
+            document.body.append(document.fbml_block)
+    ?>
+
+    <py:block py:def="fbml_block">
+        <div id="fb-root"></div>
+        <?py
+        script = """<script>(function(d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) return;
+            js = d.createElement(s); js.id = id;
+            js.src = "//connect.facebook.net/%s/all.js#xfbml=1";
+            fjs.parentNode.insertBefore(js, fjs);
+            }(document, 'script', 'facebook-jssdk'));</script>""" % (self.locale,)
+        element.append(script)
+        ?>
+    </py:block>
+
+    <div
+        class="fb-like-box"
+        data-href="@{self.href}"
+        data-show-faces="@{'true' if self.show_faces else 'false'}"
+        data-stream="@{'true' if self.stream else 'false'}"
+        data-header="@{'true' if self.header else 'false'}"
+        data-width="@{self.width}"
+        data-height="@{self.height}"
+        data-border-color="@{self.border_color}"
+        data-colorscheme="@{self.colorscheme}"></div>
+
+</div>
+

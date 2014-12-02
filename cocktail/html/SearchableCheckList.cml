@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?py
+from cocktail.html.databoundcontrol import data_bound
+?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:py="http://www.whads.com/ns/cocktail/templates">
+
+    <?py-class
+    items = None
+    value = None
+    name = None
+    search_threshold = 10
+
+    def should_enable_search(self):
+        if not self.items:
+            return False
+        
+        if not self.search_threshold:
+            return True
+
+        if self.grouped:
+            item_count = sum(
+                len(group_items)
+                for group, group_items in self.items
+            )
+        else:
+            item_count = len(self.items)
+
+        return item_count >= self.search_threshold
+    ?>
+
+    <?py
+    data_bound(self)
+    self.add_resource("/cocktail/scripts/searchable.js")
+    self.add_resource("/cocktail/scripts/SearchableCheckList.js")
+    ?>
+
+    <py:ready>
+        <?py
+        if self.should_enable_search:
+            self.add_class("search_enabled")
+        ?>
+    </py:ready>
+
+    <div
+        py:id="search_controls"
+        py:client_model="cocktail.html.SearchableCheckList.searchControls">
+        <input py:id="search_box" type="search"/>
+        <div py:id="toggle_selection_links">
+            <a py:local_id="select_all_link" href="javascript:">
+                ${translations("cocktail.html.SearchableCheckList.search_controls.select_all_link")}
+            </a>
+            <a py:local_id="empty_selection_link" href="javascript:">
+                ${translations("cocktail.html.SearchableCheckList.search_controls.empty_selection_link")}
+            </a>
+        </div>
+    </div>
+
+    <py:cocktail.html.CheckList
+        py:id="check_list"
+        py:member="@{self.member}"
+        py:data_display="@{self.data_display}"
+        py:language="@{self.language}"
+        py:name="@{self.name}"
+        py:items="@{self.items}"
+        py:value="@{self.value}"/>
+
+</div>
+
