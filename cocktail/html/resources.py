@@ -13,7 +13,7 @@ except ImportError:
 
 import os
 import hashlib
-from urllib import urlopen
+import urllib2
 from pkg_resources import resource_filename
 from cocktail.modeling import (
     abstractmethod,
@@ -352,6 +352,7 @@ class ResourceAggregator(ResourceSet):
     file_glue = "\n"
     download_remote_resources = False
     base_url = None
+    http_user_agent = "cocktail.html.ResourceAggregator"
 
     def matches(self, resource):
         return (
@@ -414,7 +415,9 @@ class ResourceAggregator(ResourceSet):
                 if not base_url:
                     base_url = unicode(Location.get_current_host())
                 url = base_url + url
-            return urlopen(url)
+            request = urllib2.Request(url)
+            request.add_header("User-Agent", self.http_user_agent)
+            return urllib2.urlopen(request)
 
         raise ValueError("Can't open %r" % resource)
 
