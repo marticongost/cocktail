@@ -822,11 +822,17 @@ class SchemaObject(object):
 
     def get_member_copy_mode(self, member, member_copy_modes = None):
 
+        # Explicit mode set by an override
         if member_copy_modes:
             copy_mode = member_copy_modes.get(member)
             if copy_mode is not None:
                 return copy_mode
 
+        # Explicit mode set by the member
+        if member.copy_mode is not None:
+            return member.copy_mode
+
+        # Implicit mode, based on member properties
         if (
             member.name == "translations"
             or member.primary
