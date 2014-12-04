@@ -858,7 +858,11 @@ class SchemaObject(object):
             if isinstance(member, Reference):
                 if mode == DEEP_COPY \
                 or (callable(mode) and mode(self, member, value)):
-                    value = value.create_copy()
+                    value = value.create_copy(
+                        member_copy_modes = 
+                            None if member.related_end is None
+                            else {member.related_end: DO_NOT_COPY}
+                    )
             else:
                 items = []
 
@@ -867,7 +871,11 @@ class SchemaObject(object):
                         mode == DEEP_COPY
                         or (callable(mode) and mode(self, member, item))
                     ):
-                        item = item.create_copy()
+                        item = item.create_copy(
+                            member_copy_modes = 
+                                None if member.related_end is None
+                                else {member.related_end: DO_NOT_COPY}
+                        )
 
                     items.append(item)
 
