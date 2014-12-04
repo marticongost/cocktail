@@ -197,7 +197,7 @@ class CacheTestCase(TestCase):
         e.append("foo")
         assert "foo" not in e.render(cache = self.cache)
 
-        sleep(1)
+        sleep(1.2)
         assert "foo" in e.render(cache = self.cache)
 
     def test_elements_can_invalidate_cached_content(self):
