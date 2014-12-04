@@ -16,7 +16,8 @@ from cocktail.events import Event, event_handler
 from cocktail.translations import translations
 from cocktail.schema import (
     SchemaClass, 
-    SchemaObject, 
+    SchemaObject,
+    String,
     Reference, 
     Collection,
     TranslationMapping
@@ -456,6 +457,37 @@ class PersistentObject(SchemaObject, Persistent):
     def _counts_as_duplicate(self, other):
         return self is not other
 
+    def copy_value(self, member, language, **kwargs):
+        
+        value = SchemaObject.copy_value(self, member, language, **kwargs)
+
+        if member.unique:
+            original = self.get(member, language = language)
+            if value == original:
+                value = self.qualify_duplicate_value(
+                    member,
+                    value,
+                    language,
+                    receiver = kwargs.get("receiver")
+                )
+
+        return value
+
+    def qualify_duplicate_value(self, member, value, language, receiver = None):
+
+        if (
+            isinstance(member, String)
+            and receiver is not None
+            and value is not None
+        ):
+            return value + ("_%s" % receiver.require_id())
+
+        if not member.required:
+            return None
+
+        raise UniqueValueCopyError(self, member, language)
+
+
 PersistentObject._translation_schema_metaclass = PersistentClass
 PersistentObject._translation_schema_base = PersistentObject
 
@@ -589,6 +621,19 @@ class UniqueValueError(ValidationError):
     def __repr__(self):
         return "%s (value already present in the database)" \
             % ValidationError.__repr__(self)
+
+
+class UniqueValueCopyError(Exception):
+    """An error raised when copying an object with a unique member."""
+
+    def __init__(self, obj, member, language):
+        Exception.__init__(self,
+            "Can't copy the value for unique member %s from %r."
+            % (member.name, obj)
+        )
+        self.object = obj
+        self.member = member
+        self.language = language
 
 
 class NewObjectDeletedError(Exception):
