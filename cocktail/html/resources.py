@@ -13,12 +13,14 @@ except ImportError:
 
 import os
 import hashlib
+from urllib import urlopen
 from pkg_resources import resource_filename
 from cocktail.modeling import (
     abstractmethod,
     InstrumentedOrderedSet,
     DictWrapper
 )
+from cocktail.controllers.location import Location
 
 
 class Resource(object):
@@ -348,11 +350,16 @@ class ResourceAggregator(ResourceSet):
     read_chunk_size = 1024 * 4
     source_encoding = "utf-8"
     file_glue = "\n"
+    download_remote_resources = False
+    base_url = None
 
     def matches(self, resource):
         return (
             ResourceSet.matches(self, resource)
-            and resource_repositories.locate(resource)
+            and (
+                self.download_remote_resources
+                or resource_repositories.locate(resource)
+            )
         )
 
     def get_source(self):
@@ -382,13 +389,34 @@ class ResourceAggregator(ResourceSet):
 
     def write_resource_source(self, resource, dest):
         chunk_size = self.read_chunk_size
-        resource_file_path = resource_repositories.locate(resource)        
-        with open(resource_file_path) as src:
+        src = self.open_resource(resource)
+        try:
             while True:
                 chunk = src.read(chunk_size)
                 if not chunk:
                     break
                 dest.write(chunk)
+        finally:
+            src.close()
+
+    def open_resource(self, resource):
+        
+        # Look for a local file
+        resource_file_path = resource_repositories.locate(resource)
+        if resource_file_path:
+            return open(resource_file_path)
+
+        # Download remote resources
+        if self.download_remote_resources:
+            url = resource.uri
+            if "://" not in url:
+                base_url = self.base_url
+                if not base_url:
+                    base_url = unicode(Location.get_current_host())
+                url = base_url + url
+            return urlopen(url)
+
+        raise ValueError("Can't open %r" % resource)
 
 
 class EmbeddedResources(ResourceAggregator):
