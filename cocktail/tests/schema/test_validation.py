@@ -162,12 +162,14 @@ class MemberValidationTestCase(ValidationTestCase):
 
 class InheritedValidationsTestCase(TestCase):
 
-    def _add_error(self, schema):
-        
+    def _add_error(self, schema, error_id = None):
+
         from cocktail.schema.exceptions import ValidationError
 
-        def validation(member, validable, context):
-            yield ValidationError(schema, validable, context)
+        def validation(context):
+            error = ValidationError(context)
+            error.error_id = error_id
+            yield error
 
         schema.add_validation(validation)
 
@@ -175,15 +177,15 @@ class InheritedValidationsTestCase(TestCase):
 
         from cocktail.schema import Schema
 
-        base = Schema()
-        self._add_error(base)
+        base = Schema("base")
+        self._add_error(base, "base_error")
 
-        derived = Schema()
+        derived = Schema("derived")
         derived.inherit(base)
     
         errors = list(derived.get_errors({}))
         assert len(errors) == 1
-        assert errors[0].member == base
+        assert errors[0].error_id == "base_error"
 
     def test_base_isolation(self):
 
@@ -192,7 +194,7 @@ class InheritedValidationsTestCase(TestCase):
         base = Schema()
 
         derived = Schema()
-        self._add_error(derived)
+        self._add_error(derived, "derived_error")
         derived.inherit(base)
     
         assert not list(base.get_errors({}))
@@ -201,44 +203,44 @@ class InheritedValidationsTestCase(TestCase):
 
         from cocktail.schema import Schema
 
-        base1 = Schema()
-        self._add_error(base1)
+        base1 = Schema("base1")
+        self._add_error(base1, "base1_error")
 
-        base2 = Schema()
-        self._add_error(base2)
+        base2 = Schema("base2")
+        self._add_error(base2, "base2_error")
 
-        derived = Schema()
+        derived = Schema("derived")
         derived.inherit(base1)
         derived.inherit(base2)
     
         errors = list(derived.get_errors({}))
         assert len(errors) == 2
-        assert errors[0].member == base1
-        assert errors[1].member == base2
+        assert errors[0].error_id == "base1_error"
+        assert errors[1].error_id == "base2_error"
 
     def test_deep_inheritance(self):
 
         from cocktail.schema import Schema
 
         s1 = Schema()
-        self._add_error(s1)
+        self._add_error(s1, "s1_error")
 
         s2 = Schema()
         s2.inherit(s1)
-        self._add_error(s2)
+        self._add_error(s2, "s2_error")
 
         s3 = Schema()
         s3.inherit(s2)
-        self._add_error(s3)
+        self._add_error(s3, "s3_error")
 
         s4 = Schema()
         s4.inherit(s3)
             
         errors = list(s4.get_errors({}))
         assert len(errors) == 3
-        assert errors[0].member == s1
-        assert errors[1].member == s2
-        assert errors[2].member == s3
+        assert errors[0].error_id == "s1_error"
+        assert errors[1].error_id == "s2_error"
+        assert errors[2].error_id == "s3_error"
 
 
 class StringValidationTestCase(ValidationTestCase):

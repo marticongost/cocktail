@@ -8,7 +8,8 @@ u"""
 """
 from operator import getitem, setitem
 from copy import copy, deepcopy
-from cocktail.modeling import ListWrapper
+from cocktail.events import when, Event
+from cocktail.modeling import ListWrapper, OrderedDict
 from cocktail.schema.schema import Schema
 from cocktail.schema.schemastrings import String
 from cocktail.schema.schemacollections import Collection
@@ -41,6 +42,7 @@ COLLECTION_COPY_MODE_DEFAULT = reference
 class AdaptationContext(object):
 
     def __init__(self,
+        adapter = None,
         source_object = None,
         target_object = None,
         source_schema = None,
@@ -50,19 +52,32 @@ class AdaptationContext(object):
         copy_mode = None,
         collection_copy_mode = None,
         copy_validations = None,
-        languages = None):
-
+        languages = None,
+        parent_context = None
+    ):
+        self.adapter = adapter
         self.source_object = source_object
         self.target_object = target_object
         self.source_accessor = source_accessor
         self.target_accessor = target_accessor
         self.source_schema = source_schema
         self.target_schema = target_schema
-        self._consumed_keys = set()            
         self.copy_mode = copy_mode
         self.collection_copy_mode = collection_copy_mode
         self.copy_validations = copy_validations
         self.languages = languages
+        self.parent_context = parent_context
+
+        if parent_context:
+            self._consumed_keys = parent_context._consumed_keys
+        else:
+            self._consumed_keys = set()
+
+    def member_created(self, target_member, source_member):
+        target_member.source_member = source_member
+        target_member.original_member = source_member.original_member
+        if self.adapter:
+            self.adapter.member_created(member = target_member)
 
     def get(self, key, default = undefined, language = None):
         """Gets a key from the source object.
@@ -137,6 +152,15 @@ class AdaptationContext(object):
 
 class Adapter(object):
 
+    member_created = Event(
+        """An event triggered when the adapter generates a new member on a
+        target schema.
+        
+        :param member: The new member.
+        :type member: `~cocktail.schema.Member`
+        """
+    )
+
     def __init__(self,
         source_accessor = None,
         target_accessor = None,
@@ -147,7 +171,10 @@ class Adapter(object):
         collection_copy_mode = COLLECTION_COPY_MODE_DEFAULT):
 
         self.import_rules = RuleSet()
-        self.export_rules = RuleSet()        
+        self.import_rules.adapter = self
+
+        self.export_rules = RuleSet()
+        self.export_rules.adapter = self
 
         self.source_accessor = source_accessor
         self.target_accessor = target_accessor
@@ -158,20 +185,36 @@ class Adapter(object):
         self.copy_mode = copy_mode
         self.collection_copy_mode = collection_copy_mode
         
-    def import_schema(self, source_schema, target_schema = None):
-
+    def import_schema(
+        self,
+        source_schema,
+        target_schema = None,
+        parent_context = None
+    ):
         if target_schema is None:
             target_schema = Schema()
 
-        self.import_rules.adapt_schema(source_schema, target_schema)
+        self.import_rules.adapt_schema(
+            source_schema,
+            target_schema,
+            parent_context = parent_context
+        )
         return target_schema
 
-    def export_schema(self, source_schema, target_schema = None):
-
+    def export_schema(
+        self,
+        source_schema,
+        target_schema = None,
+        parent_context = None
+    ):
         if target_schema is None:
             target_schema = Schema()
 
-        self.export_rules.adapt_schema(source_schema, target_schema)
+        self.export_rules.adapt_schema(
+            source_schema,
+            target_schema,
+            parent_context = parent_context
+        )
         return target_schema
 
     def import_object(self,
@@ -181,8 +224,9 @@ class Adapter(object):
         target_schema = None,
         source_accessor = None,
         target_accessor = None,
-        languages = None):
-        
+        languages = None,
+        parent_context = None
+    ):        
         self.import_rules.adapt_object(
             source_object,
             target_object,
@@ -190,7 +234,9 @@ class Adapter(object):
             target_accessor or self.target_accessor,
             source_schema,
             target_schema,
-            languages = languages)
+            languages = languages,
+            parent_context = parent_context
+        )
 
     def export_object(self,
         source_object,
@@ -199,8 +245,9 @@ class Adapter(object):
         target_schema = None,
         source_accessor = None,
         target_accessor = None,
-        languages = None):
-        
+        languages = None,
+        parent_context = None
+    ):
         self.export_rules.adapt_object(
             source_object,
             target_object,
@@ -208,7 +255,9 @@ class Adapter(object):
             target_accessor or self.target_accessor,
             source_schema,
             target_schema,
-            languages = languages)
+            languages = languages,
+            parent_context = parent_context
+        )
 
     def _get_implicit_copy(self):
         return self.__implicit_copy
@@ -372,6 +421,18 @@ class Adapter(object):
         self.import_rules.add_rule(exclusion, rule_position)
         self.export_rules.add_rule(exclusion, rule_position)
     
+    def expand(self, member, related_object, adapter, rule_position = None):
+
+        self.export_rules.add_rule(
+            Expansion(member, related_object, adapter),
+            rule_position
+        )
+
+        self.import_rules.add_rule(
+            Contraction(member, related_object, adapter),
+            rule_position
+        )
+
     def split(self,
         source_member,
         separator,
@@ -407,6 +468,7 @@ class Adapter(object):
 
 class RuleSet(object):
 
+    adapter = None
     target_accessor = None
     source_accessor = None
 
@@ -429,17 +491,22 @@ class RuleSet(object):
     def remove_rule(self, rule):
         self.__rules.remove(rule)
     
-    def adapt_schema(self, source_schema, target_schema):
-
+    def adapt_schema(
+        self,
+        source_schema,
+        target_schema,
+        parent_context = None
+    ):
         context = AdaptationContext(
+            adapter = self.adapter,
             source_schema = source_schema,
             target_schema = target_schema,
-            copy_validations = self.copy_validations
+            copy_validations = self.copy_validations,
+            parent_context = parent_context
         )
 
-        target_schema.adaptation_source = source_schema
+        target_schema.source_member = source_schema
         target_schema.original_member = source_schema.original_member
-        target_schema.members_order = []
 
         for rule in self.__rules:
             rule.adapt_schema(context)
@@ -464,7 +531,7 @@ class RuleSet(object):
 
             for source_member in source_schema.ordered_members():
                 for target_member in target_members.itervalues():
-                    if target_member.adaptation_source is source_member \
+                    if target_member.source_member is source_member \
                     and target_member not in ordered_members:
                         members_order.append(target_member.name)
                         ordered_members.add(target_member)
@@ -490,9 +557,11 @@ class RuleSet(object):
         target_accessor = None,
         source_schema = None,
         target_schema = None,
-        languages = None):
-
+        languages = None,
+        parent_context = None
+    ):
         context = AdaptationContext(
+            adapter = self.adapter,
             source_object = source_object,
             target_object = target_object,
             source_accessor = source_accessor
@@ -505,7 +574,8 @@ class RuleSet(object):
             target_schema = target_schema,
             copy_mode = self.copy_mode,
             collection_copy_mode = self.collection_copy_mode,
-            languages = languages
+            languages = languages,
+            parent_context = parent_context
         )
       
         for rule in self.__rules:
@@ -567,7 +637,7 @@ class Copy(Rule):
             self.__mapping = mapping
         else:
             try:
-                self.__mapping = dict((entry, entry) for entry in mapping)
+                self.__mapping = OrderedDict((entry, entry) for entry in mapping)
             except TypeError:
                 raise TypeError(
                     "Expected a string, string sequence or mapping")
@@ -590,7 +660,7 @@ class Copy(Rule):
                     target_member = source_member.copy()
                     target_member.name = target_name
                 
-                target_member.adaptation_source = source_member
+                target_member.source_member = source_member
                 target_member.original_member = source_member.original_member
 
                 if self.properties:
@@ -608,6 +678,7 @@ class Copy(Rule):
                         target_member,
                         append = True
                     )
+                    context.member_created(target_member, source_member)
 
     def adapt_object(self, context):
  
@@ -704,8 +775,7 @@ class Split(Rule):
                     target
                 )
                 source_member = context.source_schema[self.source]
-                target_member.adaptation_source = source_member
-                target_member.original_member = source_member.original_member
+                context.member_created(target_member, source_member)
 
     def adapt_object(self, context):
 
@@ -740,8 +810,7 @@ class Join(Rule):
                 self.target
             )
             source_member = context.source_schema[self.sources[0]]
-            target_member.adaptation_source = source_member
-            target_member.original_member = source_member.original_member
+            context.member_created(target_member, source_member)
 
     def adapt_object(self, context):
 
@@ -771,4 +840,61 @@ class Join(Rule):
             else:
                 value = self.glue.join(unicode(part) for part in parts)
                 context.set(self.target["name"], value)
+
+
+class Expansion(Rule):
+
+    def __init__(self, member, related_object, adapter):
+        self.member = member
+        self.related_object = related_object
+        self.adapter = adapter
+
+    def adapt_schema(self, context):
+
+        names = self.member.split(".")
+        
+        if len(names) > 1 or context.consume(names[0]):
+
+            # Set the persistent object that applies to each adapted member
+            # (this is necessary to make validations of the 'unique'
+            # constraint work)
+            @when(self.adapter.member_created)
+            def modify_adapted_member(e):
+                e.member.validation_parameters["persistent_object"] = \
+                    self.related_object
+
+            self.adapter.export_schema(
+                self.related_object.__class__,
+                context.target_schema,
+                parent_context = context
+            )
+
+    def adapt_object(self, context):
+
+        names = self.member.split(".")
+
+        if len(names) > 1 or context.consume(names[0]):
+            self.adapter.export_object(
+                self.related_object,
+                context.target_object,
+                source_schema = self.related_object.__class__,
+                parent_context = context
+            )
+
+
+class Contraction(Rule):
+
+    def __init__(self, member, related_object, adapter):
+        self.member = member
+        self.related_object = related_object
+        self.adapter = adapter
+
+    def adapt_object(self, context):        
+        self.adapter.import_object(
+            context.source_object,
+            self.related_object,
+            source_schema = context.source_schema,
+            target_schema = self.related_object.__class__,
+            parent_context = context
+        )
 

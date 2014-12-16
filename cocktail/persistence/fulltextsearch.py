@@ -201,7 +201,7 @@ def _cascade_index(obj, language, visited):
     visited.add(obj)
 
     # Reindex the whole object
-    if obj._should_index_member_full_text(obj.__class__):
+    if obj.is_inserted and obj._should_index_member_full_text(obj.__class__):
         obj.__class__.index_text(obj, language)
 
     # Reindex related objects which include portions of the modified object in

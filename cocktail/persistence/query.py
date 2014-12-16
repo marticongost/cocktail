@@ -7,6 +7,7 @@ u"""
 @since:			July 2008
 """
 from time import time
+from warnings import warn
 from itertools import chain, islice
 from BTrees.IIBTree import IIBTree
 from BTrees.OIBTree import OIBTree
@@ -20,7 +21,8 @@ from cocktail.schema import (
     Member,
     Collection,
     expressions,
-    SchemaObjectAccessor
+    SchemaObjectAccessor,
+    RelationMember
 )
 from cocktail.schema.io import export_file
 from cocktail.schema.expressions import TranslationExpression
@@ -940,41 +942,88 @@ def _lower_resolution(self, query):
 expressions.LowerExpression.resolve_filter = _lower_resolution
 expressions.LowerEqualExpression.resolve_filter = _lower_resolution
 
+def ids_from_subset(subset, is_id_collection = False):
+
+    from cocktail.persistence import PersistentObject
+
+    if isinstance(subset, Query):
+        return subset.execute()
+    elif isinstance(subset, PersistentObject):
+        return subset.id,
+    elif is_id_collection:
+        return subset
+    else:
+        warn(
+            "Matching a subset with a collection of PersistentObject "
+            "instances is discouraged, as the full state for those objects "
+            "will have to be fetched, just to obtain their IDs. If possible, "
+            "try to use ID collections or subqueries instead."
+        )
+        return (item.id for item in subset)
+
 def _inclusion_resolution(self, query):
 
-    if self.operands and self.operands[0] is expressions.Self:
-        
-        subset = self.operands[1].eval(None)
+    subject = self.operands[0]
+    subset = self.operands[1].eval()
+    ids = ids_from_subset(subset, self.by_key)
 
-        if not self.by_key:
-            subset = set(item.id for item in subset)
+    if subject is expressions.Self:
 
         def impl(dataset):
-            dataset.intersection_update(subset)
+            dataset.intersection_update(ids)
             return dataset
-        
+
         return ((-3, 0), impl)
-    else:
-        return ((0, 0), None)
+
+    elif isinstance(subject, RelationMember) and subject.schema is query.type:
+
+        index, index_kw = query._get_expression_index(self, subject)
+
+        if index is not None:
+
+            def impl(dataset):
+                matches = set()
+                for id in ids:
+                    matches.update(index.values(key = id, **index_kw))
+                dataset.intersection_update(matches)
+                return dataset
+
+            return ((-1, 0), impl)
+
+    return ((0, 0), None)
 
 expressions.InclusionExpression.resolve_filter = _inclusion_resolution
 
 def _exclusion_resolution(self, query):
 
-    if self.operands and self.operands[0] is expressions.Self:
-        
-        subset = self.operands[1].eval(None)
+    subject = self.operands[0]
+    subset = self.operands[1].eval()
+    ids = ids_from_subset(subset, self.by_key)
 
-        if not self.by_key:
-            subset = set(item.id for item in subset)
+    if subject is expressions.Self:
 
         def impl(dataset):
-            dataset.difference_update(subset)
+            dataset.difference_update(ids)
             return dataset
-        
+
         return ((-3, 0), impl)
-    else:
-        return ((0, 0), None)
+
+    elif isinstance(subject, RelationMember) and subject.schema is query.type:
+
+        index, index_kw = query._get_expression_index(self, subject)
+
+        if index is not None:
+
+            def impl(dataset):
+                matches = set()
+                for id in ids:
+                    matches.update(index.values(key = id, **index_kw))
+                dataset.difference_update(matches)
+                return dataset
+
+            return ((-1, 0), impl)
+
+    return ((0, 0), None)
 
 expressions.ExclusionExpression.resolve_filter = _exclusion_resolution
 
@@ -1250,34 +1299,37 @@ def _descends_from_resolution(self, query):
 
     if self.operands[0] is expressions.Self:
 
-        def impl(dataset):
-            subset = set()
-            root = self.operands[1].eval(None)
-            relation = self.relation
+        relation = self.relation
 
-            if relation._many:
-                def descend(item, include_self):
-                    if include_self:
-                        subset.add(item.id)
-                    children = item.get(relation)
-                    if children:                
-                        for child in children:
-                            descend(child, True)
-                descend(root, self.include_self)
-            else:
-                item = root if self.include_self else root.get(relation)
+        if relation.related_end is not None:
+            index, index_kw = \
+                query._get_expression_index(self, relation.related_end)
 
-                while item is not None:
-                    subset.add(item.id)
-                    item = item.get(relation)
-        
-            dataset.intersection_update(subset)
-            return dataset
-        
-        return ((-3, 0), impl)
-    
-    else:
-        return ((0, 0), None)
+            if index is not None:
+                def impl(dataset):
+                    descendants = set()
+                    root_ids = ids_from_subset(self.operands[1].eval(None))
+
+                    if self.include_self:
+                        descendants.update(root_ids)
+
+                    def descend(parent_id):
+                        for child_id in index.values(
+                            key = parent_id,
+                            **index_kw
+                        ):
+                            descendants.add(child_id)
+                            descend(child_id)
+                    
+                    for root_id in root_ids:
+                        descend(root_id)
+
+                    dataset.intersection_update(descendants)
+                    return dataset        
+
+                return ((-1, 0), impl)
+
+    return ((0, 0), None)
 
 expressions.DescendsFromExpression.resolve_filter = _descends_from_resolution
 
