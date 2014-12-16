@@ -28,6 +28,7 @@ class RadioSelector(Selector):
     def create_entry(self, value, label, selected):
         
         entry = Element()
+        entry.add_class("radio_entry")
         
         entry.input = Element("input")
         entry_id = entry.input.require_id()
