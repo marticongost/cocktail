@@ -136,3 +136,11 @@ cocktail.normalizeLatin = function (text) {
     return text.toLowerCase();
 }
 
+if (!String.prototype.trim) {
+    String.prototype.trim = function () {
+        var text = this.replace(/^\w+/, "");
+        text = text.replace(/\w+$/, "");
+        return text;
+    }
+}
+
