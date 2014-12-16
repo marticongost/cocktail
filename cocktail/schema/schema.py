@@ -694,7 +694,10 @@ class Schema(Member):
                 return None
 
             if schema.name:
-                label = translations(schema.name + "." + group)
+                label = translations(
+                    schema.name 
+                    + (("." + group) if group else "-generic_group")
+                )
                 if label:
                     return label
 
