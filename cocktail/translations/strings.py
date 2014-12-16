@@ -551,19 +551,33 @@ translations.define("datetime.date-instance",
     pt = _date_instance_pt
 )
 
+def _translate_time(value, include_seconds = True):
+    return value.strftime("%H:%M" + (":%S" if include_seconds else ""))
+
 translations.define("datetime.datetime-instance",
     ca = lambda instance, style = DATE_STYLE_NUMBERS, include_seconds = True:
         _date_instance_ca(instance, style)
-        + instance.strftime(" %H:%M" + (":%S" if include_seconds else "")),
+        + u" " + _translate_time(instance, include_seconds),
     es = lambda instance, style = DATE_STYLE_NUMBERS, include_seconds = True:
         _date_instance_es(instance, style)
-        + instance.strftime(" %H:%M" + (":%S" if include_seconds else "")),
+        + u" " + _translate_time(instance, include_seconds),
     en = lambda instance, style = DATE_STYLE_NUMBERS, include_seconds = True:
         _date_instance_en(instance, style)
-        + instance.strftime(" %H:%M" + (":%S" if include_seconds else "")),
+        + u" " + _translate_time(instance, include_seconds),
     pt = lambda instance, style = DATE_STYLE_NUMBERS, include_seconds = True:
         _date_instance_pt(instance, style)
-        + instance.strftime(" %H:%M" + (":%S" if include_seconds else ""))
+        + u" " + _translate_time(instance, include_seconds)
+)
+
+translations.define("datetime.time-instance",
+    ca = lambda instance, include_seconds = True:
+         _translate_time(instance, include_seconds),
+    es = lambda instance, include_seconds = True:
+         _translate_time(instance, include_seconds),
+    en = lambda instance, include_seconds = True:
+         _translate_time(instance, include_seconds),
+    pt = lambda instance, include_seconds = True:
+         _translate_time(instance, include_seconds)
 )
 
 def _translate_calendar_page(instance, abbreviated = False):
