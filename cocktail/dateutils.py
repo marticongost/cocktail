@@ -60,7 +60,6 @@ class CalendarPage(tuple):
 
     @classmethod
     def current(cls):
-        print cls
         today = datetime.date.today()
         return cls(today.year, today.month)
 
