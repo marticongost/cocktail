@@ -56,8 +56,8 @@ def _get_index_key(self):
         return self._index_key    
     elif isinstance(self, PersistentClass):
         return self.primary_member.index_key
-    elif self.copy_source:
-        return self.copy_source.index_key
+    elif self.source_member:
+        return self.source_member.index_key
     else:
         return (
             self.schema

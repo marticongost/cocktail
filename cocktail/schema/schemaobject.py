@@ -789,15 +789,18 @@ class SchemaObject(object):
 
     copy_excluded_members = frozenset()
 
-    def create_copy(self):
+    def create_copy(self, member_copy_modes = None):
         clone = self.__class__()
-        self.init_copy(clone)
+        self.init_copy(clone, member_copy_modes = member_copy_modes)
         return clone
 
-    def init_copy(self, copy):
+    def init_copy(self, copy, member_copy_modes = None):
 
         for member in self.__class__.members().itervalues():
-            copy_mode = self.get_member_copy_mode(member)
+            copy_mode = self.get_member_copy_mode(
+                member,
+                member_copy_modes = member_copy_modes
+            )
 
             if copy_mode == DO_NOT_COPY:
                 continue
@@ -808,11 +811,28 @@ class SchemaObject(object):
                 languages = list(self.translations)
 
             for language in languages:
-                value = self.copy_value(member, language, copy_mode)
+                value = self.copy_value(
+                    member,
+                    language,
+                    mode = copy_mode,
+                    receiver = copy,
+                    member_copy_modes = member_copy_modes
+                )
                 copy.set(member, value, language)
 
-    def get_member_copy_mode(self, member):
+    def get_member_copy_mode(self, member, member_copy_modes = None):
 
+        # Explicit mode set by an override
+        if member_copy_modes:
+            copy_mode = member_copy_modes.get(member)
+            if copy_mode is not None:
+                return copy_mode
+
+        # Explicit mode set by the member
+        if member.copy_mode is not None:
+            return member.copy_mode
+
+        # Implicit mode, based on member properties
         if (
             member.name == "translations"
             or member.primary
@@ -830,15 +850,25 @@ class SchemaObject(object):
         
         return SHALLOW_COPY
 
-    def copy_value(self, member, language, mode = SHALLOW_COPY):
-
+    def copy_value(
+        self,
+        member,
+        language,
+        mode = SHALLOW_COPY,
+        receiver = None,
+        member_copy_modes = None
+    ):
         value = self.get(member, language)
 
         if value is not None and mode != SHALLOW_COPY:
             if isinstance(member, Reference):
                 if mode == DEEP_COPY \
                 or (callable(mode) and mode(self, member, value)):
-                    value = value.create_copy()
+                    value = value.create_copy(
+                        member_copy_modes = 
+                            None if member.related_end is None
+                            else {member.related_end: DO_NOT_COPY}
+                    )
             else:
                 items = []
 
@@ -847,7 +877,11 @@ class SchemaObject(object):
                         mode == DEEP_COPY
                         or (callable(mode) and mode(self, member, item))
                     ):
-                        item = item.create_copy()
+                        item = item.create_copy(
+                            member_copy_modes = 
+                                None if member.related_end is None
+                                else {member.related_end: DO_NOT_COPY}
+                        )
 
                     items.append(item)
 

@@ -37,10 +37,6 @@ class String(Member):
     _format = None
     translatable_enumeration = True
 
-    def __init__(self, *args, **kwargs):
-        Member.__init__(self, *args, **kwargs)
-        self.add_validation(String.string_validation_rule)
-
     def translate_value(self, value, language = None, **kwargs):
 
         if value and self.translatable_enumeration and self.enumeration:
@@ -83,30 +79,33 @@ class String(Member):
         @type: int
         """)
 
-    def string_validation_rule(self, value, context):
+    def _default_validation(self, context):
         """Validation rule for string values. Checks the L{min}, L{max} and
         L{format} constraints."""
 
-        if value is not None:
+        for error in Member._default_validation(self, context):
+            yield error
+
+        if context.value is not None:
 
             # Min length
             min = self.resolve_constraint(self.min, context)
 
-            if min is not None and len(value) < min:
-                yield MinLengthError(self, value, context, min)
+            if min is not None and len(context.value) < min:
+                yield MinLengthError(context, min)
 
             # Max length
             else:
                 max = self.resolve_constraint(self.max, context)
 
-                if max is not None and len(value) > max:
-                    yield MaxLengthError(self, value, context, max)
+                if max is not None and len(context.value) > max:
+                    yield MaxLengthError(context, max)
 
             # Format
             format = self.resolve_constraint(self.format, context)
-            
-            if format is not None and not format.search(value):
-                yield FormatError(self, value, context, format)
+
+            if format is not None and not format.search(context.value):
+                yield FormatError(context, format)
 
     # Special treatment for the 'format' property (regular expressions don't
     # support deep copying)

@@ -23,6 +23,14 @@ class Number(Member, RangedMember):
         Member.__init__(self, *args, **kwargs)
         RangedMember.__init__(self)        
 
+    def _default_validation(self, context):
+
+        for error in Member._default_validation(self, context):
+            yield error
+
+        for error in self._range_validation(context):
+            yield error
+
 
 class Integer(Number):
     """A numeric field limited integer values."""
