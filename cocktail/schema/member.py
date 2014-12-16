@@ -91,6 +91,7 @@ class Member(Variable):
     _copy_class = None
     source_member = None
     original_member = None
+    copy_mode = None
 
     # Translation
     translated = False
