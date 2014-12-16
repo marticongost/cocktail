@@ -6,7 +6,7 @@ u"""
 @organization:	Whads/Accent SL
 @since:			September 2008
 """
-from cocktail.modeling import ListWrapper, SetWrapper
+from cocktail.modeling import ListWrapper, SetWrapper, OrderedDict
 from cocktail.translations import translations
 from cocktail import schema
 from cocktail.schema import ValidationContext
@@ -19,6 +19,7 @@ class Selector(Element):
 
     name = None
     items = None
+    groups = None
     __value = None
     persistent_object = None
     
@@ -26,8 +27,7 @@ class Selector(Element):
     empty_value = ""
     empty_label = None
     grouping = None
-    grouped = False
-   
+
     def __init__(self, *args, **kwargs):
         Element.__init__(self, *args, **kwargs)
         data_bound(self)
@@ -40,38 +40,44 @@ class Selector(Element):
 
         if self.member:
         
-            if self.items is None:
+            if self.items is None and self.groups is None:
                 self.items = self._get_items_from_member(self.member)
-
-            if self.grouping:
-                groups = []
-                group_map = {}
-
-                for item in self.items:
-                    group = self.grouping(item)
-                    group_items = group_map.get(group)
-
-                    if group_items is None:
-                        group_items = []
-                        groups.append((group, group_items))
-                        group_map[group] = group_items
-
-                    group_items.append(item)
-
-                self.grouped = True
-                self.items = groups
 
             if isinstance(self.member, schema.Collection):
                 if self.member.items:
                     item_translator = self.member.items.translate_value
             else:
                 item_translator = self.member.translate_value
-        
+   
         self._item_translator = (
             item_translator
             or (lambda item, **kw: translations(item, **kw))
         )
-        
+
+        if (
+            self.groups is None
+            and self.grouping is not None
+            and self.items is not None
+        ):
+            self.groups = SelectorGroup()
+
+            for item in self.items:
+                path = self.grouping(item)
+
+                if not isinstance(path, tuple):
+                    path = (path,)
+
+                group = self.groups
+
+                for group_value in path:
+                    child = group.get_group_by_value(group_value)
+                    if child is None:
+                        child = SelectorGroup(group_value)
+                        group.append_group(child)
+                    group = child
+
+                group.append_item(item)
+
         if self.value is None:
             self._is_selected = lambda item: False
         elif isinstance(
@@ -183,9 +189,9 @@ class Selector(Element):
             )
             self.append(entry)
 
-        if self.grouped:
-            for group, items in self.items:
-                self.append(self.create_group(group, items))
+        if self.groups is not None:
+            for group in self.groups.groups:
+                self.append(self.create_group(group))
         else:
             self._create_entries(self.items, self)
 
@@ -201,7 +207,7 @@ class Selector(Element):
                  self.get_item_label(item))
                 for item in items
             )
-    
+
     def _create_entries(self, items, container):
         for value, label in self._iter_pairs(items):
             entry = self.create_entry(
@@ -233,26 +239,31 @@ class Selector(Element):
     def get_item_label(self, item):
         return self._item_translator(item)
     
-    def create_group(self, group, items):
+    def create_group(self, group):
 
         container = Element()
         container.add_class("group")
 
-        container.label = self.create_group_label(group, items)
+        container.label = self.create_group_label(group)
         container.append(container.label)
 
-        self._create_entries(items, container)
+        self._create_entries(group.items, container)
+        self._create_nested_groups(group, container)
 
         return container
 
-    def create_group_label(self, group, items):
+    def _create_nested_groups(self, group, container):
+        for nested_group in group.groups:
+            container.append(self.create_group(nested_group))
+
+    def create_group_label(self, group):
         label = Element()
         label.add_class("group_label")
-        label.append(self.get_group_title(group, items))
+        label.append(self.get_group_title(group))
         return label
 
-    def get_group_title(self, group, items):
-        return translations(group)
+    def get_group_title(self, group):
+        return translations(group.value)
 
     def create_entry(self, value, label, selected):
         pass
@@ -266,4 +277,35 @@ class Selector(Element):
     value = property(_get_value, _set_value, doc = """
         Gets or sets the active selection for the selector.
         """)
+
+
+class SelectorGroup(object):
+
+    def __init__(self, value = None):
+        self.__value = value
+        self.__groups_list = []
+        self.__groups_by_value = {}
+        self.__items = []
+
+    @property
+    def value(self):
+        return self.__value
+
+    @property
+    def groups(self):
+        return self.__groups_list
+
+    @property
+    def items(self):
+        return self.__items
+
+    def get_group_by_value(self, value):
+        return self.__groups_by_value.get(value)
+
+    def append_group(self, group):
+        self.__groups_by_value[group.value] = group
+        self.__groups_list.append(group)
+
+    def append_item(self, item):
+        self.__items.append(item)
 

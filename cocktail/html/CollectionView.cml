@@ -3,6 +3,7 @@
 <?py
 from cocktail.modeling import refine
 from cocktail.controllers.viewstate import view_state_form
+from cocktail.html.selector import SelectorGroup
 from cocktail.html.datadisplay import MULTIPLE_SELECTION
 ?>
 
@@ -87,29 +88,38 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
                 <py:cocktail.html.SearchableCheckList
                     py:id="members_selector"
                     py:name="members"
-                    py:items="@{self.user_collection.schema.grouped_members()}"
                     py:value="@{self.user_collection.members}">
-                    <?py
-                    element.check_list.grouped = True
+                    <py:with py:element="element.check_list">
+                        <py:binding>
+                            <?py
+                            element.groups = SelectorGroup()
+                            for group_id, members in self.user_collection.schema.grouped_members():
+                                group = SelectorGroup(group_id)
+                                for member in members:
+                                    group.append_item(member)
+                                element.groups.append_group(group)
+                            ?>
+                        </py:binding>
+                        <?py
+                        @extend(element)
+                        def get_group_title(element, group):
+                            if group:
+                                return self.user_collection.schema.translate_group(group.value)
+                            else:
+                                return ""
 
-                    @extend(element.check_list)
-                    def get_group_title(element, group, items):
-                        if group:
-                            return self.user_collection.schema.translate_group(group)
-                        else:
-                            return ""
+                        @refine(element)
+                        def get_item_value(self, item):
+                            if isinstance(item, basestring):
+                                return item
+                            else:
+                                return item.name
 
-                    @refine(element.check_list)
-                    def get_item_value(self, item):
-                        if isinstance(item, basestring):
-                            return item
-                        else:
-                            return item.name
-
-                    @refine(element.check_list)
-                    def get_item_label(self, member):
-                        return translations(member)
-                    ?>
+                        @refine(element)
+                        def get_item_label(self, member):
+                            return translations(member)
+                        ?>
+                    </py:with>
                 </py:cocktail.html.SearchableCheckList>
                 <div py:local_id="box_buttons">
                     <button py:local_id="apply_button" type="submit">${translations("Submit")}</button>
