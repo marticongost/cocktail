@@ -66,10 +66,11 @@ def delegate_control(element, control):
         else:
             name = element["name"]
 
-        if hasattr(control, "name"):
-            control.name = name
-        else:
-            control["name"] = name
+        if name:
+            if hasattr(control, "name"):
+                control.name = name
+            else:
+                control["name"] = name
 
         control.member = element.member
         control.value = element.value
