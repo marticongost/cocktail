@@ -452,7 +452,7 @@ class InclusionExpression(Expression):
 
     def op(self, a, b):
         if self.by_key:
-            return a.id in b
+            return (None if a is None else a.id) in b
         else:
             return a in b
 
@@ -467,7 +467,7 @@ class ExclusionExpression(Expression):
 
     def op(self, a, b):
         if self.by_key:
-            return a.id not in b
+            return (None if a is None else a.id) not in b
         else:
             return a not in b
 
