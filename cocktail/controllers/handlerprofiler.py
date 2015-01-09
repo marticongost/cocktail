@@ -34,19 +34,17 @@ else:
 
 def handler_profiler(
     stats_path = "/tmp",
+    default_action = None,
     trigger = None,
     viewer = None
 ):
-    profiler_action = None
+    profiler_action = default_action
 
     if trigger:
-        profiler_action = cherrypy.request.params.get(trigger)
+        profiler_action = cherrypy.request.params.get(trigger, default_action)
 
-        if profiler_action is None:
-            return
-
-        if not profiler_action:
-            profiler_action = "store"
+    if not profiler_action:
+        return
 
     handler = cherrypy.request.handler
 
