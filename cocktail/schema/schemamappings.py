@@ -115,25 +115,34 @@ class RelationMapping(RelationCollection, InstrumentedDict):
         if new_content is None:
             self.clear()
         else:
+            previous_content = self._items
+
             if isinstance(new_content, (dict, DictWrapper)):
-                new_content = set(new_content.iteritems())
+                new_content = new_content.iteritems()
             else:
-                new_content = set(
+                new_content = (
                     (self.get_item_key(item), item)
                     for item in new_content
                 )
 
-            previous_content = set(self._items.iteritems())
             self._items = dict(new_content)
             changed = False
 
-            for pair in previous_content - new_content:
-                changed = True
-                self.item_removed(pair)
+            for key, old_value in previous_content.iteritems():
+                if (
+                    key not in self._items
+                    or self._items.get(key) != old_value
+                ):
+                    changed = True
+                    self.item_removed((key, old_value))
 
-            for pair in new_content - previous_content:
-                changed = True
-                self.item_added(pair)
+            for key, new_value in self._items.iteritems():
+                if (
+                    key not in previous_content
+                    or previous_content.get(key) != new_value
+                ):
+                    changed = True
+                    self.item_added((key, new_value))
 
             if changed:
                 self.changed()
