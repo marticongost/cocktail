@@ -473,6 +473,17 @@ class Member(Variable):
             if type and not isinstance(context.value, type):
                 yield exceptions.TypeCheckError(context, type)
 
+    def get_possible_values(self, context = None):
+        if self.enumeration is not None:
+            if context is None:
+                context = ValidationContext(self, None)
+                enumeration = self.resolve_constraint(
+                    self.enumeration,
+                    context
+                )
+                if enumeration:
+                    return enumeration
+
     def __translate__(self, language, qualified = False, **kwargs):
         if self.schema:
             if qualified:
