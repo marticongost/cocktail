@@ -24,6 +24,7 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
     this.selectedEntry = this.selectedEntry || null;
     this.autocompleteDelay = this.autocompleteDelay || 150;
     this.narrowDown = this.narrowDown === undefined ? true : false;
+    this.highlighting = this.highlighting === undefined ? true : false;
 
     var $input = $autocomplete.find(".text_box");
 
@@ -47,29 +48,39 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
         return entry.label.replace(htmlExp, "");
     }
 
-    this.entryMatchesAllTerms = function (entry, terms) {
-        for (var t = 0; t < terms.length; t++) {
-            if (!this.entryMatchesTerm(entry, terms[t])) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    this.entryMatchesTerm = function (entry, term) {
+    this.entryMatches = function (entry, terms) {
         if (!entry.normalizedText) {
             if (!entry.text) {
                 entry.text = this.getSearchableText(entry);
             }
             entry.normalizedText = this.normalizeText(entry.text);
         }
-        return this.textMatches(entry.normalizedText, term);
+        return this.matchTerms(entry.normalizedText, terms);
     }
 
-    this.textMatches = function (text, term) {
-        // term preceded by the start of the string or a non-letter character
-        // (using XRegExp, since the native \b pattern is not Unicode aware)
-        return XRegExp("(?:^|\\p{^L})" + term).test(text);
+    this.matchTerms = function (text, terms) {
+        
+        // Find terms preceded by the start of the string or a non-letter
+        // character. Using XRegExp, since the native \b pattern is not Unicode
+        // aware. Also, Javascript doesn't support look-behind expressions. :(
+
+        var matches = [];
+        var nonWordExpr = XRegExp("\\p{^L}");
+
+        if (terms.length) {
+            var expr = XRegExp(terms[0]);
+        }
+        else {
+            var expr = XRegExp("(" + terms.join("|") + ")");
+        }
+
+        expr.forEach(text, function (match) {
+            if (match.index == 0 || nonWordExpr.test(text.charAt(match.index - 1))) {
+                matches.push(match);
+            }
+        });
+
+        return matches.length ? matches : null;
     }
 
     this.normalizeText = cocktail.normalizeLatin;
@@ -108,7 +119,7 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
             var terms = this.getQueryTerms(query);
             for (var i = 0; i < this.autocompleteSource.length; i++) {
                 var entry = this.autocompleteSource[i];                
-                if (this.entryMatchesAllTerms(entry, terms)) {
+                if (this.entryMatches(entry, terms)) {
                     matchingEntries.push(entry);
                 }
             }
@@ -144,6 +155,69 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
 
     this.insertEntryDisplay = function ($display) {
         $display.appendTo($panel);
+    }
+
+    this.highlightSearchTerms = function ($display, terms) {
+        
+        var autocomplete = this;
+        var display = $display[0];
+
+        // Remove previous marks
+        var marks = display.getElementsByTagName("mark");
+        for (var i = marks.length - 1; i >= 0; i--) {
+            var mark = marks[i];
+            while (mark.firstChild) {
+                mark.parentNode.insertBefore(mark.firstChild, mark);
+            }
+            mark.parentNode.removeChild(mark);
+        }
+
+        display.normalize();
+
+        // Add new marks
+        function highlight(element) {
+            for (var i = 0; i < element.childNodes.length; i++) {
+                var node = element.childNodes[i];
+                if (node.nodeType == Document.TEXT_NODE) {
+                    var text = node.nodeValue;
+                    var normText = autocomplete.normalizeText(text);
+                    var matches = autocomplete.matchTerms(normText, terms);
+                    if (matches) {
+                        var pos = 0;
+                        for (var m = 0; m < matches.length; m++) {
+                            var match = matches[m];
+
+                            var textBefore = text.substring(pos, match.index);
+                            if (textBefore) {
+                                element.insertBefore(document.createTextNode(textBefore), node);
+                                i++;
+                            }
+
+                            var matchingText = text.substr(match.index, match[0].length);
+                            var mark = document.createElement("mark")
+                            mark.appendChild(document.createTextNode(matchingText));
+                            element.insertBefore(mark, node);
+
+                            i++;
+                            pos = match.index + match[0].length;
+                        }
+                        var trailingText = text.substr(pos);
+                        if (trailingText) {
+                            node.nodeValue = trailingText;
+                        }
+                        else {
+                            element.removeChild(node);
+                            i--;
+                        }
+                    }
+                }
+                else if (node.nodeType == Document.ELEMENT_NODE) {
+                    highlight(node);
+                }
+            }
+        }
+
+        highlight(display);
     }
 
     var panelTimeout = null;
@@ -197,6 +271,7 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
         if (query != currentSearch) {
             var $panelEntries = $panel.find("[data-autocomplete-entry]");
             var highlightedValue = $highlightedEntry && $highlightedEntry.length && $highlightedEntry[0].autocompleteEntry.value;
+            var terms = autocomplete.getQueryTerms(query);
 
             if (query != currentInput) {
                 autocomplete.setSelectedEntry(null, true);
@@ -205,10 +280,14 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
             // Narrowing down the existing query: remove entries that no longer match
             if (autocomplete.narrowDown && currentSearch && query.indexOf(currentSearch) == 0) {
                 currentSearch = query;
-                var terms = autocomplete.getQueryTerms(query);
                 $panelEntries.each(function () {
                     var $panelEntry = jQuery(this);
-                    if (!autocomplete.entryMatchesAllTerms($panelEntry[0].autocompleteEntry, terms)) {
+                    if (autocomplete.entryMatches($panelEntry[0].autocompleteEntry, terms)) {
+                        if (autocomplete.highlighting) {
+                            autocomplete.highlightSearchTerms($panelEntry, terms);
+                        }
+                    }
+                    else {
                         $panelEntry.remove();
                     }
                 });
@@ -227,6 +306,9 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
                         var $entryDisplay = autocomplete.createEntryDisplay(entry)
                             .attr("data-autocomplete-entry", entry.value);
                         $entryDisplay[0].autocompleteEntry = entry;
+                        if (autocomplete.highlighting) {
+                            autocomplete.highlightSearchTerms($entryDisplay, terms);
+                        }
                         autocomplete.insertEntryDisplay($entryDisplay);
                     }
 
