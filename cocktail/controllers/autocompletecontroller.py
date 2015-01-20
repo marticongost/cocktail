@@ -30,15 +30,15 @@ class AutocompleteController(Controller):
 
         yield u"["
 
-        record = {}
+        entry = {}
         glue = u""
 
         for item in self.get_items():
             yield glue
             glue = u","
-            record["value"] = self.get_entry_value(item)
-            record["label"] = self.get_entry_label(item)
-            yield dumps(record)
+            entry.clear()
+            self.init_entry(entry, item)
+            yield dumps(entry)
 
         yield u"]"
 
@@ -58,6 +58,10 @@ class AutocompleteController(Controller):
         items.add_filter(
             Self.search(self.query, match_mode = "prefix")
         )
+
+    def init_entry(self, entry, item):
+        entry["value"] = self.get_entry_value(item)
+        entry["label"] = self.get_entry_label(item)
 
     def get_entry_value(self, item):
         return self.member.serialize_request_value(item)
