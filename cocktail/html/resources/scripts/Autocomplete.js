@@ -25,6 +25,7 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
     this.autocompleteDelay = this.autocompleteDelay || 150;
     this.narrowDown = this.narrowDown === undefined ? true : false;
     this.highlighting = this.highlighting === undefined ? true : false;
+    this.autoSelect = this.autoSelect === undefined ? true : false;
 
     var $input = $autocomplete.find(".text_box");
 
@@ -314,6 +315,15 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
                     // (preserve it if it still matches the search, otherwise clear it)
                     setHighlightedEntry(highlightedValue !== undefined ? getPanelEntry(highlightedValue) : null);
                 });
+            }
+
+            // If there's only a single autocomplete entry, select it automatically
+            if (autocomplete.autoSelect) {
+                var $panelEntries = $panel.find("[data-autocomplete-entry]");
+                if ($panelEntries.length == 1) {
+                    autocomplete.setSelectedEntry($panelEntries[0].autocompleteEntry);
+                    autocomplete.setPanelVisible(false);
+                }
             }
         }
     }
