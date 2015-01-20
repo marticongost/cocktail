@@ -42,3 +42,8 @@
     background-color: #ddd;
 }
 
+.Autocomplete mark {
+    font-weight: bold;
+    background-color: transparent;
+}
+
