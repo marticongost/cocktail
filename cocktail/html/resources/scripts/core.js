@@ -192,11 +192,8 @@ cocktail.instantiate = function (modelId, params, initializer) {
     }
 
     // Create the instance
-    var dummy = document.createElement("div");
-    dummy.innerHTML = html;
-    var instance = dummy.firstChild;
+    var instance = jQuery(html)[0];
     instance.id = cocktail.requireId();
-    dummy.removeChild(instance);
 
     if (initializer) {
         initializer.call(instance);

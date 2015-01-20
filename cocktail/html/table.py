@@ -19,7 +19,7 @@ from cocktail.translations import (
     get_language,
     language_context
 )
-from cocktail.schema import Collection, get
+from cocktail.schema import Collection, Mapping, get
 from cocktail.schema.expressions import (
     TranslationExpression,
     PositiveExpression,
@@ -38,7 +38,6 @@ class Table(Element, CollectionDisplay):
     descending_order_image = "descending.png"
     base_image_url = None
     selection_parameter = "selection"
-    nested_list_max_length = 5
     persistence_prefix = None
     entry_selector = "tbody tr"
     checkbox_selector = ".row_selection_control"
@@ -50,7 +49,6 @@ class Table(Element, CollectionDisplay):
         CollectionDisplay.__init__(self)
         self.__column_display = {}
         self.__column_labels = {}
-        self.set_member_type_display(Collection, self.display_collection)
         self.__split_rows = {}
         self.__split_row_values = {}
         self.__split_row_iterators = {}
@@ -443,10 +441,4 @@ class Table(Element, CollectionDisplay):
 
         if language:
             cell.add_class(language)
-
-    def display_collection(self, obj, member):
-        list = templates.new("cocktail.html.List")
-        list.items = self.get_member_value(obj, member)
-        list.max_length = self.nested_list_max_length
-        return list
 
