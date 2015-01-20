@@ -248,12 +248,10 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
         if ($input.val()) {
             if ($input.val() != currentInput) {
                 cancelSearch();
-                currentInput = $input.val();
                 panelTimeout = setTimeout(showPanel, $autocomplete[0].autocompleteDelay);
             }
         }
         else {
-            currentInput = "";
             $autocomplete[0].setPanelVisible(false);
             $autocomplete[0].setSelectedEntry(null);
             return;
