@@ -154,10 +154,7 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
             $autocomplete.attr("data-autocomplete-selection", $input.val() ? "pending" : "empty");
         }
         else {
-            if (!entry.text) {
-                entry.text = this.getSearchableText(entry);
-            }
-            $input.val(entry.text);
+            $input.val(entry.label || entry.text);
             $hidden.val(entry.value); 
             $autocomplete.attr("data-autocomplete-selection", "complete");
         }
