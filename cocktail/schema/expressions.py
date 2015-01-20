@@ -8,6 +8,7 @@ u"""
 """
 import re
 import operator
+import fnmatch
 from cocktail.translations import (
     translations,
     get_language,
@@ -123,13 +124,15 @@ class Expression(object):
     def search(self,
         query,
         languages = None,
-        logic = "and"
+        logic = "and",
+        match_mode = "whole_word"
     ):
         return SearchExpression(
             self,
             query,
             languages = languages,
-            logic = logic
+            logic = logic,
+            match_mode = match_mode
         )
 
     def translated_into(self, language):
@@ -337,18 +340,21 @@ class SearchExpression(Expression):
 
     query = None
     logic = "and"
+    match_mode = "whole_word" # whole_word, prefix, pattern
 
     def __init__(self,
         subject,
         query,
         languages = None,
-        logic = "and"
+        logic = "and",
+        match_mode = None
     ):
         Expression.__init__(self, subject, query)
         self.subject = subject
         self.query = query
         self.languages = languages
         self.logic = logic
+        self.match_mode = match_mode
 
     def eval(self, context, accessor = None):
 
@@ -396,10 +402,20 @@ class SearchExpression(Expression):
         for language in languages:
             query_tokens = words.get_unique_stems(self.query, language)
 
-        if self.logic == "and":
-            return subject_tokens.issuperset(query_tokens)
+        if self.match_mode == "whole_word":
+            if self.logic == "and":
+                return subject_tokens.issuperset(query_tokens)
+            else:
+                return not query_tokens.isdisjoint(subject_tokens)
         else:
-            return not query_tokens.isdisjoint(subject_tokens)
+            if self.match_mode == "prefix":
+                query_tokens = [token + u"*" for token in query_tokens]
+
+            operand = all if self.logic == "and" else any
+            return operand(
+                fnmatch.filter(subject_tokens, token)
+                for token in query_tokens
+            )
 
 
 class AddExpression(Expression):

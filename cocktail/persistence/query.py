@@ -1361,14 +1361,39 @@ def _search_resolution(self, query):
             subset = set()
 
             for language in languages:
-                index = indexed_member.get_full_text_index(language)
-                terms = words.split(self.query)
+                index = indexed_member.get_full_text_index(language)                
+
+                if self.match_mode == "whole_word":
+                    search = index.search
+                    terms = words.split(self.query, locale = language)
+                elif self.match_mode == "prefix":
+                    search = index.search_glob                    
+                    terms = [
+                        stem + u"*"
+                        for stem in words.iter_stems(
+                            self.query,
+                            locale = language
+                        )
+                    ]
+                elif self.match_mode == "pattern":
+                    search = index.search_glob
+                    terms = words.get_stems(
+                        self.query,
+                        preserve_patterns = True,
+                        locale = language
+                    )
+                else:
+                    raise ValueError(
+                        "Invalid value for SearchExpression.match_mode: "
+                        "expected one of 'whole_word', 'prefix' or 'pattern', "
+                        "got %r instead" % self.match_mode
+                    )
 
                 if self.logic == "and":
                     language_subset = None
                     
                     for term in terms:
-                        results = index.search(term)
+                        results = search(term)
                         if not results:
                             language_subset = None
                             break
@@ -1385,7 +1410,7 @@ def _search_resolution(self, query):
 
                 elif self.logic == "or":
                     for term in terms:
-                        results = index.search(term)
+                        results = search(term)
                         if results:
                             subset.update(results.iterkeys())
 
