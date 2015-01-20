@@ -28,9 +28,19 @@
     display: block;
 }
 
+.Autocomplete .text_box {
+    padding-right: 20px;
+}
+
 .Autocomplete[data-autocomplete-selection='pending'] .text_box {
     font-style: italic;
     color: #666;
+}
+
+.Autocomplete[data-autocomplete-status='searching'] .text_box {
+    background-image: url(../images/working.gif);
+    background-repeat: no-repeat;
+    background-position: center right;
 }
 
 .Autocomplete [data-autocomplete-entry] {
