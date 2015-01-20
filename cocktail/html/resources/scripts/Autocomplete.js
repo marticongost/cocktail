@@ -23,10 +23,22 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
     var $highlightedEntry;
 
     this.selectedEntry = this.selectedEntry || null;
-    this.autocompleteDelay = this.autocompleteDelay || 150;
-    this.narrowDown = this.narrowDown === undefined ? true : false;
-    this.highlighting = this.highlighting === undefined ? true : false;
-    this.autoSelect = this.autoSelect === undefined ? true : false;
+
+    if (this.autocompleteDelay === undefined) {
+        this.autocompleteDelay = 150;
+    }
+
+    if (this.narrowDown === undefined) {
+        this.narrowDown = true;
+    }
+
+    if (this.highlighting === undefined) {
+        this.highlighting = true;
+    }
+
+    if (this.autoSelect === undefined) {
+        this.autoSelect = true;
+    }
 
     var $input = $autocomplete.find(".text_box");
 
