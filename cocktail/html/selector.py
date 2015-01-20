@@ -92,83 +92,17 @@ class Selector(Element):
         self._fill_entries()
 
     def _get_items_from_member(self, member):
-        
+
         if isinstance(member, schema.Collection):
-            enumeration = member.items.enumeration if member.items else None
-        else:
-            enumeration = member.enumeration
-        
-        if enumeration is not None:
-            # Create the validation context
-            if isinstance(self.persistent_object, PersistentObject):
-                context = ValidationContext(
-                    self.persistent_object.__class__, 
-                    self.persistent_object,
-                    persistent_object = self.persistent_object
-                )
-            else:
-                context = None
+            member = member.items
 
-            enumeration = member.resolve_constraint(enumeration, context)
+        context = ValidationContext(
+            member,
+            self.value, 
+            persistent_object = self.persistent_object
+        )
 
-            if enumeration is not None:
-                
-                related_type = getattr(member, "related_type", None)
-
-                if related_type:
-                    if isinstance(member, schema.Reference):
-                        order = member.default_order
-                    elif isinstance(member, schema.Collection):
-                        order = getattr(member.items, "default_order", None)
-
-                    if order:
-                        sorted_items = member.related_type.select()
-                        sorted_items.base_collection = enumeration
-
-                        if isinstance(order, (basestring, schema.Member)):
-                            sorted_items.add_order(order)
-                        else:
-                            for criteria in order:
-                                sorted_items.add_order(criteria)
-
-                        return sorted_items
-
-                return enumeration
-
-        if isinstance(member, schema.Boolean):
-            return (True, False)
-
-        elif isinstance(member, schema.Number):
-            if member.min is not None and member.max is not None:
-                return range(member.min, member.max + 1)
-
-        elif isinstance(member, schema.RelationMember):
-            if getattr(member, "is_persistent_relation", False):
-                items = member.select_constraint_instances(
-                    parent = self.persistent_object or self.data
-                )
-                
-                order = None
-
-                if isinstance(member, schema.Reference):
-                    order = member.default_order
-                elif isinstance(member, schema.Collection):
-                    order = member.items.default_order
-
-                if order:
-                    if isinstance(order, (basestring, schema.Member)):
-                        items.add_order(order)
-                    else:
-                        for criteria in order:
-                            items.add_order(criteria)
-
-                return items
-                
-            elif isinstance(member, schema.Collection):
-                if member.items:
-                    return self._get_items_from_member(member.items)
-        
-        return ()
+        return member.get_possible_values(context)
 
     def _fill_entries(self):
         

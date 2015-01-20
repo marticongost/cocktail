@@ -13,6 +13,7 @@ except ImportError:
     fractions = None
 from cocktail.translations import translations
 from cocktail.schema.member import Member
+from cocktail.schema.validationcontext import ValidationContext
 from cocktail.schema.rangedmember import RangedMember
 
 
@@ -35,6 +36,19 @@ class Number(Member, RangedMember):
 class Integer(Number):
     """A numeric field limited integer values."""
     type = int
+
+    def get_possible_values(self, context = None):
+        values = Number.get_possible_values(self, context)
+
+        if values is None and self.min is not None and self.max is not None:
+            if context is None:
+                context = ValidationContext(self, None)
+            min_value = context.resolve_constraint(self.min)
+            max_value = context.resolve_constraint(self.max)
+            if min_value is not None and max_value is not None:
+                values = range(min_value, max_value + 1)
+
+        return values
 
 
 class Float(Number):

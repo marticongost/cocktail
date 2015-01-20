@@ -13,6 +13,7 @@ from cocktail.schema.member import Member
 from cocktail.schema.schema import Schema
 from cocktail.schema.rangedmember import RangedMember
 from cocktail.schema.schemanumbers import Integer
+from cocktail.schema.validationcontext import ValidationContext
 from cocktail.translations import translations
 
 def get_max_day(context):
@@ -105,6 +106,24 @@ class Date(BaseDateTime):
     type = datetime.date
     _is_date = True
     translate_value = translations
+
+    def get_possible_values(self, context = None):
+        values = BaseDateTime.get_possible_values(self, context)
+
+        if values is None and self.min is not None and self.max is not None:
+            if context is None:
+                context = ValidationContext(self, None)
+            min_value = context.resolve_constraint(self.min)
+            max_value = context.resolve_constraint(self.max)
+            if min_value is not None and max_value is not None:
+                one_day = datetime.timedelta(days = 1)
+                values = []
+                d = min_value
+                while d < max_value:
+                    values.append(d)
+                    d += one_day
+
+        return values
 
 
 class Time(BaseDateTime):
