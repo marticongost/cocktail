@@ -1121,9 +1121,6 @@ expressions.LacksExpression.resolve_filter = _lacks_resolution
 expressions.MatchExpression.resolve_filter = \
     lambda self, query: ((0, -3), None)
 
-expressions.SearchExpression.resolve_filter = \
-    lambda self, query: ((0, -4), None)
-
 def _has_resolution(self, query):
 
     index = self.relation.index
