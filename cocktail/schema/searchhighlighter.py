@@ -3,9 +3,10 @@ u"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
+import fnmatch
+import re
 from cocktail.translations import words, get_language
 from .textextractor import TextExtractor
-import re
 
 
 class SearchHighlighter(object):
@@ -19,8 +20,11 @@ class SearchHighlighter(object):
         languages,
         emphasis = "*%s*",
         context_radius = None,
-        ellipsis = None
+        ellipsis = None,
+        match_mode = "whole_word"
     ):
+        self.match_mode = match_mode
+
         if isinstance(emphasis, basestring):
             self.__emphasize = lambda text: emphasis % text
         elif callable(emphasis):
@@ -40,7 +44,14 @@ class SearchHighlighter(object):
         self.__query_stems = set()
 
         for language in self.__languages:
-            self.__query_stems.update(words.iter_stems(query_text, language))
+            stems = words.iter_stems(
+                query_text,
+                language,
+                preserve_patterns = (match_mode == "pattern")
+            )
+            if match_mode == "prefix":
+                stems = [stem + u"*" for stem in stems]
+            self.__query_stems.update(stems)
 
         if context_radius is not None:
             self.context_radius = context_radius
@@ -58,8 +69,13 @@ class SearchHighlighter(object):
         def word_matches_query(word):
             for language in self.__languages:
                 for stem in words.iter_stems(word, language):
-                    if stem in self.__query_stems:
-                        return True
+                    if self.match_mode == "whole_word":
+                        if stem in self.__query_stems:
+                            return True
+                    else:
+                        for pattern in self.__query_stems:
+                            if fnmatch.fnmatch(stem, pattern):
+                                return True
             return False
 
         extractor = TextExtractor(self.__languages)
