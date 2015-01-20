@@ -10,6 +10,7 @@
 cocktail.bind(".Autocomplete", function ($autocomplete) {
 
     $autocomplete.attr("data-autocomplete-panel", "collapsed");
+    $autocomplete.attr("data-autocomplete-status", "ready");
 
     var KEY_ENTER = 13;
     var KEY_UP = 38;
@@ -105,6 +106,7 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
             currentInput = query;
             currentSearch = query;
             callback(matchingEntries);
+            $autocomplete.attr("data-autocomplete-status", "ready");
         }
 
         if (typeof(this.autocompleteSource) == "string") {
@@ -112,6 +114,7 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
             if (searchHttpRequest) {
                 searchHttpRequest.abort();
             }
+            $autocomplete.attr("data-autocomplete-status", "searching");
             searchHttpRequest = jQuery.getJSON(url)
                 .done(searchComplete);
         }
@@ -263,7 +266,7 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
         panelTimeout = null;
         searchHttpRequest = null;
         $autocomplete.attr("data-autocomplete-panel", "expanded");
-        // TODO: show a "loading" sign, handle errors
+        // TODO: handle errors
         var autocomplete = $autocomplete[0];
         var query = $input.val();
 
