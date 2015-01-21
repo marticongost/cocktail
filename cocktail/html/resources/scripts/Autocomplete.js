@@ -40,6 +40,10 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
         this.autoSelect = false;
     }
 
+    if (this.allowFullList === undefined) {
+        this.allowFullList = true;
+    }
+
     var $input = $autocomplete.find(".text_box");
 
     var $hidden = jQuery("<input type='hidden'>")
@@ -406,7 +410,9 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
     $input.keydown(function (e) {
         if (e.keyCode == KEY_DOWN) {
             var wasVisible = ($autocomplete.attr("data-autocomplete-panel") == "expanded");
-            $autocomplete[0].setPanelVisible(true);
+            if (this.value || $autocomplete[0].allowFullList) {
+                $autocomplete[0].setPanelVisible(true);
+            }
             if (wasVisible) {
                 var $nextEntry = $highlightedEntry.next();
                 if ($nextEntry.length) {
@@ -416,7 +422,9 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
             return false;
         }
         else if (e.keyCode == KEY_UP) {
-            $autocomplete[0].setPanelVisible(true);
+            if (this.value || $autocomplete[0].allowFullList) {
+                $autocomplete[0].setPanelVisible(true);
+            }
             var $prevEntry = $highlightedEntry.prev();
             if ($prevEntry.length) {
                 setHighlightedEntry($prevEntry);
