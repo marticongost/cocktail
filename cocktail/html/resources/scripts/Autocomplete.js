@@ -317,6 +317,11 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
             var highlightedValue = $highlightedEntry && $highlightedEntry.length && $highlightedEntry[0].autocompleteEntry.value;
             var terms = autocomplete.getQueryTerms(query);
 
+            if (!terms.length && !autocomplete.allowFullList) {
+                autocomplete.setPanelVisible(false);
+                return;
+            }
+
             if (query != currentInput) {
                 autocomplete.setSelectedEntry(null, true);
             }
