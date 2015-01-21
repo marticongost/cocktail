@@ -37,7 +37,7 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
     }
 
     if (this.autoSelect === undefined) {
-        this.autoSelect = true;
+        this.autoSelect = false;
     }
 
     var $input = $autocomplete.find(".text_box");
