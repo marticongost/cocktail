@@ -797,11 +797,18 @@ class FormSchemaReader(object):
 
             if not isinstance(value, cgi.FieldStorage):
                 for norm in [self.normalization, member.normalization]:
-                    if norm: 
+                    if norm:
                         if isinstance(value, basestring):
                             value = norm(value)
-                        else:
-                            value = [norm(part) for part in value]
+                        elif isinstance(value, list):
+                            value = [
+                                (
+                                    norm(part)
+                                    if isinstance(part, basestring)
+                                    else part
+                                )
+                                for part in value
+                            ]
 
             if value == "":
                 value = None
