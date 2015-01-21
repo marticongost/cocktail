@@ -10,10 +10,14 @@ from cocktail.html.databoundcontrol import delegate_control
 
 class Autocomplete(Element):
 
+    value = None
     autocomplete_source = None
     autocomplete_entries = None
     autocomplete_delay = 150
-    value = None
+    narrow_down = True
+    highlighting = True
+    auto_select = False
+    allow_full_list = True
 
     def _build(self):
         self.add_resource("/cocktail/styles/Autocomplete.css")
@@ -54,6 +58,10 @@ class Autocomplete(Element):
             self.set_client_param("autocompleteSource", entries)
 
         self.set_client_param("autocompleteDelay", self.autocomplete_delay)
+        self.set_client_param("narrowDown", self.narrow_down)
+        self.set_client_param("highlighting", self.highlighting)
+        self.set_client_param("autoSelect", self.auto_select)
+        self.set_client_param("allowFullList", self.allow_full_list)
 
         if self.value is not None:
             self.set_client_param(
