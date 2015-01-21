@@ -125,14 +125,16 @@ class Expression(object):
         query,
         languages = None,
         logic = "and",
-        match_mode = "whole_word"
+        match_mode = "whole_word",
+        stemming = None
     ):
         return SearchExpression(
             self,
             query,
             languages = languages,
             logic = logic,
-            match_mode = match_mode
+            match_mode = match_mode,
+            stemming = stemming
         )
 
     def translated_into(self, language):
@@ -341,13 +343,15 @@ class SearchExpression(Expression):
     query = None
     logic = "and"
     match_mode = "whole_word" # whole_word, prefix, pattern
+    stemming = None
 
     def __init__(self,
         subject,
         query,
         languages = None,
         logic = "and",
-        match_mode = None
+        match_mode = "whole_word",
+        stemming = None
     ):
         Expression.__init__(self, subject, query)
         self.subject = subject
@@ -355,6 +359,7 @@ class SearchExpression(Expression):
         self.languages = languages
         self.logic = logic
         self.match_mode = match_mode
+        self.stemming = stemming
 
     def eval(self, context, accessor = None):
 
@@ -364,6 +369,17 @@ class SearchExpression(Expression):
 
         added_language_neutral_text = False
         subject_tokens = set()
+
+        stemming = self.stemming
+        if stemming is None:
+            stemming = getattr(self.subject, "stemming", False)
+
+        if stemming:
+            iter_tokens = words.iter_stems
+        else:
+            def iter_tokens(text, language = None):
+                text = words.normalize(text, locale = language)
+                return words.split(text, locale = language)
 
         for language in languages:
 
@@ -381,7 +397,7 @@ class SearchExpression(Expression):
                 if get_searchable_text is not None:
                     if not added_language_neutral_text:
                         subject_tokens.update(
-                            words.iter_stems(
+                            iter_tokens(
                                 get_searchable_text(languages = (None,)),
                                 None
                             )
@@ -389,33 +405,35 @@ class SearchExpression(Expression):
                         added_language_neutral_text = True
 
                     subject_tokens.update(
-                        words.iter_stems(
+                        iter_tokens(
                             get_searchable_text(languages = (language,)),
                             language
                         )
                     )
                 else:
-                    subject_tokens.update(
-                        words.iter_stems(lang_text, language)
-                    )
+                    subject_tokens.update(iter_tokens(lang_text, language))
 
         for language in languages:
             query_tokens = words.get_unique_stems(self.query, language)
 
-        if self.match_mode == "whole_word":
-            if self.logic == "and":
-                return subject_tokens.issuperset(query_tokens)
+            if self.match_mode == "whole_word":
+                if self.logic == "and":
+                    if subject_tokens.issuperset(query_tokens):
+                        return True
+                elif not query_tokens.isdisjoint(subject_tokens):
+                    return True
             else:
-                return not query_tokens.isdisjoint(subject_tokens)
-        else:
-            if self.match_mode == "prefix":
-                query_tokens = [token + u"*" for token in query_tokens]
+                if self.match_mode == "prefix":
+                    query_tokens = [token + u"*" for token in query_tokens]
 
-            operand = all if self.logic == "and" else any
-            return operand(
-                fnmatch.filter(subject_tokens, token)
-                for token in query_tokens
-            )
+                operand = all if self.logic == "and" else any
+                if operand(
+                    fnmatch.filter(subject_tokens, token)
+                    for token in query_tokens
+                ):
+                    return True
+
+        return False
 
 
 class AddExpression(Expression):
