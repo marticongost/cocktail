@@ -73,28 +73,45 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
     }
 
     this.matchTerms = function (text, terms) {
-        
+
         // Find terms preceded by the start of the string or a non-letter
         // character. Using XRegExp, since the native \b pattern is not Unicode
         // aware. Also, Javascript doesn't support look-behind expressions. :(
 
         var matches = [];
+        var matchedTerms = {};
+
+        for (var i = 0; i < terms.length; i++) {
+            matchedTerms[terms[i]] = false;
+        }
+
         var nonWordExpr = XRegExp("\\p{^L}");
 
         if (terms.length) {
-            var expr = XRegExp(terms[0]);
+            var expr = XRegExp("(" + terms.join("|") + ")");
         }
         else {
-            var expr = XRegExp("(" + terms.join("|") + ")");
+            var expr = XRegExp(terms[0]);
         }
 
         expr.forEach(text, function (match) {
             if (match.index == 0 || nonWordExpr.test(text.charAt(match.index - 1))) {
                 matches.push(match);
+                matchedTerms[match[0]] = true;
             }
         });
 
-        return matches.length ? matches : null;
+        if (!matches.length) {
+            return null;
+        }
+
+        for (var t in matchedTerms) {
+            if (!matchedTerms[t]) {
+                return null;
+            }
+        }
+
+        return matches;
     }
 
     this.normalizeText = cocktail.normalizeLatin;
@@ -103,7 +120,10 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
         var terms = text.split(/\s+/);
         var normalizedTerms = [];
         for (var i = 0; i < terms.length; i++) {
-            normalizedTerms.push(this.normalizeText(terms[i]));
+            var term = this.normalizeText(terms[i]);
+            if (term) {
+                normalizedTerms.push(term);
+            }
         }
         return normalizedTerms;
     }
