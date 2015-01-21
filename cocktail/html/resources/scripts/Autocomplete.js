@@ -117,6 +117,7 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
         function searchComplete(matchingEntries) {
             currentInput = query;
             currentSearch = query;
+            searchHttpRequest = null;
             callback(matchingEntries);
             $autocomplete.attr("data-autocomplete-status", "ready");
         }
@@ -254,6 +255,7 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
         if (searchHttpRequest) {
             searchHttpRequest.abort();
             searchHttpRequest = null;
+            $autocomplete.attr("data-autocomplete-status", "ready");
         }
     }
 
@@ -288,6 +290,27 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
                 autocomplete.setSelectedEntry(null, true);
             }
 
+            function afterFillingPanel() {
+
+                // Set the highlighted entry
+                // (preserve it if it still matches the search, otherwise clear it)
+                setHighlightedEntry(highlightedValue !== undefined ? getPanelEntry(highlightedValue) : null);
+
+                var $panelEntries = $panel.find("[data-autocomplete-entry]");
+
+                // If there's only a single autocomplete entry, select it automatically
+                if ($panelEntries.length == 1) {
+                    if (autocomplete.autoSelect) {
+                        autocomplete.setSelectedEntry($panelEntries[0].autocompleteEntry);
+                        autocomplete.setPanelVisible(false);
+                    }
+                }
+                // If there are no entries to display, hide the panel
+                else if (!$panelEntries.length) {
+                    autocomplete.setPanelVisible(false);
+                }
+            }
+
             // Narrowing down the existing query: remove entries that no longer match
             if (autocomplete.narrowDown && currentSearch && query.indexOf(currentSearch) == 0) {
                 currentSearch = query;
@@ -302,10 +325,7 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
                         $panelEntry.remove();
                     }
                 });
-
-                // Set the highlighted entry
-                // (preserve it if it still matches the search, otherwise clear it)
-                setHighlightedEntry(highlightedValue !== undefined ? getPanelEntry(highlightedValue) : null);
+                afterFillingPanel();
             }
             // New query: clear the panel and start over
             else {
@@ -322,21 +342,9 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
                         }
                         autocomplete.insertEntryDisplay($entryDisplay);
                     }
-
-                    // Set the highlighted entry
-                    // (preserve it if it still matches the search, otherwise clear it)
-                    setHighlightedEntry(highlightedValue !== undefined ? getPanelEntry(highlightedValue) : null);
+                    afterFillingPanel();
                 });
-            }
-
-            // If there's only a single autocomplete entry, select it automatically
-            if (autocomplete.autoSelect) {
-                var $panelEntries = $panel.find("[data-autocomplete-entry]");
-                if ($panelEntries.length == 1) {
-                    autocomplete.setSelectedEntry($panelEntries[0].autocompleteEntry);
-                    autocomplete.setPanelVisible(false);
-                }
-            }
+            }            
         }
     }
 
