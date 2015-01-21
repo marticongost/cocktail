@@ -144,7 +144,10 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
         }
     }
 
-    this.setSelectedEntry = function (entry, preserveTextBox /* = false */) {
+    this.setSelectedEntry = function (entry, preserveTextBox /* = false */, triggerEvents /* = true */) {
+
+        var previousEntry = this.selectedEntry;
+        var changed = (entry != this.selectedEntry);
         this.selectedEntry = entry;
 
         if (!entry) {
@@ -161,6 +164,10 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
         }
 
         currentInput = $input.val();
+
+        if (changed && (triggerEvents || triggerEvents === undefined)) {
+            $autocomplete.trigger({type: "change", value: entry, previousValue: previousEntry});
+        }
     }
 
     this.createEntryDisplay = function (entry) {
@@ -423,7 +430,7 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
     });
 
     if (this.selectedEntry) {
-        this.setSelectedEntry(this.selectedEntry);
+        this.setSelectedEntry(this.selectedEntry, false, false);
         setHighlightedEntry(getPanelEntry(this.selectedEntry.value));
     }
 });
