@@ -1350,8 +1350,13 @@ def _search_resolution(self, query):
         if languages is None:
             languages = [get_language() if self.subject.translated else None]
 
+    # Should apply stemming?
+    stemming = self.stemming
+    if stemming is None and indexed_member is not None:
+        stemming = indexed_member.stemming
+
     # No optimization available
-    if indexed_member is None:
+    if indexed_member is None or stemming != indexed_member.stemming:
         return ((0, 0), None)
 
     # Full text index available
@@ -1366,22 +1371,38 @@ def _search_resolution(self, query):
                 if self.match_mode == "whole_word":
                     search = index.search
                     terms = words.split(self.query, locale = language)
+
                 elif self.match_mode == "prefix":
-                    search = index.search_glob                    
-                    terms = [
-                        stem + u"*"
-                        for stem in words.iter_stems(
-                            self.query,
-                            locale = language
-                        )
-                    ]
+                    search = index.search_glob
+
+                    if stemming:
+                        terms = words.iter_stems(self.query, locale = language)
+                    else:
+                        query = words.normalize(self.query, locale = language)
+                        terms = words.split(query, locale = language)
+
+                    terms = [term + u"*" for term in terms]
+
                 elif self.match_mode == "pattern":
                     search = index.search_glob
-                    terms = words.get_stems(
-                        self.query,
-                        preserve_patterns = True,
-                        locale = language
-                    )
+                    
+                    if stemming:
+                        terms = words.get_stems(
+                            self.query,
+                            locale = language,
+                            preserve_patterns = True
+                        )
+                    else:
+                        query = words.normalize(
+                            self.query,
+                            locale = language,
+                            preserve_patterns = True
+                        )
+                        terms = words.split(
+                            query,
+                            locale = language,
+                            preserve_patterns = True
+                        )
                 else:
                     raise ValueError(
                         "Invalid value for SearchExpression.match_mode: "

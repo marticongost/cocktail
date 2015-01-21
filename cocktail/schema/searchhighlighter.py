@@ -14,6 +14,7 @@ class SearchHighlighter(object):
     context_radius = 8
     ellipsis = " ... "
     word_expr = re.compile(r"\w+", re.UNICODE)
+    stemming = True
 
     def __init__(self,
         query_text,
@@ -21,7 +22,8 @@ class SearchHighlighter(object):
         emphasis = "*%s*",
         context_radius = None,
         ellipsis = None,
-        match_mode = "whole_word"
+        match_mode = "whole_word",
+        stemming = None
     ):
         self.match_mode = match_mode
 
@@ -41,23 +43,45 @@ class SearchHighlighter(object):
         else:
             self.__languages = languages
 
-        self.__query_stems = set()
+        if stemming is not None:
+            self.stemming = stemming
 
-        for language in self.__languages:
-            stems = words.iter_stems(
+        self.__query_terms = set()
+
+        for language in self.__languages:           
+            terms = self._iter_terms(
                 query_text,
                 language,
                 preserve_patterns = (match_mode == "pattern")
             )
             if match_mode == "prefix":
-                stems = [stem + u"*" for stem in stems]
-            self.__query_stems.update(stems)
+                terms = [term + u"*" for term in terms]
+            self.__query_terms.update(terms)
 
         if context_radius is not None:
             self.context_radius = context_radius
 
         if ellipsis is not None:
             self.ellipsis = ellipsis
+
+    def _iter_terms(self, text, language = None, preserve_patterns = False):
+        if self.stemming:
+            return words.iter_stems(
+                text,
+                locale = language,
+                preserve_patterns = preserve_patterns
+            )
+        else:
+            text = words.normalize(
+                text,
+                locale = language,
+                preserve_patterns = preserve_patterns
+            )
+            return words.split(
+                text,
+                locale = language,
+                preserve_patterns = preserve_patterns
+            )
 
     def emphasize(self, text):
         return self.__emphasize(text)
@@ -68,13 +92,13 @@ class SearchHighlighter(object):
 
         def word_matches_query(word):
             for language in self.__languages:
-                for stem in words.iter_stems(word, language):
+                for term in self._iter_terms(word, language):
                     if self.match_mode == "whole_word":
-                        if stem in self.__query_stems:
+                        if term in self.__query_terms:
                             return True
                     else:
-                        for pattern in self.__query_stems:
-                            if fnmatch.fnmatch(stem, pattern):
+                        for pattern in self.__query_terms:
+                            if fnmatch.fnmatch(term, pattern):
                                 return True
             return False
 

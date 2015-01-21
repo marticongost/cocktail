@@ -23,15 +23,24 @@ from cocktail.persistence.persistentobject import (
 class FullTextIndexProcessor(object):
     implements(IPipelineElement)
 
-    def __init__(self, locale):
+    def __init__(self, locale, stemming):
         self.locale = locale
+        self.stemming = stemming
 
     def process(self, sequence):
-        return words.get_stems(sequence, self.locale)
+        if self.stemming:
+            return words.get_stems(sequence, self.locale)
+        else:
+            terms = []
+            processor = words.require_processor_for_locale(self.locale)
+            for item in sequence:
+                terms.extend(processor.split(processor.normalize(item)))
+            return terms
 
 
 schema.Member.full_text_indexed = False
 PersistentObject.full_text_indexed = False
+schema.Member.stemming = True
 
 def _get_full_text_index_root(cls):
     root = cls
@@ -125,7 +134,9 @@ schema.String.full_text_index_key = property(
 )
 
 def _create_full_text_index(self, language):
-    lexicon = Lexicon(FullTextIndexProcessor(language))
+    lexicon = Lexicon(
+        FullTextIndexProcessor(language, self.stemming)
+    )
     return OkapiIndex(lexicon)
 
 PersistentClass.create_full_text_index = _create_full_text_index
