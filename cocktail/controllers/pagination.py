@@ -15,8 +15,8 @@ class Pagination(schema.SchemaObject):
     page = schema.Integer(
         required = True,
         default = 0,
-        min = lambda ctx: -ctx.validable.page_count,
-        max = lambda ctx: ctx.validable.page_count - 1
+        min = lambda ctx: -ctx.get_object().page_count,
+        max = lambda ctx: ctx.get_object().page_count - 1
     )
 
     page_size = schema.Integer(

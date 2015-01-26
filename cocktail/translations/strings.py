@@ -1126,29 +1126,52 @@ translations.define("Exception-instance",
 # Validation errors
 #------------------------------------------------------------------------------
 def member_identifier(error):
-    
-    from cocktail.schema import RelationMember
 
+    from cocktail import schema
+
+    path = list(error.context.path())
     desc = []
-    path = error.path
+        
+    for i, context in enumerate(path):
+        if isinstance(context.member, schema.Schema) and (
+            (i == 0 and len(path) > 1)
+            or (
+                context.parent_context
+                and isinstance(
+                    context.parent_context.member,
+                    schema.RelationMember
+                )
+            )
+        ):
+            continue
 
-    for member, validable, index in path:
-        if isinstance(member, RelationMember):
-            label = decapitalize(translations(member))
-            if index is not None:
-                label += " #%d" % (index + 1)
-            desc.append(label)
-    
-    if not path or error.member is not path[-1][0]:
+        label = decapitalize(translations(context.member))
+        
+        if context.collection_index is not None:
+            if isinstance(context.collection_index, int):
+                label += u" %d" % (context.collection_index + 1)
+            elif (
+                context.parent_context
+                and isinstance(context.parent_context.member, schema.Mapping)
+                and context.parent_context.keys
+            ):
+                label = u"%s: %s" % (
+                    context.parent_context.keys.translate_value(
+                        context.collection_index
+                    ),
+                    label
+                )
+            else:
+                label = u"%s: %s" % (context.collection_index, label)
+
         if error.language:
-            desc.append("%s (%s)" % (
-                decapitalize(translations(error.member)),
+            label += u" (%s)" % (
                 translations("locale", locale = error.language)
-            ))
-        else:
-            desc.append(decapitalize(translations(error.member)))
-    
-    return u" &gt; ".join(desc)
+            )
+
+        desc.append(label.strip())
+
+    return u" » ".join(desc)
 
 translations.define("cocktail.schema.exceptions.ValidationError-instance",
     ca = lambda instance:
