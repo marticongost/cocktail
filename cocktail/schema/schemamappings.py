@@ -37,28 +37,30 @@ class Mapping(Collection):
 
     # Validation
     #--------------------------------------------------------------------------
-    def items_validation_rule(self, value, context):
+    def _items_validation(self, context):
 
-        if value is not None and self.name != "translations":
+        if self.name != "translations":
 
             # Item validation
             keys = self.keys
             values = self.values
 
             if keys is not None or values is not None:
-                
-                context.enter(self, value)
     
-                try:
-                    for key, value in value.iteritems():
-                        if keys is not None:
-                            for error in keys.get_errors(key, context):
-                                yield error
-                        if values is not None:
-                            for error in values.get_errors(value, context):
-                                yield error
-                finally:
-                    context.leave()
+                for key, context.value in context.value.iteritems():
+                    if keys is not None:
+                        for error in keys.get_errors(
+                            key,
+                            parent_context = context
+                        ):
+                            yield error
+                    if values is not None:
+                        for error in values.get_errors(
+                            context.value,
+                            collection_index = key,
+                            parent_context = context
+                        ):
+                            yield error
 
 
 # Generic add/remove methods

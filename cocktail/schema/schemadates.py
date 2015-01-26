@@ -13,16 +13,18 @@ from cocktail.schema.member import Member
 from cocktail.schema.schema import Schema
 from cocktail.schema.rangedmember import RangedMember
 from cocktail.schema.schemanumbers import Integer
+from cocktail.schema.validationcontext import ValidationContext
 from cocktail.translations import translations
 
 def get_max_day(context):
 
-    date = context.validable
-
-    if date.year is not None and (0 < date.month <= 12):
+    date = context.parent_context and context.parent_context.value
+    
+    if date and date.year is not None and (0 < date.month <= 12):
         return monthrange(date.year, date.month)[1]
 
     return None
+
 
 class BaseDateTime(Schema, RangedMember):
     """Base class for all members that handle date and/or time values."""
@@ -78,6 +80,14 @@ class BaseDateTime(Schema, RangedMember):
             self.add_member(Integer(**minute_kw))
             self.add_member(Integer(**second_kw))
 
+    def _default_validation(self, context):
+
+        for error in Schema._default_validation(self, context):
+            yield error
+
+        for error in self._range_validation(context):
+            yield error
+
     def _create_default_instance(self):
         return None
 
@@ -96,6 +106,24 @@ class Date(BaseDateTime):
     type = datetime.date
     _is_date = True
     translate_value = translations
+
+    def get_possible_values(self, context = None):
+        values = BaseDateTime.get_possible_values(self, context)
+
+        if values is None and self.min is not None and self.max is not None:
+            if context is None:
+                context = ValidationContext(self, None)
+            min_value = context.resolve_constraint(self.min)
+            max_value = context.resolve_constraint(self.max)
+            if min_value is not None and max_value is not None:
+                one_day = datetime.timedelta(days = 1)
+                values = []
+                d = min_value
+                while d < max_value:
+                    values.append(d)
+                    d += one_day
+
+        return values
 
 
 class Time(BaseDateTime):

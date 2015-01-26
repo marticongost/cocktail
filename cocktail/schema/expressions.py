@@ -8,6 +8,7 @@ u"""
 """
 import re
 import operator
+import fnmatch
 from cocktail.translations import (
     translations,
     get_language,
@@ -93,11 +94,11 @@ class Expression(object):
     def positive(self):
         return PositiveExpression(self)
 
-    def one_of(self, expr):
-        return InclusionExpression(self, expr)
+    def one_of(self, expr, by_key = False):
+        return InclusionExpression(self, expr, by_key = by_key)
     
-    def not_one_of(self, expr):
-        return ExclusionExpression(self, expr)
+    def not_one_of(self, expr, by_key = False):
+        return ExclusionExpression(self, expr, by_key = by_key)
 
     def startswith(self, expr):
         return StartsWithExpression(self, expr)
@@ -123,13 +124,17 @@ class Expression(object):
     def search(self,
         query,
         languages = None,
-        logic = "and"
+        logic = "and",
+        match_mode = "whole_word",
+        stemming = None
     ):
         return SearchExpression(
             self,
             query,
             languages = languages,
-            logic = logic
+            logic = logic,
+            match_mode = match_mode,
+            stemming = stemming
         )
 
     def translated_into(self, language):
@@ -337,18 +342,24 @@ class SearchExpression(Expression):
 
     query = None
     logic = "and"
+    match_mode = "whole_word" # whole_word, prefix, pattern
+    stemming = None
 
     def __init__(self,
         subject,
         query,
         languages = None,
-        logic = "and"
+        logic = "and",
+        match_mode = "whole_word",
+        stemming = None
     ):
         Expression.__init__(self, subject, query)
         self.subject = subject
         self.query = query
         self.languages = languages
         self.logic = logic
+        self.match_mode = match_mode
+        self.stemming = stemming
 
     def eval(self, context, accessor = None):
 
@@ -358,6 +369,17 @@ class SearchExpression(Expression):
 
         added_language_neutral_text = False
         subject_tokens = set()
+
+        stemming = self.stemming
+        if stemming is None:
+            stemming = getattr(self.subject, "stemming", False)
+
+        if stemming:
+            iter_tokens = words.iter_stems
+        else:
+            def iter_tokens(text, language = None):
+                text = words.normalize(text, locale = language)
+                return words.split(text, locale = language)
 
         for language in languages:
 
@@ -375,7 +397,7 @@ class SearchExpression(Expression):
                 if get_searchable_text is not None:
                     if not added_language_neutral_text:
                         subject_tokens.update(
-                            words.iter_stems(
+                            iter_tokens(
                                 get_searchable_text(languages = (None,)),
                                 None
                             )
@@ -383,23 +405,35 @@ class SearchExpression(Expression):
                         added_language_neutral_text = True
 
                     subject_tokens.update(
-                        words.iter_stems(
+                        iter_tokens(
                             get_searchable_text(languages = (language,)),
                             language
                         )
                     )
                 else:
-                    subject_tokens.update(
-                        words.iter_stems(lang_text, language)
-                    )
+                    subject_tokens.update(iter_tokens(lang_text, language))
 
         for language in languages:
             query_tokens = words.get_unique_stems(self.query, language)
 
-        if self.logic == "and":
-            return subject_tokens.issuperset(query_tokens)
-        else:
-            return not query_tokens.isdisjoint(subject_tokens)
+            if self.match_mode == "whole_word":
+                if self.logic == "and":
+                    if subject_tokens.issuperset(query_tokens):
+                        return True
+                elif not query_tokens.isdisjoint(subject_tokens):
+                    return True
+            else:
+                if self.match_mode == "prefix":
+                    query_tokens = [token + u"*" for token in query_tokens]
+
+                operand = all if self.logic == "and" else any
+                if operand(
+                    fnmatch.filter(subject_tokens, token)
+                    for token in query_tokens
+                ):
+                    return True
+
+        return False
 
 
 class AddExpression(Expression):
@@ -445,21 +479,29 @@ class PositiveExpression(Expression):
 class InclusionExpression(Expression):
 
     by_key = False
-    
+
+    def __init__(self, subject, subset, by_key = False):
+        Expression.__init__(self, subject, subset)
+        self.by_key = by_key
+
     def op(self, a, b):
         if self.by_key:
-            return a.id in b
+            return (None if a is None else a.id) in b
         else:
             return a in b
 
 
 class ExclusionExpression(Expression):
- 
+
     by_key = False
+
+    def __init__(self, subject, subset, by_key = False):
+        Expression.__init__(self, subject, subset)
+        self.by_key = by_key
 
     def op(self, a, b):
         if self.by_key:
-            return a.id not in b
+            return (None if a is None else a.id) not in b
         else:
             return a not in b
 
@@ -618,11 +660,11 @@ class IsNotInstanceExpression(IsInstanceExpression):
 class DescendsFromExpression(Expression):
 
     # The relation parameter always is the children relation.
+
     def __init__(self, a, b, relation, include_self = True):
         Expression.__init__(self, a, b)
         self.relation = relation
         self.include_self = include_self
-
 
     def op(self, a, b):
 
@@ -673,5 +715,4 @@ class DescendsFromExpression(Expression):
                         return False
 
             return find(b, a, self.relation, self.include_self)
-
 
