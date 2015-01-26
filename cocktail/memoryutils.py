@@ -15,13 +15,13 @@ _memory_expr = re.compile(
 
 _suffixes_by_base = {
     2: [
-        (1<<60L, 'EiB'),
-        (1<<50L, 'PiB'),
-        (1<<40L, 'TiB'),
-        (1<<30L, 'GiB'),
-        (1<<20L, 'MiB'),
-        (1<<10L, 'KiB'),
-        (1, 'bytes')
+        (1024 ** 6, 'EiB'),
+        (1024 ** 5, 'PiB'),
+        (1024 ** 4, 'TiB'),
+        (1024 ** 3, 'GiB'),
+        (1024 ** 2, 'MiB'),
+        (1024, 'KiB'),
+        (1, ' bytes')
     ],
     10: [
         (10 ** 18, 'EB'),
@@ -30,7 +30,7 @@ _suffixes_by_base = {
         (10 ** 9, 'GB'),
         (10 ** 6, 'MB'),
         (10 ** 3, 'KB'),
-        (1, 'bytes')
+        (1, ' bytes')
     ]
 }
 
@@ -62,7 +62,7 @@ def format_bytes(n, base = 10, decimals_threshold = 10 ** 6):
         )
 
     for factor, suffix in suffixes:
-        if n > factor:
+        if n >= factor:
             break
 
     if n >= decimals_threshold:
