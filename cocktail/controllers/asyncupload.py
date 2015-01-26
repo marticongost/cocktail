@@ -8,6 +8,7 @@ from time import time
 from threading import Lock
 from shutil import copyfileobj
 from mimetypes import guess_type
+from urllib import unquote
 import cherrypy
 from simplejson import dumps
 from cocktail.memoryutils import format_bytes
@@ -57,6 +58,8 @@ class AsyncUploader(object):
 
             upload.filename = upload_data.filename
             file = upload_data.file
+
+        upload.filename = unquote(upload.filename)
 
         # Get the file's size
         upload.size = int(cherrypy.request.headers.get("Content-Length", 0))
