@@ -46,6 +46,7 @@
                 }
 
                 $asyncFileUploader.get(0).addUpload(json);
+                $asyncFileUploader.trigger({type: "uploadComplete", upload: json});
             }
         });
 
