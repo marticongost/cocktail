@@ -138,19 +138,14 @@ class Member(Variable):
 
     def __repr__(self):
         
-        member_desc = self._name \
-            and "member '%s'" % self._name \
-            or "anonymous " + self.__class__.__name__.lower()
+        member_desc = self.__class__.__name__
+        if (
+            self.__class__.__module__
+            and not self.__class__.__module__.startswith("cocktail.schema.")
+        ):
+            member_desc = self.__class__.__module__ + "." + type_desc
 
-        if self._schema is None:
-            return "unbound " + member_desc
-        else:
-            schema_name = self._schema.name
-            return "%s in %s" % (
-                member_desc,
-                schema_name
-                    and "'%s' schema" % schema_name or "anonymous schema"
-            )
+        return member_desc + " <%s>" % self.get_qualified_name()
 
     def _get_name(self):
         return self._name
