@@ -220,7 +220,7 @@ class Schema(Member):
                 )
 
             if self.members_order is None:
-                self.members_order = list(self.members(recursive = False))
+                self.members_order = []
             elif not isinstance(self.members_order, list):
                 self.members_order = list(self.members_order)
 
