@@ -1077,6 +1077,24 @@ translations.define("gr",
     en = u"Greek"
 )
 
+translations.define("no",
+    ca = u"Norueg",
+    es = u"Noruego",
+    en = u"Norwegian"
+)
+
+translations.define("sv",
+    ca = u"Suec",
+    es = u"Sueco",
+    en = u"Swedish"
+)
+
+translations.define("ro",
+    ca = u"Romanès",
+    es = u"Rumano",
+    en = u"Romanian"
+)
+
 translations.define("translated into",
     ca = lambda lang: "en " + translations("locale", locale = lang),
     es = lambda lang: "en " + translations("locale", locale = lang),
