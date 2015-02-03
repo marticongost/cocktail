@@ -8,9 +8,9 @@ u"""
 # http://mail.python.org/pipermail/python-list/1999-December/018519.html
 _size_suffixes = [
     (1<<50L, 'Pb'),
-    (1<<40L, 'Tb'), 
-    (1<<30L, 'Gb'), 
-    (1<<20L, 'Mb'), 
+    (1<<40L, 'Tb'),
+    (1<<30L, 'Gb'),
+    (1<<20L, 'Mb'),
     (1<<10L, 'Kb'),
     (1, 'bytes')
 ]
@@ -18,7 +18,7 @@ _size_suffixes = [
 def format_bytes(n):
     """Return a string representing the greek/metric suffix of an amount of
     bytes.
-    
+
     @param n: An amount of bytes.
     @type n: int
 

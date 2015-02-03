@@ -61,7 +61,7 @@ class Form(Element, DataDisplay):
         form. This can be very useful when dealing with multiple buttons on a
         single form. Doesn't apply to L{embeded} forms.
     @type default_button: L{Element<cocktail.html.element.Element>}
-    
+
     @var generate_fields: Indicates if the form should automatically create
         entries for all fields defined by its assigned schema. This is the
         default behavior; When set to False, filling the form will be left to
@@ -96,7 +96,7 @@ class Form(Element, DataDisplay):
 
         self.set_member_type_display(
             Reference, "cocktail.html.DropdownSelector")
-            
+
         self.set_member_type_display(
             BaseDateTime, "cocktail.html.DatePicker")
 
@@ -104,12 +104,12 @@ class Form(Element, DataDisplay):
             Decimal, "cocktail.html.TextBox")
 
         self.set_member_type_display(
-            FileUpload, 
+            FileUpload,
             lambda form, obj, member:
-                templates.new(    
+                templates.new(
                     "cocktail.html." + (
-                        "AsyncFileUploader" 
-                            if member.async 
+                        "AsyncFileUploader"
+                            if member.async
                             else "FileUploadBox"
                     )
                 )
@@ -162,7 +162,7 @@ class Form(Element, DataDisplay):
         """)
 
     def _build(self):
-        
+
         self.add_resource("/cocktail/scripts/form.js")
 
         self.fields = Element()
@@ -211,7 +211,7 @@ class Form(Element, DataDisplay):
                             set(member.name for member in members)
                         )
 
-            if self.__groups:                
+            if self.__groups:
                 members = self.displayed_members
 
                 for group in self.__groups:
@@ -250,9 +250,9 @@ class Form(Element, DataDisplay):
                     self.fields.append(field_entry)
                     self.build_member_explanation(member, field_entry)
                     setattr(self, member.name + "_field", field_entry)
-    
+
     def request_fieldset(self, group_id):
-        
+
         key = group_id.replace(".", "_") + "_fieldset"
         fieldset = getattr(self, key, None)
 
@@ -265,18 +265,18 @@ class Form(Element, DataDisplay):
                 parent = self.request_fieldset(".".join(parts))
 
             fieldset = self.create_fieldset(group_id)
-            parent.fields.append(fieldset)            
+            parent.fields.append(fieldset)
             setattr(self, key, fieldset)
 
         return fieldset
 
     def create_fieldset(self, group_id):
 
-        fieldset = Element("fieldset") 
+        fieldset = Element("fieldset")
         fieldset.add_class(group_id.replace(".", "-"))
 
         label = self.get_group_label(group_id)
-        if label:            
+        if label:
             fieldset.legend = Element("legend")
             fieldset.legend.append(label)
             fieldset.append(fieldset.legend)
@@ -293,7 +293,7 @@ class Form(Element, DataDisplay):
     def create_field(self, member):
 
         hidden = self.get_member_hidden(member)
-        
+
         entry = Element("tr" if self.table_layout else "div")
         entry.field_instances = []
 
@@ -302,7 +302,7 @@ class Form(Element, DataDisplay):
         else:
             entry.add_class("field")
             entry.add_class(member.name + "_field")
-             
+
             if member.required:
                 entry.add_class("required")
 
@@ -318,8 +318,8 @@ class Form(Element, DataDisplay):
         if member.translated:
             entry.add_class("translated")
             for language in (
-                self.translations 
-                if self.translations is not None 
+                self.translations
+                if self.translations is not None
                 else (get_language(),)
             ):
                 field_instance = create_instance(language)
@@ -327,7 +327,7 @@ class Form(Element, DataDisplay):
                 entry.append(field_instance)
         else:
             entry.append(create_instance())
-        
+
         return entry
 
     def build_member_explanation(self, member, entry):
@@ -355,12 +355,12 @@ class Form(Element, DataDisplay):
 
         field_instance = Element("td" if self.table_layout else "div")
         field_instance.add_class("field_instance")
-    
+
         # Label
         if not self.get_member_hidden(member):
             field_instance.label = self.create_label(member, language)
             field_instance.append(field_instance.label)
-        
+
         # Control
         with language_context(language):
             field_instance.control = self.create_control(self.data, member)
@@ -394,29 +394,29 @@ class Form(Element, DataDisplay):
         input.data = obj
         input.member = member
         input.data_display = self
-        
+
         value = self.get_member_value(obj, member)
         if value is not None:
             value = member.serialize_request_value(value)
         input.value = value
-        
+
         if member.translated:
             input.language = get_language()
 
         return input
 
     def create_label(self, member, language = None):
-        
+
         label = Element("label")
         label.add_class("field_label")
         text = self.get_member_label(member)
-        
+
         if text:
             label.label_title = self.create_label_title(member, text)
             label.append(label.label_title)
-            
+
             if language:
-                
+
                 label.label_language = self.create_language_label(
                     member,
                     language)
@@ -474,7 +474,7 @@ class Form(Element, DataDisplay):
         ):
             control.add_class("error")
 
-        return control   
+        return control
 
     def add_group(self, group_id, members_filter):
         self.__groups.append(FormGroup(self, group_id, members_filter))

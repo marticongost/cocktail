@@ -19,7 +19,7 @@ class CodeEditor(TextArea):
         "path": resources_uri + "js/",
         "indentUnit": 4,
         "width": "",
-        "height": ""        
+        "height": ""
     }
 
     editor_settings = {}
@@ -101,16 +101,16 @@ class CodeEditor(TextArea):
         self.editor_settings = {}
 
     def _ready(self):
-        
+
         self.add_resource(self.resources_uri + "js/codemirror.js")
 
         settings = self.base_settings.copy()
-        
+
         if self._syntax:
             settings.update(self.syntax_settings.get(self._syntax))
 
         settings.update(self.editor_settings)
-        
+
         self.add_client_code("CodeMirror.fromTextArea('%s', %s)" % (
             self.require_id(),
             dumps(settings)
@@ -123,9 +123,9 @@ class CodeEditor(TextArea):
 
     def _set_syntax(self, syntax):
 
-        if syntax not in self.syntax_settings:            
+        if syntax not in self.syntax_settings:
             raise ValueError("Unknown syntax: %s" % syntax)
-        
+
         self._syntax = syntax
 
     syntax = property(_get_syntax, _set_syntax)

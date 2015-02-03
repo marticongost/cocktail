@@ -19,7 +19,7 @@ def set_translated_shortcut(element, translation_key, target = None):
 def set_shortcut(element, key, target = None):
     element.add_resource("/cocktail/scripts/jquery.hotkeys.js")
     element.add_resource("/cocktail/scripts/shortcuts.js")
-    
+
     if target is None:
         element.add_client_code("cocktail.setShortcut(this, '%s')" % key)
     else:

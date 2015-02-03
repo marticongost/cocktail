@@ -28,7 +28,7 @@ class BaseDateTime(Schema, RangedMember):
     """Base class for all members that handle date and/or time values."""
     _is_date = False
     _is_time = False
-   
+
     def __init__(self, *args, **kwargs):
 
         kwargs.setdefault("default", None)
@@ -71,7 +71,7 @@ class BaseDateTime(Schema, RangedMember):
             self.add_member(Integer(**day_kw))
             self.add_member(Integer(**month_kw))
             self.add_member(Integer(**year_kw))
-        
+
         if self._is_time:
             self.add_member(Integer(**hour_kw))
             self.add_member(Integer(**minute_kw))

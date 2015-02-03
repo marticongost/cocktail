@@ -40,7 +40,7 @@ else:
     @handles_content_type("text/switchcss")
     def switch_css_handler(path, content_type):
 
-        try:    
+        try:
             stylesheet = cache.request(path)
         except OSError, IOError:
             raise cherrypy.NotFound()

@@ -26,7 +26,7 @@ class HTMLCleanerTestCase(TestCase):
     def test_strips_empty_tags(self):
 
         from cocktail.stringutils import clean_html
-        
+
         assert clean_html("<p></p>") == ""
         assert clean_html("<p/>") == ""
         assert clean_html("<div> </div>") == ""

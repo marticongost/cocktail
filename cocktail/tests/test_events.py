@@ -10,9 +10,9 @@ from unittest import TestCase
 
 
 class EventTestCase(TestCase):
-    
+
     def test_instance(self):
-        
+
         from cocktail.events import Event, EventInfo
 
         class Foo(object):
@@ -22,7 +22,7 @@ class EventTestCase(TestCase):
 
         # Make sure event slots get cached
         self.assertTrue(foo.spammed is foo.spammed)
-        
+
         def test_event_info(event):
             self.assertEqual(event.target, foo)
             self.assertEqual(event.source, foo)
@@ -49,7 +49,7 @@ class EventTestCase(TestCase):
 
         event_info = foo.spammed(x = 1, y = 2, executed = [])
         self.assertTrue(isinstance(event_info, EventInfo))
-        
+
         for i in range(2):
             self.assertEqual(
                 event_info.executed, [first_callback, second_callback]
@@ -67,7 +67,7 @@ class EventTestCase(TestCase):
             self.assertEqual(event_info.executed, [second_callback])
 
     def test_class(self):
-        
+
         from cocktail.events import Event, EventInfo
 
         class Foo(object):
@@ -75,7 +75,7 @@ class EventTestCase(TestCase):
 
         # Make sure event slots get cached
         self.assertTrue(Foo.spammed is Foo.spammed)
-        
+
         def test_event_info(event):
             self.assertEqual(event.target, Foo)
             self.assertEqual(event.source, Foo)
@@ -102,7 +102,7 @@ class EventTestCase(TestCase):
 
         event_info = Foo.spammed(x = 1, y = 2, executed = [])
         self.assertTrue(isinstance(event_info, EventInfo))
-        
+
         for i in range(2):
             self.assertEqual(
                 event_info.executed, [first_callback, second_callback]
@@ -120,12 +120,12 @@ class EventTestCase(TestCase):
             self.assertEqual(event_info.executed, [second_callback])
 
     def test_inheritance(self):
-        
+
         from cocktail.events import Event, EventInfo
 
         class Foo(object):
             spammed = Event()
-            
+
         class Bar(Foo):
             pass
 
@@ -133,7 +133,7 @@ class EventTestCase(TestCase):
         self.assertTrue(Foo.spammed is Foo.spammed)
         self.assertTrue(Bar.spammed is Bar.spammed)
         self.assertTrue(Foo.spammed is not Bar.spammed)
-        
+
         def test_base_event_info(event):
             self.assertEqual(event.target, Foo)
             self.assertEqual(event.source, event.tested_class)
@@ -169,10 +169,10 @@ class EventTestCase(TestCase):
 
         Bar.spammed.append(first_derived_callback)
         Bar.spammed.append(second_derived_callback)
-        
+
         event_info = Foo.spammed(
             x = 1, y = 2, tested_class = Foo, executed = [])
-        
+
         for i in range(2):
             self.assertEqual(
                 event_info.executed,
@@ -181,7 +181,7 @@ class EventTestCase(TestCase):
 
         event_info = Bar.spammed(
             x = 1, y = 2, tested_class = Bar, executed = [])
-        
+
         for i in range(2):
             self.assertEqual(
                 event_info.executed,
@@ -192,7 +192,7 @@ class EventTestCase(TestCase):
             )
 
     def test_instance_and_class(self):
-        
+
         from cocktail.events import Event, EventInfo
 
         class Foo(object):
@@ -262,7 +262,7 @@ class EventTestCase(TestCase):
         # Trigger the event
         event_info = foo.spammed(x = 1, y = 2, executed = [])
         self.assertTrue(isinstance(event_info, EventInfo))
-        
+
         for i in range(2):
             self.assertEqual(
                 event_info.executed,
@@ -292,17 +292,17 @@ class EventTestCase(TestCase):
             )
 
     def test_instance_with_inheritance(self):
-        
+
         from cocktail.events import Event
 
         class Foo(object):
             spammed = Event()
-            
+
         class Bar(Foo):
             pass
 
         foo = Bar()
-        
+
         def base_callback(event):
             self.assertTrue(event.target is Foo)
             self.assertTrue(event.source is foo)
@@ -321,9 +321,9 @@ class EventTestCase(TestCase):
         Foo.spammed.append(base_callback)
         Bar.spammed.append(derived_callback)
         foo.spammed.append(instance_callback)
-        
+
         event_info = foo.spammed(executed = [])
-        
+
         for i in range(2):
             self.assertEqual(
                 event_info.executed,
@@ -338,7 +338,7 @@ class EventTestCase(TestCase):
             spammed = Event()
 
         foo = Foo()
-       
+
         def first_instance_callback(event):
             self.assertFalse(event.consumed)
             event.consumed = True
@@ -378,7 +378,7 @@ class EventTestCase(TestCase):
         @when(foo.spammed)
         def instance_callback(event):
             pass
-        
+
         self.assertEqual(len(foo.spammed), 1)
         self.assertTrue(foo.spammed[0] is instance_callback)
 
@@ -395,20 +395,20 @@ class EventTestCase(TestCase):
 
         class Foo(object):
             __metaclass__ = EventHub
-            
+
             spammed = Event()
 
             @event_handler
             def handle_spammed(cls):
                 pass
- 
+
         self.assertEqual(
             list(Foo.spammed),
             [Foo.spammed.wrap_callback(Foo.handle_spammed)]
         )
-        
+
         class Bar(Foo):
-            
+
             @event_handler
             def handle_spammed(cls):
                 pass
