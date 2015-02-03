@@ -32,10 +32,10 @@ class TemplateLoaderTestCase(TestCase):
         rmtree(self.temp_folder)
 
     def write_module(self, filename, code):
-        
+
         path = join(self.template_repository, filename)
 
-        if exists(path):            
+        if exists(path):
             sleep(1)
 
         f = open(path, "w")
@@ -51,15 +51,15 @@ class TemplateLoaderTestCase(TestCase):
     xmlns:py="http://www.whads.com/ns/cocktail/templates"/>""" % root_tag
 
     def test_caches_cml_templates(self):
-        
-        self.write_module("Foo.cml", self._cml("div"))        
+
+        self.write_module("Foo.cml", self._cml("div"))
         cls = self.loader.get_class("testtemplates.Foo")
 
         for i in range(3):
             assert self.loader.get_class("testtemplates.Foo") is cls
 
     def test_caches_python_templates(self):
-                
+
         self.write_module("foo.py", """
 from cocktail.html import Element
 
@@ -109,6 +109,6 @@ class Foo(Element):
 
         self.write_module("Foo.cml", self._cml("span"))
         b = self.loader.get_class("testtemplates.Foo")
-        
+
         assert a is b
 

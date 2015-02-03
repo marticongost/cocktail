@@ -27,7 +27,7 @@ class CheckList(Selector):
             )
 
         Selector._ready(self)
- 
+
     def _create_entries(self, items, container):
         if self.column_count is None and self.column_height is None:
             Selector._create_entries(self, items, container)
@@ -46,7 +46,7 @@ class CheckList(Selector):
             column = None
 
             for i, (value, label) in enumerate(pairs):
-                
+
                 if column is None or not column.capacity:
 
                     column = self.create_column()
@@ -91,7 +91,7 @@ class CheckList(Selector):
         return entry
 
     def insert_into_form(self, form, field_instance):
-        
+
         field_instance.append(self)
 
         # Disable the 'required' mark for this field, as it doesn't make sense

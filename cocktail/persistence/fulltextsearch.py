@@ -52,9 +52,9 @@ def _get_full_text_index(self, language = None):
 
     if not self.full_text_indexed:
         return None
-    
+
     indexes = self._get_full_text_indexes()
-    
+
     if indexes is not None:
         index = indexes.get(language)
         if index is None:
@@ -85,7 +85,7 @@ PersistentClass._full_text_index_key = None
 schema.String._full_text_index_key = None
 
 def _get_full_text_index_key(self):
-    
+
     key = self._full_text_index_key
 
     if not key and self.name:
@@ -122,13 +122,13 @@ def _create_full_text_index(self):
 
 PersistentClass.create_full_text_index = _create_full_text_index
 schema.String.create_full_text_index = _create_full_text_index
-    
+
 def _persistent_class_index_text(self, obj, language = None):
     index = self.get_full_text_index(language)
     index.unindex_doc(obj.id)
-    
+
     chunks = []
-    
+
     for chunk in obj.get_searchable_text([language]):
         # Ignore non-unicode strings
         if isinstance(chunk, str):
@@ -137,28 +137,28 @@ def _persistent_class_index_text(self, obj, language = None):
             except UnicodeDecodeError:
                 continue
         chunks.append(chunk)
-    
+
     text = normalize(u" ".join(chunks))
 
-    if text:        
+    if text:
         index.index_doc(obj.id, text)
 
 PersistentClass.index_text = _persistent_class_index_text
 
 def _string_index_text(self, obj, language = None):
-    index = self.get_full_text_index(language)    
+    index = self.get_full_text_index(language)
     index.unindex_doc(obj.id)
     text = obj.get(self, language)
     if text:
         text = normalize(text)
-        if text:            
+        if text:
             index.index_doc(obj.id, text)
 
 schema.String.index_text = _string_index_text
 
 @when(PersistentObject.changed)
 def _handle_changed(event):
-    
+
     obj = event.source
 
     if obj.is_inserted and event.previous_value != event.value:
@@ -166,7 +166,7 @@ def _handle_changed(event):
         # Reindex this specific member
         if obj._should_index_member_full_text(event.member):
             event.member.index_text(obj, event.language)
-        
+
         # Only reindex whole objects when modifying a member included in the
         # object's text body (signaled by the 'text_search' attribute)
         if event.member.text_search:
@@ -205,12 +205,12 @@ def _cascade_index(obj, language, visited):
         related_end = getattr(member, "related_end", None)
 
         if related_end is not None and related_end.text_search:
-            
+
             if isinstance(member, schema.Reference):
                 related_object = obj.get(member)
                 if related_object is not None:
                     _cascade_index(related_object, language, visited)
-            
+
             elif isinstance(member, schema.Collection):
                 related_items = obj.get(member)
                 if related_items is not None:
@@ -222,12 +222,12 @@ def _handle_inserting(event):
 
     obj = event.source
     members = [obj.__class__] + obj.__class__.members().values()
-    
+
     for member in members:
         if obj._should_index_member_full_text(member):
-            
+
             if member.translated:
-                
+
                 # Non-translatable content of translated types
                 if isinstance(member, type):
                     member.index_text(obj)
@@ -272,8 +272,8 @@ PersistentClass.rebuild_full_text_index = _rebuild_full_text_index
 schema.String.rebuild_full_text_index = _rebuild_full_text_index
 
 def _rebuild_full_text_indexes(cls, recursive = False, verbose = True):
-    
-    if cls.full_text_indexed:        
+
+    if cls.full_text_indexed:
         if verbose:
             print "Rebuilding full text index for %s" % cls
         cls.rebuild_full_text_index()

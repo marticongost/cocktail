@@ -15,7 +15,7 @@ cocktail.setShortcut = function (element, key, target /* optional */) {
     for (var i = 0; i < element.childNodes.length; i++) {
 
         var node = element.childNodes[i];
-        
+
         if (node.nodeType == 3) {
             var text = node.nodeValue;
 

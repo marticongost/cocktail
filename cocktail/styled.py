@@ -58,17 +58,17 @@ style_codes = {
 }
 
 if sys.platform in supported_platforms:
-    
+
     def styled(
         string,
         foreground = "default",
         background = "default",
         style = "normal"):
-        
+
         foreground_code = foreground_codes.get(foreground)
         background_code = background_codes.get(background)
         style_code = style_codes.get(style)
-        
+
         if foreground_code is None \
         or background_codes is None \
         or style_code is None:

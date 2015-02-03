@@ -39,7 +39,7 @@ class Rendering(object):
     .. attribute:: renderer
 
         The `renderer <Renderer>` used to format HTML elements.
-    
+
     .. attribute:: collect_metadata
 
         Determines if resources and meta data (scripts, stylesheets, meta tags,
@@ -47,9 +47,9 @@ class Rendering(object):
 
     .. attribute:: document_metadata
 
-        A `DocumentMetadata` instance listing the resources and meta data 
-        collected from rendered elements. 
-        
+        A `DocumentMetadata` instance listing the resources and meta data
+        collected from rendered elements.
+
         Will be empty if `collect_metadata` is set to False.
 
     .. attribute:: cache
@@ -63,7 +63,7 @@ class Rendering(object):
         document_metadata = None,
         cache = rendering_cache,
         rendered_client_model = None):
-        
+
         self.renderer = renderer
         self.collect_metadata = collect_metadata
         self.document_metadata = document_metadata or DocumentMetadata()
@@ -73,7 +73,7 @@ class Rendering(object):
         self.rendered_client_model = rendered_client_model
 
     def render_element(self, element):
- 
+
         # Register the current rendering
         prev_rendering = getattr(_thread_data, "rendering", None)
         _thread_data.rendering = self
@@ -83,7 +83,7 @@ class Rendering(object):
         if setup_id:
             _thread_data.prefix = str(time()).replace(".", "")
             _thread_data.generated_id = 0
-        
+
         try:
             cache_key = None
 
@@ -108,8 +108,8 @@ class Rendering(object):
 
             # Skip invisible elements
             if element.rendered:
-            
-                # Delay rendering of client models, unless they are being 
+
+                # Delay rendering of client models, unless they are being
                 # rendered explicitly
                 if element.client_model \
                 and element is not self.rendered_client_model:
@@ -121,7 +121,7 @@ class Rendering(object):
                 # Set up a separate rendering context for cached elements, and
                 # add it to the cache
                 if cache_key and element.cached:
-                    target_rendering = self.__class__(                    
+                    target_rendering = self.__class__(
                         renderer = self.renderer,
                         collect_metadata = self.collect_metadata,
                         cache = self.cache,
@@ -152,7 +152,7 @@ class Rendering(object):
             if setup_id:
                 del _thread_data.prefix
                 del _thread_data.generated_id
-            
+
             _thread_data.rendering = prev_rendering
 
     def get_cache_key(self):
@@ -160,7 +160,7 @@ class Rendering(object):
 
     def update(self, rendering):
         """Extend the rendering state with data from another rendering.
-        
+
         The main use case for this method is reusing content and metadata from
         the rendering cache.
 

@@ -44,11 +44,11 @@ from cocktail.html.databoundcontrol import data_bound
                 self._multiple_files = False
 
         self.set_client_param("multipleFiles", self._multiple_files)
-        
+
         self._async_prefix = upload_member and upload_member.async_prefix or "async-"
-        self.set_client_param("asyncPrefix", self._async_prefix)        
-        
-        self.set_client_param("asyncUploadUrl", 
+        self.set_client_param("asyncPrefix", self._async_prefix)
+
+        self.set_client_param("asyncUploadUrl",
             self.async_upload_url or upload_member and upload_member.async_upload_url
         )
 
@@ -82,9 +82,9 @@ from cocktail.html.databoundcontrol import data_bound
         if upload:
             upload_id = upload.get("id")
             if upload_id:
-                upload_id = self._async_prefix + str(upload_id)        
+                upload_id = self._async_prefix + str(upload_id)
         ?>
-        <button 
+        <button
             py:local_id="remove_button"
             type="button"
             py:visible="@{self._multiple_files}">
@@ -93,10 +93,10 @@ from cocktail.html.databoundcontrol import data_bound
         <input type="hidden" name="@{self.name}" value="${upload_id}"/>
     </py:cocktail.html.UploadInfo>
 
-    <py:new 
+    <py:new
         py:element="self.create_upload_info()"
         py:client_model="cocktail.html.AsyncFileUploader.upload_info-@{self['id']}"/>
-    
+
     <div
         py:id="uploader"
         py:client_model="cocktail.html.AsyncFileUploader.uploader">

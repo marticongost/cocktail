@@ -65,7 +65,7 @@ class TranslationsRepository(DictWrapper):
             if translation is None:
                 translation = Translation(language)
                 self.__translations[language] = translation
-            
+
             translation[obj] = string
 
     def clear_key(self, obj):
@@ -88,7 +88,7 @@ class TranslationsRepository(DictWrapper):
         default = "",
         chain = None,
         **kwargs):
-        
+
         value = ""
         language = require_language(language)
 
@@ -97,7 +97,7 @@ class TranslationsRepository(DictWrapper):
 
         if translation_method:
             value = translation_method(language, **kwargs)
-        
+
         # Translation key
         if not value:
             translation = self.__translations.get(language, None)
@@ -114,12 +114,12 @@ class TranslationsRepository(DictWrapper):
                     type_key = get_full_name(cls) + "-instance"
                 except:
                     type_key = cls.__name__ + "-instance"
-                        
+
                 value = self(type_key, language, instance = obj, **kwargs)
-                
+
                 if value:
                     break
-        
+
         # Custom translation chain
         if not value and chain is not None:
             value = self(chain, language, default, **kwargs)
@@ -159,12 +159,12 @@ class Translation(DictWrapper):
         del self.__strings[obj]
 
     def __call__(self, obj, **kwargs):
-        
+
         try:
             value = self.__strings.get(obj, "")
         except TypeError:
             return ""
-    
+
         if value:
 
             # Custom python expression
