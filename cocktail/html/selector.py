@@ -126,7 +126,7 @@ class Selector(Element):
         if self.groups is not None:
             for group in self.groups.groups:
                 self.append(self.create_group(group))
-        else:
+        elif self.items is not None:
             self._create_entries(self.items, self)
 
     def _iter_pairs(self, items):
