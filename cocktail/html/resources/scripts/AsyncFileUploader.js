@@ -15,7 +15,7 @@
         $asyncFileUploader.find(".UploadInfo .remove_button").click(function () {
             jQuery(this).closest(".UploadInfo").remove();
         });
-            
+
         var uploaderElement = cocktail.instantiate("cocktail.html.AsyncFileUploader.uploader");
         this.appendChild(uploaderElement);
 
@@ -40,7 +40,7 @@
             },
             onComplete: function (id, fileName, json) {
                 $asyncFileUploader.removeClass("uploading");
-                
+
                 if (!$asyncFileUploader.get(0).multipleFiles) {
                     $asyncFileUploader.find(".UploadInfo").remove();
                 }
@@ -75,7 +75,7 @@
             jQuery(document.body).removeClass("drag");
             jQuery(".AsyncFileUploader").removeClass("dragOver");
         }
-        
+
         var uploader = this.uploader;
 
         var dz = new qq.UploadDropZone({

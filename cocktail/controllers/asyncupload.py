@@ -39,7 +39,7 @@ class AsyncUploader(object):
         self.lock = Lock()
 
     def process_request(self):
-       
+
         # Create an upload and give it a unique identifier
         id = self._acquire_upload_id()
         upload = AsyncUpload(id)
@@ -89,7 +89,7 @@ class AsyncUploader(object):
 
 
 class AsyncUpload(object):
-    
+
     __id = None
     file_name = None
     type = None

@@ -11,7 +11,7 @@ from threading import Lock
 def when(event):
     """A decorator factory that attaches decorated functions as event handlers
     for the given event slot.
-    
+
     :param event: The event slot to register the decorated function on.
     :type event: `EventSlot`
 
@@ -27,14 +27,14 @@ def when(event):
 
 class EventHub(type):
     """A convenience metaclass that automatically registers methods marked with
-    the `event_handler` decorator as class-level event-handlers. 
+    the `event_handler` decorator as class-level event-handlers.
     """
 
     def __init__(cls, name, bases, members):
         type.__init__(cls, name, bases, members)
 
         for key, member in members.iteritems():
-            
+
             if isinstance(member, event_handler):
                 handler = getattr(cls, key)
                 event_name = key[7:]
@@ -108,7 +108,7 @@ class Event(object):
 
 class EventSlot(SynchronizedList):
     """A binding between an `Event` and one of its targets.
-    
+
     Slots work as callable lists of callbacks. They possess all the usual list
     methods, plus the capability of being called. When the slot is called,
     callbacks in the slot are executed in order, and keyword parameters are
@@ -116,13 +116,13 @@ class EventSlot(SynchronizedList):
     class.
 
     .. attribute:: event
-    
+
         The `event <Event>` that the slot stores responses for.
 
     .. attribute:: target
 
         The object that the slot is bound to.
-    
+
     .. attribute:: next
 
         A list of other event slots that will be chained up to the slot. After
@@ -136,7 +136,7 @@ class EventSlot(SynchronizedList):
     next = ()
 
     def __call__(self, _event_info = None, **kwargs):
-        
+
         target = self.target()
 
         # self.target is a weakref, so the object may have expired
@@ -184,11 +184,11 @@ class EventSlot(SynchronizedList):
         )
 
     def wrap_callback(self, callback):
-        
+
         # Transform methods bound to the target for the event slot into a
         # callable that achieves the same effect without maintining a hard
         # reference to the target object, which would keep the target object
-        # alive undefinitely 
+        # alive undefinitely
         if isinstance(callback, MethodType) \
         and callback.im_self is self.target() \
         and not isinstance(callback.im_self, type):
@@ -214,13 +214,13 @@ class EventInfo(object):
     when an `event slot <EventSlot>` is triggered.
 
     .. attribute:: target
-        
+
         The object that the event is being triggered on.
-    
+
     .. attribute:: source
-        
+
         The object that the event originated in. While the `target` attribute
-        can change as the event `propagates between slots <EventSlot.next>`,        
+        can change as the event `propagates between slots <EventSlot.next>`,
         `source` will always point to the first element on which the event was
         invoked.
 
@@ -233,12 +233,12 @@ class EventInfo(object):
 
         If a callback sets this flag to True, no further callbacks will be
         invoked for this event.
-    """    
+    """
     target = None
     source = None
     slot = None
     consumed = False
-    
+
     def __init__(self, params):
         for key, value in params.iteritems():
             setattr(self, key, value)

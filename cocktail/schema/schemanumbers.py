@@ -21,7 +21,7 @@ class Number(Member, RangedMember):
 
     def __init__(self, *args, **kwargs):
         Member.__init__(self, *args, **kwargs)
-        RangedMember.__init__(self)        
+        RangedMember.__init__(self)
 
 
 class Integer(Number):

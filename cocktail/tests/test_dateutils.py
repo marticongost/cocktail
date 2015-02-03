@@ -7,7 +7,7 @@ from unittest import TestCase
 
 
 class CalendarPageTestCase(TestCase):
-    
+
     def test_supports_month_arithmetic(self):
         from cocktail.dateutils import CalendarPage
 

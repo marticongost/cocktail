@@ -8,7 +8,7 @@
 -----------------------------------------------------------------------------*/
 
 (function () {
- 
+
     var selectable = null;
 
     function disableTextSelection(element) {
@@ -67,9 +67,9 @@
             }
 
             selectable._selectionStart = null;
-            selectable._selectionEnd = null;            
+            selectable._selectionEnd = null;
             selectable.selectionMode = selectionMode;
-            
+
             var suppressSelectionEvents = false;
 
             function batchSelection(func) {
@@ -121,7 +121,7 @@
             // event on the table)
 
             selectable.dblClickEntryEvent = function (e) {
-                selectable.clearSelection();                
+                selectable.clearSelection();
                 selectable.setEntrySelected(this, true);
                 $selectable.trigger("activated");
             }
@@ -131,7 +131,7 @@
             selectable.getNextEntry = function (entry, selector /* = null */) {
 
                 var $entries = this.getEntries();
-                
+
                 var i = $entries.index(entry);
                 if (i == -1) {
                     return null;
@@ -149,7 +149,7 @@
             selectable.getPreviousEntry = function (entry, selector /* = null */) {
 
                 var $entries = this.getEntries();
-                
+
                 var i = $entries.index(entry);
                 if (i == -1) {
                     return null;
@@ -178,7 +178,7 @@
                 if (!checkBox) {
                     return;
                 }
-   
+
                 checkBox.checked = selected;
 
                 if (selected) {
@@ -230,11 +230,11 @@
             }
 
             selectable.setRangeSelected = function (firstEntry, lastEntry, selected) {
-                
+
                 var entries = selectable.getEntries(":visible");
                 var i = entries.index(firstEntry);
                 var j = entries.index(lastEntry);
-                
+
                 var pos = Math.min(i, j);
                 var end = Math.max(i, j);
 
@@ -285,7 +285,7 @@
             $selectable
                 // Togle entry selection when clicking an entry
                 .on("click", entrySelector, selectable.clickEntryEvent)
-                
+
                 .on("mousedown", entrySelector, function () {
                     disableTextSelection(selectable);
                 })
@@ -358,7 +358,7 @@
                             )
                         );
                     }
-                    // Up key        
+                    // Up key
                     else if (key == 38) {
                         entry = (
                             focusedCheckbox

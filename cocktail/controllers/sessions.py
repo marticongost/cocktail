@@ -23,7 +23,7 @@ class Session(DictWrapper):
     @property
     def _items(self):
         return cherrypy.request.wsgi_environ['beaker.session']
-    
+
     def __setitem__(self, key, value):
         self.save()
         self._items[key] = value
@@ -91,7 +91,7 @@ class Session(DictWrapper):
 
     def dirty(self):
         return self._items.dirty()
-    
+
     def accessed(self):
         return self._items.accessed(self)
 

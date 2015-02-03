@@ -33,7 +33,7 @@ cocktail.slideShowTransitions = {
 }
 
 cocktail.bind(".SlideShow", function ($slideShow) {
- 
+
     var current = null;
     var autoplayTimer = null;
 
@@ -46,7 +46,7 @@ cocktail.bind(".SlideShow", function ($slideShow) {
         jQuery(cocktail.instantiate("cocktail.html.SlideShow.previousSlideButton"))
             .appendTo($slideShow)
             .click(function () { $slideShow.get(0).selectPrevSlide(); });
-    
+
         jQuery(cocktail.instantiate("cocktail.html.SlideShow.nextSlideButton"))
             .appendTo($slideShow)
             .click(function () { $slideShow.get(0).selectNextSlide(); });
@@ -54,7 +54,7 @@ cocktail.bind(".SlideShow", function ($slideShow) {
 
     // Create bullets controls
     if (this.bulletControls) {
-        
+
         this.selectBullet = function () {
             jQuery(".bullet",$slideShow).removeClass("selected");
             var index = $slideShow.find(this.slidesSelector).index(current);
@@ -105,9 +105,9 @@ cocktail.bind(".SlideShow", function ($slideShow) {
 
     this.setAutoplay = function (autoplay) {
         if (autoplay) {
-            if (!autoplayTimer) this.start();                            
+            if (!autoplayTimer) this.start();
         }
-        else {        
+        else {
             this.stop();
         }
     }
@@ -117,7 +117,7 @@ cocktail.bind(".SlideShow", function ($slideShow) {
     }
 
     this.getNextSlide = function () {
-        
+
         var $slides = $slideShow.find(this.slidesSelector);
 
         if (current) {
@@ -131,7 +131,7 @@ cocktail.bind(".SlideShow", function ($slideShow) {
     }
 
     this.getPrevSlide = function () {
-        
+
         var $slides = $slideShow.find(this.slidesSelector);
 
         if (current) {
@@ -143,12 +143,12 @@ cocktail.bind(".SlideShow", function ($slideShow) {
 
         return $slides.get($slides.length-1);
     }
-    
-    this.selectNextSlide = function () {        
+
+    this.selectNextSlide = function () {
         this.selectSlide(this.getNextSlide());
     }
 
-    this.selectPrevSlide = function () {        
+    this.selectPrevSlide = function () {
         this.selectSlide(this.getPrevSlide());
     }
 
@@ -165,10 +165,10 @@ cocktail.bind(".SlideShow", function ($slideShow) {
         if (current) {
             this._hideSlide(current);
         }
-        
+
         var previous = current;
         current = slide;
-        
+
         $slideShow.trigger("beforeSlideChange", {
             previous: previous,
             current: slide
@@ -186,13 +186,13 @@ cocktail.bind(".SlideShow", function ($slideShow) {
                 });
             });
         }
-        
+
         $slideShow.trigger("slideSelected", {
             previous: previous,
             current: slide
         });
     }
-    
+
     this._hideSlide = function (slide) {
 
         var $slide = jQuery(slide);

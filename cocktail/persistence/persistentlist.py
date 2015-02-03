@@ -24,7 +24,7 @@ class PersistentList(ListWrapper, Persistent):
         return self.__class__(deepcopy(self._items))
 
     def __setitem__(self, i, item):
-        self._items.__setitem__(i, item)        
+        self._items.__setitem__(i, item)
         self._p_changed = True
 
     def __delitem__(self, i):
