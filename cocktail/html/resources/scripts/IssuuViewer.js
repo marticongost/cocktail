@@ -22,13 +22,13 @@ cocktail.bind(".IssuuViewer", function ($viewer) {
     }
 
     if (cocktail.issuuAPIReady) {
-        prepareAPI();        
+        prepareAPI();
     }
     else {
         jQuery(document).one("issuuAPIReady", prepareAPI);
     }
 
-    this.issuuAPI = function (callback) {        
+    this.issuuAPI = function (callback) {
         if (api) {
             callback(api);
         }

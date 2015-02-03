@@ -20,7 +20,7 @@ class Mapping(Collection):
         Specified as a member, which will be used as the validator for all
         values added to the collection.
     @type: L{Member<member.Member>}
-    
+
     @ivar values: The schema that all values in the collection must comply
         with. Specified as a member, which will be used as the validator for
         all values added to the collection.
@@ -30,7 +30,7 @@ class Mapping(Collection):
     values = None
     default_type = dict
     get_item_key = None
-    
+
     @getter
     def related_type(self):
         return self.values and self.values.type
@@ -46,9 +46,9 @@ class Mapping(Collection):
             values = self.values
 
             if keys is not None or values is not None:
-                
+
                 context.enter(self, value)
-    
+
                 try:
                     for key, value in value.iteritems():
                         if keys is not None:
@@ -77,7 +77,7 @@ remove.implementations[dict] = _mapping_remove
 #------------------------------------------------------------------------------
 
 class RelationMapping(RelationCollection, InstrumentedDict):
-    
+
     def __init__(self, items = None, owner = None, member = None):
         self.owner = owner
         self.member = member

@@ -30,7 +30,7 @@ def data_bound(element, control = None):
     @element.when_binding
     def binding():
         bind_member(element, control)
-    
+
 def bind_member(element, control = None):
 
     member = getattr(element, "collection", None) or element.member

@@ -34,7 +34,7 @@ class Pager(Element):
 
     pagination = None
     user_collection = None
-    
+
     def _build(self):
 
         # Aproximate layout:
@@ -56,7 +56,7 @@ class Pager(Element):
         self.append(self.last_page_button)
 
     def _ready(self):
-        
+
         Element._ready(self)
 
         if self.user_collection:
@@ -84,7 +84,7 @@ class Pager(Element):
         if self.hide_when_empty and page_count < 2:
             self.visible = False
             return
-        
+
         # First page
         if self.page == 0:
             self.first_page_button.visible = False
@@ -94,7 +94,7 @@ class Pager(Element):
             self.previous_page_button["href"] = self._get_page_link(
                 self.page - 1
             )
-        
+
         # Last page
         if self.page + 1 == page_count:
             self.next_page_button.visible = False

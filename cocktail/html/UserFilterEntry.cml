@@ -6,10 +6,10 @@
     py:name_prefix="filter_"
     py:required_marks="${False}"
     py:generate_groups="${False}">
-    
+
     <?py-class
     def create_language_display(self, obj, member):
-        
+
         display = loader.new("cocktail.html.DropdownSelector")
         display.empty_option_displayed = not member.required
         display.empty_label = translations("cocktail.html.UserFilterEntry any language")
@@ -21,7 +21,7 @@
         return display
 
     def create_operator_display(self, obj, member):
-        
+
         display = loader.new("cocktail.html.DropdownSelector")
         display.empty_option_displayed = False
 
@@ -32,13 +32,13 @@
         return display
 
     def get_member_supplied_display(self, user_filter, member):
-        
+
         control = member.search_control
-        
+
         if control is None and member.name in ("value", "values"):
-            
+
             user_filter_member = getattr(user_filter, "member", None)
-            
+
             if user_filter_member:
                 control = user_filter_member.search_control
 

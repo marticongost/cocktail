@@ -46,7 +46,7 @@ for size, suffix in _suffixes_by_base[2]:
 def format_bytes(n, base = 10, decimals_threshold = 10 ** 6):
     """Return a string representing the greek/metric suffix of an amount of
     bytes.
-    
+
     @param n: An amount of bytes.
     @type n: int
 

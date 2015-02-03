@@ -13,7 +13,7 @@ from cocktail.schema.exceptions import ValidationError
 class ErrorList(ListWrapper):
 
     def __init__(self, errors = None):
-    
+
         ListWrapper.__init__(self)
         self.__errors_by_member = {}
 
@@ -28,7 +28,7 @@ class ErrorList(ListWrapper):
         return member
 
     def add(self, error):
-        
+
         self._items.append(error)
         members = getattr(error, "invalid_members", None)
 
@@ -36,7 +36,7 @@ class ErrorList(ListWrapper):
             for member in members:
                 key = (self._normalize_member(member), error.language)
                 member_errors = self.__errors_by_member.get(key)
-                
+
                 if member_errors is None:
                     self.__errors_by_member[key] = [error]
                 else:

@@ -22,7 +22,7 @@ from cocktail.modeling import (
 
 
 class Resource(object):
-    
+
     default_mime_type = None
     mime_types = {}
     extensions = {}
@@ -33,7 +33,7 @@ class Resource(object):
         self.__mime_type = mime_type or self.default_mime_type
         self.__ie_condition = ie_condition
         self.__set = set
-           
+
     @classmethod
     def from_uri(cls, uri, mime_type = None, ie_condition = None, **kwargs):
 
@@ -58,7 +58,7 @@ class Resource(object):
             )
 
         return resource_type(
-            uri, 
+            uri,
             mime_type = mime_type,
             ie_condition = ie_condition,
             **kwargs
@@ -116,7 +116,7 @@ class Script(Resource):
     def __init__(self,
         uri,
         mime_type = None,
-        ie_condition = None, 
+        ie_condition = None,
         set = None,
         async = False
     ):
@@ -153,7 +153,7 @@ class Script(Resource):
         if self.ie_condition:
             from cocktail.html.ieconditionalcomment import IEConditionalComment
             embed = IEConditionalComment(self.ie_condition, children = [embed])
-        
+
         document.scripts_container.append(embed)
         return embed
 
@@ -288,7 +288,7 @@ class ResourceSet(InstrumentedOrderedSet):
             mime_type = self._default_mime_type
 
         self.__mime_type = mime_type
-        
+
         if mime_type is None:
             self._match_mime_type = lambda mime_type: True
         elif isinstance(mime_type, basestring):
@@ -338,13 +338,13 @@ class LinkedResources(ResourceSet):
 
     url_processor = None
 
-    def insert_into_document(self, document):        
+    def insert_into_document(self, document):
         for resource in self:
             resource.link(document, url_processor = self.url_processor)
 
 
 class ResourceAggregator(ResourceSet):
-    
+
     read_chunk_size = 1024 * 4
     source_encoding = "utf-8"
     file_glue = "\n"
@@ -382,7 +382,7 @@ class ResourceAggregator(ResourceSet):
 
     def write_resource_source(self, resource, dest):
         chunk_size = self.read_chunk_size
-        resource_file_path = resource_repositories.locate(resource)        
+        resource_file_path = resource_repositories.locate(resource)
         with open(resource_file_path) as src:
             while True:
                 chunk = src.read(chunk_size)
@@ -392,7 +392,7 @@ class ResourceAggregator(ResourceSet):
 
 
 class EmbeddedResources(ResourceAggregator):
-    
+
     def insert_into_document(self, document):
         for resource in self:
             source = self.get_resource_source(resource)
@@ -412,7 +412,7 @@ class ResourceBundle(ResourceAggregator):
 
     def matches(self, resource):
         return (
-            not resource.ie_condition            
+            not resource.ie_condition
             and ResourceAggregator.matches(self, resource)
         )
 
@@ -487,7 +487,7 @@ class ResourceBundle(ResourceAggregator):
                 else:
                     if resource_mtime > bundle_mtime:
                         return True
-        
+
             return False
 
     def insert_into_document(self, document):

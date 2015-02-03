@@ -21,7 +21,7 @@ class PersistentCollectionTestCase(TempStorageMixin, TestCase):
 
         class Foo(PersistentObject):
             bar = Collection()
-        
+
         foo = Foo()
         assert isinstance(foo.bar, PersistentRelationList)
 
@@ -34,7 +34,7 @@ class PersistentCollectionTestCase(TempStorageMixin, TestCase):
 
         class Foo(PersistentObject):
             bar = Collection()
-        
+
         foo = Foo()
         value = [Foo(), Foo()]
         foo.bar = value
@@ -50,7 +50,7 @@ class PersistentCollectionTestCase(TempStorageMixin, TestCase):
 
         class Foo(PersistentObject):
             bar = Collection(bidirectional = True)
-        
+
         class Bar(PersistentObject):
             foo = Reference(bidirectional = True)
 
@@ -71,7 +71,7 @@ class PersistentCollectionTestCase(TempStorageMixin, TestCase):
 
         class Foo(PersistentObject):
             bar = Collection(bidirectional = True)
-        
+
         class Bar(PersistentObject):
             foo = Reference(bidirectional = True)
 

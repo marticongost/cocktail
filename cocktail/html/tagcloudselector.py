@@ -30,10 +30,10 @@ class TagCloudSelector(Selector):
     def _ready(self):
 
         if self.tag_assignments_member and self.tags is None:
-            
+
             self.tags = {}
             self.items = []
-                     
+
             for tag in self.tag_assignments_member.schema.select():
                 self.items.append(tag)
                 tag_items = tag.get(self.tag_assignments_member)
@@ -56,7 +56,7 @@ class TagCloudSelector(Selector):
             )
 
         Selector._ready(self)
-    
+
     def create_entry(self, value, label, selected):
 
         entry = Element()
@@ -85,7 +85,7 @@ class TagCloudSelector(Selector):
         return entry
 
     def insert_into_form(self, form, field_instance):
-        
+
         field_instance.append(self)
 
         if self.selection_mode == MULTIPLE_SELECTION:

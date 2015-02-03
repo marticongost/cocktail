@@ -17,11 +17,11 @@ from cocktail.controllers.parameters import get_parameter
 
 class FormControllerMixin(object):
     """Mix-in class for controllers that read schema based objects.
-    
+
     @var form_model: The class of the edited object.
     @type form_model: L{SchemaObject subclass
                         <cocktail.schema.schemaobject.SchemaObject>}
-    """    
+    """
     form_model = None
     _form_instance = None
     _form_instance_is_new = True
@@ -35,10 +35,10 @@ class FormControllerMixin(object):
         @type: L{Schema<cocktail.schema.schema.Schema>}
         """
         form_model = self.form_model
-        
+
         if form_model is None:
             raise ValueError("Form model missing")
-        
+
         form_adapter = self.form_adapter
 
         if not form_adapter.has_rules():
@@ -58,16 +58,16 @@ class FormControllerMixin(object):
         # First load: set the initial state for the form
         if not self.submitted:
             self._init_form_data(form_data)
-        
+
         # Form submitted: read request data
         else:
             self._read_form_data(form_data)
 
         return form_data
-    
+
     def _init_form_data(self, form_data):
         """Set the form state on first load.
-        
+
         @param form_data: The dictionary representing the form state.
         @type form_data: dict
         """
@@ -79,7 +79,7 @@ class FormControllerMixin(object):
     def _apply_form_defaults(self, form_data):
         """Initialize the form state with defaults supplied by the form's
         schema.
-        
+
         @param form_data: The dictionary representing the form state.
         @type form_data: dict
         """
@@ -105,7 +105,7 @@ class FormControllerMixin(object):
 
     def _read_form_data(self, form_data):
         """Read data from the request.
-        
+
         @param form_data: The dictionary that request data is read into.
         @type form_data: dict
         """
@@ -131,12 +131,12 @@ class FormControllerMixin(object):
         """
         adapter = schema.Adapter()
         return adapter
-        
+
     def _get_form_instance(self):
         if self._form_instance is None:
             if self.form_model:
                 self._form_instance = self._create_form_instance()
-                
+
         return self._form_instance
 
     def _set_form_instance(self, form_instance):
@@ -210,7 +210,7 @@ class FormControllerMixin(object):
         self._apply_form_data()
 
     def _handle_processed(self, event):
-        
+
         # Extend the output with form data
         self.output.update(
             form_data = self.form_data,
