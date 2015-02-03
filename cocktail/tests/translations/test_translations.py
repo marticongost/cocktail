@@ -17,7 +17,7 @@ class TranslationsTestCase(TestCase):
         from cocktail.translations import set_language
         set_language(None)
 
-    def test_returns_empty_string_for_undefined_key(self):        
+    def test_returns_empty_string_for_undefined_key(self):
         from cocktail.translations import TranslationsRepository
         translations = TranslationsRepository()
         translations.define("parrot", es = u"Loro")
@@ -26,7 +26,7 @@ class TranslationsTestCase(TestCase):
     def test_translates_keys(self):
 
         from cocktail.translations import translations
-        
+
         translations.define("parrot",
             ca = u"Lloro",
             es = u"Loro",
@@ -40,7 +40,7 @@ class TranslationsTestCase(TestCase):
     def test_uses_implicit_language(self):
 
         from cocktail.translations import translations, set_language
-        
+
         translations.define("parrot",
             ca = u"Lloro",
             es = u"Loro",

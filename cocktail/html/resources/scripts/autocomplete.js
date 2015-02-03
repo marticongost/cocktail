@@ -25,12 +25,12 @@ cocktail.autocomplete = function (input, params /* optional */) {
     var dropdown = document.createElement("div");
     dropdown.className = "autocomplete_dropdown";
     resultsContainer.appendChild(dropdown);
-    
+
     var $input = jQuery(input);
     var $dropdown = jQuery(dropdown);
     $input.after(resultsContainer);
     $input.addClass("autocomplete");
- 
+
     $dropdown.mousedown(function () { return false; });
 
     var delay = params && params.delay || 100;
@@ -53,7 +53,7 @@ cocktail.autocomplete = function (input, params /* optional */) {
             "òóôö": "o",
             "ùúûü": "u"
         }
-        var normalizationCharMap = {}; 
+        var normalizationCharMap = {};
         var regexpStr = "";
         for (var chars in normalizationMap) {
             regexpStr += chars;
@@ -128,7 +128,7 @@ cocktail.autocomplete = function (input, params /* optional */) {
     });
 
     $input.bind("optionSelected", function (e, option) {
-        chooseOption(option);        
+        chooseOption(option);
     });
 
     function chooseOption(option) {
@@ -172,7 +172,7 @@ cocktail.autocomplete = function (input, params /* optional */) {
         selectEntry($dropdown.find(".autocomplete_entry").first());
     }
 
-    function update() {        
+    function update() {
         var query = input.value;
         if (query.length) {
             if (query != lastQuery) {
@@ -189,7 +189,7 @@ cocktail.autocomplete = function (input, params /* optional */) {
         this._findAutocompleteResults(query, function (query, results, alreadyCached) {
 
             $dropdown.empty();
-            
+
             if (!results.length || !focused) {
                 setResultsDisplayed(false);
             }
@@ -224,7 +224,7 @@ cocktail.autocomplete = function (input, params /* optional */) {
         if (normalize) {
             query = normalize(query);
         }
-        
+
         var results = cache && cache[query];
 
         if (results) {
@@ -266,13 +266,13 @@ cocktail.autocomplete = function (input, params /* optional */) {
     input.autocompleteMatch = function (option, query) {
         return option.normalizedLabel.indexOf(query) != -1;
     }
-   
+
     function setResultsDisplayed(displayed) {
         if (displayed) {
             jQuery(".autocomplete_dropdown").removeClass("unfolded");
             $dropdown.addClass("unfolded");
         }
-        else {            
+        else {
             $dropdown.removeClass("unfolded");
         }
     }

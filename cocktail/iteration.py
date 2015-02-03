@@ -77,7 +77,7 @@ def last(collection, **kwargs):
 
 def is_empty(collection):
     """Indicates if the given iterable object contains at least one item.
-    
+
     Note that calling this function on an iterator will consume its first item.
 
     :param collection: The iterable object to be tested.
@@ -123,7 +123,7 @@ def find_max(collection, key = None, default = _undefined):
     if isinstance(key, basestring):
         attrib = key
         key = lambda item: getattr(item, attrib, None)
-    
+
     for item in collection:
         item_key = item if key is None else key(item)
         if max_item is _undefined or item_key > max_key:
@@ -145,7 +145,7 @@ def find_min(collection, key = None, default = _undefined):
     if isinstance(key, basestring):
         attrib = key
         key = lambda item: getattr(item, attrib, None)
-    
+
     for item in collection:
         item_key = item if key is None else key(item)
         if min_item is _undefined or item_key < min_key:

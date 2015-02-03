@@ -89,12 +89,12 @@ class MemberFilter(UserFilter):
             ))
 
     def _add_member_to_schema(self, schema):
-        
+
         source_member = self.member
 
         if isinstance(source_member, Collection):
             source_member = source_member.items
-        
+
         value_member = source_member.copy()
         value_member.name = "value"
         value_member.translated = False
@@ -121,7 +121,7 @@ class MemberFilter(UserFilter):
 
 
 class BooleanFilter(MemberFilter):
-    
+
     repeatable = False
 
     @cached_getter
@@ -141,7 +141,7 @@ class BooleanFilter(MemberFilter):
 
 
 class BinaryFilter(MemberFilter):
-    
+
     operator = None
     operators = ()
 
@@ -174,7 +174,7 @@ class EqualityFilter(BinaryFilter):
 class ComparisonFilter(EqualityFilter):
 
     operators = EqualityFilter.operators + ("gt", "ge", "lt", "le")
-    
+
     @getter
     def expression(self):
         if self.operator == "gt":
@@ -204,7 +204,7 @@ class StringFilter(ComparisonFilter):
 
     @getter
     def expression(self):
-        
+
         if self.operator == "re":
             return self._get_member_expression().match(self.value)
 
@@ -222,7 +222,7 @@ class StringFilter(ComparisonFilter):
         return expr
 
 
-class GlobalSearchFilter(UserFilter):    
+class GlobalSearchFilter(UserFilter):
     id = "global_search"
     value = None
     language = None
@@ -232,13 +232,13 @@ class GlobalSearchFilter(UserFilter):
     def schema(self):
         schema = Schema()
         schema.name = "UserFilter"
-        
+
         if any(
             content_type.translated
             for content_type in chain(
                 [self.content_type], self.content_type.derived_schemas()
             )
-        ):        
+        ):
             schema.members_order = ["value", "language"]
             schema.add_member(String("language",
                 enumeration = self.available_languages
@@ -341,13 +341,13 @@ class MultipleChoiceFilter(MemberFilter):
                     subset.update(
                         query(member.equal(value)).execute()
                     )
-            
+
             elif isinstance(self.member, Collection):
                 by_key = False
                 rel_member = member.related_end
                 for value in self.values:
                     subset.update(value.get(rel_member))
-                
+
             expression = Self.one_of(subset)
             expression.by_key = by_key
 
@@ -372,7 +372,7 @@ class DateTimeRangeFilter(UserFilter):
             raise TypeError(
                 "Different types for start_date_member and end_date_member"
             )
-        
+
         start_date = self.start_date_member.copy()
         start_date.name = "start_date"
 
@@ -383,7 +383,7 @@ class DateTimeRangeFilter(UserFilter):
 
     @getter
     def expression(self):
-    
+
         expression = None
 
         if self.start_date and self.end_date:
@@ -403,7 +403,7 @@ class DescendsFromFilter(UserFilter):
 
     @cached_getter
     def schema(self):
-        
+
         return Schema("DescendsFromFilter", members = [
             Reference(
                 "root",
@@ -447,7 +447,7 @@ class UserFiltersRegistry(object):
         self.__filter_parameters = {}
 
     def get(self, content_type):
-        
+
         filters_by_type = self.__filters_by_type
         filters = []
 
@@ -473,7 +473,7 @@ class UserFiltersRegistry(object):
                     filter.promoted_search = True
 
         return filters
-    
+
     def _init_filter(self, filter, content_type):
         filter.content_type = content_type
         params = self.get_filter_parameters(content_type, filter.__class__)
@@ -486,7 +486,7 @@ class UserFiltersRegistry(object):
         if class_filters is None:
             class_filters = []
             self.__filters_by_type[cls] = class_filters
-        
+
         class_filters.append(filter_class)
 
     def get_filter_parameters(self, cls, filter_class):

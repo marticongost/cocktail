@@ -19,9 +19,9 @@ from zope.index.text.lexicon import Splitter
 
 
 class Expression(object):
-    
+
     operands = ()
-    
+
     def __init__(self, *operands):
         self.operands = tuple(self.wrap(operand) for operand in operands)
 
@@ -95,7 +95,7 @@ class Expression(object):
 
     def one_of(self, expr):
         return InclusionExpression(self, expr)
-    
+
     def not_one_of(self, expr):
         return ExclusionExpression(self, expr)
 
@@ -133,7 +133,7 @@ class Expression(object):
         j = None,
         exclude_min = False,
         exclude_max = True):
-        
+
         min_operator = (
             GreaterExpression
             if exclude_min
@@ -149,7 +149,7 @@ class Expression(object):
         if i is not None and j is not None:
             expr = min_operator(self, i).and_(max_operator(self, j))
         elif i is not None:
-            expr = min_operator(self, i)            
+            expr = min_operator(self, i)
         elif j is not None:
             expr = max_operator(self, j)
         else:
@@ -179,7 +179,7 @@ class Constant(Expression):
 
     def __eq__(self, other):
         return type(self) is type(other) and self.value == other.value
-        
+
     def __repr__(self):
         return "Constant(%s)" % repr(self.value)
 
@@ -228,7 +228,7 @@ class NormalizableExpression(Expression):
 
     normalized_strings = False
     _invariable_normalized = False
-    
+
     def normalize_operands(self, a, b):
 
         if self.normalized_strings:
@@ -247,21 +247,21 @@ class NormalizableExpression(Expression):
 
 
 class EqualExpression(NormalizableExpression):
-    
+
     def op(self, a, b):
         a, b = self.normalize_operands(a, b)
         return a == b
 
 
 class NotEqualExpression(NormalizableExpression):
-    
+
     def op(self, a, b):
         a, b = self.normalize_operands(a, b)
         return a != b
 
 
 class GreaterExpression(NormalizableExpression):
-    
+
     def op(self, a, b):
         a, b = self.normalize_operands(a, b)
         if a is None:
@@ -273,7 +273,7 @@ class GreaterExpression(NormalizableExpression):
 
 
 class GreaterEqualExpression(NormalizableExpression):
-    
+
     def op(self, a, b):
         a, b = self.normalize_operands(a, b)
         if a is None:
@@ -309,7 +309,7 @@ class LowerEqualExpression(NormalizableExpression):
 
 
 class StartsWithExpression(NormalizableExpression):
-    
+
     def op(self, a, b):
         a, b = self.normalize_operands(a, b)
         if a is None or b is None:
@@ -332,7 +332,7 @@ class GlobalSearchExpression(Expression):
         Expression.__init__(self)
         self.search_query = search
         self.search_words = set(normalize(search).split())
-        
+
         if languages is None:
             languages = [get_language()]
         else:
@@ -340,11 +340,11 @@ class GlobalSearchExpression(Expression):
 
         if None not in languages:
             languages.append(None)
-        
+
         self.languages = languages
         self.logic = logic
 
-    def eval(self, context, accessor = None):        
+    def eval(self, context, accessor = None):
         text = u" ".join(context.get_searchable_text(self.languages))
         text = normalize(text)
         return any((word in text) for word in self.search_words)
@@ -376,7 +376,7 @@ class SearchExpression(Expression):
         return self._query
 
     def _set_query(self, query):
-        
+
         if not isinstance(query, basestring):
             raise TypeError(
                 'SearchExpression.query must be set to a string, '
@@ -400,7 +400,7 @@ class SearchExpression(Expression):
         return normalize(word)
 
     def eval(self, context, accessor = None):
-        
+
         languages = self.languages
         if languages is None:
             languages = [get_language()]
@@ -430,10 +430,10 @@ class SearchExpression(Expression):
             searchable_text = normalize(u" ".join(text_body))
             operator = all if self.logic == "and" else any
             return operator(
-                (token in searchable_text) 
+                (token in searchable_text)
                 for token in self.__tokens
             )
-        
+
         # Match full words only (ie. a text containing "John Sanderson" would
         # not match a query for "sand", but "John Sanderson walked across the
         # sand" would).
@@ -455,7 +455,7 @@ class SearchExpression(Expression):
                 "expected 'and' or 'or', got %r instead"
                 % logic
             )
-        
+
         self.__logic = logic
 
     logic = property(_get_logic, _set_logic, doc = """
@@ -483,7 +483,7 @@ class DivisionExpression(Expression):
 
 
 class AndExpression(Expression):
-    
+
     def op(self, a, b):
         return a and b
 
@@ -509,7 +509,7 @@ class PositiveExpression(Expression):
 class InclusionExpression(Expression):
 
     by_key = False
-    
+
     def op(self, a, b):
         if self.by_key:
             return a.id in b
@@ -518,7 +518,7 @@ class InclusionExpression(Expression):
 
 
 class ExclusionExpression(Expression):
- 
+
     by_key = False
 
     def op(self, a, b):
@@ -529,7 +529,7 @@ class ExclusionExpression(Expression):
 
 
 class ContainsExpression(Expression):
-    op = operator.contains    
+    op = operator.contains
 
 
 class MatchExpression(Expression):
@@ -554,7 +554,7 @@ class AnyExpression(Expression):
         self.filters = filters
 
     def eval(self, context, accessor = None):
-        
+
         value = (accessor or get_accessor(context)).get(context, self.relation)
 
         if value:
@@ -578,10 +578,10 @@ class AllExpression(Expression):
         self.filters = filters
 
     def eval(self, context, accessor = None):
-        
+
         value = (accessor or get_accessor(context)).get(context, self.relation)
 
-        if value:            
+        if value:
             for item in value:
                 for filter in self.filters:
                     if not filter.eval(item, accessor):
@@ -597,7 +597,7 @@ class HasExpression(Expression):
         self.filters = filters
 
     def eval(self, context, accessor = None):
-        
+
         value = (accessor or get_accessor(context)).get(context, self.relation)
 
         if value:
@@ -628,7 +628,7 @@ class RangeIntersectionExpression(Expression):
             if self.exclude_max
             else LowerEqualExpression
         )
-        
+
         return (
             (d is None or max_operator(a, d).eval({}))
             and (b is None or min_operator(b, c).eval({}))

@@ -36,7 +36,7 @@ class TemplateCompiler(object):
     XHTML_NS = "http://www.w3.org/1999/xhtml"
 
     def __init__(self, pkg_name, class_name, loader, xml):
-        
+
         self.pkg_name = pkg_name
         self.class_name = class_name
         self.loader = loader
@@ -49,9 +49,9 @@ class TemplateCompiler(object):
         self.__stack = []
         self.__root_element_found = False
         self.__is_overlay = False
-        
+
         self.__source_blocks = []
-        
+
         self.__global_source_block = SourceCodeWriter()
         self.__source_blocks.append(self.__global_source_block)
 
@@ -68,12 +68,12 @@ class TemplateCompiler(object):
         for key in dir(self):
             if key.endswith("Handler"):
                 setattr(self.__parser, key, getattr(self, key))
-        
+
         self._push()
         self.compile(xml)
         self._pop()
 
-    def compile(self, xml):        
+    def compile(self, xml):
         self.__parser.Parse(xml, True)
 
     def _parse_error(self, reason):
@@ -87,7 +87,7 @@ class TemplateCompiler(object):
         )
 
     def get_source(self):
-        
+
         source = u"\n\n".join(
             unicode(block)
             for block in self.__source_blocks
@@ -122,7 +122,7 @@ class TemplateCompiler(object):
         }
 
     def add_class_reference(self, reference):
-        
+
         name = self.__classes.get(reference)
 
         if name is None:
@@ -133,7 +133,7 @@ class TemplateCompiler(object):
 
             # Automatic class aliasing (avoid name collisions)
             if name in self.__class_names:
-                
+
                 generated_name = None
                 suffix_id = 0
 
@@ -143,15 +143,15 @@ class TemplateCompiler(object):
                     generated_name = "%s_%d" % (name, suffix_id)
 
                 name = generated_name
-            
+
             self.__class_names.add(name)
             self.__classes[reference] = name
             self.__global_source_block.write(
                 "%s = loader.get_class('%s')" % (name, reference)
             )
-        
+
         return name
-    
+
     def _push(self):
 
         element = Frame()
@@ -166,15 +166,15 @@ class TemplateCompiler(object):
 
     def _pop(self):
         frame = self.__stack.pop()
-        
+
         for close_action in frame.close_actions:
             close_action()
-        
+
         return frame
 
     def _get_parent_id(self):
         parent_id = None
-                
+
         for frame in reversed(self.__stack):
             parent_id = frame.element
             if parent_id:
@@ -183,7 +183,7 @@ class TemplateCompiler(object):
         return None
 
     def StartElementHandler(self, name, attributes):
-        
+
         frame = self._push()
         source = frame.source_block
         name_parts = name.split(">")
@@ -203,7 +203,7 @@ class TemplateCompiler(object):
         else:
             uri = None
             tag = name
-        
+
         # Template/custom tag
         if uri == self.TEMPLATE_NS:
 
@@ -218,7 +218,7 @@ class TemplateCompiler(object):
                 overlay_class = attributes.pop(
                     self.TEMPLATE_NS + ">class",
                     None)
-                
+
                 if overlay_class:
                     self.__end_source_block.write(
                         "register_overlay(%r, %r)" % (
@@ -244,7 +244,7 @@ class TemplateCompiler(object):
                 with_element = attributes.pop(
                     self.TEMPLATE_NS + ">element",
                     None)
-                
+
                 with_def = attributes.pop(
                     self.TEMPLATE_NS + ">def",
                     None)
@@ -282,7 +282,7 @@ class TemplateCompiler(object):
                 elem_tag = None
             else:
                 elem_class_fullname = tag
-        else:            
+        else:
             elem_class_fullname = "cocktail.html.Element"
             elem_tag = tag
 
@@ -290,12 +290,12 @@ class TemplateCompiler(object):
             elem_class_name = self.add_class_reference(elem_class_fullname)
 
         self._handle_conditions(attributes)
- 
+
         # Document root
         if not self.__root_element_found:
-            
+
             self.__root_element_found = True
-            
+
             if self.__is_overlay:
                 base_name = "Overlay"
                 self.__global_source_block.write(
@@ -305,9 +305,9 @@ class TemplateCompiler(object):
             else:
                 base_name = elem_class_name
 
-            self.__base_class_name = base_name 
+            self.__base_class_name = base_name
             frame.element = id = "self"
-            
+
             source = self.__declaration_source_block
             source.write("class %s(%s):" % (self.class_name, base_name))
 
@@ -325,13 +325,13 @@ class TemplateCompiler(object):
                     source.write("self.tag = %r" % elem_tag)
 
             self._handle_attributes(id, attributes)
-        
+
         # Content
         elif is_content:
 
             # Iteration
             iter_expr = attributes.pop(self.TEMPLATE_NS + ">for", None)
-        
+
             if iter_expr is not None:
                 source.write("for " + iter_expr + ":")
                 source.indent()
@@ -349,10 +349,10 @@ class TemplateCompiler(object):
             local_identifier = attributes.pop(self.TEMPLATE_NS + ">local_id", None)
             def_identifier = \
                 attributes.pop(self.TEMPLATE_NS + ">def", None)
-            
+
             if def_identifier:
                 is_new = False
-            
+
             # Instantiation
             if is_new or with_element:
 
@@ -370,7 +370,7 @@ class TemplateCompiler(object):
                 if identifier:
                     factory_expr = element_expr
                     element_expr = "self.create_%s()" % identifier
-                
+
                 # Normal class instantiation
                 elif element_expr is None:
                     element_expr = "%s()" % elem_class_name
@@ -416,15 +416,15 @@ class TemplateCompiler(object):
             factory_id = identifier or def_identifier or with_def
 
             if factory_id:
-                
+
                 frame.element = id = factory_id
-                
+
                 # Declaration
                 args = attributes.pop(self.TEMPLATE_NS + ">args", None)
 
                 if not args:
                     args = "*args, **kwargs"
-                
+
                 inline = ((with_def or def_identifier) and parent_id != "self")
 
                 if inline:
@@ -461,12 +461,12 @@ class TemplateCompiler(object):
 
                 # Instantiation
                 source.write("element = %s = %s" % (id, element_factory))
-                
+
                 @frame.closing
                 def return_element():
                     source.write("return %s" % id)
                     source.unindent()
-            
+
             # Add cache key and tags information based on the element's
             # identifier
             if identifier:
@@ -488,21 +488,21 @@ class TemplateCompiler(object):
                 source.write("%s.add_class(%s)"
                     % (id, repr(factory_id or local_identifier))
                 )
-    
+
     def EndElementHandler(self, name):
         self._pop()
-                
+
         # Persistent name
         frame = self.__stack[-1]
         frame.source_block.write("element = %s" % frame.element)
-    
+
     def CharacterDataHandler(self, data):
 
         sdata = data.strip()
 
         if sdata:
             parent_id = self._get_current_element()
-            
+
             for chunk, expr_type in self._parse_data(sdata):
 
                 source = self.__stack[-1].source_block
@@ -513,7 +513,7 @@ class TemplateCompiler(object):
                 elif expr_type == EXPRESSION:
                     source.write('%s.append(%s)' \
                         % (parent_id, chunk))
-                
+
                 elif expr_type == PLACEHOLDER:
                     source.write(
                         '%s.append(PlaceHolder(lambda: %s))'
@@ -523,14 +523,14 @@ class TemplateCompiler(object):
     def DefaultHandler(self, data):
 
         for pi in ("<?py", "<?py-class"):
-            if data.startswith(pi) and data[len(pi)] in (" \n\r\t"):                
+            if data.startswith(pi) and data[len(pi)] in (" \n\r\t"):
                 break
         else:
-            return 
-        
+            return
+
         data = data[len(pi) + 1:-2]
         lines = data.split("\n")
-            
+
         for line in lines:
             if line.strip():
                 indent_str = WHITESPACE_EXPR.match(line).group(0)
@@ -585,12 +585,12 @@ class TemplateCompiler(object):
             frame.close_actions.append(source.unindent)
 
     def _handle_attributes(self, id, attributes):
-        
+
         source = self.__stack[-1].source_block
         place_holders = None
 
         for key, value in attributes.iteritems():
-            
+
             pos = key.find(">")
 
             if pos == -1:
@@ -610,14 +610,14 @@ class TemplateCompiler(object):
                 else:
                     is_placeholder = (expr_type == PLACEHOLDER)
                     chunks.append("(" + chunk + ")")
-            
+
             value_source = " + ".join(chunks) or '""'
 
             if is_template_attrib:
                 assignment = '%s.%s = %s' % (id, name, value_source)
             else:
                 assignment = '%s["%s"] = %s' % (id, name, value_source)
-            
+
             if is_placeholder:
                 if place_holders is None:
                     place_holders = [assignment]
@@ -634,7 +634,7 @@ class TemplateCompiler(object):
             parent_id = self._get_parent_id()
             if parent_id:
                 source.write("element = " + parent_id)
-                        
+
             if place_holders:
                 for assignment in place_holders:
                     source.write(assignment)
@@ -649,9 +649,9 @@ class TemplateCompiler(object):
         strlen = len(data)
         prevc = None
         expr_type = None
-        
+
         while i < strlen:
-            
+
             c = data[i]
 
             if c == "{":
@@ -665,12 +665,12 @@ class TemplateCompiler(object):
 
                 elif depth:
                     depth += 1
-                                        
+
                 i += 1
 
             elif c == "}":
                 depth -= 1
-                
+
                 if not depth:
                     if i > start:
                         yield data[start:i], expr_type

@@ -8,7 +8,7 @@
 -----------------------------------------------------------------------------*/
 
 cocktail.bind(".MediaElementVideo", function ($video) {
-    this.mediaElementOptions.success = function (mediaElement, domObject) { 
+    this.mediaElementOptions.success = function (mediaElement, domObject) {
         if ($video.attr("autoplay") && mediaElement.pluginType == 'flash') {
             mediaElement.addEventListener('canplay', function() {
                 mediaElement.play();
