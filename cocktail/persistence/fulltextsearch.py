@@ -22,6 +22,7 @@ from cocktail.persistence.persistentobject import (
 
 class FullTextIndexProcessor(object):
     implements(IPipelineElement)
+    stemming = True
 
     def __init__(self, locale, stemming):
         self.locale = locale
