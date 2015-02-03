@@ -16,7 +16,7 @@ cocktail.bind(".Slider", function ($slider) {
     var animationsEnabled = false;
 
     $slider.css("position", "relative");
-    
+
     var $sliderFrame = $slider.find(".slider_frame");
     $sliderFrame.css("overflow", "hidden");
 
@@ -30,7 +30,7 @@ cocktail.bind(".Slider", function ($slider) {
         .attr("tabindex", "0")
         .focus(function () { $slider.get(0).centerScroll(this); })
         .keydown(function (e) {
-            if (e.keyCode == 37) { 
+            if (e.keyCode == 37) {
                 (jQuery(this).prev().get(0) || $slidesContainer.children().last().get(0)).focus();
                 return false;
             }
@@ -61,8 +61,8 @@ cocktail.bind(".Slider", function ($slider) {
         var width = $sliderFrame.get(0).offsetWidth;
         var frameEnd = this.getScroll() + width;
         var moved = false;
-        
-        $slidesContainer.children().each(function () {            
+
+        $slidesContainer.children().each(function () {
             if (this.offsetLeft > frameEnd) {
                 $slider.get(0).centerScroll(this, ALIGN_RIGHT);
                 moved = true;
@@ -76,10 +76,10 @@ cocktail.bind(".Slider", function ($slider) {
     }
 
     this.scrollBackwards = function (wrap) {
-        
+
         var frameStart = this.getScroll();
         var moved = false;
-        
+
         $slidesContainer.children().reverse().each(function () {
             if (this.offsetLeft < frameStart) {
                 $slider.get(0).centerScroll(this, ALIGN_LEFT);
@@ -105,7 +105,7 @@ cocktail.bind(".Slider", function ($slider) {
 
         if (alignment == ALIGN_CENTER || alignment === undefined) {
             var scroll = Math.max(0, slide.offsetLeft + slide.offsetWidth / 2 - width / 2);
-            scroll = Math.min(scroll, contentWidth - width);            
+            scroll = Math.min(scroll, contentWidth - width);
         }
         else if (alignment == ALIGN_RIGHT) {
             var scroll = Math.max(0, slide.offsetLeft + slide.offsetWidth - width);

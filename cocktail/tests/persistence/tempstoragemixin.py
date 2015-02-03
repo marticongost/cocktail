@@ -10,7 +10,7 @@ u"""
 class TempStorageMixin(object):
 
     def setUp(self):
-        from os.path import join        
+        from os.path import join
         from tempfile import mkdtemp
         from ZODB.FileStorage import FileStorage
         from cocktail.persistence import datastore

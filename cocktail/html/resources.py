@@ -9,7 +9,7 @@ u"""
 from cocktail.modeling import getter
 
 class Resource(object):
-    
+
     default_mime_type = None
     mime_types = {}
     extensions = {}
@@ -18,7 +18,7 @@ class Resource(object):
         self.__uri = uri
         self.__mime_type = mime_type or self.default_mime_type
         self.__ie_condition = ie_condition
-           
+
     @classmethod
     def from_uri(cls, uri, mime_type = None, ie_condition = None, **kwargs):
 
@@ -43,7 +43,7 @@ class Resource(object):
             )
 
         return resource_type(
-            uri, 
+            uri,
             mime_type = mime_type,
             ie_condition = ie_condition,
             **kwargs
@@ -77,7 +77,7 @@ class Script(Resource):
     def __init__(self,
         uri,
         mime_type = None,
-        ie_condition = None, 
+        ie_condition = None,
         async = False
     ):
         Resource.__init__(self,

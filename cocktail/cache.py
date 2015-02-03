@@ -14,7 +14,7 @@ from cocktail.styled import styled
 missing = object()
 
 class Cache(DictWrapper):
-    
+
     expiration = None
     entries = None
     enabled = True
@@ -28,18 +28,18 @@ class Cache(DictWrapper):
 
         if load is not None:
             self.load = load
- 
+
     def _drop_expired(self):
-        
+
         if self.expiration:
-            
+
             oldest_creation_time = time() - self.expiration
 
             for key, entry in self.__entries.items():
                 if entry.creation < oldest_creation_time:
                     del self[key]
 
-    def request(self, key, expiration = None, invalidation = None):        
+    def request(self, key, expiration = None, invalidation = None):
         try:
             return self.get_value(key, invalidation = invalidation)
         except KeyError:
@@ -48,7 +48,7 @@ class Cache(DictWrapper):
                 print key
             value = self.load(key)
             if self.enabled:
-                self.set_value(key, value, expiration)                
+                self.set_value(key, value, expiration)
             return value
 
     def get_value(self, key, default = missing, invalidation = None):
@@ -56,7 +56,7 @@ class Cache(DictWrapper):
             entry = self.__entries.get(key, None)
 
             if entry is not None:
-        
+
                 if self.updatable \
                 and not self._is_current(entry, invalidation, self.verbose):
                     if default is missing:
@@ -65,11 +65,11 @@ class Cache(DictWrapper):
                     if self.verbose:
                         print styled("CACHE: Recovering", "white", "green", "bold"),
                         print key
-                    return entry.value 
+                    return entry.value
 
         if default is missing:
             raise KeyError("Undefined cache key: %s" % repr(key))
-    
+
         return default
 
     def set_value(self, key, value, expiration = None):
@@ -91,7 +91,7 @@ class Cache(DictWrapper):
             self._entry_removed(entry)
         else:
             raise KeyError(key)
-    
+
     def pop(self, key, default = missing):
         entry = self.__entries.get(key)
         if entry is None:
@@ -119,13 +119,13 @@ class Cache(DictWrapper):
                     print self.expiration
                 else:
                     print entry.expiration
-            
+
             return False
 
         # Invalidation
         if callable(invalidation):
             invalidation = invalidation()
-        
+
         if invalidation is not None:
             if isinstance(invalidation, datetime):
                 invalidation = mktime(invalidation.timetuple())
@@ -142,7 +142,7 @@ class Cache(DictWrapper):
 
 
 class CacheEntry(object):
-    
+
     def __init__(self, key, value, expiration = None):
         self.key = key
         self.value = value

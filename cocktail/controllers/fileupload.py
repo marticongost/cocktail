@@ -12,7 +12,7 @@ from mimetypes import guess_type
 from cocktail import schema
 
 class FileUpload(schema.Schema):
- 
+
     _special_copy_keys = (
         schema.Schema._special_copy_keys | set(["async_uploader"])
     )
@@ -66,7 +66,7 @@ class FileUpload(schema.Schema):
         return copy
 
     def parse_request_value(self, reader, value):
- 
+
         # Handle asynchronous uploads
         async_upload = None
         file = None
@@ -112,7 +112,7 @@ class FileUpload(schema.Schema):
         if value.type in self.meaningless_mime_types:
             mime_type_guess = guess_type(file_name, strict = False)
             if mime_type_guess:
-                upload["mime_type"] = mime_type_guess[0] 
+                upload["mime_type"] = mime_type_guess[0]
 
         # Map bad MIME types to their proper values
         good_mime_type = self.mime_type_corrections.get(upload["mime_type"])
@@ -122,7 +122,7 @@ class FileUpload(schema.Schema):
         dest = self.get_file_destination(upload)
         dest_file = None
         chunk_size = self.chunk_size
-        
+
         hash = None \
             if self.hash_algorithm is None \
             else hashlib.new(self.hash_algorithm)
@@ -135,7 +135,7 @@ class FileUpload(schema.Schema):
             file = value.file
 
         chunk = file.read(chunk_size)
-        
+
         # Don't write to the destination if no file has been uploaded
         if chunk and dest:
             dest_file = open(dest, "wb")

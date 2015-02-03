@@ -18,7 +18,7 @@ cocktail.bind(".CompoundDateSelector", function ($selector) {
         .appendTo(this);
 
     // Update the value of the hidden textbox when a value is chosen in the
-    // month/year dropdown selectors        
+    // month/year dropdown selectors
     $controls.find("select").change(function () {
         var day = $controls.find(".day_selector").val();
         var month = $controls.find(".month_selector").val();

@@ -34,8 +34,8 @@ def make_uri(*args, **kwargs):
             ("%s=%s" % (
                 name,
                 quote(
-                    value.encode("utf-8") 
-                    if isinstance(value, unicode) 
+                    value.encode("utf-8")
+                    if isinstance(value, unicode)
                     else str(value)
                 )
             )).decode("utf-8")
@@ -75,7 +75,7 @@ percent_encode_escape_range = [
    (0xF0000, 0xFFFFD),
    (0x100000, 0x10FFFD)
 ]
- 
+
 def percent_encode(c):
     """Apply percent encoding to IRI fragments.
 

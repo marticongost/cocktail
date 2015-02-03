@@ -46,34 +46,34 @@ class HandlerActivator(object):
                         event_slot()
 
                     parent = handler
-                    
+
                 # Execute the response handler
-                try:                    
+                try:
                     return self.callable(*self.args, **self.kwargs)
 
                 except TypeError, x:
 
                     callable = self.callable
-                    
+
                     if not isfunction(callable):
                         callable = getattr(callable, "im_func", callable)
                         if not isfunction(callable) \
                         and hasattr(callable, "__call__"):
                             callable = callable.__call__.im_func
-                    
-                    if callable:                        
+
+                    if callable:
                         (args, varargs, varkw, defaults) = getargspec(callable)
 
                         if args and args[0] == "self":
                             args = args[1:]
-                        
+
                         if len(self.args) < len(args) \
                         or (len(self.args) > len(args) and not varargs):
                             raise cherrypy.NotFound()
 
                     raise
-            
-            except cherrypy.HTTPRedirect: 
+
+            except cherrypy.HTTPRedirect:
                 raise
 
             except StopRequest:
@@ -91,7 +91,7 @@ class HandlerActivator(object):
                         if event_info.handled:
                             break
                 else:
-                    raise       
+                    raise
 
             # Cleanup
             finally:
@@ -101,7 +101,7 @@ class HandlerActivator(object):
                     StopRequest
                 )
                 flow_exception = None
-                
+
                 for handler in reversed(visited):
                     event_slot = getattr(handler, "after_request", None)
                     if event_slot is not None:
@@ -119,7 +119,7 @@ class HandlerActivator(object):
 
         except StopRequest:
             pass
-    
+
         return cherrypy.response.body
 
     def _get_kwargs(self):
@@ -127,10 +127,10 @@ class HandlerActivator(object):
         if self._kwargs:
             kwargs.update(self._kwargs)
         return kwargs
-    
+
     def _set_kwargs(self, kwargs):
         self._kwargs = kwargs
-    
+
     kwargs = property(_get_kwargs, _set_kwargs)
 
 
@@ -146,7 +146,7 @@ class Dispatcher(object):
         if config is None:
             config = cherrypy.config.copy()
             request.config = config
-        
+
         # Path components
         if isinstance(path_info, basestring):
             parts = self.split(path_info)
@@ -160,7 +160,7 @@ class Dispatcher(object):
             handler = request.app.root
 
         parent = None
-        
+
         chain = getattr(request, "handler_chain", None)
 
         if chain is None:
@@ -179,7 +179,7 @@ class Dispatcher(object):
                     # Instantiate classes
                     if isinstance(handler, type):
                         handler = handler()
-                    
+
                     if not getattr(handler, "exposed", False):
                         handler = None
                         break
@@ -189,7 +189,7 @@ class Dispatcher(object):
 
                     # Handler specific configuration
                     handler_config = getattr(handler, "_cp_config", None)
-                    
+
                     if handler_config is not None:
                         config.update(handler_config)
 
@@ -204,7 +204,7 @@ class Dispatcher(object):
                     if event_slot is not None:
                         event_slot(path = path, config = config)
 
-                # Descend:                
+                # Descend:
                 child = None
 
                 # Named child
@@ -223,14 +223,14 @@ class Dispatcher(object):
                     resolver = getattr(handler, "resolve", None)
                     if resolver:
                         child = resolver(path)
-                
+
                 resolved_to_self = child is handler
 
                 if child is None:
                     break
                 else:
                     handler = child
-        
+
             if handler is None:
                 raise cherrypy.NotFound()
 
@@ -239,9 +239,9 @@ class Dispatcher(object):
             def handler(*args, **kwargs):
                 raise exc_info[0], exc_info[1], exc_info[2]
             chain.append(handler)
-        
+
         request.handler = HandlerActivator(handler, *path)
-    
+
     def respond(self, path_info, handler = None):
         self(path_info, handler)
         return cherrypy.request.handler()
@@ -253,7 +253,7 @@ class Dispatcher(object):
 
     def normalize_component(self, component):
         return component.replace("%2F", "/")
-       
+
     class PathProcessor(ListWrapper):
 
         def __init__(self, path):
@@ -266,12 +266,12 @@ class Dispatcher(object):
                 index = len(self._items) + index
 
             component = self._items.pop(index)
-            
+
             if index == 0:
                 self.__consumed_components.append(component)
 
             return component
-            
+
         @getter
         def current_path(self):
             return "/" + "/".join(component
@@ -285,7 +285,7 @@ class StopRequest(Exception):
 
 
 if __name__ == "__main__":
-    
+
     class TestController(object):
 
         @cherrypy.expose

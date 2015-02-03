@@ -36,7 +36,7 @@ class UserAgentSniffer(object):
 
         if match is None:
             user_agent = cherrypy.request.headers.get("User-Agent")
-            
+
             if user_agent is None:
                 match = False
             else:

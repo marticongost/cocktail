@@ -43,7 +43,7 @@ cocktail.searchable = function (searchable, params /* = null */) {
 
             // Flag matching / non matching entries
             $entries.each(function (i) {
-                
+
                 // Obtain and normalize the searchable text for each entry
                 var text = this.searchableText;
                 if (text === undefined) {

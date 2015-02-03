@@ -8,7 +8,7 @@
 -----------------------------------------------------------------------------*/
 
 (function () {
- 
+
     var focusedSelectable = null;
 
     function disableTextSelection(element) {
@@ -56,9 +56,9 @@
             selectable.entrySelector = entrySelector;
             selectable._getEntries = function () { return $selectable.find(entrySelector); }
             selectable._selectionStart = null;
-            selectable._selectionEnd = null;            
+            selectable._selectionEnd = null;
             selectable.selectionMode = selectionMode;
-            
+
             // Create a dummy link element to fake focus for the element
             focusTarget = document.createElement('a');
             focusTarget.href = "javascript:;";
@@ -96,29 +96,29 @@
                 focusedSelectable = null;
                 $selectable.removeClass("focused");
             }
-        
+
             jQuery(focusTarget)
                 .focus(handleFocus)
                 .blur(handleBlur);
-            
+
             $selectable.find(entryCheckboxSelector)
                 .focus(handleFocus)
-                .blur(handleBlur);            
+                .blur(handleBlur);
 
             // Double clicking selectable._getEntries() (change the selection and trigger an 'activated'
             // event on the table)
 
             selectable.dblClickEntryEvent = function (e) {
-                selectable.clearSelection();                
+                selectable.clearSelection();
                 selectable.setEntrySelected(this, true);
                 $selectable.trigger("activated");
             }
 
             selectable._getEntries().bind("dblclick", selectable.dblClickEntryEvent);
-        
-            selectable.getNextEntry = function (entry) {                
+
+            selectable.getNextEntry = function (entry) {
                 var $entries = this._getEntries();
-                var i = $entries.index(entry);                
+                var i = $entries.index(entry);
                 return (i == -1 || i == $entries.length) ? null : $entries[i + 1];
             }
 
@@ -137,7 +137,7 @@
             }
 
             selectable.setEntrySelected = function (entry, selected, scroll /* = false */) {
-                
+
                 jQuery(checkboxSelector, entry).get(0).checked = selected;
 
                 if (selected) {
@@ -175,11 +175,11 @@
             }
 
             selectable.setRangeSelected = function (firstEntry, lastEntry, selected) {
-                
+
                 var entries = selectable._getEntries();
                 var i = entries.index(firstEntry);
                 var j = entries.index(lastEntry);
-                
+
                 var pos = Math.min(i, j);
                 var end = Math.max(i, j);
 
@@ -230,7 +230,7 @@
             selectable._getEntries()
                 // Togle entry selection when clicking an entry
                 .bind("click", selectable.clickEntryEvent)
-                
+
                 .mousedown(function () {
                     disableTextSelection($selectable.get(0));
                 })
@@ -286,7 +286,7 @@
                 if (multipleSelection && e.shiftKey) {
                     focusedSelectable.setRangeSelected(focusedSelectable._selectionStart, lastEntry, true);
                 }
-                else {  
+                else {
                     focusedSelectable.setEntrySelected(lastEntry, true, true);
                 }
 
@@ -294,13 +294,13 @@
             }
             // Down key
             else if (key == 40) {
-                
+
                 var nextEntry = focusedSelectable._selectionEnd
                              && focusedSelectable.getNextEntry(focusedSelectable._selectionEnd);
 
                 if (nextEntry) {
                     focusedSelectable.clearSelection();
-                                
+
                     if (multipleSelection && e.shiftKey) {
                         focusedSelectable.setRangeSelected(
                             focusedSelectable._selectionStart, nextEntry, true);
@@ -312,15 +312,15 @@
 
                 return false;
             }
-            // Up key        
+            // Up key
             else if (key == 38) {
-                   
+
                 var previousEntry = focusedSelectable._selectionEnd
                                  && focusedSelectable.getPreviousEntry(focusedSelectable._selectionEnd);
 
                 if (previousEntry) {
                     focusedSelectable.clearSelection();
-                
+
                     if (multipleSelection && e.shiftKey) {
                         focusedSelectable.setRangeSelected(
                             focusedSelectable._selectionStart, previousEntry, true);

@@ -13,11 +13,11 @@ from cocktail.schema.exceptions import MinValueError, MaxValueError
 class RangedMember(object):
     """A mixin class, used as a base for members that can constrain their
     values to a certain range (numbers, dates, etc).
-    
+
     @ivar min: Sets the minimum value accepted by the member. If set to a value
         other than None, values below this limit will produce a
         L{MinValueError<exceptions.MinValueError>} during validation.
-    
+
     @ivar max: Sets the maximum value accepted by the member. If set to a value
         other than None, values above this limit will produce a
         L{MaxValueError<exceptions.MaxValueError>} during validation.

@@ -13,7 +13,7 @@ from cocktail.controllers.requestproperty import (
 )
 from cocktail.controllers.requesthandler import RequestHandler
 from cocktail.controllers.static import (
-    file_publisher, 
+    file_publisher,
     folder_publisher,
     serve_file
 )
@@ -26,7 +26,7 @@ from cocktail.controllers.dispatcher import (
     context
 )
 from cocktail.controllers.uriutils import (
-    make_uri, 
+    make_uri,
     try_decode,
     percent_encode_uri
 )
@@ -53,7 +53,7 @@ import cocktail.controllers.handlerprofiler
 
 # The ZODB debugger needs collections.Counter, and therefore is not available
 # under Python 2.6
-try:    
+try:
     import cocktail.controllers.zodbdebuggertool
 except ImportError:
     pass
