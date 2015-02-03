@@ -22,7 +22,7 @@ def _update_relation(action, obj, related_obj, member, relocation = False):
 
     if not obj.bidirectional:
         return
-    
+
     if action == "relate":
         method = member.related_end.add_relation
     elif action == "unrelate":
@@ -56,7 +56,7 @@ def _update_relation(action, obj, related_obj, member, relocation = False):
         )
 
 def _push(action, obj, related_obj, member):
-    
+
     stack = getattr(_thread_data, "stack", None)
 
     if stack is None:
@@ -86,7 +86,7 @@ def _pop():
 class RelationMember(Member):
     """Base class for all members that describe a single end of a relation
     between two or more schemas.
-    
+
     This is an abstract class; Noteworthy concrete subclasses include
     L{Reference<cocktail.schema.schemareference.Reference>} and
     L{Collection<cocktail.schema.schemacollections.Collection>}.
@@ -108,7 +108,7 @@ class RelationMember(Member):
     """
     bidirectional = False
     related_key = None
-    relation_constraints = None    
+    relation_constraints = None
     language_agnostic_text_extraction = True
     _integral = None
     _many = False
@@ -119,7 +119,7 @@ class RelationMember(Member):
         doc = """An event triggered when the relation end is attached to a
         schema after being declared using a self-contained bidirectional
         relation.
-        
+
         @ivar anonymous: Indicates if the relation end had no name of its own.
         @type anonymous: bool
         """
@@ -132,14 +132,14 @@ class RelationMember(Member):
             raise SchemaIntegrityError(
                 "%s can't be declared 'integral' without setting "
                 "'bidirectional' to True" % self)
-    
+
     def _get_related_end(self):
         """Gets the opposite end of a bidirectional relation.
         @type: L{Member<member.Member>}
-        """    
+        """
         if self.__related_end:
             return self.__related_end
-        
+
         if self.adaptation_source:
             return self.adaptation_source.related_end
 
@@ -168,7 +168,7 @@ class RelationMember(Member):
                         and member is not self:
                             related_end = member
                             break
-            
+
             # Related end missing
             if related_end is None:
                 raise SchemaIntegrityError(
@@ -194,7 +194,7 @@ class RelationMember(Member):
         return related_end
 
     def _set_related_end(self, related_end):
-        
+
         if related_end is not None:
             self.bidirectional = True
 
@@ -270,7 +270,7 @@ class RelationMember(Member):
 
     def add_relation(self, obj, related_obj):
         if _push("relate", obj, related_obj, self):
-            try:                
+            try:
                 self._add_relation(obj, related_obj)
             finally:
                 _pop()

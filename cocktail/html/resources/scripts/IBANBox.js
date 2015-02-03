@@ -12,7 +12,7 @@ cocktail.bind(".IBANBox", function ($box) {
     var currentFormat = null;
 
     function updateMask() {
-        
+
         var value = $box.val();
         var format = null;
 
@@ -34,7 +34,7 @@ cocktail.bind(".IBANBox", function ($box) {
             if (format != currentFormat) {
                 $box.inputmask(format, {
                     definitions: {
-                        'A': { 
+                        'A': {
                             validator: "[A-Za-z]",
                             cardinality: 1,
                             casing: "upper"

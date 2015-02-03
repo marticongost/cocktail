@@ -30,7 +30,7 @@ class BankAccountNumber(String):
 
     def bank_account_validation_rule(self, value, context):
         """Validation rule for european bank account numbers."""
-        
+
         if isinstance(value, basestring) and not self.checksum(value):
             yield BankAccountChecksumError(
                 self, value, context

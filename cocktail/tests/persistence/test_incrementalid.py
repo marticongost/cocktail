@@ -21,7 +21,7 @@ class IncrementalIdTestCase(TempStorageMixin, TestCase):
     def test_acquisition(self):
 
         from cocktail.persistence import incremental_id
-       
+
         n = 100
         ids = set(incremental_id() for i in range(n))
 
@@ -30,12 +30,12 @@ class IncrementalIdTestCase(TempStorageMixin, TestCase):
         for id in ids:
             self.assertTrue(id)
             self.assertTrue(isinstance(id, int))
- 
+
     def test_multithreaded_acquisition(self):
- 
+
         from cocktail.tests.utils import run_concurrently
         from cocktail.persistence import incremental_id
-        
+
         thread_count = 100
         ids_per_thread = 50
         ids = set()
@@ -53,9 +53,9 @@ class IncrementalIdTestCase(TempStorageMixin, TestCase):
             self.assertTrue(isinstance(id, int))
 
     def test_multiprocess_acquisition(self):
-        
+
         raise SkipTest()
-        
+
         from tempfile import mkdtemp
         from sbprocess import Popen, PIPE
         from os import kill
@@ -109,7 +109,7 @@ finally:
                         stderr = PIPE
                     )
                     processes.append(proc)
-                
+
                 done = False
 
                 while not done:
@@ -138,7 +138,7 @@ finally:
             self.assertTrue(isinstance(id, int))
 
     def test_conflict_resolution(self):
-        
+
         from cocktail.persistence import datastore, incremental_id
         datastore.root["foo"] = "bar"
         incremental_id()

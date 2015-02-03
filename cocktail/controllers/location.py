@@ -55,7 +55,7 @@ class Location(object):
 
         location = cls()
         location.method = "GET"
-        
+
         headers = cherrypy.request.headers
         base = cherrypy.request.base
 
@@ -82,14 +82,14 @@ class Location(object):
 
     @classmethod
     def get_current(cls, relative = True):
-        
+
         request = cherrypy.request
         query_string = get_state()
 
         location = cls.get_current_host()
         location.relative = relative
         location.method = request.method
-        location.path_info = try_decode(request.path_info)        
+        location.path_info = try_decode(request.path_info)
         location.query_string.update(query_string)
         location.form_data.update(
             (key, value)
@@ -132,7 +132,7 @@ class Location(object):
         return copy
 
     def join_path(self, *args):
-        
+
         parts = [self.path_info]
         parts.extend(args)
 
@@ -181,7 +181,7 @@ class Location(object):
             return self.query_string
         else:
             return self.form_data
- 
+
     def go(self, method = None, client_redirect = False):
         method = method or self.method
         if method == "POST" or client_redirect:
@@ -201,7 +201,7 @@ class Location(object):
         if not method:
             method = self.method
 
-        with language_context(get_language() or "en"):        
+        with language_context(get_language() or "en"):
             trans_prefix = "cocktail.controllers.Location.client_redirect"
             title = translations(trans_prefix + "_title")
             control_label = translations(trans_prefix + "_control")
@@ -240,7 +240,7 @@ class Location(object):
             }
 
         return u"""
-<html>	
+<html>
     <head>
         <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
         <title>%(title)s</title>
@@ -252,7 +252,7 @@ class Location(object):
             }
             //-->
         </script>
-    </head>        
+    </head>
     <body>
         %(content)s
     </body>

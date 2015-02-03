@@ -26,7 +26,7 @@ class StringCollectionIndexing(TempStorageMixin, TestCase):
         self.TestObject = TestObject
 
     def test_inserting_object_updates_index(self):
-        
+
         a = self.TestObject()
         a.test_collection = ["foo", "bar", "spam"]
 
@@ -136,7 +136,7 @@ class StringCollectionIndexing(TempStorageMixin, TestCase):
         ])
 
     def test_removing_items_updates_index(self):
-        
+
         a = self.TestObject()
         a.test_collection = ["foo", "bar", "spam"]
         a.insert()
@@ -185,7 +185,7 @@ class StringCollectionIndexing(TempStorageMixin, TestCase):
         assert not list(index)
 
     def test_can_rebuild_index(self):
-    
+
         self.TestObject.test_collection.indexed = False
 
         a = self.TestObject()
@@ -461,7 +461,7 @@ class ReferenceCollectionIndexing(TempStorageMixin, TestCase):
         assert not list(index)
 
     def test_setting_collection_updates_index(self):
-        
+
         Doc = self.Document
         Tag = self.Tag
 

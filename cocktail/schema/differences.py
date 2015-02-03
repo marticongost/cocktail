@@ -20,7 +20,7 @@ def diff(
 
     @param source: The first item to compare.
     @param target: The other item to compare.
-    
+
     @param schema: The schema used to compare both objects. Can be omitted if
         both objects are instances of the same
         L{SchemaObject<cocktail.schema.SchemaObject}.
@@ -57,18 +57,18 @@ def diff(
                     "instances of the same SchemaObject derived class")
 
     for member in schema.members().itervalues():
-     
+
         if exclude and exclude(member):
             continue
-        
+
         key = member.name
-        
+
         # Translated members
         if member.translated:
 
             source_languages = set(source_accessor.languages(source, key))
             target_languages = set(target_accessor.languages(target, key))
-            
+
             for language in (source_languages | target_languages):
 
                 source_value = source_accessor.get(
@@ -85,7 +85,7 @@ def diff(
 
                 if source_value != target_value:
                     yield (member, language)
-        
+
         # Regular members
         else:
             source_value = source_accessor.get(source, key, default = None)

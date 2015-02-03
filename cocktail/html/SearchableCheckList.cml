@@ -16,7 +16,7 @@ from cocktail.html.databoundcontrol import data_bound
     def should_enable_search(self):
         if not self.items:
             return False
-        
+
         if not self.search_threshold:
             return True
 

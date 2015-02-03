@@ -18,16 +18,16 @@ from cocktail.controllers.renderingengines import get_rendering_engine
 
 
 class Controller(RequestHandler):
- 
+
     context = context
-    
+
     # Default configuration
-    #------------------------------------------------------------------------------    
+    #------------------------------------------------------------------------------
     default_rendering_engine = "cocktail"
     default_rendering_format = "html"
 
     # Execution and lifecycle
-    #------------------------------------------------------------------------------    
+    #------------------------------------------------------------------------------
     exposed = True
 
     def __call__(self, **kwargs):
@@ -38,9 +38,9 @@ class Controller(RequestHandler):
             self.processed()
         except Exception, ex:
             self.handle_error(ex)
-        
+
         return self.render()
-    
+
     def submit(self):
         pass
 
@@ -57,7 +57,7 @@ class Controller(RequestHandler):
         return self.submitted and self.valid
 
     successful = False
-    
+
     handled_errors = ()
 
     def handle_error(self, error):
@@ -67,7 +67,7 @@ class Controller(RequestHandler):
             raise
 
     processed = Event(doc = """
-        An event triggered after the controller's logic has been invoked.        
+        An event triggered after the controller's logic has been invoked.
         """)
 
     # Input / Output
@@ -79,9 +79,9 @@ class Controller(RequestHandler):
     @cached_getter
     def output(self):
         return {}
-    
+
     # Rendering
-    #------------------------------------------------------------------------------   
+    #------------------------------------------------------------------------------
     rendering_format_param = "format"
     allowed_rendering_formats = frozenset([
         "html", "html4", "html5", "xhtml", "json"
@@ -106,7 +106,7 @@ class Controller(RequestHandler):
 
         if self.rendering_format_param:
             format = cherrypy.request.params.get(self.rendering_format_param)
-            
+
         if format is None:
             format = cherrypy.request.config.get(
                 "rendering.format",
@@ -124,7 +124,7 @@ class Controller(RequestHandler):
         return get_rendering_engine(
             engine_name,
             cherrypy.request.config.get("rendering.engine_options")
-        )                
+        )
 
     @cached_getter
     def view_class(self):
@@ -138,7 +138,7 @@ class Controller(RequestHandler):
             renderer = getattr(self, "render_" + format, None)
         else:
             renderer = None
-        
+
         if renderer is None:
             raise ValueError(
                 "%s can't render its response in '%s' format" % (self, format))

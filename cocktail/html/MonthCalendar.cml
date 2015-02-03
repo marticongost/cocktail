@@ -30,9 +30,9 @@ from datetime import date, datetime, timedelta
     calendar_page = property(_get_calendar_page, _set_calendar_page)
 
     def _get_month_dates(self):
-        
+
         month_cal = calendar.monthcalendar(self.year, self.month)
- 
+
         # Fix the first row in the calendar
         first_week = []
         weeks = [first_week]
@@ -63,9 +63,9 @@ from datetime import date, datetime, timedelta
             else:
                 current_date = current_date + one_day
             last_week.append(current_date)
-        
+
         return weeks
-    
+
     def get_cell(self, day):
         if isinstance(day, datetime):
             day = day.date()
@@ -77,9 +77,9 @@ from datetime import date, datetime, timedelta
     ?>
 
     <py:binding>
-        <?py        
+        <?py
         self._today = date.today()
-        
+
         if self.year is None:
             self.year = self._today.year
 
@@ -114,7 +114,7 @@ from datetime import date, datetime, timedelta
 
     <tr py:def="week_row" py:args="index, days">
         <?py
-        element.add_class("week%d" % index)                    
+        element.add_class("week%d" % index)
         ?>
         <py:new
             py:element="self.create_day_cell(day)"

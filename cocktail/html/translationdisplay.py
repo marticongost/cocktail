@@ -30,7 +30,7 @@ class TranslationDisplay(Element):
                     self.add_class("inherited_translation")
                     self["title"] = \
                         self.get_translation_inheritance_remark(source_locale)
-    
+
     def get_translation_inheritance_remark(self, source_locale):
         return translations(
             "cocktail.html.TranslationDisplay.translation_inheritance_remark",

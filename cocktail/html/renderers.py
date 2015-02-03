@@ -81,10 +81,10 @@ class Renderer(object):
         return True
 
     def write_element_content(self, element, rendering):
-        
+
         for child in element.children:
             rendering.render_element(child)
-            
+
             # Inherit cache information
             element.cache_tags.update(child.cache_tags)
             element.cache_expiration = nearest_expiration(
@@ -92,7 +92,7 @@ class Renderer(object):
                 child.cache_expiration
             )
 
-    def write_element_closure(self, element, rendering):        
+    def write_element_closure(self, element, rendering):
         tag = element.tag
         if tag:
             rendering.write(u"</" + tag + u">")
@@ -110,7 +110,7 @@ class HTMLRenderer(Renderer):
 class HTML4Renderer(HTMLRenderer):
     doctype = HTML4_STRICT
     html_version = 4
-    
+
 
 class HTML5Renderer(HTMLRenderer):
     doctype = HTML5

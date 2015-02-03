@@ -22,7 +22,7 @@ class Selector(Element):
     groups = None
     __value = None
     persistent_object = None
-    
+
     empty_option_displayed = True
     empty_value = ""
     empty_label = None
@@ -39,7 +39,7 @@ class Selector(Element):
         item_translator = None
 
         if self.member:
-        
+
             if self.items is None and self.groups is None:
                 self.items = self._get_items_from_member(self.member)
 
@@ -48,7 +48,7 @@ class Selector(Element):
                     item_translator = self.member.items.translate_value
             else:
                 item_translator = self.member.translate_value
-   
+
         self._item_translator = (
             item_translator
             or (lambda item, **kw: translations(item, **kw))
@@ -92,17 +92,17 @@ class Selector(Element):
         self._fill_entries()
 
     def _get_items_from_member(self, member):
-        
+
         if isinstance(member, schema.Collection):
             enumeration = member.items.enumeration if member.items else None
         else:
             enumeration = member.enumeration
-        
+
         if enumeration is not None:
             # Create the validation context
             if isinstance(self.persistent_object, PersistentObject):
                 context = ValidationContext(
-                    self.persistent_object.__class__, 
+                    self.persistent_object.__class__,
                     self.persistent_object,
                     persistent_object = self.persistent_object
                 )
@@ -112,7 +112,7 @@ class Selector(Element):
             enumeration = member.resolve_constraint(enumeration, context)
 
             if enumeration is not None:
-                
+
                 related_type = getattr(member, "related_type", None)
 
                 if related_type:
@@ -147,7 +147,7 @@ class Selector(Element):
                 items = member.select_constraint_instances(
                     parent = self.persistent_object or self.data
                 )
-                
+
                 order = None
 
                 if isinstance(member, schema.Reference):
@@ -163,15 +163,15 @@ class Selector(Element):
                             items.add_order(criteria)
 
                 return items
-                
+
             elif isinstance(member, schema.Collection):
                 if member.items:
                     return self._get_items_from_member(member.items)
-        
+
         return ()
 
     def _fill_entries(self):
-        
+
         if self.empty_option_displayed:
 
             empty_label = self.empty_label
@@ -218,7 +218,7 @@ class Selector(Element):
             container.append(entry)
 
     def get_item_value(self, item):
-       
+
         member = (
             self.member
             and (
@@ -228,17 +228,17 @@ class Selector(Element):
             or self.member
         )
 
-        if member:            
+        if member:
             try:
                 return member.serialize_request_value(item)
             except:
                 pass
-        
+
         return getattr(item, "id", None) or str(item)
 
     def get_item_label(self, item):
         return self._item_translator(item)
-    
+
     def create_group(self, group):
 
         container = Element()

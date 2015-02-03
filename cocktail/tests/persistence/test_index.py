@@ -93,14 +93,14 @@ class MultipleValuesIndexTestCase(TestCase):
             [(1, "foo"),
              (2, "bar"),
              (2, "bar2"),
-             (3, "spam")],            
+             (3, "spam")],
             max = 3, exclude_max = False)
 
     def test_supports_ranges_with_excluded_max(self):
         self.assert_range(
             [(1, "foo"),
              (2, "bar"),
-             (2, "bar2")],            
+             (2, "bar2")],
             max = 3, exclude_max = True)
 
     def test_supports_ranges_with_both_min_and_max(self):
@@ -264,7 +264,7 @@ class SingleValueIndexTestCase(TestCase):
 class TranslationInheritanceIndexingTestCase(TempStorageMixin, TestCase):
 
     def test_indexing_works_across_derived_translations(self):
-        
+
         from cocktail.translations import fallback_languages_context
         from cocktail import schema
         from cocktail.persistence import PersistentObject
