@@ -24,20 +24,20 @@ Member.display = None
 
 def display_factory(display_name, **kwargs):
     """A convenience function to assign displays to schema members.
-    
+
     @param display_name: A fully qualified name of an
         L{Element<element.Element>} subclass or CML template.
     @type display_name: str
 
     @param kwargs: HTML or Python attributes to set on the display.
-    
+
     @return: A function that produces displays of the indicated kind,
         initialized with the supplied parameters.
     @rtype: L{Element<element.Element>}
     """
     def func(parent, obj, member):
         display = templates.new(display_name)
-        
+
         for key, value in kwargs.iteritems():
             if hasattr(display, key):
                 setattr(display, key, value)
@@ -56,7 +56,7 @@ class DataDisplay(object):
     schema = None
     editable = True
     translations = None
-    accessor = None    
+    accessor = None
     name_prefix = None
     name_suffix = None
 
@@ -140,23 +140,23 @@ class DataDisplay(object):
         scripting. Members that shouldn't be shown at all shouldn't appear on
         the schema provided to the data display (possibly by excluding them
         using an `~cocktail.schema.adapter.Adapter`).
-        
+
         @param member: The member to get the display state for. Can be
             specified using a direct reference to the member object, or by
             name.
         @type member: str or L{Member<cocktail.schema.member.Member>}
-        
+
         @return: True if the member should be displayed, False otherwise.
         @rtype: bool
         """
         return self.__member_displayed.get(
                     self._normalize_member(member),
                     True)
-    
+
     def set_member_displayed(self, member, displayed):
         """Establishes if the indicated member should be displayed. See
         L{get_member_displayed} for more details.
-        
+
         @param member: The member to get the display state for. Can be
             specified using a direct reference to the member object, or by
             name.
@@ -171,7 +171,7 @@ class DataDisplay(object):
     def get_member_label(self, member):
         """Gets the descriptive, human readable title for the member, as shown
         by the data display.
-        
+
         @param member: The member to get the label for. Can be specified using
             a direct reference to the member object, or by name.
         @type member: str or L{Member<cocktail.schema.member.Member>}
@@ -188,7 +188,7 @@ class DataDisplay(object):
 
     def set_member_label(self, member, label):
         """Sets the descriptive, human readable title for the member.
-        
+
         @param member: The member to set the label for. Can be specified using
             a direct reference to the member object, or by name.
         @type member: str or L{Member<cocktail.schema.member.Member>}
@@ -208,7 +208,7 @@ class DataDisplay(object):
 
         if self.persistent_object:
             return self.persistent_object.__class__.translate_group(group)
-        
+
     def get_member_editable(self, member):
         """Indicates if the given member should be editable by users. This
         affects the kind of display used by the member (for example, a text
@@ -271,7 +271,7 @@ class DataDisplay(object):
         self.__member_expressions[self._normalize_member(member)] = expression
 
     def get_member_value(self, obj, member, language = None):
-        
+
         translated = member.translated
         expr = self.get_member_expression(member)
 
@@ -283,10 +283,10 @@ class DataDisplay(object):
                 return expr(obj, language)
             else:
                 return expr(obj)
-        else:            
+        else:
             accessor = self.accessor or get_accessor(obj)
-            value = obj            
-            for part in self._normalize_member(member).split("."):                
+            value = obj
+            for part in self._normalize_member(member).split("."):
                 value = accessor.get(value, part, None, language)
                 if value is None:
                     break
@@ -332,11 +332,11 @@ class DataDisplay(object):
     def get_default_member_display(self, obj, member):
 
         display = self.get_member_type_display(member.__class__)
-        
+
         if display is None:
             display = self.default_display
 
-        return display 
+        return display
 
     def _normalize_member_display(self, obj, member, display):
 
@@ -347,7 +347,7 @@ class DataDisplay(object):
                 display = display(obj, member)
             else:
                 display = display(self, obj, member)
-        
+
         if isinstance(display, basestring):
             display = templates.new(display)
 
@@ -418,9 +418,9 @@ class CollectionDisplay(DataDisplay):
 
     def add_filter(self, filter):
         self.__filters.append(filter)
-    
+
     def is_selected(self, item):
-        
+
         if self.selection is None:
             return False
         elif self.selection_mode == SINGLE_SELECTION:
@@ -430,7 +430,7 @@ class CollectionDisplay(DataDisplay):
 
     def _get_user_collection(self):
         return self.__user_collection
-    
+
     def _set_user_collection(self, collection):
         self.__user_collection = collection
 

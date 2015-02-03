@@ -19,7 +19,7 @@ class DeclarationTestCase(TestCase):
         class Foo(SchemaObject):
             bar = String()
             spam = Integer()
-        
+
         self.assertTrue(isinstance(Foo, Schema))
         self.assertTrue(isinstance(Foo.bar, String))
         self.assertTrue(isinstance(Foo.spam, Integer))
@@ -52,7 +52,7 @@ class DeclarationTestCase(TestCase):
             )
 
     def test_inheritance(self):
-        
+
         from cocktail.schema import Schema, SchemaObject, String, Integer
 
         class Foo(SchemaObject):
@@ -74,12 +74,12 @@ class DeclarationTestCase(TestCase):
         })
         self.assertRaises(AttributeError, getattr, Foo, "bar_a")
         self.assertRaises(AttributeError, getattr, Foo, "bar_b")
-        
+
         # Check that the derived class correctly defines its members
         self.assertTrue(isinstance(Bar.bar_a, String))
         self.assertTrue(isinstance(Bar.bar_b, Integer))
         self.assertTrue(Bar.bar_a is Bar["bar_a"])
-        self.assertTrue(Bar.bar_b is Bar["bar_b"])        
+        self.assertTrue(Bar.bar_b is Bar["bar_b"])
         self.assertEqual(Bar.members(recursive = False), {
             "bar_a": Bar.bar_a,
             "bar_b": Bar.bar_b
@@ -94,7 +94,7 @@ class DeclarationTestCase(TestCase):
             "bar_a": Bar.bar_a,
             "bar_b": Bar.bar_b
         })
-        
+
         # Inherited members should still refer the base class as their schema
         self.assertTrue(Foo.foo_a.schema is Foo)
         self.assertTrue(Foo.foo_b.schema is Foo)
@@ -106,9 +106,9 @@ class DeclarationTestCase(TestCase):
 
 
 class ExtensionTestCase(TestCase):
-    
+
     def test_add_member(self):
-        
+
         from cocktail.schema import SchemaObject, String
 
         class Foo(SchemaObject):
@@ -116,12 +116,12 @@ class ExtensionTestCase(TestCase):
 
         new_member = String("bar")
         Foo.add_member(new_member)
-        
+
         self.assertEqual(new_member.schema, Foo)
         self.assertEqual(Foo.bar, new_member)
 
     def test_inheritance(self):
-        
+
         from cocktail.schema import SchemaObject, String
 
         class Foo(SchemaObject):
@@ -156,7 +156,7 @@ class ExtensionTestCase(TestCase):
 
         class Bar(Foo):
             pass
-            
+
         bar = Bar()
         Foo.add_member(String("spam", default = "Foo!"))
         Bar.default_spam = "Bar!"
@@ -267,8 +267,8 @@ class AttributeTestCase(TestCase):
         from cocktail.schema import Schema, SchemaObject, String, Integer
 
         class Foo(SchemaObject):
-            bar = String()        
-      
+            bar = String()
+
         events = EventLog()
         events.listen(
             Foo_changed = Foo.changed,
@@ -276,7 +276,7 @@ class AttributeTestCase(TestCase):
         )
 
         foo = Foo()
-        
+
         # First assignment
         foo.bar = "Spam!"
 
@@ -321,15 +321,15 @@ class AttributeTestCase(TestCase):
 
         class Foo(SchemaObject):
             bar = String()
-        
+
         foo = Foo()
 
         def alter_value(event):
             event.value += "!"
 
         foo.changing.append(alter_value)
-        
-        foo.bar = "Spam"        
+
+        foo.bar = "Spam"
         self.assertEqual(foo.bar, "Spam!")
 
     def test_alter_value_with_class_event(self):
@@ -338,19 +338,19 @@ class AttributeTestCase(TestCase):
 
         class Foo(SchemaObject):
             bar = String()
-        
+
         def alter_value(event):
             event.value += "!"
 
         Foo.changing.append(alter_value)
 
         foo = Foo()
-        foo.bar = "Spam"        
+        foo.bar = "Spam"
         self.assertEqual(foo.bar, "Spam!")
 
 
 class TranslationTestCase(TestCase):
-    
+
     def test_declaration(self):
 
         from cocktail.schema import Schema, SchemaObject, String, Integer
@@ -369,7 +369,7 @@ class TranslationTestCase(TestCase):
         self.assertRaises(AttributeError, getattr, Foo.translation, "spam")
 
     def test_inheritance(self):
-        
+
         from cocktail.schema import SchemaObject, String, Integer
 
         class Foo(SchemaObject):
@@ -396,7 +396,7 @@ class TranslationTestCase(TestCase):
         pass
 
     def test_changing_translated_member_triggers_event(self):
-    
+
         from cocktail.schema import SchemaObject, String
 
         class Foo(SchemaObject):
@@ -405,17 +405,17 @@ class TranslationTestCase(TestCase):
         foo = Foo()
         foo.set("spam", u"green", "en")
         foo.set("spam", u"grün", "de")
-        
+
         events = EventLog()
         events.listen(foo_changed = foo.changed)
-    
+
         foo.set("spam", u"red", "en")
         foo.set("spam", u"rot", "de")
 
         event = events.pop(0)
         assert event.slot is foo.changed
         assert event.member is Foo.spam
-        assert event.value == u"red"    
+        assert event.value == u"red"
         assert event.previous_value == u"green"
         assert event.language == "en"
 
@@ -475,17 +475,17 @@ class TranslationTestCase(TestCase):
         foo = Foo()
         foo.set("spam", u"green", "en")
         foo.set("spam", u"grün", "de")
-        
+
         events = EventLog()
         events.listen(foo_changed = foo.changed)
-    
+
         foo.translations["en"].spam = u"red"
         foo.translations["de"].spam = u"rot"
 
         event = events.pop(0)
         assert event.slot is foo.changed
         assert event.member is Foo.spam
-        assert event.value == u"red"    
+        assert event.value == u"red"
         assert event.previous_value == u"green"
         assert event.language == "en"
 
@@ -506,10 +506,10 @@ class TranslationTestCase(TestCase):
             bar = String(translated = True, default = "gray")
 
         foo = Foo()
-        
+
         events = EventLog()
         events.listen(foo_changed = foo.changed)
-    
+
         foo.set("spam", u"green", "en")
         foo.set("spam", u"grün", "de")
 
@@ -545,7 +545,7 @@ class TranslationTestCase(TestCase):
 class CopyTestCase(TestCase):
 
     def test_copying_schema_object_class_produces_new_class(self):
-        
+
         from cocktail.schema import Schema, SchemaObject
 
         class TestClass(SchemaObject):
@@ -571,17 +571,17 @@ class CopyTestCase(TestCase):
         assert issubclass(copy, BaseClass)
 
     def test_copying_schema_object_class_copies_members(self):
-        
+
         from cocktail.schema import Schema, SchemaObject, String
 
-        class TestClass(SchemaObject):            
+        class TestClass(SchemaObject):
             member1 = String(required = True)
             member2 = String(min = 3)
 
         copy = TestClass.copy()
-        
+
         assert copy.members().keys() == TestClass.members().keys()
-        
+
         assert copy.member1 is not TestClass.member1
         assert isinstance(copy.member1, String)
         assert copy.member1.copy_source is TestClass.member1
@@ -601,7 +601,7 @@ class CollectionChangeEventsTestCase(TestCase):
 
         from cocktail.tests.utils import EventLog
         from cocktail.schema import SchemaObject, Collection
-        
+
         class TestClass(SchemaObject):
             member1 = Collection()
 
@@ -612,7 +612,7 @@ class CollectionChangeEventsTestCase(TestCase):
         events.listen(foo_changed = foo.changed)
 
         foo.member1 = [2, 1]
-        
+
         event = events.pop(0)
         assert event.slot is foo.changed
         assert event.member is TestClass.member1
@@ -633,7 +633,7 @@ class CollectionChangeEventsTestCase(TestCase):
         events.listen(foo_changed = foo.changed)
 
         foo.member1.append(3)
-        
+
         event = events.pop(0)
         assert event.slot is foo.changed
         assert event.member is TestClass.member1

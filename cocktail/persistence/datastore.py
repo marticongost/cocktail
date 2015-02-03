@@ -101,7 +101,7 @@ class DataStore(object):
         if root is None:
             root = self.connection.root()
             self._thread_data.root = root
-        
+
         return root
 
     @getter
@@ -202,7 +202,7 @@ class DataStore(object):
         def callback_wrapper(success, *args, **kwargs):
             try:
                 self._thread_data.transaction = transaction
-                return callback(success, *args, **kwargs)                
+                return callback(success, *args, **kwargs)
             finally:
                 self._thread_data.transaction = None
 

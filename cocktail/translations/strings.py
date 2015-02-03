@@ -478,7 +478,7 @@ def _date_instance_ca(instance, style = DATE_STYLE_NUMBERS):
 
 def _date_instance_es(instance, style = DATE_STYLE_NUMBERS):
     if style == DATE_STYLE_NUMBERS:
-        return instance.strftime(translations("date format"))        
+        return instance.strftime(translations("date format"))
     elif style == DATE_STYLE_ABBR:
         return u"%s %s %s" % (
             instance.day,
@@ -510,7 +510,7 @@ def _date_instance_en(instance, style = DATE_STYLE_NUMBERS):
 
 def _date_instance_pt(instance, style = DATE_STYLE_NUMBERS):
     if style == DATE_STYLE_NUMBERS:
-        return instance.strftime(translations("date format"))        
+        return instance.strftime(translations("date format"))
     elif style == DATE_STYLE_ABBR:
         return u"%s %s %s" % (
             instance.day,
@@ -543,7 +543,7 @@ translations.define("datetime-instance",
 )
 
 def _translate_calendar_page(instance, abbreviated = False):
-    return "%s %d" % (    
+    return "%s %d" % (
         translations(
             "month %d%s" % (
                 instance[1],
@@ -566,11 +566,11 @@ def _create_time_span_function(span_format, forms, join):
         # Without days
         if len(span) == 4:
             return span_format % span[:-1]
-        
+
         # With days
         else:
             desc = []
-            
+
             for value, form in zip(span, forms):
                 if value:
                     desc.append("%d %s" % (value, plural2(value, *form)))
@@ -581,7 +581,7 @@ def _create_time_span_function(span_format, forms, join):
 
 translations.define("time span",
     ca = _create_time_span_function(
-        "%.2d.%.2d.%2d", 
+        "%.2d.%.2d.%2d",
         [[u"dia", u"dies"],
          [u"hora", u"hores"],
          [u"minut", u"minuts"],
@@ -590,7 +590,7 @@ translations.define("time span",
         ca_join
     ),
     es = _create_time_span_function(
-        "%.2d:%.2d:%2d", 
+        "%.2d:%.2d:%2d",
         [[u"día", u"días"],
          [u"hora", u"horas"],
          [u"minuto", u"minutos"],
@@ -599,7 +599,7 @@ translations.define("time span",
         es_join
     ),
     en = _create_time_span_function(
-        "%.2d:%.2d:%2d", 
+        "%.2d:%.2d:%2d",
         [[u"day", u"days"],
          [u"hour", u"hours"],
          [u"minute", u"minutes"],
@@ -970,7 +970,7 @@ translations.define("Exception-instance",
 # Validation errors
 #------------------------------------------------------------------------------
 def member_identifier(error):
-    
+
     from cocktail.schema import RelationMember
 
     desc = []
@@ -982,7 +982,7 @@ def member_identifier(error):
             if index is not None:
                 label += " #%d" % (index + 1)
             desc.append(label)
-    
+
     if not path or error.member is not path[-1][0]:
         if error.language:
             desc.append("%s (%s)" % (
@@ -991,7 +991,7 @@ def member_identifier(error):
             ))
         else:
             desc.append(translations(error.member).lower())
-    
+
     return u" &gt; ".join(desc)
 
 translations.define("cocktail.schema.exceptions.ValidationError-instance",
@@ -999,7 +999,7 @@ translations.define("cocktail.schema.exceptions.ValidationError-instance",
         u"El camp <em>%s</em> no és vàlid"
         % member_identifier(instance),
     es = lambda instance:
-        u"El campo <em>%s</em> no es válido"        
+        u"El campo <em>%s</em> no es válido"
         % member_identifier(instance),
     en = lambda instance:
         u"The <em>%s</em> field is not valid"
@@ -1177,10 +1177,10 @@ translations.define(
 translations.define(
     "cocktail.unexpected_error",
     ca = lambda error:
-        u"Error inesperat %s" 
+        u"Error inesperat %s"
         %(error),
     es = lambda error:
-        u"Error inesperado %s" 
+        u"Error inesperado %s"
         %(error),
     en = lambda error:
         u"Unexpedted error %s"
@@ -1189,16 +1189,16 @@ translations.define(
 
 translations.define(
     "cocktail.controllers.imageupload.ImageTooSmallError-instance",
-    ca = lambda instance: 
+    ca = lambda instance:
         u"El fitxer proporcionat pel camp <em>%s</em> és massa petit: la mida "
         u"mínima permesa és de %sx%s pixels" % (
             member_identifier(instance),
             instance.min_width or u"∞",
             instance.min_height or u"∞"
         ),
-    es = lambda instance: 
+    es = lambda instance:
         u"El fichero proporcionado para el campo <em>%s</em> es demasiado "
-        u"pequeño: el tamaño mínimo permitido es de %sx%s píxeles" % (         
+        u"pequeño: el tamaño mínimo permitido es de %sx%s píxeles" % (
             member_identifier(instance),
             instance.min_width or u"∞",
             instance.min_height or u"∞"
@@ -1214,16 +1214,16 @@ translations.define(
 
 translations.define(
     "cocktail.controllers.imageupload.ImageTooBigError-instance",
-    ca = lambda instance: 
+    ca = lambda instance:
         u"El fitxer proporcionat pel camp <em>%s</em> és massa gran: la mida "
         u"màxima permesa és de %sx%s pixels" % (
             member_identifier(instance),
             instance.max_width or u"∞",
             instance.max_height or u"∞"
         ),
-    es = lambda instance: 
+    es = lambda instance:
         u"El fichero proporcionado para el campo <em>%s</em> es demasiado "
-        u"grande: el tamaño máximo permitido es de %sx%s píxeles" % (         
+        u"grande: el tamaño máximo permitido es de %sx%s píxeles" % (
             member_identifier(instance),
             instance.max_width or u"∞",
             instance.max_height or u"∞"
@@ -1244,12 +1244,12 @@ def _thousands_parser(thousands_sep, fraction_sep):
 
     expr = re.compile(r"^[-+]?((\d{1,3}(\%s\d{3})*)|\d+)(\%s\d+)?$"
                     % (thousands_sep, fraction_sep))
-    
+
     def parser(value):
 
         if not expr.match(value):
             raise ValueError("Invalid decimal literal: %s" % value)
-        
+
         value = value.replace(thousands_sep, "")
 
         if fraction_sep != ".":
@@ -1259,8 +1259,8 @@ def _thousands_parser(thousands_sep, fraction_sep):
 
     return parser
 
-def _serialize_thousands(value, thousands_sep, fraction_sep):    
-    
+def _serialize_thousands(value, thousands_sep, fraction_sep):
+
     sign, num, precision = value.as_tuple()
     num = list(num)
     if abs(precision) > len(num):
@@ -1288,7 +1288,7 @@ def _serialize_thousands(value, thousands_sep, fraction_sep):
         serialized_value = "-" + serialized_value
 
     return serialized_value
-    
+
 translations.define("Decimal parser",
     ca = lambda: _thousands_parser(".", ","),
     es = lambda: _thousands_parser(".", ","),
@@ -1399,10 +1399,10 @@ def _date_interval_ca(dates = None):
         start_date.year == end_date.year:
 
         date_string = "%d %s%s" % (
-            start_date.day, 
+            start_date.day,
             month_string(start_date, True),
             year_string(
-                start_date, 
+                start_date,
                 show = start_date.year != datetime.now().year
             )
         )
@@ -1419,7 +1419,7 @@ def _date_interval_ca(dates = None):
             and start_date.year == end_date.year:
 
             date_string += "al %d %s%s" % (
-                end_date.day, 
+                end_date.day,
                 month_string(end_date, show_end_month),
                 year_string(end_date, show_end_year)
             )
@@ -1464,10 +1464,10 @@ def _date_interval_es(dates = None):
         start_date.year == end_date.year:
 
         date_string = "%d %s%s" % (
-            start_date.day, 
+            start_date.day,
             month_string(start_date, True),
             year_string(
-                start_date, 
+                start_date,
                 show = start_date.year != datetime.now().year
             )
         )
@@ -1479,7 +1479,7 @@ def _date_interval_es(dates = None):
             and start_date.year == end_date.year:
 
             date_string += "al %d %s%s" % (
-                end_date.day, 
+                end_date.day,
                 month_string(end_date, show_end_month),
                 year_string(end_date, show_end_year)
             )
@@ -1523,10 +1523,10 @@ def _date_interval_en(dates = None):
         start_date.year == end_date.year:
 
         date_string = "%d %s%s" % (
-            start_date.day, 
+            start_date.day,
             month_string(start_date, True),
             year_string(
-                start_date, 
+                start_date,
                 show = start_date.year != datetime.now().year
             )
         )
@@ -1537,8 +1537,8 @@ def _date_interval_en(dates = None):
 
             date_string += "From %s %d to %d%s" % (
                 month_string(end_date, show_end_month),
-                start_date.day, 
-                end_date.day, 
+                start_date.day,
+                end_date.day,
                 year_string(end_date, show_end_year)
             )
 
@@ -1733,7 +1733,7 @@ def _list_op_translation_factory(format, join):
     def list_op_translation(instance, **kwargs):
         rel = instance.operands[0]
         items = instance.operands[1]
-        
+
         if isinstance(items, Constant):
             items = items.value
 
@@ -1901,9 +1901,9 @@ translations.define(
 def _query_translation_factory(filtered_format):
 
     def translate_query(instance, **kwargs):
-        
+
         subject = translations(instance.type.name + "-plural", **kwargs)
-        
+
         if instance.filters:
             return filtered_format % {
                 "subject": subject,
@@ -2107,7 +2107,7 @@ translations.define("cocktail.html.SWIFTBICEntry.swiftbic_explanation",
     ca = u"""
         <p>
             BIC és un format internacional per identificar entitats
-            bancàries. A vegades també s'anomena <em>codi SWIFT</em>.        
+            bancàries. A vegades també s'anomena <em>codi SWIFT</em>.
             Normalment, <strong>el codi BIC apareix a la llibreta o a extractes
             bancaris</strong>. En cas contrari, posi's en contacte amb
             l'entitat bancària.

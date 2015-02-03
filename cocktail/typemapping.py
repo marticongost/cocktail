@@ -9,10 +9,10 @@ _undefined = object()
 
 class TypeMapping(dict):
     """An inheritance aware type/value mapping.
-    
+
     A type mapping allows to associate arbitrary values to types. It works a
     lot like a regular dictionary, with the following considerations:
-    
+
         * All keys in the dictionary must be references to classes
         * When retrieving values by key, type inheritance is taken into
           account, mimicking attribute inheritance
@@ -27,18 +27,18 @@ class TypeMapping(dict):
     >>> mapping[A] = "A"
     >>> mapping[B]
     "A"
-    
+
     Type mappings are espcially useful to extend classes with additional data
     and behavior without polluting their namespace.
     """
 
     def __getitem__(self, cls):
-        
+
         value = self.get(cls, _undefined)
 
         if value is _undefined:
             raise KeyError(cls)
-        
+
         return value
 
     def get(self, cls, default = None, recursive = True):

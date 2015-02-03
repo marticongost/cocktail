@@ -8,7 +8,7 @@ from threading import local
 from contextlib import contextmanager
 from ZODB.Connection import Connection
 from cocktail.styled import styled
-    
+
 _thread_data = local()
 
 class ZODBDebugger(object):
@@ -52,7 +52,7 @@ def setstate(self, obj):
     debugger = getattr(_thread_data, "debugger", None)
     if debugger is not None:
         if (
-            debugger.filter is None 
+            debugger.filter is None
             or debugger.filter == obj.__class__.__name__
         ):
             if debugger.action == "count":

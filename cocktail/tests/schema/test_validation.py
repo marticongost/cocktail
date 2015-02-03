@@ -20,7 +20,7 @@ class ValidationTestCase(TestCase):
         error_attributes = None,
         error_count = 1):
 
-        from cocktail.schema import Schema      
+        from cocktail.schema import Schema
 
         if correct_values:
             for value in correct_values:
@@ -35,7 +35,7 @@ class ValidationTestCase(TestCase):
                 assert not list(member.get_errors(value))
 
         if incorrect_values:
-            for value in incorrect_values:            
+            for value in incorrect_values:
                 assert not member.validate(value), \
                     "%r shouldn't be a valid value" % value
                 errors = list(member.get_errors(value))
@@ -44,7 +44,7 @@ class ValidationTestCase(TestCase):
                 assert isinstance(error, error_type), \
                     "%r should be an instance of %r" % (error, error_type)
                 #assert error.member is member
-                
+
                 if error_attributes:
                     for attrib_key, attrib_value \
                     in error_attributes.iteritems():
@@ -76,13 +76,13 @@ class DuplicatedValidationsTestCase(TestCase):
 
         s1 = Schema()
         s1.add_validation(a)
-        
+
         s2 = Schema()
         s2.inherit(s1)
         v1 = list(s2.validations())
         s2.add_validation(a)
         v2 = list(s2.validations())
-         
+
         assert v1 == v2
 
     def test_add_duplicated_validation_to_base_schema(self):
@@ -92,7 +92,7 @@ class DuplicatedValidationsTestCase(TestCase):
         def a(): pass
 
         s1 = Schema()
-        
+
         s2 = Schema()
         s2.inherit(s1)
         s2.add_validation(a)
@@ -100,12 +100,12 @@ class DuplicatedValidationsTestCase(TestCase):
         v1 = list(s2.validations())
         s1.add_validation(a)
         v2 = list(s2.validations())
-                
-        assert v1 == v2    
+
+        assert v1 == v2
 
 
 class MemberValidationTestCase(ValidationTestCase):
-    
+
     def test_required(self):
 
         from cocktail.schema import Member, exceptions
@@ -153,7 +153,7 @@ class MemberValidationTestCase(ValidationTestCase):
         from cocktail.schema import Member, exceptions
 
         self._test_validation(
-            Member(enumeration = ["cherry", "apple", "peach"]),            
+            Member(enumeration = ["cherry", "apple", "peach"]),
             [None, "cherry", "apple", "peach"],
             ["coconut", "watermelon", "banana"],
             exceptions.EnumerationError
@@ -163,7 +163,7 @@ class MemberValidationTestCase(ValidationTestCase):
 class InheritedValidationsTestCase(TestCase):
 
     def _add_error(self, schema):
-        
+
         from cocktail.schema.exceptions import ValidationError
 
         def validation(member, validable, context):
@@ -180,7 +180,7 @@ class InheritedValidationsTestCase(TestCase):
 
         derived = Schema()
         derived.inherit(base)
-    
+
         errors = list(derived.get_errors({}))
         assert len(errors) == 1
         assert errors[0].member == base
@@ -194,7 +194,7 @@ class InheritedValidationsTestCase(TestCase):
         derived = Schema()
         self._add_error(derived)
         derived.inherit(base)
-    
+
         assert not list(base.get_errors({}))
 
     def test_multiple_inheritance(self):
@@ -210,7 +210,7 @@ class InheritedValidationsTestCase(TestCase):
         derived = Schema()
         derived.inherit(base1)
         derived.inherit(base2)
-    
+
         errors = list(derived.get_errors({}))
         assert len(errors) == 2
         assert errors[0].member == base1
@@ -233,7 +233,7 @@ class InheritedValidationsTestCase(TestCase):
 
         s4 = Schema()
         s4.inherit(s3)
-            
+
         errors = list(s4.get_errors({}))
         assert len(errors) == 3
         assert errors[0].member == s1
@@ -255,7 +255,7 @@ class StringValidationTestCase(ValidationTestCase):
         )
 
     def test_max(self):
-        
+
         from cocktail.schema import String, exceptions
 
         self._test_validation(
@@ -287,7 +287,7 @@ class IntegerValidationTestCase(ValidationTestCase):
             [None, 5, 6, 15, 300],
             [4, 3, 0, -2, -100],
             exceptions.MinValueError
-        )    
+        )
 
     def test_max(self):
 
@@ -407,11 +407,11 @@ class RelationValidationTestCase(ValidationTestCase):
             {"constraint": collection.relation_constraints[3]}
         )
 
-        
+
 class CollectionValidationTestCase(ValidationTestCase):
 
     def test_min(self):
-        
+
         from cocktail.schema import Collection, exceptions
 
         self._test_validation(
@@ -451,11 +451,11 @@ class CollectionValidationTestCase(ValidationTestCase):
         # Valid relations
         a = {"rel": None}
         b = {"rel": a}
-        
+
         # 'c' contains itself
         c = {"rel": None}
         c["rel"] = c
-        
+
         # 'd' and 'e' form a cycle
         d = {"rel": None}
         e = {"rel": None}
@@ -488,7 +488,7 @@ class SchemaValidationTestCase(ValidationTestCase):
     def test_scalar(self):
 
         from cocktail.schema import Schema, Integer, exceptions
-        
+
         class Validable(object):
             def __init__(self, foo):
                 self.foo = foo
@@ -506,7 +506,7 @@ class SchemaValidationTestCase(ValidationTestCase):
         )
 
     def test_translated(self):
-        
+
         from cocktail.schema import Schema, String, exceptions
 
         schema = Schema()
@@ -532,7 +532,7 @@ class DynamicConstraintsTestCase(TestCase):
 
         from cocktail.schema import Schema, String, Boolean
         from cocktail.schema.exceptions import ValueRequiredError
-        
+
         test_schema = Schema()
         test_schema.add_member(Boolean("enabled"))
         test_schema.add_member(
@@ -541,7 +541,7 @@ class DynamicConstraintsTestCase(TestCase):
 
         assert test_schema.validate({"enabled": False, "field": None})
         assert test_schema.validate({"enabled": True, "field": "foo"})
-        
+
         errors = list(test_schema.get_errors({"enabled": True, "field": None}))
         assert len(errors) == 1
         error = errors[0]
@@ -551,7 +551,7 @@ class DynamicConstraintsTestCase(TestCase):
 
         from cocktail.schema import Schema, String, Boolean
         from cocktail.schema.exceptions import ValueRequiredError
-        
+
         test_schema = Schema()
         test_schema.add_member(Boolean("enabled"))
         test_schema.add_member(
@@ -560,7 +560,7 @@ class DynamicConstraintsTestCase(TestCase):
 
         assert test_schema.validate({"enabled": False, "field": None})
         assert test_schema.validate({"enabled": True, "field": "foo"})
-        
+
         errors = list(test_schema.get_errors({"enabled": True, "field": None}))
         assert len(errors) == 1
         error = errors[0]
@@ -573,7 +573,7 @@ class DynamicConstraintsTestCase(TestCase):
             ValueRequiredError,
             NoneRequiredError
         )
-        
+
         test_schema = Schema()
         test_schema.add_member(Boolean("enabled"))
         test_schema.add_member(
@@ -583,7 +583,7 @@ class DynamicConstraintsTestCase(TestCase):
         # Valid states
         assert test_schema.validate({"enabled": False, "field": None})
         assert test_schema.validate({"enabled": True, "field": "foo"})
-        
+
         # None required error
         errors = list(test_schema.get_errors({
             "enabled": False, "field": "foo"
@@ -605,7 +605,7 @@ class DynamicConstraintsTestCase(TestCase):
             ValueRequiredError,
             NoneRequiredError
         )
-        
+
         test_schema = Schema()
         test_schema.add_member(Boolean("enabled"))
         test_schema.add_member(
@@ -615,7 +615,7 @@ class DynamicConstraintsTestCase(TestCase):
         # Valid states
         assert test_schema.validate({"enabled": False, "field": None})
         assert test_schema.validate({"enabled": True, "field": "foo"})
-        
+
         # None required error
         errors = list(test_schema.get_errors({
             "enabled": False, "field": "foo"

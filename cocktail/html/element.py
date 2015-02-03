@@ -29,11 +29,11 @@ default = object()
 
 class Element(object):
     """Base class for all presentation components.
-    
+
     An element provides an abstraction over a piece of HTML content. It can be
     modified programatically before it is rendered, which makes it possible to
     compound complex presentations out of simpler elements.
-    
+
     Elements expose all the properties of an HTML tag, such as their tag name,
     attributes, CSS classes and inline styles.
 
@@ -81,12 +81,12 @@ class Element(object):
         Sets the default base URL for any relative URLs inside the document.
 
     .. attribute:: styled_class
-    
+
         Indicates if the element class should add its own name
         as a CSS class of its instances.
-        
+
         For example, given the following python class hierarchy::
-            
+
             class Box(Element):
                 pass
 
@@ -101,40 +101,40 @@ class Element(object):
         subclasses set it to True by default.
 
     .. attribute:: visible
-    
+
         Indicates if the element should be rendered (False) or hidden
         (True).
 
     .. attribute:: collapsible
-    
+
         Elements marked as collapsible are automatically hidden
         if they don't have one or more children which should be rendered.
 
     .. attribute:: overlays_enabled
-        
+
         Enables or disables `overlays <Overlay>` for the element.
 
     .. attribute:: client_model
-        
+
         When set to a value other than None, the element won't
         be rendered normally. Instead, its HTML and javascript code will be
         serialized to a string and made available to the client side
         *cocktail.instantiate* method, using the given identifier.
 
     .. attribute:: data_display
-    
+
         The `DataDisplay` used by the element for data binding purposes.
-    
+
     .. attribute:: data
         The source of data used by the element for data binding purposes.
 
     .. attribute:: member
-        
+
         The `~cocktail.schema.Member` used by the element for data binding
         purposes.
 
     .. attribute:: language
-        
+
         The language used by the element for data binding purposes.
     """
     tag = "div"
@@ -154,25 +154,25 @@ class Element(object):
     data = None
     member = None
     language = None
-    
+
     def __init__(self,
         tag = default,
         class_name = None,
         children = None,
         **attributes):
- 
+
         self.__parent = None
         self.__children = None
 
         if children:
             for child in children:
                 self.append(child)
-        
+
         if attributes:
             self.__attributes = dict(attributes)
         else:
             self.__attributes = None
-    
+
         if self.class_css:
             self["class"] = self.class_css
 
@@ -193,7 +193,7 @@ class Element(object):
 
         if tag is not default:
             self.tag = tag
-         
+
         if self.overlays_enabled:
             apply_overlays(self)
 
@@ -204,7 +204,7 @@ class Element(object):
         def __init__(cls, name, bases, members):
             type.__init__(cls, name, bases, members)
             cls._view_name = None
-         
+
             if "overlays_enabled" not in members:
                 cls.overlays_enabled = True
 
@@ -237,7 +237,7 @@ class Element(object):
             return "html block"
         else:
             desc = "<" + self.tag
-            
+
             id = self["id"]
 
             if id:
@@ -341,7 +341,7 @@ class Element(object):
         :param document_metadata: The set of resources and metadata required by
             the rendered document: scripts, stylesheets, meta tags, client side
             state, etc.
-            
+
             This parameter covers two use cases: it makes it possible to inject
             additional metadata into rendering results, and it allows to
             inspect the produced metadata after rendering (the object will be
@@ -369,19 +369,19 @@ class Element(object):
             renderer = renderer,
             document_metadata = document_metadata,
             collect_metadata = collect_metadata,
-            cache = cache        
+            cache = cache
         )
         rendering.render_element(self)
-        return rendering.markup()                
+        return rendering.markup()
 
     def _render(self, rendering):
         """Readies the element and writes its HTML code to the given stream.
 
         This is an internal method; applications should invoke `render_page`
         or `render`, which in turn will call this method.
-        
+
         The default implementation delegates the production of its HTML code to
-        the given renderer object. Overriding this behavior will seldom be 
+        the given renderer object. Overriding this behavior will seldom be
         necessary. The `Content` class is one of the rare cases. Another case
         were it may make sense is to optimize expensive rendering operations,
         bypassing the `Element` class to produce opaque HTML blobs for nested
@@ -395,7 +395,7 @@ class Element(object):
 
     def _build(self):
         """Initializes the object.
-        
+
         This method is used by subclasses of `Element` to initialize their
         instances. It is recommended to use this method instead of overriding
         the class constructor, which can be tricky.
@@ -403,11 +403,11 @@ class Element(object):
 
     def bind(self):
         """Updates the element's state before it is rendered.
-        
+
         This method gives the element a chance to initialize its state before
-        its HTML code is written. 
-        
-        `bind` serves a similar purpose to `ready`, which is executed right 
+        its HTML code is written.
+
+        `bind` serves a similar purpose to `ready`, which is executed right
         after. By convention, `bind` code should only perform 'shallow' updates
         of the element's state: modifying its content should be done at the
         `ready` stage. This separation makes it possible to implement effective
@@ -445,7 +445,7 @@ class Element(object):
 
     def _binding(self):
         """A method invoked when the element reaches the `bind` stage.
-        
+
         This is a placeholder method, to implement late initialization for the
         element. It's an alternative to `when_binding`, and can be more
         convenient when defining initialization logic at the class level.
@@ -472,7 +472,7 @@ class Element(object):
         Note that the rendering cache takes advantage of this convention, by
         skipping the `ready` stage when rendering an element from cached
         content.
-        
+
         The method will first invoke `bind`, then the element's `_ready`
         method, and then any function scheduled with `when_ready`.
 
@@ -481,16 +481,16 @@ class Element(object):
         won't produce any effect if it had been executed already.
         """
         if not self.__is_ready:
-            
+
             self.bind()
-                        
+
             self._ready()
-            
+
             if self.__ready_handlers:
                 for handler in self.__ready_handlers:
                     handler()
 
-            if self.member: 
+            if self.member:
                 self.add_class(self.member.__class__.__name__)
 
             self.__transmit_client_params()
@@ -499,7 +499,7 @@ class Element(object):
 
     def when_ready(self, handler):
         """Call the given function when the element reaches the `ready` stage.
-        
+
         See `bind` and `ready` for more details on late initialization.
 
         :param handler: The function that will be invoked. It should
@@ -513,7 +513,7 @@ class Element(object):
 
     def _ready(self):
         """A method invoked when the element reaches the `ready` stage.
-        
+
         This is a placeholder method, to implement late initialization for the
         element. It's an alternative to `when_ready`, and can be more
         convenient when defining initialization logic at the class level.
@@ -581,13 +581,13 @@ class Element(object):
 
     # Attributes
     #--------------------------------------------------------------------------
-    
+
     @getter
     def attributes(self):
         """A dictionary containing the HTML attributes defined by the element.
 
         Attributes can be set to any value that can be transformed into
-        unicode. Attributes set to None will not be rendered.        
+        unicode. Attributes set to None will not be rendered.
         """
         if self.__attributes is None:
             return empty_dict
@@ -628,7 +628,7 @@ class Element(object):
     def __delitem__(self, key):
         """Removes an attribute from the element, using the 'del' operator.
 
-        Deleting an undefined attribute is allowed, and will produce no effect.        
+        Deleting an undefined attribute is allowed, and will produce no effect.
         """
         if self.__attributes is not None:
             self.__attributes.pop(key, None)
@@ -639,7 +639,7 @@ class Element(object):
         If the element already has an id, the method does nothing. If it
         doesn't, it will generate a unique identifier for the element, and
         assign it to its 'id' HTML attribute.
-        
+
         This method can be useful to identify the element uniquely at the
         client side (ie. to pass parameters for javascript scripts, set up the
         'for' attribute of a <label> tag, etc).
@@ -649,7 +649,7 @@ class Element(object):
         `render` or `render_page` methods). Calling `require_id` from two
         separate (not nested) rendering invocations will generate duplicate
         identifiers.
-        
+
         Identifier generation is only enabled during rendering operations.
         Calling this method outside a rendering method will raise an
         `IdGenerationError` exception.
@@ -670,7 +670,7 @@ class Element(object):
 
     # Visibility
     #--------------------------------------------------------------------------
-    
+
     @getter
     def rendered(self):
         """Indicates if the element should be rendered.
@@ -680,7 +680,7 @@ class Element(object):
         """
         return self.visible \
             and (not self.collapsible or self.has_rendered_children())
-        
+
     @getter
     def substantial(self):
         """Indicates if the element has enough weight to influence the
@@ -704,7 +704,7 @@ class Element(object):
         """
         if self.__children:
             for child in self.__children:
-                if child.substantial:                
+                if child.substantial:
                     return True
 
         return False
@@ -734,7 +734,7 @@ class Element(object):
             return empty_list
         else:
             return self.__children
-    
+
     def descend(self, include_self = True):
         if include_self:
             yield self
@@ -765,7 +765,7 @@ class Element(object):
             self.__children = [child]
         else:
             self.__children.append(child)
-        
+
         child.__parent = self
 
     def insert(self, index, child):
@@ -780,10 +780,10 @@ class Element(object):
         :param index: The ordinal position of the new child among its siblings.
             Accepts negative indices.
         :type index: int
-        
+
         :param child: The attached element.
         :type child: `Element` or basestring
-        """        
+        """
         if not isinstance(child, Element):
             child = Content(unicode(child))
         else:
@@ -874,7 +874,7 @@ class Element(object):
 
     def replace(self, target):
         """Puts the element in place of the indicated element.
-        
+
         :param target: The element that indicates the point in the element
             tree where the element should be placed.
         :type target: `Element`
@@ -884,16 +884,16 @@ class Element(object):
         if target.__parent is None:
             raise ElementTreeError()
 
-        self.release()        
+        self.release()
         pos = target.__parent.__children.index(target)
         target.__parent.__children[pos] = self
         target.__parent = None
 
     def replace_with(self, replacement):
         """Replaces the element with another element.
-        
+
         :param replacement: The element that will be put in the position
-            currently occupied by the element.            
+            currently occupied by the element.
         :type replacement: `Element`
 
         :raise: Raises `ElementTreeError` if the element that is being replaced
@@ -914,7 +914,7 @@ class Element(object):
 
     @getter
     def classes(self):
-        """The list of CSS classes assigned to the element."""        
+        """The list of CSS classes assigned to the element."""
         css_class = self["class"]
 
         if css_class is None:
@@ -952,7 +952,7 @@ class Element(object):
         :type name: str
         """
         css_class = self["class"]
-        
+
         if css_class is not None:
             classes = css_class.split()
             try:
@@ -967,7 +967,7 @@ class Element(object):
 
     # Inline CSS styles
     #--------------------------------------------------------------------------
-    
+
     @getter
     def style(self):
         """A dictionary containing the inline CSS declarations for the element.
@@ -987,7 +987,7 @@ class Element(object):
 
     def get_style(self, property):
         """Retrieves the value of an inline CSS property.
-        
+
         :param property: The style property to retrieve (ie. font-weight,
             color, etc).
         :type property: str
@@ -1023,19 +1023,19 @@ class Element(object):
         else:
             self["style"] = "%s: %s" % (property, value)
 
-    def update_style(self, styles):        
+    def update_style(self, styles):
         style = self.style.copy()
         style.update(styles)
         self["style"] = "; ".join("%s: %s" % i for i in style.iteritems())
 
     # Resources
     #--------------------------------------------------------------------------
-    
+
     @getter
     def resources(self):
         """The list of `resources <Resource>` (scripts, stylesheets, etc)
         linked to the element.
-        
+
         Linked resources will be rendered along the element when a
         `full page rendering <render_page>` is requested.
         """
@@ -1055,7 +1055,7 @@ class Element(object):
         Resources are `indexed by their URI<resource_uris>`, allowing only one
         instance of each URI per element. That means that linking the same
         script or stylesheet twice will produce no effect.
-        
+
         :param resource: A resource object, or a resource URI. URI strings will
             be wrapped using a new resource object of the appropiate type.
         :type resource: `Resource` or basestring
@@ -1066,7 +1066,7 @@ class Element(object):
         :type mime_type: str
 
         :param ie_condition: Indicates that the linked resource should be
-            wrapped in an Internet Explorer `conditional comment 
+            wrapped in an Internet Explorer `conditional comment
             <http://msdn.microsoft.com/en-us/library/ms537512(VS.85).aspx>`
             with the specified expression.
         :type ie_condition: str
@@ -1087,7 +1087,7 @@ class Element(object):
                 )
 
             uri = resource.uri
-            
+
             if uri is None:
                 raise ValueError("Can't add a resource without a defined URI.")
 
@@ -1119,13 +1119,13 @@ class Element(object):
 
     # Meta attributes
     #--------------------------------------------------------------------------
-    
+
     @getter
     def meta(self):
         """A dictionary containing the meta declarations for the element.
 
         Meta declarations will be rendered as <meta> tags when performing a
-        `full page rendering <render_page>`. 
+        `full page rendering <render_page>`.
         """
         if self.__meta is None:
             return empty_dict
@@ -1199,7 +1199,7 @@ class Element(object):
 
     def add_body_end_element(self, element):
         """Specifies that the given element should be rendered just before the
-        closure of the <body> tag when the element takes part in a 
+        closure of the <body> tag when the element takes part in a
         `full page rendering <render_page>`
         """
         warn(
@@ -1222,7 +1222,7 @@ class Element(object):
     @getter
     def client_params(self):
         """A dictionary with the client side parameters for the element.
-    
+
         Each parameter in this dictionary will be relayed client side as an
         attribute of the element's DOM element, using a JSON encoder.
         """
@@ -1230,11 +1230,11 @@ class Element(object):
             return empty_dict
         else:
             return self.__client_params
-    
+
     def get_client_param(self, key):
         """Gets the value of the indicated
         `client side parameter <client_params>`.
-        
+
         :param key: The parameter to retrieve.
         :type key: str
 
@@ -1278,7 +1278,7 @@ class Element(object):
                 "client param '%s' on %s" % (key, self))
         else:
             del self.__client_params[key]
-    
+
     # Client side element initialization code
     #--------------------------------------------------------------------------
     def __transmit_client_code(self):
@@ -1301,7 +1301,7 @@ class Element(object):
             return empty_list
         else:
             return self.__client_code
-    
+
     def add_client_code(self, snippet):
         """Attaches a `snippet of javascript code <client_code>` to the
         element.
@@ -1321,7 +1321,7 @@ class Element(object):
     def client_variables(self):
         """A dictionary containing the client side variables declared by the
         element.
-    
+
         Each parameter in this dictionary will be relayed client side as a
         global javascript variable, using a JSON encoder. Note that different
         elements can define the same variable, overriding its value.
@@ -1333,7 +1333,7 @@ class Element(object):
             return empty_dict
         else:
             return self.__client_variables
-    
+
     def get_client_variable(self, key):
         """Gets the value of the indicated
         `client side variable <client_variables>`.
@@ -1384,7 +1384,7 @@ class Element(object):
 
     # Client side translations
     #--------------------------------------------------------------------------
-    
+
     @getter
     def client_translations(self):
         """A set of translation keys to relay client side.
@@ -1399,7 +1399,7 @@ class Element(object):
             return empty_set
         else:
             return self.__client_translations
-    
+
     def add_client_translation(self, key):
         """Makes the given translation key available client side.
 
@@ -1412,7 +1412,7 @@ class Element(object):
         if self.__client_translations is None:
             self.__client_translations = set()
         self.__client_translations.add(key)
-        
+
 
 class Content(Element):
     """A piece of arbitrary HTML content.
@@ -1422,7 +1422,7 @@ class Content(Element):
     They can still link to resources or client side assets.
 
     .. attribute:: value
-    
+
         The HTML code for the element. Can be anything that can be represented
         as an unicode string.
     """
@@ -1434,11 +1434,11 @@ class Content(Element):
     def __init__(self, value = None, *args, **kwargs):
         Element.__init__(self, *args, **kwargs)
         self.value = value
- 
+
     @getter
     def rendered(self):
         return self.visible
-    
+
     @getter
     def substantial(self):
         return (
@@ -1465,10 +1465,10 @@ class TranslatedValue(Content):
 
 class PlaceHolder(Content):
     """A blob of content that produces its value just before it's rendered.
-    
+
     .. attribute:: expression
-        
-        A callable that produces the content for the placeholder.    
+
+        A callable that produces the content for the placeholder.
     """
     class_provides_cache_tag = False
 

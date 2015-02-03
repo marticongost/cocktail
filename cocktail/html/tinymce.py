@@ -14,7 +14,7 @@ from cocktail.html.databoundcontrol import data_bound
 
 
 class TinyMCE(Element):
-    
+
     class __metaclass__(Element.__metaclass__):
         def __init__(cls, name, bases, members):
             Element.__metaclass__.__init__(cls, name, bases, members)
@@ -58,7 +58,7 @@ class TinyMCE(Element):
         self.textarea = templates.new("cocktail.html.TextArea")
         self.append(self.textarea)
         self.binding_delegate = self.textarea
-        
+
     def _ready(self):
         Element._ready(self)
         params = self.aggregate_tinymce_params()
@@ -69,7 +69,7 @@ class TinyMCE(Element):
         params["elements"] = self.textarea.require_id()
 
         self.set_client_param("tinymceSettings", params);
-    
+
     def _get_value(self):
         return self.textarea.value
 

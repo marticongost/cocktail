@@ -34,7 +34,7 @@ from cocktail.html.element import (
     PlaceHolder
 )
 from cocktail.html.resources import (
-    Resource, 
+    Resource,
     Script,
     StyleSheet
 )

@@ -10,7 +10,7 @@ from unittest import TestCase
 from cocktail.tests.persistence.tempstoragemixin import TempStorageMixin
 
 class UniqueTestCase(TempStorageMixin, TestCase):
-    
+
     def setUp(self):
 
         TempStorageMixin.setUp(self)
@@ -23,7 +23,7 @@ class UniqueTestCase(TempStorageMixin, TestCase):
                 unique = True,
                 indexed = True
             )
-        
+
         class Bar(Foo):
             pass
 
@@ -46,11 +46,11 @@ class UniqueTestCase(TempStorageMixin, TestCase):
         assert not self.duplicated(a)
 
     def test_validate_distinct(self):
-        
+
         a = self.Foo()
         a.spam = "A"
         a.insert()
-        
+
         b = self.Foo()
         b.spam = "B"
         assert not self.duplicated(b)
@@ -60,7 +60,7 @@ class UniqueTestCase(TempStorageMixin, TestCase):
         a = self.Foo()
         a.spam = "A"
         a.insert()
-        
+
         b = self.Foo()
         b.spam = "A"
         assert self.duplicated(b)
@@ -70,7 +70,7 @@ class UniqueTestCase(TempStorageMixin, TestCase):
         a = self.Foo()
         a.spam = "A"
         a.insert()
-        
+
         b = self.Bar()
         b.spam = "A"
         assert self.duplicated(b)

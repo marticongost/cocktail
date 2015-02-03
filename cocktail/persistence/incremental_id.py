@@ -35,7 +35,7 @@ def discard_acquired_ids(event):
         _acquired_ids.clear()
 
 def incremental_id(key = "default", step = None):
-    
+
     with _lock:
         key_acquired_ids = _acquired_ids.get(key)
 
@@ -59,7 +59,7 @@ def acquire_id_range(size, key = "default"):
                 if container is None:
                     container = PersistentMapping()
                     root[ID_CONTAINER_KEY] = container
-                
+
                 base_id = container.get(key, 0)
                 top_id = base_id + size
 

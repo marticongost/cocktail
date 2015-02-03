@@ -57,14 +57,14 @@ class AdaptationContext(object):
         self.target_accessor = target_accessor
         self.source_schema = source_schema
         self.target_schema = target_schema
-        self._consumed_keys = set()            
+        self._consumed_keys = set()
         self.copy_mode = copy_mode
         self.collection_copy_mode = collection_copy_mode
         self.copy_validations = copy_validations
 
     def get(self, key, default = undefined, language = None):
         """Gets a key from the source object.
- 
+
         @param key: The name of the value to retrieve.
         @type key: str
 
@@ -75,7 +75,7 @@ class AdaptationContext(object):
         @param language: Required for multi-language values. Indicates the
             language to retrieve the value in.
         @type language: str
-    
+
         @return: The requested value, if defined. If not, the method either
             returns the default value (if one has been specified) or raises a
             KeyError exception.
@@ -85,10 +85,10 @@ class AdaptationContext(object):
         """
         return self.source_accessor.get(
                 self.source_object, key, default, language)
-    
+
     def set(self, key, value, language = None):
         """Sets the value of a key on the target object.
-        
+
         @param obj: The object to set the value on.
         @type obj: object
 
@@ -114,7 +114,7 @@ class AdaptationContext(object):
         """Marks the given key as processed, making it unavailable to other
         adaptation rules. It is the responsibility of each L{Rule} subclass to
         call this method on every key it handles.
-        
+
         @param key: The key to consume.
         @type key: str
 
@@ -141,7 +141,7 @@ class Adapter(object):
         collection_copy_mode = COLLECTION_COPY_MODE_DEFAULT):
 
         self.import_rules = RuleSet()
-        self.export_rules = RuleSet()        
+        self.export_rules = RuleSet()
 
         self.source_accessor = source_accessor
         self.target_accessor = target_accessor
@@ -151,7 +151,7 @@ class Adapter(object):
         self.copy_validations = copy_validations
         self.copy_mode = copy_mode
         self.collection_copy_mode = collection_copy_mode
-        
+
     def import_schema(self, source_schema, target_schema = None):
 
         if target_schema is None:
@@ -175,7 +175,7 @@ class Adapter(object):
         target_schema = None,
         source_accessor = None,
         target_accessor = None):
-        
+
         self.import_rules.adapt_object(
             source_object,
             target_object,
@@ -191,7 +191,7 @@ class Adapter(object):
         target_schema = None,
         source_accessor = None,
         target_accessor = None):
-        
+
         self.export_rules.adapt_object(
             source_object,
             target_object,
@@ -211,12 +211,12 @@ class Adapter(object):
     implicit_copy = property(_get_implicit_copy, _set_implicit_copy,
         doc = """Indicates if members of the source schema that are not
         covered by any adaptation rule should be implicitly copied.
-        
+
         Note that setting this property will alter the analogous attribute on
         both of the adapter's import and export rule sets (but the opposite
         isn't true; setting X{collection_copy_mode} on either rule set won't
         affect the adapter).
-        
+
         @type: bool
         """)
 
@@ -232,12 +232,12 @@ class Adapter(object):
         doc = """Indicates if the schemas exported by the adapter attempt to
         preserve the same relative ordering for their members and groups of
         members defined by the source schema.
-        
+
         Note that setting this property will alter the analogous attribute on
         both of the adapter's import and export rule sets (but the opposite
         isn't true; setting X{preserve_order} on either rule set won't affect
         the adapter).
-        
+
         @type: bool
         """)
 
@@ -268,16 +268,16 @@ class Adapter(object):
         self.__copy_mode = copy_mode
         self.import_rules.copy_mode = copy_mode
         self.export_rules.copy_mode = copy_mode
-    
+
     copy_mode = property(_get_copy_mode, _set_copy_mode, doc = """
         Indicates the way in which values are copied between objects. This
         should be a function, taking a single parameter (the input value) and
         returning the resulting copy of the value. For convenience, the module
         provides the following functions:
-        
+
             * L{reference}: This is the default copy mode. It doesn't actually
                 perform a copy of the provided value, but rather returns the
-                same value unmodified.                
+                same value unmodified.
             * L{shallow}: Creates a shallow copy of the provided value.
             * L{deep}: Creates a deep copy of the provided value.
 
@@ -296,7 +296,7 @@ class Adapter(object):
         self.__collection_copy_mode = copy_mode
         self.import_rules.collection_copy_mode = copy_mode
         self.export_rules.collection_copy_mode = copy_mode
-    
+
     collection_copy_mode = property(
         _get_collection_copy_mode,
         _set_collection_copy_mode,
@@ -304,7 +304,7 @@ class Adapter(object):
         objects. This should be a function, taking a single parameter (the
         input collection) and returning the resulting copy of the collection.
         For convenience, the module provides the following functions:
-        
+
             * L{reference}: This is the default copy mode. It doesn't actually
                 perform a copy of the provided collection, but rather returns
                 a reference to it. Beware that by using this copy mode, an
@@ -337,7 +337,7 @@ class Adapter(object):
         export_condition = None,
         rule_position = None,
         properties = None):
-        
+
         export_rule = Copy(
                         mapping,
                         transform = export_transform,
@@ -354,20 +354,20 @@ class Adapter(object):
         self.import_rules.add_rule(import_rule, rule_position)
 
     def exclude(self, members, rule_position = None):
-        
+
         if isinstance(members, basestring):
             members = [members]
 
         exclusion = Exclusion(members)
         self.import_rules.add_rule(exclusion, rule_position)
         self.export_rules.add_rule(exclusion, rule_position)
-    
+
     def split(self,
         source_member,
         separator,
         target_members,
         rule_position = None):
-        
+
         self.export_rules.add_rule(
             Split(source_member, separator, target_members),
             rule_position
@@ -383,12 +383,12 @@ class Adapter(object):
         glue,
         target_member,
         rule_position = None):
-        
+
         self.export_rules.add_rule(
             Join(source_members, glue, target_member),
             rule_position
         )
-        
+
         self.import_rules.add_rule(
             Split(target_member, glue, source_members),
             rule_position
@@ -418,7 +418,7 @@ class RuleSet(object):
 
     def remove_rule(self, rule):
         self.__rules.remove(rule)
-    
+
     def adapt_schema(self, source_schema, target_schema):
 
         context = AdaptationContext(
@@ -433,7 +433,7 @@ class RuleSet(object):
 
         for rule in self.__rules:
             rule.adapt_schema(context)
-        
+
         if self.implicit_copy:
             copy_rule = Copy(
                 set(source_schema.members()) - context._consumed_keys
@@ -480,7 +480,7 @@ class RuleSet(object):
         target_accessor = None,
         source_schema = None,
         target_schema = None):
-        
+
         context = AdaptationContext(
             source_object = source_object,
             target_object = target_object,
@@ -495,7 +495,7 @@ class RuleSet(object):
             copy_mode = self.copy_mode,
             collection_copy_mode = self.collection_copy_mode
         )
-      
+
         for rule in self.__rules:
             rule.adapt_object(context)
 
@@ -521,7 +521,7 @@ class Rule(object):
         except KeyError:
             member_type = properties["__class__"]
             member = member_type()
-            
+
         for key, value in properties.iteritems():
             if key != "__class__":
                 setattr(member, key, value)
@@ -559,7 +559,7 @@ class Copy(Rule):
             except TypeError:
                 raise TypeError(
                     "Expected a string, string sequence or mapping")
-    
+
     mapping = property(__get_mapping, __set_mapping, doc = """
         Gets or sets the mapping detailing the copy operation.
         @type: (str, str) mapping
@@ -568,7 +568,7 @@ class Copy(Rule):
     def adapt_schema(self, context):
 
         for source_name, target_name in self.mapping.iteritems():
-            
+
             if context.consume(source_name):
                 source_member = context.source_schema[source_name]
 
@@ -577,7 +577,7 @@ class Copy(Rule):
                 except KeyError:
                     target_member = source_member.copy()
                     target_member.name = target_name
-                
+
                 target_member.adaptation_source = source_member
                 target_member.original_member = source_member.original_member
 
@@ -598,7 +598,7 @@ class Copy(Rule):
                     )
 
     def adapt_object(self, context):
- 
+
         # Determine if the rule fulfills its condition
         condition_fulfilled = True
 
@@ -635,7 +635,7 @@ class Copy(Rule):
                         copy_mode = context.copy_mode
 
                 for language in context.iter_languages(source_name):
-                    
+
                     value = context.get(source_name, None, language)
 
                     # Make a copy of the value
@@ -653,7 +653,7 @@ class Exclusion(Rule):
 
     def __init__(self, excluded_members):
         self.excluded_members = excluded_members
-    
+
     def _consume_keys(self, context):
         for excluded_key in self.excluded_members:
             context.consume(excluded_key)
@@ -663,9 +663,9 @@ class Exclusion(Rule):
 
 
 class Split(Rule):
-    
+
     def __init__(self, source, separator, targets):
-        
+
         self.source = source
         self.separator = separator
 
@@ -683,9 +683,9 @@ class Split(Rule):
                 raise TypeError("Expected a string or dictionary")
 
         self.targets = norm_targets
-    
+
     def adapt_schema(self, context):
-        if context.consume(self.source):        
+        if context.consume(self.source):
             for target in self.targets:
                 target_member = self._adapt_member(
                     context.target_schema,
@@ -699,7 +699,7 @@ class Split(Rule):
 
         if context.consume(self.source):
             for language in context.languages(source_name):
-                
+
                 value = context.get(self.source, None, language)
 
                 if value is not None:
@@ -710,8 +710,8 @@ class Split(Rule):
 
 
 class Join(Rule):
-    
-    def __init__(self, sources, glue, target):        
+
+    def __init__(self, sources, glue, target):
         self.sources = sources
         self.glue = glue
 
@@ -722,7 +722,7 @@ class Join(Rule):
 
     def adapt_schema(self, context):
 
-        if all(context.consume(source) for source in self.sources):        
+        if all(context.consume(source) for source in self.sources):
             target_member = self._adapt_member(
                 context.target_schema,
                 self.target
@@ -741,7 +741,7 @@ class Join(Rule):
             if not consume_key(source):
                 return
             languages.update(context.languages(source))
-        
+
         # For each of those languages, try to join all source members into a
         # a single value
         for language in languages:

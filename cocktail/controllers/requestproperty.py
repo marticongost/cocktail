@@ -12,7 +12,7 @@ cherrypy.request.hooks.attach("on_start_resource", create_request_properties_con
 
 def clear_request_properties():
     properties = getattr(
-        cherrypy, 
+        cherrypy,
         "request._cocktail_request_properties",
         None
     )

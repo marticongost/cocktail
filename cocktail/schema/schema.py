@@ -564,7 +564,7 @@ class Schema(Member):
 
         if relative:
             def insert_relative(member, visited):
-                
+
                 # Disallow conflicting positions
                 if member.before_member and member.after_member:
                     raise ValueError(
@@ -702,10 +702,10 @@ class Schema(Member):
                     return label
 
         label = get_label(self)
-        
+
         if label:
             return label
-        
+
         source_schema = self.adaptation_source
         while source_schema is not None:
             label = get_label(source_schema)
@@ -725,7 +725,7 @@ class Schema(Member):
                 "insert_group() can't take both 'after' and 'before' "
                 "parameters at the same time"
             )
- 
+
         anchor = before or after
         if not isinstance(self.groups_order, list):
             self.groups_order = list(self.groups_order)

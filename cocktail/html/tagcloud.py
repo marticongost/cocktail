@@ -19,7 +19,7 @@ def get_tag_cloud_font_sizes(tags, max_font_increment = 75):
 
         if min_frequency is None or frequency < min_frequency:
             min_frequency = frequency
-        
+
         if frequency > max_frequency:
             max_frequency = frequency
 
@@ -39,7 +39,7 @@ def get_tag_cloud_font_sizes(tags, max_font_increment = 75):
 
 class TagCloud(Element):
     """An element that renders a link cloud for a set of tags.
-    
+
     @var tags: A mapping of tags and their frequency.
     @type tags: dict
 
@@ -52,7 +52,7 @@ class TagCloud(Element):
 
     def _ready(self):
         Element._ready(self)
-        
+
         self._font_sizes = get_tag_cloud_font_sizes(
             self.tags,
             self.max_font_increment
@@ -65,11 +65,11 @@ class TagCloud(Element):
     def sorted_tags(self, tags):
         return sorted(tags.keys(), key = translations)
 
-    def create_tag_entry(self, tag, frequency):        
-        entry = Element("a")        
-        entry.label = self.create_tag_label(tag, frequency) 
+    def create_tag_entry(self, tag, frequency):
+        entry = Element("a")
+        entry.label = self.create_tag_label(tag, frequency)
         entry.append(entry.label)
-        entry.set_style("font-size", str(self._font_sizes[tag]) + "%")                
+        entry.set_style("font-size", str(self._font_sizes[tag]) + "%")
         return entry
 
     def create_tag_label(self, tag, frequency):

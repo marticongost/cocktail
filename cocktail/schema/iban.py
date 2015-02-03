@@ -136,7 +136,7 @@ class IBAN(String):
                 .replace("-", "")
         )
 
-    def translate_value(self, value, language = None, **kwargs):        
+    def translate_value(self, value, language = None, **kwargs):
 
         if not value:
             return ""
@@ -147,6 +147,6 @@ class IBAN(String):
         while value:
             chunks.append(value[:4])
             value = value[4:]
-        
+
         return "-".join(chunks)
 

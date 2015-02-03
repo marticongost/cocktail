@@ -8,7 +8,7 @@
 -----------------------------------------------------------------------------*/
 
 cocktail.bind(".IBANEntry", function ($entry) {
-    
+
     var $expl = $entry.find(".iban_explanation");
     var $summary = $expl.find("summary");
 

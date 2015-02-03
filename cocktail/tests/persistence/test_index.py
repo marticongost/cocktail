@@ -92,14 +92,14 @@ class MultipleValuesIndexTestCase(TestCase):
             [(1, "foo"),
              (2, "bar"),
              (2, "bar2"),
-             (3, "spam")],            
+             (3, "spam")],
             max = 3, exclude_max = False)
 
     def test_supports_ranges_with_excluded_max(self):
         self.assert_range(
             [(1, "foo"),
              (2, "bar"),
-             (2, "bar2")],            
+             (2, "bar2")],
             max = 3, exclude_max = True)
 
     def test_supports_ranges_with_both_min_and_max(self):

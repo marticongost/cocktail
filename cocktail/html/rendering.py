@@ -41,7 +41,7 @@ class Rendering(object):
     .. attribute:: renderer
 
         The `renderer <Renderer>` used to format HTML elements.
-    
+
     .. attribute:: collect_metadata
 
         Determines if resources and meta data (scripts, stylesheets, meta tags,
@@ -49,9 +49,9 @@ class Rendering(object):
 
     .. attribute:: document_metadata
 
-        A `DocumentMetadata` instance listing the resources and meta data 
-        collected from rendered elements. 
-        
+        A `DocumentMetadata` instance listing the resources and meta data
+        collected from rendered elements.
+
         Will be empty if `collect_metadata` is set to False.
 
     .. attribute:: cache
@@ -65,7 +65,7 @@ class Rendering(object):
         document_metadata = None,
         cache = rendering_cache,
         rendered_client_model = None):
-        
+
         self.renderer = renderer
         self.collect_metadata = collect_metadata
         self.document_metadata = document_metadata or DocumentMetadata()
@@ -77,7 +77,7 @@ class Rendering(object):
         self.__content.append(chunk)
 
     def render_element(self, element):
- 
+
         # Register the current rendering
         prev_rendering = getattr(_thread_data, "rendering", None)
         _thread_data.rendering = self
@@ -87,7 +87,7 @@ class Rendering(object):
         if setup_id:
             _thread_data.prefix = str(time()).replace(".", "")
             _thread_data.generated_id = 0
-        
+
         try:
             # Bring the element to the 'binding' stage
             element.bind()
@@ -138,7 +138,7 @@ class Rendering(object):
 
             # Otherwise, render the element from scratch
             if not rendered_from_cache:
-                
+
                 # Bring the element to the 'ready' stage
                 element.ready()
 
@@ -180,7 +180,7 @@ class Rendering(object):
                         tags = tags
                     )
                     rendering.update(cache_rendering)
-                
+
                 # Non cached elements are rendered directly onto the main
                 # rendering buffer.
                 else:
@@ -212,7 +212,7 @@ class Rendering(object):
 
     def update(self, rendering):
         """Extend the rendering state with data from another rendering.
-        
+
         The main use case for this method is reusing content and metadata from
         the rendering cache.
 

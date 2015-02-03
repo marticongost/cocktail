@@ -134,7 +134,7 @@ class Query(object):
             return self.type.index.values()
         else:
             return self.__base_collection
-    
+
     def _set_base_collection(self, value):
 
         if value is None and not self.type.indexed:
@@ -152,8 +152,8 @@ class Query(object):
 
     def _get_filters(self):
         return self.__filters
-    
-    def _set_filters(self, value):        
+
+    def _set_filters(self, value):
         self.discard_results()
         self.__filters = self._normalize_filters(value)
 
@@ -164,7 +164,7 @@ class Query(object):
         @type filters: L{Expression<cocktail.schema.expressions.Expression>}
             list
         """)
- 
+
     def _normalize_filters(self, value):
         if value is None:
             return []
@@ -178,7 +178,7 @@ class Query(object):
             return list(value)
 
     def add_filter(self, filter):
-        
+
         self.discard_results()
 
         if self.filters is None:
@@ -210,12 +210,12 @@ class Query(object):
             self.__cached_results_sorted = False
             self.__order = order
 
-    order = property(_get_order, _set_order, doc = """            
+    order = property(_get_order, _set_order, doc = """
         Specifies the order in which instances are returned. Can take both
         single and multiple sorting criteria. Criteria can be specified using
         member names or references to L{Member<cocktail.schema.member.Member>}
         objects.
-        
+
         When specified using a string, an optional '+' or '-' prefix can be
         used to choose between ascending (default) and descending order,
         respectively. When using member references, the same can be
@@ -234,13 +234,13 @@ class Query(object):
         self.__order.append(self._normalize_order_criteria(criteria))
 
     def _normalize_order_criteria(self, criteria):
-        
+
         if isinstance(criteria, basestring):
             if not criteria:
                 raise ValueError(
                     "An empty string is not a valid query filter"
                 )
-            
+
             wrapper = None
 
             if criteria[0] == "+":
@@ -254,7 +254,7 @@ class Query(object):
 
             if wrapper:
                 criteria = wrapper(criteria)
-        
+
         elif not isinstance(criteria, expressions.Expression):
             raise TypeError(
                 "Query.order expected a string or Expression, got "
@@ -280,7 +280,7 @@ class Query(object):
             or not isinstance(value[0], int) \
             or not isinstance(value[1], int):
                 raise TypeError("Invalid query range: %s" % (value,))
-            
+
             if value[0] < 0 or value[1] < 0:
                 raise ValueError(
                     "Negative indexes not supported on query ranges: %d, %d"
@@ -295,7 +295,7 @@ class Query(object):
 
             self.__range = value
 
-    range = property(_get_range, _set_range, doc = """        
+    range = property(_get_range, _set_range, doc = """
         Limits the set of matching instances to the given integer range. Ranges
         start counting from zero. Negative indexes or None values are not
         allowed.
@@ -306,11 +306,11 @@ class Query(object):
         print " " * 4 * self.nesting + self.styles[style](*args, **kwargs)
 
     # Execution
-    #--------------------------------------------------------------------------    
+    #--------------------------------------------------------------------------
     def execute(self, _sorted = True, _sliced = True):
 
         if self.verbose:
-            
+
             if self.nesting:
                 print
                 self._verbose_message("nested_header", "Nested query")
@@ -327,17 +327,17 @@ class Query(object):
 
             if self.range:
                 self._verbose_message("attrib", "range", self.range)
-            
+
         # Try to make use of cached results
         if self.cached \
         and self.__cached_results is not None \
         and not (
-            self.__cached_results_sliced 
-            and not self.__cached_results_sorted 
+            self.__cached_results_sliced
+            and not self.__cached_results_sorted
             and _sorted
         ):
             dataset = self.__cached_results
-            
+
             if self.verbose:
                 self._verbose_message("cached", "cached")
 
@@ -371,7 +371,7 @@ class Query(object):
                 start = time()
                 print
                 self._verbose_message("phase", "Applying order")
-            
+
             # Preserve ordering when selecting items from a custom ordered
             # collection
             if not self.__order and isinstance(
@@ -387,14 +387,14 @@ class Query(object):
                     subset = set(subset)
 
                 dataset = (obj.id
-                           for obj in self.__base_collection 
+                           for obj in self.__base_collection
                            if obj.id in subset)
             else:
                 dataset = self._apply_order(dataset)
 
             if self.verbose:
                 self._verbose_message("timing", time() - start)
-      
+
         # Apply range
         if _sliced \
         and self.range \
@@ -403,7 +403,7 @@ class Query(object):
                 start = time()
                 print
                 self._verbose_message("phase", "Applying range")
-            
+
             dataset = self._apply_range(dataset)
 
             if self.verbose:
@@ -425,7 +425,7 @@ class Query(object):
     def _apply_filters(self, dataset):
 
         type_index = self.type.index
-        
+
         if self.verbose:
             if not isinstance(dataset, set):
                 dataset = set(dataset)
@@ -440,7 +440,7 @@ class Query(object):
             # there's no point in applying any further filter
             if not dataset:
                 break
- 
+
             # Default filter implementation. Used when no custom transformation
             # function is provided, or if the dataset has been reduced to a
             # single item (to spare the intersection between the results for
@@ -455,10 +455,10 @@ class Query(object):
                     for id in dataset
                     if expr.eval(type_index[id], SchemaObjectAccessor)
                 )
-                
+
             # Custom filter implementation
             else:
-                
+
                 if self.verbose:
                     self._verbose_message("resolve", expr)
 
@@ -487,7 +487,7 @@ class Query(object):
 
         for resolution, filter in plan:
             yield (filter, resolution[1])
-    
+
     def _get_expression_index(self, expr, member = None):
 
         # Expressions can override normal indexes and supply their own
@@ -495,7 +495,7 @@ class Query(object):
             index = self._get_member_index(expr)
         else:
             index = expr.index
-                
+
         # Otherwise, just use the one provided by the evaluated member
         if index is None and member is not None:
             index = self._get_member_index(member)
@@ -514,9 +514,9 @@ class Query(object):
                 return member.index
 
         return None
-    
+
     def _apply_order(self, dataset):
- 
+
         order = []
 
         # Wrap the translated members into a TranslationExpression
@@ -535,8 +535,8 @@ class Query(object):
             if self.range:
                 order = [self.__type.primary_member.positive()]
             else:
-                return dataset 
-        
+                return dataset
+
         # Optimized case: single indexed member, or a member that is both
         # required and unique followed by other members
         expr = order[0].operands[0]
@@ -556,7 +556,7 @@ class Query(object):
 
             # BTrees don't provide a means for efficient reverse iteration
             if not (desc and is_btree):
-            
+
                 if not isinstance(dataset, fast_membership_test_sequence_types):
                     dataset = set(dataset)
 
@@ -564,7 +564,7 @@ class Query(object):
                     sequence = index.keys(descending = desc, **index_kw)
                 elif getattr(expr, "translated", False):
                     sequence = (id
-                                for key, id 
+                                for key, id
                                 in index.items(descending = desc, **index_kw)
                                 if key[0] == language)
                 elif is_btree:
@@ -607,9 +607,9 @@ class Query(object):
             else:
                 language = None
 
-            index, index_kw = self._get_expression_index(expr)            
+            index, index_kw = self._get_expression_index(expr)
             desc = isinstance(criteria, expressions.NegativeExpression)
-            
+
             # Sort using an index
             if index is not None:
 
@@ -620,7 +620,7 @@ class Query(object):
                 # Index with duplicates
                 if index.accepts_multiple_values:
                     pos = 0
-                    prev_key = None                    
+                    prev_key = None
                     for key, id in index.items(descending = desc, **index_kw):
                         # Skip entries in non-active languages
                         if not getattr(expr, "translated", False) \
@@ -668,7 +668,7 @@ class Query(object):
     def _apply_range(self, dataset):
 
         r = self.range
-        
+
         if dataset and r:
             dataset = islice(dataset, r[0], r[1])
 
@@ -679,7 +679,7 @@ class Query(object):
         for id in self.execute():
             yield type_index[id]
 
-    def __len__(self):        
+    def __len__(self):
         if self.cached:
             if self.__cached_length is None:
                 self.__cached_length = len(self.execute(_sorted = False))
@@ -697,13 +697,13 @@ class Query(object):
         return item.id in self.execute()
 
     def __getitem__(self, index):
-        
+
         # Retrieve a slice
         if isinstance(index, slice):
             if index.step is not None and index.step != 1:
                 raise ValueError("Can't retrieve a query slice using a step "
                         "different than 1")
-            
+
             return self.select(range = (index.start, index.stop))
 
         # Retrieve a single item
@@ -723,11 +723,11 @@ class Query(object):
         order = inherit,
         range = inherit,
         verbose = inherit):
-        
+
         child_query = self.__class__(
             self.__type,
             self.filters
-                if filters is inherit 
+                if filters is inherit
                 else self._normalize_filters(filters) + self.filters,
             self.order if order is inherit else order,
             self.range if range is inherit else range,
@@ -775,7 +775,7 @@ class Comparator(object):
 
         if self.reversed:
             a, b = b, a
-        
+
         if a is None and b is None:
             return 0
         elif a is None:
@@ -797,7 +797,7 @@ def _get_filter_info(filter):
         member = filter.operands[0] \
             if filter.operands and isinstance(filter.operands[0], Member) \
             else None
-    
+
         index = member.index if member is not None else None
 
         if index is None:
@@ -813,7 +813,7 @@ def _get_index_value(member, value):
 
 def _expression_resolution(self, query):
     return ((0, 0), None)
-    
+
 expressions.Expression.resolve_filter = _expression_resolution
 
 def _constant_resolution(self, query):
@@ -827,7 +827,7 @@ expressions.Constant.resolve_filter = _constant_resolution
 
 def _equal_resolution(self, query):
 
-    member, index = _get_filter_info(self)     
+    member, index = _get_filter_info(self)
 
     if index is None:
         return ((0, -1), None)
@@ -853,20 +853,20 @@ def _equal_resolution(self, query):
             value = _get_index_value(member, self.operands[1].value)
             dataset.intersection_update(index.values(key = value))
             return dataset
-    
+
     return (order, impl)
 
 expressions.EqualExpression.resolve_filter = _equal_resolution
 
 def _not_equal_resolution(self, query):
 
-    member, index = _get_filter_info(self)     
+    member, index = _get_filter_info(self)
 
     if index is None:
         return ((0, 0), None)
     elif not index.accepts_multiple_values:
         order = (-2, 0)
-        
+
         if member and member.primary:
             def impl(dataset):
                 id = _get_index_value(member, self.operands[1].value)
@@ -885,7 +885,7 @@ def _not_equal_resolution(self, query):
             value = _get_index_value(member, self.operands[1].value)
             dataset.difference_update(index.values(key = value))
             return dataset
-    
+
     return (order, impl)
 
 expressions.NotEqualExpression.resolve_filter = _not_equal_resolution
@@ -898,7 +898,7 @@ def _greater_resolution(self, query):
         return ((0, 0), None)
     else:
         exclude_end = isinstance(self, expressions.GreaterExpression)
-        
+
         def impl(dataset):
             value = _get_index_value(member, self.operands[1].value)
             method = index.keys if member and member.primary else index.values
@@ -934,7 +934,7 @@ expressions.LowerEqualExpression.resolve_filter = _lower_resolution
 def _inclusion_resolution(self, query):
 
     if self.operands and self.operands[0] is expressions.Self:
-        
+
         subset = self.operands[1].eval(None)
 
         if not self.by_key:
@@ -943,7 +943,7 @@ def _inclusion_resolution(self, query):
         def impl(dataset):
             dataset.intersection_update(subset)
             return dataset
-        
+
         return ((-3, 0), impl)
     else:
         return ((0, 0), None)
@@ -953,7 +953,7 @@ expressions.InclusionExpression.resolve_filter = _inclusion_resolution
 def _exclusion_resolution(self, query):
 
     if self.operands and self.operands[0] is expressions.Self:
-        
+
         subset = self.operands[1].eval(None)
 
         if not self.by_key:
@@ -962,7 +962,7 @@ def _exclusion_resolution(self, query):
         def impl(dataset):
             dataset.difference_update(subset)
             return dataset
-        
+
         return ((-3, 0), impl)
     else:
         return ((0, 0), None)
@@ -996,9 +996,9 @@ def _has_resolution(self, query):
 
             related_subset = \
                 self.relation.related_type.select(self.filters).execute()
-            
+
             if related_subset:
-                
+
                 subset = set()
 
                 if not index.accepts_multiple_values:
@@ -1014,7 +1014,7 @@ def _has_resolution(self, query):
                 return dataset
             else:
                 return set()
-                
+
         return ((0, -1), impl)
 
 expressions.HasExpression.resolve_filter = _has_resolution
@@ -1038,14 +1038,14 @@ def _range_intersection_resolution(self, query):
     else:
         min_index = None if min_member is None else min_member.index
         max_index = None if max_member is None else max_member.index
-    
+
     # One or both fields not indexed
     if min_index is None or max_index is None:
         order = (0, 0)
         impl = None
     else:
         def impl(dataset):
-            
+
             min_value = self.operands[2].value
             if min_member:
                 min_value = _get_index_value(min_member, min_value)
@@ -1075,7 +1075,7 @@ def _range_intersection_resolution(self, query):
                 subset.intersection_update(
                     min_method(max = max_value, exclude_max = self.exclude_max)
                 )
-            
+
             dataset.intersection_update(subset)
             return dataset
 
@@ -1086,7 +1086,7 @@ def _range_intersection_resolution(self, query):
         # Both fields have unique indexes
         else:
             order = (-2, 0)
-    
+
     return (order, impl)
 
 
@@ -1131,7 +1131,7 @@ def _isinstance_resolution(self, query):
         def impl(dataset):
             dataset.intersection_update(subset)
             return dataset
-        
+
         return ((-3, 0), impl)
     else:
         return ((0, 0), None)
@@ -1143,13 +1143,13 @@ def _is_not_instance_resolution(self, query):
     #   a Reference
 
     if self.operands and self.operands[0] is expressions.Self:
-        
+
         subset = _isinstance_subset(self)
 
         def impl(dataset):
             dataset.difference_update(subset)
             return dataset
-        
+
         return ((-3, 0), impl)
     else:
         return ((0, 0), None)
@@ -1170,7 +1170,7 @@ def _descends_from_resolution(self, query):
                     if include_self:
                         subset.add(item.id)
                     children = item.get(relation)
-                    if children:                
+                    if children:
                         for child in children:
                             descend(child, True)
                 descend(root, self.include_self)
@@ -1180,12 +1180,12 @@ def _descends_from_resolution(self, query):
                 while item is not None:
                     subset.add(item.id)
                     item = item.get(relation)
-        
+
             dataset.intersection_update(subset)
             return dataset
-        
+
         return ((-3, 0), impl)
-    
+
     else:
         return ((0, 0), None)
 
@@ -1194,17 +1194,17 @@ expressions.DescendsFromExpression.resolve_filter = _descends_from_resolution
 def _global_search_resolution(self, query):
 
     if query.type.full_text_indexed:
-        
+
         def impl(dataset):
-            terms = normalize(self.search_query)            
+            terms = normalize(self.search_query)
             subset = set()
 
             for language in self.languages:
                 index = query.type.get_full_text_index(language)
-                
+
                 if self.logic == "and":
                     language_subset = None
-                    
+
                     for term in terms.split():
                         results = index.search(term)
                         if not results:
@@ -1225,13 +1225,13 @@ def _global_search_resolution(self, query):
                     results = index.search(terms)
                     if results:
                         subset.update(results.iterkeys())
-            
+
             dataset.intersection_update(subset)
             return dataset
 
         return ((-1, 1), impl)
     else:
-        return ((0, 0), None)    
+        return ((0, 0), None)
 
 expressions.GlobalSearchExpression.resolve_filter = _global_search_resolution
 
@@ -1246,13 +1246,13 @@ def _search_resolution(self, query):
 
     # Searching over the whole text mass of the queried type
     if isinstance(self.subject, expressions.SelfExpression) \
-    and query.type.full_text_indexed:        
+    and query.type.full_text_indexed:
         indexed_member = query.type
         if languages is None:
             languages = [None, get_language()]
         elif None not in languages:
             languages.append(None)
-    
+
     # Searching a specific text field
     elif isinstance(self.subject, Member) and self.subject.full_text_indexed:
         indexed_member = self.subject
@@ -1266,7 +1266,7 @@ def _search_resolution(self, query):
     # Full text index available
     else:
         def impl(dataset):
-            
+
             subset = set()
 
             for language in languages:
@@ -1274,7 +1274,7 @@ def _search_resolution(self, query):
 
                 if self.logic == "and":
                     language_subset = None
-                    
+
                     for term in self.tokens:
                         results = index.search(term)
                         if not results:
@@ -1295,7 +1295,7 @@ def _search_resolution(self, query):
                     results = index.search(self.tokens)
                     if results:
                         subset.update(results.iterkeys())
-            
+
             dataset.intersection_update(subset)
             return dataset
 

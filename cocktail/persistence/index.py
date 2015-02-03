@@ -36,7 +36,7 @@ class Index(Persistent):
 
     def add(self, key, value):
         """Adds a key, value pair to the index.
-        
+
         If a value for the given key was present in the index already it will
         be replaced with the new value.
 
@@ -70,19 +70,19 @@ class Index(Persistent):
         exclude_max = False,
         descending = False):
         """Iterates over the keys defined by the index.
-        
+
         The `min`, `max`, `include_min` and `include_max` parameters can be
         used to return only a range of the keys defined by the index, while the
         `descending` parameter allows to obtain the keys in reverse order.
         These features are used extensively by `queries <Query>` to compute
         their results.
-        
+
         :param min: If set, return a subset of keys starting at the specified
             key.
 
         :param max: If set, return a subset of keys ending at the specified
             key.
-        
+
         :param include_min: When supplying the `min` parameter to obtain a
             subset of keys, determine if the lower boundary should be included
             in the subset.
@@ -99,7 +99,7 @@ class Index(Persistent):
 
         :return: An iterable sequence containing the requested keys.
         :rtype: iterable
-        """        
+        """
         for pair in self.items(
             min = min,
             max = max,
@@ -117,13 +117,13 @@ class Index(Persistent):
         exclude_max = False,
         descending = False):
         """Iterates over the values contained inside the index.
-        
+
         The `key`, `min`, `max`, `include_min` and `include_max` parameters can
         be used to return only a subset of the values defined by the index,
         while the `descending` parameter allows to obtain the values in reverse
         key order. These features are used extensively by `queries <Query>` to
         compute their results.
-     
+
         :param key: If set, return only the values for the indicated key. This
             parameter can't be mixed with `min`, `max`, `exclude_min` or
             `exclude_max`.
@@ -133,7 +133,7 @@ class Index(Persistent):
 
         :param max: If set, return a subset of values ending at the specified
             key.
-        
+
         :param include_min: When supplying the `min` parameter to obtain a
             subset of values, determine if the lower boundary should be
             included in the subset.
@@ -158,18 +158,18 @@ class Index(Persistent):
                 raise ValueError(
                     "Can't supply both 'key' and 'min' to Index.values()"
                 )
-            
+
             if max is not undefined:
                 raise ValueError(
                     "Can't supply both 'key' and 'max' to Index.values()"
                 )
-            
+
             if exclude_min:
                 raise ValueError(
                     "Can't supply both 'key' and 'exclude_min' to "
                     "Index.values()"
                 )
-            
+
             if exclude_max:
                 raise ValueError(
                     "Can't supply both 'key' and 'exclude_max' to "
@@ -195,19 +195,19 @@ class Index(Persistent):
         exclude_max = False,
         descending = False):
         """Iterates over the key,value pairs defined by the index.
-        
+
         The `min`, `max`, `include_min` and `include_max` parameters can be
         used to return only a subset of the entries defined by the index, while
         the `descending` parameter allows to obtain entries in reverse key
         order. These features are used extensively by `queries <Query>` to
         compute their results.
-        
+
         :param min: If set, return a subset of entries starting at the
             specified key.
 
         :param max: If set, return a subset of entries ending at the specified
             key.
-        
+
         :param include_min: When supplying the `min` parameter to obtain a
             subset of entries, determine if the lower boundary should be
             included in the subset.
@@ -230,7 +230,7 @@ class Index(Persistent):
 
     def min_key(self, exclude_none = False):
         """Obtains the smallest key defined by the index.
-        
+
         :return: The smallest key defined by the index.
 
         :raise ValueError: Raised if the index is empty.
@@ -239,7 +239,7 @@ class Index(Persistent):
 
     def max_key(self):
         """Obtains the biggest key defined by the index.
-        
+
         :return: The biggest key defined by the index.
 
         :raise ValueError: Raised if the index is empty.
@@ -248,7 +248,7 @@ class Index(Persistent):
 
     def __len__(self):
         """Counts the pairs defined by the index.
-        
+
         :type: The number of pairs defined by the index.
         :rtype: int
         """
@@ -256,14 +256,14 @@ class Index(Persistent):
 
     def __iter__(self):
         """Iterates over the keys defined by the index.
-        
+
         :return: An iterable sequence containing the keys defined by the index.
         """
         return self.keys()
 
     def __nonzero__(self):
         """Determines if the index is empty.
-        
+
         :return: True if the index is empty, False otherwise.
         :rtype: bool
         """
@@ -383,11 +383,11 @@ class SingleValueIndex(Index):
 
     def __getitem__(self, key):
         """Get the value for the specified key.
-        
+
         :param key: The key to retrieve the value for.
 
         :return: The value for the specified key.
-        
+
         :raise KeyError: Raised if the indicated key isn't present in the
             index.
         """
@@ -401,7 +401,7 @@ class SingleValueIndex(Index):
     def get(self, key, default = None):
         """Get the value for the specified key, returning `default` if the key
         is undefined.
-        
+
         :param key: The key to retrieve the value for.
         :param default: The value that should be returned if the key is not
             defined by the index.
@@ -436,7 +436,7 @@ class MultipleValuesIndex(Index):
         else:
             self._remove_pair(key, value)
 
-    def _remove_pair(self, key, value):        
+    def _remove_pair(self, key, value):
         pair = (key, value)
         try:
             self.__items.remove(pair)
