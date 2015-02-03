@@ -18,7 +18,7 @@ from cocktail.controllers import get_state, view_state, serialize_parameter
         ui.table_layout = False
         ui.add_class("filter_ui")
         return ui
-        
+
     def get_discard_filters_state(self):
         state = {"page": 0, "filter": ""}
 
@@ -29,7 +29,7 @@ from cocktail.controllers import get_state, view_state, serialize_parameter
         return state
 
     def get_add_filter_state(self, filter):
-    
+
         filter_param = []
         state = {"page": 0, "filter": filter_param}
 
@@ -51,7 +51,7 @@ from cocktail.controllers import get_state, view_state, serialize_parameter
     ?>
 
     <div py:id="filter_list">
-        <py:ready>            
+        <py:ready>
             <py:new
                 py:element="self.create_filter_entry(index, filter)"
                 py:for="index, filter in enumerate(self.filters)"/>
@@ -71,7 +71,7 @@ from cocktail.controllers import get_state, view_state, serialize_parameter
             <?py
             filter_param = []
             params = {"page": "0"}
-                       
+
             for i, f in enumerate(self.filters):
                 if i != index:
                     filter_param.append(f.id)

@@ -36,7 +36,7 @@ def _get_index(self):
 
     if isinstance(self, PersistentClass):
         return self.primary_member.index
-    
+
     index = datastore.root.get(self.index_key)
 
     if index is None:
@@ -53,7 +53,7 @@ schema.Member.index = property(_get_index, _set_index, doc = """
 
 def _get_index_key(self):
     if self._index_key is not None:
-        return self._index_key    
+        return self._index_key
     elif isinstance(self, PersistentClass):
         return self.primary_member.index_key
     elif self.copy_source:
@@ -183,7 +183,7 @@ def _rebuild_collection_index(self):
 schema.Collection.rebuild_index = _rebuild_collection_index
 
 def _rebuild_indexes(cls, recursive = False, verbose = True):
-    
+
     if cls.indexed:
         for member in cls.members(False).itervalues():
             if member.indexed and not member.primary:
@@ -322,7 +322,7 @@ def _handle_deleting(event):
     obj = event.source
 
     if obj.indexed:
-        
+
         id = obj.id
 
         # Remove the item from ID indexes
@@ -341,7 +341,7 @@ def _handle_deleting(event):
                     languages.add(lang)
 
         for member in obj.__class__.members().itervalues():
-            
+
             if member.indexed and obj._should_index_member(member):
                 if member.translated:
                     for language in languages:
@@ -382,7 +382,7 @@ def _handle_removing_translation(event):
                     include_self = True
                 ):
                     remove_index_entry(obj, member, value, lang)
-                    
+
                     # Add index entries for derived translations that now
                     # inherit their values from a different fallback language.
                     if lang != removed_language:
@@ -400,19 +400,19 @@ def _handle_removing_translation(event):
                                 break
 
 def add_index_entry(obj, member, value, language = None):
-            
+
     k = member.get_index_value(value)
-        
+
     if language:
         k = (language, k)
-    
+
     v = obj if member.primary else obj.id
     member.index.add(k, v)
 
 def remove_index_entry(obj, member, value, language = None):
-    
+
     key = member.get_index_value(value)
-        
+
     if language:
         key = (language, key)
 

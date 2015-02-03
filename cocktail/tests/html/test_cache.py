@@ -24,7 +24,7 @@ class CacheTestCase(TestCase):
 
         e.render(cache = self.cache)
         e.append("!!!")
-        
+
         assert e.render(cache = self.cache) == "<div>Hello, world</div>"
 
         e.cached = False
@@ -52,7 +52,7 @@ class CacheTestCase(TestCase):
         x.render(cache = self.cache)
 
         assert x.render(cache = self.cache) == "<div>x</div>"
-        
+
         x.cache_key = "a"
         assert x.render(cache = self.cache) == "<div>a</div>"
 
@@ -65,17 +65,17 @@ class CacheTestCase(TestCase):
 
         img = Element("img")
         img.cached = True
-        img.cache_key = "test"        
+        img.cache_key = "test"
         img.render(cache = self.cache)
 
         html = img.render(renderer = html4_renderer, cache = self.cache)
         assert html == "<img>"
 
-        xhtml = img.render(renderer = xhtml_renderer, cache = self.cache) 
+        xhtml = img.render(renderer = xhtml_renderer, cache = self.cache)
         assert xhtml == "<img/>"
 
     def test_cached_content_includes_resources(self):
-        
+
         from cocktail.html.element import Element
 
         e = Element()
@@ -93,7 +93,7 @@ class CacheTestCase(TestCase):
         assert "foo.js" in e.render_page()
 
     def test_cached_content_includes_client_parameters(self):
-        
+
         from cocktail.html.element import Element
 
         e = Element()
@@ -111,7 +111,7 @@ class CacheTestCase(TestCase):
         assert "foo" in e.render_page()
 
     def test_cached_content_includes_client_variables(self):
-        
+
         from cocktail.html.element import Element
 
         e = Element()
@@ -129,7 +129,7 @@ class CacheTestCase(TestCase):
         assert "foo" in e.render_page()
 
     def test_cached_content_includes_head_elements(self):
-        
+
         from cocktail.html.element import Element
 
         e = Element()
@@ -147,7 +147,7 @@ class CacheTestCase(TestCase):
         assert "foo" in e.render_page()
 
     def test_cached_content_includes_meta_tags(self):
-        
+
         from cocktail.html.element import Element
 
         e = Element()
@@ -165,7 +165,7 @@ class CacheTestCase(TestCase):
         assert "foo" in e.render_page()
 
     def test_cached_content_includes_client_translations(self):
-        
+
         from cocktail.html.element import Element
 
         e = Element()
@@ -187,7 +187,7 @@ class CacheTestCase(TestCase):
         from time import sleep
         from datetime import timedelta
         from cocktail.html.element import Element
-        
+
         e = Element()
         e.cached = True
         e.cache_key = "test"

@@ -56,7 +56,7 @@ class HTMLDocument(Element):
 
         self.head = Element("head")
         self.append(self.head)
-        
+
         self.meta_container = Element(None)
         self.head.append(self.meta_container)
 
@@ -66,13 +66,13 @@ class HTMLDocument(Element):
 
         self.resources_container = Element(None)
         self.head.append(self.resources_container)
-        
+
         self.styles_container = Element(None)
         self.resources_container.append(self.styles_container)
 
         self.scripts_container = Element(None)
         self.resources_container.append(self.scripts_container)
-        
+
         self.client_setup = Element("script")
         self.client_setup["type"] = "text/javascript"
         self.head.append(self.client_setup)
@@ -137,12 +137,12 @@ class HTMLDocument(Element):
         # Other meta tags
         for key, value in self.metadata.meta.iteritems():
             meta = Element("meta")
-            
+
             if key.lower() in HTTP_EQUIV_KEYS:
                 attribute = "http-equiv"
             else:
                 attribute = "name"
-            
+
             meta[attribute] = key
             meta["content"] = value
             self.meta_container.append(meta)
@@ -152,10 +152,10 @@ class HTMLDocument(Element):
             self.title.append(self.metadata.page_title)
 
     def _add_resources(self):
-    
+
         if self.ie_html5_workaround and rendering_html5():
             self.metadata.resources.insert(
-                0, 
+                0,
                 Script(
                     "/cocktail/scripts/html5shiv-printshiv.js",
                     ie_condition = "lt IE 9"
@@ -179,7 +179,7 @@ class HTMLDocument(Element):
                         break
                 else:
                     remaining_resources.append(resource)
-            
+
             for resource_set in resource_sets:
                 resource_set.insert_into_document(self)
         else:
@@ -207,7 +207,7 @@ class HTMLDocument(Element):
         return resource_sets
 
     def _add_core_scripts(self):
-        
+
         if not self.__core_scripts_added:
             self.__core_scripts_added = True
 
@@ -225,7 +225,7 @@ class HTMLDocument(Element):
             if self.root_element_id:
                 init_code = (
                     "cocktail.rootElement =  document.getElementById(%s); "
-                    % dumps(self.root_element_id)                    
+                    % dumps(self.root_element_id)
                 ) + init_code
 
             self.client_setup.append(
@@ -275,7 +275,7 @@ class HTMLDocument(Element):
                 self.metadata.client_models = {}
 
                 for model_id, model_data in client_models:
-                    
+
                     all_client_models[model_id] = model_data
                     (cm_content, cm_metadata) = model_data
 

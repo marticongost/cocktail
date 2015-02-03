@@ -19,7 +19,7 @@ cocktail.bind(".VimeoPlayer.scriptable_video_player", function ($player) {
         });
 
         ctl.addEvent("finish", function () {
-            $player.removeClass("prevent_autoplay");        
+            $player.removeClass("prevent_autoplay");
         });
 
         playerReady = true;

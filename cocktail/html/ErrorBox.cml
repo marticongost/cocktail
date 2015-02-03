@@ -7,7 +7,7 @@ from cocktail.pkgutils import get_full_name
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:py="http://www.whads.com/ns/cocktail/templates"
     py:collapsible="${True}">
-    
+
     <?py-class
     errors = ()
 

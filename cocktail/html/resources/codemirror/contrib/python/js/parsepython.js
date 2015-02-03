@@ -78,7 +78,7 @@ var PythonParser = Editor.Parser = (function() {
         function normal(source, setState) {
             var stringDelim, threeStr, temp, type, word, possible = {};
             var ch = source.next();
-            
+
             function filterPossible(token, styleIfPossible) {
                 if (!possible.style && !possible.content) {
                     return token;

@@ -10,11 +10,11 @@ from types import ModuleType
 PYTHON_EXTENSIONS = ".py", ".pyc", ".pyo", ".pyd"
 
 def resolve(reference):
-    """Resolves a reference to an object. 
-    
+    """Resolves a reference to an object.
+
     The refered object can be specified using a fully qualified name, which
     will be imported, or an object reference, which will be returned as is.
-    
+
     :param name: The reference to resolve.
     :type name: str or object
 
@@ -34,7 +34,7 @@ def resolve(reference):
 
 def import_module(name):
     """Obtains a reference to a module or package from a qualified name.
-    
+
     :param name: The fully qualified name of the module to import.
     :type name: str
 
@@ -45,15 +45,15 @@ def import_module(name):
         indicated qualified name.
     """
     obj = __import__(name)
-    
+
     for component in name.split(".")[1:]:
         obj = getattr(obj, component)
-    
+
     return obj
 
 def import_object(name):
     """Obtains a reference to an object from a qualified name.
-    
+
     :param name: The fully qualified name of the object to import.
     :type name: str
 
@@ -68,7 +68,7 @@ def import_object(name):
     """
     components = name.split(".")
     obj = __import__(".".join(components[:-1]))
-    
+
     for component in components[1:]:
         try:
             obj = getattr(obj, component)
@@ -81,7 +81,7 @@ _full_names = {}
 
 def get_full_name(obj):
     """Obtains the canonical qualified name for the provided object.
-    
+
     :param obj: The object to determine the name for.
     :type obj: Package, module, class, function or method
 
@@ -94,11 +94,11 @@ def get_full_name(obj):
     name = _full_names.get(obj)
 
     if name is None:
-        
+
         if isinstance(obj, ModuleType):
-            
+
             if obj.__name__ == "__main__":
-                name = get_path_name(sys.argv[0])                
+                name = get_path_name(sys.argv[0])
             else:
                 try:
                     name = get_path_name(obj.__file__)
@@ -106,7 +106,7 @@ def get_full_name(obj):
                     name = obj.__name__
         else:
             module_name = getattr(obj, "__module__", None)
-            
+
             if module_name == "__builtin__":
                 prefix = ""
             else:
@@ -117,14 +117,14 @@ def get_full_name(obj):
                 # Classes
                 if isinstance(obj, type):
                     name = prefix + obj.__name__
-                else:                
+                else:
                     # Methods
                     im_func = getattr(obj, "im_func", None)
                     im_class = getattr(obj, "im_class", None)
 
                     if im_func and im_class:
                         name = "%s%s.%s" \
-                            % (prefix, im_class.__name__, im_func.func_name)                    
+                            % (prefix, im_class.__name__, im_func.func_name)
                     else:
                         # Functions
                         func_name = getattr(obj, "func_name", None)
@@ -148,7 +148,7 @@ def set_full_name(obj, name):
     given object, so that it always returns the assigned name. This can be used
     to supply qualified names for objects that can't be normally mapped to a
     name (for example, templates produced by `cocktail.html.templates`).
-    
+
     :param obj: The object to establish the name for.
     :type obj: Package, module, class, function or method
 
@@ -160,7 +160,7 @@ def set_full_name(obj, name):
 def get_path_name(path):
     """Gets the qualified name of the module or package that maps to the
     indicated file or folder.
-    
+
     :param path: The path to the file or folder to evaluate.
     :type path: str
 
@@ -182,10 +182,10 @@ def get_path_name(path):
     while path:
 
         parent_path, path_component = os.path.split(path)
-                        
+
         # Modules
         if os.path.isfile(path):
-        
+
             fname, ext = os.path.splitext(path_component)
 
             if ext not in PYTHON_EXTENSIONS:
@@ -196,10 +196,10 @@ def get_path_name(path):
 
             if fname != "__init__":
                 components.append(fname)
-        
+
         # Packages
         elif os.path.isdir(path):
-            
+
             if any(
                 os.path.isfile(os.path.join(path, "__init__" + ext))
                 for ext in PYTHON_EXTENSIONS
@@ -214,7 +214,7 @@ def get_path_name(path):
                 % path
             )
 
-        path = parent_path                        
+        path = parent_path
 
     return ".".join(reversed(components))
 

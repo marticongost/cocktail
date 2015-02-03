@@ -11,7 +11,7 @@ from cocktail.events import Event, EventHub
 
 
 class RequestHandler(object):
-    
+
     __metaclass__ = EventHub
 
     exposed = True
@@ -42,7 +42,7 @@ class RequestHandler(object):
         An event triggered after the controller (or one of its nested handlers)
         has been executed. This is guaranteed to run, regardless of errors.
         """)
-    
+
     exception_raised = Event(doc = """
         An event triggered when an exception is raised by the controller or one
         of its descendants. The event is propagated up through the handler
@@ -59,7 +59,7 @@ class RequestHandler(object):
             eventually, the user.
         @type handled: bool
         """)
-    
+
     @cherrypy.expose
     def default(self, *args, **kwargs):
         # Compatibility with the standard CherryPy dispatcher

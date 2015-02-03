@@ -8,7 +8,7 @@ from cocktail.tests.persistence.tempstoragemixin import TempStorageMixin
 
 
 class FullTextIndexingTestCase(TempStorageMixin, TestCase):
-    
+
     def setUp(self):
 
         TempStorageMixin.setUp(self)
@@ -23,9 +23,9 @@ class FullTextIndexingTestCase(TempStorageMixin, TestCase):
             field1 = String(
                 full_text_indexed = True
             )
-            
+
             field2 = String()
-        
+
         self.test_type = TestObject
 
     def test_only_indexes_selected_types(self):
@@ -44,19 +44,19 @@ class FullTextIndexingTestCase(TempStorageMixin, TestCase):
         obj.field1 = u"aaa"
         obj.field2 = u"bbb"
         obj.insert()
-        
+
         index = self.test_type.field1.get_full_text_index()
         assert index is not None
-        
+
         index = self.test_type.field2.get_full_text_index()
         assert index is None
 
     def test_indexes_objects_when_inserted(self):
-        
+
         obj = self.test_type()
         obj.field1 = u"aaa"
         obj.field2 = u"bbb"
-        
+
         index = self.test_type.get_full_text_index()
         index1 = self.test_type.field1.get_full_text_index()
 
@@ -71,10 +71,10 @@ class FullTextIndexingTestCase(TempStorageMixin, TestCase):
         assert obj.id in index1.search(u"aaa")
 
     def test_reindexes_objects_when_modified(self):
-        
+
         obj = self.test_type()
         obj.insert()
-        
+
         index = self.test_type.get_full_text_index()
         index1 = self.test_type.field1.get_full_text_index()
 
@@ -98,20 +98,20 @@ class FullTextIndexingTestCase(TempStorageMixin, TestCase):
 
         obj = self.test_type()
         obj.field1 = u"aaa"
-        obj.field2 = u"bbb"        
+        obj.field2 = u"bbb"
         obj.insert()
         obj.delete()
 
         index = self.test_type.get_full_text_index()
         index1 = self.test_type.field1.get_full_text_index()
-        
+
         assert not index.search(u"aaa")
         assert not index.search(u"bbb")
         assert not index1.search(u"aaa")
 
 
 class FullTextIndexingTranslationsTestCase(TempStorageMixin, TestCase):
-    
+
     def setUp(self):
 
         TempStorageMixin.setUp(self)
@@ -127,18 +127,18 @@ class FullTextIndexingTranslationsTestCase(TempStorageMixin, TestCase):
                 full_text_indexed = True,
                 translated = True
             )
-            
+
             field2 = String(
                 translated = True
             )
-        
+
         self.test_type = TestObject
 
     def test_only_indexes_selected_types(self):
 
         obj = self.test_type()
         self.test_type.full_text_indexed = False
-        obj.set("field1", u"dog", "en")        
+        obj.set("field1", u"dog", "en")
         obj.set("field2", u"cat", "en")
         obj.insert()
         index = self.test_type.get_full_text_index("en")
@@ -150,19 +150,19 @@ class FullTextIndexingTranslationsTestCase(TempStorageMixin, TestCase):
         obj.set("field1", u"dog", "en")
         obj.set("field2", u"cat", "en")
         obj.insert()
-        
+
         index = self.test_type.field1.get_full_text_index("en")
         assert index is not None
-        
+
         index = self.test_type.field2.get_full_text_index("en")
         assert index is None
 
     def test_indexes_objects_when_inserted(self):
-        
+
         obj = self.test_type()
         obj.set("field1", u"dog", "en")
         obj.set("field2", u"cat", "en")
-        
+
         index = self.test_type.get_full_text_index("en")
         index1 = self.test_type.field1.get_full_text_index("en")
 
@@ -214,10 +214,10 @@ class FullTextIndexingTranslationsTestCase(TempStorageMixin, TestCase):
         assert not index_es.search("porc")
 
     def test_reindexes_objects_when_modified(self):
-        
+
         obj = self.test_type()
         obj.insert()
-                
+
         # First set of values
         obj.set("field1", u"dog", "en")
         obj.set("field2", u"cat", "en")
@@ -260,12 +260,12 @@ class FullTextIndexingTranslationsTestCase(TempStorageMixin, TestCase):
         obj.set("field2", u"gat", "ca")
         obj.insert()
         obj.delete()
-        
+
         index_en = self.test_type.get_full_text_index("en")
         index1_en = self.test_type.get_full_text_index("en")
         index_ca = self.test_type.get_full_text_index("ca")
-        index1_ca = self.test_type.get_full_text_index("ca")        
-        
+        index1_ca = self.test_type.get_full_text_index("ca")
+
         assert not index_en.search(u"dog")
         assert not index1_en.search(u"dog")
         assert not index_en.search(u"cat")
@@ -283,12 +283,12 @@ class FullTextIndexingTranslationsTestCase(TempStorageMixin, TestCase):
         obj.set("field2", u"gat", "ca")
         obj.insert()
         del obj.translations["ca"]
-        
+
         index_en = self.test_type.get_full_text_index("en")
         index1_en = self.test_type.get_full_text_index("en")
         index_ca = self.test_type.get_full_text_index("ca")
-        index1_ca = self.test_type.get_full_text_index("ca")        
-        
+        index1_ca = self.test_type.get_full_text_index("ca")
+
         assert index_en.search(u"dog")
         assert index1_en.search(u"dog")
         assert index_en.search(u"cat")
@@ -299,7 +299,7 @@ class FullTextIndexingTranslationsTestCase(TempStorageMixin, TestCase):
 
 
 class FullTextIndexingRelationsTestCase(TempStorageMixin, TestCase):
-    
+
     def setUp(self):
 
         TempStorageMixin.setUp(self)
@@ -308,26 +308,26 @@ class FullTextIndexingRelationsTestCase(TempStorageMixin, TestCase):
         from cocktail.persistence import PersistentObject
 
         class A(PersistentObject):
-            
+
             full_text_indexed = True
-            
+
             text = schema.String()
-            
+
             child = schema.Reference(
                 bidirectional = True,
                 text_search = True
             )
-            
+
             irrelevant_child = schema.Reference(
                 bidirectional = True
             )
-        
+
         class B(PersistentObject):
-            
+
             full_text_indexed = True
-            
+
             text = schema.String()
-            
+
             parent = schema.Reference(
                 bidirectional = True
             )
@@ -336,23 +336,23 @@ class FullTextIndexingRelationsTestCase(TempStorageMixin, TestCase):
                 bidirectional = True,
                 text_search = True
             )
-                
-        class C(PersistentObject):            
-            
+
+        class C(PersistentObject):
+
             full_text_indexed = True
 
-            text = schema.String()            
-            
+            text = schema.String()
+
             parent = schema.Reference(
                 bidirectional = True
             )
-        
+
         class Z(PersistentObject):
 
             text = schema.String()
 
             parent = schema.Reference(
-                bidirectional = True        
+                bidirectional = True
             )
 
         A.child.type = B
@@ -380,7 +380,7 @@ class FullTextIndexingRelationsTestCase(TempStorageMixin, TestCase):
         assert not self.A.get_full_text_index().search("zzz")
 
     def test_can_index_text_from_references(self):
-        
+
         a = self.A(text = u"aaa")
         b = self.B(text = u"bbb")
         a.child = b
@@ -395,7 +395,7 @@ class FullTextIndexingRelationsTestCase(TempStorageMixin, TestCase):
 
         b1 = self.B(text = u"bbb1")
         b1.insert()
-        
+
         b2 = self.B(text = u"bbb2")
         b2.insert()
 
@@ -415,7 +415,7 @@ class FullTextIndexingRelationsTestCase(TempStorageMixin, TestCase):
 
         b = self.B(text = u"bbb")
         b.insert()
-        a = self.A(text = u"aaa", child = b)        
+        a = self.A(text = u"aaa", child = b)
         a.insert()
 
         b.text = u"xxx"
@@ -442,7 +442,7 @@ class FullTextIndexingRelationsTestCase(TempStorageMixin, TestCase):
     #--------------------------------------------------------------------------
 
     def test_can_index_text_from_collections(self):
-        
+
         c1 = self.C(text = u"ccc1")
         c2 = self.C(text = u"ccc2")
         c3 = self.C(text = u"ccc3")
@@ -459,7 +459,7 @@ class FullTextIndexingRelationsTestCase(TempStorageMixin, TestCase):
 
         b = self.B(text = u"bbb")
         b.insert()
-        
+
         c1 = self.C(text = u"ccc1")
         c1.insert()
 
@@ -587,7 +587,7 @@ class FullTextIndexingRelationsTestCase(TempStorageMixin, TestCase):
         assert a.id in index_a.search("aaa")
         assert a.id in index_a.search("bbb")
         assert a.id in index_a.search("ccc")
-        
+
         assert not index_b.search("aaa")
         assert b.id in index_b.search("bbb")
         assert b.id in index_b.search("ccc")
@@ -644,7 +644,7 @@ class FullTextIndexingTranslationInheritanceTestCase(TempStorageMixin, TestCase)
         assert obj.id not in field_index.search(query)
 
     def test_full_text_indexing_works_across_derived_translations(self):
-        
+
         from cocktail.translations import fallback_languages_context
 
         obj = self.test_type()
@@ -677,7 +677,7 @@ class FullTextIndexingTranslationInheritanceTestCase(TempStorageMixin, TestCase)
             self.must_not_match(u"bar", obj, "fr")
 
     def test_no_automatic_full_text_reindexing_if_the_language_chain_changes(self):
-        
+
         from cocktail.translations import fallback_languages_context
 
         obj = self.test_type()

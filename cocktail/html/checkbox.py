@@ -12,7 +12,7 @@ from cocktail.html.databoundcontrol import data_bound
 class CheckBox(Element):
 
     tag = "input"
-    
+
     def __init__(self, *args, **kwargs):
         Element.__init__(self, *args, **kwargs)
         data_bound(self)
@@ -20,7 +20,7 @@ class CheckBox(Element):
 
     def _get_value(self):
         return self["checked"] or False
-    
+
     def _set_value(self, value):
         self["checked"] = bool(value)
 

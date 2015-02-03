@@ -44,7 +44,7 @@ class Reference(RelationMember):
             return translations(value, language, **kwargs)
 
     def _add_relation(self, obj, related_obj):
-        get_accessor(obj).set(obj, self.name, related_obj)                
+        get_accessor(obj).set(obj, self.name, related_obj)
 
     def _remove_relation(self, obj, related_obj):
         get_accessor(obj).set(obj, self.name, None)
@@ -92,11 +92,11 @@ class Reference(RelationMember):
     def reference_validation_rule(self, value, context):
 
         if value is not None:
- 
+
             # Apply the 'class_family' constraint
             class_family = \
                 self.resolve_constraint(self.class_family, context)
-            
+
             if class_family:
                 if not isinstance(value, type):
                     yield TypeCheckError(self, value, context, type)

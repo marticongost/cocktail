@@ -72,7 +72,7 @@ class BaseDateTime(Schema, RangedMember):
             self.add_member(Integer(**day_kw))
             self.add_member(Integer(**month_kw))
             self.add_member(Integer(**year_kw))
-        
+
         if self._is_time:
             self.add_member(Integer(**hour_kw))
             self.add_member(Integer(**minute_kw))

@@ -50,7 +50,7 @@ class MemoryCacheStorage(CacheStorage):
             not self.__memory_limit
             or memory_limit < self.__memory_limit
         )
-        
+
         self.__memory_limit = memory_limit
 
         if reducing_size:
@@ -61,7 +61,7 @@ class MemoryCacheStorage(CacheStorage):
         _set_memory_limit,
         doc = """
         Gets or sets the maximum memory allowance for cached content.
-        
+
         The memory limit is expressed as a number of bytes. The size of each
         entry is measured by the `._get_entry_memory_usage` method, and its
         cumulative sum is accessible through the `.memory_usage` property.
@@ -100,7 +100,7 @@ class MemoryCacheStorage(CacheStorage):
 
     def print_memory_usage(self):
 
-        if self.memory_limit:            
+        if self.memory_limit:
             usage = self.memory_usage
             limit = self.memory_limit
             ratio = usage / limit
@@ -125,7 +125,7 @@ class MemoryCacheStorage(CacheStorage):
             )
         else:
             info = format_bytes(self.memory_usage)
-            
+
         print "Memory usage: %s\n" % info
 
     def __require_entry(self, key):
@@ -185,10 +185,10 @@ class MemoryCacheStorage(CacheStorage):
         entry.next_entry = None
 
     def __update_last_access(self, entry):
-        
+
         if entry is self.__newest_entry:
             return
-        
+
         self.__release(entry)
 
         if self.__oldest_entry is None:
@@ -265,13 +265,13 @@ class MemoryCacheStorage(CacheStorage):
                 return False
 
             self.__remove_entry(entry)
-            
+
         return True
 
     @overrides(CacheStorage.clear)
     def clear(self, scope = whole_cache):
         with self.__lock:
-            
+
             # Clear the whole cache
             if scope is whole_cache:
                 self.__dict.clear()
@@ -305,7 +305,7 @@ class MemoryCacheStorage(CacheStorage):
                             "Scope selectors should be strings or tuples of "
                             "strings; got %r instead" % selector
                         )
-                    
+
                     if selector_entries:
                         entries_to_remove.update(selector_entries)
 

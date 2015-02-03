@@ -8,25 +8,25 @@
 -----------------------------------------------------------------------------*/
 
 cocktail.bind(".TwitterTimeline", function ($timeline) {
-    
+
     this.loadTweets = function () {
-        
+
         var $tweets = $timeline.find(".tweets");
         $tweets.hide();
         $tweets.empty();
         $timeline.addClass("loading");
-        
+
         var url = "http://api.twitter.com/1/statuses/user_timeline.json?callback=?";
 
         jQuery.getJSON(url, {screen_name: this.account, count: this.maxTweets}, function (tweets) {
-            
+
             var timeline = $timeline.get(0);
 
             for (var i = 0; i < tweets.length; i++) {
                 var entry = timeline.createEntry(tweets[i]);
                 $tweets.append(entry);
             }
-            
+
             $tweets.show();
             $timeline.removeClass("loading");
         });
@@ -64,16 +64,16 @@ cocktail.bind(".TwitterTimeline", function ($timeline) {
 
     function relativeTime(time, base) {
 
-        var base = base || new Date();        
-        
+        var base = base || new Date();
+
         var values = time.split(" ");
         var parsedDate = Date.parse(
-              values[1] + " " 
-            + values[2] + ", " 
-            + values[5] + " " 
+              values[1] + " "
+            + values[2] + ", "
+            + values[5] + " "
             + values[3]
         );
-        
+
         var delta = parseInt((base.getTime() - parsedDate) / 1000);
         delta = delta + base.getTimezoneOffset() * 60;
 

@@ -79,7 +79,7 @@ class SearchHighlighter(object):
             # Separate the output of different nodes
             if output:
                 text = u" " + text
-        
+
             while True:
                 match = self.word_expr.search(text, pos)
                 if match is None:
