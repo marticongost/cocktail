@@ -26,7 +26,7 @@ def register_exporter(func, mime_types, extensions = ()):
     more file extensions. If either MIME types or extensions are repeated
     between calls to this function, the newest registered exporter takes
     precedence.
-    
+
     @param func: The writer function. It has a similar signature to the
         L{export_file} function, with the following differences:
 
@@ -63,7 +63,7 @@ def export_file(collection, dest, schema,
     languages = None,
     **kwargs):
     """Writes a collection of objects to a file.
-    
+
     @var collection: The collection of objects to write to the file.
     @type collection: iterable
 
@@ -105,7 +105,7 @@ def export_file(collection, dest, schema,
     if exporter is None:
         try:
             exporter = _exporters_by_mime_type[mime_type]
-        except KeyError:        
+        except KeyError:
             raise ValueError(
                 "There is no exporter associated with the %s mime_type" % mime_type
             )
@@ -135,7 +135,7 @@ msexcel_exporters[float] = lambda member, value: value
 msexcel_exporters[Decimal] = lambda member, value: float(value)
 
 def _iterables_to_msexcel(member, value):
-    return "\n".join(msexcel_exporters[type(item)](member.items, item) 
+    return "\n".join(msexcel_exporters[type(item)](member.items, item)
                     for item in value)
 
 msexcel_exporters[list] = _iterables_to_msexcel
@@ -156,7 +156,7 @@ def export_msexcel(collection, dest, schema, members, languages = None):
     header_style = pyExcelerator.XFStyle()
     header_style.font = pyExcelerator.Font()
     header_style.font.bold = True
-    
+
     if isinstance(schema, Schema):
         # Column headers
         col = 0
@@ -205,8 +205,8 @@ def export_msexcel(collection, dest, schema, members, languages = None):
     book.save(dest)
 
 register_exporter(
-    export_msexcel, 
-    ["application/msexcel", "application/vnd.ms-excel"], 
+    export_msexcel,
+    ["application/msexcel", "application/vnd.ms-excel"],
     [".xls"]
 )
 

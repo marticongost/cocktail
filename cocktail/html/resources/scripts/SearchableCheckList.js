@@ -39,7 +39,7 @@ cocktail.bind(".SearchableCheckList.search_enabled", function ($control) {
 
     var $selectAllLink = $searchControls.find(".select_all_link");
     var $emptySelectionLink = $searchControls.find(".empty_selection_link");
-    
+
     $selectAllLink.click(function () {
         $checkList.get(0).selectEntries(":selectable-entry");
     });

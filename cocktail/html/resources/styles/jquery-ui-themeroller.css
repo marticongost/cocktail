@@ -114,7 +114,7 @@
 	border: 1px solid #777777;
 	background: #ffffff url(images/jquery_ui/ffffff_40x100_textures_01_flat_0.png) 0 0 repeat-x;
 	color: #222222;
-	padding: 1.5em 1.7em;	
+	padding: 1.5em 1.7em;
 	font-size: 1.1em;
 }
 .ui-tabs-hide {
@@ -188,66 +188,66 @@
 	z-index: 99999;
 }
 .ui-resizable .ui-resizable-handle {
-	display: block; 
+	display: block;
 }
 body .ui-resizable-disabled .ui-resizable-handle { display: none; } /* use 'body' to make it more specific (css order) */
 body .ui-resizable-autohide .ui-resizable-handle { display: none; } /* use 'body' to make it more specific (css order) */
-.ui-resizable-n { 
-	cursor: n-resize; 
-	height: 7px; 
-	width: 100%; 
-	top: -5px; 
-	left: 0px;  
+.ui-resizable-n {
+	cursor: n-resize;
+	height: 7px;
+	width: 100%;
+	top: -5px;
+	left: 0px;
 }
-.ui-resizable-s { 
-	cursor: s-resize; 
-	height: 7px; 
-	width: 100%; 
-	bottom: -5px; 
-	left: 0px; 
+.ui-resizable-s {
+	cursor: s-resize;
+	height: 7px;
+	width: 100%;
+	bottom: -5px;
+	left: 0px;
 }
-.ui-resizable-e { 
-	cursor: e-resize; 
-	width: 7px; 
-	right: -5px; 
-	top: 0px; 
-	height: 100%; 
-}
-.ui-resizable-w { 
-	cursor: w-resize; 
-	width: 7px; 
-	left: -5px; 
-	top: 0px; 
+.ui-resizable-e {
+	cursor: e-resize;
+	width: 7px;
+	right: -5px;
+	top: 0px;
 	height: 100%;
 }
-.ui-resizable-se { 
-	cursor: se-resize; 
-	width: 13px; 
-	height: 13px; 
-	right: 0px; 
-	bottom: 0px; 
+.ui-resizable-w {
+	cursor: w-resize;
+	width: 7px;
+	left: -5px;
+	top: 0px;
+	height: 100%;
+}
+.ui-resizable-se {
+	cursor: se-resize;
+	width: 13px;
+	height: 13px;
+	right: 0px;
+	bottom: 0px;
 	background: url(images/jquery_ui/222222_11x11_icon_resize_se.gif) no-repeat 0 0;
 }
-.ui-resizable-sw { 
-	cursor: sw-resize; 
-	width: 9px; 
-	height: 9px; 
-	left: 0px; 
-	bottom: 0px;  
+.ui-resizable-sw {
+	cursor: sw-resize;
+	width: 9px;
+	height: 9px;
+	left: 0px;
+	bottom: 0px;
 }
-.ui-resizable-nw { 
-	cursor: nw-resize; 
-	width: 9px; 
-	height: 9px; 
-	left: 0px; 
-	top: 0px; 
+.ui-resizable-nw {
+	cursor: nw-resize;
+	width: 9px;
+	height: 9px;
+	left: 0px;
+	top: 0px;
 }
-.ui-resizable-ne { 
-	cursor: ne-resize; 
-	width: 9px; 
-	height: 9px; 
-	right: 0px; 
-	top: 0px; 
+.ui-resizable-ne {
+	cursor: ne-resize;
+	width: 9px;
+	height: 9px;
+	right: 0px;
+	top: 0px;
 }
 .ui-dialog-titlebar {
 	/*resets*/margin: 0; padding: 0; border: 0; outline: 0; line-height: 1.3; text-decoration: none; font-size: 100%; list-style: none;
@@ -282,7 +282,7 @@ body .ui-resizable-autohide .ui-resizable-handle { display: none; } /* use 'body
 .ui-dialog-content {
 	/*resets*/margin: 0; padding: 0; border: 0; outline: 0; line-height: 1.3; text-decoration: none; font-size: 100%; list-style: none;
 	color: #222222;
-	padding: 1.5em 1.7em;	
+	padding: 1.5em 1.7em;
 }
 .ui-dialog-buttonpane {
 	position: absolute;
@@ -474,11 +474,11 @@ table.ui-datepicker .ui-datepicker-title-row td a {
 	/*resets*/margin: 0; padding: 0; border: 0; outline: 0; line-height: 1.3; text-decoration: none; font-size: 100%; list-style: none;
 	font-family: Trebuchet MS, Arial, sans-serif;
 	font-size: 1.1em;
-	z-index: 9999;	
+	z-index: 9999;
 }
 .ui-autocomplete-results ul, .ui-autocomplete-results li {
-	margin: 0; 
-	padding: 0; 
+	margin: 0;
+	padding: 0;
 	list-style: none;
 }
 .ui-autocomplete-results ul {
@@ -620,7 +620,7 @@ table.ui-datepicker .ui-datepicker-title-row td a {
 	margin-right: 15px;
 }
 .ui-colorpicker-hue div {
-	background:transparent url(images/jquery_ui/222222_35x9_colorpicker_indicator.gif.gif); 
+	background:transparent url(images/jquery_ui/222222_35x9_colorpicker_indicator.gif.gif);
 	height:9px;
 	left:-9px;
 	margin:-4px 0 0;
@@ -840,10 +840,10 @@ Generic ThemeRoller Classes
 }
 /*clearfix class*/
 .ui-clearfix:after {
-    content: "."; 
-    display: block; 
-    height: 0; 
-    clear: both; 
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
     visibility: hidden;
 }
 .ui-clearfix {display: inline-block;}

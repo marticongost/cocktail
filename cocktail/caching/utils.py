@@ -44,7 +44,7 @@ def normalize_expiration(expiration):
             - A ``datetime`` object will be transformed into a timestamp.
             - A ``date`` object will be be transformed into a timestamp,
               assuming a time of 00:00:00.
-    
+
     :raises TypeError: Raised if the given value doesn't match any of the
         acceptable types.
     """

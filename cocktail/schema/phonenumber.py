@@ -47,7 +47,7 @@ class PhoneNumber(String):
     def normalization(self, value):
 
         if value:
-            
+
             value = value.replace("(", " ")
             value = value.replace(")", " ")
             value = value.strip()
@@ -68,7 +68,7 @@ class PhoneNumber(String):
                         and self.get_country_from_prefix(prefix)
                            == self.local_country
                     ):
-                        prefix = None                        
+                        prefix = None
             else:
                 number = value
                 if self.prefix_normalization == "add_local" and self.local_country:
@@ -194,7 +194,7 @@ class PhoneNumber(String):
 
         number = number.replace(" ", "")
 
-        count = len(number)        
+        count = len(number)
         if count < 5:
             return number
 
@@ -202,7 +202,7 @@ class PhoneNumber(String):
         i = 0
         n = 3
 
-        while i < count:            
+        while i < count:
             groups.append(number[i:i + n])
             i += n
             if n == 3:

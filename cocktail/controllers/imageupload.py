@@ -9,7 +9,7 @@ from cocktail.schema.exceptions import ValidationError
 def get_image_size(path):
     """Find the size in pixels of the given image file, loading as little of
     the image into memory as possible.
-    
+
     :param path: The path to the image file to obtain the size for.
     :type path: str
 
@@ -48,7 +48,7 @@ def constrain_image_upload(member,
     :param max_width: The maximum accepted width of images uploaded into this
         member, in pixels. Images with a higher width will yield an error of
         type `ImageTooBigError` during validation.
-        
+
         Passing None to this parameter will disable this validation.
 
     :type max_width: int
@@ -56,7 +56,7 @@ def constrain_image_upload(member,
     :param max_height: The maximum accepted height of images uploaded into this
         member, in pixels. Images with a higher height will yield an error of
         type `ImageTooBigError` during validation.
-        
+
         Passing None to this parameter will disable this validation.
 
     :type max_height: int
@@ -64,7 +64,7 @@ def constrain_image_upload(member,
     :param min_width: The minimum accepted width of images uploaded into this
         member, in pixels. Images with a lower width will yield an error of
         type `ImageTooSmallError` during validation.
-        
+
         Passing None to this parameter will disable this validation.
 
     :type min_width: int
@@ -72,7 +72,7 @@ def constrain_image_upload(member,
     :param min_height: The minimum accepted height of images uploaded into this
         member, in pixels. Images with a lower height will yield an error of
         type `ImageTooSmallError` during validation.
-        
+
         Passing None to this parameter will disable this validation.
 
     :type min_height: int

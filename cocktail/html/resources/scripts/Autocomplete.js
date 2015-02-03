@@ -61,7 +61,7 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
     var $panel = jQuery("<div>")
         .addClass("panel")
         .appendTo($panelWrapper);
-    
+
     this.getSearchableText = function (entry) {
         return entry.label.replace(htmlExp, "");
     }
@@ -159,7 +159,7 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
             var matchingEntries = [];
             var terms = this.getQueryTerms(query);
             for (var i = 0; i < this.autocompleteSource.length; i++) {
-                var entry = this.autocompleteSource[i];                
+                var entry = this.autocompleteSource[i];
                 if (this.entryMatches(entry, terms)) {
                     matchingEntries.push(entry);
                 }
@@ -183,7 +183,7 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
         }
         else {
             $input.val(entry.label || entry.text);
-            $hidden.val(entry.value); 
+            $hidden.val(entry.value);
             $autocomplete.attr("data-autocomplete-selection", "complete");
         }
 
@@ -203,7 +203,7 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
     }
 
     this.highlightSearchTerms = function ($display, terms) {
-        
+
         var autocomplete = this;
         var display = $display[0];
 
@@ -365,7 +365,7 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
             }
             // New query: clear the panel and start over
             else {
-                $panelEntries.remove();                
+                $panelEntries.remove();
                 autocomplete.search(query, function (entries) {
 
                     for (var i = 0; i < entries.length; i++) {
@@ -380,7 +380,7 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
                     }
                     afterFillingPanel();
                 });
-            }            
+            }
         }
     }
 

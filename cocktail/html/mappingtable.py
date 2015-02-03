@@ -58,7 +58,7 @@ class MappingTable(Element):
                 display = display(self.value, member)
             else:
                 display = display(self, self.value, member)
-        
+
         if isinstance(display, basestring):
             display = templates.new(display)
 

@@ -57,7 +57,7 @@ def run_concurrently(thread_count, func, *args, **kwargs):
     for i in range(thread_count):
         if ExecutionContext.error is not None:
             break
-        
+
         start_new_thread(thread_runner, ())
 
     try:
