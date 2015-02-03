@@ -8,7 +8,7 @@
 -----------------------------------------------------------------------------*/
 
 cocktail.bind(".SWIFTBICEntry", function ($entry) {
-    
+
     var $expl = $entry.find(".swiftbic_explanation");
     var $summary = $expl.find("summary");
 

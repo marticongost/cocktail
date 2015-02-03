@@ -43,9 +43,9 @@ DEEP_COPY = 3
 class SchemaClass(EventHub, Schema):
 
     def __init__(cls, name, bases, members):
-        
+
         cls._declared = False
-        
+
         EventHub.__init__(cls, name, bases, members)
         Schema.__init__(cls)
 
@@ -54,7 +54,7 @@ class SchemaClass(EventHub, Schema):
         cls.__derived_schemas = []
         cls.members_order = members.get("members_order")
         cls.groups_order = members.get("groups_order")
-        
+
         # Inherit base schemas
         for base in bases:
             if SchemaObject \
@@ -87,7 +87,7 @@ class SchemaClass(EventHub, Schema):
         cls.declared()
 
     def inherit(cls, *bases):
-        
+
         if cls._declared:
             raise TypeError(
                 "Can't extend the base classes of %s with %s. Dynamic "
@@ -97,13 +97,13 @@ class SchemaClass(EventHub, Schema):
             )
 
         Schema.inherit(cls, *bases)
-        
+
         for base in bases:
             base.__derived_schemas.append(cls)
 
     def remove_derived_schema(self, cls):
         """Forget about the indicated derived schema.
-        
+
         @param cls: The class to remove from the list of inheritors of the
             schema.
         @type cls: `SchemaObject` class
@@ -113,7 +113,7 @@ class SchemaClass(EventHub, Schema):
     def _check_member(cls, member):
 
         Schema._check_member(cls, member)
-        
+
         if not member.shadows_attribute \
         and (
             hasattr(cls, member.name) \
@@ -131,7 +131,7 @@ class SchemaClass(EventHub, Schema):
             )
 
     def _add_member(cls, member):
-       
+
         Schema._add_member(cls, member)
 
         # Install a descriptor to mediate access to the member
@@ -140,7 +140,7 @@ class SchemaClass(EventHub, Schema):
 
         # Translation
         if member.translated:
- 
+
             if cls.translated == False:
                 cls.translated = True
                 # Add a mapping to hold the translations defined by items
@@ -173,14 +173,14 @@ class SchemaClass(EventHub, Schema):
         return translations_member
 
     def _create_translation_schema(cls, members):
-        
+
         bases = tuple(
             base.translation
             for base in cls.bases if base.translation
         )
 
         members["_generates_translation_schema"] = False
-        
+
         if not bases:
             bases = (cls._translation_schema_base,)
 
@@ -190,7 +190,7 @@ class SchemaClass(EventHub, Schema):
                 required = True
             )
             members["language"] = String(required = True)
-            
+
         cls.translation = cls._translation_schema_metaclass(
             cls.name + "Translation",
             bases,
@@ -272,13 +272,13 @@ class SchemaClass(EventHub, Schema):
                         return self.__get__(instance, type, language)
                     finally:
                         instance._v_is_producing_default = was_producing_default
-                
+
                 return value
 
         def __set__(self, instance, value,
             language = None,
             previous_value = undefined):
-            
+
             member = self.member
 
             # For translated members, make sure the translation for the specified
@@ -327,12 +327,12 @@ class SchemaClass(EventHub, Schema):
                     )
 
                 value = event.value
-            
+
             preserve_value = False
 
             # Bidirectional collections require special treatment:
             if self._bidirectional_collection:
-                
+
                 # When setting the collection for the first time, wrap it with an
                 # instrumented instance of the appropiate type
                 if previous_value is None \
@@ -347,7 +347,7 @@ class SchemaClass(EventHub, Schema):
                 # If a collection is already set on the element, update it instead
                 # of just replacing it (this will invoke add/delete hooks on the
                 # collection, and update the opposite end of the relation)
-                else:                    
+                else:
                     changed = value != previous_value
                     if value is None:
                         setattr(target, self.__priv_key, value)
@@ -364,16 +364,16 @@ class SchemaClass(EventHub, Schema):
                     else:
                         previous_value.set_content(value)
                         preserve_value = True
-            
+
             # Set the value
             else:
                 setattr(target, self.__priv_key, value)
 
             # Update the opposite end of a bidirectional reference
             if self._bidirectional_reference and value != previous_value:
-                
+
                 # TODO: translated bidirectional references
-                if previous_value is not None:                    
+                if previous_value is not None:
                     _update_relation(
                         "unrelate", instance, previous_value, member,
                         relocation = value is not None
@@ -409,7 +409,7 @@ class SchemaClass(EventHub, Schema):
             # Lists
             if isinstance(collection, list):
                 collection = RelationList(collection, owner, member)
-            
+
             # Sets
             elif isinstance(collection, set):
                 collection = RelationSet(collection, owner, member)
@@ -435,11 +435,11 @@ def _init_translation(cls,
     # Set 'translated_object' and 'language' first, so events for changes in
     # all other members are relayed to the translation owner
     if values is not None:
-                
+
         language = values.pop("language")
         if language is not None:
             instance.language = language
-        
+
         translated_object = values.pop("translated_object")
         if translated_object is not None:
             instance.translated_object = translated_object
@@ -559,23 +559,23 @@ class SchemaObject(object):
 
         self.__class__.init_instance(self, values, SchemaObjectAccessor)
         self.__class__.instantiated(instance = self, values = values)
-        
+
     def __repr__(self):
-        
+
         if self.__class__.primary_member:
             id = getattr(self, self.__class__.primary_member.name, None)
             if id is not None:
                 return "%s #%s" % (self.__class__.full_name, self.id)
-        
+
         return self.__class__.full_name + " instance"
 
     def __translate__(self, language, **kwargs):
-        
+
         desc = None
 
         if self.__class__.descriptive_member:
             desc = self.get(self.__class__.descriptive_member, language)
-        
+
         if not desc and not kwargs.get("discard_generic_translation", False):
 
             desc = translations(self.__class__.name, language, **kwargs)
@@ -583,7 +583,7 @@ class SchemaObject(object):
             if self.__class__.primary_member:
                 desc += " #" \
                     + str(getattr(self, self.__class__.primary_member.name))
- 
+
         return desc
 
     def get(self, member, language = None):
@@ -592,12 +592,12 @@ class SchemaObject(object):
         if not isinstance(member, Member):
 
             if isinstance(member, basestring):
-                member = self.__class__[member]                
+                member = self.__class__[member]
             else:
                 raise TypeError("Expected a string or a member reference")
 
         getter = member.schema.__dict__[member.name].__get__
-        return getter(self, None, language)        
+        return getter(self, None, language)
 
     def set(self, member, value, language = None):
 
@@ -605,7 +605,7 @@ class SchemaObject(object):
         if not isinstance(member, Member):
 
             if isinstance(member, basestring):
-                member = self.__class__[member]                
+                member = self.__class__[member]
             else:
                 raise TypeError("Expected a string or a member reference")
 
@@ -620,10 +620,10 @@ class SchemaObject(object):
         return translation
 
     def get_searchable_text(self,
-        languages, 
+        languages,
         visited_objects = None,
         stack = None):
-        
+
         if stack is None:
             stack = []
 
@@ -631,10 +631,10 @@ class SchemaObject(object):
             visited_objects = set()
         elif self in visited_objects:
             return []
-        
+
         visited_objects.add(self)
         return self._get_searchable_text(languages, visited_objects, stack)
-    
+
     def _get_searchable_text(self, languages, visited_objects, stack):
 
         # Yield all text fields, traversing selected relations
@@ -651,7 +651,7 @@ class SchemaObject(object):
                         # Yield strings
                         if isinstance(member, String):
                             yield member_value
-                        
+
                         # Recurse into selected references
                         elif isinstance(member, Reference):
                             stack.append(self)
@@ -711,15 +711,15 @@ class SchemaObject(object):
             or member in self.copy_excluded_members
         ):
             return DO_NOT_COPY
-        
+
         if isinstance(member, (Reference, Collection)):
 
             if member.anonymous:
                 return DO_NOT_COPY
-            
+
             if member.integral:
                 return DEEP_COPY
-        
+
         return SHALLOW_COPY
 
     def copy_value(self, member, language, mode = SHALLOW_COPY):
@@ -982,7 +982,7 @@ class TranslationMapping(DictWrapper):
                     "update expected at most 1 argument, got %d"
                     % len(args)
                 )
-        
+
             for key, value in args[0].iteritems():
                 self[key] = value
 

@@ -50,7 +50,7 @@ class DocumentMetadata(object):
         Values that should be declared as custom attributes of specific DOM
         nodes, using JSON serialization. A dictionary mapping DOM node IDs to
         dictionaries of key/value pairs.
-    
+
     .. attribute:: client_variables
 
         Values that should be declared as client side variables, using JSON
@@ -183,7 +183,7 @@ class DocumentMetadata(object):
         self.client_variables.update(metadata.client_variables)
         self.client_translations.update(metadata.client_translations)
         self.client_models.update(metadata.client_models)
-            
+
         # Client code
         for id, new_code in metadata.client_code.iteritems():
             old_code = self.client_code.get(id)

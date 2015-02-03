@@ -8,13 +8,13 @@
 -----------------------------------------------------------------------------*/
 
 cocktail.bind(".MultipleChoiceSelector", function () {
-    
+
     var PREFIX = "cocktail.html.MultipleChoiceSelector ";
 
     // Create a dialog for the check list
     var dialog = document.createElement("div");
     dialog.className = "MultipleChoiceSelector-dialog";
-    
+
     var dialogContainer = document.createElement("div");
     dialogContainer.className = "container";
     dialog.appendChild(dialogContainer);
@@ -28,7 +28,7 @@ cocktail.bind(".MultipleChoiceSelector", function () {
     var buttons = document.createElement("div");
     buttons.className = "buttons";
     dialog.appendChild(buttons);
-    
+
     var acceptButton = document.createElement("input");
     acceptButton.className = "accept";
     acceptButton.type = "button";
@@ -54,7 +54,7 @@ cocktail.bind(".MultipleChoiceSelector", function () {
     function showSelection() {
         jQuery(container).empty();
         jQuery("input[type=checkbox]:checked", dialog).each(function () {
-            
+
             var content = jQuery("label", this.parentNode).get(0);
             var entry = document.createElement("span");
             entry.className = content.className;
@@ -82,6 +82,6 @@ cocktail.bind(".MultipleChoiceSelector", function () {
     this.appendChild(button);
     jQuery(button).click(function () {
         cocktail.showDialog(dialog);
-    });        
+    });
 });
 

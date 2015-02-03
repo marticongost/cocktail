@@ -19,7 +19,7 @@ class Tuple(Member):
     def tuple_validation_rule(self, value, context):
 
         if value is not None:
-            
+
             value_length = len(value)
             expected_length = len(self.items)
 

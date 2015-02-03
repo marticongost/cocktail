@@ -52,7 +52,7 @@ from cocktail.html.databoundcontrol import data_bound
         <select py:id="month_selector">
             <option/>
             <py:ready>
-                <option py:for="i in range(1, 13)" value="${str(i).zfill(2)}">${translations("month %d" % i)}</option>            
+                <option py:for="i in range(1, 13)" value="${str(i).zfill(2)}">${translations("month %d" % i)}</option>
             </py:ready>
         </select>
         <select py:id="year_selector">

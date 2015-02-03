@@ -15,13 +15,13 @@ class CalendarPage(Tuple):
     request_value_separator = "-"
 
     def __init__(self, *args, **kwargs):
-        
+
         year_params = kwargs.pop("year_params", None) or {}
         year_params.setdefault("required", True)
 
         month_params = kwargs.pop("month_params", None) or {}
         month_params.setdefault("required", True)
-        
+
         kwargs["items"] = (
             Integer("year", **year_params),
             Month("month", **month_params)

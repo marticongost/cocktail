@@ -19,7 +19,7 @@ class PersistentCollectionTestCase(TempStorageMixin, TestCase):
 
         class Foo(PersistentObject):
             bar = Collection()
-        
+
         foo = Foo()
         self.assertTrue(isinstance(foo.bar, PersistentList))
 
@@ -30,7 +30,7 @@ class PersistentCollectionTestCase(TempStorageMixin, TestCase):
 
         class Foo(PersistentObject):
             bar = Collection()
-        
+
         foo = Foo()
         value = [Foo(), Foo()]
         foo.bar = value
@@ -46,7 +46,7 @@ class PersistentCollectionTestCase(TempStorageMixin, TestCase):
 
         class Foo(PersistentObject):
             bar = Collection(bidirectional = True)
-        
+
         class Bar(PersistentObject):
             foo = Reference(bidirectional = True)
 
@@ -67,7 +67,7 @@ class PersistentCollectionTestCase(TempStorageMixin, TestCase):
 
         class Foo(PersistentObject):
             bar = Collection(bidirectional = True)
-        
+
         class Bar(PersistentObject):
             foo = Reference(bidirectional = True)
 

@@ -54,10 +54,10 @@ class PicklingTestCase(TempStorageMixin, TestCase):
         assert self._rebuild(q).filters == q.filters
 
     def test_serialized_queries_retain_order(self):
-        
+
         q = A.select(order = A.b)
         assert self._rebuild(q).order == q.order
-        
+
         q = A.select(order = A.c.negative())
         assert self._rebuild(q).order == q.order
 
@@ -69,16 +69,16 @@ class PicklingTestCase(TempStorageMixin, TestCase):
         assert self._rebuild(q).range == q.range
 
     def test_serialized_queries_retain_attributes(self):
- 
+
         q = A.select(
             filters = [A.b.equal("foo"), A.c.greater(4)],
             order = [A.b, A.c.negative()],
             range = (5, 25)
         )
         q.base_collection = [1, 2, 3]
-        
+
         rq = self._rebuild(q)
-        
+
         assert rq.type is A
         assert rq.base_collection == q.base_collection
         assert rq.filters == q.filters

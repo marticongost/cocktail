@@ -22,7 +22,7 @@ migration_steps = DictWrapper(OrderedDict())
 def migrate(verbose = False):
     """Executes all migration steps that haven't been executed yet, in the
     correct order.
-    
+
     :param verbose: When set to True, migration steps will print out
         informative messages of their progress.
     :type verbose: bool
@@ -46,7 +46,7 @@ class MigrationStep(object):
     step_id_styles = {"style": "bold"}
 
     def __init__(self, id):
-        
+
         if not id:
             raise ValueError("MigrationStep instances require a non-empty id")
 
@@ -75,7 +75,7 @@ class MigrationStep(object):
 
     def execute(self, verbose = False):
         """Executes the migration step on the current datastore.
-        
+
         :param verbose: When set to True, the migration step will print out
             informative messages of its progress.
         :type verbose: bool
@@ -84,11 +84,11 @@ class MigrationStep(object):
             already been executed and has been skipped.
         :rtype: bool
         """
-        
+
         # Make sure the step is not executed twice
         if not self.mark_as_executed():
             return False
-        
+
         # Execute dependencies first
         for dependency in self.dependencies():
             dependency.execute(verbose = verbose)
@@ -113,36 +113,36 @@ class MigrationStep(object):
         """
         key = "cocktail.persistence.migration_steps"
         applied_steps = datastore.root.get(key)
-        
+
         if applied_steps is None:
             applied_steps = PersistentSet()
             datastore.root[key] = applied_steps
         elif self.__id in applied_steps:
             return False
-        
+
         applied_steps.add(self.__id)
         return True
 
     def dependencies(self, recursive = False):
         """Iterates over the dependencies of the migration step.
-        
+
         :param recursive: Set to True to calculate dependencies recursively;
             False limits the return value to a shallow search.
 
         :return: An iterable sequence of those `MigrationStep` instances that
             must be executed before this step can be safely executed.
-        """ 
+        """
         for dependency in self.__dependencies:
-            
+
             if recursive:
                 for recursive_dependency in dependency.dependencies(True):
                     yield recursive_dependency
-            
+
             yield dependency
 
     def require(self, dependency):
         """Adds a dependency on another migration step.
-        
+
         :param dependency: The migration step to add as a dependency. If given
             as a string.
 
@@ -158,7 +158,7 @@ class MigrationStep(object):
         step = e.source
 
         if step.__renamed_classes:
-            
+
             def format_class_name(class_name):
                 pos = class_name.rfind(".")
                 return "%s %s" % (class_name[:pos], class_name[pos + 1:])
@@ -168,12 +168,12 @@ class MigrationStep(object):
                 renames = dict(
                     (format_class_name(old_name),
                      format_class_name(new_name))
-                    for old_name, new_name 
+                    for old_name, new_name
                     in step.__renamed_classes.iteritems()
                 )
             )
             updater()
-            
+
             root = datastore.root
 
             # Rename indexes
@@ -185,9 +185,9 @@ class MigrationStep(object):
                     elif key.startswith(old_name + "."):
                         root[new_name + key[len(old_name):]] = root[key]
                         del root[key]
-    
+
     @classmethod
-    def _instance_processing_handler(cls, e):        
+    def _instance_processing_handler(cls, e):
         step = e.source
         root = datastore.root
         for cls, processors in step.__class_processors.iteritems():
@@ -213,10 +213,10 @@ class MigrationStep(object):
         return decorator
 
     def _resolve_member(self, member):
-        
+
         if isinstance(member, basestring):
             last_dot = member.rfind(".")
-            
+
             if last_dot == -1:
                 raise ValueError("%s is not a valid member reference" % member)
 
@@ -256,7 +256,7 @@ class MigrationStep(object):
             self.process_instances(cls, rename)
 
     def remove_member(self, member, translated = False):
-        
+
         member = self._resolve_member(member)
 
         if translated:
@@ -267,7 +267,7 @@ class MigrationStep(object):
                     try:
                         delattr(trans, key)
                     except AttributeError:
-                        pass                        
+                        pass
         else:
             @self.processor(member.schema)
             def process(instance):
@@ -294,7 +294,7 @@ class MigrationStep(object):
                     instance.set(member, value, language)
 
     def untranslate_member(self, member, prefered_languages):
-        
+
         member = self._resolve_member(member)
         undefined = object()
 

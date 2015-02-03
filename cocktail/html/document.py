@@ -54,7 +54,7 @@ class HTMLDocument(Element):
 
         self.head = Element("head")
         self.append(self.head)
-        
+
         self.meta_container = Element(None)
         self.head.append(self.meta_container)
 
@@ -64,18 +64,18 @@ class HTMLDocument(Element):
 
         self.resources_container = Element(None)
         self.head.append(self.resources_container)
-        
+
         self.styles_container = Element(None)
         self.resources_container.append(self.styles_container)
 
         self.scripts_container = Element(None)
         self.resources_container.append(self.scripts_container)
-        
+
         self.client_setup = Element("script")
         self.client_setup["type"] = "text/javascript"
         self.client_setup.append("// cocktail.html client-side setup\n")
         self.head.append(self.client_setup)
-        
+
         self.client_setup_container = Element(None)
         self.client_setup.append(self.client_setup_container)
 
@@ -131,12 +131,12 @@ class HTMLDocument(Element):
         # Other meta tags
         for key, value in self.metadata.meta.iteritems():
             meta = Element("meta")
-            
+
             if key.lower() in HTTP_EQUIV_KEYS:
                 attribute = "http-equiv"
             else:
                 attribute = "name"
-            
+
             meta[attribute] = key
             meta["content"] = value
             self.meta_container.append(meta)
@@ -146,7 +146,7 @@ class HTMLDocument(Element):
             self.title.append(self.metadata.page_title)
 
     def _add_resources(self):
-    
+
         if self.ie_html5_workaround and rendering_html5():
             self.scripts_container.append(
                 IEConditionalComment("lt IE 9", children = [
@@ -194,10 +194,10 @@ class HTMLDocument(Element):
             return element
 
     def _add_core_scripts(self):
-        
+
         if not self.__core_scripts_added:
             self.__core_scripts_added = True
-            
+
             for uri in self.core_scripts:
                 script = Script(uri)
                 if script not in self.metadata.resources:
@@ -229,7 +229,7 @@ class HTMLDocument(Element):
 
         if self.metadata.client_code:
             self._add_core_scripts()
-            
+
             for id,code_snippets in self.metadata.client_code.iteritems():
                 js = "\t\tcocktail.__clientCode['%s'] = [%s];\n" % (
                     id,
@@ -283,7 +283,7 @@ class HTMLDocument(Element):
                 self.metadata.client_models = {}
 
                 for model_id, element in client_models:
-                    
+
                     all_client_models[model_id] = element
 
                     cm_rendering = Rendering(
@@ -315,7 +315,7 @@ class HTMLDocument(Element):
                     for id, values in cm_metadata.client_params.iteritems():
                         self.client_setup_container.append(
                             "\t\tcocktail._clientModel(%s).params = %s;\n" % (
-                                cm_str 
+                                cm_str
                                     if id == cm_id
                                     else cm_str + ", '%s'" % id,
                                 dumps(values)
@@ -335,7 +335,7 @@ class HTMLDocument(Element):
                     # Apply any remaining metadata supplied by the client model or
                     # its content to the document.
                     cm_metadata.client_params = {}
-                    cm_metadata.client_code = {}            
+                    cm_metadata.client_code = {}
                     self.metadata.update(cm_metadata)
 
             self.metadata.client_models = all_client_models
