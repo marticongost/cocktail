@@ -91,9 +91,9 @@ class PhoneNumber(String):
             value = value.strip()
             if value.startswith("00"):
                 value = value[2:].lstrip()
-            
+
             # Obtain the country code
-            if value.startswith("+"):               
+            if value.startswith("+"):
                 try:
                     prefix, value = value.split(" ", 1)
                     prefix.lstrip("+")

@@ -13,6 +13,6 @@ from cocktail.html.modalselector import modal_selector
 class MultipleChoiceSelector(CheckList):
 
     def _build(self):
-        CheckList._build(self)        
-        modal_selector(self)      
+        CheckList._build(self)
+        modal_selector(self)
 

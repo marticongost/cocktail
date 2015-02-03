@@ -38,7 +38,7 @@ class GetInstanceTests(TempStorageMixin, TestCase):
 
         class Foo(PersistentObject):
             foo_name = schema.String(unique = True, indexed = True)
-        
+
         bar = Foo(foo_name = u"bar")
         bar.insert()
 
@@ -56,7 +56,7 @@ class GetInstanceTests(TempStorageMixin, TestCase):
 
         class Foo(PersistentObject):
             foo_name = schema.String(unique = True)
-        
+
         bar = Foo(foo_name = u"bar")
         bar.insert()
 
@@ -68,14 +68,14 @@ class GetInstanceTests(TempStorageMixin, TestCase):
         self.assertEqual(Foo.get_instance(foo_name = u"scrum"), None)
 
     def test_get_by_regular_member(self):
-        
+
         from cocktail import schema
         from cocktail.persistence import PersistentObject
 
         class Foo(PersistentObject):
             indexed_foo_name = schema.String()
             unindexed_foo_name = schema.String()
-        
+
         bar = Foo(
             indexed_foo_name = u"bar",
             unindexed_foo_name = u"bar"
@@ -100,7 +100,7 @@ class GetInstanceTests(TempStorageMixin, TestCase):
 
         class Foo(PersistentObject):
             pass
-        
+
         self.assertRaises(ValueError, Foo.get_instance)
 
     def test_get_with_no_criteria(self):
@@ -111,7 +111,7 @@ class GetInstanceTests(TempStorageMixin, TestCase):
         class Foo(PersistentObject):
             foo_name = schema.String(unique = True, indexed = True)
             bar_name = schema.String(unique = True, indexed = True)
-        
+
         self.assertRaises(ValueError,
             Foo.get_instance,
             foo_name = u"foo",
@@ -125,7 +125,7 @@ class GetInstanceTests(TempStorageMixin, TestCase):
 
         class Foo(PersistentObject):
             foo_name = schema.String(unique = True, indexed = True)
-        
+
         class Bar(Foo):
             pass
 

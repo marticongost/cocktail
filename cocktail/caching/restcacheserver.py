@@ -116,7 +116,7 @@ class KeyController(Controller):
     @cherrypy.expose
     def value(self):
         cherrypy.response.headers["Content-Type"] = "text/plain"
-        return self.cache.retrieve(self.key)        
+        return self.cache.retrieve(self.key)
 
     @cherrypy.expose
     def expiration(self):
@@ -130,7 +130,7 @@ class KeyController(Controller):
             return dumps(expiration)
 
 
-if __name__ == "__main__": 
+if __name__ == "__main__":
     server = CacheController()
     server.cache.verbose = True
 

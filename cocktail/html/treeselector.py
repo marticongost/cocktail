@@ -46,7 +46,7 @@ class TreeSelector(Selector):
         return getattr(item, self.children_collection, None) or ()
 
     def _fill_entries(self):
-        
+
         if self.empty_option_displayed:
             entry = self.create_entry(
                 self.empty_value,
@@ -57,7 +57,7 @@ class TreeSelector(Selector):
 
         if self.items:
             self._fill_container(self, self.items)
-        
+
     def _fill_container(self, container, items):
 
         for item in items:
@@ -68,7 +68,7 @@ class TreeSelector(Selector):
                 label,
                 self._is_selected(value)
             )
-            
+
             children = self.get_child_items(item)
             if children:
                 children_container = Element("ul")
@@ -89,7 +89,7 @@ class TreeSelector(Selector):
                 value = value,
                 checked = selected
             )
-        
+
             if self.selection_mode == SINGLE_SELECTION:
                 entry.control["type"] = "radio"
 
@@ -112,7 +112,7 @@ class TreeSelector(Selector):
         return entry
 
     def insert_into_form(self, form, field_instance):
-        
+
         field_instance.append(self)
 
         # Disable the 'required' mark for this field, as it doesn't make sense

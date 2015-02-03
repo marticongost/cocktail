@@ -8,13 +8,13 @@
 -----------------------------------------------------------------------------*/
 
 cocktail.bind(".modal_selector", function ($modalSelector) {
-    
+
     var PREFIX = "cocktail.html.modal_selector ";
 
     // Create a dialog for the check list
     var dialog = document.createElement("div");
     dialog.className = "modal_selector_dialog";
-    
+
     var dialogContainer = document.createElement("div");
     dialogContainer.className = "container";
     dialog.appendChild(dialogContainer);
@@ -23,7 +23,7 @@ cocktail.bind(".modal_selector", function ($modalSelector) {
     var buttons = document.createElement("div");
     buttons.className = "buttons";
     dialog.appendChild(buttons);
-    
+
     var acceptButton = document.createElement("input");
     acceptButton.className = "accept";
     acceptButton.type = "button";
@@ -44,8 +44,8 @@ cocktail.bind(".modal_selector", function ($modalSelector) {
     // Selection
     var selector = document.createElement("div");
     selector.className = "modal_selector_control";
-    
-    $modalSelector.replaceWith(selector);        
+
+    $modalSelector.replaceWith(selector);
     jQuery(dialog).hide();
     selector.appendChild(dialog);
     dialogContainer.appendChild(this);
@@ -57,7 +57,7 @@ cocktail.bind(".modal_selector", function ($modalSelector) {
     function showSelection() {
         jQuery(container).empty();
         jQuery(dialog).find("input[type=checkbox]:checked").each(function () {
-            
+
             var content = jQuery(this.parentNode).find("label").get(0);
             var entry = document.createElement("div");
             entry.className = "entry " + content.className;
@@ -85,6 +85,6 @@ cocktail.bind(".modal_selector", function ($modalSelector) {
     jQuery(button).click(function () {
         jQuery(dialog).show();
         cocktail.showDialog(dialog);
-    });   
+    });
 });
 

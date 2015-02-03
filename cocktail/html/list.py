@@ -43,7 +43,7 @@ class List(Element):
         entry = Element("li")
         entry.append(self.create_entry_content(item))
         return entry
-    
+
     def create_entry_content(self, item):
         if self.member:
             if isinstance(self.member, schema.Mapping):

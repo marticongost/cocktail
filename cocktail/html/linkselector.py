@@ -16,14 +16,14 @@ class LinkSelector(Selector):
     empty_option_displayed = False
 
     def create_entry(self, value, label, selected):
-        
+
         entry = Element()
         entry.add_class("entry")
 
         if selected:
             entry.add_class("selected")
 
-        link = self.create_entry_link(value, label)                
+        link = self.create_entry_link(value, label)
         entry.append(link)
         return entry
 
@@ -44,6 +44,6 @@ class LinkSelector(Selector):
             # strings
             if isinstance(name, unicode):
                 name = str(name)
-        
+
             return "?" + view_state(**{name: value})
 

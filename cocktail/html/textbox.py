@@ -34,12 +34,12 @@ class TextBox(Element):
             if isinstance(self.member, String) \
             and self.member.max is not None:
                 self["maxlength"] = str(self.member.max)
-    
+
         Element._ready(self)
 
     def _get_value(self):
         return self["value"]
-    
+
     def _set_value(self, value):
         self["value"] = value
 
