@@ -33,9 +33,9 @@ class RESTCacheStorage(object):
         return self.__serializer
 
     def _key_request(self, key, *args, **kwargs):
-        
+
         url = self.__address + "/keys/" + urlsafe_b64encode(key)
-        
+
         extra_path = kwargs.pop("extra_path", None)
         if extra_path:
             url += "/" + extra_path
@@ -45,7 +45,7 @@ class RESTCacheStorage(object):
 
         if (400 <= response.status < 500):
             raise CacheKeyError(key)
-        
+
         if content and response.get("content-type") == "application/json":
             content = loads(content)
 

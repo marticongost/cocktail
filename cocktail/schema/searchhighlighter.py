@@ -48,7 +48,7 @@ class SearchHighlighter(object):
 
         self.__query_terms = set()
 
-        for language in self.__languages:           
+        for language in self.__languages:
             terms = self._iter_terms(
                 query_text,
                 language,
@@ -119,7 +119,7 @@ class SearchHighlighter(object):
             # Separate the output of different nodes
             if output:
                 text = u" " + text
-        
+
             while True:
                 match = self.word_expr.search(text, pos)
                 if match is None:

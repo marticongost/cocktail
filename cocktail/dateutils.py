@@ -12,7 +12,7 @@ HOUR_SECONDS = 60 * 60
 DAY_SECONDS = HOUR_SECONDS * 24
 
 def split_seconds(seconds, include_days = True):
-  
+
     ms = int((seconds - int(seconds)) * 1000)
 
     if include_days:

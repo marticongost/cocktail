@@ -14,7 +14,7 @@ TRANSACTION_KEY = "cocktail.cache.invalidation"
 
 class Cache(object):
     """A cache frontend, with pluggable storage backends.
-    
+
     .. attribute:: storage
 
         A storage backend, implementing all the IO operations required by the
@@ -173,7 +173,7 @@ class Cache(object):
 
         if expiration is not None:
             expiration = normalize_expiration(expiration)
-        
+
         self.storage.store(
             norm_key,
             value,
@@ -199,7 +199,7 @@ class Cache(object):
     def set_expiration(self, key, expiration):
         """Sets the expiration assigned to the given key.
 
-        :param key: The key to update the expiration for.        
+        :param key: The key to update the expiration for.
         :param expiration: The new expiration date for the key. Can be set to
             None to disable time based expiration for the key; otherwise, check
             the `~cocktail.caching.utils.normalize_expiration` function for all
@@ -210,7 +210,7 @@ class Cache(object):
             (ie. is not an integer timestamp, or is set in the past).
         """
         if not self.enabled or self.storage is None:
-            raise CacheKeyError(key)            
+            raise CacheKeyError(key)
 
         norm_key = self.normalize_key(key)
 
@@ -344,8 +344,8 @@ class Cache(object):
 
         scope = normalize_scope(scope)
 
-        if transaction_invalidation_scope is None:            
-            datastore.set_transaction_value(key, scope)        
+        if transaction_invalidation_scope is None:
+            datastore.set_transaction_value(key, scope)
         elif scope is whole_cache:
             datastore.set_transaction_value(key, scope)
         else:

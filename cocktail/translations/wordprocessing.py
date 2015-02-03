@@ -20,7 +20,7 @@ class PerLocaleWordProcessing(dict):
             for locale in iter_language_chain(locale):
                 processor = self.get(locale)
                 if processor is not None:
-                    return processor 
+                    return processor
 
         return self.get(None)
 
@@ -30,7 +30,7 @@ class PerLocaleWordProcessing(dict):
             raise ValueError(
                 "No word processor defined for locale %r" % locale
             )
-        return processor        
+        return processor
 
     def normalize(self, text, locale = None, preserve_patterns = False):
         return self.require_processor_for_locale(locale).normalize(
@@ -82,7 +82,7 @@ class WordProcessor(object):
     def normalize(self, text, preserve_patterns = False):
         return normalize(
             text,
-            normalization_map = 
+            normalization_map =
                 self.pattern_normalization
                     if preserve_patterns
                     else self.normalization
@@ -201,7 +201,7 @@ for language in (
     try:
         stemmer = Stemmer(language)
     except:
-        warn("Couldn't create stemmer for language %r" % language)        
+        warn("Couldn't create stemmer for language %r" % language)
     else:
         words[language] = LocaleWordProcessor(stemmer)
 

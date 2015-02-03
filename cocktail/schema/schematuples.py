@@ -18,7 +18,7 @@ class Tuple(Member):
             yield error
 
         if context.value is not None:
-            
+
             value_length = len(context.value)
             expected_length = len(self.items)
 

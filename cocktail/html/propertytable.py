@@ -58,13 +58,13 @@ class PropertyTable(Element, DataDisplay):
 
     def create_group(self, group, members):
         tbody = Element("tbody")
-        
+
         if group:
             tbody.add_class(group.replace(".", "_") + "_group")
             tbody.header_row = self.create_group_header(group)
             if tbody.header_row:
                 tbody.append(tbody.header_row)
-        
+
         for i, member in enumerate(members):
             member_row = self.create_member_row(member)
             member_row.add_class("even" if i % 2 else "odd")
@@ -84,13 +84,13 @@ class PropertyTable(Element, DataDisplay):
             row.header = th
             row.append(th)
             return row
-    
+
     def create_member_row(self, member):
 
         row = Element("tr")
         row.add_class("member_row")
         row.add_class(member.name + "_member")
-        
+
         label = self.create_label(member)
         row.append(label)
 
@@ -111,14 +111,14 @@ class PropertyTable(Element, DataDisplay):
         cell = Element("td")
         cell.append(self.get_member_display(self.data, member))
         return cell
-        
+
     def create_translated_values(self, member):
         cell = Element("td")
 
         table = Element("table")
         table.add_class("translated_values")
         cell.append(table)
-        
+
         for language in (self.translations or (get_language(),)):
 
             language_row = Element("tr")
@@ -128,11 +128,11 @@ class PropertyTable(Element, DataDisplay):
             language_label = Element("th")
             language_label.append(translations(language))
             language_row.append(language_label)
-            
+
             with language_context(language):
                 language_value_cell = self.create_value(member)
-                
-            language_row.append(language_value_cell)            
+
+            language_row.append(language_value_cell)
 
         return cell
 

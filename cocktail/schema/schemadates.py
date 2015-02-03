@@ -19,7 +19,7 @@ from cocktail.translations import translations
 def get_max_day(context):
 
     date = context.parent_context and context.parent_context.value
-    
+
     if date and date.year is not None and (0 < date.month <= 12):
         return monthrange(date.year, date.month)[1]
 
@@ -74,7 +74,7 @@ class BaseDateTime(Schema, RangedMember):
             self.add_member(Integer(**day_kw))
             self.add_member(Integer(**month_kw))
             self.add_member(Integer(**year_kw))
-        
+
         if self._is_time:
             self.add_member(Integer(**hour_kw))
             self.add_member(Integer(**minute_kw))

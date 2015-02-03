@@ -22,7 +22,7 @@ class TemplateLoaderCache(ResourceLoader):
     expiration = None
 
     def _is_current(self, resource, invalidation = None, verbose = False):
-        
+
         if not ResourceLoader._is_current(self,
             resource,
             invalidation = invalidation,
@@ -37,7 +37,7 @@ class TemplateLoaderCache(ResourceLoader):
             if template.source_file \
             and resource.creation < os.stat(template.source_file).st_mtime:
                 return False
- 
+
         # Reload templates if their dependencies need to be reloaded
         return all(
             self._is_current(self[dependency], invalidation = invalidation)
@@ -71,7 +71,7 @@ class TemplateLoader(object):
 
     def get_class(self, name):
         """Obtains a python class from the specified template.
-        
+
         @param name: The name of the template to obtain the class for.
         @type name: str
 
@@ -82,16 +82,16 @@ class TemplateLoader(object):
             found on the loader's search path.
         """
         return self.cache.request(name)
-    
+
     def new(self, name):
         """Produces an instance of the specified template.
-        
+
         @param name: The name of the template to instantiate.
         @type name: str
 
         @return: An instance of the requested template.
         @rtype: L{cocktail.html.Element}
-        
+
         @raise TemplateNotFoundError: Raised if the indicated template can't be
             found on the loader's search path.
         """
@@ -144,7 +144,7 @@ class TemplateLoader(object):
             # Update the template dependency graph
             dependencies = set()
             self.__dependencies[name] = dependencies
-            
+
             for dependency in compiler.classes.keys():
 
                 dependencies.add(dependency)
@@ -172,7 +172,7 @@ class TemplateLoader(object):
 
         cls.source_file = source_file
         return cls
-   
+
     def _forget_template(self, name):
 
         # Clear the dependency declarations for the previous version of the
@@ -192,12 +192,12 @@ class TemplateLoader(object):
         if derivatives:
             for derivative in list(derivatives):
                 self.cache.pop(derivative, None)
-            
+
             del self.__derivatives[name]
 
     def _find_template(self, pkg_name, class_name):
         """Finds the source file for a template, given its package and name.
-        
+
         @param pkg_name: The full name of the package where the template
             resides.
         @type name: str
@@ -216,10 +216,10 @@ class TemplateLoader(object):
             path = resource_filename(pkg_name, class_name + self.extension)
         except ImportError:
             path = None
-        
+
         if path is None or not os.path.exists(path):
             raise TemplateNotFoundError(pkg_name + "." + class_name)
-        
+
         return path
 
 

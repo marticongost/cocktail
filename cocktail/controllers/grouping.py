@@ -50,7 +50,7 @@ class MemberGrouping(object):
             return value
 
     def translate_grouping_value(self, value, language = None, **kwargs):
-        
+
         if value is not None:
             for cls in self.__class__.__mro__:
                 translation = translations(
@@ -59,7 +59,7 @@ class MemberGrouping(object):
                     grouping = self,
                     value = value,
                     **kwargs
-                )                
+                )
                 if translation:
                     return translation
                 if cls is MemberGrouping:
@@ -94,9 +94,9 @@ class DateGrouping(MemberGrouping):
     variants = "day", "month", "year"
 
     def get_grouping_value(self, item):
-        
+
         value = item.get(self.member, self.language)
-        
+
         if value is not None:
             if self.variant == "day":
                 return date(value.year, value.month, value.day)

@@ -20,9 +20,9 @@ from cocktail.stringutils import normalize
 
 
 class Expression(object):
-    
+
     operands = ()
-    
+
     def __init__(self, *operands):
         self.operands = tuple(self.wrap(operand) for operand in operands)
 
@@ -96,7 +96,7 @@ class Expression(object):
 
     def one_of(self, expr, by_key = False):
         return InclusionExpression(self, expr, by_key = by_key)
-    
+
     def not_one_of(self, expr, by_key = False):
         return ExclusionExpression(self, expr, by_key = by_key)
 
@@ -145,7 +145,7 @@ class Expression(object):
         j = None,
         exclude_min = False,
         exclude_max = True):
-        
+
         min_operator = (
             GreaterExpression
             if exclude_min
@@ -161,7 +161,7 @@ class Expression(object):
         if i is not None and j is not None:
             expr = min_operator(self, i).and_(max_operator(self, j))
         elif i is not None:
-            expr = min_operator(self, i)            
+            expr = min_operator(self, i)
         elif j is not None:
             expr = max_operator(self, j)
         else:
@@ -191,7 +191,7 @@ class Constant(Expression):
 
     def __eq__(self, other):
         return type(self) is type(other) and self.value == other.value
-        
+
     def __repr__(self):
         return "Constant(%s)" % repr(self.value)
 
@@ -240,7 +240,7 @@ class NormalizableExpression(Expression):
 
     normalized_strings = False
     _invariable_normalized = False
-    
+
     def normalize_operands(self, a, b):
 
         if self.normalized_strings:
@@ -259,21 +259,21 @@ class NormalizableExpression(Expression):
 
 
 class EqualExpression(NormalizableExpression):
-    
+
     def op(self, a, b):
         a, b = self.normalize_operands(a, b)
         return a == b
 
 
 class NotEqualExpression(NormalizableExpression):
-    
+
     def op(self, a, b):
         a, b = self.normalize_operands(a, b)
         return a != b
 
 
 class GreaterExpression(NormalizableExpression):
-    
+
     def op(self, a, b):
         a, b = self.normalize_operands(a, b)
         if a is None:
@@ -285,7 +285,7 @@ class GreaterExpression(NormalizableExpression):
 
 
 class GreaterEqualExpression(NormalizableExpression):
-    
+
     def op(self, a, b):
         a, b = self.normalize_operands(a, b)
         if a is None:
@@ -321,7 +321,7 @@ class LowerEqualExpression(NormalizableExpression):
 
 
 class StartsWithExpression(NormalizableExpression):
-    
+
     def op(self, a, b):
         a, b = self.normalize_operands(a, b)
         if a is None or b is None:
@@ -453,7 +453,7 @@ class DivisionExpression(Expression):
 
 
 class AndExpression(Expression):
-    
+
     def op(self, a, b):
         return a and b
 
@@ -507,7 +507,7 @@ class ExclusionExpression(Expression):
 
 
 class ContainsExpression(Expression):
-    op = operator.contains    
+    op = operator.contains
 
 
 class ContainsAnyExpression(Expression):
@@ -550,7 +550,7 @@ class AnyExpression(Expression):
         self.filters = filters
 
     def eval(self, context, accessor = None):
-        
+
         value = (accessor or get_accessor(context)).get(context, self.relation)
 
         if value:
@@ -574,10 +574,10 @@ class AllExpression(Expression):
         self.filters = filters
 
     def eval(self, context, accessor = None):
-        
+
         value = (accessor or get_accessor(context)).get(context, self.relation)
 
-        if value:            
+        if value:
             for item in value:
                 for filter in self.filters:
                     if not filter.eval(item, accessor):
@@ -593,7 +593,7 @@ class HasExpression(Expression):
         self.filters = filters
 
     def eval(self, context, accessor = None):
-        
+
         value = (accessor or get_accessor(context)).get(context, self.relation)
 
         if value:
@@ -624,7 +624,7 @@ class RangeIntersectionExpression(Expression):
             if self.exclude_max
             else LowerEqualExpression
         )
-        
+
         return (
             (d is None or max_operator(a, d).eval({}))
             and (b is None or min_operator(b, c).eval({}))

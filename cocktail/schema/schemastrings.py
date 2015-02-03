@@ -16,13 +16,13 @@ from cocktail.schema.exceptions import MinLengthError, \
 
 class String(Member):
     """A member that handles textual values.
-    
+
     @ivar min: A constraint that establishes the minimum number of characters
         accepted by the member. If set to a value other than None, setting the
         member to a string shorter than this limit will trigger a
         L{MinLengthError<exceptions.MinLengthError>} validation error.
     @type min: int
-    
+
     @ivar max: A constraint that limits the maximum number of characters
         accepted by the member. If set to a value other than None, setting the
         member to a string longer than this limit will trigger a

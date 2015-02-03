@@ -26,7 +26,7 @@ def create_translation_map(pairs):
     return translation_map
 
 def create_normalization_map(normalization = None, preserved_chars = None):
-    
+
     if normalization is None:
         normalization = {
             u"a": u"áàäâ",

@@ -41,7 +41,7 @@ class Reference(RelationMember):
             return translations(value, language, **kwargs)
 
     def _add_relation(self, obj, related_obj):
-        get_accessor(obj).set(obj, self.name, related_obj)                
+        get_accessor(obj).set(obj, self.name, related_obj)
 
     def _remove_relation(self, obj, related_obj):
         get_accessor(obj).set(obj, self.name, None)
@@ -92,11 +92,11 @@ class Reference(RelationMember):
             yield error
 
         if context.value is not None:
- 
+
             # Apply the 'class_family' constraint
             class_family = \
                 self.resolve_constraint(self.class_family, context)
-            
+
             if class_family:
                 if not isinstance(context.value, type):
                     yield TypeCheckError(context, type)
@@ -150,7 +150,7 @@ class Reference(RelationMember):
             if self.type is not None:
                 if hasattr(self.type, "select_constraint_instances"):
                     query = self.type.select_constraint_instances(
-                        persistent_object = 
+                        persistent_object =
                             context and context.get("persistent_object")
                     )
                 elif hasattr(self.type, "select"):

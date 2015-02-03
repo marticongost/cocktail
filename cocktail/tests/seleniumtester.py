@@ -39,7 +39,7 @@ def selenium_test(func):
 selenium_test.__test__ = False
 
 def _selenium_test_factory(test_func, session):
-    
+
     def wrapper(*args, **kwargs):
         global _current_selenium_session
         previous_session = _current_selenium_session
@@ -112,7 +112,7 @@ class SeleniumTester(Plugin):
         parser.add_option("--selenium-url",
             help = "Root URL for selenium tests."
         )
-    
+
     def configure(self, options, conf):
 
         global _selenium_site_address
@@ -123,7 +123,7 @@ class SeleniumTester(Plugin):
         and options.selenium_host \
         and options.selenium_port \
         and options.selenium_browsers:
-        
+
             if options.selenium_url:
                 selenium_url = options.selenium_url
                 url = urlparse(selenium_url)
@@ -154,23 +154,23 @@ class SeleniumTester(Plugin):
             session.stop()
 
     def _get_default_site_address(self, selenium_host):
-        
+
         # Get the local host's IP address, as seen from the selenium server
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect((selenium_host, 0))
         site_host = s.getsockname()[0]
         s.close()
-        
+
         # Find the first available port on the local host
         site_port = self._find_free_port(SITE_PORT_RANGE)
 
         return (site_host, site_port)
 
     def _find_free_port(self, port_range):
-        
+
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         host = "0.0.0.0"
-        
+
         for port in port_range:
             try:
                 s.bind((host, port))

@@ -55,7 +55,7 @@ class UserCollection(object):
         self.__base_filters = []
         self.__parameter_sources = {}
         self.__default_source = lambda k: self.get_parameter_source(k)(k)
-    
+
     # Parameters
     #--------------------------------------------------------------------------
     @cached_getter
@@ -71,7 +71,7 @@ class UserCollection(object):
             source = self.__parameter_sources.get(param_name)
             if source is None:
                 source = cherrypy.request.params.get
-        
+
         return source
 
     def set_parameter_source(self, param_name, source):
@@ -104,10 +104,10 @@ class UserCollection(object):
     @cached_getter
     def adapter(self):
         return None
-    
+
     @cached_getter
     def schema(self):
-        
+
         schema = self.type
 
         adapter = self.adapter
@@ -143,7 +143,7 @@ class UserCollection(object):
         return set(self.schema.members().keys())
 
     def _get_member(self, key, translatable = False, from_type = False):
-        
+
         if translatable:
             parts = key.split(".")
             name = parts[0]
@@ -155,7 +155,7 @@ class UserCollection(object):
             member = schema[name]
         except KeyError:
             member = None
-    
+
         if member is None or name not in self.public_members:
             return None
 
@@ -163,12 +163,12 @@ class UserCollection(object):
             member = member.translated_into(parts[1])
 
         return member
-    
+
     # Languages
     #------------------------------------------------------------------------------
     @cached_getter
     def languages(self):
-        
+
         languages = set([get_language()])
 
         if self.allow_language_selection:
@@ -193,7 +193,7 @@ class UserCollection(object):
 
     @cached_getter
     def user_filters(self):
- 
+
         user_filters = []
 
         if self.allow_filters:
@@ -203,7 +203,7 @@ class UserCollection(object):
                 "filter" in cherrypy.request.params
                 and isinstance(filter_source, CookieParameterSource)
             )
-                    
+
             filters_param = self.params.read(
                 schema.Collection("filter", items = schema.String())
             )
@@ -216,7 +216,7 @@ class UserCollection(object):
                         for filter in self.available_user_filters
                         if filter.promoted_search]
                 )
-            
+
             # Discard all persisted filter parameters (restoring filters
             # selectively isn't supported, it's all or nothing)
             if replacing_existing_filters:
@@ -226,11 +226,11 @@ class UserCollection(object):
                         del cherrypy.request.cookie[key]
                         cherrypy.response.cookie[key] = ""
                         response_cookie = cherrypy.response.cookie[key]
-                        set_cookie_expiration(response_cookie, seconds = 0) 
+                        set_cookie_expiration(response_cookie, seconds = 0)
                         response_cookie["path"] = "/"
 
             if filters_param:
-                
+
                 available_filters = dict(
                     (filter.id, filter)
                     for filter in self.available_user_filters)
@@ -256,12 +256,12 @@ class UserCollection(object):
     def base_filters(self):
         return ListWrapper(self.__base_filters)
 
-    def add_base_filter(self, expression):    
+    def add_base_filter(self, expression):
         self.__base_filters.append(expression)
         self.discard_results()
 
     # Ordering
-    #--------------------------------------------------------------------------   
+    #--------------------------------------------------------------------------
     @cached_getter
     def order(self):
 
@@ -274,7 +274,7 @@ class UserCollection(object):
             )
 
             if order_param:
-                
+
                 for key in order_param:
 
                     if key.startswith("-"):
@@ -296,7 +296,7 @@ class UserCollection(object):
             order = self.default_order
 
         return ListWrapper(order)
-    
+
     # Grouping
     #------------------------------------------------------------------------------
     @cached_getter
@@ -305,7 +305,7 @@ class UserCollection(object):
         grouping = None
 
         if self.allow_grouping:
-            
+
             grouping_param = self.params.read(schema.String("grouping"))
 
             if grouping_param:
@@ -316,7 +316,7 @@ class UserCollection(object):
                     grouping_param = grouping_param[1:]
                 else:
                     sign = PositiveExpression
-                
+
                 # Grouping variant
                 pos = grouping_param.find("!")
                 if pos != -1:
@@ -339,14 +339,14 @@ class UserCollection(object):
                     )
                 else:
                     language = None
-                
+
                 if member and member.grouping:
                     grouping_class = resolve(member.grouping)
                     grouping = grouping_class()
                     grouping.member = member
                     grouping.sign = sign
                     grouping.language = language
-                    grouping.variant = variant                    
+                    grouping.variant = variant
 
         return grouping
 
@@ -402,7 +402,7 @@ class UserCollection(object):
             self.type,
             base_collection = self.base_collection
         )
-        
+
         for expression in self.__base_filters:
             subset.add_filter(expression)
 
@@ -414,15 +414,15 @@ class UserCollection(object):
 
         if self.grouping:
             subset.add_order(self.grouping.order)
-        
+
         for criteria in self.order:
             subset.add_order(criteria)
 
         return subset
-    
+
     @cached_getter
     def page_subset(self):
-        
+
         page_subset = self.subset
         page = self.page
         page_size = self.page_size
@@ -431,7 +431,7 @@ class UserCollection(object):
             start = page * page_size
             end = start + page_size
             page_subset = page_subset[start:end]
-    
+
         return page_subset
 
     def discard_results(self):

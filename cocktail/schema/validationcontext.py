@@ -29,7 +29,7 @@ class ValidationContext(DictWrapper):
     contexts, through the use of the L{enter} and L{leave} method. This
     mechanism also keeps track of the active validation L{path}.
     """
-   
+
     def __init__(self,
         member,
         value,
@@ -48,7 +48,7 @@ class ValidationContext(DictWrapper):
 
         if parent_context is not None:
             self._items.update(self.__parent_context._items)
-            
+
         self._items.update(member.validation_parameters)
         self._items.update(parameters)
         self.__trigger_validating_event(member)

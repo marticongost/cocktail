@@ -224,7 +224,7 @@ class Schema(Member):
             elif not isinstance(self.members_order, list):
                 self.members_order = list(self.members_order)
 
-            if append:                
+            if append:
                 self.members_order.append(member.name)
             elif after:
                 pos = self.members_order.index(after)
@@ -544,7 +544,7 @@ class Schema(Member):
 
         if relative:
             def insert_relative(member, visited):
-                
+
                 # Disallow conflicting positions
                 if member.before_member and member.after_member:
                     raise ValueError(
@@ -673,7 +673,7 @@ class Schema(Member):
 
             if schema.name:
                 label = translations(
-                    schema.name 
+                    schema.name
                     + (("." + group) if group else "-generic_group")
                 )
                 if label:
@@ -685,10 +685,10 @@ class Schema(Member):
                     return label
 
         label = get_label(self)
-        
+
         if label:
             return label
-        
+
         source_schema = self.source_member
         while source_schema is not None:
             label = get_label(source_schema)
@@ -708,7 +708,7 @@ class Schema(Member):
                 "insert_group() can't take both 'after' and 'before' "
                 "parameters at the same time"
             )
- 
+
         anchor = before or after
         if not isinstance(self.groups_order, list):
             self.groups_order = list(self.groups_order)
@@ -723,7 +723,7 @@ class Schema(Member):
             self.groups_order.insert(pos, group)
 
     def extract_searchable_text(self, extractor):
-        
+
         obj = extractor.current.value
 
         for member in self.iter_members():

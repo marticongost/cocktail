@@ -24,7 +24,7 @@ class Autocomplete(Element):
         self.add_resource("/cocktail/scripts/xregexp.js")
         self.add_resource("/cocktail/scripts/searchable.js")
         self.add_resource("/cocktail/scripts/Autocomplete.js")
-        self.text_box = self.create_text_box()        
+        self.text_box = self.create_text_box()
         self.append(self.text_box)
         delegate_control(self, self.text_box)
 
