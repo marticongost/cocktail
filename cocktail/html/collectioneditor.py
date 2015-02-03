@@ -18,7 +18,7 @@ class CollectionEditor(Element):
         data_bound(self)
         self.add_resource("/cocktail/scripts/CollectionEditor.js")
         self.entries = self.create_entries()
-        self.append(self.entries)        
+        self.append(self.entries)
         self.add_button = self.create_add_button()
         self.append(self.add_button)
 
@@ -26,7 +26,7 @@ class CollectionEditor(Element):
         if self.member:
             self.new_entry = self.create_new_entry()
             self.append(self.new_entry)
- 
+
             if self.value is not None:
                 for item in self.value:
                     self.entries.append(self.create_entry(item))
@@ -91,7 +91,7 @@ class CollectionEditor(Element):
                     self.value,
                     self.member.items
                 )
-        
+
         if isinstance(display, basestring):
             display = templates.new(display)
 
@@ -100,8 +100,8 @@ class CollectionEditor(Element):
         display.persistent_object = self.data_display.persistent_object
         display.collection = self.member
         display.member = self.member.items
-        display.language = get_language()        
-        
+        display.language = get_language()
+
         if hasattr(display, "value"):
             display.value = item
 

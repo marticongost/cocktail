@@ -8,7 +8,7 @@
 -----------------------------------------------------------------------------*/
 
 cocktail.bind(".FilterBox", function ($filterBox) {
-        
+
     var filterList = jQuery(this).find(".filter_list").get(0);
 
     this.addUserFilter = function (filterId) {
@@ -33,7 +33,7 @@ cocktail.bind(".FilterBox", function ($filterBox) {
         jQuery(this).find(".deleteButton")
             .attr("href", "javascript:")
             .click(function () {
-                                    
+
                 // Shift the indices in filter fields
                 for (var i = filterEntry.index + 1; i < filterList.childNodes.length; i++) {
                     var sibling = filterList.childNodes[i];
@@ -61,6 +61,6 @@ cocktail.bind(".FilterBox", function ($filterBox) {
             $filterBox.get(0).addUserFilter(this.filterId);
             return false;
         });
-    
+
     // TODO: Client-side implementation for the 'delete filter' button
 });

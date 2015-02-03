@@ -71,10 +71,10 @@ class Renderer(object):
             # Beginning of tag content
             else:
                 out(u">")
-        
+
         for child in element.children:
             rendering.render_element(child)
-            
+
             # Inherit cache information
             element.cache_tags.update(child.cache_tags)
             element.cache_expiration = nearest_expiration(
@@ -98,7 +98,7 @@ class HTMLRenderer(Renderer):
 class HTML4Renderer(HTMLRenderer):
     doctype = HTML4_STRICT
     html_version = 4
-    
+
 
 class HTML5Renderer(HTMLRenderer):
     doctype = HTML5

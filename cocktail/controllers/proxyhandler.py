@@ -28,7 +28,7 @@ def proxy_handler(url):
     # TODO: find the encoding from the remote resource (meta tag - for (X)HTML
     # resources - or header)
     encoding = "utf-8"
-    
+
     # Taking request parameters
     params = cherrypy.request.params
 

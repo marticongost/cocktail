@@ -17,14 +17,14 @@ class FormProcessor(object):
     """
     is_transactional = False
 
-    def __init__(self):        
+    def __init__(self):
         self.processed.append(self.__handle_processed)
 
     @cached_getter
     def forms(self):
         """The list of `forms <Form>` defined by the controller."""
-        forms = {}        
-        
+        forms = {}
+
         for key in dir(self.__class__):
             member = getattr(self.__class__, key, None)
             if isinstance(member, type) and issubclass(member, Form):
@@ -36,7 +36,7 @@ class FormProcessor(object):
     @cached_getter
     def action(self):
         """The action selected by the user.
-        
+
         The chosen action is paired with the `~Form.actions>` attribute of each
         form defined by the controller to determine which forms should be
         submitted.
@@ -71,9 +71,9 @@ class FormProcessor(object):
                             dependency = self.forms.get(dependency_id)
                             if dependency:
                                 find_submitted_forms(dependency)
-                
+
                     forms.append(form)
-                            
+
             for form in self.forms.itervalues():
                 find_submitted_forms(form)
 
@@ -94,7 +94,7 @@ class FormProcessor(object):
         self.transaction()
 
     def transaction(self):
-        self.submit_forms()    
+        self.submit_forms()
 
     def submit_forms(self):
         for form in self.submitted_forms:
@@ -142,7 +142,7 @@ class Form(object):
     def form_id(self):
         """The name given to the form by its `controller`."""
         return camel_to_underscore(self.__class__.__name__)
-    
+
     @cached_getter
     def submitted(self):
         """Indicates if this particular form has been submitted in the current
@@ -192,10 +192,10 @@ class Form(object):
         """
         if self.model is None:
             raise ValueError("No form model specified for %s" % self)
-        
+
         adapted_schema = schema.Schema(self.form_id)
         return self.adapter.export_schema(self.model, adapted_schema)
-    
+
     @cached_getter
     def data(self):
         """A dictionary containing the user's input."""
@@ -205,7 +205,7 @@ class Form(object):
         # First load: set the initial state for the form
         if not self.submitted:
             self.init_data(data)
-        
+
         # Form submitted: read request data
         else:
             self.read_data(data)
@@ -214,14 +214,14 @@ class Form(object):
 
     def init_data(self, data):
         """Set the form state on first load.
-        
+
         :param data: The dictionary representing the form state.
         :type data: dict
         """
         if self.source_instance is None:
             # First, apply defaults specified by the form schema
             self.apply_defaults(data)
-            
+
             # Then, selectively override these with any pre-supplied parameter
             # (useful to pass parameters to a form page)
             get_parameter(
@@ -232,15 +232,15 @@ class Form(object):
             )
         else:
             self.apply_instance_data(data)
-    
+
     def apply_defaults(self, data):
         """Initialize the form state with defaults supplied by the form's
         schema.
-        
+
         :param data: The dictionary representing the form state.
         :type data: dict
         """
-        self.schema.init_instance(data)    
+        self.schema.init_instance(data)
 
     def apply_instance_data(self, data):
         """Initialize the form state with data from the edited instance.
@@ -258,7 +258,7 @@ class Form(object):
 
     def read_data(self, data):
         """Update the form state with data read from the request.
-        
+
         :param data: The dictionary that request data is read into.
         :type data: dict
         """
@@ -272,15 +272,15 @@ class Form(object):
     def reader_params(self):
         """The set of parameters to pass to
         `get_parameter <cocktail.controllers.parameters.get_parameter>` when
-        reading data from the form.        
+        reading data from the form.
         """
         return {"errors": "ignore", "undefined": "set_none"}
 
     @cached_getter
     def instance(self):
-        """The instance produced by the form. 
-        
-        Depending on the form's model, it will be a dictionary or a 
+        """The instance produced by the form.
+
+        Depending on the form's model, it will be a dictionary or a
         `SchemaObject <cocktail.schema.schemaobject.SchemaObject>` instance.
         """
         return self.source_instance or self.create_instance()

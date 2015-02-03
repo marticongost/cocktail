@@ -11,24 +11,24 @@ from cocktail.modeling import DictWrapper
 
 def file_publisher(path, content_type = None, disposition = None, name = None):
     """Creates a CherryPy handler that serves the specified file."""
- 
+
     @cherrypy.expose
     def handler(self):
         return serve_file(path, content_type, disposition, name)
-    
+
     return handler
 
 class FolderPublisher(object):
     """Creates a CherryPy handler that serves files in the specified folder."""
-    
+
     def __init__(self, path):
         self.path = path
 
     @cherrypy.expose
     def __call__(self, *args, **kwargs):
-        
+
         requested_path = self.path
-        
+
         for arg in args:
             requested_path = os.path.join(requested_path, arg)
 
@@ -72,12 +72,12 @@ def handles_content_type(content_type):
 
 def get_content_type_handler(content_type):
     """Get the handler for the specified MIME type.
-    
+
     :param content_type: The MIME type to evaluate. Can be a specific MIME
-        type (ie. image/png, text/css) or a general MIME category 
+        type (ie. image/png, text/css) or a general MIME category
         (ie. image, text).
     :type content_type: str
-    
+
     :return: The handler for the specified MIME type, or None if there is
         no registered handler for the specified type.
     :rtype: callable
@@ -115,10 +115,10 @@ def serve_file(
 
     if content_type:
         handler = get_content_type_handler(content_type)
-    
+
         if handler:
             if not name:
-                name = os.path.basename(path)            
+                name = os.path.basename(path)
 
             cherrypy.response.headers["Content-Type"] = content_type
             cherrypy.response.headers["Content-Disposition"] = \

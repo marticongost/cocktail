@@ -12,7 +12,7 @@
     // Delay the initialization of TinyMCE instances until all page assets are
     // loaded (it doesn't work otherwise)
     var documentLoaded = false;
-    
+
     jQuery(window).bind("load", function () {
         documentLoaded = true;
         jQuery(".TinyMCE").each(function () {

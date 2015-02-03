@@ -44,12 +44,12 @@ class ValidationContext(DictWrapper):
 
         return value
 
-    def enter(self, member, validable, **kwargs):        
+    def enter(self, member, validable, **kwargs):
         """Begins a nested validation context, which will be stacked uppon the
         active context. All key/value pairs defined by the parent context will
         be accessible from the child. On the other hand, changes done to the
         child won't propagate to its parent.
-        
+
         @param member: The member that requests the creation of the nested
             context. Will be added to the current validation L{path}.
         @type member: L{Member<member.Member>}
@@ -57,7 +57,7 @@ class ValidationContext(DictWrapper):
         @param validable: The object being validated by the member that
             requests the creation of the nested context. Will be added to the
             current validation L{path}.
-        
+
 
         @param kwargs: Key/value pairs used to initialize the context.
         """
@@ -72,7 +72,7 @@ class ValidationContext(DictWrapper):
 
         self.__stack.pop()
         self._member, self._validable, self._items = self.__stack[-1]
-        
+
     def __setitem__(self, key, value):
         self._items[key] = value
 

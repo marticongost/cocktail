@@ -31,7 +31,7 @@ _ids_expr = re.compile(r"\d+(,\d+)*")
 class PersistentClassWebService(RequestHandler):
     """A controller that produces web service interfaces from a persistent data
     type definition.
-    
+
     @ivar root_type: The root persistent data type exposed by the controller.
     @type root_type: L{PersistentObject<cocktail.persistence.PersistentObject>}
         subclass
@@ -66,7 +66,7 @@ class PersistentClassWebService(RequestHandler):
                 [self.type.get_instance(int(id)) for id in ids]
             )
             controller = self.__class__()
-            
+
             # All items on the selected subset are of the same type: set it as
             # the active type for the request
             if len(set(item.__class__ for item in subset)) == 1:
@@ -80,7 +80,7 @@ class PersistentClassWebService(RequestHandler):
     @cached_getter
     def type(self):
         """The type specified by the current HTTP request.
-        
+
         Will always be L{root_type} or one of its subclasses.
         @type: L{PersistentObject<cocktail.persistence.PersistentObject>}
             subclass
@@ -98,13 +98,13 @@ class PersistentClassWebService(RequestHandler):
 
         if cls is None:
             raise ValueError("Wrong type selection")
- 
+
         return cls
 
     class JSONEncoder(simplejson.JSONEncoder):
 
         def default(self, obj):
- 
+
             if isinstance(obj, (ListWrapper, SetWrapper)):
                 return list(obj)
 
@@ -118,11 +118,11 @@ class PersistentClassWebService(RequestHandler):
                 return (obj.hour, obj.minute, obj.second, obj.microsecond)
 
             elif isinstance(obj, schema.SchemaObject):
-                
+
                 values = {"__class__": obj.__class__.full_name}
-                
-                for key, member in obj.__class__.members().iteritems():                                        
-                    
+
+                for key, member in obj.__class__.members().iteritems():
+
                     # TODO: allow selecting a subset of the available
                     # translations
                     if member.translated:
@@ -138,7 +138,7 @@ class PersistentClassWebService(RequestHandler):
 
                     if value is excluded_member:
                         continue
-                    
+
                     values[key] = value
 
                 return values
@@ -150,7 +150,7 @@ class PersistentClassWebService(RequestHandler):
             # TODO: implement joins
             if member.name == "translations":
                 value = excluded_member
-                
+
             elif isinstance(member, schema.Reference):
                 value = obj.get(member)
                 if value is not None:
@@ -207,7 +207,7 @@ class PersistentClassWebService(RequestHandler):
 
     @cherrypy.expose
     def new(self, **kwargs):
- 
+
         # Make sure the operation can only be performed using a POST request
         if cherrypy.request.method != "POST":
             raise cherrypy.HTTPError(400, "Wrong HTTP method")
@@ -222,7 +222,7 @@ class PersistentClassWebService(RequestHandler):
 
     def _create_instance(self):
         return self.type()
-    
+
     def _init_new_instance(self, instance):
 
         # Initialize the instance with data from the request
@@ -239,7 +239,7 @@ class PersistentClassWebService(RequestHandler):
         # Validate the new instance
         for error in instance.__class__.get_errors(instance):
             raise error
-        
+
     def _store_new_instance(self, instance):
         instance.insert()
 
@@ -249,7 +249,7 @@ class PersistentClassWebService(RequestHandler):
         # Make sure the operation can only be performed using a POST request
         if cherrypy.request.method != "POST":
             raise cherrypy.HTTPError(400, "Wrong HTTP method")
-        
+
         update_count = 0
 
         for instance in self.query:
@@ -257,7 +257,7 @@ class PersistentClassWebService(RequestHandler):
             update_count += 1
 
         datastore.commit()
-        
+
         # Return the number of affected instances
         return self.dumps({"updated_items": update_count})
 
@@ -301,7 +301,7 @@ class PersistentClassWebService(RequestHandler):
         count = len(query)
         self._delete_instances(query)
         datastore.commit()
-        
+
         # Return the number of deleted instances
         return self.dumps({"deleted_items": count})
 

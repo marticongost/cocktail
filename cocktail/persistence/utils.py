@@ -37,10 +37,10 @@ def remove_broken_type(
 
         if languages:
             langauges = [None] + list(languages)
-        
+
         for base in existing_bases:
             indexes.append(base.keys)
-            
+
             if languages and base.full_text_indexed:
                 for language in languages:
                     full_text_indexes.append(
@@ -50,7 +50,7 @@ def remove_broken_type(
             for member in base.members(recursive = False).itervalues():
                 if member.indexed:
                     indexes.append(member.index)
-                
+
                 if languages and member.full_text_indexed:
                     for language in languages:
                         full_text_indexes.append(
@@ -71,7 +71,7 @@ def remove_broken_type(
                         index.remove(id)
                     except KeyError:
                         pass
-                
+
                 for index in full_text_indexes:
                     index.unindex_doc(id)
 
@@ -103,7 +103,7 @@ def remove_broken_type(
                             schema.RelationOrderedSet
                         )):
                             items = items._items
-                        
+
                         for item in list(items):
                             if is_broken_instance_of(item, local_name):
                                 schema.remove(items, item)

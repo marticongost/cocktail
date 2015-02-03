@@ -15,7 +15,7 @@ missing = object()
 
 
 class ResourceLoader(DictWrapper):
-    
+
     expiration = None
     resources = None
     enabled = True
@@ -29,18 +29,18 @@ class ResourceLoader(DictWrapper):
 
         if load is not None:
             self.load = load
- 
+
     def _drop_expired(self):
-        
+
         if self.expiration:
-            
+
             oldest_creation_time = time() - self.expiration
 
             for key, resource in self.__resources.items():
                 if resource.creation < oldest_creation_time:
                     del self[key]
 
-    def request(self, key, expiration = None, invalidation = None):        
+    def request(self, key, expiration = None, invalidation = None):
         try:
             return self.get_value(key, invalidation = invalidation)
         except KeyError:
@@ -49,7 +49,7 @@ class ResourceLoader(DictWrapper):
                 print key
             value = self.load(key)
             if self.enabled:
-                self.set_value(key, value, expiration)                
+                self.set_value(key, value, expiration)
             return value
 
     def get_value(self, key, default = missing, invalidation = None):
@@ -57,7 +57,7 @@ class ResourceLoader(DictWrapper):
             resource = self.__resources.get(key, None)
 
             if resource is not None:
-        
+
                 if self.updatable \
                 and not self._is_current(resource, invalidation, self.verbose):
                     if default is missing:
@@ -67,11 +67,11 @@ class ResourceLoader(DictWrapper):
                     if self.verbose:
                         print styled("ResourceLoader: Recovering", "white", "green", "bold"),
                         print key
-                    return resource.value 
+                    return resource.value
 
         if default is missing:
             raise KeyError("Undefined cache key: %s" % repr(key))
-    
+
         return default
 
     def set_value(self, key, value, expiration = None):
@@ -93,7 +93,7 @@ class ResourceLoader(DictWrapper):
             self._resource_removed(resource)
         else:
             raise KeyError(key)
-    
+
     def pop(self, key, default = missing):
         resource = self.__resources.get(key)
         if resource is None:
@@ -124,13 +124,13 @@ class ResourceLoader(DictWrapper):
                     print self.expiration
                 else:
                     print resource.expiration
-            
+
             return False
 
         # Invalidation
         if callable(invalidation):
             invalidation = invalidation()
-        
+
         if invalidation is not None:
             if isinstance(invalidation, datetime):
                 invalidation = mktime(invalidation.timetuple())
@@ -153,7 +153,7 @@ class ResourceLoader(DictWrapper):
 
 
 class Resource(object):
-    
+
     def __init__(self, key, value, expiration = None):
         self.key = key
         self.value = value

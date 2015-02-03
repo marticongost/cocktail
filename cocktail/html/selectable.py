@@ -17,11 +17,11 @@ def selectable(
     mode = SINGLE_SELECTION,
     entry_selector = None,
     checkbox_selector = None):
-    
+
     element.add_resource(
         "/cocktail/scripts/jquery.disable.text.select.pack.js")
     element.add_resource("/cocktail/scripts/selectable.js")
-    
+
     element.set_client_variable(
         "cocktail.NO_SELECTION", NO_SELECTION)
     element.set_client_variable(
