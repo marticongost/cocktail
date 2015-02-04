@@ -43,19 +43,18 @@ class CheckList(Selector):
             Selector._create_entries(self, items, container)
         else:
             self.add_class("with_columns")
-            pairs = list(self._iter_pairs(items))
 
             if self.column_height:
                 column_height = self.column_height
                 remainder = 0
             else:
-                column_height, remainder = divmod(len(pairs), self.column_count)
+                column_height, remainder = divmod(len(items), self.column_count)
                 if remainder:
                     column_height += 1
 
             column = None
 
-            for i, (value, label) in enumerate(pairs):
+            for i, item in enumerate(item):
 
                 if column is None or not column.capacity:
 
@@ -69,11 +68,7 @@ class CheckList(Selector):
 
                     container.append(column)
 
-                entry = self.create_entry(
-                    value,
-                    label,
-                    self._is_selected(value)
-                )
+                entry = self.create_entry(item)
 
                 column.append(entry)
                 column.capacity -= 1
@@ -83,20 +78,20 @@ class CheckList(Selector):
         column.add_class("column")
         return column
 
-    def create_entry(self, value, label, selected):
+    def create_entry(self, item):
 
         entry = Element()
         entry.add_class("entry")
 
         entry.check = CheckBox()
         entry.check["name"] = self.name
-        entry.check.value = selected
-        entry.check["value"] = value
+        entry.check.value = self.is_selected(item)
+        entry.check["value"] = self.get_item_value(item)
         entry.append(entry.check)
 
         entry.label = Element("label")
         entry.label["for"] = entry.check.require_id()
-        entry.label.append(label)
+        entry.label.append(self.get_item_label(item))
         entry.append(entry.label)
 
         return entry

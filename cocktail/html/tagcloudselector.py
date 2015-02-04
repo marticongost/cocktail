@@ -57,7 +57,10 @@ class TagCloudSelector(Selector):
 
         Selector._ready(self)
 
-    def create_entry(self, value, label, selected):
+    def create_entry(self, item):
+
+        value = self.get_item_value(item)
+        selected = self.is_selected(item)
 
         entry = Element()
         entry.add_class("entry")
@@ -76,7 +79,7 @@ class TagCloudSelector(Selector):
 
         entry.label = Element("label")
         entry.label["for"] = entry.control.require_id()
-        entry.label.append(label)
+        entry.label.append(self.get_item_label(item))
         entry.append(entry.label)
 
         if value:

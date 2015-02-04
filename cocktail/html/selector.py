@@ -79,15 +79,17 @@ class Selector(Element):
                 group.append_item(item)
 
         if self.value is None:
-            self._is_selected = lambda item: False
-        elif isinstance(
-            self.value, (list, tuple, set, ListWrapper, SetWrapper)
-        ) and not isinstance(self.member, schema.Tuple):
-            selection = set(self.get_item_value(item) for item in self.value)
-            self._is_selected = lambda item: item in selection
+            self._is_selected = lambda item: item is None
+        elif (
+            isinstance(
+                self.value,
+                (list, tuple, set, ListWrapper, SetWrapper)
+            )
+            and not isinstance(self.member, schema.Tuple)
+        ):
+            self._is_selected = lambda item: item in self.value
         else:
-            selection = self.get_item_value(self.value)
-            self._is_selected = lambda item: item == selection
+            self._is_selected = lambda item: item == self.value
 
         self._fill_entries()
 
@@ -107,20 +109,7 @@ class Selector(Element):
     def _fill_entries(self):
 
         if self.empty_option_displayed:
-
-            empty_label = self.empty_label
-
-            if not empty_label and self.member:
-                empty_label = self.member.translate_value(None)
-
-            if not empty_label:
-                empty_label = "---"
-
-            entry = self.create_entry(
-                self.empty_value,
-                empty_label,
-                self.value is None
-            )
+            entry = self.create_entry(None)
             self.append(entry)
 
         if self.groups is not None:
@@ -129,29 +118,15 @@ class Selector(Element):
         elif self.items is not None:
             self._create_entries(self.items, self)
 
-    def _iter_pairs(self, items):
-        if hasattr(items, "iteritems"):
-            return (
-                (self.get_item_value(value), label)
-                for value, label in items.iteritems()
-            )
-        else:
-            return (
-                (self.get_item_value(item),
-                 self.get_item_label(item))
-                for item in items
-            )
-
     def _create_entries(self, items, container):
-        for value, label in self._iter_pairs(items):
-            entry = self.create_entry(
-                value,
-                label,
-                self._is_selected(value)
-            )
+        for item in items:
+            entry = self.create_entry(item)
             container.append(entry)
 
     def get_item_value(self, item):
+
+        if item is None and self.empty_value is not None:
+            return self.empty_value
 
         member = (
             self.member
@@ -171,7 +146,22 @@ class Selector(Element):
         return getattr(item, "id", None) or str(item)
 
     def get_item_label(self, item):
+
+        if item is None:
+            empty_label = self.empty_label
+
+            if not empty_label and self.member:
+                empty_label = self.member.translate_value(None)
+
+            if not empty_label:
+                empty_label = "---"
+
+            return empty_label
+
         return self._item_translator(item)
+
+    def is_selected(self, item):
+        return self._is_selected(item)
 
     def create_group(self, group):
 
@@ -199,8 +189,10 @@ class Selector(Element):
     def get_group_title(self, group):
         return translations(group.value)
 
-    def create_entry(self, value, label, selected):
-        pass
+    def create_entry(self, item):
+        raise TypeError(
+            "%s doesn't implement the create_entry() method" % self
+        )
 
     def _get_value(self):
         return self.__value
