@@ -705,6 +705,8 @@ class Query(object):
         return False
 
     def __contains__(self, item):
+        if item is None:
+            return False
         return item.id in self.execute()
 
     def __getitem__(self, index):
