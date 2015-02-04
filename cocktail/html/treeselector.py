@@ -48,11 +48,7 @@ class TreeSelector(Selector):
     def _fill_entries(self):
 
         if self.empty_option_displayed:
-            entry = self.create_entry(
-                self.empty_value,
-                self.empty_label,
-                self.value is None
-            )
+            entry = self.create_entry(None)
             self.append(entry)
 
         if self.items:
@@ -61,14 +57,7 @@ class TreeSelector(Selector):
     def _fill_container(self, container, items):
 
         for item in items:
-            value = self.get_item_value(item)
-            label = self.get_item_label(item)
-            entry = self.create_entry(
-                value,
-                label,
-                self._is_selected(value)
-            )
-
+            entry = self.create_entry(item)
             children = self.get_child_items(item)
             if children:
                 children_container = Element("ul")
@@ -77,9 +66,10 @@ class TreeSelector(Selector):
 
             container.append(entry)
 
-    def create_entry(self, value, label, selected):
+    def create_entry(self, item):
 
         entry = Element("li")
+        value = self.get_item_value(item)
         eligible = value is not uneligible
 
         # Control (checkbox or radio button)
@@ -87,7 +77,7 @@ class TreeSelector(Selector):
             entry.control = Element("input",
                 name = self.name,
                 value = value,
-                checked = selected
+                checked = self.is_selected(item)
             )
 
             if self.selection_mode == SINGLE_SELECTION:
@@ -106,7 +96,7 @@ class TreeSelector(Selector):
             entry.label = Element("span")
             entry.add_class("uneligible")
 
-        entry.label.append(label)
+        entry.label.append(self.get_item_label(item))
         entry.append(entry.label)
 
         return entry

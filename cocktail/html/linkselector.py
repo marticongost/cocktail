@@ -15,27 +15,27 @@ class LinkSelector(Selector):
 
     empty_option_displayed = False
 
-    def create_entry(self, value, label, selected):
+    def create_entry(self, item):
 
         entry = Element()
         entry.add_class("entry")
 
-        if selected:
+        if self.is_selected(item):
             entry.add_class("selected")
 
-        link = self.create_entry_link(value, label)
+        link = self.create_entry_link(item)
         entry.append(link)
         return entry
 
-    def create_entry_link(self, value, label):
+    def create_entry_link(self, item):
 
         link = Element("a")
         link.add_class("entry_link")
-        link["href"] = self.get_entry_url(value)
-        link.append(label)
+        link["href"] = self.get_entry_url(item)
+        link.append(self.get_item_label(item))
         return link
 
-    def get_entry_url(self, value):
+    def get_entry_url(self, item):
 
         if self.name:
             name = self.name
@@ -45,5 +45,5 @@ class LinkSelector(Selector):
             if isinstance(name, unicode):
                 name = str(name)
 
-            return "?" + view_state(**{name: value})
+            return "?" + view_state(**{name: self.get_item_value(item)})
 
