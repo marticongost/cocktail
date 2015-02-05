@@ -108,15 +108,19 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
                             else:
                                 return ""
 
-                        @refine(element)
-                        def get_item_value(self, item):
+                        @extend(element)
+                        def get_item_value(element, item):
                             if isinstance(item, basestring):
                                 return item
                             else:
                                 return item.name
 
-                        @refine(element)
-                        def get_item_label(self, member):
+                        @extend(element)
+                        def is_selected(element, member):
+                            return element.get_item_value(member) in element.value
+
+                        @extend(element)
+                        def get_item_label(element, member):
                             return translations(member)
                         ?>
                     </py:with>
