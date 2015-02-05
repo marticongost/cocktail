@@ -1,10 +1,10 @@
 /*-----------------------------------------------------------------------------
 
 
-@author:		Martí Congost
-@contact:		marti.congost@whads.com
-@organization:	Whads/Accent SL
-@since:			January 2015
+@author:        Martí Congost
+@contact:       marti.congost@whads.com
+@organization:  Whads/Accent SL
+@since:         January 2015
 -----------------------------------------------------------------------------*/
 
 cocktail.bind(".Autocomplete", function ($autocomplete) {
@@ -42,6 +42,10 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
 
     if (this.allowFullList === undefined) {
         this.allowFullList = true;
+    }
+
+    if (this.autoExpand === undefined) {
+        this.autoExpand = false;
     }
 
     var $input = $autocomplete.find(".text_box");
@@ -273,7 +277,7 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
         if (visible) {
             showPanel();
         }
-        else {
+        else if (!(this.autoExpand && $input.is(":focus") && $autocomplete.attr("data-autocomplete-selection") != "complete")) {
             $autocomplete.attr("data-autocomplete-panel", "collapsed");
         }
     }
@@ -456,7 +460,16 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
         }
     });
 
-    $input.change(processInput);
+    $input
+        .change(processInput)
+        .focus(function () {
+            if ($autocomplete[0].autoExpand && $autocomplete.attr("data-autocomplete-selection") != "complete") {
+                $autocomplete[0].setPanelVisible(true);
+            }
+        })
+        .blur(function () {
+            $autocomplete[0].setPanelVisible(false);
+        });
 
     $panel.mousedown(false);
 
@@ -469,13 +482,5 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
         this.setSelectedEntry(this.selectedEntry, false, false);
         setHighlightedEntry(getPanelEntry(this.selectedEntry.value));
     }
-});
-
-jQuery(function () {
-    jQuery(document).mousedown(function () {
-        jQuery(".Autocomplete[data-autocomplete-panel='expanded']").each(function () {
-            this.setPanelVisible(false);
-        });
-    });
 });
 
