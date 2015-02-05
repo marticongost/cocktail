@@ -18,6 +18,7 @@ class Autocomplete(Element):
     highlighting = True
     auto_select = False
     allow_full_list = True
+    auto_expand = False
 
     def _build(self):
         self.add_resource("/cocktail/styles/Autocomplete.css")
@@ -61,7 +62,11 @@ class Autocomplete(Element):
         self.set_client_param("narrowDown", self.narrow_down)
         self.set_client_param("highlighting", self.highlighting)
         self.set_client_param("autoSelect", self.auto_select)
-        self.set_client_param("allowFullList", self.allow_full_list)
+        self.set_client_param(
+            "allowFullList",
+            self.allow_full_list or self.auto_expand
+        )
+        self.set_client_param("autoExpand", self.auto_expand)
 
         if self.value is not None:
             self.set_client_param(
