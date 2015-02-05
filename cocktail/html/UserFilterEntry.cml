@@ -14,9 +14,12 @@
         display.empty_option_displayed = not member.required
         display.empty_label = translations("cocktail.html.UserFilterEntry any language")
 
-        @refine(display)
-        def get_item_label(self, language):
-            return translations("translated into", lang = language)
+        @extend(display)
+        def get_item_label(display, language):
+            if language:
+                return translations("translated into", lang = language)
+            else:
+                return call_base(language)
 
         return display
 
