@@ -93,7 +93,7 @@ class IBAN(String):
         for error in String._default_validation(self, context):
             yield error
 
-        if value and not self.validate_iban_format(context.value):
+        if context.value and not self.validate_iban_format(context.value):
             yield FormatError(context, "IBAN")
 
     @classmethod
