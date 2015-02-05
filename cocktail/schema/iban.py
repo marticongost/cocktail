@@ -99,18 +99,15 @@ class IBAN(String):
     @classmethod
     def validate_iban_format(cls, value):
         value = cls.normalization(value)
-        from cocktail.styled import styled
 
         # Validate the overall format
         if not cls.reg_expr.match(value):
-            print styled("REGEXPR DOESN'T MATCH", "red"), repr(value)
             return False
 
         # Validate the value's length
         country = value[:2]
         expected_length = cls.length_by_country.get(country)
         if expected_length and len(value) != expected_length:
-            print styled("BAD LENGTH", "red")
             return False
 
         # Validate control digits
@@ -121,7 +118,6 @@ class IBAN(String):
             for c in value[4:] + value[:4]
         )
         if int(number) % 97 != 1:
-            print styled("INVALID CONTROL DIGITS", "red")
             return False
 
         return True
