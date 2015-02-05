@@ -2,10 +2,10 @@
 u"""
 Provides a class to describe members that handle sets of values.
 
-@author:		Martí Congost
-@contact:		marti.congost@whads.com
-@organization:	Whads/Accent SL
-@since:			July 2008
+@author:        Martí Congost
+@contact:       marti.congost@whads.com
+@organization:  Whads/Accent SL
+@since:         July 2008
 """
 from cocktail.modeling import getter, InstrumentedDict, DictWrapper
 from cocktail.schema.schemacollections import (
@@ -47,7 +47,7 @@ class Mapping(Collection):
 
             if keys is not None or values is not None:
 
-                for key, context.value in context.value.iteritems():
+                for key, value in context.value.iteritems():
                     if keys is not None:
                         for error in keys.get_errors(
                             key,
@@ -56,7 +56,7 @@ class Mapping(Collection):
                             yield error
                     if values is not None:
                         for error in values.get_errors(
-                            context.value,
+                            value,
                             collection_index = key,
                             parent_context = context
                         ):
