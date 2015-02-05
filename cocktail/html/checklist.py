@@ -1,10 +1,10 @@
 #-*- coding: utf-8 -*-
 u"""
 
-@author:		Martí Congost
-@contact:		marti.congost@whads.com
-@organization:	Whads/Accent SL
-@since:			October 2008
+@author:        Martí Congost
+@contact:       marti.congost@whads.com
+@organization:  Whads/Accent SL
+@since:         October 2008
 """
 from cocktail.html import Element, templates
 from cocktail.html.selector import Selector
@@ -54,7 +54,7 @@ class CheckList(Selector):
 
             column = None
 
-            for i, item in enumerate(item):
+            for i, item in enumerate(items):
 
                 if column is None or not column.capacity:
 
