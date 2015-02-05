@@ -2,10 +2,10 @@
 u"""
 Visual elements for data binding.
 
-@author:		Martí Congost
-@contact:		marti.congost@whads.com
-@organization:	Whads/Accent SL
-@since:			July 2008
+@author:        Martí Congost
+@contact:       marti.congost@whads.com
+@organization:  Whads/Accent SL
+@since:         July 2008
 """
 from cocktail import schema
 from cocktail.modeling import getter, ListWrapper, empty_list
@@ -23,6 +23,7 @@ import cocktail.controllers.parameters
 schema.Member.display = None
 schema.Collection.display = "cocktail.html.List"
 schema.Mapping.display = "cocktail.html.MappingTable"
+schema.Color.display = "cocktail.html.ColorDisplay"
 
 def display_factory(display_name, **kwargs):
     """A convenience function to assign displays to schema members.
