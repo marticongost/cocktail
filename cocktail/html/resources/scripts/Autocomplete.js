@@ -461,7 +461,10 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
     });
 
     $input
-        .change(processInput)
+        .change(function (e) {
+            processInput(e);
+            e.stopPropagation();
+        })
         .focus(function () {
             if ($autocomplete[0].autoExpand && $autocomplete.attr("data-autocomplete-selection") != "complete") {
                 $autocomplete[0].setPanelVisible(true);
