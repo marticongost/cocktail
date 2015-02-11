@@ -17,7 +17,19 @@ cocktail.searchable = function (searchable, params /* = null */) {
     }
 
     searchable.getSearchableText = function (item) {
-        return jQuery(item).text();
+        var text = [];
+        function descend(node) {
+            if (node.nodeType == Document.TEXT_NODE) {
+                text.push(node.nodeValue);
+            }
+            else if (node.nodeType == Document.ELEMENT_NODE) {
+                for (var i = 0; i < node.childNodes.length; i++) {
+                    descend(node.childNodes[i]);
+                }
+            }
+        }
+        descend(item);
+        return text.join(" ");
     }
 
     searchable.normalizeText = function (text) {
