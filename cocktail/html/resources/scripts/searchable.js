@@ -229,8 +229,14 @@ cocktail.searchable = function (searchable, params /* = null */) {
         highlightElement(entry);
     }
 
+    var prevSearch = null;
+
     function searchBoxEventHandler() {
+        if (prevSearch !== null && this.value == prevSearch) {
+            return;
+        }
         searchable.applySearch(this.value);
+        prevSearch = this.value;
     }
 
     var $searchBox = $searchable.find(params && params.searchBoxSelector || "input[type=search]")
