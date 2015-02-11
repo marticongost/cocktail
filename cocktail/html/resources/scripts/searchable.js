@@ -14,8 +14,12 @@ cocktail.searchable = function (searchable, params /* = null */) {
 
     $searchable.attr("data-cocktail-searchable-status", "idle");
 
-    searchable.getSearchableEntries = function () {
-        return $searchable.find(params && params.entriesSelector || ".entry");
+    searchable.getSearchableEntries = function (matchState /* = null */) {
+        var selector = params && params.entriesSelector || ".entry";
+        if (matchState !== null && matchState !== undefined) {
+            selector += matchState ? ".match" : ".no_match";
+        }
+        return $searchable.find(selector);
     }
 
     searchable.getSearchableText = function (item) {
@@ -86,7 +90,15 @@ cocktail.searchable = function (searchable, params /* = null */) {
         return matches;
     }
 
+    var prevQuery = null;
+
     searchable.applySearch = function (query) {
+
+        if (prevQuery !== null && query == prevQuery) {
+            return;
+        }
+        var refiningPreviousQuery = prevQuery && query.indexOf(prevQuery) == 0;
+        prevQuery = query;
 
         $searchable.attr("data-cocktail-searchable-status", "searching");
 
@@ -102,7 +114,7 @@ cocktail.searchable = function (searchable, params /* = null */) {
         // "Searching..." signs wouldn't be displayed).
         setTimeout(function () {
 
-            var $entries = searchable.getSearchableEntries();
+            var $entries = searchable.getSearchableEntries(refiningPreviousQuery ? true : null);
             var $matches = jQuery();
 
             if (!query) {
@@ -253,18 +265,10 @@ cocktail.searchable = function (searchable, params /* = null */) {
         highlightElement(entry);
     }
 
-    var prevSearch = null;
     var searchDelay = params && params.searchDelay;
     var searchTimeout = null;
 
     function searchBoxEventHandler() {
-
-        if (prevSearch !== null && this.value == prevSearch) {
-            return;
-        }
-
-        prevSearch = this.value;
-
         if (searchDelay) {
             if (searchTimeout) {
                 clearTimeout(searchTimeout);
