@@ -45,6 +45,7 @@ from cocktail.html.databoundcontrol import data_bound
 
     <?py
     data_bound(self)
+    self.add_resource("/cocktail/scripts/xregexp.js")
     self.add_resource("/cocktail/scripts/searchable.js")
     self.add_resource("/cocktail/scripts/SplitSelector.js")
     ?>

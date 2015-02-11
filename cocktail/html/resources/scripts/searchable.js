@@ -40,6 +40,50 @@ cocktail.searchable = function (searchable, params /* = null */) {
         return text.split(/\s+/);
     }
 
+    searchable.matchTerms = function (text, terms, acceptPartialMatch /* = false */) {
+
+        // Find terms preceded by the start of the string or a non-letter
+        // character. Using XRegExp, since the native \b pattern is not Unicode
+        // aware. Also, Javascript doesn't support look-behind expressions. :(
+
+        var matches = [];
+        var matchedTerms = {};
+
+        for (var i = 0; i < terms.length; i++) {
+            matchedTerms[terms[i]] = false;
+        }
+
+        var nonWordExpr = XRegExp("\\p{^L}");
+
+        if (terms.length) {
+            var expr = XRegExp("(" + terms.join("|") + ")");
+        }
+        else {
+            var expr = XRegExp(terms[0]);
+        }
+
+        expr.forEach(text, function (match) {
+            if (match.index == 0 || nonWordExpr.test(text.charAt(match.index - 1))) {
+                matches.push(match);
+                matchedTerms[match[0]] = true;
+            }
+        });
+
+        if (!matches.length) {
+            return null;
+        }
+
+        if (!acceptPartialMatch) {
+            for (var t in matchedTerms) {
+                if (!matchedTerms[t]) {
+                    return null;
+                }
+            }
+        }
+
+        return matches;
+    }
+
     searchable.applySearch = function (query) {
 
         var $entries = searchable.getSearchableEntries();
@@ -48,6 +92,11 @@ cocktail.searchable = function (searchable, params /* = null */) {
         if (!query) {
             searchable.applyMatchState($entries, true);
             $matches = $entries;
+            if (highlighted) {
+                $entries.each(function () {
+                    searchable.clearHighlighting(this);
+                });
+            }
         }
         else {
             // Normalize and tokenize the search query
@@ -65,15 +114,19 @@ cocktail.searchable = function (searchable, params /* = null */) {
                 }
 
                 // All tokens must be found for the entry to match
-                for (var i = 0; i < queryTokens.length; i++) {
-                    if (text.indexOf(queryTokens[i]) == -1) {
-                        searchable.applyMatchState(this, false);
-                        return;
+                if (searchable.matchTerms(text, queryTokens)) {
+                    searchable.applyMatchState(this, true);
+                    $matches.add(this);
+                    if (highlighted) {
+                        searchable.highlightSearchTerms(this, queryTokens);
                     }
                 }
-
-                searchable.applyMatchState(this, true);
-                $matches = $matches.add(this);
+                else {
+                    searchable.applyMatchState(this, false);
+                    if (highlighted) {
+                        searchable.clearHighlighting(this);
+                    }
+                }
             });
         }
 
@@ -93,6 +146,7 @@ cocktail.searchable = function (searchable, params /* = null */) {
 
     var matchClass = params && params.matchCSSClass || "match";
     var noMatchClass = params && params.noMatchCSSClass || "no_match";
+    var highlighted = params && params.highlighted;
 
     searchable.applyMatchState = function (target, match) {
         var $target = jQuery(target);
@@ -104,6 +158,75 @@ cocktail.searchable = function (searchable, params /* = null */) {
             $target.removeClass(matchClass);
             $target.addClass(noMatchClass);
         }
+    }
+
+    searchable.clearHighlighting = function (entry) {
+
+        // Remove previous marks
+        var marks = entry.getElementsByTagName("mark");
+        for (var i = marks.length - 1; i >= 0; i--) {
+            var mark = marks[i];
+            while (mark.firstChild) {
+                mark.parentNode.insertBefore(mark.firstChild, mark);
+            }
+            mark.parentNode.removeChild(mark);
+        }
+
+        entry.normalize();
+    }
+
+    searchable.highlightSearchTerms = function (entry, terms) {
+
+        this.clearHighlighting(entry);
+
+        if (!terms.length) {
+            return;
+        }
+
+        // Add new marks
+        function highlightElement(element) {
+            for (var i = 0; i < element.childNodes.length; i++) {
+                var node = element.childNodes[i];
+                if (node.nodeType == Document.TEXT_NODE) {
+                    var text = node.nodeValue;
+                    var normText = searchable.normalizeText(text);
+                    var matches = searchable.matchTerms(normText, terms, true);
+                    if (matches) {
+                        var pos = 0;
+                        for (var m = 0; m < matches.length; m++) {
+                            var match = matches[m];
+
+                            var textBefore = text.substring(pos, match.index);
+                            if (textBefore) {
+                                element.insertBefore(document.createTextNode(textBefore), node);
+                                i++;
+                            }
+
+                            var matchingText = text.substr(match.index, match[0].length);
+                            var mark = document.createElement("mark")
+                            mark.appendChild(document.createTextNode(matchingText));
+                            element.insertBefore(mark, node);
+
+                            i++;
+                            pos = match.index + match[0].length;
+                        }
+                        var trailingText = text.substr(pos);
+                        if (trailingText) {
+                            node.nodeValue = trailingText;
+                        }
+                        else {
+                            element.removeChild(node);
+                            i--;
+                        }
+                    }
+                }
+                else if (node.nodeType == Document.ELEMENT_NODE) {
+                    highlightElement(node);
+                }
+            }
+        }
+
+        highlightElement(entry);
     }
 
     function searchBoxEventHandler() {
