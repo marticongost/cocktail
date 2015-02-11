@@ -230,13 +230,31 @@ cocktail.searchable = function (searchable, params /* = null */) {
     }
 
     var prevSearch = null;
+    var searchDelay = params && params.searchDelay;
+    var searchTimeout = null;
 
     function searchBoxEventHandler() {
+
         if (prevSearch !== null && this.value == prevSearch) {
             return;
         }
-        searchable.applySearch(this.value);
+
         prevSearch = this.value;
+
+        if (searchDelay) {
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
+            }
+            searchTimeout = setTimeout(executeSearch, searchDelay);
+        }
+        else {
+            executeSearch();
+        }
+    }
+
+    function executeSearch() {
+        searchTimeout = null;
+        searchable.applySearch($searchBox.val());
     }
 
     var $searchBox = $searchable.find(params && params.searchBoxSelector || "input[type=search]")
