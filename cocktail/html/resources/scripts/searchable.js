@@ -97,7 +97,7 @@ cocktail.searchable = function (searchable, params /* = null */) {
         if (prevQuery !== null && query == prevQuery) {
             return;
         }
-        var refiningPreviousQuery = prevQuery && query.indexOf(prevQuery) == 0;
+        var refiningPreviousQuery = query && prevQuery && query.indexOf(prevQuery) == 0;
         prevQuery = query;
 
         $searchable.attr("data-cocktail-searchable-status", "searching");
