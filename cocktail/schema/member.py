@@ -154,7 +154,7 @@ class Member(Variable):
             self.__class__.__module__
             and not self.__class__.__module__.startswith("cocktail.schema.")
         ):
-            member_desc = self.__class__.__module__ + "." + type_desc
+            member_desc = self.__class__.__module__ + "." + member_desc
 
         return member_desc + " <%s>" % self.get_qualified_name()
 
