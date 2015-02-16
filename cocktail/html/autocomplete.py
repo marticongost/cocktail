@@ -6,6 +6,7 @@ u"""
 from cocktail.html import Element
 from cocktail.html.textbox import TextBox
 from cocktail.html.databoundcontrol import delegate_control
+from cocktail.controllers.autocomplete import MemberAutocompleteSource
 
 
 class Autocomplete(Element):
@@ -14,6 +15,11 @@ class Autocomplete(Element):
     autocomplete_source = None
     autocomplete_entries = None
     autocomplete_delay = 150
+    ajax_search = False
+    ajax_search_threshold = None
+    ajax_url = None
+
+    # Client side settings
     narrow_down = True
     highlighting = True
     auto_select = False
@@ -36,24 +42,30 @@ class Autocomplete(Element):
 
     def _ready(self):
 
+        if self.autocomplete_source is None and self.member:
+            self.autocomplete_source = self.create_autocomplete_source()
+
         entries = self.autocomplete_entries
 
         if entries is None:
-            if isinstance(self.autocomplete_source, basestring):
-                self.set_client_param(
-                    "autocompleteSource",
-                    self.autocomplete_source
+            if (
+                self.ajax_search
+                and (
+                    self.ajax_search_threshold is None
+                    or len(self.autocomplete_source.items) < self.ajax_search_threshold
                 )
+            ):
+                ajax_url = self.ajax_url or self.get_default_ajax_url()
             else:
-                source = self.autocomplete_source
-                if source is None and self.member:
-                    source = self.member.get_possible_values()
+                ajax_url = None
 
-                if source is not None:
-                    entries = [
-                        self.get_autocomplete_entry(item)
-                        for item in source
-                    ]
+            if ajax_url:
+                self.set_client_param("autocompleteSource", ajax_url)
+            elif self.autocomplete_source is not None:
+                entries = [
+                    self.autocomplete_source.get_entry(item)
+                    for item in self.autocomplete_source.items
+                ]
 
         if entries is not None:
             self.set_client_param("autocompleteSource", entries)
@@ -68,21 +80,15 @@ class Autocomplete(Element):
         )
         self.set_client_param("autoExpand", self.auto_expand)
 
-        if self.value is not None:
+        if self.value is not None and self.autocomplete_source is not None:
             self.set_client_param(
                 "selectedEntry",
-                self.get_autocomplete_entry(self.value)
+                self.autocomplete_source.get_entry(self.value)
             )
 
-    def get_autocomplete_entry(self, item):
-        return {
-            "value": self.get_entry_value(item),
-            "label": self.get_entry_label(item)
-        }
+    def create_autocomplete_source(self):
+        return MemberAutocompleteSource(self.member)
 
-    def get_entry_value(self, item):
-        return self.member.serialize_request_value(item)
-
-    def get_entry_label(self, item):
-        return self.member.translate_value(item)
+    def get_default_ajax_url(self):
+        return None
 
