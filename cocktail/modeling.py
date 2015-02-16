@@ -980,11 +980,11 @@ class InstrumentedDict(DictWrapper, InstrumentedCollection):
                 )
 
             for key, value in args[0].iteritems():
-                changed = changed or self.__set_key(key, value)
+                changed = self.__set_key(key, value) or changed
 
         if kwargs:
             for key, value in kwargs.iteritems():
-                changed = changed or self.__set_key(key, value)
+                changed = self.__set_key(key, value) or changed
 
         if changed:
             self.changed()
