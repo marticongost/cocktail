@@ -14,7 +14,7 @@ cocktail.__bindings = [];
 cocktail.__bindingId = 0;
 
 cocktail.init = function (root) {
-    
+
     if (!cocktail.__initialized) {
         cocktail.__initialized = true;
     }
@@ -46,7 +46,7 @@ cocktail.bind = function (/* varargs */) {
     else {
         throw "Invalid binding parameters";
     }
-    
+
     if (binding.children) {
         if (binding.children instanceof Array) {
             for (var i = 0; i < binding.children.length; i++) {
@@ -88,7 +88,7 @@ cocktail.bind = function (/* varargs */) {
         }
 
         var $root = jQuery(root);
-        
+
         if (root == body) {
             var $matches = jQuery(body).find(binding.selector);
         }
@@ -157,7 +157,7 @@ cocktail._clientModel = function (modelId, partId /* optional */) {
         if (!part) {
             part = model.parts[partId] = {
                 params: {},
-                code: []                
+                code: []
             };
         }
         return part;
@@ -182,7 +182,7 @@ cocktail.instantiate = function (modelId, params, initializer) {
     if (!model || !model.html) {
         throw "Undefined client model '" + modelId + "'";
     }
-    
+
     // Variable replacement
     var html = model.html;
 
@@ -244,7 +244,7 @@ cocktail.instantiate = function (modelId, params, initializer) {
     if (instance.parentNode && instance.parentNode.nodeType != 11) {
         cocktail.init();
     }
-    // If the instance hasn't been inserted yet, limit bindings to the 
+    // If the instance hasn't been inserted yet, limit bindings to the
     // instances itself
     else {
         cocktail.init(instance);
@@ -276,9 +276,9 @@ cocktail.setTranslation = function (key, value) {
 }
 
 cocktail.translate = function (key, params) {
-    
+
     var translation = this.__text[key];
-    
+
     if (translation) {
         if (translation instanceof Function) {
             translation = translation.call(this, params || []);
@@ -289,7 +289,7 @@ cocktail.translate = function (key, params) {
             }
         }
     }
-    
+
     return translation;
 }
 
@@ -417,7 +417,7 @@ cocktail.prepareBackgroundSubmit = function (params) {
         if (params.disabledControls) {
             params.disabledControls.removeAttr("disabled");
         }
-        
+
         if (params.callback) {
             params.callback.call(params.form, params, doc);
         }
@@ -428,11 +428,11 @@ cocktail.prepareBackgroundSubmit = function (params) {
 
     params.form.target = iframe.name;
 }
-    
+
 cocktail.submit = function (params) {
     cocktail.prepareBackgroundSubmit(params);
     params.form.submit();
-    
+
     // Disable all form controls for the duration of the submit operation
     if (params.disableForm) {
         var $form = jQuery(params.form);
@@ -463,7 +463,7 @@ cocktail._updateElement = function (params) {
     params.$container = jQuery("<div>").html(bodyHTML);
     var target = params.element;
     var source = params.$container.find(params.fragment || "*").get(0);
-    
+
     if (source) {
 
         // Assign CSS classes
@@ -523,18 +523,18 @@ if (!jQuery.fn.reverse) {
 
 // Add a :focus selector
 jQuery.extend(jQuery.expr[':'], {
-    focus: function(element) { 
-        return element == document.activeElement; 
+    focus: function(element) {
+        return element == document.activeElement;
     }
 });
 
 cocktail.findPrevious = function (element, filter /* optional */) {
-    
+
     var $iterator = jQuery(element);
 
     while ($iterator.length) {
         var $prev = $iterator.prev();
-        
+
         while ($prev.length) {
             if (!filter || $prev.filter(filter).length) {
                 return $prev.get(0);
@@ -543,14 +543,14 @@ cocktail.findPrevious = function (element, filter /* optional */) {
             if (filter) {
                 $descendants = $descendants.filter(filter);
             }
-            if ($descendants.length) {                
+            if ($descendants.length) {
                 return $descendants.last().get(0);
             }
             $prev = $prev.prev();
         }
 
         $iterator = $iterator.parent();
-        
+
         if ($iterator.length) {
             if (!filter || $iterator.filter(filter).length) {
                 return $iterator.get(0);
@@ -560,11 +560,11 @@ cocktail.findPrevious = function (element, filter /* optional */) {
 }
 
 cocktail.findNext = function (element, filter /* optional */) {
-    
+
     var $iterator = jQuery(element);
 
     while ($iterator.length) {
-        
+
         var $next = $iterator;
         var first = true;
 
@@ -588,7 +588,7 @@ cocktail.findNext = function (element, filter /* optional */) {
         }
 
         $iterator = $iterator.parent();
-        
+
         if ($iterator.length) {
             if (!filter || $iterator.filter(filter).length) {
                 return $iterator.get(0);
@@ -598,18 +598,18 @@ cocktail.findNext = function (element, filter /* optional */) {
 }
 
 cocktail.isVisible = function (element, recursive) {
-    
-    var $element = jQuery(element);    
-    if ($element.css("visibility") == "hidden" 
+
+    var $element = jQuery(element);
+    if ($element.css("visibility") == "hidden"
         || $element.css("display") == "none") {
         return false;
     }
-    
+
     if (recursive && element.parentNode && element != document.body) {
         return cocktail.isVisible(element.parentNode, true);
     }
-    
-    return true;    
+
+    return true;
 }
 
 cocktail.acceptsFocus = function (element) {
@@ -639,7 +639,7 @@ cocktail.focusPrevious = function (item) {
     var target;
     var origin = item || jQuery(":focus").get(0);
     var focusable = function () { return cocktail.acceptsFocus(this); }
-    
+
     if (origin) {
         target = cocktail.findPrevious(origin, focusable);
     }
@@ -713,7 +713,7 @@ cocktail.bind("[accesskey]", function () {
     for (var i = 0; i < this.childNodes.length; i++) {
 
         var node = this.childNodes[i];
-        
+
         if (node.nodeType == 3) {
             var text = node.nodeValue;
             var pos = text.toLowerCase().indexOf(key);
