@@ -263,6 +263,33 @@ def serialize_reference(self, value):
 schema.Reference.parse_request_value = parse_reference
 schema.Reference.serialize_request_value = serialize_reference
 
+def parse_member_reference(self, reader, value):
+
+    if value is not None:
+
+        possible_values = self.get_possible_values()
+
+        if possible_values:
+            for member in possible_values:
+                if isinstance(member, schema.Schema):
+                    kind = self.SCHEMAS
+                else:
+                    kind = self.MEMBERS
+
+                if (
+                    self.kind & kind
+                    and member.get_qualified_name(include_ns = True) == value
+                ):
+                    return member
+
+    return value
+
+def serialize_member_reference(self, value):
+    return value and value.full_name or ""
+
+schema.MemberReference.parse_request_value = parse_member_reference
+schema.MemberReference.serialize_request_value = serialize_member_reference
+
 def parse_collection(self, reader, value):
 
     if not value:
