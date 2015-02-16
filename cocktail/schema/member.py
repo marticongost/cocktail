@@ -174,13 +174,21 @@ class Member(Variable):
         `exceptions.MemberRenamedError` exception).
         """)
 
-    def get_qualified_name(self, delimiter = "."):
+    def get_qualified_name(self, delimiter = ".", include_ns = False):
         member = self
         names = []
-        while member is not None:
+        while True:
             if member._name:
                 names.append(member._name)
-            member = member._schema
+            owner = member._schema
+            if owner is None:
+                if include_ns:
+                    namespace = getattr(member, "__module__", None)
+                    if namespace:
+                        names.append(namespace)
+                break
+            else:
+                member = owner
         names.reverse()
         return delimiter.join(names)
 
