@@ -321,6 +321,8 @@ cocktail.showDialog = function (content) {
     setTimeout(function () {
         $dialogElements.addClass("dialog_ready");
     }, 100);
+
+    $content.trigger("dialogOpened");
 }
 
 cocktail.center = function (element) {
