@@ -322,6 +322,64 @@ def serialize_collection(self, value):
 schema.Collection.parse_request_value = parse_collection
 schema.Collection.serialize_request_value = serialize_collection
 
+def parse_mapping(self, reader, value):
+
+    if not value:
+        if self.required and reader.undefined != "set_default":
+            return (self.type or self.default_type)()
+        else:
+            return None
+
+    elif isinstance(value, basestring):
+        mapping_type = self.type or self.default_type or dict
+        items_sep = self.request_items_separator
+        key_value_sep = self.request_key_value_separator
+        try:
+            items = (
+                item.split(key_value_sep, 1)
+                for item in value.split(items_sep)
+            )
+            mapping = mapping_type(
+                (
+                    reader.process_value(self.keys, k) if self.keys else k,
+                    reader.process_value(self.values, v) if self.values else v
+                )
+                for k, v in items
+            )
+        except:
+            pass
+        else:
+            value = mapping
+
+    return value
+
+def serialize_mapping(self, value):
+
+    if not value:
+        return ""
+    else:
+        items = self.items
+        serialize_key = (
+            self.keys
+            and self.keys.serialize_request_value
+            or unicode
+        )
+        serialize_value = (
+            self.values
+            and self.values.serialize_request_value
+            or unicode
+        )
+        key_value_glue = self.request_key_value_separator
+        return self.request_items_separator.join(
+            serialize_key(k) + key_value_glue + serialize_value(v)
+            for k, v in value.iteritems()
+        )
+
+schema.Mapping.parse_request_value = parse_mapping
+schema.Mapping.serialize_request_value = serialize_mapping
+schema.Mapping.request_items_separator = ";"
+schema.Mapping.request_key_value_separator = ":"
+
 def parse_tuple(self, reader, value):
 
     if value is not None:
