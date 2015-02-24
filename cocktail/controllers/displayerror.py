@@ -23,14 +23,14 @@ def format_error(error_type, error, traceback):
                 <code>%(caller)s</code>
             </li>
             """ % {
-                "file": escape(file or "<?>"),
+                "file": _escape_error_property(file or "<?>"),
                 "num": num,
-                "func": escape(func or "<?>"),
-                "caller": escape(caller or "<?>")
+                "func": _escape_error_property(func or "<?>"),
+                "caller": _escape_error_property(caller or "<?>")
             }
         )
 
-    return u"""
+    return """
         <!DOCTYPE html>
         <html>
             <head>
@@ -102,8 +102,13 @@ def format_error(error_type, error, traceback):
         """ % {
             "error_type": error_type.__name__,
             "error_message": error.message,
-            "traceback_lines": u"\n".join(lines)
+            "traceback_lines": "\n".join(lines)
         }
+
+def _escape_error_property(string):
+    if isinstance(string, unicode):
+        string = string.encode("utf-8")
+    return escape(string)
 
 def display_error():
     cherrypy.response.status = 500
