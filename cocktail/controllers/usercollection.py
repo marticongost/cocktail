@@ -376,6 +376,10 @@ class UserCollection(object):
 
     # Selection
     #--------------------------------------------------------------------------
+    @property
+    def selection_type(self):
+        return self.type
+
     @cached_getter
     def selection(self):
 
@@ -383,12 +387,12 @@ class UserCollection(object):
             return list()
         else:
             if self.selection_mode == SINGLE_SELECTION:
-                param = schema.Reference("selection", type = self.type)
+                param = schema.Reference("selection", type = self.selection_type)
             else:
                 param = schema.Collection(
                     "selection",
                     default = list(),
-                    items = schema.Reference(type = self.type)
+                    items = schema.Reference(type = self.selection_type)
                 )
 
             return self.params.read(param)
