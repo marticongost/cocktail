@@ -10,31 +10,12 @@ from __future__ import with_statement
 from cocktail.translations import get_language, language_context
 from cocktail.modeling import getter, ListWrapper
 from cocktail.translations import translations
-from cocktail.schema import (
-    Member,
-    Schema,
-    Boolean,
-    Reference,
-    BaseDateTime,
-    Collection,
-    Number,
-    Money,
-    Decimal,
-    URL,
-    EmailAddress,
-    PhoneNumber,
-    Color,
-    CodeBlock
-)
+from cocktail import schema
 from cocktail.persistence import PersistentObject
 from cocktail.controllers.fileupload import FileUpload
 from cocktail.html import Element, templates
 from cocktail.html.datadisplay import DataDisplay, display_factory
 from cocktail.html.hiddeninput import HiddenInput
-
-# Extension property that allows members to define their appearence in HTML
-# forms
-Member.edit_control = None
 
 
 class Form(Element, DataDisplay):
@@ -82,6 +63,7 @@ class Form(Element, DataDisplay):
     @type redundant_translation_labels: bool
     """
     tag = "form"
+    display_property = "edit_control"
     translations = None
     hide_empty_fieldsets = True
     errors = None
@@ -97,55 +79,6 @@ class Form(Element, DataDisplay):
 
     def __init__(self, *args, **kwargs):
         DataDisplay.__init__(self)
-
-        self.set_member_type_display(
-            Boolean, "cocktail.html.CheckBox")
-
-        self.set_member_type_display(
-            Reference, "cocktail.html.DropdownSelector")
-
-        self.set_member_type_display(
-            BaseDateTime, "cocktail.html.DatePicker")
-
-        self.set_member_type_display(
-            Decimal, "cocktail.html.TextBox")
-
-        self.set_member_type_display(
-            FileUpload,
-            lambda form, obj, member:
-                templates.new(
-                    "cocktail.html." + (
-                        "AsyncFileUploader"
-                            if member.async
-                            else "FileUploadBox"
-                    )
-                )
-        )
-
-        self.set_member_type_display(Collection, _collection_display)
-
-        self.set_member_type_display(
-            Number, "cocktail.html.NumberBox")
-
-        self.set_member_type_display(
-            Money, "cocktail.html.MoneyBox")
-
-        self.set_member_type_display(
-            PhoneNumber, "cocktail.html.PhoneNumberBox")
-
-        self.set_member_type_display(
-            URL, "cocktail.html.URLBox")
-
-        self.set_member_type_display(
-            EmailAddress, "cocktail.html.EmailAddressBox")
-
-        self.set_member_type_display(
-            Color, "cocktail.html.ColorPicker")
-
-        self.set_member_type_display(CodeBlock, _code_block_display)
-
-        self.set_member_type_display(Schema, embeded_form)
-
         self.__groups = []
         self.groups = ListWrapper(self.__groups)
         self.__hidden_members = {}
@@ -451,7 +384,7 @@ class Form(Element, DataDisplay):
                 label.append(label.label_language)
 
             if self.required_marks:
-                if isinstance(member, Collection):
+                if isinstance(member, schema.Collection):
                     is_required = (isinstance(member.min, int) and member.min)
                 else:
                     is_required = (member.required == True)
@@ -487,14 +420,11 @@ class Form(Element, DataDisplay):
         mark.append("*")
         return mark
 
-    def get_member_supplied_display(self, obj, member):
-        return member.edit_control
-
-    def default_display(self, obj, member):
+    def get_default_member_display(self, obj, member):
         if member.enumeration is not None:
             return "cocktail.html.DropdownSelector"
         else:
-            return "cocktail.html.TextBox"
+            return DataDisplay.get_default_member_display(self, obj, member)
 
     def create_control(self, obj, member):
         control = self.get_member_display(obj, member)
@@ -560,27 +490,66 @@ class FormGroup(object):
         return self.__match_expr(member)
 
 
-def embeded_form(parent_form, obj, member):
+# Edit controls
+#------------------------------------------------------------------------------
+
+# Extension properties that allow members to define their appearence in HTML
+# forms:
+schema.Member.edit_control = None
+schema.Member.default_edit_control = None
+
+def embeded_form(self, parent_form, obj):
     form = Form()
     form.tag = "div"
     form.embeded = True
-    form.schema = member
+    form.schema = self
     form.name_prefix = parent_form.name_prefix
     form.name_suffix = parent_form.name_suffix
     return form
 
-def _collection_display(form, obj, member):
-    if isinstance(member.items, FileUpload) and member.items.async:
+def _collection_display(self, form, obj):
+    if isinstance(self.items, FileUpload) and self.items.async:
         return templates.new("cocktail.html.AsyncFileUploader")
-    elif member.items.enumeration is not None or member.is_persistent_relation:
+    elif self.items.enumeration is not None or self.is_persistent_relation:
         return templates.new("cocktail.html.CheckList")
     else:
         return templates.new("cocktail.html.CollectionEditor")
 
-def _code_block_display(form, obj, member):
+def _code_block_display(self, form, obj):
     display = templates.new("cocktail.html.CodeEditor")
-    display.syntax = member.language
-    if member.language == "python":
+    display.syntax = self.language
+    if self.language == "python":
         display.cols = 80
     return display
+
+schema.String.default_edit_control = "cocktail.html.TextBox"
+schema.Boolean.default_edit_control = "cocktail.html.CheckBox"
+schema.Reference.default_edit_control = "cocktail.html.DropdownSelector"
+schema.BaseDateTime.default_edit_control = "cocktail.html.DatePicker"
+schema.Decimal.default_edit_control = "cocktail.html.TextBox"
+schema.Number.default_edit_control = "cocktail.html.NumberBox"
+schema.Money.default_edit_control = "cocktail.html.MoneyBox"
+schema.PhoneNumber.default_edit_control = "cocktail.html.PhoneNumberBox"
+schema.URL.default_edit_control = "cocktail.html.URLBox"
+schema.EmailAddress.default_edit_control = "cocktail.html.EmailAddressBox"
+schema.Color.default_edit_control = "cocktail.html.ColorPicker"
+schema.Month.default_edit_control = "cocktail.html.DropdownSelector"
+schema.HTML.default_edit_control = "cocktail.html.TinyMCE"
+schema.IBAN.default_edit_control = "cocktail.html.IBANEntry"
+schema.SWIFTBIC.default_edit_control = "cocktail.html.SWIFTBICEntry"
+schema.BankAccountNumber.default_edit_control = "cocktail.html.MaskedInputBox"
+schema.Collection.default_edit_control = _collection_display
+schema.CodeBlock.default_edit_control = _code_block_display
+schema.Schema.default_edit_control = embeded_form
+
+FileUpload.default_edit_control = (
+    lambda self, form, obj:
+        templates.new(
+            "cocktail.html." + (
+                "AsyncFileUploader"
+                    if self.async
+                    else "FileUploadBox"
+            )
+        )
+)
 

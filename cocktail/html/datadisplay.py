@@ -21,9 +21,10 @@ import cocktail.controllers.parameters
 
 # Extension that allows members to specify their prefered display
 schema.Member.display = None
-schema.Collection.display = "cocktail.html.List"
-schema.Mapping.display = "cocktail.html.MappingTable"
-schema.Color.display = "cocktail.html.ColorDisplay"
+schema.Member.default_display = None
+schema.Collection.default_display = "cocktail.html.List"
+schema.Mapping.default_display = "cocktail.html.MappingTable"
+schema.Color.default_display = "cocktail.html.ColorDisplay"
 
 def display_factory(display_name, **kwargs):
     """A convenience function to assign displays to schema members.
@@ -51,6 +52,7 @@ def display_factory(display_name, **kwargs):
 
     return func
 
+
 class DataDisplay(object):
     """Base class for all visual components that can display schema-based data.
     """
@@ -62,6 +64,7 @@ class DataDisplay(object):
     accessor = None
     name_prefix = None
     name_suffix = None
+    display_property = "display"
 
     def __init__(self):
         self.__member_displayed = {}
@@ -301,6 +304,8 @@ class DataDisplay(object):
     def get_member_display(self, obj, member):
         member = self._resolve_member(member)
         display = self._resolve_member_display(obj, member)
+        if display is None:
+            raise ValueError("Couldn't find a display for %r" % member)
         display = self._normalize_member_display(obj, member, display)
         return display
 
@@ -308,36 +313,42 @@ class DataDisplay(object):
 
         # Explicitly assigned
         display = self.__member_display.get(self._normalize_member(member))
+        if display is not None:
+            return display
 
         # Implemented as a method
-        if display is None:
-            display_method = getattr(
-                self,
-                "create_%s_display" % member.name,
-                None)
+        display_method = getattr(
+            self,
+            "create_%s_display" % member.name,
+            None
+        )
 
-            if display_method:
-                display = display_method(obj, member)
+        if display_method is not None:
+            display = display_method(obj, member)
+            if display is not None:
+                return display
 
-            # Supplied by the member
-            if display is None:
-                display = self.get_member_supplied_display(obj, member)
+        # Supplied by the member
+        display = self.get_member_supplied_display(obj, member)
+        if display is not None:
+            return display
 
-                # Default display
-                if display is None:
-                    display = self.get_default_member_display(obj, member)
-
-        return display
+        # Default display
+        return self.get_default_member_display(obj, member)
 
     def get_member_supplied_display(self, obj, member):
-        return member.display
+        return getattr(member, self.display_property, None)
 
     def get_default_member_display(self, obj, member):
 
         display = self.get_member_type_display(member.__class__)
 
         if display is None:
-            display = self.default_display
+            display = getattr(
+                member,
+                "default_" +  self.display_property,
+                None
+            ) or self.default_display
 
         return display
 
@@ -346,8 +357,11 @@ class DataDisplay(object):
         if isinstance(display, type) and issubclass(display, Element):
             display = display()
         elif callable(display):
-            if getattr(display, "im_self", None) is self:
+            method_subject = getattr(display, "im_self", None)
+            if method_subject is self:
                 display = display(obj, member)
+            elif method_subject is member:
+                display = display(self, obj)
             else:
                 display = display(self, obj, member)
 

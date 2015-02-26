@@ -9,7 +9,6 @@ from cocktail.schema.schemanumbers import Integer
 
 class Month(Integer):
 
-    edit_control = "cocktail.html.DropdownSelector"
     min = 1
     max = 12
 

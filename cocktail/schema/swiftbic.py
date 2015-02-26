@@ -11,8 +11,6 @@ _reg_expr = re.compile(r"^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$")
 
 class SWIFTBIC(String):
 
-    edit_control = "cocktail.html.SWIFTBICEntry"
-
     def __init__(self, *args, **kwargs):
         kwargs.setdefault("format", _reg_expr)
         String.__init__(self, *args, **kwargs)
