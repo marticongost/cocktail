@@ -13,7 +13,6 @@ divider_expr = re.compile(r"\-*")
 
 class BankAccountNumber(String):
 
-    edit_control = "cocktail.html.MaskedInputBox"
     input_mask = "9999-9999-99-9999999999"
     min = 20
     max = 20

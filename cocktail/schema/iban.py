@@ -82,8 +82,6 @@ class IBAN(String):
         "VG": 24
     }
 
-    edit_control = "cocktail.html.IBANEntry"
-
     # Special treatment for the 'reg_expr' attribute (regular expressions don't
     # support deep copying)
     _special_copy_keys = String._special_copy_keys | set(["reg_expr"])
