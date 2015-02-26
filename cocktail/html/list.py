@@ -25,7 +25,7 @@ class List(Element):
             DeprecationWarning,
             stacklevel = 2
         )
-        return self._items
+        return self.value
 
     def _set_items(self, items):
         warn(
