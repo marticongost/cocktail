@@ -309,7 +309,7 @@ def _default_file_upload_edit_control(
     value,
     **context
 ):
-    if self.async:
+    if member.async:
         return "cocktail.html.AsyncFileUploader"
     else:
         return "cocktail.html.FileUploadBox"
