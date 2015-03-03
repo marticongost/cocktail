@@ -121,11 +121,12 @@ class Element(object):
         serialized to a string and made available to the client side
         *cocktail.instantiate* method, using the given identifier.
 
-    .. attribute:: data_display
+    .. attribute:: ui_generator
 
-        The `DataDisplay` used by the element for data binding purposes.
+        The `UIGenerator` that originated this element.
 
     .. attribute:: data
+
         The source of data used by the element for data binding purposes.
 
     .. attribute:: member
@@ -136,6 +137,20 @@ class Element(object):
     .. attribute:: language
 
         The language used by the element for data binding purposes.
+
+    .. attribute:: name
+
+        The name of the element, as used in HTML forms.
+
+    .. attribute:: value
+
+        The value assigned to the element, as used in HTML forms.
+
+    .. attribute:: data_binding_delegate
+
+        Another element which the element's data binding information will be
+        propagated to. This is useful to have container elements with a control
+        nested within them.
     """
     tag = "div"
     page_doctype = None
@@ -150,10 +165,15 @@ class Element(object):
     client_model = None
 
     # Data binding
-    data_display = None
+    ui_generator = None
     data = None
     member = None
+    collection = None
+    name = None
+    value = None
     language = None
+    data_binding_delegate = None
+    tags_with_name = set(["input", "select", "textarea", "button"])
 
     def __init__(self,
         tag = default,
@@ -451,6 +471,7 @@ class Element(object):
                 for handler in self.__binding_handlers:
                     handler()
 
+            self._data_binding()
             self.__is_bound = True
 
     def when_binding(self, handler):
@@ -477,6 +498,38 @@ class Element(object):
 
         See `bind` and `ready` for more details on late initialization.
         """
+
+    def _data_binding(self):
+        """Sets the name that the element should have on a form, based on its
+        `member`.
+        """
+        if self.name is None:
+            member = self.collection or self.member
+
+            if member and member.name:
+
+                get_member_name = getattr(
+                    self.ui_generator,
+                    "get_member_name",
+                    None
+                )
+
+                if get_member_name is not None:
+                    self.name = get_member_name(member, self.language)
+                else:
+                    self.name = member.name
+                    if self.language:
+                        self.name += "-" + self.language
+
+        if self.data_binding_delegate:
+            self.data_binding_delegate.member = self.member
+            self.data_binding_delegate.collection = self.collection
+            self.data_binding_delegate.name = self.name
+            self.data_binding_delegate.value = self.value
+            self.data_binding_delegate.ui_generator = self.ui_generator
+            self.data_binding_delegate.language = self.language
+        elif self.name and self.tag in self.tags_with_name:
+            self["name"] = self.name
 
     def ready(self):
         """Readies the element before it is rendered.
@@ -1445,7 +1498,6 @@ class Content(Element):
     """
     styled_class = False
     class_provides_cache_tag = False
-    value = None
     overlays_enabled = False
 
     def __init__(self, value = None, *args, **kwargs):

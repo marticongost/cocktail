@@ -49,12 +49,6 @@ class TagCloudSelector(Selector):
         if self.selection_mode == MULTIPLE_SELECTION:
             self.empty_option_displayed = False
 
-        if not self.name and self.data_display:
-            self.name = self.data_display.get_member_name(
-                self.member,
-                self.language
-            )
-
         Selector._ready(self)
 
     def create_entry(self, item):

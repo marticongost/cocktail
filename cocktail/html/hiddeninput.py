@@ -7,7 +7,7 @@ u"""
 @since:			October 2008
 """
 from cocktail.html import Element
-from cocktail.html.databoundcontrol import data_bound
+from cocktail.controllers.parameters import serialize_parameter
 
 
 class HiddenInput(Element):
@@ -17,29 +17,18 @@ class HiddenInput(Element):
 
     def __init__(self, *args, **kwargs):
         Element.__init__(self, *args, **kwargs)
-        data_bound(self)
         self["type"] = "hidden"
 
     def _ready(self):
 
+        value = self.value
+
         if self.member:
-            value = self["value"]
-            if value is not None:
-                try:
-                    self["value"] = self.member.serialize_request_value(value)
-                except:
-                    pass
+            try:
+                value = serialize_parameter(self.member, value)
+            except:
+                pass
 
-        Element._ready(self)
-
-    def _get_value(self):
-        return self["value"]
-
-    def _set_value(self, value):
         self["value"] = value
-
-    value = property(_get_value, _set_value, doc = """
-        Gets or sets the value of the input.
-        @type: str
-        """)
+        Element._ready(self)
 

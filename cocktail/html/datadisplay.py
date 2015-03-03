@@ -9,54 +9,21 @@ Visual elements for data binding.
 """
 from cocktail import schema
 from cocktail.modeling import getter, ListWrapper, empty_list
-from cocktail.translations import (
-    translations,
-    require_language,
-    get_language
+from cocktail.translations import translations, require_language
+
+# IMPORTANT: importing 'display_factory' is required for backwards
+# compatibility
+from cocktail.html.uigeneration import (
+    UIGenerator,
+    default_display,
+    display_factory
 )
-from cocktail.typemapping import TypeMapping
-from cocktail.html import Element, TranslatedValue
-from cocktail.html import templates
-import cocktail.controllers.parameters
-
-# Extension that allows members to specify their prefered display
-schema.Member.display = None
-schema.Member.default_display = None
-schema.Collection.default_display = "cocktail.html.List"
-schema.Mapping.default_display = "cocktail.html.MappingTable"
-schema.Color.default_display = "cocktail.html.ColorDisplay"
-
-def display_factory(display_name, **kwargs):
-    """A convenience function to assign displays to schema members.
-
-    @param display_name: A fully qualified name of an
-        L{Element<element.Element>} subclass or CML template.
-    @type display_name: str
-
-    @param kwargs: HTML or Python attributes to set on the display.
-
-    @return: A function that produces displays of the indicated kind,
-        initialized with the supplied parameters.
-    @rtype: L{Element<element.Element>}
-    """
-    def func(parent, obj, member):
-        display = templates.new(display_name)
-
-        for key, value in kwargs.iteritems():
-            if hasattr(display, key):
-                setattr(display, key, value)
-            else:
-                display[key] = value
-
-        return display
-
-    return func
 
 
-class DataDisplay(object):
-    """Base class for all visual components that can display schema-based data.
-    """
-    data = None
+class DataDisplay(UIGenerator):
+    "Base class for all visual components that can display schema-based data."
+
+    base_ui_generators = [default_display]
     persistent_object = None
     schema = None
     editable = True
@@ -64,15 +31,14 @@ class DataDisplay(object):
     accessor = None
     name_prefix = None
     name_suffix = None
-    display_property = "display"
 
     def __init__(self):
+        UIGenerator.__init__(self)
         self.__member_displayed = {}
         self.__member_labels = {}
         self.__member_editable = {}
         self.__member_expressions = {}
-        self.__member_display = {}
-        self.__member_type_display = TypeMapping()
+        self.__member_displays = {}
 
     def _resolve_member(self, member):
 
@@ -298,98 +264,45 @@ class DataDisplay(object):
                     break
             return value
 
-    def translate_value(self, obj, member, value):
-        return member.translate_value(value) or u"-"
-
-    def get_member_display(self, obj, member):
-        member = self._resolve_member(member)
-        display = self._resolve_member_display(obj, member)
-        if display is None:
-            raise ValueError("Couldn't find a display for %r" % member)
-        display = self._normalize_member_display(obj, member, display)
-        return display
-
-    def _resolve_member_display(self, obj, member):
-
-        # Explicitly assigned
-        display = self.__member_display.get(self._normalize_member(member))
-        if display is not None:
-            return display
-
-        # Implemented as a method
-        display_method = getattr(
-            self,
-            "create_%s_display" % member.name,
-            None
-        )
-
-        if display_method is not None:
-            display = display_method(obj, member)
-            if display is not None:
-                return display
-
-        # Supplied by the member
-        display = self.get_member_supplied_display(obj, member)
-        if display is not None:
-            return display
-
-        # Default display
-        return self.get_default_member_display(obj, member)
-
-    def get_member_supplied_display(self, obj, member):
-        return getattr(member, self.display_property, None)
-
-    def get_default_member_display(self, obj, member):
-
-        display = self.get_member_type_display(member.__class__)
-
-        if display is None:
-            display = getattr(
-                member,
-                "default_" +  self.display_property,
-                None
-            ) or self.default_display
-
-        return display
-
-    def _normalize_member_display(self, obj, member, display):
-
-        if isinstance(display, type) and issubclass(display, Element):
-            display = display()
-        elif callable(display):
-            method_subject = getattr(display, "im_self", None)
-            if method_subject is self:
-                display = display(obj, member)
-            elif method_subject is member:
-                display = display(self, obj)
-            else:
-                display = display(self, obj, member)
-
-        if isinstance(display, basestring):
-            display = templates.new(display)
-
-        display.data_display = self
-        display.data = obj
-        display.persistent_object = self.persistent_object
-        display.member = member
-        display.language = get_language()
-
-        if hasattr(display, "value"):
-            value = self.get_member_value(obj, member)
-            display.value = value
-
-        return display
+    def get_member_display(self, member):
+        return self.__member_displays.get(member)
 
     def set_member_display(self, member, display):
-        self.__member_display[self._normalize_member(member)] = display
+        self.__member_displays[self._normalize_member(member)] = display
 
-    def get_member_type_display(self, member_type):
-        return self.__member_type_display.get(member_type)
+    def create_member_display(self, obj, member, value, **context):
+        context.setdefault("persistent_object", self.persistent_object)
+        return UIGenerator.create_member_display(
+            self,
+            obj,
+            member,
+            value,
+            **context
+        )
 
-    def set_member_type_display(self, member_type, display):
-        self.__member_type_display[member_type] = display
+    def _iter_per_member_displays(
+        self,
+        obj,
+        member,
+        value,
+        **context
+    ):
+        yield self.__member_displays.get(member)
 
-    default_display = TranslatedValue
+        if member.name:
+            yield getattr(self, "create_%s_display" % member.name, None)
+
+        for display in UIGenerator._iter_per_member_displays(
+            self,
+            obj,
+            member,
+            value,
+            **context
+        ):
+            yield display
+
+    def translate_value(self, obj, member, value):
+        return member.translate_value(value) or u"-"
 
 
 NO_SELECTION = 0

@@ -1,7 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?py
-from cocktail.html.databoundcontrol import data_bound
-?>
 
 <div
     xmlns="http://www.w3.org/1999/xhtml"
@@ -9,8 +6,6 @@ from cocktail.html.databoundcontrol import data_bound
 
     <?py-class
     items = None
-    value = None
-    name = None
     search_threshold = 10
 
     def should_enable_search(self):
@@ -32,7 +27,6 @@ from cocktail.html.databoundcontrol import data_bound
     ?>
 
     <?py
-    data_bound(self)
     self.add_resource("/cocktail/scripts/xregexp.js")
     self.add_resource("/cocktail/scripts/searchable.js")
     self.add_resource("/cocktail/scripts/SearchableCheckList.js")
@@ -61,12 +55,11 @@ from cocktail.html.databoundcontrol import data_bound
 
     <py:cocktail.html.CheckList
         py:id="check_list"
-        py:member="@{self.member}"
-        py:data_display="@{self.data_display}"
-        py:language="@{self.language}"
-        py:name="@{self.name}"
-        py:items="@{self.items}"
-        py:value="@{self.value}"/>
+        py:items="@{self.items}"/>
+
+    <?py
+    self.data_binding_delegate = self.check_list
+    ?>
 
 </div>
 

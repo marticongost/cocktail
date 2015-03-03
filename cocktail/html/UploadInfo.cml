@@ -7,10 +7,6 @@ from cocktail.memoryutils import format_bytes
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:py="http://www.whads.com/ns/cocktail/templates">
 
-    <?py-class
-    value = None
-    ?>
-
     <div py:id="file_name_label">
         @{self.value and self.value.get("file_name") or ""}
     </div>

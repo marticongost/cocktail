@@ -14,7 +14,6 @@ from cocktail.controllers.viewstate import view_state
 
 class Pager(Element):
 
-    name = None
     item_count = 0
     page = 0
     page_size = 15

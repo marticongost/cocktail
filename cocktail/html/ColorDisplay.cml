@@ -5,7 +5,6 @@
     xmlns:py="http://www.whads.com/ns/cocktail/templates">
 
     <?py-class
-    value = None
     show_label = True
 
     def get_color_label(self):

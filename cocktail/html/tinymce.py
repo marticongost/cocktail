@@ -10,7 +10,6 @@ from warnings import warn
 from simplejson import dumps
 from cocktail.translations import get_language
 from cocktail.html import Element, templates
-from cocktail.html.databoundcontrol import data_bound
 
 
 class TinyMCE(Element):
@@ -40,12 +39,12 @@ class TinyMCE(Element):
         return params
 
     def _build(self):
-        data_bound(self)
         self.add_resource("/cocktail/scripts/tinymce/js/tinymce/tinymce.min.js")
         self.add_client_code("tinymce.init(this.tinymceSettings);")
         self.textarea = templates.new("cocktail.html.TextArea")
+        self.data_binding_delegate = self.textarea
         self.append(self.textarea)
-        self.binding_delegate = self.textarea
+        self.data_binding_delegate = self.textarea
 
     def _ready(self):
         Element._ready(self)
@@ -57,15 +56,4 @@ class TinyMCE(Element):
         params["elements"] = self.textarea.require_id()
 
         self.set_client_param("tinymceSettings", params);
-
-    def _get_value(self):
-        return self.textarea.value
-
-    def _set_value(self, value):
-        self.textarea.value = value
-
-    value = property(_get_value, _set_value, doc = """
-        Gets or sets the content of the rich text editor.
-        @type: str
-        """)
 

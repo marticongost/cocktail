@@ -18,7 +18,6 @@ class CheckList(Selector):
     empty_option_displayed = False
     column_count = None
     column_height = None
-    name = None
     apply_selectable_behavior = True
     exclusive_selection = False
 
@@ -29,13 +28,6 @@ class CheckList(Selector):
                 mode = MULTIPLE_SELECTION,
                 exclusive = self.exclusive_selection
             )
-
-        if not self.name and self.data_display:
-            self.name = self.data_display.get_member_name(
-                self.member,
-                self.language
-            )
-
         Selector._ready(self)
 
     def _create_entries(self, items, container):
@@ -84,7 +76,7 @@ class CheckList(Selector):
         entry.add_class("entry")
 
         entry.check = CheckBox()
-        entry.check["name"] = self.name
+        entry.check.name = self.name
         entry.check.value = self.is_selected(item)
         entry.check["value"] = self.get_item_value(item)
         entry.append(entry.check)

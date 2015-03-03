@@ -8,16 +8,21 @@ u"""
 """
 from itertools import islice
 from warnings import warn
+from cocktail.translations import translations
 from cocktail import schema
 from cocktail.html import Element
-from cocktail.translations import translations
+from cocktail.html.uigeneration import UIGenerator, default_display
 
 
-class List(Element):
+class List(Element, UIGenerator):
 
     tag = "ul"
     max_length = None
-    value = None
+    base_ui_generators = [default_display]
+
+    def __init__(self, *args, **kwargs):
+        Element.__init__(self, *args, **kwargs)
+        UIGenerator.__init__(self)
 
     def _get_items(self):
         warn(
@@ -67,10 +72,18 @@ class List(Element):
         if self.member:
             if isinstance(self.member, schema.Mapping):
                 if self.member.values:
-                    return self.member.values.translate_value(item)
+                    return self.create_member_display(
+                        self.data,
+                        self.member.values,
+                        item
+                    )
             elif isinstance(self.member, schema.Collection):
                 if self.member.items:
-                    return self.member.items.translate_value(item)
+                    return self.create_member_display(
+                        self.data,
+                        self.member.items,
+                        item
+                    )
 
         return translations(item, default = item)
 

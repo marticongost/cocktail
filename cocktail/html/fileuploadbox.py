@@ -7,7 +7,6 @@ u"""
 @since:			February 2009
 """
 from cocktail.html import Element
-from cocktail.html.databoundcontrol import data_bound
 
 
 class FileUploadBox(Element):
@@ -16,7 +15,6 @@ class FileUploadBox(Element):
 
     def __init__(self, *args, **kwargs):
         Element.__init__(self, *args, **kwargs)
-        data_bound(self)
         self["type"] = "file"
 
     def _ready(self):

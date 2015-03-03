@@ -431,7 +431,11 @@ class Table(Element, CollectionDisplay):
             cell.add_class("sorted")
 
         self._init_cell(cell, column, language)
-        display = self.get_member_display(item, column)
+        display = self.create_member_display(
+            item,
+            column,
+            self.get_member_value(item, column)
+        )
         cell.append(display)
         return cell
 
