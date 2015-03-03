@@ -101,7 +101,7 @@ def format_error(error_type, error, traceback):
         </html>
         """ % {
             "error_type": error_type.__name__,
-            "error_message": error.message,
+            "error_message": escape(error.message),
             "traceback_lines": "\n".join(lines)
         }
 
