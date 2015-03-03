@@ -44,7 +44,7 @@ class TemplateCompiler(object):
         self.__classes = {}
         self.classes = DictWrapper(self.__classes)
         self.__class_names = set()
-        self.__base_class_name = None
+        self.__bases = None
         self.__element_id = 0
         self.__stack = []
         self.__root_element_found = False
@@ -312,14 +312,32 @@ class TemplateCompiler(object):
             else:
                 base_name = elem_class_name
 
-            self.__base_class_name = base_name
-            frame.element = id = "self"
+            self.__bases = [base_name]
+            mixins_str = attributes.pop(self.TEMPLATE_NS + ">mixins", None)
+            if mixins_str:
+                self.__bases.extend(
+                    mixin.strip()
+                    for mixin in mixins_str.split(",")
+                )
 
+            frame.element = id = "self"
             source = self.__declaration_source_block
-            source.write("class %s(%s):" % (self.class_name, base_name))
+            source.write(
+                "class %s(%s):"
+                % (self.class_name, ", ".join(self.__bases))
+            )
 
             frame.source_block = source = SourceCodeWriter(1)
             self.__source_blocks.append(source)
+
+            source.write("def __init__(self, *args, **kwargs):")
+            source.indent()
+            source.write(
+                "%s.__init__(self, *args, **kwargs)" % self.__bases[0]
+            )
+            for base in self.__bases[1:]:
+                source.write("%s.__init__(self)" % base)
+            source.unindent()
 
             source.write("def _build(self):")
             source.indent()
@@ -457,7 +475,7 @@ class TemplateCompiler(object):
                         element_factory = "call_base(%s)" % (base_args or "")
                     else:
                         element_factory = "%s.create_%s(self%s)" % (
-                            self.__base_class_name,
+                            self.__bases[0],
                             factory_id,
                             ", " + base_args if base_args else ""
                         )
