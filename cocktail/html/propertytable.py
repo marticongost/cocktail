@@ -109,7 +109,13 @@ class PropertyTable(Element, DataDisplay):
 
     def create_value(self, member):
         cell = Element("td")
-        cell.append(self.get_member_display(self.data, member))
+        cell.append(
+            self.create_member_display(
+                self.data,
+                member,
+                self.get_member_value(self.data, member)
+            )
+        )
         return cell
 
     def create_translated_values(self, member):

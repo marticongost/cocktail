@@ -1,15 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?py
-from cocktail.html.databoundcontrol import data_bound
-?>
 
 <div
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:py="http://www.whads.com/ns/cocktail/templates">
-
-    <?py-class
-    value = None
-    ?>
 
     <?py
     self.add_resource("/cocktail/styles/IBANEntry.css")
@@ -36,7 +29,7 @@ from cocktail.html.databoundcontrol import data_bound
     </div>
 
     <?py
-    data_bound(self, self.iban_box)
+    self.data_binding_delegate = self.iban_box
     ?>
 
 </div>

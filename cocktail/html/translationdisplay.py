@@ -10,8 +10,6 @@ from cocktail.html import Element
 
 class TranslationDisplay(Element):
 
-    value = None
-
     def _ready(self):
 
         Element._ready(self)

@@ -12,15 +12,13 @@ from cocktail import schema
 from cocktail.schema import ValidationContext
 from cocktail.persistence import PersistentObject
 from cocktail.html import Element
-from cocktail.html.databoundcontrol import data_bound
+from cocktail.controllers.parameters import serialize_parameter
 
 
 class Selector(Element):
 
-    name = None
     items = None
     groups = None
-    __value = None
     persistent_object = None
 
     empty_option_displayed = True
@@ -30,7 +28,6 @@ class Selector(Element):
 
     def __init__(self, *args, **kwargs):
         Element.__init__(self, *args, **kwargs)
-        data_bound(self)
         self._is_selected = lambda item: False
 
     def _ready(self):
@@ -139,7 +136,7 @@ class Selector(Element):
 
         if member:
             try:
-                return member.serialize_request_value(item)
+                return serialize_parameter(member, item)
             except:
                 pass
 
@@ -193,16 +190,6 @@ class Selector(Element):
         raise TypeError(
             "%s doesn't implement the create_entry() method" % self
         )
-
-    def _get_value(self):
-        return self.__value
-
-    def _set_value(self, value):
-        self.__value = value
-
-    value = property(_get_value, _set_value, doc = """
-        Gets or sets the active selection for the selector.
-        """)
 
 
 class SelectorGroup(object):

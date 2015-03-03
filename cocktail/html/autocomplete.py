@@ -5,13 +5,11 @@ u"""
 """
 from cocktail.html import Element
 from cocktail.html.textbox import TextBox
-from cocktail.html.databoundcontrol import delegate_control
 from cocktail.controllers.autocomplete import MemberAutocompleteSource
 
 
 class Autocomplete(Element):
 
-    value = None
     autocomplete_source = None
     autocomplete_entries = None
     autocomplete_delay = 150
@@ -33,7 +31,7 @@ class Autocomplete(Element):
         self.add_resource("/cocktail/scripts/Autocomplete.js")
         self.text_box = self.create_text_box()
         self.append(self.text_box)
-        delegate_control(self, self.text_box)
+        self.data_binding_delegate = self.text_box
 
     def create_text_box(self):
         text_box = TextBox()

@@ -10,9 +10,7 @@ from cocktail.html import Element, TranslatedValue, templates
 class MappingTable(Element):
 
     tag = "table"
-    value = None
     sorted = True
-    default_display = TranslatedValue
 
     def _ready(self):
         if self.value and self.member:
@@ -37,38 +35,21 @@ class MappingTable(Element):
 
     def create_key_cell(self, key):
         key_cell = Element("th")
-        key_cell.display = self._get_display(self.member.keys, key)
+        key_cell.display = self.datadisplay.create_member_display(
+            self.value,
+            self.member.keys,
+            key
+        )
         key_cell.append(key_cell.display)
         return key_cell
 
     def create_value_cell(self, value):
         value_cell = Element("td")
-        value_cell.display = self._get_display(self.member.values, value)
+        value_cell.display = self.data_display.create_member_display(
+            self.value,
+            self.member.values,
+            value
+        )
         value_cell.append(value_cell.display)
         return value_cell
-
-    def _get_display(self, member, value):
-
-        display = member and member.display or self.default_display
-
-        if isinstance(display, type) and issubclass(display, Element):
-            display = display()
-        elif callable(display):
-            if getattr(display, "im_self", None) is self:
-                display = display(self.value, member)
-            else:
-                display = display(self, self.value, member)
-
-        if isinstance(display, basestring):
-            display = templates.new(display)
-
-        display.data_display = self
-        display.data = self.value
-        display.member = member
-        display.language = get_language()
-
-        if hasattr(display, "value"):
-            display.value = value
-
-        return display
 

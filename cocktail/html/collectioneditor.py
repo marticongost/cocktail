@@ -6,16 +6,11 @@ u"""
 from cocktail.translations import get_language
 from cocktail.html.element import Element
 from cocktail.html import templates
-from cocktail.html.databoundcontrol import data_bound
 
 
 class CollectionEditor(Element):
 
-    name = None
-    value = None
-
     def _build(self):
-        data_bound(self)
         self.add_resource("/cocktail/scripts/CollectionEditor.js")
         self.entries = self.create_entries()
         self.append(self.entries)
@@ -67,43 +62,9 @@ class CollectionEditor(Element):
         return new_entry
 
     def create_control(self, item):
-
-        # Supplied by the member
-        display = self.data_display.get_member_supplied_display(
+        return self.ui_generator.create_member_display(
             self.value,
-            self.member.items
+            self.member.items,
+            item
         )
-
-        # Default display
-        if display is None:
-            display = self.data_display.get_default_member_display(
-                self.value,
-                self.member.items
-            )
-
-        if isinstance(display, type) and issubclass(display, Element):
-            display = display()
-        elif callable(display):
-            if getattr(display, "im_self", None) is self:
-                display = display(self.value, self.member.items)
-            else:
-                display = display(
-                    self.value,
-                    self.member.items
-                )
-
-        if isinstance(display, basestring):
-            display = templates.new(display)
-
-        display.data_display = self.data_display
-        display.data = self.value
-        display.persistent_object = self.data_display.persistent_object
-        display.collection = self.member
-        display.member = self.member.items
-        display.language = get_language()
-
-        if hasattr(display, "value"):
-            display.value = item
-
-        return display
 

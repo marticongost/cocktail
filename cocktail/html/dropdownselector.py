@@ -35,14 +35,3 @@ class DropdownSelector(Selector):
         entry.append(self.get_item_label(item))
         return entry
 
-    def _get_name(self):
-        return self["name"]
-
-    def _set_name(self, value):
-        self["name"] = value
-
-    name = property(_get_name, _set_name, doc = """
-        Gets or sets the name that the selector will take in HTML forms.
-        @type: str
-        """)
-

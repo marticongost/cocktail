@@ -9,7 +9,6 @@ from cocktail.html.element import Element
 class MailToLink(Element):
 
     tag = "a"
-    value = None
 
     def _ready(self):
 

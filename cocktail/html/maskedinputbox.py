@@ -5,6 +5,7 @@ u"""
 """
 from cocktail.html.textbox import TextBox
 
+
 class MaskedInputBox(TextBox):
 
     input_mask = None

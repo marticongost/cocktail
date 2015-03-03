@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <?py
 from datetime import date
-from cocktail.html.databoundcontrol import data_bound
 ?>
 
 <div
@@ -11,7 +10,6 @@ from cocktail.html.databoundcontrol import data_bound
     <?py-class
     year_offset = -100
     year_span = 100
-    value = None
 
     def get_year_range(self):
         min_year = date.today().year + self.year_offset
@@ -28,10 +26,6 @@ from cocktail.html.databoundcontrol import data_bound
             "dateFormat",
             self.member.request_date_format or translations("date format")
         )
-
-        if self.member and self.value:
-            if isinstance(self.value, date):
-                self.text_box.value = self.member.serialize_request_value(self.value)
         ?>
     </py:ready>
 
@@ -39,7 +33,7 @@ from cocktail.html.databoundcontrol import data_bound
         py:id="text_box"/>
 
     <?py
-    data_bound(self, self.text_box)
+    self.data_binding_delegate = self.text_box
     ?>
 
     <div py:id="controls" py:client_model="cocktail.html.CompoundDateSelector.controls">

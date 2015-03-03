@@ -10,6 +10,7 @@ from cocktail import schema
 from cocktail.schema.expressions import Self
 from cocktail.persistence.query import Query
 from cocktail.persistence.persistentobject import PersistentClass
+from cocktail.controllers.parameters import serialize_parameter
 from cocktail.controllers.controller import Controller
 from cocktail.controllers.requestproperty import request_property
 
@@ -73,7 +74,7 @@ class MemberAutocompleteSource(AutocompleteSource):
         return items
 
     def get_entry_value(self, item):
-        return self.member.serialize_request_value(item)
+        return serialize_parameter(self.member, item)
 
     def get_entry_label(self, item):
         return self.member.translate_value(item)

@@ -14,17 +14,6 @@ class RadioSelector(Selector):
 
     empty_option_displayed = False
 
-    def _ready(self):
-
-        if not self.name and self.data_display:
-            self.name = self.data_display.get_member_name(
-                self.member,
-                self.language
-            )
-
-        self["name"] = None
-        Selector._ready(self)
-
     def create_entry(self, item):
 
         entry = Element()

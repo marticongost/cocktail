@@ -6,15 +6,15 @@ u"""
 @organization:	Whads/Accent SL
 @since:			September 2008
 """
-from __future__ import with_statement
 from cocktail.translations import get_language, language_context
 from cocktail.modeling import getter, ListWrapper
 from cocktail.translations import translations
 from cocktail import schema
 from cocktail.persistence import PersistentObject
 from cocktail.controllers.fileupload import FileUpload
-from cocktail.html import Element, templates
-from cocktail.html.datadisplay import DataDisplay, display_factory
+from cocktail.html import Element
+from cocktail.html.uigeneration import default_edit_control
+from cocktail.html.datadisplay import DataDisplay
 from cocktail.html.hiddeninput import HiddenInput
 
 
@@ -63,7 +63,7 @@ class Form(Element, DataDisplay):
     @type redundant_translation_labels: bool
     """
     tag = "form"
-    display_property = "edit_control"
+    base_ui_generators = [default_edit_control]
     translations = None
     hide_empty_fieldsets = True
     errors = None
@@ -355,11 +355,7 @@ class Form(Element, DataDisplay):
         input.data = obj
         input.member = member
         input.data_display = self
-
-        value = self.get_member_value(obj, member)
-        if value is not None:
-            value = member.serialize_request_value(value)
-        input.value = value
+        input.value = self.get_member_value(obj, member)
 
         if member.translated:
             input.language = get_language()
@@ -427,7 +423,11 @@ class Form(Element, DataDisplay):
             return DataDisplay.get_default_member_display(self, obj, member)
 
     def create_control(self, obj, member):
-        control = self.get_member_display(obj, member)
+        control = self.create_member_display(
+            obj,
+            member,
+            self.get_member_value(obj, member)
+        )
         control.add_class("control")
 
         if self.errors and self.errors.in_member(
@@ -488,68 +488,4 @@ class FormGroup(object):
 
     def matches(self, member):
         return self.__match_expr(member)
-
-
-# Edit controls
-#------------------------------------------------------------------------------
-
-# Extension properties that allow members to define their appearence in HTML
-# forms:
-schema.Member.edit_control = None
-schema.Member.default_edit_control = None
-
-def embeded_form(self, parent_form, obj):
-    form = Form()
-    form.tag = "div"
-    form.embeded = True
-    form.schema = self
-    form.name_prefix = parent_form.name_prefix
-    form.name_suffix = parent_form.name_suffix
-    return form
-
-def _collection_display(self, form, obj):
-    if isinstance(self.items, FileUpload) and self.items.async:
-        return templates.new("cocktail.html.AsyncFileUploader")
-    elif self.items.enumeration is not None or self.is_persistent_relation:
-        return templates.new("cocktail.html.CheckList")
-    else:
-        return templates.new("cocktail.html.CollectionEditor")
-
-def _code_block_display(self, form, obj):
-    display = templates.new("cocktail.html.CodeEditor")
-    display.syntax = self.language
-    if self.language == "python":
-        display.cols = 80
-    return display
-
-schema.String.default_edit_control = "cocktail.html.TextBox"
-schema.Boolean.default_edit_control = "cocktail.html.CheckBox"
-schema.Reference.default_edit_control = "cocktail.html.DropdownSelector"
-schema.BaseDateTime.default_edit_control = "cocktail.html.DatePicker"
-schema.Decimal.default_edit_control = "cocktail.html.TextBox"
-schema.Number.default_edit_control = "cocktail.html.NumberBox"
-schema.Money.default_edit_control = "cocktail.html.MoneyBox"
-schema.PhoneNumber.default_edit_control = "cocktail.html.PhoneNumberBox"
-schema.URL.default_edit_control = "cocktail.html.URLBox"
-schema.EmailAddress.default_edit_control = "cocktail.html.EmailAddressBox"
-schema.Color.default_edit_control = "cocktail.html.ColorPicker"
-schema.Month.default_edit_control = "cocktail.html.DropdownSelector"
-schema.HTML.default_edit_control = "cocktail.html.TinyMCE"
-schema.IBAN.default_edit_control = "cocktail.html.IBANEntry"
-schema.SWIFTBIC.default_edit_control = "cocktail.html.SWIFTBICEntry"
-schema.BankAccountNumber.default_edit_control = "cocktail.html.MaskedInputBox"
-schema.Collection.default_edit_control = _collection_display
-schema.CodeBlock.default_edit_control = _code_block_display
-schema.Schema.default_edit_control = embeded_form
-
-FileUpload.default_edit_control = (
-    lambda self, form, obj:
-        templates.new(
-            "cocktail.html." + (
-                "AsyncFileUploader"
-                    if self.async
-                    else "FileUploadBox"
-            )
-        )
-)
 

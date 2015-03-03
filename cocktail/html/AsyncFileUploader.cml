@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <?py
 from cocktail import schema
-from cocktail.html.databoundcontrol import data_bound
 ?>
 
 <div
@@ -9,8 +8,6 @@ from cocktail.html.databoundcontrol import data_bound
     xmlns:py="http://www.whads.com/ns/cocktail/templates">
 
     <?py-class
-    name = None
-    value = None
     async_upload_url = None
 
     def insert_into_form(self, form, field_instance):
@@ -26,8 +23,6 @@ from cocktail.html.databoundcontrol import data_bound
     self.add_resource("/cocktail/styles/AsyncFileUploader.css")
     self.add_resource("/cocktail/valums-ajax-upload/fileuploader.js")
     self.add_resource("/cocktail/scripts/AsyncFileUploader.js")
-
-    data_bound(self)
     ?>
 
     <py:ready>
