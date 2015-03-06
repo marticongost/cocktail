@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:py="http://www.whads.com/ns/cocktail/templates">
+
+    <?py-class
+    autoplay = True
+    interval = 3000
+    transition_effect = "fade"
+    transition_duration = 500
+    slides_selector = ".slides > *"
+    navigation_controls = False
+    bullet_controls = False
+    starting_slide = "first"
+    ?>
+
+    <?py
+    self.add_resource("/cocktail/scripts/SlideShow.js")
+    ?>
+
+    <py:ready>
+        <?py
+        self.set_client_param("autoplay", self.autoplay)
+        self.set_client_param("interval", self.interval)
+        self.set_client_param("transitionEffect", self.transition_effect)
+        self.set_client_param("transitionDuration", self.transition_duration)
+        self.set_client_param("slidesSelector", self.slides_selector)
+        self.set_client_param("navigationControls", self.navigation_controls)
+        self.set_client_param("bulletControls", self.bullet_controls)
+        self.set_client_param("startingSlide", self.starting_slide)
+        ?>
+    </py:ready>
+
+    <div py:id="slides"></div>
+
+    <py:new
+        py:element="self.create_navigation_button()"
+        py:id="previous_slide_button"
+        py:visible="@{self.navigation_controls}"
+        py:client_model="cocktail.html.SlideShow.previousSlideButton">&lt;</py:new>
+
+    <py:new
+        py:element="self.create_navigation_button()"
+        py:id="next_slide_button"
+        py:visible="@{self.navigation_controls}"
+        py:client_model="cocktail.html.SlideShow.nextSlideButton">&gt;</py:new>
+
+    <div
+        py:id="bullets"
+        py:visible="@{self.bullet_controls}"
+        py:client_model="cocktail.html.SlideShow.bulletSlideButtons">
+        <div py:id="bullets_layer">
+            <py:ready>
+                <py:new
+                    py:element="self.create_bullet(slide)"
+                    py:for="slide in self.slides.children"/>
+            </py:ready>
+        </div>
+    </div>
+
+    <button py:def="bullet" py:args="slide" type="button"></button>
+
+    <button
+        py:def="navigation_button"
+        type="button"/>
+
+</div>
+
