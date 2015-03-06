@@ -144,7 +144,7 @@ cocktail.searchable = function (searchable, params /* = null */) {
                     // All tokens must be found for the entry to match
                     if (searchable.matchTerms(text, queryTokens)) {
                         searchable.applyMatchState(this, true);
-                        $matches.add(this);
+                        $matches = $matches.add(this);
                         if (highlighted) {
                             searchable.highlightSearchTerms(this, queryTokens);
                         }
