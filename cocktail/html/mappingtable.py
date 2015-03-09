@@ -45,7 +45,7 @@ class MappingTable(Element):
 
     def create_value_cell(self, value):
         value_cell = Element("td")
-        value_cell.display = self.data_display.create_member_display(
+        value_cell.display = self.ui_generator.create_member_display(
             self.value,
             self.member.values,
             value
