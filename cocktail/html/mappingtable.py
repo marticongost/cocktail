@@ -35,7 +35,7 @@ class MappingTable(Element):
 
     def create_key_cell(self, key):
         key_cell = Element("th")
-        key_cell.display = self.datadisplay.create_member_display(
+        key_cell.display = self.ui_generator.create_member_display(
             self.value,
             self.member.keys,
             key
