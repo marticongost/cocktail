@@ -7,6 +7,7 @@ u"""
 @since:			September 2008
 """
 from copy import copy
+from collections import OrderedDict
 import cherrypy
 from cocktail.pkgutils import resolve
 from cocktail.modeling import ListWrapper, SetWrapper, getter, cached_getter
@@ -14,6 +15,7 @@ from cocktail.translations import get_language
 from cocktail import schema
 from cocktail.schema.io import export_file
 from cocktail.schema.expressions import (
+    Expression,
     PositiveExpression,
     NegativeExpression,
     TranslationExpression
@@ -55,6 +57,7 @@ class UserCollection(object):
         self.__base_filters = []
         self.__parameter_sources = {}
         self.__default_source = lambda k: self.get_parameter_source(k)(k)
+        self.__tabs = OrderedDict()
 
     # Parameters
     #--------------------------------------------------------------------------
@@ -260,6 +263,32 @@ class UserCollection(object):
         self.__base_filters.append(expression)
         self.discard_results()
 
+    @property
+    def tabs(self):
+        return self.__tabs
+
+    default_tab = None
+
+    @cached_getter
+    def tab(self):
+        tab_id = self.params.read(
+            schema.String("tab",
+                enumeration = self.__tabs,
+                default = self.default_tab
+            )
+        )
+        if not tab_id:
+            return None
+        else:
+            tab = self.__tabs[tab_id]
+            tab.selected = True
+            return tab
+
+    def add_tab(self, id, label, filter):
+        tab = CollectionViewTab(id, label, filter)
+        self.__tabs[id] = tab
+        return tab
+
     # Ordering
     #--------------------------------------------------------------------------
     @cached_getter
@@ -422,6 +451,21 @@ class UserCollection(object):
         for criteria in self.order:
             subset.add_order(criteria)
 
+        if self.__tabs:
+            for tab in self.__tabs.itervalues():
+                if tab.filter is None:
+                    tab.results = subset
+                elif isinstance(tab.filter, Expression):
+                    tab.results = subset.select([tab.filter])
+                elif isinstance(tab.filter, list):
+                    tab.results = subset.select(tab.filter)
+                else:
+                    tab.results = subset.select()
+                    tab.filter(tab.results)
+
+            if self.tab:
+                subset = self.tab.results
+
         return subset
 
     @cached_getter
@@ -452,3 +496,14 @@ class UserCollection(object):
 
         export_file(self.subset, dest, self.type, mime_type, members,
             languages, **kwargs)
+
+
+class CollectionViewTab(object):
+
+    def __init__(self, id, label, filter):
+        self.id = id
+        self.label = label
+        self.filter = filter
+        self.results = None
+        self.selected = False
+

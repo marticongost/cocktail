@@ -2,7 +2,7 @@
 
 <?py
 from cocktail.modeling import refine
-from cocktail.controllers.viewstate import view_state_form
+from cocktail.controllers.viewstate import view_state_form, view_state
 from cocktail.html.selector import SelectorGroup
 from cocktail.html.datadisplay import MULTIPLE_SELECTION
 ?>
@@ -19,7 +19,7 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
     activation_control = None
     allow_empty_search = False
     excluded_view_state_params = frozenset([
-        "members", "language", "page_size", "selection", "filter"
+        "members", "language", "page_size", "selection", "filter", "change_tab"
     ])
 
     def _get_view_state_form_params(self):
@@ -163,6 +163,31 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
     <div py:id="search_results_message">
         ${translations("cocktail.html.ContentView search results")}
     </div>
+
+    <!-- Tabbed search -->
+    <div py:id="tab_strip" py:visible="@{self.user_collection.tabs}">
+        <py:ready>
+            <py:new
+                py:element="self.create_tab_strip_entry(tab)"
+                py:for="tab in self.user_collection.tabs.itervalues()"/>
+        </py:ready>
+    </div>
+
+    <a
+        py:def="tab_strip_entry" py:args="tab"
+        type="submit"
+        href="?${view_state(tab = tab.id, page = 0)}">
+        <?py
+        if tab.selected:
+            tab_strip_entry.add_class("selected")
+        ?>
+        <span py:local_id="tab_title">
+            ${tab.label}
+        </span>
+        <span py:local_id="tab_results_count">
+            (${len(tab.results)})
+        </span>
+    </a>
 
     <!-- Toolbar -->
     <div py:id="toolbar_box" py:collapsible="${True}">
