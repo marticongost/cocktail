@@ -65,6 +65,7 @@ class CollectionEditor(Element):
         return self.ui_generator.create_member_display(
             self.value,
             self.member.items,
-            item
+            item,
+            collection = self.member
         )
 
