@@ -229,18 +229,20 @@ class EditControlGenerator(UIGenerator):
 
     enumeration_display = "cocktail.html.DropdownSelector"
 
-    def _iter_per_member_displays(
+    def _iter_per_member_type_displays(
         self,
         obj,
         member,
         value,
+        member_type,
         **context
     ):
-        for display in UIGenerator._iter_per_member_displays(
+        for display in UIGenerator._iter_per_member_type_displays(
             self,
             obj,
             member,
             value,
+            member_type,
             **context
         ):
             yield display
