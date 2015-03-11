@@ -21,6 +21,7 @@ class PropertyTable(Element, DataDisplay):
 
     tag = "table"
     translations = None
+    grouped = True
 
     def __init__(self, *args, **kwargs):
         DataDisplay.__init__(self)
@@ -30,11 +31,14 @@ class PropertyTable(Element, DataDisplay):
     def _ready(self):
         Element._ready(self)
 
-        for group, members in self.displayed_members_by_group:
-            tbody = self.create_group(group, self._flatten_members(members))
-            if group:
-                setattr(self, group + "_group", tbody)
-            self.append(tbody)
+        if self.grouped:
+            for group, members in self.displayed_members_by_group:
+                tbody = self.create_group(group, members)
+                if group:
+                    setattr(self, group + "_group", tbody)
+                self.append(tbody)
+        else:
+            self._create_rows(self.displayed_members, self)
 
     def should_flatten(self, member):
         if isinstance(member, schema.BaseDateTime):
@@ -65,12 +69,7 @@ class PropertyTable(Element, DataDisplay):
             if tbody.header_row:
                 tbody.append(tbody.header_row)
 
-        for i, member in enumerate(members):
-            member_row = self.create_member_row(member)
-            member_row.add_class("even" if i % 2 else "odd")
-            setattr(self, member.name + "_member", member_row)
-            tbody.append(member_row)
-
+        self._create_rows(members, tbody)
         return tbody
 
     def create_group_header(self, group):
@@ -84,6 +83,14 @@ class PropertyTable(Element, DataDisplay):
             row.header = th
             row.append(th)
             return row
+
+    def _create_rows(self, members, container):
+        members = self._flatten_members(members)
+        for i, member in enumerate(members):
+            member_row = self.create_member_row(member)
+            member_row.add_class("even" if i % 2 else "odd")
+            setattr(self, member.name + "_member", member_row)
+            container.append(member_row)
 
     def create_member_row(self, member):
 
