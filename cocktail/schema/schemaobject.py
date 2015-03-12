@@ -60,7 +60,13 @@ class SchemaClass(EventHub, Schema):
         cls.full_name = members.get("full_name") or get_full_name(cls)
         cls.__derived_schemas = []
         cls.members_order = members.get("members_order")
-        cls.groups_order = members.get("groups_order")
+
+        # Give each class its own groups_order property
+        groups_order = members.get("groups_order")
+        if groups_order is None:
+            groups_order = cls.groups_order
+            groups_order = list(groups_order) if groups_order else []
+        cls.groups_order = groups_order
 
         # Inherit base schemas
         for base in bases:
