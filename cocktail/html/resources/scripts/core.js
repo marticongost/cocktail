@@ -297,6 +297,9 @@ cocktail.__dialogBackground = null;
 
 cocktail.showDialog = function (content) {
 
+    var $content = jQuery(content);
+    content = $content[0];
+
     if (!cocktail.__dialogBackground) {
         cocktail.__dialogBackground = document.createElement("div")
         cocktail.__dialogBackground.className = "dialog-background";
@@ -310,7 +313,6 @@ cocktail.showDialog = function (content) {
 
         jQuery(cocktail.__dialogBackground).click(cocktail.closeDialog);
     }
-    var $content = jQuery(content);
     var $dialogElements = jQuery(cocktail.__dialogBackground).add($content);
     $dialogElements.removeClass("dialog_ready");
     cocktail.rootElement.appendChild(cocktail.__dialogBackground);
@@ -326,6 +328,7 @@ cocktail.showDialog = function (content) {
 }
 
 cocktail.center = function (element) {
+    element = jQuery(element)[0];
     var windowWidth = window.innerWidth || document.documentElement.clientWidth;
     var windowHeight = window.innerHeight || document.documentElement.clientHeight;
     element.style.left = (windowWidth / 2 - element.offsetWidth / 2) + "px";
