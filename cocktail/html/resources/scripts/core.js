@@ -295,10 +295,11 @@ cocktail.translate = function (key, params) {
 
 cocktail.__dialogBackground = null;
 
-cocktail.showDialog = function (content) {
+cocktail.showDialog = function (content, params /* = null */) {
 
     var $content = jQuery(content);
     content = $content[0];
+    var dialogParent = params && params.parent && jQuery(params.parent)[0] || cocktail.rootElement;
 
     if (!cocktail.__dialogBackground) {
         cocktail.__dialogBackground = document.createElement("div")
@@ -315,14 +316,18 @@ cocktail.showDialog = function (content) {
     }
     var $dialogElements = jQuery(cocktail.__dialogBackground).add($content);
     $dialogElements.removeClass("dialog_ready");
-    cocktail.rootElement.appendChild(cocktail.__dialogBackground);
+    dialogParent.appendChild(cocktail.__dialogBackground);
 
     $content.addClass("dialog");
     jQuery(document.body).addClass("modal");
-    cocktail.rootElement.appendChild($content.get(0));
+    dialogParent.appendChild($content.get(0));
     setTimeout(function () {
         $dialogElements.addClass("dialog_ready");
     }, 100);
+
+    if (!params || params.center || params.center === undefined) {
+        cocktail.center(content);
+    }
 
     $content.trigger("dialogOpened");
 }
