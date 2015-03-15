@@ -6,6 +6,8 @@
 
     <?py-class
     items = None
+    grouping = None
+    groups = None
     search_threshold = 10
     searchable_options = {"entryGroupsSelector": ".group"}
 
@@ -58,7 +60,9 @@
 
     <py:cocktail.html.CheckList
         py:id="check_list"
-        py:items="@{self.items}"/>
+        py:items="@{self.items}"
+        py:grouping="@{self.grouping}"
+        py:groups="@{self.groups}"/>
 
     <?py
     self.data_binding_delegate = self.check_list
