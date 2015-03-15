@@ -7,6 +7,7 @@
     <?py-class
     items = None
     search_threshold = 10
+    searchable_options = {"entryGroupsSelector": ".group"}
 
     def should_enable_search(self):
         if not self.items:
@@ -30,12 +31,14 @@
     self.add_resource("/cocktail/scripts/xregexp.js")
     self.add_resource("/cocktail/scripts/searchable.js")
     self.add_resource("/cocktail/scripts/SearchableCheckList.js")
+    self.searchable_options = self.searchable_options.copy()
     ?>
 
     <py:ready>
         <?py
         if self.should_enable_search:
             self.add_class("search_enabled")
+            self.set_client_param("searchableOptions", self.searchable_options)
         ?>
     </py:ready>
 

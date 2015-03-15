@@ -12,9 +12,7 @@ cocktail.bind(".SearchableCheckList.search_enabled", function ($control) {
     var $searchControls = jQuery(cocktail.instantiate("cocktail.html.SearchableCheckList.searchControls"))
         .prependTo($control);
 
-    cocktail.searchable(this, {
-        entryGroupsSelector: ".group"
-    });
+    cocktail.searchable(this, this.searchableOptions);
 
     this.getSearchableText = function (item) {
         var $entry = jQuery(item);
