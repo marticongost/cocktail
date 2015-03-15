@@ -103,7 +103,7 @@
 
             selectable.focusContent = function () {
                 var entry = (this._selectionEnd || this._selectionStart);
-                if (entry && jQuery(entry).is(selectableEntryFilter)) {
+                if (entry && jQuery(entry).is(this.getEntries(":selectable-entry"))) {
                     this.focusEntry(entry);
                 }
                 else {
