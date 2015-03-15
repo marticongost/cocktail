@@ -183,6 +183,7 @@ cocktail.searchable = function (searchable, params /* = null */) {
     var matchClass = params && params.matchCSSClass || "match";
     var noMatchClass = params && params.noMatchCSSClass || "no_match";
     var highlighted = params && params.highlighted;
+    var disableChecks = params && params.disableChecks;
 
     searchable.applyMatchState = function (target, match) {
         var $target = jQuery(target);
@@ -193,6 +194,19 @@ cocktail.searchable = function (searchable, params /* = null */) {
         else {
             $target.removeClass(matchClass);
             $target.addClass(noMatchClass);
+        }
+
+        if (disableChecks) {
+            var isGroup = params && params.entryGroupsSelector && $target.is(params.entryGroupsSelector);
+            if (!isGroup) {
+                var $input = $target.is("input") ? $target : $target.find("input");
+                if (match) {
+                    $input.removeAttr("disabled");
+                }
+                else {
+                    $input.attr("disabled", "disabled");
+                }
+            }
         }
     }
 
