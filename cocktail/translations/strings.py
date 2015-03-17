@@ -1046,7 +1046,7 @@ translations.define("jp",
     jp = u"日本語"
 )
 
-translations.define("cn",
+translations.define("zh",
     ca = u"Xinès",
     es = u"Chino",
     en = u"Chinese",
