@@ -5,7 +5,10 @@ data types.
 """
 from cocktail.schema.member import (
     Member,
-    DynamicDefault
+    DynamicDefault,
+    NOT_EDITABLE,
+    EDITABLE,
+    READ_ONLY
 )
 from cocktail.schema.schema import Schema
 from cocktail.schema.rangedmember import RangedMember

@@ -4,6 +4,7 @@ Provides the base class for all schema members.
 """
 from itertools import chain
 from copy import deepcopy
+from warnings import warn
 from cocktail.events import Event, EventHub
 from cocktail.modeling import ListWrapper, OrderedSet
 from cocktail.pkgutils import import_object, get_full_name
@@ -12,6 +13,10 @@ from cocktail.schema import exceptions
 from cocktail.schema.expressions import Expression, Variable
 from cocktail.schema.validationcontext import ValidationContext
 from cocktail.schema.accessors import get_accessor
+
+NOT_EDITABLE = 0
+EDITABLE = 1
+READ_ONLY = 2
 
 
 class Member(Variable):
@@ -583,6 +588,24 @@ class Member(Variable):
 
     def extract_searchable_text(self, extractor):
         extractor.feed(self.translate_value(extractor.current.value))
+
+    __editable = EDITABLE
+
+    def _get_editable(self):
+        return self.__editable
+
+    def _set_editable(self, editable):
+        if isinstance(editable, bool):
+            warn(
+                "Setting Member.editable to a bool is deprecated, use one of "
+                "schema.EDITABLE, schema.NOT_EDITABLE or schema.READ_ONLY",
+                DeprecationWarning,
+                stacklevel = 2
+            )
+            editable = EDITABLE if editable else NOT_EDITABLE
+        self.__editable = editable
+
+    editable = property(_get_editable, _set_editable)
 
 
 class DynamicDefault(object):

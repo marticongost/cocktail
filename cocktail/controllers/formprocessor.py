@@ -212,7 +212,11 @@ class Form(object):
             self.init_data(data)
 
         # Form submitted: read request data
+        # - Start by exporting data from the source instance; this takes care
+        #   of read only members
+        # - Then, overwrite all editable parameters by reading from the request
         else:
+            self.apply_instance_data(data)
             self.read_data(data)
 
         return data
