@@ -766,7 +766,7 @@ class FormSchemaReader(object):
             if not path and self.errors != "ignore":
                 value = self._fix_value(target, member, value)
 
-            if target is not None:
+            if target is not None and member.editable == schema.EDITABLE:
                 schema.set(target, member.name, value, language)
 
         return value
@@ -807,6 +807,9 @@ class FormSchemaReader(object):
         try:
             for child_member in member.members().itervalues():
 
+                if child_member.editable != schema.EDITABLE:
+                    continue
+
                 if self._is_schema(child_member):
                     nested_target = schema.get(target, child_member, None)
                     if nested_target is None:
@@ -832,7 +835,10 @@ class FormSchemaReader(object):
 
                 for error in member.get_errors(target):
                     error_member = error.member
-                    if error_member not in invalid_members:
+                    if (
+                        error_member not in invalid_members
+                        and error_member.editable == schema.EDITABLE
+                    ):
                         invalid_members.add(error_member)
                         error_target = error.context.get_object()
                         fixed_value = self._fix_value(

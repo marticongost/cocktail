@@ -10,6 +10,7 @@ from operator import getitem, setitem
 from copy import copy, deepcopy
 from cocktail.events import when, Event
 from cocktail.modeling import ListWrapper, OrderedDict
+from cocktail.schema.member import READ_ONLY
 from cocktail.schema.schema import Schema
 from cocktail.schema.schemastrings import String
 from cocktail.schema.schemacollections import Collection
@@ -420,6 +421,26 @@ class Adapter(object):
         exclusion = Exclusion(members)
         self.import_rules.add_rule(exclusion, rule_position)
         self.export_rules.add_rule(exclusion, rule_position)
+
+    def export_read_only(self,
+        mapping,
+        transform = None,
+        condition = None,
+        properties = None,
+        rule_position = None
+    ):
+        properties = {} if properties is None else properties.copy()
+        properties["editable"] = READ_ONLY
+
+        self.export_rules.add_rule(
+            Copy(
+                mapping,
+                transform = transform,
+                condition = condition,
+                properties = properties
+            ),
+            rule_position
+        )
 
     def expand(self, member, related_object, adapter, rule_position = None):
 

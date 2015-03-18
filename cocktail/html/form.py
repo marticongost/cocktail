@@ -13,7 +13,11 @@ from cocktail import schema
 from cocktail.persistence import PersistentObject
 from cocktail.controllers.fileupload import FileUpload
 from cocktail.html import Element
-from cocktail.html.uigeneration import default_edit_control
+from cocktail.html.uigeneration import (
+    UIGenerator,
+    default_edit_control,
+    default_display
+)
 from cocktail.html.datadisplay import DataDisplay
 from cocktail.html.hiddeninput import HiddenInput
 
@@ -83,6 +87,9 @@ class Form(Element, DataDisplay):
         self.groups = ListWrapper(self.__groups)
         self.__hidden_members = {}
         kwargs.setdefault("action", "")
+        self.read_only_ui_generator = UIGenerator(
+            base_ui_generators = [default_display]
+        )
         Element.__init__(self, *args, **kwargs)
 
     def _get_form(self):
@@ -423,11 +430,22 @@ class Form(Element, DataDisplay):
             return DataDisplay.get_default_member_display(self, obj, member)
 
     def create_control(self, obj, member):
-        control = self.create_member_display(
-            obj,
-            member,
-            self.get_member_value(obj, member)
-        )
+
+        if member.editable == schema.READ_ONLY:
+            control = self.read_only_ui_generator.create_member_display(
+                obj,
+                member,
+                self.get_member_value(obj, member)
+            )
+            control["cocktail-editable"] = "read_only"
+        else:
+            control = self.create_member_display(
+                obj,
+                member,
+                self.get_member_value(obj, member)
+            )
+            control["cocktail-editable"] = "editable"
+
         control.add_class("control")
 
         if self.errors and self.errors.in_member(
