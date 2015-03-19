@@ -33,6 +33,7 @@ class Table(Element, CollectionDisplay):
     tag = "table"
     sortable = False
     show_language_headers = True
+    grouped = True
     column_groups_displayed = False
     ascending_order_image = "ascending.png"
     descending_order_image = "descending.png"
@@ -122,13 +123,18 @@ class Table(Element, CollectionDisplay):
             self.head_row.append(selection_header)
 
         # Column groups
-        if not self.column_groups_displayed:
+        if not self.grouped or not self.column_groups_displayed:
             self.column_groups_row.visible = False
 
         # Regular columns
-        for group, columns in self.displayed_members_by_group:
+        if self.grouped:
+            self.columns_by_group = list(self.displayed_members_by_group)
+        else:
+            self.columns_by_group = [(None, list(self.displayed_members))]
 
-            if self.column_groups_displayed:
+        for group, columns in self.columns_by_group:
+
+            if self.grouped and self.column_groups_displayed:
                 self.column_groups_row.append(
                     self.create_column_group_header(group, columns)
                 )
@@ -172,17 +178,12 @@ class Table(Element, CollectionDisplay):
 
         row_span = 1
         end = False
-        i = 0
 
         while not end:
             extra_row = Element("tr")
             has_content = False
 
-            i += 1
-            if i > 100:
-                raise Exception("Damn")
-
-            for group, columns in self.displayed_members_by_group:
+            for group, columns in self.columns_by_group:
                 for column in columns:
                     key = column.name
                     iterator = self.__split_row_iterators.get(key)
@@ -263,7 +264,7 @@ class Table(Element, CollectionDisplay):
         if self.schema.primary_member:
             row["id"] = item.id
 
-        for group, columns in self.displayed_members_by_group:
+        for group, columns in self.columns_by_group:
             for column in columns:
                 if self.translations and column.translated:
                     for language in self.translations:
