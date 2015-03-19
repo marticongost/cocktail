@@ -144,17 +144,25 @@ class UIGenerator(object):
             ):
                 yield display
 
-        for cls in member.__class__.__mro__:
-            if issubclass(cls, schema.Member):
-                for ui_generator in chain:
-                    for display in ui_generator._iter_per_member_type_displays(
-                        obj,
-                        member,
-                        value,
-                        cls,
-                        **context
-                    ):
-                        yield display
+        mro = [cls
+               for cls in member.__class__.__mro__
+               if issubclass(cls, schema.Member)]
+
+        if isinstance(member, schema.SchemaClass):
+            mro = [cls
+                   for cls in member.__mro__
+                   if isinstance(cls, schema.SchemaClass)] + mro
+
+        for cls in mro:
+            for ui_generator in chain:
+                for display in ui_generator._iter_per_member_type_displays(
+                    obj,
+                    member,
+                    value,
+                    cls,
+                    **context
+                ):
+                    yield display
 
     def _iter_per_member_displays(
         self,
