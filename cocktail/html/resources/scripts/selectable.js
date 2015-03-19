@@ -48,7 +48,7 @@
         var multipleSelection = (selectionMode == cocktail.MULTIPLE_SELECTION);
 
         var elementSelector = getParam("element");
-        var entrySelector = getParam("entrySelector", ".entry");
+        var entrySelector = this.entrySelector = getParam("entrySelector", ".entry");
         var checkboxSelector = getParam("checkboxSelector", "input[type=checkbox]");
         var entryCheckboxSelector = entrySelector + " " + checkboxSelector;
 
