@@ -10,33 +10,33 @@ from unittest import TestCase
 
 class ElementAttributesTestCase(TestCase):
 
-    def test_get_set(self):        
-        
-        from cocktail.html.element import Element        
+    def test_get_set(self):
+
+        from cocktail.html.element import Element
         e = Element()
-        
+
         # Attributes can be set and read
         e["id"] = "foo"
         e["title"] = "hello world"
         self.assertEquals(e["id"], "foo")
         self.assertEquals(e["title"], "hello world")
- 
+
         # Attributes can be changed
         e["id"] = "bar"
         self.assertEquals(e["id"], "bar")
 
     def get_undefined(self):
-        
-        from cocktail.html.element import Element        
+
+        from cocktail.html.element import Element
         e = Element()
-        
+
         # Getting an undefined attribute yields None
         self.assertTrue(e["id"] is None)
 
     def test_set_none(self):
-        
+
         from cocktail.html.element import Element
-        
+
         e = Element()
         e["id"] = "foo"
 
@@ -45,9 +45,9 @@ class ElementAttributesTestCase(TestCase):
         self.assertFalse("id" in e.attributes)
 
     def test_delete(self):
-        
+
         from cocktail.html.element import Element
-        
+
         e = Element()
         e["id"] = "foo"
 
@@ -56,7 +56,7 @@ class ElementAttributesTestCase(TestCase):
         self.assertFalse("id" in e.attributes)
 
     def test_delete_undefined(self):
-        
+
         from cocktail.html.element import Element
         e = Element()
 
@@ -76,7 +76,7 @@ class ElementAttributesTestCase(TestCase):
     def test_list(self):
 
         from cocktail.html.element import Element
-        
+
         # An element starts with no attributes
         e = Element()
         self.assertEquals(e.attributes, {})
@@ -89,32 +89,32 @@ class ElementAttributesTestCase(TestCase):
 class ElementMetaAttributesTestCase(TestCase):
 
     def test_get_set(self):
-        
+
         from cocktail.html.element import Element
         e = Element()
-        
+
         # Meta attributes can be set and read
         e.set_meta("desc", "this is a test element")
         e.set_meta("keywords", "foo bar")
         self.assertEquals(e.get_meta("desc"), "this is a test element")
         self.assertEquals(e.get_meta("keywords"), "foo bar")
- 
+
         # Meta attributes can be changed
         e.set_meta("keywords", "sprunge")
         self.assertEquals(e.get_meta("keywords"), "sprunge")
 
     def get_undefined(self):
-        
+
         from cocktail.html.element import Element
         e = Element()
-        
+
         # Getting an undefined meta attribute yields None
         self.assertTrue(e.get_meta("desc") is None)
 
     def test_set_none(self):
-        
+
         from cocktail.html.element import Element
-        
+
         e = Element()
         e.set_meta("desc", "foo")
 
@@ -134,7 +134,7 @@ class ElementMetaAttributesTestCase(TestCase):
     def test_list(self):
 
         from cocktail.html.element import Element
-        
+
         # An element starts with no meta attributes
         e = Element()
         self.assertEquals(e.meta, {})
@@ -148,11 +148,11 @@ class ElementMetaAttributesTestCase(TestCase):
         })
 
 class ElementVisibilityTestCase(TestCase):
-    
+
     def test_visible_default(self):
 
         from cocktail.html.element import Element
-        
+
         # Elements must be visible by default
         self.assertTrue(Element().visible)
 
@@ -179,9 +179,9 @@ class ElementVisibilityTestCase(TestCase):
     def test_collapsible_rendered(self):
 
         from cocktail.html.element import Element
-        
+
         parent = Element()
-        
+
         # An element starts with no rendered children
         self.assertFalse(parent.has_rendered_children())
 
@@ -198,7 +198,7 @@ class ElementVisibilityTestCase(TestCase):
         # A collapsible element with invisible children is not rendered
         child1.visible = False
         self.assertFalse(parent.has_rendered_children())
-        self.assertFalse(parent.rendered) 
+        self.assertFalse(parent.rendered)
 
         # A collapsible element with collapsible children without rendered
         # children is not rendered
@@ -237,7 +237,7 @@ class ElementTreeTestCase(TestCase):
 
         def set_parent():
             e.parent = None
-        
+
         self.assertRaises(AttributeError, set_parent)
 
     def test_elements_start_empty(self):
@@ -248,7 +248,7 @@ class ElementTreeTestCase(TestCase):
     def test_append(self):
 
         from cocktail.html.element import Element
-        
+
         parent = Element()
 
         child1 = Element()
@@ -291,11 +291,11 @@ class ElementTreeTestCase(TestCase):
         self.assertTrue(child.parent is parent)
 
     def test_insert(self):
-        
+
         from cocktail.html.element import Element
 
         parent = Element()
-        
+
         child1 = Element()
         parent.insert(0, child1)
         self.assertTrue(child1.parent is parent)
@@ -346,7 +346,7 @@ class ElementTreeTestCase(TestCase):
         self.assertTrue(child.parent is parent)
 
     def test_place_before_root(self):
-        
+
         from cocktail.html.element import Element, ElementTreeError
 
         def place_before_root():
@@ -379,7 +379,7 @@ class ElementTreeTestCase(TestCase):
         self.assertEquals(parent.children, [child3, child2, child1])
 
     def test_place_after_root(self):
-        
+
         from cocktail.html.element import Element, ElementTreeError
 
         def place_after_root():
@@ -434,7 +434,7 @@ class ElementTreeTestCase(TestCase):
         from cocktail.html.element import Element
 
         parent = Element()
-        
+
         # Emptying an empty element is a no-op
         parent.empty()
 
@@ -451,7 +451,7 @@ class ElementTreeTestCase(TestCase):
 class ElementCSSClassesTestCase(TestCase):
 
     def test_starts_without_classes(self):
-        
+
         from cocktail.html.element import Element
         e = Element()
         self.assertEquals(e["class"], None)
@@ -489,16 +489,16 @@ class ElementCSSClassesTestCase(TestCase):
         self.assertEquals(scrum["class"], "Spam Foo Scrum")
 
     def test_constructor(self):
-        
+
         from cocktail.html.element import Element
         e = Element(class_name = "huge fugly")
         self.assertEquals(e["class"], "huge fugly")
         self.assertEquals(e.classes, ["huge", "fugly"])
 
     def test_set_attribute(self):
-        
+
         from cocktail.html.element import Element
-        
+
         e = Element()
 
         # Setting the 'class' attribute reflects on the element's 'classes'
@@ -513,11 +513,11 @@ class ElementCSSClassesTestCase(TestCase):
         self.assertEquals(e.classes, ["craptastic", "shiny"])
 
     def test_add_class(self):
-        
+
         from cocktail.html.element import Element
-        
+
         e = Element()
-        
+
         # Adding a class works as expected
         e.add_class("craptastic")
         self.assertEquals(e["class"], "craptastic")
@@ -534,18 +534,18 @@ class ElementCSSClassesTestCase(TestCase):
         self.assertEquals(e.classes, ["craptastic", "shiny"])
 
     def test_remove_class(self):
-        
+
         from cocktail.html.element import Element
-        
+
         e = Element()
-        
+
         # Removing an undefined class is a no-op
         e.remove_class("big")
-        
+
         e.add_class("craptastic")
         e.add_class("shiny")
         e.add_class("important")
-        
+
         e.remove_class("shiny")
         self.assertEquals(e["class"], "craptastic important")
         self.assertEquals(e.classes, ["craptastic", "important"])
@@ -561,32 +561,32 @@ class ElementCSSClassesTestCase(TestCase):
 class ElementStyleTestCase(TestCase):
 
     def test_get_set(self):
-        
+
         from cocktail.html.element import Element
         e = Element()
-        
+
         # Style declarations can be set and read
         e.set_style("font-weight", "bold")
         e.set_style("margin", "1em")
         self.assertEquals(e.get_style("font-weight"), "bold")
         self.assertEquals(e.get_style("margin"), "1em")
- 
+
         # Style declarations can be changed
         e.set_style("font-weight", "normal")
         self.assertEquals(e.get_style("font-weight"), "normal")
 
     def get_undefined(self):
-        
+
         from cocktail.html.element import Element
         e = Element()
-        
+
         # Getting an undefined style declaration yields None
         self.assertTrue(e.get_style("font-weight") is None)
 
     def test_set_none(self):
-        
+
         from cocktail.html.element import Element
-        
+
         e = Element()
         e.set_style("font-weight", "bold")
 
@@ -597,7 +597,7 @@ class ElementStyleTestCase(TestCase):
     def test_dict(self):
 
         from cocktail.html.element import Element
-        
+
         # An element starts with no style declarations
         e = Element()
         self.assertEquals(e.style, {})
@@ -626,12 +626,12 @@ class ElementStyleTestCase(TestCase):
 
 class ElementResourcesTestCase(TestCase):
 
-    def test_starts_empty(self):        
+    def test_starts_empty(self):
         from cocktail.html.element import Element
         self.assertEquals(Element().resources, [])
 
     def __test_create_resource_from_uri(self, uri, expected_type):
-        from cocktail.html.resources import Resource        
+        from cocktail.html.resources import Resource
         resource = Resource.from_uri(uri)
         self.assertEquals(resource.uri, uri)
         self.assertTrue(isinstance(resource, expected_type))
@@ -651,9 +651,9 @@ class ElementResourcesTestCase(TestCase):
         self.__test_create_resource_from_uri("foo.css", StyleSheet)
 
     def __test_add_uri(self, uri, expected_type):
-        
+
         from cocktail.html.element import Element
-        
+
         e = Element()
         e.add_resource(uri)
         self.assertEquals(len(e.resources), 1)
@@ -671,12 +671,12 @@ class ElementResourcesTestCase(TestCase):
         self.__test_add_uri("foo.css", StyleSheet)
 
     def test_add_resource(self):
-        
+
         from cocktail.html.element import Element
         from cocktail.html.resources import Resource
 
         e = Element()
-        
+
         r1 = Resource("foo.js")
         e.add_resource(r1)
         self.assertEquals(e.resources, [r1])
@@ -693,15 +693,15 @@ class ElementResourcesTestCase(TestCase):
         self.assertRaises(ValueError, Element().add_resource, Resource(None))
 
     def test_remove_uri(self):
-        
+
         from cocktail.html.element import Element
         from cocktail.html.resources import Resource
 
         e = Element()
-        
+
         r1 = Resource("foo.js")
         e.add_resource(r1)
-        
+
         r2 = Resource("bar.js")
         e.add_resource(r2)
 
@@ -726,15 +726,15 @@ class ElementResourcesTestCase(TestCase):
         self.assertEquals(e.resources, [])
 
     def test_remove_resource(self):
-        
+
         from cocktail.html.element import Element
         from cocktail.html.resources import Resource
 
         e = Element()
-        
+
         r1 = Resource("foo.js")
         e.add_resource(r1)
-        
+
         r2 = Resource("bar.js")
         e.add_resource(r2)
 
@@ -759,7 +759,7 @@ class ElementResourcesTestCase(TestCase):
         self.assertEquals(e.resources, [])
 
     def test_resource_set(self):
-        
+
         from cocktail.html.element import Element
         from cocktail.html.resources import Resource, Script
 
@@ -767,7 +767,7 @@ class ElementResourcesTestCase(TestCase):
         r1 = Resource("foo.js")
 
         # Adding the same resource object twice only adds the resource once
-        e.add_resource(r1)        
+        e.add_resource(r1)
         e.add_resource(r1)
         self.assertEquals(e.resources, [r1])
 
@@ -787,9 +787,9 @@ class ElementResourcesTestCase(TestCase):
         self.assertEquals(e.resources, [r1, r2])
 
     def test_set_resource_uri(self):
-        
+
         from cocktail.html.resources import Resource
-    
+
         # A resource's uri can be set through its constructor
         r = Resource("foo.js")
         self.assertEquals(r.uri, "foo.js")
@@ -807,7 +807,7 @@ class ElementClientParamsTestCase(TestCase):
         self.assertEquals(Element().client_params, {})
 
     def test_get_set(self):
-        
+
         from cocktail.html.element import Element
         e = Element()
 

@@ -16,7 +16,7 @@ from cocktail.html.databoundcontrol import data_bound
     def should_enable_search(self):
         if not self.items:
             return False
-        
+
         if not self.search_threshold:
             return True
 
@@ -29,7 +29,7 @@ from cocktail.html.databoundcontrol import data_bound
             item_count = len(self.items)
 
         return item_count >= self.search_threshold
-    
+
     def get_selected_items_heading(self):
         return translations("cocktail.html.SplitSelector.selected_items_panel.heading")
 
@@ -38,13 +38,14 @@ from cocktail.html.databoundcontrol import data_bound
 
     def get_eligible_items_heading(self):
         return translations("cocktail.html.SplitSelector.eligible_items_panel.heading")
-            
+
     def get_eligible_items_toggle_button_label(self):
         return translations("cocktail.html.SplitSelector.eligible_items_panel.toggle_button")
     ?>
 
     <?py
     data_bound(self)
+    self.add_resource("/cocktail/scripts/xregexp.js")
     self.add_resource("/cocktail/scripts/searchable.js")
     self.add_resource("/cocktail/scripts/SplitSelector.js")
     ?>
@@ -59,7 +60,7 @@ from cocktail.html.databoundcontrol import data_bound
     <div
         py:id="search_controls"
         py:client_model="cocktail.html.SplitSelector.searchControls">
-        <input py:id="search_box" type="search"/>        
+        <input py:id="search_box" type="search"/>
     </div>
 
     <py:cocktail.html.CheckList
@@ -106,7 +107,7 @@ from cocktail.html.databoundcontrol import data_bound
         <div py:local_id="split_panel_toolbar">
             <button type="button" py:local_id="toggle_button">
                 <img py:local_id="button_icon"/>
-                <span py:local_id="button_label"/>                
+                <span py:local_id="button_label"/>
             </button>
         </div>
         <div py:local_id="split_panel_content"/>

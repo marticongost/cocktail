@@ -23,22 +23,22 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
     ])
 
     def _get_view_state_form_params(self):
-        
+
         excluded = set(self.excluded_view_state_params)
 
         for i, filter in enumerate(self.user_collection.user_filters):
             for member in filter.schema.members().itervalues():
                 excluded.add("filter_" + member.name + str(i))
-        
+
         return dict((key, None) for key in excluded)
     ?>
-    
+
     <?py
     self.add_resource("/cocktail/scripts/jquery.cookie.js")
     self.add_resource("/cocktail/scripts/CollectionView.js")
     self.add_client_translation("cocktail.html.CollectionView selection options")
     self.add_client_translation("cocktail.html.CollectionView select all")
-    self.add_client_translation("cocktail.html.CollectionView clear selection")   
+    self.add_client_translation("cocktail.html.CollectionView clear selection")
     ?>
 
     <py:ready>
@@ -108,15 +108,19 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
                             else:
                                 return ""
 
-                        @refine(element)
-                        def get_item_value(self, item):
+                        @extend(element)
+                        def get_item_value(element, item):
                             if isinstance(item, basestring):
                                 return item
                             else:
                                 return item.name
 
-                        @refine(element)
-                        def get_item_label(self, member):
+                        @extend(element)
+                        def is_selected(element, member):
+                            return element.get_item_value(member) in element.value
+
+                        @extend(element)
+                        def get_item_label(element, member):
                             return translations(member)
                         ?>
                     </py:with>
@@ -201,7 +205,7 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
         <?py
         self.visible_results = bool(self.user_collection.page_subset)
         self.collection_display.user_collection = self.user_collection
-        self.collection_display.selection_mode = self.selection_mode        
+        self.collection_display.selection_mode = self.selection_mode
         self.collection_display.visible = self.visible_results
         self.no_results.visible = not self.visible_results
 
@@ -218,7 +222,7 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
 
         self.set_client_param("hasResults", self.visible_results)
 
-        if not self.visible_results:        
+        if not self.visible_results:
             if self.user_collection.user_filters:
                 self.no_results.append(translations("cocktail.html.CollectionView no search results"))
             else:

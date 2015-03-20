@@ -15,10 +15,10 @@ from cocktail.modeling import getter, OrderedSet
 from cocktail.events import Event, event_handler
 from cocktail.translations import translations
 from cocktail.schema import (
-    SchemaClass, 
+    SchemaClass,
     SchemaObject,
     String,
-    Reference, 
+    Reference,
     Collection,
     TranslationMapping
 )
@@ -67,7 +67,7 @@ schema.RelationMember.cascade_delete = property(
     for that relation. This behavior propagates recursively.
 
     The property is disabled by default.
-    
+
     L{Integral<cocktail.schema.schemarelations.RelationMember.integral>}
     relations implicitly enable cascade deletion.
 
@@ -94,17 +94,17 @@ class PersistentClass(SchemaClass):
     # Avoid creating a duplicate persistent class when copying the class
     _copy_class = schema.Schema
     _generated_id = False
-    
+
     @event_handler
     def handle_member_added(metacls, event):
-        
+
         cls = event.source
         member = event.member
 
         # Unique values restriction
         if member.unique:
             if (
-                unique_validation_rule 
+                unique_validation_rule
                 not in member.validations(recursive = False)
             ):
                 member.add_validation(unique_validation_rule)
@@ -172,13 +172,13 @@ class PersistentObject(SchemaObject, Persistent):
         self._v_initializing = False
 
     def require_id(self):
-        
+
         if not self.__class__._generated_id:
             return None
 
         primary = self.__class__.primary_member
         id = self.get(primary)
-        
+
         if id is None:
             id = incremental_id()
             self.set(primary, id)
@@ -193,17 +193,17 @@ class PersistentObject(SchemaObject, Persistent):
 
         @param criteria: A single keyword parameter, indicating the name of a
             unique member and its value. It is mutually exclusive with L{id}.
-        
+
         @return: The requested object, if found. Otherwise, None.
         @rtype: L{PersistentObject} or None
         """
         if id is not None:
-            
+
             if criteria:
                 raise ValueError("Can't call get_instance() using both "
                     "positional and keyword parameters"
                 )
-            
+
             member = cls.primary_member
 
             if member is None:
@@ -211,7 +211,7 @@ class PersistentObject(SchemaObject, Persistent):
                     "Can't call get_instance() using a single positional "
                     "argument on a type without a primary member"
                 )
-                
+
             value = id
         else:
             if len(criteria) > 1:
@@ -262,7 +262,7 @@ class PersistentObject(SchemaObject, Persistent):
             match = None
 
         return match
-    
+
     @classmethod
     def require_instance(cls, id = None, **criteria):
         """Obtains an instance of the class or raises an exception.
@@ -271,7 +271,7 @@ class PersistentObject(SchemaObject, Persistent):
 
         @param criteria: A single keyword parameter, indicating the name of a
             unique member and its value. It is mutually exclusive with L{id}.
-        
+
         @return: The requested object, if found. Otherwise, None.
         @rtype: L{PersistentObject} or None
 
@@ -304,7 +304,7 @@ class PersistentObject(SchemaObject, Persistent):
         constructor.
 
         @return: The requested collection of instances of the class.
-        @rtype: L{Query<cocktail.persistence.query.Query>}                
+        @rtype: L{Query<cocktail.persistence.query.Query>}
         """
         return Query(cls, *args, **kwargs)
 
@@ -339,10 +339,10 @@ class PersistentObject(SchemaObject, Persistent):
 
     def insert(self, inserted_objects = None):
         """Inserts the object into the database."""
-        
+
         if self.__inserted:
             return False
-     
+
         if inserted_objects is None:
             inserted_objects = set()
             inserted_objects.add(self)
@@ -379,7 +379,7 @@ class PersistentObject(SchemaObject, Persistent):
 
     def delete(self, deleted_objects = None):
         """Removes the object from the database."""
-        
+
         if deleted_objects is None:
             deleted_objects = set()
             deleted_objects.add(self)
@@ -458,7 +458,7 @@ class PersistentObject(SchemaObject, Persistent):
         return self is not other
 
     def copy_value(self, member, language, **kwargs):
-        
+
         value = SchemaObject.copy_value(self, member, language, **kwargs)
 
         if member.unique:
@@ -524,7 +524,7 @@ def _select_constraint_instances(self, *args, **kwargs):
     parent = kwargs.pop("parent", None)
 
     query = self.related_type.select(*args, **kwargs)
-    
+
     if parent is not None:
         for expr in self.get_constraint_filters(parent):
             query.add_filter(expr)
@@ -536,7 +536,7 @@ schema.RelationMember.select_constraint_instances = \
 
 
 def _get_constraint_filters(self, parent):
-    
+
     context = schema.ValidationContext(self, parent, relation_parent = parent)
     constraints = self.resolve_constraint(self.relation_constraints, context)
 
@@ -553,7 +553,7 @@ def _get_constraint_filters(self, parent):
 
     # Prevent cycles in recursive relations
     excluded_items = set()
-    
+
     # References: exclude the parent and its descendants
     if isinstance(self, schema.Reference) and not self.cycles_allowed:
         if self.bidirectional:
@@ -598,7 +598,7 @@ def _get_constraint_filters(self, parent):
         while item:
             excluded_items.add(item)
             item = item.get(self.related_end)
-            
+
     if excluded_items:
         yield ExclusionExpression(Self, excluded_items)
 

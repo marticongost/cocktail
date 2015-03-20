@@ -19,7 +19,7 @@ from cocktail.translations import (
     get_language,
     language_context
 )
-from cocktail.schema import Collection, get
+from cocktail.schema import Collection, Mapping, get
 from cocktail.schema.expressions import (
     TranslationExpression,
     PositiveExpression,
@@ -29,7 +29,7 @@ from cocktail.controllers.viewstate import view_state
 
 
 class Table(Element, CollectionDisplay):
-    
+
     tag = "table"
     sortable = False
     show_language_headers = True
@@ -38,7 +38,6 @@ class Table(Element, CollectionDisplay):
     descending_order_image = "descending.png"
     base_image_url = None
     selection_parameter = "selection"
-    nested_list_max_length = 5
     persistence_prefix = None
     entry_selector = "tbody tr"
     checkbox_selector = ".row_selection_control"
@@ -50,7 +49,6 @@ class Table(Element, CollectionDisplay):
         CollectionDisplay.__init__(self)
         self.__column_display = {}
         self.__column_labels = {}
-        self.set_member_type_display(Collection, self.display_collection)
         self.__split_rows = {}
         self.__split_row_values = {}
         self.__split_row_iterators = {}
@@ -71,7 +69,7 @@ class Table(Element, CollectionDisplay):
         self.append(self.body)
 
     def _ready(self):
-                
+
         Element._ready(self)
 
         selectable(
@@ -98,13 +96,13 @@ class Table(Element, CollectionDisplay):
 
         # Cache sorted columns
         if self.order:
-            
+
             self._sorted_columns = sorted_columns = {}
-            
+
             for criteria in self.order:
                 sign = criteria.__class__
                 expr = criteria.operands[0]
-                
+
                 if isinstance(expr, TranslationExpression):
                     member = expr.operands[0].name
                     language = expr.operands[1].value
@@ -129,7 +127,7 @@ class Table(Element, CollectionDisplay):
 
         # Regular columns
         for group, columns in self.displayed_members_by_group:
-            
+
             if self.column_groups_displayed:
                 self.column_groups_row.append(
                     self.create_column_group_header(group, columns)
@@ -143,12 +141,12 @@ class Table(Element, CollectionDisplay):
                 else:
                     header = self.create_header(column)
                     self.head_row.append(header)
-        
+
     def _fill_body(self):
 
         if self.grouping:
             undefined = object()
-            current_group = undefined        
+            current_group = undefined
             get_group = self.grouping.get_grouping_value
         else:
             get_group = None
@@ -171,7 +169,7 @@ class Table(Element, CollectionDisplay):
 
         if not self.__split_rows:
             return
-        
+
         row_span = 1
         end = False
         i = 0
@@ -179,7 +177,7 @@ class Table(Element, CollectionDisplay):
         while not end:
             extra_row = Element("tr")
             has_content = False
-            
+
             i += 1
             if i > 100:
                 raise Exception("Damn")
@@ -198,7 +196,7 @@ class Table(Element, CollectionDisplay):
                         else:
                             cell = self.create_cell(item, column)
                             has_content = True
-                    
+
                     if cell is not None:
                         extra_row.append(cell)
 
@@ -206,7 +204,7 @@ class Table(Element, CollectionDisplay):
                 self.append(extra_row)
                 row_span += 1
 
-        for cell in row.children:            
+        for cell in row.children:
             if cell.member is None \
             or cell.member.name not in self.__split_rows:
                 cell["rowspan"] = row_span
@@ -215,10 +213,10 @@ class Table(Element, CollectionDisplay):
         pass
 
     def create_group_row(self, group):
-        
+
         row = Element("tr")
         row.add_class("group")
-        
+
         cell = Element("td",
             colspan = len(self.head_row.children),
             children = [
@@ -245,17 +243,17 @@ class Table(Element, CollectionDisplay):
             ]
         )
         row.append(cell)
-        
+
         return row
 
     def create_row(self, index, item):
-        
+
         self.__split_row_iterators.clear()
         self.__split_row_values.clear()
 
         row = Element("tr")
         row.add_class(index % 2 == 0 and "odd" or "even")
-        
+
         if (
             self.selection_mode != NO_SELECTION
             and self.use_separate_selection_column
@@ -264,14 +262,14 @@ class Table(Element, CollectionDisplay):
 
         if self.schema.primary_member:
             row["id"] = item.id
-                    
+
         for group, columns in self.displayed_members_by_group:
             for column in columns:
                 if self.translations and column.translated:
                     for language in self.translations:
                         with language_context(language):
                             cell = self.create_cell(item, column, language)
-                            row.append(cell)                
+                            row.append(cell)
                 else:
                     key = column.name
                     sequence_factory = self.__split_rows.get(key)
@@ -279,7 +277,7 @@ class Table(Element, CollectionDisplay):
                     if sequence_factory is not None:
                         iterator = iter(sequence_factory(item))
                         self.__split_row_iterators[key] = iterator
-                        
+
                         try:
                             value = iterator.next()
                         except StopIteration:
@@ -289,7 +287,7 @@ class Table(Element, CollectionDisplay):
 
                     cell = self.create_cell(item, column)
                     row.append(cell)
-        
+
         if (
             self.selection_mode != NO_SELECTION
             and not self.use_separate_selection_column
@@ -321,7 +319,7 @@ class Table(Element, CollectionDisplay):
             )
         return get(item, pm)
 
-    def create_selection_cell(self, item):        
+    def create_selection_cell(self, item):
         selection_cell = Element("td")
         selection_cell.add_class("selection")
         selection_cell.append(self.create_selection_control(item))
@@ -358,25 +356,25 @@ class Table(Element, CollectionDisplay):
         if group and self.schema and self.schema.name:
             return translations("%s.%s_group" % (self.schema.name, group))
         else:
-            return ""    
+            return ""
 
     def create_header(self, column, language = None):
-        
+
         header = Element("th")
         self._init_cell(header, column, language)
-        
+
         header.label = Element("span")
         header.label.add_class("label")
         header.label.append(self.get_member_label(column))
         header.append(header.label)
-        
+
         # Translation label
         if self.show_language_headers and language:
             header.translation_label = self.create_translation_label(language)
             header.append(header.translation_label)
-        
+
         self.add_header_ui(header, column, language)
-        return header       
+        return header
 
     def create_translation_label(self, language):
         label = Element("span")
@@ -408,7 +406,7 @@ class Table(Element, CollectionDisplay):
                         sign = "-"
                     elif current_direction is NegativeExpression:
                         header.add_class("descending")
- 
+
             order_param = sign + column.name
 
             if language:
@@ -443,10 +441,4 @@ class Table(Element, CollectionDisplay):
 
         if language:
             cell.add_class(language)
-
-    def display_collection(self, obj, member):
-        list = templates.new("cocktail.html.List")
-        list.items = self.get_member_value(obj, member)
-        list.max_length = self.nested_list_max_length
-        return list
 

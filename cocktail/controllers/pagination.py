@@ -30,7 +30,7 @@ class Pagination(schema.SchemaObject):
     def _get_item_count(self):
         if self.__item_count is not None:
             return self.__item_count
-            
+
         if self.items is not None:
             return len(self.items)
 

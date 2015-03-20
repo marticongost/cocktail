@@ -8,6 +8,7 @@ from time import time
 from threading import Lock
 from shutil import copyfileobj
 from mimetypes import guess_type
+from urllib import unquote
 import cherrypy
 from simplejson import dumps
 from cocktail.memoryutils import format_bytes
@@ -39,7 +40,7 @@ class AsyncUploader(object):
         self.lock = Lock()
 
     def process_request(self):
-       
+
         # Create an upload and give it a unique identifier
         id = self._acquire_upload_id()
         upload = AsyncUpload(id)
@@ -57,6 +58,8 @@ class AsyncUploader(object):
 
             upload.filename = upload_data.filename
             file = upload_data.file
+
+        upload.filename = unquote(upload.filename)
 
         # Get the file's size
         upload.size = int(cherrypy.request.headers.get("Content-Length", 0))
@@ -89,7 +92,7 @@ class AsyncUploader(object):
 
 
 class AsyncUpload(object):
-    
+
     __id = None
     file_name = None
     type = None

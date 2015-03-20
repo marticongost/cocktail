@@ -16,8 +16,8 @@ from cocktail.modeling import (
 
 whole_cache = object()
 
-def normalize_scope(scope):        
-    
+def normalize_scope(scope):
+
     if scope is whole_cache:
         return whole_cache
     else:

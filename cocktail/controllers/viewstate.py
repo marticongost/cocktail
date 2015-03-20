@@ -16,7 +16,7 @@ from cocktail.controllers.parameters import serialize_parameter
 def get_state(**kwargs):
     state = parse_qs(cherrypy.request.query_string)
     state.update(kwargs)
-    
+
     for key, value in state.items():
         if value is None:
             del state[key]
@@ -68,7 +68,7 @@ def save_view_state(view_state_id = None):
     session[session_key] = cherrypy.request.query_string
 
 def restore_view_state(view_state_id = None, **kwargs):
-    session_key = _view_state_session_key(view_state_id)    
+    session_key = _view_state_session_key(view_state_id)
     qs = session.get(session_key)
     state = parse_qs(qs) if qs else {}
     state.update(kwargs)

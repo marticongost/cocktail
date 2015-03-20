@@ -35,7 +35,7 @@ class TextArea(Element):
 
     def _get_value(self):
         return self.__content.value
-    
+
     def _set_value(self, value):
         self.__content.value = value
 

@@ -29,12 +29,12 @@ from cocktail.controllers.fileupload import FileUpload
 schema.Member.parameter_name = None
 
 def _get_parameter_name(self, language = None, prefix = None, suffix = None):
-    
+
     parameter = self.parameter_name or self.name
 
     if parameter and self.schema and self.parameter_name_is_qualified:
         parameter = self.schema.get_parameter_name() + "." + parameter
-        
+
     if language:
         parameter += "-" + language
 
@@ -55,7 +55,7 @@ def _get_parameter_name_is_qualified(self):
     if self._parameter_name_is_qualified is None:
         return self.schema is not None \
            and self.schema.schema is not None
-        
+
     return self._parameter_name_is_qualified
 
 def _set_parameter_name_is_qualified(self, value):
@@ -151,7 +151,7 @@ except ImportError:
     pass
 
 def parse_date(self, reader, value):
-    
+
     if value is not None:
         format = self.request_date_format or translations("date format")
 
@@ -171,7 +171,7 @@ Date.parse_request_value = parse_date
 Date.serialize_request_value = serialize_date
 
 def parse_datetime(self, reader, value):
-    
+
     if value is not None:
         date_format = self.request_date_format or translations("date format")
         time_format = "%H:%M:%S"
@@ -204,7 +204,7 @@ def parse_time(self, reader, value):
             value = datetime.time(*time.strptime(value, "%H:%M:%S")[3:6])
         except ValueError:
             pass
-    
+
     return value
 
 def serialize_time(self, value):
@@ -214,18 +214,18 @@ schema.Time.parse_request_value = parse_time
 schema.Time.serialize_request_value = serialize_time
 
 def parse_boolean(self, reader, value):
-    
+
     if value is not None:
 
         vl = value.lower()
-        
+
         if vl in ("true", "1", "on"):
             value = True
         elif vl in ("false", "0", "off"):
             value = False
 
     return value
-        
+
 schema.Boolean.parse_request_value = parse_boolean
 
 def parse_reference(self, reader, value):
@@ -239,10 +239,10 @@ def parse_reference(self, reader, value):
                 if cls.full_name == value:
                     value = cls
                     break
-        # Object references        
+        # Object references
         else:
             value = resolve_object_ref(related_type, value)
-    
+
     return value
 
 resolve_object_ref = GenericClassMethod(
@@ -263,6 +263,33 @@ def serialize_reference(self, value):
 schema.Reference.parse_request_value = parse_reference
 schema.Reference.serialize_request_value = serialize_reference
 
+def parse_member_reference(self, reader, value):
+
+    if value is not None:
+
+        possible_values = self.get_possible_values()
+
+        if possible_values:
+            for member in possible_values:
+                if isinstance(member, schema.Schema):
+                    kind = self.SCHEMAS
+                else:
+                    kind = self.MEMBERS
+
+                if (
+                    self.kind & kind
+                    and member.get_qualified_name(include_ns = True) == value
+                ):
+                    return member
+
+    return value
+
+def serialize_member_reference(self, value):
+    return value and value.full_name or ""
+
+schema.MemberReference.parse_request_value = parse_member_reference
+schema.MemberReference.serialize_request_value = serialize_member_reference
+
 def parse_collection(self, reader, value):
 
     if not value:
@@ -271,7 +298,7 @@ def parse_collection(self, reader, value):
         else:
             return None
 
-    elif isinstance(value, basestring):         
+    elif isinstance(value, basestring):
         value = reader.split_collection(self, value)
 
     collection_type = self.type or self.default_type or list
@@ -294,6 +321,64 @@ def serialize_collection(self, value):
 
 schema.Collection.parse_request_value = parse_collection
 schema.Collection.serialize_request_value = serialize_collection
+
+def parse_mapping(self, reader, value):
+
+    if not value:
+        if self.required and reader.undefined != "set_default":
+            return (self.type or self.default_type)()
+        else:
+            return None
+
+    elif isinstance(value, basestring):
+        mapping_type = self.type or self.default_type or dict
+        items_sep = self.request_items_separator
+        key_value_sep = self.request_key_value_separator
+        try:
+            items = (
+                item.split(key_value_sep, 1)
+                for item in value.split(items_sep)
+            )
+            mapping = mapping_type(
+                (
+                    reader.process_value(self.keys, k) if self.keys else k,
+                    reader.process_value(self.values, v) if self.values else v
+                )
+                for k, v in items
+            )
+        except:
+            pass
+        else:
+            value = mapping
+
+    return value
+
+def serialize_mapping(self, value):
+
+    if not value:
+        return ""
+    else:
+        items = self.items
+        serialize_key = (
+            self.keys
+            and self.keys.serialize_request_value
+            or unicode
+        )
+        serialize_value = (
+            self.values
+            and self.values.serialize_request_value
+            or unicode
+        )
+        key_value_glue = self.request_key_value_separator
+        return self.request_items_separator.join(
+            serialize_key(k) + key_value_glue + serialize_value(v)
+            for k, v in value.iteritems()
+        )
+
+schema.Mapping.parse_request_value = parse_mapping
+schema.Mapping.serialize_request_value = serialize_mapping
+schema.Mapping.request_items_separator = ";"
+schema.Mapping.request_key_value_separator = ":"
 
 def parse_tuple(self, reader, value):
 
@@ -390,7 +475,7 @@ def get_parameter(
         function will return a (language => value) dictionary.
 
     @type languages: str collection
-    
+
     @param normalization: A function that will be called to normalize data read
         from the request, before handling it to the member's parser. It must
         receive a single parameter (the piece of data to normalize) and return
@@ -406,9 +491,9 @@ def get_parameter(
             set_none
                 Incorrect values will be replaced with None. This is the
                 default behavior.
-            
+
             set_default
-                Incorrect values will be replaced with their field's default 
+                Incorrect values will be replaced with their field's default
                 value.
 
             ignore
@@ -418,13 +503,13 @@ def get_parameter(
             raise
                 As soon as an incorrect value is found, the first of its
                 validation errors will be raised as an exception.
-    
+
     @type errors: str
 
     @param undefined: Determines the treatment received by members defined by
         the retrieved schema that aren't given an explicit value by the
         request. Can take any of the following string identifiers:
-            
+
             set_default
                 Undefined values will be replaced by their member's default
                 value. This is the default behavior.
@@ -434,8 +519,8 @@ def get_parameter(
 
             skip
                 Undefined values will be reported as None, but won't modify the
-                target object.        
-    
+                target object.
+
     @type undefined: str
 
     @param implicit_booleans: A flag that indicates if missing required boolean
@@ -461,7 +546,7 @@ def get_parameter(
 
     @return: The requested value, or None if the request doesn't provide a
         matching value for the indicated member, or it is empty.
-        
+
         The function will try to coerce request parameters into an instance of
         an adequate type, through the L{parse_request_value<cocktail.schema.member.Member>}
         method of the supplied member. Depending on the value of the L{errors}
@@ -469,7 +554,7 @@ def get_parameter(
         also be tested against the obtained value. Validation errors can be
         ignored, raised as exceptions or used to set the retrieved value to
         None or to the member's specified default.
-        
+
         By default, reading a schema will produce a dictionary or a
         L{SchemaObject<cocktail.schema.schemaobject.SchemaObject>} with all its
         values. Reading a translated member will produce a dictionary with
@@ -506,13 +591,13 @@ class FormSchemaReader(object):
     @ivar errors: Specifies what should happen if the read value doesn't
         satisfy the constraints and validations set by the member. Can be set
         to any of the following string identifiers:
-            
+
             set_none
                 Incorrect values will be replaced with None. This is the
                 default behavior.
-            
+
             set_default
-                Incorrect values will be replaced with their field's default 
+                Incorrect values will be replaced with their field's default
                 value.
 
             ignore
@@ -522,13 +607,13 @@ class FormSchemaReader(object):
             raise
                 As soon as an incorrect value is found, the first of its
                 validation errors will be raised as an exception.
-    
+
     @type errors: string
 
     @ivar undefined: Determines the treatment received by members defined by
         the retrieved schema that aren't given an explicit value by the
         request. Can take any of the following string identifiers:
-            
+
             set_default
                 Undefined values will be replaced by their member's default
                 value. This is the default behavior.
@@ -538,8 +623,8 @@ class FormSchemaReader(object):
 
             skip
                 Undefined values will be reported as None, but won't modify the
-                target object.        
-    
+                target object.
+
     @type undefined: str
 
     @ivar implicit_booleans: A flag that indicates if missing required boolean
@@ -555,7 +640,7 @@ class FormSchemaReader(object):
     @param suffix: A string that will be appended at the end of the parameter
         name for each retrieved member.
     @type suffix: str
-    
+
     @ivar source: By default, all parameters are read from the current
         cherrypy request (which includes both GET and POST parameters), but
         this can be overriden through this attribute. Should be set to a
@@ -599,7 +684,7 @@ class FormSchemaReader(object):
             retrieve, which will be used to apply the required processing to
             turn the raw data supplied by the request into a value of the given
             type.
-            
+
             Can also accept a string, which will implicitly create a temporary
             `schema.String` member.
 
@@ -614,13 +699,13 @@ class FormSchemaReader(object):
             the function will return a (language => value) dictionary.
 
         @type languages: str collection
-        
+
         @param target: If supplied, the read member will be set on the given
             object.
 
         @return: The requested value, or None if the request doesn't provide a
             matching value for the indicated member, or it is empty.
-            
+
             The function will try to coerce request parameters into an instance
             of an adequate type, through the L{parse_request_value<cocktail.schema.member.Member>}
             method of the supplied member. Depending on the value of the L{errors}
@@ -628,7 +713,7 @@ class FormSchemaReader(object):
             also be tested against the obtained value. Validation errors can be
             ignored, raised as exceptions or used to set the retrieved value to
             None or to the member's specified default.
-            
+
             By default, reading a schema will produce a dictionary or a
             L{SchemaObject<cocktail.schema.schemaobject.SchemaObject>} with all its
             values. Reading a translated member will produce a dictionary with
@@ -651,7 +736,7 @@ class FormSchemaReader(object):
                     "translatable member %s"
                     % (languages, member)
                 )
-            
+
             if target is None:
                 target = {}
 
@@ -662,13 +747,13 @@ class FormSchemaReader(object):
 
         else:
             return self._read_value(member, target, None, path)
-    
+
     def _read_value(self,
         member,
         target,
         language,
         path):
- 
+
         if member.read_request_value:
             value = member.read_request_value(self)
         else:
@@ -740,7 +825,7 @@ class FormSchemaReader(object):
                     path)
 
             # Validate child members *after* all members have read their values
-            # (this allows conditional validations based on other members in 
+            # (this allows conditional validations based on other members in
             # the schema)
             if self.errors != "ignore":
                 invalid_members = set()
@@ -751,19 +836,19 @@ class FormSchemaReader(object):
                         invalid_members.add(error_member)
                         error_target = error.context.get_object()
                         fixed_value = self._fix_value(
-                            error_target, 
+                            error_target,
                             error_member,
                             error.value,
                             error
                         )
                         schema.set(
-                            error_target, 
-                            error_member.name, 
+                            error_target,
+                            error_member.name,
                             fixed_value
                         )
         finally:
             path.pop()
-            
+
         return target
 
     def get_parameter_name(self, member, language = None):
@@ -783,7 +868,7 @@ class FormSchemaReader(object):
             return member
         else:
             return member.get_parameter_name(
-                language, 
+                language,
                 prefix = self.prefix,
                 suffix = self.suffix
             )
@@ -797,11 +882,18 @@ class FormSchemaReader(object):
 
             if not isinstance(value, cgi.FieldStorage):
                 for norm in [self.normalization, member.normalization]:
-                    if norm: 
+                    if norm:
                         if isinstance(value, basestring):
                             value = norm(value)
-                        else:
-                            value = [norm(part) for part in value]
+                        elif isinstance(value, list):
+                            value = [
+                                (
+                                    norm(part)
+                                    if isinstance(part, basestring)
+                                    else part
+                                )
+                                for part in value
+                            ]
 
             if value == "":
                 value = None
@@ -835,7 +927,7 @@ class FormSchemaReader(object):
 
 def set_cookie_expiration(cookie, seconds=None):
     """ Sets the 'max-age' and 'expires' attributes for generated cookies.
-        Setting it to None produces session cookies. 
+        Setting it to None produces session cookies.
     """
 
     if seconds is None:
@@ -848,7 +940,7 @@ def set_cookie_expiration(cookie, seconds=None):
         cookie["max-age"] = seconds
 
         if seconds == 0:
-            cookie["expires"] = http.HTTPDate(                                                                                                                                            
+            cookie["expires"] = http.HTTPDate(
                 time.time() - (60 * 60 * 24 * 365)
             )
         else:
@@ -865,7 +957,7 @@ class CookieParameterSource(object):
         requested parameters. Defaults to X{cherrypy.request.params.get}.
     @type source: callable
 
-    @param cookie_duration: Sets the 'max-age' and 'expires' attributes for 
+    @param cookie_duration: Sets the 'max-age' and 'expires' attributes for
         generated cookies. Setting it to None produces session cookies.
     @type cookie_duration: int
 
@@ -888,7 +980,7 @@ class CookieParameterSource(object):
 
     @param ignore_new_values: When set to True, updated values from the
         L{source} callable will be ignored, and only existing values persisted
-        on cookies will be taken into account. 
+        on cookies will be taken into account.
     @type ignore_new_values: bool
 
     @param update: Indicates if new values from the L{source} callable should
@@ -970,18 +1062,18 @@ class CookieParameterSource(object):
 
                     if param_value and self.cookie_encoding:
                         param_value = param_value.decode(self.cookie_encoding)
-        
+
         return param_value
 
     def get_cookie_name(self, param_name):
         """Determines the name of the cookie used to persist a parameter.
-        
+
         @param param_name: The name of the persistent parameter.
         @type param_name: str
 
         @return: The name for the cookie.
         @rtype: str
-        """        
+        """
         if self.cookie_naming:
             prefix = self.cookie_prefix
             return self.cookie_naming % {
@@ -1012,7 +1104,7 @@ class SessionParameterSource(object):
 
     @param ignore_new_values: When set to True, updated values from the
         L{source} callable will be ignored, and only existing values stored
-        on session will be taken into account. 
+        on session will be taken into account.
     @type ignore_new_values: bool
 
     @param update: Indicates if new values from the L{source} callable should
@@ -1074,13 +1166,13 @@ class SessionParameterSource(object):
 
     def get_key(self, param_name):
         """Determines the name of the key used to persist a parameter.
-        
+
         @param param_name: The name of the persistent parameter.
         @type param_name: str
 
         @return: The key.
         @rtype: str
-        """        
+        """
         if self.key_naming:
             prefix = self.key_prefix
             return self.key_naming % {

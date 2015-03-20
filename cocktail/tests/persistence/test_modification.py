@@ -8,7 +8,7 @@ from cocktail.tests.persistence.tempstoragemixin import TempStorageMixin
 
 
 class ModificationTestCase(TempStorageMixin, TestCase):
-    
+
     def setUp(self):
 
         TempStorageMixin.setUp(self)
@@ -24,7 +24,7 @@ class ModificationTestCase(TempStorageMixin, TestCase):
                 indexed = True,
                 translated = True
             )
-        
+
         self.test_type = TestObject
 
     def test_modifying_member_updates_index(self):

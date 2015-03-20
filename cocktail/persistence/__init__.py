@@ -40,7 +40,10 @@ from cocktail.persistence.migration import (
 from cocktail.persistence.incremental_id import (
     incremental_id,
     acquire_id_range,
-    reset_incremental_id
+    reset_incremental_id,
+    get_incremental_id_slice_size,
+    set_incremental_id_slice_size,
+    incremental_id_slice_size_context
 )
 from cocktail.persistence.index import (
     Index,

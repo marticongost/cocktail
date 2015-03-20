@@ -26,11 +26,11 @@ class Member(Variable):
     data set, by embedding them within a `Collection` or `Schema`.
 
     .. attribute:: default
-    
+
         The default value for the member.
-    
+
     .. attribute:: required
-    
+
         Determines if the field requires a value. When set to true, a value of
         None for this member will trigger a validation error of type
         `exceptions.ValueRequiredError`.
@@ -40,7 +40,7 @@ class Member(Variable):
         Determines if the field disallows any value other than None.  When set
         to true, a value different than None for this member will trigger a
         validation error of type `exceptions.NoneRequiredError`.
-    
+
     .. attribute:: enumeration
 
         Establishes a limited set of acceptable values for the member. If a
@@ -148,20 +148,15 @@ class Member(Variable):
         return self is other
 
     def __repr__(self):
-        
-        member_desc = self._name \
-            and "member '%s'" % self._name \
-            or "anonymous " + self.__class__.__name__.lower()
 
-        if self._schema is None:
-            return "unbound " + member_desc
-        else:
-            schema_name = self._schema.name
-            return "%s in %s" % (
-                member_desc,
-                schema_name
-                    and "'%s' schema" % schema_name or "anonymous schema"
-            )
+        member_desc = self.__class__.__name__
+        if (
+            self.__class__.__module__
+            and not self.__class__.__module__.startswith("cocktail.schema.")
+        ):
+            member_desc = self.__class__.__module__ + "." + member_desc
+
+        return member_desc + " <%s>" % self.get_qualified_name()
 
     def _get_name(self):
         return self._name
@@ -170,22 +165,30 @@ class Member(Variable):
 
         if self._schema is not None:
             raise exceptions.MemberRenamedError(self, value)
-        
+
         self._name = value
 
-    name = property(_get_name, _set_name, doc = 
+    name = property(_get_name, _set_name, doc =
         """The name that uniquely identifies the member on the schema it is
         bound to. Once set it can't be changed (trying to do so will raise a
         `exceptions.MemberRenamedError` exception).
         """)
 
-    def get_qualified_name(self, delimiter = "."):
+    def get_qualified_name(self, delimiter = ".", include_ns = False):
         member = self
         names = []
-        while member is not None:
+        while True:
             if member._name:
                 names.append(member._name)
-            member = member._schema
+            owner = member._schema
+            if owner is None:
+                if include_ns:
+                    namespace = getattr(member, "__module__", None)
+                    if namespace:
+                        names.append(namespace)
+                break
+            else:
+                member = owner
         names.reverse()
         return delimiter.join(names)
 
@@ -199,18 +202,18 @@ class Member(Variable):
 
         self._schema = value
 
-    schema = property(_get_schema, _set_schema, doc = 
+    schema = property(_get_schema, _set_schema, doc =
         """The `schema <Schema>` that the member is bound to. Once set it can't
         be changed (doing so will raise a `exceptions.MemberReacquiredError`
         exception).
         """)
 
     def _get_type(self):
-        
+
         # Resolve string references
         if isinstance(self.__type, basestring):
             self.__type = import_object(self.__type)
-        
+
         return self.__type
 
     def _set_type(self, type):
@@ -221,7 +224,7 @@ class Member(Variable):
         this member must be instances of the specified data type. Breaking this
         restriction will produce a validation error of type
         `exceptions.TypeCheckError`.
-        
+
         The value for this constraint can take either a reference to a type
         object or a fully qualified python name. When set using a name, the
         indicated type will be imported lazily, the first time the value for
@@ -231,8 +234,8 @@ class Member(Variable):
 
     def _set_exclusive(self, expr):
         self.required = expr
-        
-        if isinstance(expr, Expression):        
+
+        if isinstance(expr, Expression):
             self.require_none = expr.not_()
         else:
             self.require_none = lambda ctx: not expr(ctx)
@@ -274,32 +277,32 @@ class Member(Variable):
 
         for key, value in kwargs.iteritems():
             obj = member_copy
-            
+
             name_parts = key.split(".")
-            
+
             for name in name_parts[:-1]:
                 obj = getattr(obj, name)
-            
+
             setattr(obj, name_parts[-1], value)
 
         return member_copy
 
     def __deepcopy__(self, memo):
-        
+
         # Custom class
         if self._copy_class:
             copy = self._copy_class()
-        
+
         # Copying a SchemaObject
         elif issubclass(self.__class__, type):
             members = self.members()
             copy = self.__class__(self.name, self.__bases__, dict(
                 (key, value)
                 for key, value in self.__dict__.iteritems()
-                if key not in self._special_copy_keys 
+                if key not in self._special_copy_keys
                 and key not in members
             ))
-        
+
         # Regular copy
         else:
             copy = self.__class__()
@@ -310,10 +313,10 @@ class Member(Variable):
             for key, value in self.__dict__.iteritems():
                 if key not in self._special_copy_keys:
                     copy.__dict__[key] = deepcopy(value, memo)
-        
+
         copy._validations = list(self._validations)
         memo[id(self._validations)] = copy._validations
-        
+
         copy._validations_wrapper = ListWrapper(copy._validations)
         memo[id(copy._validations_wrapper)] = copy._validations_wrapper
 
@@ -324,7 +327,7 @@ class Member(Variable):
 
     def add_validation(self, validation):
         """Adds a validation function to the member.
-        
+
         :param validation: A callable that will be added as a validation rule
             for the member. Takes two positional parameters (a reference to the
             member itself, and the value assigned to the member), plus any
@@ -338,7 +341,7 @@ class Member(Variable):
         """
         self._validations.append(validation)
         return validation
-    
+
     def remove_validation(self, validation):
         """Removes one of the validation rules previously added to a member.
 
@@ -369,9 +372,9 @@ class Member(Variable):
     def validate(self, value, **validation_parameters):
         """Indicates if the given value fulfills all the validation rules
         imposed by the member.
-        
+
         :param value: The value to validate.
-        
+
         :param validation_parameters: Additional parameters used to initialize
             the `ValidationContext` instance generated by this validation
             process.
@@ -385,7 +388,7 @@ class Member(Variable):
             return False
 
         return True
- 
+
     def get_errors(self, value, **validation_parameters):
         """Tests the given value with all the validation rules declared by the
         member, iterating over the resulting set of errors.
@@ -412,7 +415,7 @@ class Member(Variable):
     @classmethod
     def resolve_constraint(cls, expr, context):
         """Resolves a constraint expression for the given context.
-        
+
         Most constraints can be specified using dynamic expressions instead of
         static values, allowing them to adapt to different validation contexts.
         For example, a field may state that it should be required only if
@@ -424,7 +427,7 @@ class Member(Variable):
         `expressions.Expression` instance to a constraint value.
 
         :param expr: The constraint expression to resolve.
-        
+
         :param context: The validation context that will be made available to
             dynamic constraint expressions.
         :type context: `ValidationContext`
@@ -473,6 +476,17 @@ class Member(Variable):
             if type and not isinstance(context.value, type):
                 yield exceptions.TypeCheckError(context, type)
 
+    def get_possible_values(self, context = None):
+        if self.enumeration is not None:
+            if context is None:
+                context = ValidationContext(self, None)
+            enumeration = self.resolve_constraint(
+                self.enumeration,
+                context
+            )
+            if enumeration:
+                return enumeration
+
     def __translate__(self, language, qualified = False, **kwargs):
         if self.schema:
             if qualified:
@@ -495,7 +509,7 @@ class Member(Variable):
                     translation = None
 
                 if not translation:
-                    for cls in self.schema.__class__.__mro__:                        
+                    for cls in self.schema.__class__.__mro__:
                         translation = translations(
                             cls.__name__ + "." + self.name + suffix,
                             language,
@@ -526,7 +540,7 @@ class Member(Variable):
                 class_name = get_full_name(error.__class__)
             except Exception, ex:
                 class_name = error.__class__.__name__
-            
+
             trans = translations(
                 "%s-error: %s" % (self.get_qualified_name(), class_name),
                 instance = error,
@@ -540,7 +554,7 @@ class Member(Variable):
         # translations
         if self.source_member:
             return self.source_member.translate_error(
-                error, 
+                error,
                 language = language,
                 **kwargs
             )
@@ -549,10 +563,10 @@ class Member(Variable):
         return translations(error, language = language, **kwargs)
 
     def get_member_explanation(self, language = None, **kwargs):
-        
+
         explanation = None
 
-        if self.schema and self.schema.name:        
+        if self.schema and self.schema.name:
             explanation = translations(
                 self.schema.name + "." + self.name + "-explanation",
                 language,

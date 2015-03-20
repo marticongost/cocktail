@@ -32,7 +32,7 @@
         element.set_client_param("flashVars", self.flash_vars)
         element.set_client_param("flashParams", self.flash_params)
         element.set_client_param("flashAttributes", self.flash_attributes)
-        ?>        
+        ?>
     </py:ready>
 
 </div>

@@ -111,13 +111,13 @@
             var $option = getSelectedOption();
             if ($option.length && $option[0].treeNode.children.length) {
                 addSelector($option[0].treeNode);
-            }            
+            }
             $hidden.attr("value", $option[0].treeNode.value || "");
         });
 
         var initialPath = [];
 
-        function findInitialPath(node) {            
+        function findInitialPath(node) {
             if (node.value == initialValue) {
                 initialPath.push(node);
                 return true;
