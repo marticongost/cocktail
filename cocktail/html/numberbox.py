@@ -17,4 +17,9 @@ class NumberBox(TextBox):
     def _ready(self):
         if rendering_html5():
             self["type"] = "number"
+            if self.member:
+                if isinstance(self.member.min, int):
+                    self["min"] = self.member.min
+                if isinstance(self.member.max, int):
+                    self["max"] = self.member.max
 

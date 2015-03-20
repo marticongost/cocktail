@@ -9,7 +9,8 @@ from cocktail.translations.translation import get_language
 CA_APOSTROPHE_LETTERS = u"haàeèéiíoòóuú"
 
 def ca_apostrophe(word):
-    return word and word[0].lower() in CA_APOSTROPHE_LETTERS
+    norm_word = word.lstrip('"')
+    return norm_word and norm_word[0].lower() in CA_APOSTROPHE_LETTERS
 
 def ca_possessive(text):
     if ca_apostrophe(text):

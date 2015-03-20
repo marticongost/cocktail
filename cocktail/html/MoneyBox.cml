@@ -3,7 +3,7 @@
 <div
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:py="http://www.whads.com/ns/cocktail/templates">
-    
+
     <?py-class
     currency = None
 
@@ -59,7 +59,7 @@
             else:
                 element.visible = False
             ?>
-        </py:ready>        
+        </py:ready>
     </span>
 
 </div>

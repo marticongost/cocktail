@@ -15,7 +15,7 @@
     starting_slide = "first"
     ?>
 
-    <?py    
+    <?py
     self.add_resource("/cocktail/scripts/SlideShow.js")
     ?>
 
@@ -34,14 +34,14 @@
 
     <div py:id="slides"></div>
 
-    <py:new 
-        py:element="self.create_navigation_button()" 
+    <py:new
+        py:element="self.create_navigation_button()"
         py:id="previous_slide_button"
         py:visible="@{self.navigation_controls}"
         py:client_model="cocktail.html.SlideShow.previousSlideButton">&lt;</py:new>
 
-    <py:new 
-        py:element="self.create_navigation_button()" 
+    <py:new
+        py:element="self.create_navigation_button()"
         py:id="next_slide_button"
         py:visible="@{self.navigation_controls}"
         py:client_model="cocktail.html.SlideShow.nextSlideButton">&gt;</py:new>
@@ -61,7 +61,7 @@
 
     <button py:def="bullet" py:args="slide" type="button"></button>
 
-    <button 
+    <button
         py:def="navigation_button"
         type="button"/>
 

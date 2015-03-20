@@ -29,12 +29,12 @@ class HiddenInput(Element):
                     self["value"] = self.member.serialize_request_value(value)
                 except:
                     pass
-    
+
         Element._ready(self)
 
     def _get_value(self):
         return self["value"]
-    
+
     def _set_value(self, value):
         self["value"] = value
 

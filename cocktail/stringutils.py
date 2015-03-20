@@ -25,16 +25,29 @@ def create_translation_map(pairs):
 
     return translation_map
 
-_normalization_map = create_translation_map({
-    u"a": u"áàäâ",
-    u"e": u"éèëê",
-    u"i": u"íìïî",
-    u"o": u"óòöô",
-    u"u": u"úùüû",
-    u" ": u"'\"\t\n\r(),.:;+-*/\\¡!¿?&|=[]{}~#¬<>"
-})
+def create_normalization_map(normalization = None, preserved_chars = None):
 
-def normalize(string):
+    if normalization is None:
+        normalization = {
+            u"a": u"áàäâ",
+            u"e": u"éèëê",
+            u"i": u"íìïî",
+            u"o": u"óòöô",
+            u"u": u"úùüû",
+            u" ": u"'\"\t\n\r(),.:;+-*/\\¡!¿?&|=[]{}~#¬<>"
+        }
+
+    if preserved_chars:
+        for norm_char, input_chars in normalization.items():
+            for preserved_char in preserved_chars:
+                input_chars = input_chars.replace(preserved_char, "")
+            normalization[norm_char] = input_chars
+
+    return create_translation_map(normalization)
+
+_normalization_map = create_normalization_map()
+
+def normalize(string, normalization_map = None):
     string = string.lower()
 
     if not isinstance(string, unicode):
@@ -44,7 +57,7 @@ def normalize(string):
             return string
 
     if isinstance(string, unicode):
-        string = string.translate(_normalization_map)
+        string = string.translate(normalization_map or _normalization_map)
         string = u" ".join(string.split())
 
     return string

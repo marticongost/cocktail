@@ -34,19 +34,17 @@ else:
 
 def handler_profiler(
     stats_path = "/tmp",
+    default_action = None,
     trigger = None,
     viewer = None
 ):
-    profiler_action = None
+    profiler_action = default_action
 
     if trigger:
-        profiler_action = cherrypy.request.params.get(trigger)
+        profiler_action = cherrypy.request.params.get(trigger, default_action)
 
-        if profiler_action is None:
-            return
-
-        if not profiler_action:
-            profiler_action = "store"
+    if not profiler_action:
+        return
 
     handler = cherrypy.request.handler
 
@@ -54,7 +52,7 @@ def handler_profiler(
         viewer = default_viewer
 
     def profiled_handler(*args, **kwargs):
-        
+
         global _request_id
 
         # Acquire a unique identifier for the request
@@ -130,7 +128,7 @@ cherrypy.tools.handler_profiler = cherrypy.Tool(
 )
 
 if __name__ == "__main__":
-    
+
     import sys
     from optparse import OptionParser
     from pprint import pprint
@@ -152,13 +150,13 @@ if __name__ == "__main__":
     )
 
     options, args = parser.parse_args()
-    
+
     if not args:
         sys.stderr.write("Need one or more profile identifiers\n")
         sys.exit(1)
 
     for arg in args:
-        
+
         # Load context
         context_path = join(options.path, "%s.context" % arg)
         context_file = open(context_path, "r")
@@ -173,7 +171,7 @@ if __name__ == "__main__":
 
         if options.sort:
             stats.sort_stats(options.sort)
-        
+
         print "Context"
         print "-" * 80
         print pprint(context)

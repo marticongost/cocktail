@@ -26,7 +26,7 @@ class TextExtractor(object):
 
         if verbose is not None:
             self.verbose = verbose
- 
+
     def iter_node_languages(self):
 
         try:

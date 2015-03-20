@@ -28,11 +28,11 @@ class DropdownSelector(Selector):
         self._create_nested_groups(group, container)
         return container
 
-    def create_entry(self, value, label, selected):
+    def create_entry(self, item):
         entry = Element("option")
-        entry["value"] = value
-        entry["selected"] = selected
-        entry.append(label)
+        entry["value"] = self.get_item_value(item)
+        entry["selected"] = self.is_selected(item)
+        entry.append(self.get_item_label(item))
         return entry
 
     def _get_name(self):

@@ -8,7 +8,7 @@ from warnings import warn
 import re
 import collections
 from Stemmer import Stemmer
-from cocktail.stringutils import normalize
+from cocktail.stringutils import normalize, create_normalization_map
 from cocktail.translations.translation import iter_language_chain
 
 
@@ -20,7 +20,7 @@ class PerLocaleWordProcessing(dict):
             for locale in iter_language_chain(locale):
                 processor = self.get(locale)
                 if processor is not None:
-                    return processor 
+                    return processor
 
         return self.get(None)
 
@@ -30,25 +30,43 @@ class PerLocaleWordProcessing(dict):
             raise ValueError(
                 "No word processor defined for locale %r" % locale
             )
-        return processor        
+        return processor
 
-    def normalize(self, text, locale = None):
-        return self.require_processor_for_locale(locale).normalize(text)
+    def normalize(self, text, locale = None, preserve_patterns = False):
+        return self.require_processor_for_locale(locale).normalize(
+            text,
+            preserve_patterns = preserve_patterns
+        )
 
-    def split(self, text, locale = None):
-        return self.require_processor_for_locale(locale).split(text)
+    def split(self, text, locale = None, preserve_patterns = False):
+        return self.require_processor_for_locale(locale).split(
+            text,
+            preserve_patterns = preserve_patterns
+        )
 
-    def get_stem(self, word, locale = None):
-        return self.require_processor_for_locale(locale).get_stem(word)
+    def get_stem(self, word, locale = None, preserve_patterns = False):
+        return self.require_processor_for_locale(locale).get_stem(
+            word,
+            preserve_patterns = preserve_patterns
+        )
 
-    def get_stems(self, text, locale = None):
-        return self.require_processor_for_locale(locale).get_stems(text)
+    def get_stems(self, text, locale = None, preserve_patterns = False):
+        return self.require_processor_for_locale(locale).get_stems(
+            text,
+            preserve_patterns = preserve_patterns
+        )
 
-    def get_unique_stems(self, text, locale = None):
-        return self.require_processor_for_locale(locale).get_unique_stems(text)
+    def get_unique_stems(self, text, locale = None, preserve_patterns = False):
+        return self.require_processor_for_locale(locale).get_unique_stems(
+            text,
+            preserve_patterns = preserve_patterns
+        )
 
-    def iter_stems(self, text, locale = None):
-        return self.require_processor_for_locale(locale).iter_stems(text)
+    def iter_stems(self, text, locale = None, preserve_patterns = False):
+        return self.require_processor_for_locale(locale).iter_stems(
+            text,
+            preserve_patterns = preserve_patterns
+        )
 
 
 class WordProcessor(object):
@@ -56,28 +74,55 @@ class WordProcessor(object):
     __metaclass__ = ABCMeta
 
     non_word_regexp = re.compile(r"\W+", re.UNICODE)
+    non_pattern_regexp = re.compile(r"[^\w*?]+", re.UNICODE)
 
-    def normalize(self, text):
-        return normalize(text)
+    normalization = create_normalization_map()
+    pattern_normalization = create_normalization_map(preserved_chars = "*?")
 
-    def split(self, text):
-        return [
-            word
-            for word in self.non_word_regexp.split(text)
-            if word
-        ]
+    def normalize(self, text, preserve_patterns = False):
+        return normalize(
+            text,
+            normalization_map =
+                self.pattern_normalization
+                    if preserve_patterns
+                    else self.normalization
+        )
+
+    def split(self, text, preserve_patterns = False):
+        if preserve_patterns:
+            return [
+                word
+                for word in self.non_pattern_regexp.split(text)
+                if word
+            ]
+        else:
+            return [
+                word
+                for word in self.non_word_regexp.split(text)
+                if word
+            ]
 
     @abstractmethod
-    def get_stem(self, word):
+    def get_stem(self, word, preserve_patterns = False):
         pass
 
-    def get_stems(self, text):
+    def get_stems(self, text, preserve_patterns = False):
         if isinstance(text, basestring):
-            return list(self.iter_stems(text))
+            return list(
+                self.iter_stems(
+                    text,
+                    preserve_patterns = preserve_patterns
+                )
+            )
         elif isinstance(text, collections.Iterable):
             stems = []
             for chunk in text:
-                stems.extend(self.iter_stems(chunk))
+                stems.extend(
+                    self.iter_stems(
+                        chunk,
+                        preserve_patterns = preserve_patterns
+                    )
+                )
             return stems
         else:
             raise TypeError(
@@ -85,13 +130,23 @@ class WordProcessor(object):
                 "sequence, got %s instead" % type(text)
             )
 
-    def get_unique_stems(self, text):
+    def get_unique_stems(self, text, preserve_patterns = False):
         if isinstance(text, basestring):
-            return set(self.iter_stems(text))
+            return set(
+                self.iter_stems(
+                    text,
+                    preserve_patterns = preserve_patterns
+                )
+            )
         elif isinstance(text, collections.Iterable):
             stems = set()
             for chunk in text:
-                stems.update(self.iter_stems(chunk))
+                stems.update(
+                    self.iter_stems(
+                        chunk,
+                        preserve_patterns = preserve_patterns
+                    )
+                )
             return stems
         else:
             raise TypeError(
@@ -99,14 +154,17 @@ class WordProcessor(object):
                 "got %s instead" % type(text)
             )
 
-    def iter_stems(self, text):
-        text = self.normalize(text)
-        return (self.get_stem(word) for word in self.split(text))
+    def iter_stems(self, text, preserve_patterns = False):
+        text = self.normalize(text, preserve_patterns = preserve_patterns)
+        return (
+            self.get_stem(word, preserve_patterns = preserve_patterns)
+            for word in self.split(text, preserve_patterns = preserve_patterns)
+        )
 
 
 class GenericWordProcessor(WordProcessor):
 
-    def get_stem(self, word):
+    def get_stem(self, word, preserve_patterns = False):
         return word
 
 
@@ -115,7 +173,7 @@ class LocaleWordProcessor(WordProcessor):
     def __init__(self, stemmer):
         self.stemmer = stemmer
 
-    def get_stem(self, word):
+    def get_stem(self, word, preserve_patterns = False):
         return self.stemmer.stemWord(word)
 
 
@@ -143,7 +201,7 @@ for language in (
     try:
         stemmer = Stemmer(language)
     except:
-        warn("Couldn't create stemmer for language %r" % language)        
+        warn("Couldn't create stemmer for language %r" % language)
     else:
         words[language] = LocaleWordProcessor(stemmer)
 

@@ -10,6 +10,7 @@ from cocktail.modeling import getter
 from cocktail.events import event_handler
 from cocktail.pkgutils import import_object
 from cocktail.translations import translations
+from cocktail.schema.member import Member
 from cocktail.schema.schema import Schema
 from cocktail.schema.schemarelations import RelationMember
 from cocktail.schema.accessors import get_accessor, get
@@ -40,7 +41,7 @@ class Reference(RelationMember):
             return translations(value, language, **kwargs)
 
     def _add_relation(self, obj, related_obj):
-        get_accessor(obj).set(obj, self.name, related_obj)                
+        get_accessor(obj).set(obj, self.name, related_obj)
 
     def _remove_relation(self, obj, related_obj):
         get_accessor(obj).set(obj, self.name, None)
@@ -91,11 +92,11 @@ class Reference(RelationMember):
             yield error
 
         if context.value is not None:
- 
+
             # Apply the 'class_family' constraint
             class_family = \
                 self.resolve_constraint(self.class_family, context)
-            
+
             if class_family:
                 if not isinstance(context.value, type):
                     yield TypeCheckError(context, type)
@@ -135,4 +136,42 @@ class Reference(RelationMember):
     def extract_searchable_text(self, extractor):
         item = extractor.current.value.__class__
         return item.extract_searchable_text(extractor)
+
+    def get_possible_values(self, context = None):
+
+        values = RelationMember.get_possible_values(self, context)
+
+        if values is None:
+            if self.class_family:
+                if isinstance(self.class_family, Schema):
+                    values = list(self.class_family.schema_tree())
+
+        if values is None or self.default_order:
+            if self.type is not None:
+                if hasattr(self.type, "select_constraint_instances"):
+                    query = self.type.select_constraint_instances(
+                        persistent_object =
+                            context and context.get("persistent_object")
+                    )
+                elif hasattr(self.type, "select"):
+                    query = self.type.select()
+
+                if values is not None:
+                    query.base_collection = values
+
+                order = (
+                    self.default_order
+                    or getattr(self.type, "descriptive_member", None)
+                )
+
+                if order is not None:
+                    if isinstance(order, (basestring, Member)):
+                        query.add_order(order)
+                    else:
+                        for criteria in order:
+                            query.add_order(criteria)
+
+                values = query
+
+        return values
 

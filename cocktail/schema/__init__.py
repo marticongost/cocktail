@@ -30,6 +30,7 @@ from cocktail.schema.schemanumbers import (
     Decimal,
     Float
 )
+from cocktail.schema.memberreference import MemberReference
 from cocktail.schema.money import Money
 from cocktail.schema.month import Month
 from cocktail.schema.calendarpage import CalendarPage

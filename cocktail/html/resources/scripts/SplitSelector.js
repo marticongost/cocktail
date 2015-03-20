@@ -87,7 +87,7 @@ cocktail.bind(".SplitSelector.search_enabled", function ($control) {
             $chooseButton.attr("disabled", "disabled");
         }
     }
-    
+
     var $splitPanels = jQuery(cocktail.instantiate("cocktail.html.SplitSelector.splitPanels"))
         .prependTo($control);
 

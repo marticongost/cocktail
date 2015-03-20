@@ -157,7 +157,7 @@ class ClassFamilyError(ValidationError):
 class EnumerationError(ValidationError):
     """A validation error produced when a field is set to a value that falls
     out of its set of accepted values.
-    
+
     @ivar enumeration: The set of values accepted by the field, at the time of
         validation.
     """
@@ -210,7 +210,7 @@ class MaxLengthError(ValidationError):
 class FormatError(ValidationError):
     """A validation error produced when a value assigned to a string field
     doesn't comply with the format mandated by the field.
-    
+
     @ivar format: The format enforced on the field.
     @type format: Regular Expression
     """
@@ -228,7 +228,7 @@ class MinValueError(ValidationError):
     """A validation error produced when a value assigned to a scalar field
     (numbers, dates, etc) falls below a expected threshold.
     value.
-    
+
     @ivar min: The lowest value accepted by the field, at the time of
         validation.
     """
@@ -245,7 +245,7 @@ class MinValueError(ValidationError):
 class MaxValueError(ValidationError):
     """A validation error produced when a value assigned to a scalar field
     (numbers, dates, etc) exceeds a certain limit.
-    
+
     @ivar max: The highest value accepted by the field, at the time of
         validation.
     """
@@ -328,7 +328,7 @@ class RelationConstraintError(ValidationError):
     @ivar constraint: The constraint that the related object didn't fulfill.
     @type constraint: callable or L{Expression<cocktail.schema.expressions.Expression>}
     """
-    
+
     def __init__(self, context, constraint):
         ValidationError.__init__(self, context)
         self.constraint = constraint

@@ -27,7 +27,7 @@ class FileUploadBox(Element):
             if self.member["mime_type"].enumeration:
                 self["accept"] = \
                     ",".join(ct for ct in self.member["mime_type"].enumeration)
-    
+
         Element._ready(self)
 
     def insert_into_form(self, form, field_instance):

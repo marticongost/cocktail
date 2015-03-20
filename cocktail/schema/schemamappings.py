@@ -2,10 +2,10 @@
 u"""
 Provides a class to describe members that handle sets of values.
 
-@author:		Martí Congost
-@contact:		marti.congost@whads.com
-@organization:	Whads/Accent SL
-@since:			July 2008
+@author:        Martí Congost
+@contact:       marti.congost@whads.com
+@organization:  Whads/Accent SL
+@since:         July 2008
 """
 from cocktail.modeling import getter, InstrumentedDict, DictWrapper
 from cocktail.schema.schemacollections import (
@@ -20,7 +20,7 @@ class Mapping(Collection):
         Specified as a member, which will be used as the validator for all
         values added to the collection.
     @type: L{Member<member.Member>}
-    
+
     @ivar values: The schema that all values in the collection must comply
         with. Specified as a member, which will be used as the validator for
         all values added to the collection.
@@ -30,7 +30,7 @@ class Mapping(Collection):
     values = None
     default_type = dict
     get_item_key = None
-    
+
     @getter
     def related_type(self):
         return self.values and self.values.type
@@ -46,8 +46,8 @@ class Mapping(Collection):
             values = self.values
 
             if keys is not None or values is not None:
-    
-                for key, context.value in context.value.iteritems():
+
+                for key, value in context.value.iteritems():
                     if keys is not None:
                         for error in keys.get_errors(
                             key,
@@ -56,7 +56,7 @@ class Mapping(Collection):
                             yield error
                     if values is not None:
                         for error in values.get_errors(
-                            context.value,
+                            value,
                             collection_index = key,
                             parent_context = context
                         ):
@@ -79,7 +79,7 @@ remove.implementations[dict] = _mapping_remove
 #------------------------------------------------------------------------------
 
 class RelationMapping(RelationCollection, InstrumentedDict):
-    
+
     def __init__(self, items = None, owner = None, member = None):
         self.owner = owner
         self.member = member
@@ -117,25 +117,34 @@ class RelationMapping(RelationCollection, InstrumentedDict):
         if new_content is None:
             self.clear()
         else:
+            previous_content = self._items
+
             if isinstance(new_content, (dict, DictWrapper)):
-                new_content = set(new_content.iteritems())
+                new_content = new_content.iteritems()
             else:
-                new_content = set(
+                new_content = (
                     (self.get_item_key(item), item)
                     for item in new_content
                 )
 
-            previous_content = set(self._items.iteritems())
             self._items = dict(new_content)
             changed = False
 
-            for pair in previous_content - new_content:
-                changed = True
-                self.item_removed(pair)
+            for key, old_value in previous_content.iteritems():
+                if (
+                    key not in self._items
+                    or self._items.get(key) != old_value
+                ):
+                    changed = True
+                    self.item_removed((key, old_value))
 
-            for pair in new_content - previous_content:
-                changed = True
-                self.item_added(pair)
+            for key, new_value in self._items.iteritems():
+                if (
+                    key not in previous_content
+                    or previous_content.get(key) != new_value
+                ):
+                    changed = True
+                    self.item_added((key, new_value))
 
             if changed:
                 self.changed()

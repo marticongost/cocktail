@@ -22,16 +22,26 @@ from cocktail.persistence.persistentobject import (
 
 class FullTextIndexProcessor(object):
     implements(IPipelineElement)
+    stemming = True
 
-    def __init__(self, locale):
+    def __init__(self, locale, stemming):
         self.locale = locale
+        self.stemming = stemming
 
     def process(self, sequence):
-        return words.get_stems(sequence, self.locale)
+        if self.stemming:
+            return words.get_stems(sequence, self.locale)
+        else:
+            terms = []
+            processor = words.require_processor_for_locale(self.locale)
+            for item in sequence:
+                terms.extend(processor.split(processor.normalize(item)))
+            return terms
 
 
 schema.Member.full_text_indexed = False
 PersistentObject.full_text_indexed = False
+schema.Member.stemming = True
 
 def _get_full_text_index_root(cls):
     root = cls
@@ -64,9 +74,9 @@ def _get_full_text_index(self, language = None):
 
     if not self.full_text_indexed:
         return None
-    
+
     indexes = self._get_full_text_indexes()
-    
+
     if indexes is not None:
         index = indexes.get(language)
         if index is None:
@@ -97,7 +107,7 @@ PersistentClass._full_text_index_key = None
 schema.String._full_text_index_key = None
 
 def _get_full_text_index_key(self):
-    
+
     key = self._full_text_index_key
 
     if not key and self.name:
@@ -125,7 +135,9 @@ schema.String.full_text_index_key = property(
 )
 
 def _create_full_text_index(self, language):
-    lexicon = Lexicon(FullTextIndexProcessor(language))
+    lexicon = Lexicon(
+        FullTextIndexProcessor(language, self.stemming)
+    )
     return OkapiIndex(lexicon)
 
 PersistentClass.create_full_text_index = _create_full_text_index
@@ -179,7 +191,7 @@ schema.String.index_text = _string_index_text
 
 @when(PersistentObject.changed)
 def _handle_changed(event):
-    
+
     obj = event.source
 
     if obj.is_inserted and event.previous_value != event.value:
@@ -210,12 +222,12 @@ def _cascade_index(obj, language, visited):
         related_end = getattr(member, "related_end", None)
 
         if related_end is not None and related_end.text_search:
-            
+
             if isinstance(member, schema.Reference):
                 related_object = obj.get(member)
                 if related_object is not None:
                     _cascade_index(related_object, language, visited)
-            
+
             elif isinstance(member, schema.Collection):
                 related_items = obj.get(member)
                 if related_items is not None:
@@ -240,7 +252,7 @@ def _handle_translation_removed(event):
     obj = event.source
     id = obj.id
     removed_language = event.language
-    
+
     translated_members = []
 
     if obj._should_index_member_full_text(obj.__class__):
@@ -281,7 +293,7 @@ def _handle_translation_removed(event):
                         if text:
                             index = member.get_full_text_index(lang)
                             index.index_doc(id, text)
-                        
+
                     break
 
 @when(PersistentObject.deleting)

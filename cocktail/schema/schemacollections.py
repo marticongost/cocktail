@@ -31,7 +31,7 @@ from cocktail.schema.exceptions import (
 class Collection(RelationMember):
     """A member that handles a set of values. Such sets are generically called
     X{collections}, while each value they contain is referred to as an X{item}.
-    
+
     @ivar min: A constraint that establishes the minimum number of items for
         the collection. If set to a value other than None, collections smaller
         than this limit will produce a
@@ -63,19 +63,19 @@ class Collection(RelationMember):
                 item_translator = self.items.translate_value
             else:
                 item_translator = lambda item, **kwargs: unicode(item)
-            
+
             return u", ".join(
                 item_translator(item, language, **kwargs) for item in value
-            )            
+            )
 
     def _add_relation(self, obj, related_obj):
 
         key = self.name
         accessor = get_accessor(obj)
         collection = accessor.get(obj, key)
-        
+
         if collection is None:
-            
+
             # Try to create a new, empty collection automatically
             collection_type = self.type or self.default_type
 
@@ -95,10 +95,10 @@ class Collection(RelationMember):
     @getter
     def related_type(self):
         return self.items and self.items.type
-    
+
     @event_handler
     def handle_attached_as_orphan(cls, event):
-        
+
         member = event.source
 
         if member.items is None:
@@ -124,7 +124,7 @@ class Collection(RelationMember):
         return self.any(*args, **kwargs).not_()
 
     def all(self, *args, **kwargs):
-        
+
         filters = list(args)
 
         for key, value in kwargs.iteritems():
@@ -146,7 +146,7 @@ class Collection(RelationMember):
                 items = items()
             else:
                 items = Reference(type = items)
-            
+
         self.__items = items
 
     items = property(_get_items, _set_items, doc = """
@@ -176,7 +176,7 @@ class Collection(RelationMember):
                 default_type = self.default_type
                 if default_type is not None:
                     default = default_type()
-        
+
         return default
 
     def _get_default_type(self):
@@ -190,7 +190,7 @@ class Collection(RelationMember):
 
     def _set_default_type(self, default_type):
         self._default_type = default_type
-    
+
     default_type = property(_get_default_type, _set_default_type,
         doc = """Gets or sets the default type for the collection.
         @type: collection class
@@ -220,8 +220,8 @@ class Collection(RelationMember):
 
     def _items_validation(self, context):
         """Validation rule for collection items. Checks the L{items}
-        constraint."""    
-        
+        constraint."""
+
         relation_constraints = self.resolve_constraint(
             self.relation_constraints, context
         )
@@ -289,7 +289,7 @@ class RelationCollection(object):
         )
         if self.member.related_end:
             _update_relation("relate", self.owner, item, self.member)
-        
+
     def item_removed(self, item):
         self.owner.collection_item_removed(
             member = self.member,
@@ -308,7 +308,7 @@ class RelationCollection(object):
 
 
 class RelationList(RelationCollection, InstrumentedList):
-    
+
     def __init__(self, items = None, owner = None, member = None):
         self.owner = owner
         self.member = member
@@ -359,7 +359,7 @@ class RelationList(RelationCollection, InstrumentedList):
 
 
 class RelationSet(RelationCollection, InstrumentedSet):
-    
+
     def __init__(self, items = None, owner = None, member = None):
         self.owner = owner
         self.member = member
@@ -372,7 +372,7 @@ class RelationSet(RelationCollection, InstrumentedSet):
         else:
             if not isinstance(new_content, set):
                 new_content = set(new_content)
-            
+
             previous_content = self._items
             self._items = new_content
             changed = False
@@ -390,12 +390,12 @@ class RelationSet(RelationCollection, InstrumentedSet):
 
 
 class RelationOrderedSet(RelationCollection, InstrumentedOrderedSet):
-    
+
     def __init__(self, items = None, owner = None, member = None):
         self.owner = owner
         self.member = member
         InstrumentedOrderedSet.__init__(self, items)
-        
+
     def add(self, item):
         self.append(item)
 
@@ -410,7 +410,7 @@ class RelationOrderedSet(RelationCollection, InstrumentedOrderedSet):
         else:
             previous_set = set(self._items)
             new_set = set(new_content)
-            
+
             if not isinstance(new_content, OrderedSet):
                 new_content = OrderedSet(new_content)
 

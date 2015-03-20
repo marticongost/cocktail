@@ -12,7 +12,7 @@
     padding: 0.2em;
     padding-top: 0.1em;
     -webkit-border-top-left-radius: 3px;
-    -webkit-border-top-right-radius: 3px;    
+    -webkit-border-top-right-radius: 3px;
     background-image: none;
     background-color: transparent;
     box-shadow: none;
@@ -33,7 +33,7 @@
 .scripted .DropdownPanel > .panel_wrapper {
     height: 0;
     z-index: 1000;
-    position: relative;    
+    position: relative;
 }
 
 .scripted .DropdownPanel > .panel_wrapper > .panel {
