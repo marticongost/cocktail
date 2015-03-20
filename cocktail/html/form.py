@@ -386,7 +386,7 @@ class Form(Element, DataDisplay):
                 )
                 label.append(label.label_language)
 
-            if self.required_marks:
+            if self.required_marks and member.editable == schema.EDITABLE:
                 if isinstance(member, schema.Collection):
                     is_required = (isinstance(member.min, int) and member.min)
                 else:
