@@ -19,7 +19,8 @@ from cocktail.schema import (
     Boolean,
     Collection,
     Reference,
-    RelationMember
+    RelationMember,
+    EDITABLE
 )
 from cocktail.schema.expressions import (
     CustomExpression,
@@ -99,6 +100,7 @@ class MemberFilter(UserFilter):
         value_member.name = "value"
         value_member.translated = False
         value_member.default = None
+        value_member.editable = EDITABLE
 
         # Remove the bidirectional flag from relations
         if isinstance(value_member, RelationMember):
