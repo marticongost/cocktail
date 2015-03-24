@@ -528,7 +528,11 @@ class Element(object):
             self.data_binding_delegate.value = self.value
             self.data_binding_delegate.ui_generator = self.ui_generator
             self.data_binding_delegate.language = self.language
-        elif self.name and self.tag in self.tags_with_name:
+        elif (
+            self.name
+            and self.tag in self.tags_with_name
+            and not self["name"]
+        ):
             self["name"] = self.name
 
     def ready(self):
