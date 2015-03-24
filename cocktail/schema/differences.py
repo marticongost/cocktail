@@ -36,8 +36,8 @@ def diff(
     @type target_accessor: L{Accessor<cocktail.accessors.Accessor>}
         subclass
 
-    @return: The set of changed members.
-    @rtype: L{member<cocktail.schema.member.Member>} set
+    @return: An iterable sequence of member and language tuples.
+    @rtype: (L{member<cocktail.schema.member.Member>}, str) iterable
     """
     if source_accessor is None:
         source_accessor = get_accessor(source)
