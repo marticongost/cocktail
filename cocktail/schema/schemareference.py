@@ -148,10 +148,9 @@ class Reference(RelationMember):
 
         if values is None or self.default_order:
             if self.type is not None:
-                if hasattr(self.type, "select_constraint_instances"):
-                    query = self.type.select_constraint_instances(
-                        persistent_object =
-                            context and context.get("persistent_object")
+                if hasattr(self, "select_constraint_instances"):
+                    query = self.select_constraint_instances(
+                        parent = context and context.get("persistent_object")
                     )
                 elif hasattr(self.type, "select"):
                     query = self.type.select()

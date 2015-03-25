@@ -522,12 +522,10 @@ def unique_validation_rule(context):
 def _select_constraint_instances(self, *args, **kwargs):
 
     parent = kwargs.pop("parent", None)
-
     query = self.related_type.select(*args, **kwargs)
 
-    if parent is not None:
-        for expr in self.get_constraint_filters(parent):
-            query.add_filter(expr)
+    for expr in self.get_constraint_filters(parent):
+        query.add_filter(expr)
 
     return query
 
