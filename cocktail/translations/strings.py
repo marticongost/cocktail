@@ -1171,14 +1171,16 @@ def member_identifier(error):
             elif (
                 context.parent_context
                 and isinstance(context.parent_context.member, schema.Mapping)
-                and context.parent_context.keys
+                and context.parent_context.member.keys
             ):
-                label = u"%s: %s" % (
-                    context.parent_context.keys.translate_value(
-                        context.collection_index
-                    ),
-                    label
+                key_label = context.parent_context.member.keys.translate_value(
+                    context.collection_index
                 )
+                if label:
+                    if key_label:
+                        label = u"%s: %s" % (key_label, label)
+                else:
+                    label = key_label
             else:
                 label = u"%s: %s" % (context.collection_index, label)
 
