@@ -35,3 +35,17 @@ class Tuple(Member):
                 ):
                     yield error
 
+    def translate_value(self, value, language = None, **kwargs):
+        try:
+            desc = []
+            for item, member in zip(value, self.items):
+                desc.append(member.translate_value(item))
+            return u", ".join(desc)
+        except:
+            return Member.translate_value(
+                self,
+                value,
+                language = language,
+                **kwargs
+            )
+
