@@ -518,7 +518,7 @@ class Element(object):
                     self.name = get_member_name(member, self.language)
                 else:
                     self.name = member.name
-                    if self.language:
+                    if member.translated and self.language:
                         self.name += "-" + self.language
 
         if self.data_binding_delegate:
