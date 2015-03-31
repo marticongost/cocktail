@@ -40,6 +40,7 @@ def display_factory(display_name, **kwargs):
 class UIGenerator(object):
 
     base_ui_generators = []
+    read_only_ui_generator = None
 
     def __init__(self,
         display_property = None,
@@ -105,6 +106,22 @@ class UIGenerator(object):
         return self.create_member_display(None, obj.__class__, obj, **context)
 
     def create_member_display(self, obj, member, value, **context):
+
+        if member.editable == schema.READ_ONLY:
+            for ui_generator in self._iter_generator_chain():
+                if ui_generator.read_only_ui_generator:
+                    display = (
+                        ui_generator.read_only_ui_generator
+                        .create_member_display(
+                            obj,
+                            member,
+                            value,
+                            **context
+                        )
+                    )
+                    display["data-cocktail-editable"] = "read_only"
+                    return display
+
         for display in self._iter_member_displays(
             obj,
             member,
@@ -120,6 +137,8 @@ class UIGenerator(object):
                     **context
                 )
                 if display is not None:
+                    if self.read_only_ui_generator:
+                        display["data-coktail-editable"] = "editable"
                     return display
 
         raise ValueError(
@@ -236,6 +255,7 @@ default_display = UIGenerator("display", {
 class EditControlGenerator(UIGenerator):
 
     enumeration_display = "cocktail.html.DropdownSelector"
+    read_only_ui_generator = default_display
 
     def _iter_per_member_type_displays(
         self,

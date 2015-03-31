@@ -87,9 +87,6 @@ class Form(Element, DataDisplay):
         self.groups = ListWrapper(self.__groups)
         self.__hidden_members = {}
         kwargs.setdefault("action", "")
-        self.read_only_ui_generator = UIGenerator(
-            base_ui_generators = [default_display]
-        )
         Element.__init__(self, *args, **kwargs)
 
     def _get_form(self):
@@ -431,21 +428,11 @@ class Form(Element, DataDisplay):
 
     def create_control(self, obj, member):
 
-        if member.editable == schema.READ_ONLY:
-            control = self.read_only_ui_generator.create_member_display(
-                obj,
-                member,
-                self.get_member_value(obj, member)
-            )
-            control["cocktail-editable"] = "read_only"
-        else:
-            control = self.create_member_display(
-                obj,
-                member,
-                self.get_member_value(obj, member)
-            )
-            control["cocktail-editable"] = "editable"
-
+        control = self.create_member_display(
+            obj,
+            member,
+            self.get_member_value(obj, member)
+        )
         control.add_class("control")
 
         if self.errors and self.errors.in_member(
