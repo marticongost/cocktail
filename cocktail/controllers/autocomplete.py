@@ -97,6 +97,8 @@ class AutocompleteController(Controller):
         self.autocomplete_factory = autocomplete_factory
 
     def __call__(self, query = ""):
+        if isinstance(query, str):
+            query = query.decode("utf-8")
         self.query = query
         cherrypy.response.headers["Content-Type"] = "application/json"
         return Controller.__call__(self)
