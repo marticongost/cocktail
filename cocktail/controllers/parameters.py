@@ -89,6 +89,35 @@ schema.Member.serialize_request_value = unicode
 # request values
 schema.Member.read_request_value = None
 
+def _read_mapping_request_value(self, reader):
+
+    param_name = reader.get_parameter_name(self)
+    param_value = reader.source(param_name)
+
+    if param_value is None:
+        mapping_type = self.default_type or self.type
+        keys = reader.read(
+            schema.Collection(
+                param_name + "-keys",
+                items = self.keys,
+                default_type = list
+            )
+        )
+        values = reader.read(
+            schema.Collection(
+                param_name + "-values",
+                items = self.values,
+                default_type = list
+            )
+        )
+
+        if keys is not None and values is not None:
+            param_value = mapping_type(zip(keys, values))
+
+    return param_value or None
+
+schema.Mapping.read_request_value = _read_mapping_request_value
+
 def parse_int(self, reader, value):
 
     if value is not None:
