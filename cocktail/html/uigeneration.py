@@ -5,7 +5,7 @@ u"""
 """
 from cocktail import schema
 from cocktail.translations import get_language
-from cocktail.html.element import Element, TranslatedValue
+from cocktail.html.element import Element
 from cocktail.html import templates
 import cocktail.controllers.parameters
 from cocktail.controllers.fileupload import FileUpload
@@ -243,7 +243,7 @@ def _reference_default_display(ui_generator, obj, member, value, **context):
         return ui_generator.create_object_display(value, **context)
 
 default_display = UIGenerator("display", {
-    schema.Member: TranslatedValue,
+    schema.Member: "cocktail.html.ValueDisplay",
     schema.Collection: "cocktail.html.List",
     schema.Mapping: "cocktail.html.MappingTable",
     schema.Reference: _reference_default_display,
