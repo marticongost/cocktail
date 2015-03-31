@@ -48,6 +48,10 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
         this.autoExpand = false;
     }
 
+    if (this.selectTextOnFocus === undefined) {
+        this.selectTextOnFocus = true;
+    }
+
     var $input = $autocomplete.find(".text_box");
 
     var $hidden = jQuery("<input type='hidden'>")
@@ -186,7 +190,10 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
             $autocomplete.attr("data-autocomplete-selection", $input.val() ? "pending" : "empty");
         }
         else {
-            $input.val(entry.label || entry.text);
+            var textValue = entry.label || entry.text;
+            if ($input.val() != textValue) {
+                $input.val(textValue);
+            }
             $hidden.val(entry.value);
             $autocomplete.attr("data-autocomplete-selection", "complete");
         }
@@ -468,6 +475,18 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
         .focus(function () {
             if ($autocomplete[0].autoExpand && $autocomplete.attr("data-autocomplete-selection") != "complete") {
                 $autocomplete[0].setPanelVisible(true);
+            }
+        })
+        .click(function () {
+            if ($autocomplete[0].selectTextOnFocus) {
+                if (this.select) {
+                    this.select();
+                    return false;
+                }
+                else if (this.setSelectionRange) {
+                    this.setSelectionRange(0, this.value.length);
+                    return false;
+                }
             }
         })
         .blur(function () {
