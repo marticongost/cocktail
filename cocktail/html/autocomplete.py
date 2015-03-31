@@ -23,6 +23,7 @@ class Autocomplete(Element):
     auto_select = False
     allow_full_list = True
     auto_expand = False
+    select_text_on_focus = True
 
     def _build(self):
         self.add_resource("/cocktail/styles/Autocomplete.css")
@@ -76,6 +77,7 @@ class Autocomplete(Element):
             "allowFullList",
             self.allow_full_list or self.auto_expand
         )
+        self.set_client_param("selectTextOnFocus", self.select_text_on_focus)
         self.set_client_param("autoExpand", self.auto_expand)
 
         if self.value is not None and self.autocomplete_source is not None:
