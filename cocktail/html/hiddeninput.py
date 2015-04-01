@@ -14,6 +14,7 @@ class HiddenInput(Element):
 
     tag = "input"
     styled_class = False
+    is_form_control = True
 
     def __init__(self, *args, **kwargs):
         Element.__init__(self, *args, **kwargs)

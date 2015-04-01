@@ -14,6 +14,7 @@ from cocktail.controllers.parameters import serialize_parameter
 class TextBox(Element):
 
     tag = "input"
+    is_form_control = True
 
     def __init__(self, *args, **kwargs):
         Element.__init__(self, *args, **kwargs)
