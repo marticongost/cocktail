@@ -12,6 +12,7 @@ from cocktail.html import Element
 class CheckBox(Element):
 
     tag = "input"
+    is_form_control = True
 
     def __init__(self, *args, **kwargs):
         Element.__init__(self, *args, **kwargs)

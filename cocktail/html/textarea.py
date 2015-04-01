@@ -13,6 +13,7 @@ from cocktail.html import Element, Content
 class TextArea(Element):
 
     tag = "textarea"
+    is_form_control = True
 
     def __init__(self, *args, **kwargs):
         kwargs.setdefault("rows", 4)

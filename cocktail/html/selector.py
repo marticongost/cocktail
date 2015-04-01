@@ -17,6 +17,7 @@ from cocktail.controllers.parameters import serialize_parameter
 
 class Selector(Element):
 
+    is_form_control = True
     items = None
     groups = None
     persistent_object = None

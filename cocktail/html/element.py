@@ -174,6 +174,7 @@ class Element(object):
     language = None
     data_binding_delegate = None
     tags_with_name = set(["input", "select", "textarea", "button"])
+    is_form_control = False
 
     def __init__(self,
         tag = default,
