@@ -46,6 +46,7 @@
 
 .Autocomplete [data-autocomplete-entry] {
     padding: 0.5em;
+    padding-right: 3em;
     cursor: pointer;
 }
 
