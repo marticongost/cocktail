@@ -51,7 +51,7 @@ class Autocomplete(Element):
                 self.ajax_search
                 and (
                     self.ajax_search_threshold is None
-                    or len(self.autocomplete_source.items) < self.ajax_search_threshold
+                    or len(self.autocomplete_source.items) >= self.ajax_search_threshold
                 )
             ):
                 ajax_url = self.ajax_url or self.get_default_ajax_url()
