@@ -102,6 +102,8 @@ class CodeEditor(TextArea):
 
     def _ready(self):
 
+        TextArea._ready(self)
+
         self.add_resource(self.resources_uri + "js/codemirror.js")
 
         settings = self.base_settings.copy()
