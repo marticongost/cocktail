@@ -8,6 +8,7 @@ Provides a class to describe members that handle sets of values.
 @since:         July 2008
 """
 from cocktail.modeling import getter, InstrumentedDict, DictWrapper
+from cocktail.schema.member import Member
 from cocktail.schema.schemacollections import (
     Collection, RelationCollection, add, remove
 )
@@ -34,6 +35,17 @@ class Mapping(Collection):
     @getter
     def related_type(self):
         return self.values and self.values.type
+
+    def translate_value(self, value, language = None, **kwargs):
+        if self.keys and self.values and value:
+            return u", ".join(
+                u"%s: %s" % (
+                    self.keys.translate_value(key),
+                    self.values.translate_value(value)
+                )
+                for key, value in value.iteritems()
+            )
+        return Member.translate_value(self, value, language, **kwargs)
 
     # Validation
     #--------------------------------------------------------------------------
