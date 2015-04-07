@@ -196,6 +196,30 @@ class GenericClassMethod(object):
             return function
         return decorator
 
+def copy_mutable_containers(value):
+
+    if isinstance(value, OrderedSet):
+        return OrderedSet(
+            map(copy_mutable_containers, value)
+        )
+    elif isinstance(value, (list, ListWrapper)):
+        return map(copy_mutable_containers, value)
+    elif isinstance(value, (set, SetWrapper)):
+        return set(
+            copy_mutable_containers(item)
+            for item in value
+        )
+    elif isinstance(value, (dict, DictWrapper)):
+        return dict(
+            (
+                copy_mutable_containers(key),
+                copy_mutable_containers(value)
+            )
+            for key, value in value.iteritems()
+        )
+
+    return value
+
 # Read-only collection wrappers
 #------------------------------------------------------------------------------
 
