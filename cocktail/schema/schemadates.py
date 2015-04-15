@@ -31,6 +31,7 @@ class BaseDateTime(Schema, RangedMember):
     _is_date = False
     _is_time = False
     language_agnostic_text_extraction = False
+    text_search = False
 
     def __init__(self, *args, **kwargs):
 
