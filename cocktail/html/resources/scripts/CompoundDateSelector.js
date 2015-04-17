@@ -14,7 +14,7 @@ cocktail.bind(".CompoundDateSelector", function ($selector) {
     var $textBox = $selector.find("input")
         .hide();
 
-    var $controls = jQuery(cocktail.instantiate("cocktail.html.CompoundDateSelector.controls"))
+    var $controls = jQuery(cocktail.instantiate("cocktail.html.CompoundDateSelector-" + this.id + ".controls"))
         .appendTo(this);
 
     // Update the value of the hidden textbox when a value is chosen in the
