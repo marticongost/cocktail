@@ -24,6 +24,8 @@ from cocktail.html.databoundcontrol import data_bound
 
     <py:ready>
         <?py
+        self.require_id()
+
         self.set_client_param(
             "dateFormat",
             self.member.request_date_format or translations("date format")
@@ -42,7 +44,7 @@ from cocktail.html.databoundcontrol import data_bound
     data_bound(self, self.text_box)
     ?>
 
-    <div py:id="controls" py:client_model="cocktail.html.CompoundDateSelector.controls">
+    <div py:id="controls" py:client_model="cocktail.html.CompoundDateSelector-@{str(self['id'])}.controls">
         <select py:id="day_selector">
             <option/>
             <py:ready>
