@@ -332,11 +332,11 @@ class TemplateCompiler(object):
 
             source.write("def __init__(self, *args, **kwargs):")
             source.indent()
+            for base in self.__bases[1:]:
+                source.write("%s.__init__(self)" % base)
             source.write(
                 "%s.__init__(self, *args, **kwargs)" % self.__bases[0]
             )
-            for base in self.__bases[1:]:
-                source.write("%s.__init__(self)" % base)
             source.unindent()
 
             source.write("def _build(self):")
