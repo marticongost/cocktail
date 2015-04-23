@@ -504,5 +504,8 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
         this.setSelectedEntry(this.selectedEntry, false, false);
         setHighlightedEntry(getPanelEntry(this.selectedEntry.value));
     }
+    else {
+        $autocomplete.attr("data-autocomplete-selection", "empty");
+    }
 });
 
