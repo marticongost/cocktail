@@ -43,8 +43,8 @@ class Integer(Number):
         if values is None and self.min is not None and self.max is not None:
             if context is None:
                 context = ValidationContext(self, None)
-            min_value = context.resolve_constraint(self.min)
-            max_value = context.resolve_constraint(self.max)
+            min_value = self.resolve_constraint(self.min, context)
+            max_value = self.resolve_constraint(self.max, context)
             if min_value is not None and max_value is not None:
                 values = range(min_value, max_value + 1)
 
