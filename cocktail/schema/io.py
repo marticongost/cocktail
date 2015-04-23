@@ -10,10 +10,10 @@ Provides a method to export collections to different mime_types.
 import os
 import pyExcelerator
 from decimal import Decimal
-from cocktail.schema import Schema
-from cocktail.modeling import ListWrapper, SetWrapper
+from cocktail.modeling import ListWrapper, SetWrapper, DictWrapper
 from cocktail.translations import translations, get_language
 from cocktail.typemapping import TypeMapping
+from cocktail import schema
 
 _exporters_by_mime_type = {}
 _exporters_by_extension = {}
@@ -57,7 +57,7 @@ def register_exporter(func, mime_types, extensions = ()):
     for ext in extensions:
         _exporters_by_extension[ext] = func
 
-def export_file(collection, dest, schema,
+def export_file(collection, dest, export_schema,
     mime_type = None,
     members = None,
     languages = None,
@@ -71,8 +71,8 @@ def export_file(collection, dest, schema,
         object, or a string pointing to a file system path.
     @type dest: str or file-like object
 
-    @var schema: The schema describing the objects to write.
-    @type schema: L{Member<cocktail.schema.Schema>}
+    @var export_schema: The schema describing the objects to write.
+    @type export_schema: L{Member<cocktail.schema.Schema>}
 
     @var mime_type: The kind of file to write, indicated using its MIME type.
     @type mime_type: str
@@ -110,99 +110,223 @@ def export_file(collection, dest, schema,
                 "There is no exporter associated with the %s mime_type" % mime_type
             )
 
-    if members is None and isinstance(schema, Schema):
-        members = schema.ordered_members()
+    if members is None and isinstance(export_schema, schema.Schema):
+        members = export_schema.ordered_members()
 
     # Export the collection to the desired MIME type
     if dest_is_string:
         dest = open(dest, "w")
         try:
-            exporter(collection, dest, schema, members, languages, **kwargs)
+            exporter(
+                collection,
+                dest,
+                export_schema,
+                members,
+                languages,
+                **kwargs
+            )
         finally:
             dest.close()
     else:
-        exporter(collection, dest, schema, members, languages, **kwargs)
+        exporter(
+            collection,
+            dest,
+            export_schema,
+            members,
+            languages,
+            **kwargs
+        )
 
 # Exporters
 #------------------------------------------------------------------------------
-msexcel_exporters = TypeMapping()
-msexcel_exporters[type(None)] = lambda member, value: ""
-msexcel_exporters[object] = lambda member, value: member.translate_value(value)
-msexcel_exporters[bool] = lambda member, value: member.translate_value(value)
-msexcel_exporters[int] = lambda member, value: value
-msexcel_exporters[int] = lambda member, value: value
-msexcel_exporters[float] = lambda member, value: value
-msexcel_exporters[Decimal] = lambda member, value: float(value)
 
-def _iterables_to_msexcel(member, value):
-    return "\n".join(msexcel_exporters[type(item)](member.items, item)
-                    for item in value)
+class MSExcelExporter(object):
 
-msexcel_exporters[list] = _iterables_to_msexcel
-msexcel_exporters[set] = _iterables_to_msexcel
-msexcel_exporters[ListWrapper] = _iterables_to_msexcel
-msexcel_exporters[SetWrapper] = _iterables_to_msexcel
+    def __init__(self):
 
-def export_msexcel(collection, dest, schema, members, languages = None):
-    """Method to export a collection to MS Excel."""
+        self.header_style = pyExcelerator.XFStyle()
+        self.header_style.font = pyExcelerator.Font()
+        self.header_style.font.bold = True
 
-    book = pyExcelerator.Workbook()
-    sheet = book.add_sheet('0')
+        self.regular_style = pyExcelerator.XFStyle()
+        self.regular_style.font = pyExcelerator.Font()
 
-    if languages is None:
-        languages = [get_language()]
-
-    # Header style
-    header_style = pyExcelerator.XFStyle()
-    header_style.font = pyExcelerator.Font()
-    header_style.font.bold = True
-
-    if isinstance(schema, Schema):
-        # Column headers
-        col = 0
-        for member in members:
-            if member.translated:
-                for language in languages:
-                    label = "%s (%s)" % (
-                        translations(member), translations(language)
+        def joiner(glue):
+            return (
+                lambda value:
+                    glue.join(
+                        unicode(self.export_value(item))
+                        for item in value
                     )
-                    sheet.write(0, col, label, header_style)
-                    col += 1
-            else:
-                label = translations(member)
-                sheet.write(0, col, label, header_style)
-                col += 1
+            )
 
-        for row, item in enumerate(collection):
-            col = 0
+        multiline = joiner(u"\n")
+
+        def multiline_mapping(value):
+            return u"\n".join(
+                u"%s: %s" % (k, v)
+                for k, v in value.iteritems()
+            )
+
+        self.type_exporters = TypeMapping((
+            (object, lambda value: unicode(value)),
+            (str, lambda value: value.encode("utf-8")),
+            (unicode, None),
+            (type(None), lambda value: ""),
+            (bool, None),
+            (int, None),
+            (float, None),
+            (Decimal, None),
+            (tuple, joiner(u", ")),
+            (list, multiline),
+            (set, multiline),
+            (ListWrapper, multiline),
+            (SetWrapper, multiline),
+            (dict, multiline_mapping),
+            (DictWrapper, multiline_mapping)
+        ))
+
+        self.member_type_exporters = TypeMapping((
+            (schema.Member, description_or_raw_value),
+        ))
+
+        self.member_exporters = {}
+
+    def get_member_columns(self, member, languages):
+
+        if member.translated:
+            for language in languages:
+                yield (
+                    self.get_member_heading(member, language),
+                    self.header_style,
+                    (lambda obj:
+                        (
+                            self.export_member_value(
+                                obj,
+                                member,
+                                obj.get(member.name, language),
+                                language
+                            ),
+                            self.regular_style
+                        )
+                    )
+                )
+        else:
+            yield (
+                self.get_member_heading(member, None),
+                self.header_style,
+                (lambda obj:
+                    (
+                        self.export_member_value(
+                            obj,
+                            member,
+                            obj.get(member.name)
+                        ),
+                        self.regular_style
+                    )
+                )
+            )
+
+    def get_member_heading(self, member, language):
+        if language:
+            return u"%s (%s)" % (
+                translations(member),
+                translations("locale", locale = language)
+            )
+        else:
+            return translations(member)
+
+    def export_member_value(self, obj, member, value, language = None):
+        exporter = self.member_exporters.get(member.name)
+
+        if exporter is None:
+            exporter = self.member_type_exporters.get(member.__class__)
+
+        if exporter is not None:
+            value = exporter(obj, member, value, language)
+
+        return value
+
+    def export_value(self, value):
+        exporter = self.type_exporters.get(value.__class__)
+
+        if exporter is None:
+            return value
+        else:
+            return exporter(value)
+
+    def create_workbook(
+        self,
+        collection,
+        export_schema,
+        members,
+        languages = None
+    ):
+        workbook = pyExcelerator.Workbook()
+        sheet = workbook.add_sheet('0')
+
+        if languages is None:
+            languages = [get_language()]
+
+        if isinstance(export_schema, schema.Schema):
+
+            # Determine columns
+            columns = []
+
             for member in members:
+                columns.extend(self.get_member_columns(member, languages))
 
-                if member.translated:
-                    for language in languages:
-                        value = item.get(member.name, language)
-                        cell_content = msexcel_exporters[type(value)](member, value)
-                        sheet.write(row + 1, col, cell_content)
-                        col += 1
-                else:
-                    if member.name == "element":
-                        value = translations(item)
-                    elif member.name == "class":
-                        value = translations(item.__class__.name)
-                    else:
-                        value = item.get(member.name)
+            # Column headers
+            for col, (heading, heading_style, cell_factory) \
+            in enumerate(columns):
+                sheet.write(0, col, heading, heading_style)
 
-                    cell_content = msexcel_exporters[type(value)](member, value)
-                    sheet.write(row + 1, col, cell_content)
-                    col += 1
+            for row, obj in enumerate(collection):
+                for col, (heading, heading_style, cell_factory) \
+                in enumerate(columns):
+                    cell_value, cell_style = cell_factory(obj)
+                    cell_value = self.export_value(cell_value)
+                    sheet.write(row + 1, col, cell_value, cell_style)
+        else:
+            # Column headers
+            sheet.write(0, 0, schema.name or "", self.header_style)
+
+            for row, obj in enumerate(collection):
+                cell_content = self.export_value(obj)
+                sheet.write(row + 1, 0, cell_content)
+
+        return workbook
+
+
+def description_or_raw_value(obj, member, value, language = None):
+    if (
+        "translate_value" not in member.__dict__
+        and member.__class__.translate_value is not schema.Member.translate_value
+    ):
+        desc = member.translate_value(value, language = language)
+        return desc or value
     else:
-        # Column headers
-        sheet.write(0, 0, schema.name or "", header_style)
+        return value
 
-        for row, item in enumerate(collection):
-            cell_content = msexcel_exporters[type(item)](schema, item)
-            sheet.write(row + 1, 0, cell_content)
+default_msexcel_exporter = MSExcelExporter()
 
-    book.save(dest)
+
+def export_msexcel(
+    collection,
+    dest,
+    export_schema,
+    members,
+    languages = None,
+    msexcel_exporter = default_msexcel_exporter
+):
+    """Method to export a collection to MS Excel."""
+    workbook = msexcel_exporter.create_workbook(
+        collection,
+        export_schema,
+        members,
+        languages
+    )
+    workbook.save(dest)
 
 register_exporter(
     export_msexcel,
