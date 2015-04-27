@@ -13,7 +13,7 @@ cocktail.bind(".FilterBox", function ($filterBox) {
 
     this.addUserFilter = function (filterId) {
         var index = filterList.childNodes.length;
-        var entry = cocktail.instantiate(
+        var $entry = jQuery(cocktail.instantiate(
             "cocktail.html.FilterBox-entry-" + filterId,
             {index: index},
             function () {
@@ -21,9 +21,10 @@ cocktail.bind(".FilterBox", function ($filterBox) {
                 this.index = index;
                 filterList.appendChild(this);
             }
-        );
-        initFilterEntry.call(entry);
-        jQuery(entry).show("normal");
+        ));
+        initFilterEntry.call($entry[0]);
+        $entry.show("normal");
+        return $entry;
     }
 
     var filterSuffixExpr = /\d+$/;
@@ -54,15 +55,20 @@ cocktail.bind(".FilterBox", function ($filterBox) {
         initFilterEntry.call(filterEntry);
     }
 
-    $filterBox.find(".new_filter_selector .selector_content a")
+    var $newFilterSelector = $filterBox.find(".new_filter_selector");
+    var $panel = $newFilterSelector.find(".panel");
+
+    $panel.find("a")
         .attr("href", "javascript:")
-        .click(function () {
+        .click(function (e) {
             cocktail.foldSelectors();
-            $filterBox.get(0).addUserFilter(this.filterId);
-            return false;
+            var $entry = $filterBox.get(0).addUserFilter(this.filterId);
+            e.preventDefault();
+            $newFilterSelector[0].setCollapsed(true);
+            $entry.find(":input:visible").first().focus();
+            $entry.find(".value_field :input:visible").first().focus();
         });
 
-    var $panel = $filterBox.find(".new_filter_selector .panel");
     var $searchBox = jQuery("<input type='search'>")
         .addClass("search_box")
         .prependTo($panel);
