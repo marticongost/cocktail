@@ -47,6 +47,8 @@ from cocktail.controllers import get_state, view_state, serialize_parameter
     ?>
 
     <?py
+    self.add_resource("/cocktail/scripts/xregexp.js")
+    self.add_resource("/cocktail/scripts/searchable.js")
     self.add_resource("/cocktail/scripts/FilterBox.js")
     ?>
 
@@ -67,7 +69,10 @@ from cocktail.controllers import get_state, view_state, serialize_parameter
         <py:new
             py:element="self.create_filter_ui(filter)"
             py:name_suffix="${str(index)}"/>
-        <a class="deleteButton" py:if="not filter.promoted_search">
+        <a
+            class="delete_filter_button"
+            title="${translations('cocktail.html.FilterBox.delete_button')}"
+            py:if="not filter.promoted_search">
             <?py
             filter_param = []
             params = {"page": "0"}
@@ -86,7 +91,7 @@ from cocktail.controllers import get_state, view_state, serialize_parameter
             params["filter"] = filter_param or ""
             element["href"] = "?" + view_state(**params)
             ?>
-            ${translations("cocktail.html.FilterBox.delete_button")}
+            ✖
         </a>
     </div>
 

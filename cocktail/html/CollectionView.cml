@@ -148,9 +148,6 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
                 if not self.user_collection.user_filters:
                     self.filters.add_class("empty")
                 ?>
-                <div py:id="filters_label" class="label">
-                    ${translations("cocktail.html.CollectionView search")}
-                </div>
                 <py:cocktail.html.FilterBox
                     py:id="filters_selector"
                     py:tag="div"

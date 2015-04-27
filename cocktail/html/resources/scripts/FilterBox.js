@@ -30,7 +30,7 @@ cocktail.bind(".FilterBox", function ($filterBox) {
 
     function initFilterEntry() {
         var filterEntry = this;
-        jQuery(this).find(".deleteButton")
+        jQuery(this).find(".delete_filter_button")
             .attr("href", "javascript:")
             .click(function () {
 
@@ -61,6 +61,16 @@ cocktail.bind(".FilterBox", function ($filterBox) {
             $filterBox.get(0).addUserFilter(this.filterId);
             return false;
         });
+
+    var $panel = $filterBox.find(".new_filter_selector .panel");
+    var $searchBox = jQuery("<input type='search'>")
+        .addClass("search_box")
+        .prependTo($panel);
+
+    cocktail.searchable($panel, {
+        entriesSelector: "a",
+        highlighted: true
+    });
 
     // TODO: Client-side implementation for the 'delete filter' button
 });
