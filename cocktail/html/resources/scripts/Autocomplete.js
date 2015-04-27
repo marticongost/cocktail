@@ -461,8 +461,11 @@ cocktail.bind(".Autocomplete", function ($autocomplete) {
                 $autocomplete[0].setPanelVisible(false);
                 return false;
             }
-            else if ($autocomplete.attr("data-autocomplete-selection") == "pending") {
-                return false;
+            else {
+                if ($autocomplete[0].selectedEntry) {
+                    $autocomplete[0].setSelectedEntry(null);
+                    return false;
+                }
             }
         }
     });
