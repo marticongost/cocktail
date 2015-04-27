@@ -645,33 +645,21 @@ translations.define("datetime.datetime-instance",
         include_seconds = True,
         relative = False:
             _date_instance_ca(instance, style, relative)
-            + (
-                u" a les "
-                if (relative or style != DATE_STYLE_NUMBERS)
-                else u" "
-            )
+            + (u" a les " if style == DATE_STYLE_TEXT else u" ")
             + _translate_time(instance, include_seconds),
     es = lambda instance,
         style = DATE_STYLE_NUMBERS,
         include_seconds = True,
         relative = False:
             _date_instance_es(instance, style, relative)
-            + (
-                u" a las "
-                if (relative or style != DATE_STYLE_NUMBERS)
-                else u" "
-            )
+            + (u" a las " if style == DATE_STYLE_TEXT else u" ")
             + _translate_time(instance, include_seconds),
     en = lambda instance,
         style = DATE_STYLE_NUMBERS,
         include_seconds = True,
         relative = False:
             _date_instance_en(instance, style, relative)
-            + (
-                u" at "
-                if (relative or style != DATE_STYLE_NUMBERS)
-                else u" "
-            )
+            + (u" at " if style == DATE_STYLE_TEXT else u" ")
             + _translate_time(instance, include_seconds),
     pt = lambda instance, style = DATE_STYLE_NUMBERS, include_seconds = True:
         _date_instance_pt(instance, style)
