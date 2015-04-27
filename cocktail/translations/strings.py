@@ -7,7 +7,7 @@ u"""
 @since:			July 2008
 """
 import re
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from decimal import Decimal
 from cocktail.pkgutils import get_full_name
 from cocktail.stringutils import decapitalize
@@ -478,57 +478,142 @@ DATE_STYLE_NUMBERS = 1
 DATE_STYLE_ABBR = 2
 DATE_STYLE_TEXT = 3
 
-def _date_instance_ca(instance, style = DATE_STYLE_NUMBERS):
-    if style == DATE_STYLE_NUMBERS:
-        return instance.strftime(translations("date format"))
-    elif style == DATE_STYLE_ABBR:
-        return u"%s %s %s" % (
-            instance.day,
-            translations(u"month %s abbr" % instance.month),
-            instance.year
-        )
-    elif style == DATE_STYLE_TEXT:
-        return u"%s %s de %s" % (
-            instance.day,
-            ca_possessive(
-                translations(u"month %s" % instance.month).lower()
-            ),
-            instance.year
-        )
+def _date_instance_ca(instance, style = DATE_STYLE_NUMBERS, relative = False):
 
-def _date_instance_es(instance, style = DATE_STYLE_NUMBERS):
-    if style == DATE_STYLE_NUMBERS:
-        return instance.strftime(translations("date format"))
-    elif style == DATE_STYLE_ABBR:
-        return u"%s %s %s" % (
-            instance.day,
-            translations(u"month %s abbr" % instance.month),
-            instance.year
+    if relative:
+        today = date.today()
+        date_value = (
+            instance.date() if isinstance(instance, datetime) else instance
         )
-    elif style == DATE_STYLE_TEXT:
-        return u"%s de %s de %s" % (
-            instance.day,
-            translations(u"month %s" % instance.month).lower(),
-            instance.year
-        )
+        day_diff = (date_value - today).days
 
-def _date_instance_en(instance, style = DATE_STYLE_NUMBERS):
+        if day_diff == 0:
+            return u"Avui"
+        elif day_diff == -1:
+            return u"Ahir"
+        elif day_diff == 1:
+            return u"Demà"
+        elif 1 < day_diff <= 7:
+            return (
+                translations("weekday %d" % instance.weekday())
+                + u" que ve"
+            )
+        elif -7 <= day_diff < 0:
+            return (
+                translations("weekday %d" % instance.weekday())
+                + u" passat"
+            )
+
     if style == DATE_STYLE_NUMBERS:
         return instance.strftime(translations("date format"))
     elif style == DATE_STYLE_ABBR:
-        return u"%s %s %s" % (
-            instance.year,
+        desc = u"%s %s" % (
+            instance.day,
+            translations(u"month %s abbr" % instance.month)
+        )
+        if not relative or today.year != instance.year:
+            desc += u" %d" % instance.year
+        return desc
+    elif style == DATE_STYLE_TEXT:
+        desc = u"%s %s" % (
+            instance.day,
+            ca_possessive(translations(u"month %s" % instance.month).lower())
+        )
+        if not relative or today.year != instance.year:
+            desc += u" de %d" % instance.year
+        return desc
+
+def _date_instance_es(instance, style = DATE_STYLE_NUMBERS, relative = False):
+
+    if relative:
+        today = date.today()
+        date_value = (
+            instance.date() if isinstance(instance, datetime) else instance
+        )
+        day_diff = (date_value - today).days
+
+        if day_diff == 0:
+            return u"Hoy"
+        elif day_diff == -1:
+            return u"Ayer"
+        elif day_diff == 1:
+            return u"Mañana"
+        elif 1 < day_diff <= 7:
+            return (
+                translations("weekday %d" % instance.weekday())
+                + u" que viene"
+            )
+        elif -7 <= day_diff < 0:
+            return (
+                translations("weekday %d" % instance.weekday())
+                + u" pasado"
+            )
+
+    if style == DATE_STYLE_NUMBERS:
+        return instance.strftime(translations("date format"))
+    elif style == DATE_STYLE_ABBR:
+        desc = u"%s %s" % (
+            instance.day,
+            translations(u"month %s abbr" % instance.month)
+        )
+        if not relative or today.year != instance.year:
+            desc += u" %d" % instance.year
+        return desc
+    elif style == DATE_STYLE_TEXT:
+        desc = u"%s de %s" % (
+            instance.day,
+            translations(u"month %s" % instance.month).lower()
+        )
+        if not relative or today.year != instance.year:
+            desc += u" de %d" % instance.year
+        return desc
+
+def _date_instance_en(instance, style = DATE_STYLE_NUMBERS, relative = False):
+
+    if relative:
+        today = date.today()
+        date_value = (
+            instance.date() if isinstance(instance, datetime) else instance
+        )
+        day_diff = (date_value - today).days
+
+        if day_diff == 0:
+            return u"Today"
+        elif day_diff == -1:
+            return u"Yesterday"
+        elif day_diff == 1:
+            return u"Tomorrow"
+        elif 1 < day_diff <= 7:
+            return (
+                u"Next "
+                + translations("weekday %d" % instance.weekday()).lower()
+            )
+        elif -7 <= day_diff < 0:
+            return (
+                u"Past "
+                + translations("weekday %d" % instance.weekday()).lower()
+            )
+
+    if style == DATE_STYLE_NUMBERS:
+        return instance.strftime(translations("date format"))
+    elif style == DATE_STYLE_ABBR:
+        desc = u"%s %s" % (
             translations(u"month %s abbr" % instance.month),
             instance.day
         )
+        if not relative or today.year != instance.year:
+            desc += u" %d" % instance.year
+        return desc
     elif style == DATE_STYLE_TEXT:
-        return u"%s %s %s" % (
-            instance.year,
+        desc = u"%s %s" % (
             translations(u"month %s" % instance.month),
             instance.day
         )
+        if not relative or today.year != instance.year:
+            desc += u", %d" % instance.year
+        return desc
 
-def _date_instance_pt(instance, style = DATE_STYLE_NUMBERS):
+def _date_instance_pt(instance, style = DATE_STYLE_NUMBERS, relative = False):
     if style == DATE_STYLE_NUMBERS:
         return instance.strftime(translations("date format"))
     elif style == DATE_STYLE_ABBR:
@@ -555,15 +640,39 @@ def _translate_time(value, include_seconds = True):
     return value.strftime("%H:%M" + (":%S" if include_seconds else ""))
 
 translations.define("datetime.datetime-instance",
-    ca = lambda instance, style = DATE_STYLE_NUMBERS, include_seconds = True:
-        _date_instance_ca(instance, style)
-        + u" " + _translate_time(instance, include_seconds),
-    es = lambda instance, style = DATE_STYLE_NUMBERS, include_seconds = True:
-        _date_instance_es(instance, style)
-        + u" " + _translate_time(instance, include_seconds),
-    en = lambda instance, style = DATE_STYLE_NUMBERS, include_seconds = True:
-        _date_instance_en(instance, style)
-        + u" " + _translate_time(instance, include_seconds),
+    ca = lambda instance,
+        style = DATE_STYLE_NUMBERS,
+        include_seconds = True,
+        relative = False:
+            _date_instance_ca(instance, style, relative)
+            + (
+                u" a les "
+                if (relative or style != DATE_STYLE_NUMBERS)
+                else u" "
+            )
+            + _translate_time(instance, include_seconds),
+    es = lambda instance,
+        style = DATE_STYLE_NUMBERS,
+        include_seconds = True,
+        relative = False:
+            _date_instance_es(instance, style, relative)
+            + (
+                u" a las "
+                if (relative or style != DATE_STYLE_NUMBERS)
+                else u" "
+            )
+            + _translate_time(instance, include_seconds),
+    en = lambda instance,
+        style = DATE_STYLE_NUMBERS,
+        include_seconds = True,
+        relative = False:
+            _date_instance_en(instance, style, relative)
+            + (
+                u" at "
+                if (relative or style != DATE_STYLE_NUMBERS)
+                else u" "
+            )
+            + _translate_time(instance, include_seconds),
     pt = lambda instance, style = DATE_STYLE_NUMBERS, include_seconds = True:
         _date_instance_pt(instance, style)
         + u" " + _translate_time(instance, include_seconds)
