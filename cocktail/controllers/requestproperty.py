@@ -33,7 +33,12 @@ class RequestProperty(object):
         if instance is None:
             return self
         else:
-            properties = cherrypy.request._cocktail_request_properties
+            try:
+                properties = cherrypy.request._cocktail_request_properties
+            except AttributeError:
+                create_request_properties_container()
+                properties = cherrypy.request._cocktail_request_properties
+
             key = (self, instance)
             try:
                 return properties[key]
