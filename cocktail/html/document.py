@@ -286,8 +286,8 @@ class HTMLDocument(Element):
                             cm_content
                                 .replace("'", "\\'")
                                 .replace("\n", "\\n")
-                                .replace("&", "\\x26")
-                                .replace("<", "\\x3C")
+                                .replace("&", "\\u0026")
+                                .replace("<", "\\u003C")
                         )
                     )
                     self.metadata.update(cm_metadata)
