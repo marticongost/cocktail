@@ -14,6 +14,7 @@ class TextArea(Element):
 
     tag = "textarea"
     is_form_control = True
+    spellcheck = None
 
     def __init__(self, *args, **kwargs):
         kwargs.setdefault("rows", 4)
@@ -23,12 +24,19 @@ class TextArea(Element):
     def _ready(self):
 
         value = self.value
+        spellcheck = self.spellcheck
 
         if self.member:
             try:
                 value = serialize_parameter(self.member, value)
             except:
                 pass
+
+            if spellcheck is None:
+                spellcheck = self.member.spellcheck
+
+        if spellcheck == False:
+            self["spellcheck"] = False
 
         if value:
             self.append(value)

@@ -16,6 +16,7 @@ Some of its most notable features include:
 Also, an extensive set of ready made components is provided as well, covering a
 wide assortment of needs: forms, tables, calendars, etc.
 """
+from cocktail.html import memberextensions
 from cocktail.html.renderers import (
     Renderer,
     html4_renderer,
