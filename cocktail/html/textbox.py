@@ -15,6 +15,7 @@ class TextBox(Element):
 
     tag = "input"
     is_form_control = True
+    spellcheck = None
 
     def __init__(self, *args, **kwargs):
         Element.__init__(self, *args, **kwargs)
@@ -23,6 +24,7 @@ class TextBox(Element):
     def _ready(self):
 
         value = self.value
+        spellcheck = self.spellcheck
 
         if self.member:
             try:
@@ -34,6 +36,12 @@ class TextBox(Element):
             if isinstance(self.member, String) \
             and self.member.max is not None:
                 self["maxlength"] = str(self.member.max)
+
+            if spellcheck is None:
+                spellcheck = self.member.spellcheck
+
+        if spellcheck:
+            self["spellcheck"] = True
 
         self["value"] = value
         Element._ready(self)
