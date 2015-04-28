@@ -280,6 +280,9 @@ resolve_object_ref = GenericClassMethod(
 
 def serialize_reference(self, value):
 
+    if self.class_family:
+        return value.get_qualified_name(include_ns = True)
+
     # TODO: make this extensible to other types?
     if isinstance(self.type, PersistentClass) \
     and self.type.primary_member:
