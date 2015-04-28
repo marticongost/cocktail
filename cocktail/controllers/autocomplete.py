@@ -7,6 +7,7 @@ from abc import ABCMeta, abstractmethod
 import cherrypy
 from simplejson import dumps
 from cocktail import schema
+from cocktail.translations import words
 from cocktail.schema.expressions import Self
 from cocktail.persistence.query import Query
 from cocktail.persistence.persistentobject import PersistentClass
@@ -30,10 +31,29 @@ class AutocompleteSource(object):
         pass
 
     def apply_search(self, items):
-        if self.query:
+        if isinstance(items, Query):
             items.add_filter(
                 Self.search(self.query, match_mode = "prefix")
             )
+            return items
+        else:
+            query_tokens = set(words.split(words.normalize(self.query)))
+            matches = []
+
+            for item in items:
+                item_text = self.get_entry_label(item)
+                item_tokens = set(words.split(words.normalize(item_text)))
+
+                if all(
+                    any(
+                        item_token.startswith(query_token)
+                        for item_token in item_tokens
+                    )
+                    for query_token in query_tokens
+                ):
+                    matches.append(item)
+
+            return matches
 
     def get_entry(self, item):
         return {
@@ -59,12 +79,20 @@ class MemberAutocompleteSource(AutocompleteSource):
             member = schema.Reference(type = member)
 
         self.member = member
+        self._listing_types = (
+            isinstance(self.member, schema.Reference)
+            and self.member.class_family
+        )
 
     @request_property
     def items(self):
         items = self.member.get_possible_values()
 
-        if not isinstance(items, Query):
+        if self._listing_types:
+            items.sort(
+                key = lambda item: words.normalize(self.get_entry_label(item))
+            )
+        elif not isinstance(items, Query):
             items = self.member.type.select()
             items.base_collection = items
 
