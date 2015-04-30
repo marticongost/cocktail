@@ -77,6 +77,7 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
             </py:with>
         </py:cocktail.html.DropdownPanel>
 
+        <!-- Visible members -->
         <py:cocktail.html.DropdownPanel
             py:id="members_dropdown">
             <py:with
@@ -133,6 +134,38 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
                 </div>
             </py:with>
         </py:cocktail.html.DropdownPanel>
+
+        <!-- Paging size -->
+        <py:cocktail.html.DropdownPanel py:id="page_size_dropdown">
+            <py:binding>
+                <?py
+                if not self.user_collection.allow_paging or not self.user_collection.page_sizes:
+                    element.visible = False
+                ?>
+            </py:binding>
+            <py:with
+                py:element="element.label"
+                accesskey="${translations('cocktail.html.CollectionView.page_size_dropdown.shortcut')}">
+                @{translations("cocktail.page_size", page_size = self.user_collection.page_size)}
+            </py:with>
+            <py:with py:element="element.panel">
+                <py:cocktail.html.RadioSelector
+                    py:id="page_size_selector"
+                    py:name="page_size"
+                    py:items="@{self.user_collection.page_sizes}"
+                    py:value="@{self.user_collection.page_size}">
+                    <?py
+                    @extend(element)
+                    def get_item_label(page_size_selector, page_size):
+                        return translations("cocktail.page_size", page_size = page_size)
+                    ?>
+                </py:cocktail.html.RadioSelector>
+                <div py:local_id="box_buttons">
+                    <button py:local_id="apply_button" type="submit">${translations("Submit")}</button>
+                </div>
+            </py:with>
+        </py:cocktail.html.DropdownPanel>
+
     </div>
 
     <!-- Filters -->

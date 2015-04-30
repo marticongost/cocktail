@@ -131,6 +131,12 @@ translations.define("cocktail.html.CollectionView.languages_dropdown.shortcut",
     en = u"l"
 )
 
+translations.define("cocktail.page_size",
+    ca = u"%(page_size)d resultats per pàgina",
+    es = u"%(page_size)d resultados por pàgina",
+    en = u"%(page_size)d results per page"
+)
+
 translations.define("Filters",
     ca = u"Filtres",
     es = u"Filtros",
