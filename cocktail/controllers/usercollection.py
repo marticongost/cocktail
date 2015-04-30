@@ -39,6 +39,7 @@ class UserCollection(object):
 
     base_collection = None
     default_page_size = 15
+    page_sizes = None
     selection_mode = MULTIPLE_SELECTION
     available_languages = ()
     default_order = None
@@ -398,9 +399,10 @@ class UserCollection(object):
                 schema.Integer(
                     "page_size",
                     min = 0,
+                    enumeration = self.page_sizes,
                     default = self.default_page_size
                 )
-            )
+            ) or self.default_page_size
         return page_size
 
     # Selection
