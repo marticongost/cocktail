@@ -3,7 +3,7 @@
 <?py
 from cocktail.modeling import refine
 from cocktail.controllers.viewstate import view_state_form, view_state
-from cocktail.html.selector import SelectorGroup
+from cocktail.html.grouping import Grouping
 from cocktail.html.datadisplay import MULTIPLE_SELECTION
 ?>
 
@@ -92,19 +92,22 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
                     <py:with py:element="element.check_list">
                         <py:binding>
                             <?py
-                            element.groups = SelectorGroup()
+                            element.grouping = Grouping(
+                                sorted = False,
+                                prefilled = True
+                            )
                             for group_id, members in self.user_collection.schema.grouped_members():
-                                group = SelectorGroup(group_id)
+                                group = Grouping(group_id)
                                 for member in members:
-                                    group.append_item(member)
-                                element.groups.append_group(group)
+                                    group.add_item(member)
+                                element.grouping.add_group(group)
                             ?>
                         </py:binding>
                         <?py
                         @extend(element)
-                        def get_group_title(element, group):
-                            if group:
-                                return self.user_collection.schema.translate_group(group.value)
+                        def get_group_title(element, grouping):
+                            if grouping:
+                                return self.user_collection.schema.translate_group(grouping.key)
                             else:
                                 return ""
 

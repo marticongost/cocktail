@@ -12,6 +12,7 @@ from cocktail import schema
 from cocktail.schema import ValidationContext
 from cocktail.persistence import PersistentObject
 from cocktail.html import Element
+from cocktail.html.grouping import Grouping
 from cocktail.controllers.parameters import serialize_parameter
 
 
@@ -52,29 +53,7 @@ class Selector(Element):
             or (lambda item, **kw: translations(item, **kw))
         )
 
-        if (
-            self.groups is None
-            and self.grouping is not None
-            and self.items is not None
-        ):
-            self.groups = SelectorGroup()
-
-            for item in self.items:
-                path = self.grouping(item)
-
-                if not isinstance(path, tuple):
-                    path = (path,)
-
-                group = self.groups
-
-                for group_value in path:
-                    child = group.get_group_by_value(group_value)
-                    if child is None:
-                        child = SelectorGroup(group_value)
-                        group.append_group(child)
-                    group = child
-
-                group.append_item(item)
+        Grouping.init_element(self)
 
         if self.value is None:
             self._is_selected = lambda item: item is None
@@ -110,9 +89,9 @@ class Selector(Element):
             entry = self.create_entry(None)
             self.append(entry)
 
-        if self.groups is not None:
-            for group in self.groups.groups:
-                self.append(self.create_group(group))
+        if self.grouping is not None:
+            for grouping in self.grouping.groups:
+                self.append(self.create_group(grouping))
         elif self.items is not None:
             self._create_entries(self.items, self)
 
@@ -161,65 +140,34 @@ class Selector(Element):
     def is_selected(self, item):
         return self._is_selected(item)
 
-    def create_group(self, group):
+    def create_group(self, grouping):
 
         container = Element()
         container.add_class("group")
 
-        container.label = self.create_group_label(group)
+        container.label = self.create_group_label(grouping)
         container.append(container.label)
 
-        self._create_entries(group.items, container)
-        self._create_nested_groups(group, container)
+        self._create_entries(grouping.items, container)
+        self._create_nested_groups(grouping, container)
 
         return container
 
-    def _create_nested_groups(self, group, container):
-        for nested_group in group.groups:
+    def _create_nested_groups(self, grouping, container):
+        for nested_group in grouping.groups:
             container.append(self.create_group(nested_group))
 
-    def create_group_label(self, group):
+    def create_group_label(self, grouping):
         label = Element()
         label.add_class("group_label")
-        label.append(self.get_group_title(group))
+        label.append(self.get_group_title(grouping))
         return label
 
-    def get_group_title(self, group):
-        return translations(group.value)
+    def get_group_title(self, grouping):
+        return translations(grouping)
 
     def create_entry(self, item):
         raise TypeError(
             "%s doesn't implement the create_entry() method" % self
         )
-
-
-class SelectorGroup(object):
-
-    def __init__(self, value = None):
-        self.__value = value
-        self.__groups_list = []
-        self.__groups_by_value = {}
-        self.__items = []
-
-    @property
-    def value(self):
-        return self.__value
-
-    @property
-    def groups(self):
-        return self.__groups_list
-
-    @property
-    def items(self):
-        return self.__items
-
-    def get_group_by_value(self, value):
-        return self.__groups_by_value.get(value)
-
-    def append_group(self, group):
-        self.__groups_by_value[group.value] = group
-        self.__groups_list.append(group)
-
-    def append_item(self, item):
-        self.__items.append(item)
 
