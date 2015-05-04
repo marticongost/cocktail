@@ -11,6 +11,7 @@ import re
 import types
 from copy import copy, deepcopy
 from threading import local, Lock, RLock
+from frozendict import frozendict
 from cocktail.typemapping import TypeMapping
 
 _thread_data = local()
@@ -215,6 +216,20 @@ def copy_mutable_containers(value):
                 copy_mutable_containers(key),
                 copy_mutable_containers(value)
             )
+            for key, value in value.iteritems()
+        )
+
+    return value
+
+def frozen(value):
+
+    if isinstance(value, (list, ListWrapper, OrderedSet)):
+        return tuple(frozen(item) for item in value)
+    elif isinstance(value, (set, SetWrapper)):
+        return frozenset(frozen(item) for item in value)
+    elif isinstance(value, (dict, DictWrapper)):
+        return frozendict(
+            (frozen(key), frozen(value))
             for key, value in value.iteritems()
         )
 
