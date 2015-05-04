@@ -4,6 +4,7 @@ u"""
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
 from cocktail.styled import styled
+from cocktail.modeling import frozen
 from cocktail.stringutils import normalize
 from cocktail.sortedcollection import SortedCollection
 from cocktail.translations import translations
@@ -164,7 +165,8 @@ class GroupByMember(Grouping):
         return self.member.translate_value(self.value)
 
     def get_item_key(self, item):
-        return item.get(self.member)
+        value = item.get(self.member)
+        return frozen(value)
 
     def get_sorting_key(self):
         return normalize(translations(self))
