@@ -17,6 +17,7 @@ class Grouping(object):
     grouping = None
     sorted = True
     prefilled = False
+    sort_groups_alphabetically = True
 
     def __init__(self, key = None, sorted = None, prefilled = None):
         self.key = key
@@ -101,7 +102,10 @@ class Grouping(object):
         return normalize(translations(item))
 
     def get_group_sorting_key(self, grouping):
-        return grouping.key
+        if self.sort_groups_alphabetically:
+            return normalize(translations(grouping))
+        else:
+            return grouping.key
 
     def find_group(self, item):
 
