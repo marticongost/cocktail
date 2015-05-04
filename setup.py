@@ -36,6 +36,7 @@ setup(
         "Topic :: Text Processing :: Markup :: HTML"
     ],
     install_requires = [
+        "frozendict",
         "simplejson",
         "transaction==1.1.1",
         "ZODB3==3.10.5",
