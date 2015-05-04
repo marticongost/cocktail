@@ -42,7 +42,23 @@ class Grouping(object):
         return "%s(key = %r)" % (self.__class__.__name__, self.key)
 
     def __translate__(self, language, **kwargs):
+
+        if self.__parent_group:
+            parent_translation = self.__parent_group.get_child_group_label(
+                self,
+                language,
+                **kwargs
+            )
+            if parent_translation:
+                return parent_translation
+
+        return self.get_group_label(language, **kwargs)
+
+    def get_group_label(self, language, **kwargs):
         return translations(self.key, language)
+
+    def get_child_group_label(self, group, language, **kwargs):
+        return None
 
     @classmethod
     def init_element(cls, element):
@@ -165,8 +181,11 @@ class GroupByMember(Grouping):
             self.key
         )
 
-    def __translate__(self, language, **kwargs):
-        return self.member.translate_value(self.value)
+    def get_child_group_label(self, group, language, **kwargs):
+        return self.member.translate_value(
+            group.key,
+            language = language
+        )
 
     def get_item_key(self, item):
         value = item.get(self.member)
