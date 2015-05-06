@@ -134,6 +134,8 @@ def serve_file(
                 return cherrypy.response.body
 
     if use_xsendfile:
+        if isinstance(path, unicode):
+            path = path.encode("utf-8")
         cherrypy.response.headers["X-Sendfile"] = path
         return ""
     else:
