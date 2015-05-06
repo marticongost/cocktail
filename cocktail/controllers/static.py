@@ -9,6 +9,8 @@ import cherrypy
 from cherrypy.lib.static import serve_file as cp_serve_file
 from cocktail.modeling import DictWrapper
 
+use_xsendfile = False
+
 def file_publisher(path, content_type = None, disposition = None, name = None):
     """Creates a CherryPy handler that serves the specified file."""
 
@@ -131,7 +133,11 @@ def serve_file(
             else:
                 return cherrypy.response.body
 
-    return cp_serve_file(path, content_type, disposition, name)
+    if use_xsendfile:
+        cherrypy.response.headers["X-Sendfile"] = path
+        return ""
+    else:
+        return cp_serve_file(path, content_type, disposition, name)
 
 
 class CantHandleFile(Exception):
