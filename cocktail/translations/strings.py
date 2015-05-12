@@ -1170,7 +1170,7 @@ translations.define("zh",
     cn = u"汉语"
 )
 
-translations.define("cz",
+translations.define("cs",
     ca = u"Txec",
     es = u"Checo",
     en = u"Czech"
@@ -1188,7 +1188,7 @@ translations.define("kr",
     en = u"Korean"
 )
 
-translations.define("gr",
+translations.define("el",
     ca = u"Grec",
     es = u"Griego",
     en = u"Greek"
