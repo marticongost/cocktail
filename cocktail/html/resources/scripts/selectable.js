@@ -11,6 +11,21 @@
 
     var selectable = null;
 
+    function selectText(element) {
+        if (document.body.createTextRange) {
+            var range = document.body.createTextRange();
+            range.moveToElementText(element);
+            range.select();
+        }
+        else if (document.createRange && window.getSelection) {
+            var selection = window.getSelection();
+            var range = document.createRange();
+            range.selectNodeContents(element);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+    }
+
     function disableTextSelection(element) {
         if (!element._hasTextSelectionDisabler) {
             element._hasTextSelectionDisabler = true;
@@ -253,6 +268,11 @@
                 var src = (e.target || e.srcElement);
                 var srcTag = src.tagName.toLowerCase();
 
+                if (e.ctrlKey && e.altKey) {
+                    selectText(src);
+                    return false;
+                }
+
                 if (srcTag != "a" && !jQuery(src).parents("a").length
                     && srcTag != "button" && !jQuery(src).parents("button").length
                     && srcTag != "textarea"
@@ -286,8 +306,10 @@
                 // Togle entry selection when clicking an entry
                 .on("click", entrySelector, selectable.clickEntryEvent)
 
-                .on("mousedown", entrySelector, function () {
-                    disableTextSelection(selectable);
+                .on("mousedown", entrySelector, function (e) {
+                    if (!(e.ctrlKey && e.altKey)) {
+                        disableTextSelection(selectable);
+                    }
                 })
 
                 .on("click", entrySelector, function() {
