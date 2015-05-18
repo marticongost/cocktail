@@ -21,14 +21,14 @@
             });
         }
         jQuery(element)
-            .attr('unselectable', 'on')
-            .css('user-select', 'none');
+            .attr("unselectable", "on")
+            .css("user-select", "none");
     }
 
     function restoreTextSelection(element) {
         jQuery(element)
-            .attr('unselectable', 'off')
-            .css("user-select", "");
+            .attr("unselectable", 'off')
+            .css("user-select", "text");
     }
 
     cocktail.selectable = function (params) {
