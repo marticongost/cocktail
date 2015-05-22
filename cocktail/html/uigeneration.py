@@ -365,6 +365,7 @@ default_edit_control = EditControlGenerator("edit_control", {
     schema.Collection: _default_collection_edit_control,
     schema.Mapping: "cocktail.html.MappingEditor",
     schema.CodeBlock: _default_code_block_edit_control,
+    schema.GeoCoordinates: "cocktail.html.TextBox",
     FileUpload: _default_file_upload_edit_control
 })
 
