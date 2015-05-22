@@ -163,6 +163,22 @@ def serialize_decimal(self, value):
 schema.Decimal.parse_request_value = parse_decimal
 schema.Decimal.serialize_request_value = serialize_decimal
 
+def parse_geocoordinate(self, reader, value):
+
+    if value is not None:
+        try:
+            value = decimal.Decimal(value)
+        except ValueError:
+            pass
+
+    return value
+
+def serialize_geocoordinate(self, value):
+    return value and str(value) or ""
+
+schema.GeoCoordinate.parse_request_value = parse_geocoordinate
+schema.GeoCoordinate.serialize_request_value = serialize_geocoordinate
+
 try:
     from fractions import Fraction
 
