@@ -265,16 +265,6 @@ class EditControlGenerator(UIGenerator):
         member_type,
         **context
     ):
-        for display in UIGenerator._iter_per_member_type_displays(
-            self,
-            obj,
-            member,
-            value,
-            member_type,
-            **context
-        ):
-            yield display
-
         # If the member defines an enumeration, disregard its regular display,
         # and use a control that can display a set of values (typically, a
         # <select> element).
@@ -285,6 +275,16 @@ class EditControlGenerator(UIGenerator):
                 value,
                 **context
             )
+
+        for display in UIGenerator._iter_per_member_type_displays(
+            self,
+            obj,
+            member,
+            value,
+            member_type,
+            **context
+        ):
+            yield display
 
     def get_display_for_member_with_enumeration(
         self,
