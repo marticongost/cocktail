@@ -523,18 +523,21 @@ class Element(object):
                         self.name += "-" + self.language
 
         if self.data_binding_delegate:
-            self.data_binding_delegate.member = self.member
-            self.data_binding_delegate.collection = self.collection
-            self.data_binding_delegate.name = self.name
-            self.data_binding_delegate.value = self.value
-            self.data_binding_delegate.ui_generator = self.ui_generator
-            self.data_binding_delegate.language = self.language
+            self.init_data_binding_delegate(self.data_binding_delegate)
         elif (
             self.name
             and self.tag in self.tags_with_name
             and not self["name"]
         ):
             self["name"] = self.name
+
+    def init_data_binding_delegate(self, delegate):
+        delegate.member = self.member
+        delegate.collection = self.collection
+        delegate.name = self.name
+        delegate.value = self.value
+        delegate.ui_generator = self.ui_generator
+        delegate.language = self.language
 
     def ready(self):
         """Readies the element before it is rendered.
