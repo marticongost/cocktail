@@ -2553,3 +2553,11 @@ translations.define(
     en = u"Add"
 )
 
+# SuggestionList
+#------------------------------------------------------------------------------
+translations.define("cocktail.html.SuggestionList.custom_value",
+    ca = u"Un altre:",
+    es = u"Otro:",
+    en = u"Other:"
+)
+
