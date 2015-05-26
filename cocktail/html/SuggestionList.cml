@@ -75,6 +75,11 @@ custom_value = object()
                 return self.get_label_for_custom_value()
             else:
                 return call_base(item)
+
+        @extend(element)
+        def is_selected(suggestions_selector, item):
+            # -- Don't care about the selected entry, it will be chosen at the client side --
+            return False
         ?>
 
     </py:cocktail.html.RadioSelector>
