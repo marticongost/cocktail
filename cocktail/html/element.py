@@ -539,6 +539,9 @@ class Element(object):
         delegate.ui_generator = self.ui_generator
         delegate.language = self.language
 
+    def is_valid_display(self, ui_generator, obj, member, value, **context):
+        return True
+
     def ready(self):
         """Readies the element before it is rendered.
 
