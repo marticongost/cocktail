@@ -55,16 +55,18 @@ cocktail.bind(".SuggestionList", function ($control) {
             if (this.value == value) {
                 usingSuggestedValue = true;
                 this.checked = true;
-                $customInput
-                    .val("")
-                    .attr("disabled", "disabled");
                 return false;
             }
         }
     });
 
-    if (!usingSuggestedValue) {
+    if (!usingSuggestedValue && value) {
         lastOption.checked = true;
+    }
+    else {
+        $customInput
+            .val("")
+            .attr("disabled", "disabled");
     }
 
     $hidden.val(value);
