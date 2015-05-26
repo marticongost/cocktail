@@ -224,6 +224,16 @@ class UIGenerator(object):
             display = templates.new(display)
 
         if display is not None:
+
+            if not display.is_valid_display(
+                self,
+                obj,
+                member,
+                value,
+                **context
+            ):
+                return None
+
             display.ui_generator = self
             display.data = obj
             display.member = member
