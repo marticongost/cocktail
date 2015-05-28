@@ -340,6 +340,18 @@ cocktail.center = function (element) {
     element.style.top = (windowHeight / 2 - element.offsetHeight / 2) + "px";
 }
 
+cocktail.waitForImages = function (element) {
+    var deferreds = [];
+    jQuery(element).find("img").each(function () {
+        var deferred = jQuery.Deferred();
+        jQuery(this).on("load", function () {
+            deferred.resolve();
+        });
+        deferreds.push(deferred);
+    });
+    return jQuery.when.apply(jQuery, deferreds);
+}
+
 cocktail.closeDialog = function () {
     // We use a custom remove function because jQuery.remove()
     // clears event handlers
