@@ -685,6 +685,18 @@ cocktail.declare = function (dottedName) {
     return obj;
 }
 
+cocktail.getVariable = function (dottedName, defaultValue /* = undefined */) {
+    var parts = dottedName.split(".");
+    var obj = window;
+    for (var i = 0; i < parts.length; i++) {
+        obj = obj[parts[i]];
+        if (obj === undefined) {
+            return defaultValue;
+        }
+    }
+    return obj;
+}
+
 cocktail.setVariable = function (dottedName, value) {
     var parts = dottedName.split(".");
     var name = parts.pop();
