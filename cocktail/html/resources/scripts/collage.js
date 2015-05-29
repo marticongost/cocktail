@@ -41,9 +41,10 @@ cocktail.collage.init = function (element, options /* = {} */) {
     }
 
     if (!(element.collage.layout instanceof cocktail.collage.Layout) && element.collage.layout.type) {
-        var collageType = cocktail.getVariable(element.collage.layout.type);
-        element.collage.layout = new collageType(element.collage.layout);
+        var layoutOptions = element.collage.layout;
+        var collageType = cocktail.getVariable(layoutOptions.type);
         delete element.collage.layout.type;
+        element.collage.layout = new collageType(layoutOptions);
     }
 
     $element.attr("data-cocktail-collage-layout", element.collage.layout.layoutId);
@@ -63,13 +64,20 @@ cocktail.collage.init = function (element, options /* = {} */) {
                 items.push(item);
             });
 
-        var containerWidth = this.containerWidth;
-        if (containerWidth == "auto") {
-            containerWidth = $container.width();
-        }
-
-        this.layout.apply(items, containerWidth);
+        this.layout.apply(element, items);
         $element.addClass("layout_ready");
+    }
+
+    element.collage.getContainer = function () {
+        return $container;
+    }
+
+    element.collage.getContainerWidth = function () {
+        var width = this.containerWidth;
+        if (width == "auto") {
+            width = $container.width();
+        }
+        return width;
     }
 
     element.collage.getContent = function () {
@@ -135,26 +143,41 @@ cocktail.collage.init = function (element, options /* = {} */) {
     });
 }
 
-cocktail.collage.Layout = function () {}
+cocktail.collage.Layout = function (options /* = {} */) {
+    this.absolutePosition = options && options.absolutePosition || false;
+}
 
 cocktail.collage.Layout.prototype.layoutId = "";
 cocktail.collage.Layout.prototype.absolutePosition = false;
 
-cocktail.collage.Layout.prototype.apply = function (contentInfo, containerWidth) {
-    var tiles = this.getTiles(contentInfo, containerWidth);
-    for (var i = 0; i < tiles.length; i++) {
-        var tile = tiles[i];
+cocktail.collage.Layout.prototype.apply = function (element, contentInfo) {
+
+    var dist = this.getDistribution(contentInfo, element.collage.getContainerWidth());
+
+    this.updateCollage(element, dist);
+
+    for (var i = 0; i < dist.tiles.length; i++) {
+        var tile = dist.tiles[i];
         this.updateTile(tile);
     }
 }
 
-cocktail.collage.Layout.prototype.getTiles = function (items, containerWidth) {
+cocktail.collage.Layout.prototype.getDistribution = function (items, containerWidth) {
     return [];
+}
+
+cocktail.collage.Layout.prototype.updateCollage = function (element, dist) {
+    if (this.absolutePosition) {
+        element.collage.getContainer()
+            .css("position", "relative")
+            .height(dist.height);
+    }
 }
 
 cocktail.collage.Layout.prototype.updateTile = function (tile) {
     this.setTileSize(tile);
     if (this.absolutePosition) {
+        tile.content.style.position = "absolute";
         this.setTilePosition(tile);
     }
 }
@@ -177,6 +200,7 @@ cocktail.collage.Layout.prototype.setTilePosition = function (tile) {
 }
 
 cocktail.collage.RowLayout = function (options /* = null */) {
+    cocktail.collage.Layout.call(this, options);
     this.maxRowHeight = options && options.maxRowHeight || 200;
     this.expandLastRow = options ? options.expandLastRow : false;
     this.expandLastRowThreshold = options ? options.expandLastRowThreshold : null;
@@ -187,7 +211,7 @@ cocktail.collage.RowLayout = function (options /* = null */) {
 cocktail.collage.RowLayout.prototype = new cocktail.collage.Layout();
 cocktail.collage.RowLayout.prototype.layoutId = "rows";
 
-cocktail.collage.RowLayout.prototype.getTiles = function (items, containerWidth) {
+cocktail.collage.RowLayout.prototype.getDistribution = function (items, containerWidth) {
 
     if (!items.length) {
         return [];
@@ -267,6 +291,9 @@ cocktail.collage.RowLayout.prototype.getTiles = function (items, containerWidth)
         resizeRow();
     }
 
-    return tiles;
+    return {
+        tiles: tiles,
+        height: rowTop + tile.height
+    };
 }
 
