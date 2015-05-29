@@ -293,7 +293,7 @@ cocktail.collage.RowLayout.prototype.getDistribution = function (items, containe
 
     return {
         tiles: tiles,
-        height: rowTop + tile.height
+        height: rowTop
     };
 }
 
