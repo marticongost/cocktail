@@ -231,14 +231,14 @@ cocktail.collage.RowLayout.prototype.getDistribution = function (items, containe
         var adjWidth = 0;
 
         for (var i = 0; i < row.length; i++) {
+            if (i > 0) {
+                adjWidth += layout.hspacing;
+            }
             var tile = row[i];
             tile.left = adjWidth;
             tile.width = Math.floor(tile.width * adjRatio);
             tile.height = Math.floor(tile.height * adjRatio);
             adjWidth += tile.width;
-            if (i > 0) {
-                adjWidth += layout.hspacing;
-            }
         }
 
         var diff = containerWidth - adjWidth;
