@@ -224,6 +224,7 @@ cocktail.collage.RowLayout.prototype.getDistribution = function (items, containe
     var tiles = [];
     var row = null;
     var rowWidth = 0;
+    var rowTop = 0;
 
     function resizeRow() {
 
@@ -249,8 +250,6 @@ cocktail.collage.RowLayout.prototype.getDistribution = function (items, containe
         rowTop += tile.height + layout.vspacing;
         row = null;
     }
-
-    var rowTop = 0;
 
     for (var i = 0; i < items.length; i++) {
 
