@@ -7,7 +7,7 @@ from abc import ABCMeta, abstractmethod
 import cherrypy
 from simplejson import dumps
 from cocktail import schema
-from cocktail.translations import words
+from cocktail.translations import words, set_language
 from cocktail.schema.expressions import Self
 from cocktail.persistence.query import Query
 from cocktail.persistence.persistentobject import PersistentClass
@@ -124,11 +124,17 @@ class AutocompleteController(Controller):
 
         self.autocomplete_factory = autocomplete_factory
 
-    def __call__(self, query = ""):
+    def __call__(self, query = "", lang = None):
+
         if isinstance(query, str):
             query = query.decode("utf-8")
+
         self.query = query
         cherrypy.response.headers["Content-Type"] = "application/json"
+
+        if lang:
+            set_language(lang)
+
         return Controller.__call__(self)
 
     def render(self):

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?py
+custom_value = object()
+?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:py="http://www.whads.com/ns/cocktail/templates">
+
+    <?py-class
+    suggestions = ()
+
+    def get_label_for_custom_value(self):
+
+        if self.member:
+            label = translations(self.member, suffix = "-custom_value")
+
+        if not label:
+            label = translations("cocktail.html.SuggestionList.custom_value")
+
+        return label
+
+    def _data_binding(self):
+        Element._data_binding(self)
+        self.init_data_binding_delegate(self.suggestions_selector)
+
+    # Prevent and endless loop when generating the display for the custom value
+    def is_valid_display(self, ui_generator, obj, member, value, **context):
+        return not isinstance(context.get("requested_by"), SuggestionList)
+
+    def create_custom_value_display(self):
+        display = self.ui_generator.create_member_display(
+            self.data,
+            self.member,
+            self.value,
+            requested_by = self
+        )
+        display.add_class("custom_value_display")
+        return display
+    ?>
+
+    <?py
+    self.add_resource("/cocktail/scripts/SuggestionList.js")
+    ?>
+
+    <py:binding>
+        <?py
+        self.init_data_binding_delegate(self.suggestions_selector)
+        ?>
+    </py:binding>
+
+    <py:cocktail.html.RadioSelector
+        py:id="suggestions_selector"
+        py:client_model="cocktail.html.SuggestionList.suggestionsSelector">
+
+        <py:binding>
+            <?py
+            element.name += "-suggestion"
+            element.items = list(self.suggestions)
+            element.items.append(custom_value)
+            ?>
+        </py:binding>
+
+        <?py
+        @extend(element)
+        def get_item_value(suggestions_selector, item):
+            if item is custom_value:
+                return ""
+            else:
+                return call_base(item)
+
+        @extend(element)
+        def get_item_label(suggestions_selector, item):
+            if item is custom_value:
+                return self.get_label_for_custom_value()
+            else:
+                return call_base(item)
+
+        @extend(element)
+        def is_selected(suggestions_selector, item):
+            # -- Don't care about the selected entry, it will be chosen at the client side --
+            return False
+        ?>
+
+    </py:cocktail.html.RadioSelector>
+
+    <py:ready>
+        <py:new py:element="self.create_custom_value_display()"/>
+    </py:ready>
+
+</div>
+

@@ -51,6 +51,12 @@ from cocktail.schema.schemadates import (
 from cocktail.schema.url import URL
 from cocktail.schema.emailaddress import EmailAddress
 from cocktail.schema.phonenumber import PhoneNumber
+from cocktail.schema.geocoordinates import (
+    GeoCoordinate,
+    Latitude,
+    Longitude,
+    GeoCoordinates
+)
 from cocktail.schema.color import Color
 from cocktail.schema.creditcardnumber import CreditCardNumber
 from cocktail.schema.bankaccountnumber import BankAccountNumber
