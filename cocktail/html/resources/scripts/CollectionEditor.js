@@ -20,6 +20,24 @@ cocktail.bind(".CollectionEditor", function ($collectionEditor) {
         cocktail.init();
     }
 
+    this.getNumberOfEntries = function () {
+        return $collectionEditor.children(".entries").children().length;
+    }
+
+    this.setNumberOfEntries = function (requestedNumber) {
+        var $entries = $collectionEditor.children(".entries").children();
+        var diff = requestedNumber - $entries.length;
+        if (diff > 0) {
+            do {
+                this.appendEntry();
+            }
+            while (--diff);
+        }
+        else if (diff < 0) {
+            $entries.slice(diff).remove();
+        }
+    }
+
     function removeEntry() {
         jQuery(this).closest(".entry").remove();
     }
