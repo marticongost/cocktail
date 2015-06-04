@@ -334,10 +334,24 @@ cocktail.showDialog = function (content, params /* = null */) {
 
 cocktail.center = function (element) {
     element = jQuery(element)[0];
-    var windowWidth = window.innerWidth || document.documentElement.clientWidth;
-    var windowHeight = window.innerHeight || document.documentElement.clientHeight;
-    element.style.left = (windowWidth / 2 - element.offsetWidth / 2) + "px";
-    element.style.top = (windowHeight / 2 - element.offsetHeight / 2) + "px";
+    cocktail.waitForImages(element).done(function () {
+        var windowWidth = window.innerWidth || document.documentElement.clientWidth;
+        var windowHeight = window.innerHeight || document.documentElement.clientHeight;
+        element.style.left = (windowWidth / 2 - element.offsetWidth / 2) + "px";
+        element.style.top = (windowHeight / 2 - element.offsetHeight / 2) + "px";
+    });
+}
+
+cocktail.waitForImages = function (element) {
+    var deferreds = [];
+    jQuery(element).find("img").each(function () {
+        var deferred = jQuery.Deferred();
+        jQuery(this).on("load", function () {
+            deferred.resolve();
+        });
+        deferreds.push(deferred);
+    });
+    return jQuery.when.apply(jQuery, deferreds);
 }
 
 cocktail.closeDialog = function () {
@@ -681,6 +695,18 @@ cocktail.declare = function (dottedName) {
             obj.toString = function () { return this.__dottedName__; }
         }
         container = obj;
+    }
+    return obj;
+}
+
+cocktail.getVariable = function (dottedName, defaultValue /* = undefined */) {
+    var parts = dottedName.split(".");
+    var obj = window;
+    for (var i = 0; i < parts.length; i++) {
+        obj = obj[parts[i]];
+        if (obj === undefined) {
+            return defaultValue;
+        }
     }
     return obj;
 }

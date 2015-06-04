@@ -224,6 +224,16 @@ class UIGenerator(object):
             display = templates.new(display)
 
         if display is not None:
+
+            if not display.is_valid_display(
+                self,
+                obj,
+                member,
+                value,
+                **context
+            ):
+                return None
+
             display.ui_generator = self
             display.data = obj
             display.member = member
@@ -265,16 +275,6 @@ class EditControlGenerator(UIGenerator):
         member_type,
         **context
     ):
-        for display in UIGenerator._iter_per_member_type_displays(
-            self,
-            obj,
-            member,
-            value,
-            member_type,
-            **context
-        ):
-            yield display
-
         # If the member defines an enumeration, disregard its regular display,
         # and use a control that can display a set of values (typically, a
         # <select> element).
@@ -285,6 +285,16 @@ class EditControlGenerator(UIGenerator):
                 value,
                 **context
             )
+
+        for display in UIGenerator._iter_per_member_type_displays(
+            self,
+            obj,
+            member,
+            value,
+            member_type,
+            **context
+        ):
+            yield display
 
     def get_display_for_member_with_enumeration(
         self,
@@ -365,6 +375,7 @@ default_edit_control = EditControlGenerator("edit_control", {
     schema.Collection: _default_collection_edit_control,
     schema.Mapping: "cocktail.html.MappingEditor",
     schema.CodeBlock: _default_code_block_edit_control,
+    schema.GeoCoordinates: "cocktail.html.TextBox",
     FileUpload: _default_file_upload_edit_control
 })
 
