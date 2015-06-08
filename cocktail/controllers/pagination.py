@@ -114,6 +114,8 @@ class Pagination(schema.SchemaObject):
         """
         if not self.page_size:
             return self.item_count
+        elif self.page is None:
+            return 0
         else:
             return min((self.current_page + 1) * self.page_size, self.item_count)
     @getter
