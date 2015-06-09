@@ -334,12 +334,14 @@ cocktail.showDialog = function (content, params /* = null */) {
 
 cocktail.center = function (element) {
     element = jQuery(element)[0];
-    cocktail.waitForImages(element).done(function () {
+    function center() {
         var windowWidth = window.innerWidth || document.documentElement.clientWidth;
         var windowHeight = window.innerHeight || document.documentElement.clientHeight;
         element.style.left = (windowWidth / 2 - element.offsetWidth / 2) + "px";
         element.style.top = (windowHeight / 2 - element.offsetHeight / 2) + "px";
-    });
+    }
+    center();
+    cocktail.waitForImages(element).done(center);
 }
 
 cocktail.waitForImages = function (element) {
