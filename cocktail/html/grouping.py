@@ -71,9 +71,10 @@ class Grouping(object):
             if isinstance(grouping, type):
                 element.grouping = grouping = grouping()
 
-            items = element.value
-            if not grouping.prefilled and items:
-                grouping.populate(items)
+            if not grouping.prefilled:
+                items = getattr(element, "items", None)
+                if items:
+                    grouping.populate(items)
         else:
             element["cocktail-grouping"] = "false"
 
