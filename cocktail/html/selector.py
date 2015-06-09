@@ -92,6 +92,7 @@ class Selector(Element):
         if self.grouping is not None:
             for grouping in self.grouping.groups:
                 self.append(self.create_group(grouping))
+            self._create_entries(self.grouping.items, self)
         elif self.items is not None:
             self._create_entries(self.items, self)
 
