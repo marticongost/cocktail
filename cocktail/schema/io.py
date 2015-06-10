@@ -135,8 +135,10 @@ msexcel_exporters[float] = lambda member, value: value
 msexcel_exporters[Decimal] = lambda member, value: float(value)
 
 def _iterables_to_msexcel(member, value):
-    return "\n".join(msexcel_exporters[type(item)](member.items, item)
-                    for item in value)
+    return u", ".join(
+        unicode(msexcel_exporters[type(item)](member.items, item))
+        for item in value
+    )
 
 msexcel_exporters[list] = _iterables_to_msexcel
 msexcel_exporters[set] = _iterables_to_msexcel
