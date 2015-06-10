@@ -66,6 +66,20 @@ def error_email(
     param_template = PARAM_TEMPLATE,
     encoding = "utf-8"):
     
+    def _serialize_value(value):
+        if isinstance(value, FieldStorage):
+            return "FieldStorage"
+        elif isinstance(value, basestring):
+            return _encode(value)
+        else:
+            return _encode(repr(value))
+
+    def _encode(value):
+        if isinstance(value, unicode):
+            return value
+
+        return unicode(value, encoding, errors='replace')
+
     host_name = cherrypy.request.headers.get(
         "X-FORWARDED-HOST",
         cherrypy.request.local.name
@@ -86,31 +100,22 @@ def error_email(
         receivers = receivers.split(",")
     receivers = set([receiver.strip() for receiver in receivers])
 
-    def encode(value):
-        if isinstance(value, unicode):
-            return value
-
-        return unicode(value, encoding, errors='replace')
-
     tpl_params = {}
-    tpl_params["base"] = encode(cherrypy.request.base)
-    tpl_params["path_info"] = encode(cherrypy.request.path_info)
-    tpl_params["query_string"] = encode(cherrypy.request.query_string)
-    tpl_params["headers"] = u"".join(header_template % (encode(k), encode(v))
-                                     for k, v in cherrypy.request.header_list)
+    tpl_params["base"] = _encode(cherrypy.request.base)
+    tpl_params["path_info"] = _encode(cherrypy.request.path_info)
+    tpl_params["query_string"] = _encode(cherrypy.request.query_string)
+    tpl_params["headers"] = u"".join(
+        header_template % (_encode(k), _serialize_value(v))
+        for k, v in cherrypy.request.header_list
+    )
     tpl_params["params"] = u"".join(
-        param_template % (
-            encode(k),
-            # Don't include the whole datastream of FieldStorage instances
-            # on error emails
-            encode(v) if not isinstance(v, FieldStorage) else "FieldStorage"
-        )
+        param_template % (_encode(k), _serialize_value(v))
         for k, v in cherrypy.request.params.iteritems()
     )
     tpl_params["traceback"] = _cperror.format_exc()
 
     html = template % tpl_params
- 
+
     message = MIMEText(html.encode(encoding), _subtype = mime_type, _charset = encoding)
     message["Subject"] = subject
     message["From"] = sender or "errors@" + host_name
@@ -120,6 +125,7 @@ def error_email(
     smtp = smtplib.SMTP(smtp_host, smtp_port)
     smtp.sendmail(sender, list(receivers), message.as_string())
     smtp.quit()
+
 
 cherrypy.tools.error_email = cherrypy.Tool(
     'before_error_response',
