@@ -553,7 +553,11 @@ def _get_constraint_filters(self, parent):
     excluded_items = set()
 
     # References: exclude the parent and its descendants
-    if isinstance(self, schema.Reference) and not self.cycles_allowed:
+    if (
+        isinstance(self, schema.Reference)
+        and not self.cycles_allowed
+        and parent is not None
+    ):
         if self.bidirectional:
             # 1-n
             if isinstance(self.related_end, schema.Collection):
