@@ -1079,12 +1079,6 @@ translations.define("hu",
     en = u"Hungarian"
 )
 
-translations.define("kr",
-    ca = u"Coreà",
-    es = u"Coreano",
-    en = u"Korean"
-)
-
 translations.define("gr",
     ca = u"Grec",
     es = u"Griego",
