@@ -207,6 +207,34 @@ cocktail.bind(".SplitSelector.search_enabled", function ($control) {
         .addClass("exposable")
         .on("exposed", toggleButtons);
 
+    this.getValue = function () {
+        var value = [];
+        $selectedItemsContainer[0].getEntries().each(function () {
+            value.push(this.splitSelectorHiddenInput.value);
+        });
+        return value;
+    }
+
+    this.setValue = function (value) {
+
+        // Remove entries that are no longer selected
+        $selectedItemsContainer[0].getEntries().each(function () {
+            var entryValue = this.splitSelectorHiddenInput.value;
+            if (!value || value.indexOf(entryValue) == -1) {
+                dropEntry(this);
+            }
+        })
+
+        // Add entries that were not selected
+        if (value) {
+            $eligibleItemsContainer[0].getEntries().each(function () {
+                if (value.indexOf(this.splitSelectorHiddenInput.value) != -1) {
+                    chooseEntry(this);
+                }
+            });
+        }
+    }
+
     this.applySearch($searchBox.val());
 });
 
