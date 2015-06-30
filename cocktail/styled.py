@@ -5,6 +5,7 @@ u"""Provides functions for styling output in CLI applications.
 """
 import sys
 from warnings import warn
+from time import time
 
 supported_platforms = ["linux2"]
 
@@ -57,7 +58,9 @@ style_codes = {
     "strike_through": 9
 }
 
-if sys.platform in supported_platforms:
+supported_platform = (sys.platform in supported_platforms)
+
+if supported_platform:
 
     def styled(
         string,
@@ -84,12 +87,75 @@ if sys.platform in supported_platforms:
                 background_code,
                 string
             )
-
 else:
     def styled(string, foreground = None, background = None, style = None):
         if not isinstance(string, str):
             string = str(string)
         return string
+
+
+class ProgressBar(object):
+
+    width = 30
+    min_time_between_updates = 0.005
+
+    completed_char = "*"
+    completed_style = {"foreground": "bright_green"}
+
+    pending_char = "*"
+    pending_style = {"foreground": "dark_gray"}
+
+    def __init__(self, total_cycles):
+        self.__first_iteration = True
+        self.__last_update = None
+        self.progress = 0
+        self.total_cycles = total_cycles
+
+    def update(self, cycles = 0):
+
+        self.progress += cycles
+
+        # Prevent flickering caused by too frequent updates
+        if self.min_time_between_updates is not None:
+            now = time()
+            if (
+                self.__last_update is not None
+                and now - self.__last_update < self.min_time_between_updates
+            ):
+                return False
+            self.__last_update = now
+
+        if supported_platform:
+            line = self.get_bar_string() + self.get_progress_string()
+        else:
+            line = self.get_progress_string()
+
+        if self.__first_iteration:
+            self.__first_iteration = False
+        else:
+            if supported_platform:
+                line = "\033[1A\033[K" + line
+
+        print line
+        return True
+
+    def get_bar_string(self):
+        completed_width = int(
+            self.width * (float(self.progress) / self.total_cycles)
+        )
+        return (
+            styled(
+                self.completed_char * completed_width,
+                **self.completed_style
+            )
+            + styled(
+                self.pending_char * (self.width - completed_width),
+                **self.pending_style
+            )
+        )
+
+    def get_progress_string(self):
+        return " (%d / %d)" % (self.progress, self.total_cycles)
 
 
 if __name__ == "__main__":
