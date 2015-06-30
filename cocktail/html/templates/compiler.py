@@ -50,18 +50,24 @@ class TemplateCompiler(object):
         self.__root_element_found = False
         self.__is_overlay = False
 
-        self.__source_blocks = []
+        self.__source = SourceCodeWriter()
+        self.__global_source = self.__source.nest()
+        self.__source.linejump(2)
+        self.__declaration_source = self.__source.nest()
 
-        self.__global_source_block = SourceCodeWriter()
-        self.__source_blocks.append(self.__global_source_block)
+        with self.__source.indented_block():
+            self.__source.linejump()
+            self.__source.write("def __init__(self, *args, **kwargs):")
+            with self.__source.indented_block():
+                self.__initialization_source = self.__source.nest()
 
-        self.__declaration_source_block = SourceCodeWriter()
-        self.__source_blocks.append(self.__declaration_source_block)
+            self.__source.write("def _build(self):")
+            with self.__source.indented_block():
+                self.__build_source = self.__source.nest()
 
-        self.__class_source_block = SourceCodeWriter(1)
-        self.__source_blocks.append(self.__class_source_block)
+            self.__class_source = self.__source.nest()
 
-        self.__end_source_block = SourceCodeWriter()
+        self.__end_source = self.__source.nest()
 
         self.__parser = expat.ParserCreate(namespace_separator = ">")
 
@@ -87,14 +93,7 @@ class TemplateCompiler(object):
         )
 
     def get_source(self):
-
-        source = u"\n\n".join(
-            unicode(block)
-            for block in self.__source_blocks
-        ) + u"\n"
-
-        source += unicode(self.__end_source_block)
-        return source
+        return unicode(self.__source)
 
     def get_template_class(self):
         template_env = self.get_template_env()
@@ -146,7 +145,7 @@ class TemplateCompiler(object):
 
             self.__class_names.add(name)
             self.__classes[reference] = name
-            self.__global_source_block.write(
+            self.__global_source.write(
                 "%s = loader.get_class('%s')" % (name, reference)
             )
 
@@ -159,7 +158,7 @@ class TemplateCompiler(object):
         if self.__stack:
             element.source_block = self.__stack[-1].source_block
         else:
-            element.source_block = self.__global_source_block
+            element.source_block = self.__global_source
 
         self.__stack.append(element)
         return element
@@ -220,7 +219,7 @@ class TemplateCompiler(object):
                     None)
 
                 if overlay_class:
-                    self.__end_source_block.write(
+                    self.__end_source.write(
                         "register_overlay(%r, %r)" % (
                             overlay_class,
                             self.pkg_name + "." + self.class_name
@@ -301,12 +300,12 @@ class TemplateCompiler(object):
                     self.TEMPLATE_NS + ">overlay_base",
                     "cocktail.html.Overlay"
                 )
-                self.__global_source_block.write(
+                self.__global_source.write(
                     "from cocktail.modeling import call_base")
 
                 base_pkg, base_name = overlay_base.rsplit(".", 1)
 
-                self.__global_source_block.write(
+                self.__global_source.write(
                     "from %s.%s import %s" % (base_pkg, base_name.lower(), base_name)
                 )
             else:
@@ -321,33 +320,26 @@ class TemplateCompiler(object):
                 )
 
             frame.element = id = "self"
-            source = self.__declaration_source_block
-            source.write(
+            self.__declaration_source.write(
                 "class %s(%s):"
                 % (self.class_name, ", ".join(self.__bases))
             )
 
-            frame.source_block = source = SourceCodeWriter(1)
-            self.__source_blocks.append(source)
-
-            source.write("def __init__(self, *args, **kwargs):")
-            source.indent()
             for base in self.__bases[1:]:
-                source.write("%s.__init__(self)" % base)
-            source.write(
+                self.__initialization_source.write("%s.__init__(self)" % base)
+
+            self.__initialization_source.write(
                 "%s.__init__(self, *args, **kwargs)" % self.__bases[0]
             )
-            source.unindent()
 
-            source.write("def _build(self):")
-            source.indent()
+            frame.source_block = source = self.__build_source
 
             if self.__is_overlay:
-                source.write("call_base()")
+                self.__build_source.write("call_base()")
             else:
-                source.write("%s._build(self)" % elem_class_name)
+                self.__build_source.write("%s._build(self)" % elem_class_name)
                 if elem_tag is not default:
-                    source.write("self.tag = %r" % elem_tag)
+                    self.__build_source.write("self.tag = %r" % elem_tag)
 
             self._handle_attributes(id, attributes)
 
@@ -457,9 +449,9 @@ class TemplateCompiler(object):
                     source.write("@extend(%s)" % parent_id)
                 else:
                     self_var = "self"
-                    source = SourceCodeWriter(1)
+                    self.__class_source.linejump()
+                    source = self.__class_source.nest()
                     frame.source_block = source
-                    self.__source_blocks.append(source)
 
                 source.write(
                     "def create_%s(%s%s):"
@@ -518,8 +510,9 @@ class TemplateCompiler(object):
         self._pop()
 
         # Persistent name
-        frame = self.__stack[-1]
-        frame.source_block.write("element = %s" % frame.element)
+        if len(self.__stack) > 1:
+            frame = self.__stack[-1]
+            frame.source_block.write("element = %s" % frame.element)
 
     def CharacterDataHandler(self, data):
 
@@ -567,7 +560,7 @@ class TemplateCompiler(object):
             source = self.__stack[-1].source_block
 
         elif pi == "<?py-class":
-            source = self.__class_source_block
+            source = self.__class_source
 
         for i, line in enumerate(lines):
             if not line.startswith(indent_str) and line.strip():
