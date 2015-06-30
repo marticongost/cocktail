@@ -199,32 +199,13 @@ class MSExcelExporter(object):
                 yield (
                     self.get_member_heading(member, language),
                     self.header_style,
-                    (lambda obj:
-                        (
-                            self.export_member_value(
-                                obj,
-                                member,
-                                obj.get(member.name, language),
-                                language
-                            ),
-                            self.regular_style
-                        )
-                    )
+                    MSExcelMemberCell(self, member, language)
                 )
         else:
             yield (
                 self.get_member_heading(member, None),
                 self.header_style,
-                (lambda obj:
-                    (
-                        self.export_member_value(
-                            obj,
-                            member,
-                            obj.get(member.name)
-                        ),
-                        self.regular_style
-                    )
-                )
+                MSExcelMemberCell(self, member)
             )
 
     def get_member_heading(self, member, language):
@@ -296,6 +277,26 @@ class MSExcelExporter(object):
                 sheet.write(row + 1, 0, cell_content)
 
         return workbook
+
+
+class MSExcelMemberCell(object):
+
+    def __init__(self, exporter, member, language = None, style = None):
+        self.exporter = exporter
+        self.member = member
+        self.language = language
+        self.style = style or exporter.regular_style
+
+    def __call__(self, obj):
+        return (
+            self.exporter.export_member_value(
+                obj,
+                self.member,
+                obj.get(self.member.name, self.language),
+                self.language
+            ),
+            self.style
+        )
 
 
 def description_or_raw_value(obj, member, value, language = None):
