@@ -12,17 +12,28 @@ from contextlib import contextmanager
 class SourceCodeWriter(object):
 
     def __init__(self, indentation = 0):
-        self.__lines = []
+        self.__content = []
         self.indentation = indentation
         self.line_separator = u"\n"
         self.indent_str = " " * 4
 
     def __unicode__(self):
-        return self.line_separator.join(self.__lines)
+        return self.line_separator.join(
+            unicode(content)
+            for content in self.__content
+        )
 
     def write(self, *line):
         indent_str = self.indent_str * self.indentation
-        self.__lines.append(indent_str + u"".join(line))
+        self.__content.append(indent_str + u"".join(line))
+
+    def nest(self, indent = 0):
+        child = self.__class__(self.indentation + indent)
+        self.__content.append(child)
+        return child
+
+    def append(self, content):
+        self.__content.append(content)
 
     def indent(self):
         self.indentation += 1
