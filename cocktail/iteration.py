@@ -159,3 +159,19 @@ def find_min(collection, key = None, default = _undefined):
 
     return min_item
 
+def batch(iterable, batch_size):
+
+    if not batch_size:
+        yield iterable
+    else:
+        group = []
+
+        for item in iterable:
+            group.append(item)
+            if len(group) == batch_size:
+                yield group
+                group = []
+
+        if group:
+            yield group
+
