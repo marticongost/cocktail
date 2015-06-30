@@ -60,6 +60,7 @@ class TemplateCompiler(object):
             self.__source.write("def __init__(self, *args, **kwargs):")
             with self.__source.indented_block():
                 self.__initialization_source = self.__source.nest()
+                self.__custom_initialization_source = self.__source.nest()
 
             self.__source.write("def _build(self):")
             with self.__source.indented_block():
@@ -540,7 +541,7 @@ class TemplateCompiler(object):
 
     def DefaultHandler(self, data):
 
-        for pi in ("<?py", "<?py-class"):
+        for pi in ("<?py", "<?py-class", "<?py-init"):
             if data.startswith(pi) and data[len(pi)] in (" \n\r\t"):
                 break
         else:
@@ -561,6 +562,9 @@ class TemplateCompiler(object):
 
         elif pi == "<?py-class":
             source = self.__class_source
+
+        elif pi == "<?py-init":
+            source = self.__custom_initialization_source
 
         for i, line in enumerate(lines):
             if not line.startswith(indent_str) and line.strip():
