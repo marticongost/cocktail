@@ -1156,7 +1156,7 @@ translations.define("ko",
     ko = u"Hanguk"
 )
 
-translations.define("jp",
+translations.define("ja",
     ca = u"Japonès",
     es = u"Japonés",
     en = u"Japanese",
