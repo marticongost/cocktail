@@ -6,6 +6,8 @@ u"""
 @organization:	Whads/Accent SL
 @since:			February 2008
 """
+from contextlib import contextmanager
+
 
 class SourceCodeWriter(object):
 
@@ -27,4 +29,12 @@ class SourceCodeWriter(object):
 
     def unindent(self):
         self.indentation -= 1
+
+    @contextmanager
+    def indented_block(self):
+        self.indentation += 1
+        try:
+            yield None
+        finally:
+            self.indentation -= 1
 
