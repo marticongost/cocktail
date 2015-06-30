@@ -38,3 +38,7 @@ class SourceCodeWriter(object):
         finally:
             self.indentation -= 1
 
+    def linejump(self, lines = 1):
+        for i in xrange(lines):
+            self.write()
+
