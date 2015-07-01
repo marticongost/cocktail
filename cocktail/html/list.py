@@ -19,6 +19,7 @@ class List(Element, UIGenerator):
     tag = "ul"
     max_length = None
     base_ui_generators = [default_display]
+    sort_key = None
 
     def __init__(self, *args, **kwargs):
         Element.__init__(self, *args, **kwargs)
@@ -52,6 +53,10 @@ class List(Element, UIGenerator):
         items = self.value
 
         if items:
+            if self.sort_key:
+                items = list(items)
+                items.sort(key = self.sort_key)
+
             if self.max_length:
                 ellipsis = len(items) - self.max_length
                 if ellipsis > 0:
