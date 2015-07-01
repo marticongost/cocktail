@@ -935,7 +935,7 @@ class InstrumentedSet(SetWrapper, InstrumentedCollection):
             self.changed()
 
     def update(self, other_set):
-        if isinstance(other_set, types.GeneratorType):
+        if not isinstance(other_set, (set, SetWrapper)):
             other_set = set(other_set)
 
         items = other_set - self._items
