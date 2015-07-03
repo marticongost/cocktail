@@ -314,7 +314,7 @@ class Adapter(object):
 
         Note that setting this property will alter the analogous attribute on
         both of the adapter's import and export rule sets (but the opposite
-        isn't true; setting X{collection_copy_mode} on either rule set won't
+        isn't true; setting X{copy_validations} on either rule set won't
         affect the adapter).
 
         @type: bool
