@@ -144,9 +144,9 @@ class MSExcelExporter(object):
 
     def __init__(self):
 
-        self.header_style = pyExcelerator.XFStyle()
-        self.header_style.font = pyExcelerator.Font()
-        self.header_style.font.bold = True
+        self.heading_style = pyExcelerator.XFStyle()
+        self.heading_style.font = pyExcelerator.Font()
+        self.heading_style.font.bold = True
 
         self.regular_style = pyExcelerator.XFStyle()
         self.regular_style.font = pyExcelerator.Font()
@@ -191,22 +191,29 @@ class MSExcelExporter(object):
         ))
 
         self.member_exporters = {}
+        self.member_column_types = {}
+
+    def get_member_is_translated(self, member):
+        return member.translated
+
+    def get_columns(self, collection, export_schema, members, languages):
+        columns = []
+        for member in members:
+            columns.extend(self.get_member_columns(member, languages))
+        return columns
 
     def get_member_columns(self, member, languages):
 
-        if member.translated:
+        column_type = (
+            self.member_column_types.get(member)
+            or MSExcelMemberColumn
+        )
+
+        if self.get_member_is_translated(member):
             for language in languages:
-                yield (
-                    self.get_member_heading(member, language),
-                    self.header_style,
-                    MSExcelMemberCell(self, member, language)
-                )
+                yield column_type(self, member, language)
         else:
-            yield (
-                self.get_member_heading(member, None),
-                self.header_style,
-                MSExcelMemberCell(self, member)
-            )
+            yield column_type(self, member)
 
     def get_member_heading(self, member, language):
         if language:
@@ -252,25 +259,34 @@ class MSExcelExporter(object):
         if isinstance(export_schema, schema.Schema):
 
             # Determine columns
-            columns = []
+            columns = self.get_columns(
+                collection,
+                export_schema,
+                members,
+                languages
+            )
 
-            for member in members:
-                columns.extend(self.get_member_columns(member, languages))
+            # Column headings
+            for j, column in enumerate(columns):
+                sheet.write(
+                    0,
+                    j,
+                    column.heading,
+                    column.heading_style or self.heading_style
+                )
 
-            # Column headers
-            for col, (heading, heading_style, cell_factory) \
-            in enumerate(columns):
-                sheet.write(0, col, heading, heading_style)
-
-            for row, obj in enumerate(collection):
-                for col, (heading, heading_style, cell_factory) \
-                in enumerate(columns):
-                    cell_value, cell_style = cell_factory(obj)
-                    cell_value = self.export_value(cell_value)
-                    sheet.write(row + 1, col, cell_value, cell_style)
+            # Cells
+            for i, obj in enumerate(collection):
+                for j, column in enumerate(columns):
+                    cell_value = self.export_value(column.get_cell_value(obj))
+                    cell_style = (
+                        column.get_cell_style(obj)
+                        or self.regular_style
+                    )
+                    sheet.write(i + 1, j, cell_value, cell_style)
         else:
-            # Column headers
-            sheet.write(0, 0, schema.name or "", self.header_style)
+            # Column headings
+            sheet.write(0, 0, schema.name or "", self.heading_style)
 
             for row, obj in enumerate(collection):
                 cell_content = self.export_value(obj)
@@ -279,23 +295,57 @@ class MSExcelExporter(object):
         return workbook
 
 
-class MSExcelMemberCell(object):
+class MSExcelColumn(object):
 
-    def __init__(self, exporter, member, language = None, style = None):
+    def __init__(self,
+        exporter,
+        language = None,
+        heading = "",
+        heading_style = None,
+        style = None
+    ):
         self.exporter = exporter
-        self.member = member
         self.language = language
-        self.style = style or exporter.regular_style
+        self.heading = heading
+        self.heading_style = heading_style
+        self.style = style
 
-    def __call__(self, obj):
-        return (
-            self.exporter.export_member_value(
-                obj,
-                self.member,
-                obj.get(self.member.name, self.language),
-                self.language
-            ),
-            self.style
+    def get_cell_value(self, obj):
+        return ""
+
+    def get_cell_style(self, obj):
+        return self.style or self.exporter.regular_style
+
+
+class MSExcelMemberColumn(MSExcelColumn):
+
+    def __init__(self,
+        exporter,
+        member,
+        language = None,
+        heading = None,
+        heading_style = None,
+        style = None
+    ):
+        MSExcelColumn.__init__(
+            self,
+            exporter,
+            language = language,
+            heading =
+                exporter.get_member_heading(member, language)
+                if heading is None
+                else heading,
+            heading_style = heading_style,
+            style = style
+        )
+        self.member = member
+
+    def get_cell_value(self, obj):
+        return self.exporter.export_member_value(
+            obj,
+            self.member,
+            obj.get(self.member.name, self.language),
+            self.language
         )
 
 
