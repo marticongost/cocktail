@@ -302,6 +302,8 @@ class RelationCollection(object):
         self.owner.changed(
             member = self.member,
             previous_value = None,
+            added = added,
+            removed = removed,
             language = None,
             value = self
         )
