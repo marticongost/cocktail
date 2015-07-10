@@ -127,8 +127,12 @@ class RelationMapping(RelationCollection, InstrumentedDict):
     def set_content(self, new_content):
 
         if new_content is None:
+            added = []
+            removed = self._items.items()
             self.clear()
         else:
+            added = []
+            removed = []
             previous_content = self._items
 
             if isinstance(new_content, (dict, DictWrapper)):
@@ -140,14 +144,13 @@ class RelationMapping(RelationCollection, InstrumentedDict):
                 )
 
             self._items = dict(new_content)
-            changed = False
 
             for key, old_value in previous_content.iteritems():
                 if (
                     key not in self._items
                     or self._items.get(key) != old_value
                 ):
-                    changed = True
+                    removed.append((key, old_value))
                     self.item_removed((key, old_value))
 
             for key, new_value in self._items.iteritems():
@@ -155,9 +158,9 @@ class RelationMapping(RelationCollection, InstrumentedDict):
                     key not in previous_content
                     or previous_content.get(key) != new_value
                 ):
-                    changed = True
+                    added.append((key, new_value))
                     self.item_added((key, new_value))
 
-            if changed:
-                self.changed()
+        if added or removed:
+            self.changed(added = added, removed = removed)
 

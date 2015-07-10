@@ -456,7 +456,9 @@ class SchemaClass(EventHub, Schema):
                     language = language,
                     value = value,
                     previous_value = previous_value,
-                    translation_changes = translation_changes
+                    translation_changes = translation_changes,
+                    added = None,
+                    removed = None
                 )
 
                 if member.translation_source:
@@ -465,7 +467,9 @@ class SchemaClass(EventHub, Schema):
                         language = instance.language,
                         value = value,
                         previous_value = previous_value,
-                        translation_changes = translation_changes
+                        translation_changes = translation_changes,
+                        added = None,
+                        removed = None
                     )
 
         def instrument_collection(self, collection, owner, member):
@@ -597,6 +601,12 @@ class SchemaObject(object):
 
         @ivar previous_value: The value that the member had before the current
             change.
+
+        @ivar added: Only for collections. A collection of all the items added
+            to the collection.
+
+        @ivar removed: Only for collections. A collection of all the items
+            removed from the collection.
 
         @ivar translation_changes: A dictionary indicating the translations
             that will be affected by this change, and their respective values
