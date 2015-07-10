@@ -96,18 +96,6 @@ cocktail.bind(".SplitSelector.search_enabled", function ($control) {
     var $eligibleItemsPanel = $splitPanels.find(".eligible_items_panel");
     var $eligibleItemsContainer = $eligibleItemsPanel.find(".split_panel_content");
 
-    cocktail.selectable({
-        element: $selectedItemsContainer,
-        mode: cocktail.MULTIPLE_SELECTION,
-        exclusive: true
-    });
-
-    cocktail.selectable({
-        element: $eligibleItemsContainer,
-        mode: cocktail.MULTIPLE_SELECTION,
-        exclusive: true
-    });
-
     // Toggle buttons for both panels
     var $dropButton = $selectedItemsPanel.find(".toggle_button").click(dropSelection);
     var $chooseButton = $eligibleItemsPanel.find(".toggle_button").click(chooseSelection);

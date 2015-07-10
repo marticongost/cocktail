@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
+<?py
+from cocktail.html.selectable import selectable, MULTIPLE_SELECTION
+?>
 
 <div
     xmlns="http://www.w3.org/1999/xhtml"
@@ -39,6 +42,7 @@
     ?>
 
     <?py
+    self.add_resource("/cocktail/scripts/selectable.js")
     self.add_resource("/cocktail/scripts/xregexp.js")
     self.add_resource("/cocktail/scripts/searchable.js")
     self.add_resource("/cocktail/scripts/SplitSelector.js")
@@ -103,7 +107,15 @@
                 <span py:local_id="button_label"/>
             </button>
         </div>
-        <div py:local_id="split_panel_content"/>
+        <div py:local_id="split_panel_content">
+            <?py
+            selectable(
+                element,
+                mode = MULTIPLE_SELECTION,
+                exclusive = True
+            )
+            ?>
+        </div>
     </div>
 
 </div>
