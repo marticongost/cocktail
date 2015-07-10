@@ -38,6 +38,7 @@ cocktail.bind(".SplitSelector.search_enabled", function ($control) {
         $eligibleItemsContainer[0].setEntrySelected(entry, false);
         insertEntry($selectedItemsContainer, entry, sort);
         entry.appendChild(entry.splitSelectorHiddenInput);
+        $control.trigger({type: "change"});
         return true;
     }
 
@@ -51,6 +52,7 @@ cocktail.bind(".SplitSelector.search_enabled", function ($control) {
             entry.removeChild(entry.splitSelectorHiddenInput);
         }
         $(entry).find("input[type=checkbox]").removeAttr("checked");
+        $control.trigger({type: "change"});
         return true;
     }
 
