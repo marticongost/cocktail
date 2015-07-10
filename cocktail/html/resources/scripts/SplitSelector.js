@@ -225,6 +225,14 @@ cocktail.bind(".SplitSelector.search_enabled", function ($control) {
         }
     }
 
+    this.getPossibleValues = function () {
+        var values = this.getValue();
+        $eligibleItemsContainer[0].getEntries().each(function () {
+            values.push(this.splitSelectorHiddenInput.value);
+        });
+        return values;
+    }
+
     this.applySearch($searchBox.val());
 });
 
