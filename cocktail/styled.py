@@ -137,6 +137,7 @@ class ProgressBar(object):
                 line = "\033[1A\033[K" + line
 
         print line
+        sys.stdout.flush()
         return True
 
     def get_bar_string(self):
