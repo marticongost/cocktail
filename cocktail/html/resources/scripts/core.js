@@ -360,10 +360,13 @@ cocktail.closeDialog = function () {
     // We use a custom remove function because jQuery.remove()
     // clears event handlers
     function remove() { this.parentNode.removeChild(this); };
-    jQuery(".dialog-background").each(remove);
+    var $dialogBackground = jQuery(".dialog-background").each(remove);
     jQuery(".dialog")
         .each(remove)
-        .trigger("dialogClosed");
+        .trigger({
+            type: "dialogClosed",
+            background: $dialogBackground[0]
+        });
     jQuery(document.body).removeClass("modal");
 }
 
