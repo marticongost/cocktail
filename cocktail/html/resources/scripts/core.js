@@ -372,6 +372,11 @@ cocktail.closeDialog = function () {
     var $dialog = jQuery(".dialog");
     var $dialogBackground = jQuery(".dialog-background");
 
+    $dialog.trigger({
+        type: "dialogClosing",
+        background: $dialogBackground[0]
+    });
+
     $dialogBackground.detach();
 
     var closeMode = $dialog.data("cocktailDialogCloseMode");
