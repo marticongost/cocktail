@@ -320,7 +320,18 @@ cocktail.showDialog = function (content, params /* = null */) {
 
     $content.addClass("dialog");
     jQuery(document.body).addClass("modal");
-    dialogParent.appendChild($content.get(0));
+
+    var closeMode = params && params.closeMode || "detach";
+    $content.data("cocktailDialogCloseMode", closeMode);
+
+    if (closeMode == "hide") {
+        $content.show();
+    }
+
+    if (content.parentNode != dialogParent) {
+        dialogParent.appendChild($content.get(0));
+    }
+
     setTimeout(function () {
         $dialogElements.addClass("dialog_ready");
     }, 100);
@@ -357,16 +368,25 @@ cocktail.waitForImages = function (element) {
 }
 
 cocktail.closeDialog = function () {
-    // We use a custom remove function because jQuery.remove()
-    // clears event handlers
-    function remove() { this.parentNode.removeChild(this); };
-    var $dialogBackground = jQuery(".dialog-background").each(remove);
-    jQuery(".dialog")
-        .each(remove)
-        .trigger({
-            type: "dialogClosed",
-            background: $dialogBackground[0]
-        });
+
+    var $dialog = jQuery(".dialog");
+    var $dialogBackground = jQuery(".dialog-background");
+
+    $dialogBackground.detach();
+
+    var closeMode = $dialog.data("cocktailDialogCloseMode");
+    if (closeMode == "detach") {
+        $dialog.detach();
+    }
+    else if (closeMode == "hide") {
+        $dialog.hide();
+    }
+
+    $dialog.trigger({
+        type: "dialogClosed",
+        background: $dialogBackground[0]
+    });
+
     jQuery(document.body).removeClass("modal");
 }
 
