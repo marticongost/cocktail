@@ -38,6 +38,7 @@ cocktail.bind(".SplitSelector.search_enabled", function ($control) {
         $eligibleItemsContainer[0].setEntrySelected(entry, false);
         insertEntry($selectedItemsContainer, entry, sort);
         entry.appendChild(entry.splitSelectorHiddenInput);
+        $control.trigger({type: "change"});
         return true;
     }
 
@@ -51,6 +52,7 @@ cocktail.bind(".SplitSelector.search_enabled", function ($control) {
             entry.removeChild(entry.splitSelectorHiddenInput);
         }
         $(entry).find("input[type=checkbox]").removeAttr("checked");
+        $control.trigger({type: "change"});
         return true;
     }
 
@@ -95,18 +97,6 @@ cocktail.bind(".SplitSelector.search_enabled", function ($control) {
     var $selectedItemsContainer = $selectedItemsPanel.find(".split_panel_content");
     var $eligibleItemsPanel = $splitPanels.find(".eligible_items_panel");
     var $eligibleItemsContainer = $eligibleItemsPanel.find(".split_panel_content");
-
-    cocktail.selectable({
-        element: $selectedItemsContainer,
-        mode: cocktail.MULTIPLE_SELECTION,
-        exclusive: true
-    });
-
-    cocktail.selectable({
-        element: $eligibleItemsContainer,
-        mode: cocktail.MULTIPLE_SELECTION,
-        exclusive: true
-    });
 
     // Toggle buttons for both panels
     var $dropButton = $selectedItemsPanel.find(".toggle_button").click(dropSelection);
@@ -233,6 +223,14 @@ cocktail.bind(".SplitSelector.search_enabled", function ($control) {
                 }
             });
         }
+    }
+
+    this.getPossibleValues = function () {
+        var values = this.getValue();
+        $eligibleItemsContainer[0].getEntries().each(function () {
+            values.push(this.splitSelectorHiddenInput.value);
+        });
+        return values;
     }
 
     this.applySearch($searchBox.val());
