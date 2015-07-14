@@ -731,7 +731,7 @@ class InstrumentedCollection(object):
     def item_removed(self, item):
         pass
 
-    def changed(self):
+    def changed(self, added, removed):
         pass
 
 
@@ -745,30 +745,30 @@ class InstrumentedList(ListWrapper, InstrumentedCollection):
         self.item_added(item)
 
         if _trigger_changed:
-            self.changed()
+            self.changed(added = (item,), removed = ())
 
     def insert(self, index, item):
         self._items.insert(index, item)
         self.item_added(item)
-        self.changed()
+        self.changed(added = (item,), removed = ())
 
     def extend(self, items):
         self._items.extend(items)
         for item in items:
             self.item_added(item)
-        self.changed()
+        self.changed(added = items, removed = ())
 
     def remove(self, item):
         self._items.remove(item)
         self.item_removed(item)
-        self.changed()
+        self.changed(added = (), removed = (item,))
 
     def pop(self, index, _trigger_changed = True):
         item = self._items.pop(index)
         self.item_removed(item)
 
         if _trigger_changed:
-            self.changed()
+            self.changed(added = (), removed = (item,))
 
         return item
 
@@ -780,20 +780,24 @@ class InstrumentedList(ListWrapper, InstrumentedCollection):
             self._items[index] = item
             self.item_removed(prev_item)
             self.item_added(item)
-            self.changed()
+            self.changed(added = (item,), removed = (prev_item,))
 
     def __delitem__(self, index):
+
+        removed = []
 
         if isinstance(index, slice):
             items = self._items[index]
             self._items.__delitem__(index)
             for item in items:
+                removed.append(item)
                 self.item_removed(item)
         else:
             item = self._items.pop(index, _trigger_changed = False)
+            removed.append(item)
             self.item_removed(item)
 
-        self.changed()
+        self.changed(added = (), removed = removed)
 
 
 class InstrumentedOrderedSet(ListWrapper, InstrumentedCollection):
@@ -809,31 +813,33 @@ class InstrumentedOrderedSet(ListWrapper, InstrumentedCollection):
     def append(self, item, relocate = False, _trigger_changed = True):
         if self._items.append(item, relocate):
             self.item_added(item)
-
-        if _trigger_changed:
-            self.changed()
+            if _trigger_changed:
+                self.changed(added = (item,), removed = ())
 
     def insert(self, index, item, relocate = False):
         if self._items.insert(index, item, relocate):
             self.item_added(item)
-        self.changed()
+            self.changed(added = (item,), removed = ())
 
     def extend(self, items, relocate = False):
         for item in items:
-            self.append(item, relocate, _trigger_changed = False)
-        self.changed()
+            added = []
+            if self.append(item, relocate, _trigger_changed = False):
+                added.append(item)
+            if added:
+                self.changed(added = added, removed = ())
 
     def remove(self, item):
         self._items.remove(item)
         self.item_removed(item)
-        self.changed()
+        self.changed(added = (), removed = (item,))
 
     def pop(self, index, _trigger_changed = True):
         item = self._items.pop(index)
         self.item_removed(item)
 
         if _trigger_changed:
-            self.changed()
+            self.changed(added = (), removed = (item,))
 
         return item
 
@@ -844,7 +850,7 @@ class InstrumentedOrderedSet(ListWrapper, InstrumentedCollection):
             self._items[index] = item
             self.item_removed(prev_item)
             self.item_added(item)
-            self.changed()
+            self.changed(added = (item,), removed = (prev_item,))
 
     def __delitem__(self, index):
 
@@ -857,7 +863,7 @@ class InstrumentedOrderedSet(ListWrapper, InstrumentedCollection):
             item = self._items.pop(index, _trigger_changed = False)
             self.item_removed(item)
 
-        self.changed()
+        self.changed(added = (), removed = (item,))
 
 
 class InstrumentedSet(SetWrapper, InstrumentedCollection):
@@ -869,7 +875,7 @@ class InstrumentedSet(SetWrapper, InstrumentedCollection):
         if item not in self._items:
             self._items.add(item)
             self.item_added(item)
-            self.changed()
+            self.changed(added = (item,), removed = ())
 
     def clear(self):
         items = list(self._items)
@@ -879,7 +885,7 @@ class InstrumentedSet(SetWrapper, InstrumentedCollection):
             for item in items:
                 self.item_removed(item)
 
-            self.changed()
+            self.changed(added = (), removed = items)
 
     def difference_update(self, other_set):
         items = self._items & other_set
@@ -889,13 +895,13 @@ class InstrumentedSet(SetWrapper, InstrumentedCollection):
             for item in items:
                 self.item_removed(item)
 
-            self.changed()
+            self.changed(added = (), removed = items)
 
     def discard(self, item):
         if item in self._items:
             self._items.remove(item)
             self.item_removed(item)
-            self.changed()
+            self.changed(added = (), removed = (item,))
 
     def intersection_update(self, other_set):
         items = self._items - other_set
@@ -905,18 +911,18 @@ class InstrumentedSet(SetWrapper, InstrumentedCollection):
             for item in items:
                 self.item_removed(item)
 
-            self.changed()
+            self.changed(added = (), removed = items)
 
     def pop(self):
         item = self._items.pop()
         self.item_removed(item)
-        self.changed()
+        self.changed(added = (), removed = (item,))
         return item
 
     def remove(self, item):
         self._items.remove(item)
         self.item_removed(item)
-        self.changed()
+        self.changed(added = (), removed = (item,))
 
     def symmetric_difference_update(self, other_set):
 
@@ -932,7 +938,7 @@ class InstrumentedSet(SetWrapper, InstrumentedCollection):
             self.item_added(item)
 
         if removed_items or added_items:
-            self.changed()
+            self.changed(added = added_items, removed = removed_items)
 
     def update(self, other_set):
         if not isinstance(other_set, (set, SetWrapper)):
@@ -945,7 +951,7 @@ class InstrumentedSet(SetWrapper, InstrumentedCollection):
             for item in items:
                 self.item_added(item)
 
-            self.changed()
+            self.changed(added = items, removed = ())
 
 
 class InstrumentedDict(DictWrapper, InstrumentedCollection):
@@ -953,7 +959,7 @@ class InstrumentedDict(DictWrapper, InstrumentedCollection):
     def __init__(self, items = None):
         DictWrapper.__init__(self, items)
 
-    def __set_key(self, key, value):
+    def __setitem__(self, key, value):
         prev_value = self._items.get(key, _undefined)
         self._items.__setitem__(key, value)
 
@@ -961,20 +967,18 @@ class InstrumentedDict(DictWrapper, InstrumentedCollection):
 
             if prev_value is not _undefined:
                 self.item_removed((key, prev_value))
+                removed = ((key, prev_value),)
+            else:
+                removed = ()
 
             self.item_added((key, value))
-            return True
-
-        return False
-
-    def __setitem__(self, key, value):
-        if self.__set_key(key, value):
-            self.changed()
+            self.changed(added = ((key, value),), removed = removed)
 
     def __delitem__(self, key):
         value = self._items.pop(key)
-        self.item_removed((key, value))
-        self.changed()
+        item = (key, value)
+        self.item_removed(item)
+        self.changed(added = (), removed = (item,))
 
     def clear(self):
         items = self._items.items()
@@ -984,7 +988,7 @@ class InstrumentedDict(DictWrapper, InstrumentedCollection):
             for item in items:
                 self.item_removed(item)
 
-            self.changed()
+            self.changed(added = (), removed = items)
 
     def pop(self, key, default = _undefined):
 
@@ -996,20 +1000,23 @@ class InstrumentedDict(DictWrapper, InstrumentedCollection):
             value = default
         else:
             del self._items[key]
-            self.item_removed((key, value))
-            self.changed()
+            item = (key, value)
+            self.item_removed(item)
+            self.changed(added = (), removed = (item,))
 
         return value
 
     def popitem(self):
         item = self._items.popitem()
         self.item_removed(item)
-        self.changed()
+        self.changed(added = (), removed = (item,))
         return item
 
     def update(self, *args, **kwargs):
 
-        changed = False
+        added = []
+        removed = []
+        items = None
 
         if args:
             if len(args) != 1:
@@ -1018,15 +1025,29 @@ class InstrumentedDict(DictWrapper, InstrumentedCollection):
                     % len(args)
                 )
 
-            for key, value in args[0].iteritems():
-                changed = self.__set_key(key, value) or changed
+            items = args.items()
 
         if kwargs:
-            for key, value in kwargs.iteritems():
-                changed = self.__set_key(key, value) or changed
+            if items is None:
+                items = kwargs.items()
+            else:
+                items.extend(kwargs.iteritems())
 
-        if changed:
-            self.changed()
+        for key, value in items:
+            prev_value = self._items.get(key, _undefined)
+            self._items.__setitem__(key, value)
+
+            if value != prev_value:
+
+                if prev_value is not _undefined:
+                    removed.append((key, prev_value))
+                    self.item_removed((key, prev_value))
+
+                added.append((key, value))
+                self.item_added((key, value))
+
+        if added or removed:
+            self.changed(added = added, removed = removed)
 
 
 # Thread safe collections

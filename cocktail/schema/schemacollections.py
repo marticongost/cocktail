@@ -298,10 +298,12 @@ class RelationCollection(object):
         if self.member.related_end:
             _update_relation("unrelate", self.owner, item, self.member)
 
-    def changed(self):
+    def changed(self, added, removed):
         self.owner.changed(
             member = self.member,
             previous_value = None,
+            added = added,
+            removed = removed,
             language = None,
             value = self
         )
@@ -319,11 +321,10 @@ class RelationList(RelationCollection, InstrumentedList):
 
     def set_content(self, new_content):
 
-        changed = False
-
         if not new_content:
+            added = []
+            removed = list(self._items)
             while self._items:
-                changed = True
                 self.pop(0, _trigger_changed = False)
         else:
             if not hasattr(new_content, "__iter__") \
@@ -337,25 +338,30 @@ class RelationList(RelationCollection, InstrumentedList):
             previous_content = self._items
             self._items = new_content
             changed = False
+            added = []
+            removed = []
 
             for tag, alo, ahi, blo, bhi in diff.get_opcodes():
-                changed = True
                 if tag == "replace":
                     for item in previous_content[alo:ahi]:
+                        removed.append(item)
                         self.item_removed(item)
                     for item in new_content[blo:bhi]:
+                        added.append(item)
                         self.item_added(item)
                 elif tag == "delete":
                     for item in previous_content[alo:ahi]:
+                        removed.append(item)
                         self.item_removed(item)
                 elif tag == "insert":
                     for item in new_content[blo:bhi]:
+                        added.append(item)
                         self.item_added(item)
                 elif tag == "equal":
                     pass
 
-        if changed:
-            self.changed()
+        if added or removed:
+            self.changed(added = added, removed = removed)
 
 
 class RelationSet(RelationCollection, InstrumentedSet):
@@ -368,6 +374,8 @@ class RelationSet(RelationCollection, InstrumentedSet):
     def set_content(self, new_content):
 
         if new_content is None:
+            added = set()
+            removed = set(self._items)
             self.clear()
         else:
             if not isinstance(new_content, set):
@@ -375,18 +383,17 @@ class RelationSet(RelationCollection, InstrumentedSet):
 
             previous_content = self._items
             self._items = new_content
-            changed = False
 
-            for item in previous_content - new_content:
-                changed = True
+            removed = previous_content - new_content
+            for item in removed:
                 self.item_removed(item)
 
-            for item in new_content - previous_content:
-                changed = True
+            added = new_content - previous_content
+            for item in added:
                 self.item_added(item)
 
-            if changed:
-                self.changed()
+        if added or removed:
+            self.changed(added = added, removed = removed)
 
 
 class RelationOrderedSet(RelationCollection, InstrumentedOrderedSet):
@@ -404,10 +411,13 @@ class RelationOrderedSet(RelationCollection, InstrumentedOrderedSet):
         changed = False
 
         if new_content is None:
+            added = set()
+            removed = set(self._items)
             while self._items:
                 changed = True
                 self.pop(0, _trigger_changed = False)
         else:
+            changed = (new_content != self._items)
             previous_set = set(self._items)
             new_set = set(new_content)
 
@@ -416,14 +426,14 @@ class RelationOrderedSet(RelationCollection, InstrumentedOrderedSet):
 
             self._items = new_content
 
-            for item in previous_set - new_set:
-                changed = True
+            removed = previous_set - new_set
+            for item in removed:
                 self.item_removed(item)
 
-            for item in new_set - previous_set:
-                changed = True
+            added = new_set - previous_set
+            for item in added:
                 self.item_added(item)
 
         if changed:
-            self.changed()
+            self.changed(added = added, removed = removed)
 
