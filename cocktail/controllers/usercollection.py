@@ -10,7 +10,13 @@ from copy import copy
 from collections import OrderedDict
 import cherrypy
 from cocktail.pkgutils import resolve
-from cocktail.modeling import ListWrapper, SetWrapper, getter, cached_getter
+from cocktail.modeling import (
+    ListWrapper,
+    SetWrapper,
+    getter,
+    cached_getter,
+    OrderedSet
+)
 from cocktail.translations import get_language
 from cocktail import schema
 from cocktail.schema.io import export_file
@@ -173,15 +179,20 @@ class UserCollection(object):
     @cached_getter
     def languages(self):
 
-        languages = set([get_language()])
+        languages = OrderedSet([get_language()])
 
         if self.allow_language_selection:
-            languages = self.params.read(
+            language_subset = self.params.read(
                 schema.Collection("language",
                     type = set,
                     items = schema.String(enumeration = self.available_languages),
                     default = languages
                 )
+            )
+            languages = OrderedSet(
+                language
+                for language in self.available_languages
+                if language in language_subset
             )
 
         return languages
