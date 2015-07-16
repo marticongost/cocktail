@@ -534,6 +534,7 @@ class Element(object):
     def init_data_binding_delegate(self, delegate):
         delegate.member = self.member
         delegate.collection = self.collection
+        delegate.data = self.data
         delegate.name = self.name
         delegate.value = self.value
         delegate.ui_generator = self.ui_generator
