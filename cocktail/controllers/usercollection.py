@@ -185,10 +185,9 @@ class UserCollection(object):
             language_subset = self.params.read(
                 schema.Collection("language",
                     type = set,
-                    items = schema.String(enumeration = self.available_languages),
-                    default = languages
+                    items = schema.String(enumeration = self.available_languages)
                 )
-            )
+            ) or languages
             languages = OrderedSet(
                 language
                 for language in self.available_languages
