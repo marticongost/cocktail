@@ -36,6 +36,10 @@ def diff(
     @type target_accessor: L{Accessor<cocktail.accessors.Accessor>}
         subclass
 
+    @param exclude: An optional filtering function that will be called to
+        determine if a given member should be inspected or not.
+    @type exclude: callable (L{member<cocktail.schema.member.Member>}) -> bool
+
     @return: An iterable sequence of member and language tuples.
     @rtype: (L{member<cocktail.schema.member.Member>}, str) iterable
     """
