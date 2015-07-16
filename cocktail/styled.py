@@ -111,12 +111,12 @@ class ProgressBar(object):
         self.progress = 0
         self.total_cycles = total_cycles
 
-    def update(self, cycles = 0):
+    def update(self, cycles = 0, force = False):
 
         self.progress += cycles
 
         # Prevent flickering caused by too frequent updates
-        if self.min_time_between_updates is not None:
+        if not force and self.min_time_between_updates is not None:
             now = time()
             if (
                 self.__last_update is not None
@@ -139,6 +139,10 @@ class ProgressBar(object):
         print line
         sys.stdout.flush()
         return True
+
+    def finish(self):
+        self.progress = self.total_cycles
+        self.update(force = True)
 
     def get_bar_string(self):
         completed_width = int(
