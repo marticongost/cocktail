@@ -10,12 +10,18 @@ from cocktail.html import Element
 
 class TranslationDisplay(Element):
 
+    empty_label = u"∅"
+
     def _ready(self):
 
         Element._ready(self)
 
-        if self.value is not None and self.member is not None:
-            self.append(self.member.translate_value(self.value, self.language))
+        if self.member is not None:
+            label = self.member.translate_value(self.value, self.language)
+            if not label:
+                label = self.get_empty_label()
+                self.add_class("empty")
+            self.append(label)
 
             if (
                 self.language
@@ -28,6 +34,9 @@ class TranslationDisplay(Element):
                     self.add_class("inherited_translation")
                     self["title"] = \
                         self.get_translation_inheritance_remark(source_locale)
+
+    def get_empty_label(self):
+        return self.empty_label
 
     def get_translation_inheritance_remark(self, source_locale):
         return translations(
