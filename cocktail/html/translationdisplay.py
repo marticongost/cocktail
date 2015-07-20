@@ -24,13 +24,14 @@ class TranslationDisplay(Element):
             self.append(label)
 
             if (
-                self.language
+                self.value is not None
+                and self.language
                 and self.member.translated
                 and isinstance(self.data, SchemaObject)
                 and self.data.__class__.translated
             ):
                 source_locale = self.data.get_source_locale(self.language)
-                if self.language != source_locale:
+                if source_locale and self.language != source_locale:
                     self.add_class("inherited_translation")
                     self["title"] = \
                         self.get_translation_inheritance_remark(source_locale)
