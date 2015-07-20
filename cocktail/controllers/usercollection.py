@@ -295,8 +295,8 @@ class UserCollection(object):
             tab.selected = True
             return tab
 
-    def add_tab(self, id, label, filter):
-        tab = CollectionViewTab(id, label, filter)
+    def add_tab(self, id, label, filter, **kwargs):
+        tab = CollectionViewTab(id, label, filter, **kwargs)
         self.__tabs[id] = tab
         return tab
 
@@ -522,10 +522,12 @@ class UserCollection(object):
 
 class CollectionViewTab(object):
 
-    def __init__(self, id, label, filter):
+    def __init__(self, id, label, filter, **kwargs):
         self.id = id
         self.label = label
         self.filter = filter
         self.results = None
         self.selected = False
+        for key, value in kwargs.iteritems():
+            setattr(self, key, value)
 
