@@ -56,12 +56,9 @@ def handler_profiler(
         global _request_id
 
         # Acquire a unique identifier for the request
-        _lock.acquire()
-        try:
+        with _lock:
             _request_id += 1
             id = _request_id
-        finally:
-            _lock.release()
 
         name = cherrypy.request.path_info.strip("/").replace("/", "-")
         name += "." + str(id)
