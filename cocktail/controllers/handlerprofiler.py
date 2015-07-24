@@ -12,10 +12,13 @@ from pstats import Stats
 from threading import Lock
 from pickle import dumps
 from subprocess import Popen
+import re
 import os
 from os.path import join
 import shlex
+from collections import Sequence
 import cherrypy
+from cocktail.controllers.location import Location
 from cocktail.controllers.static import serve_file
 
 _lock = Lock()
@@ -36,15 +39,44 @@ def handler_profiler(
     stats_path = "/tmp",
     default_action = None,
     trigger = None,
-    viewer = None
+    viewer = None,
+    filter = None
 ):
-    profiler_action = default_action
-
     if trigger:
-        profiler_action = cherrypy.request.params.get(trigger, default_action)
+        trigger_action = cherrypy.request.params.get(trigger)
+        profiler_action = trigger_action or default_action
+    else:
+        profiler_action = default_action
+        trigger_action = None
 
     if not profiler_action:
         return
+
+    if filter and not trigger_action:
+
+        if not isinstance(filter, Sequence):
+            filter = (filter,)
+
+        for expr in filter:
+
+            if isinstance(expr, basestring):
+                url = unicode(Location.get_current())
+                if expr.startswith("!"):
+                    reg_expr = re.compile(expr[1:])
+                    match = not reg_expr.search(url)
+                else:
+                    reg_expr = re.compile(expr)
+                    match = reg_expr.search(url)
+            elif callable(expr):
+                match = expr()
+            else:
+                raise ValueError(
+                    "Profiler filter expressions should be a string or a "
+                    "callable, not %r" % expr
+                )
+
+            if not match:
+                return
 
     handler = cherrypy.request.handler
 
