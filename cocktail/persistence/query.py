@@ -16,7 +16,7 @@ from BTrees.OOBTree import OOTreeSet, OOSet
 from cocktail.styled import styled
 from cocktail.modeling import getter, ListWrapper
 from cocktail.stringutils import normalize
-from cocktail.translations import get_language, words
+from cocktail.translations import get_language, require_language, words
 from cocktail.schema import (
     Member,
     Collection,
@@ -805,23 +805,28 @@ def _get_filter_info(filter):
 
     if isinstance(filter, Member):
         member = filter
-        index = member.index
+        language = None
+    elif (
+        isinstance(filter.operands[0], TranslationExpression)
+        and isinstance(filter.operands[0].operands[0], Member)
+    ):
+        member, language = filter.operands[0].operands
+        language = language.eval()
     else:
-        member = filter.operands[0] \
-            if filter.operands and isinstance(filter.operands[0], Member) \
+        member = (
+            filter.operands[0]
+            if filter.operands and isinstance(filter.operands[0], Member)
             else None
+        )
+        language = None
 
-        index = member.index if member is not None else None
+    index = member and member.index or filter.index
+    return member, index, language
 
-        if index is None:
-            index = filter.index
-
-    return member, index
-
-def _get_index_value(member, value):
+def _get_index_value(member, value, language = None):
     value = member.get_index_value(value)
     if member.translated:
-        value = (get_language(), value)
+        value = (require_language(language), value)
     return value
 
 def _expression_resolution(self, query):
@@ -840,7 +845,7 @@ expressions.Constant.resolve_filter = _constant_resolution
 
 def _equal_resolution(self, query):
 
-    member, index = _get_filter_info(self)
+    member, index, language = _get_filter_info(self)
 
     if index is None:
         return ((0, -1), None)
@@ -850,11 +855,19 @@ def _equal_resolution(self, query):
 
         if member and member.primary:
             def impl(dataset):
-                id = _get_index_value(member, self.operands[1].value)
+                id = _get_index_value(
+                    member,
+                    self.operands[1].value,
+                    language
+                )
                 return set([id]) if id in dataset else set()
         else:
             def impl(dataset):
-                value = _get_index_value(member, self.operands[1].value)
+                value = _get_index_value(
+                    member,
+                    self.operands[1].value,
+                    language
+                )
                 match = index.get(value)
                 if match is None:
                     return set()
@@ -863,7 +876,11 @@ def _equal_resolution(self, query):
     else:
         order = (-1, -1)
         def impl(dataset):
-            value = _get_index_value(member, self.operands[1].value)
+            value = _get_index_value(
+                member,
+                self.operands[1].value,
+                language
+            )
             dataset.intersection_update(index.values(key = value))
             return dataset
 
@@ -873,7 +890,7 @@ expressions.EqualExpression.resolve_filter = _equal_resolution
 
 def _not_equal_resolution(self, query):
 
-    member, index = _get_filter_info(self)
+    member, index, language = _get_filter_info(self)
 
     if index is None:
         return ((0, 0), None)
@@ -882,12 +899,20 @@ def _not_equal_resolution(self, query):
 
         if member and member.primary:
             def impl(dataset):
-                id = _get_index_value(member, self.operands[1].value)
+                id = _get_index_value(
+                    member,
+                    self.operands[1].value,
+                    language
+                )
                 dataset.discard(id)
                 return dataset
         else:
             def impl(dataset):
-                value = _get_index_value(member, self.operands[1].value)
+                value = _get_index_value(
+                    member,
+                    self.operands[1].value,
+                    language
+                )
                 index_value = index.get(value)
                 if index_value is not None:
                     dataset.discard(index_value)
@@ -905,7 +930,7 @@ expressions.NotEqualExpression.resolve_filter = _not_equal_resolution
 
 def _greater_resolution(self, query):
 
-    member, index = _get_filter_info(self)
+    member, index, language = _get_filter_info(self)
 
     if index is None:
         return ((0, 0), None)
@@ -913,7 +938,7 @@ def _greater_resolution(self, query):
         exclude_end = isinstance(self, expressions.GreaterExpression)
 
         def impl(dataset):
-            value = _get_index_value(member, self.operands[1].value)
+            value = _get_index_value(member, self.operands[1].value, language)
             method = index.keys if member and member.primary else index.values
             subset = method(min = value, exclude_min = exclude_end)
             dataset.intersection_update(subset)
@@ -926,14 +951,14 @@ expressions.GreaterEqualExpression.resolve_filter = _greater_resolution
 
 def _lower_resolution(self, query):
 
-    member, index = _get_filter_info(self)
+    member, index, language = _get_filter_info(self)
 
     if index is None:
         return ((0, 0), None)
     else:
         exclude_end = isinstance(self, expressions.LowerExpression)
         def impl(dataset):
-            value = _get_index_value(member, self.operands[1].value)
+            value = _get_index_value(member, self.operands[1].value, language)
             method = index.keys if member and member.primary else index.values
             subset = method(max = value, exclude_max = exclude_end)
             dataset.intersection_update(subset)
