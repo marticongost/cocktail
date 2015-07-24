@@ -75,45 +75,48 @@ def handler_profiler(
         # Profile data is either shown on standard output or stored on the
         # indicated file.
         stats_file = join(stats_path, "%s.stats" % name) if stats_path else None
-        runctx(
-            "rvalue = handler(*args, **kwargs)",
-            globals(),
-            local_context,
-            stats_file
-        )
 
-        # If pyprof2calltree is available, use it to export the profiler stats
-        # from Python's own format to 'calltree' (which can be parsed by
-        # kcachegrind and others)
-        calltree_file = None
-
-        if stats_file is not None and convert is not None:
-            calltree_file = join(stats_path, "%s.calltree" % name)
-            convert(stats_file, calltree_file)
-
-        if profiler_action == "view":
-
-            if not viewer:
-                raise ValueError(
-                    "No value defined for the "
-                    "tools.handler_profiler.viewer setting; can't use the "
-                    "'view' profiler action"
-                )
-
-            cmd = shlex.split(viewer % {
-                "stats": stats_file,
-                "calltree": calltree_file
-            })
-            env = os.environ.copy()
-            env.setdefault("DISPLAY", ":0")
-            proc = Popen(cmd, env = env)
-
-        if profiler_action == "download":
-            return serve_file(
-                calltree_file or stats_file,
-                "application/octet-stream",
-                "attachment"
+        try:
+            runctx(
+                "rvalue = handler(*args, **kwargs)",
+                globals(),
+                local_context,
+                stats_file
             )
+        finally:
+
+            # If pyprof2calltree is available, use it to export the profiler stats
+            # from Python's own format to 'calltree' (which can be parsed by
+            # kcachegrind and others)
+            calltree_file = None
+
+            if stats_file is not None and convert is not None:
+                calltree_file = join(stats_path, "%s.calltree" % name)
+                convert(stats_file, calltree_file)
+
+            if profiler_action == "view":
+
+                if not viewer:
+                    raise ValueError(
+                        "No value defined for the "
+                        "tools.handler_profiler.viewer setting; can't use the "
+                        "'view' profiler action"
+                    )
+
+                cmd = shlex.split(viewer % {
+                    "stats": stats_file,
+                    "calltree": calltree_file
+                })
+                env = os.environ.copy()
+                env.setdefault("DISPLAY", ":0")
+                proc = Popen(cmd, env = env)
+
+            if profiler_action == "download":
+                return serve_file(
+                    calltree_file or stats_file,
+                    "application/octet-stream",
+                    "attachment"
+                )
 
         return local_context["rvalue"]
 
