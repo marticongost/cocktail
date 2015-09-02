@@ -196,6 +196,7 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
                 <py:cocktail.html.FilterBox
                     py:id="filters_selector"
                     py:tag="div"
+                    py:content_type="${self.user_collection.type}"
                     py:filters="${self.user_collection.user_filters}"
                     py:available_filters="${self.user_collection.available_user_filters}"/>
             </py:block>

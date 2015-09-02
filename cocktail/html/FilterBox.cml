@@ -2,6 +2,7 @@
 <?py
 from cocktail.stringutils import normalize
 from cocktail.controllers import get_state, view_state, serialize_parameter
+from cocktail.controllers.userfilter import user_filters_registry
 ?>
 
 <form
@@ -9,6 +10,7 @@ from cocktail.controllers import get_state, view_state, serialize_parameter
     xmlns:py="http://www.whads.com/ns/cocktail/templates">
 
     <?py-class
+    content_type = None
     filters = ()
     available_filters = ()
 
@@ -29,20 +31,11 @@ from cocktail.controllers import get_state, view_state, serialize_parameter
         return state
 
     def get_add_filter_state(self, filter):
-
-        filter_param = []
-        state = {"page": 0, "filter": filter_param}
-
-        for i, f in enumerate(self.filters):
-            filter_param.append(f.id)
-            for member in f.schema.members().itervalues():
-                state["filter_" + member.name + str(i)] = \
-                    serialize_parameter(
-                        member,
-                        getattr(f, member.name)
-                    )
-
-        filter_param.append(filter.id)
+        return user_filters_registry.get_new_filter_view_state(
+            self.content_type,
+            [filter.id for filter in self.filters],
+            filter
+        )
         return state
     ?>
 

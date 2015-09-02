@@ -31,6 +31,8 @@ from cocktail.schema.expressions import (
     normalize
 )
 from cocktail.persistence import PersistentObject
+from cocktail.controllers import viewstate
+from cocktail.controllers.parameters import serialize_parameter
 from cocktail.html import templates
 from cocktail.translations import translations
 
@@ -469,16 +471,19 @@ class UserFiltersRegistry(object):
         # Member filters
         for member in content_type.ordered_members():
             if member.searchable and member.user_filter and member.visible:
-                filter = resolve(member.user_filter)()
-                filter.id = "member-" + member.name
-                filter.member = member
-                self._init_filter(filter, content_type)
+                filter = self._create_member_filter(content_type, member)
                 filters.append(filter)
 
-                if member.promoted_search:
-                    filter.promoted_search = True
-
         return filters
+
+    def _create_member_filter(self, content_type, member):
+        filter = resolve(member.user_filter)()
+        filter.id = "member-" + member.name
+        filter.member = member
+        self._init_filter(filter, content_type)
+        if member.promoted_search:
+            filter.promoted_search = True
+        return filter
 
     def _init_filter(self, filter, content_type):
         filter.content_type = content_type
@@ -486,6 +491,28 @@ class UserFiltersRegistry(object):
         if params:
             for key, value in params.iteritems():
                 setattr(filter, key, value)
+
+    def get_new_filter_view_state(self, content_type, filters, new_filter):
+
+        if isinstance(new_filter, Member):
+            new_filter = self._create_member_filter(content_type, new_filter)
+
+        index = len(filters)
+        filters = list(filters)
+        filters.append(new_filter.id)
+
+        state = viewstate.get_state()
+        state["filter"] = filters
+
+        for member in new_filter.schema.iter_members():
+            value = getattr(new_filter, member.name)
+            if value is None:
+                value = ""
+            else:
+                value = serialize_parameter(member, value)
+            state["filter_%s%d" % (member.name, index)] = value
+
+        return state
 
     def add(self, cls, filter_class):
         class_filters = self.__filters_by_type.get(cls)
