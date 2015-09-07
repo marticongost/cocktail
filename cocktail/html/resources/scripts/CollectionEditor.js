@@ -14,10 +14,11 @@ cocktail.bind(".CollectionEditor", function ($collectionEditor) {
     });
 
     this.appendEntry = function () {
-        var entry = cocktail.instantiate("cocktail.html.CollectionEditor.new_entry-" + this.id);
-        $collectionEditor.children(".entries").append(entry);
-        jQuery(entry).children(".remove_button").click(removeEntry);
+        var $entry = jQuery(cocktail.instantiate("cocktail.html.CollectionEditor.new_entry-" + this.id));
+        $collectionEditor.children(".entries").append($entry);
+        $entry.children(".remove_button").click(removeEntry);
         cocktail.init();
+        $entry.find(":input").first().focus();
     }
 
     this.getNumberOfEntries = function () {
