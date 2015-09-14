@@ -157,9 +157,11 @@ _list_regexp = re.compile(r"(^\s*[-*].*$\s*){2,}", re.MULTILINE)
 _line_jumps_regexp = re.compile(r"\n{2,}")
 _link_regexp = re.compile(r"(\S+)://(\S+)")
 
-def _link_for_match(match):
-    url = "%s://%s" % (match.group(1), match.group(2))
-    return u'<a href="%s">%s</a>' % (url, url)
+def _link_for_match(target):
+    def link_repl(match):
+        url = "%s://%s" % (match.group(1), match.group(2))
+        return u'<a href="%s" target="%s">%s</a>' % (url, target, url)
+    return link_repl
 
 def _list_for_match(match):
 
@@ -172,14 +174,14 @@ def _list_for_match(match):
 
     return u"<ul>" + u"".join(items) + u"</ul>"
 
-def plain_text_to_html(text):
+def plain_text_to_html(text, links_target = "_self"):
     text = text.strip()
     text = text.replace("\r\n", "\n")
     text = text.replace("&", "&amp;")
     text = text.replace("<", "&lt;")
     text = text.replace(">", "&gt;")
     text = _list_regexp.sub(_list_for_match, text)
-    text = _link_regexp.sub(_link_for_match, text)
+    text = _link_regexp.sub(_link_for_match(links_target), text)
     text = u"".join(
         u"<p>%s</p>" % chunk
         for chunk in _line_jumps_regexp.split(text)
