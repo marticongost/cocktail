@@ -9,7 +9,9 @@ u"""
 import cherrypy
 import hashlib
 from mimetypes import guess_type
+from cocktail.memoryutils import format_bytes
 from cocktail import schema
+
 
 class FileUpload(schema.Schema):
 
@@ -51,6 +53,13 @@ class FileUpload(schema.Schema):
         file_size_properties = kwargs.get("file_size_properties")
         if file_size_properties:
             file_size_kw.update(file_size_properties)
+
+        file_size_kw.setdefault(
+            "translate_value",
+            lambda value, language = None, **kwargs:
+                format_bytes(value)
+                if value or value == 0 else ""
+        )
 
         mime_type_properties = kwargs.get("mime_type_properties")
         if mime_type_properties:
