@@ -145,9 +145,12 @@ class ProgressBar(object):
         self.update(force = True)
 
     def get_bar_string(self):
-        completed_width = int(
-            self.width * (float(self.progress) / self.total_cycles)
-        )
+        if not self.total_cycles:
+            completed_width = 0
+        else:
+            completed_width = int(
+                self.width * (float(self.progress) / self.total_cycles)
+            )
         return (
             styled(
                 self.completed_char * completed_width,
