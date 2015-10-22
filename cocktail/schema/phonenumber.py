@@ -60,7 +60,8 @@ class PhoneNumber(String):
                     prefix, number = value.split(" ", 1)
                     prefix = int(prefix)
                 except:
-                    pass
+                    number = value
+                    prefix = None
                 else:
                     if (
                         self.prefix_normalization == "strip_local"
