@@ -159,7 +159,7 @@ def _list_for_match(match):
 
     return u"<ul>" + u"".join(items) + u"</ul>"
 
-def plain_text_to_html(text):
+def plain_text_to_html(text, paragraphs_policy = "all"):
     text = text.strip()
     text = text.replace("\r\n", "\n")
     text = text.replace("&", "&amp;")
@@ -167,10 +167,27 @@ def plain_text_to_html(text):
     text = text.replace(">", "&gt;")
     text = _list_regexp.sub(_list_for_match, text)
     text = _link_regexp.sub(_link_for_match, text)
-    text = u"".join(
-        u"<p>%s</p>" % chunk
-        for chunk in _line_jumps_regexp.split(text)
-    )
+
+    paragraphs_list = _line_jumps_regexp.split(text)
+
+    if paragraphs_policy == "all":
+        apply_paragraphs_policy = True
+    elif paragraphs_policy == "unless_only_one":
+        apply_paragraphs_policy = len(paragraphs_list) > 1
+    else:
+        raise ValueError(
+            "The 'paragraphs_policy' parameter of plain_text_to_html() "
+            "should be one of 'all' or 'unless_only_one'; got %s"
+            "instead"
+            % paragraphs_policy
+        )
+
+    if apply_paragraphs_policy:
+        text = u"".join(
+            u"<p>%s</p>" % paragraph
+            for paragraph in paragraphs_list
+        )
+
     text = text.replace("\n", "<br/>")
     return text
 
