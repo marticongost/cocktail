@@ -17,7 +17,6 @@ class DatePicker(TextBox):
         TextBox.__init__(self, *args, **kwargs)
         self.add_resource("/cocktail/scripts/jquery-ui.js")
         self.add_resource("/cocktail/scripts/ui.datepicker-lang.js")
-        self.add_resource("/cocktail/styles/jquery-ui-themeroller.css")
         self.add_resource("/cocktail/scripts/jquery.maskedinput.js")
         self.add_resource("/cocktail/scripts/DatePicker.js")
         self.date_picker_params = {}
@@ -50,6 +49,8 @@ class DatePicker(TextBox):
             "buttonImage": "/cocktail/images/calendar.png",
             "buttonImageOnly": True,
             "defaultValue": self["value"],
-            "showOn": "both"
+            "showOn": "both",
+            "prevText": "&lt;",
+            "nextText": "&gt;"
         }
 
