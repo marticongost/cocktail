@@ -18,3 +18,12 @@ class CodeBlock(String):
                 value = value.replace("\r", "")
         return value
 
+    def execute(self, obj, context):
+        code = compile(
+            obj.get(self), # code
+            "<%r.%s>" % (obj, self.name), # label
+            "exec"
+        )
+        exec code in context
+        return context
+
