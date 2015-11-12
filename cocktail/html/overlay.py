@@ -95,6 +95,8 @@ class Overlay(object):
 
             if isinstance(value, FunctionType):
                 extend(element)(value)
+            elif isinstance(value, property):
+                setattr(element.__class__, key, value)
             else:
                 setattr(element, key, value)
 
