@@ -136,7 +136,7 @@ class Script(Resource):
         link["src"] = self._process_url(self.uri, url_processor)
 
         if self.async:
-            link["async"] = "true"
+            link["async"] = True
 
         if self.ie_condition:
             from cocktail.html.ieconditionalcomment import IEConditionalComment
