@@ -14,6 +14,7 @@ except ImportError:
 import os
 import hashlib
 import urllib2
+from warnings import warn
 from pkg_resources import resource_filename
 from cocktail.modeling import (
     abstractmethod,
@@ -112,21 +113,22 @@ class Resource(object):
 
 class Script(Resource):
     default_mime_type = "text/javascript"
-    async = False
+    mode = "block"
 
     def __init__(self,
         uri,
         mime_type = None,
         ie_condition = None,
         set = None,
-        async = False
+        async = None
     ):
         Resource.__init__(self,
             uri,
             mime_type = mime_type,
             ie_condition = ie_condition
         )
-        self.async = async
+        if async is not None:
+            self.async = async
 
     def link(self, document, url_processor = None):
         from cocktail.html.element import Element
@@ -135,8 +137,16 @@ class Script(Resource):
         link["type"] = self.mime_type
         link["src"] = self._process_url(self.uri, url_processor)
 
-        if self.async:
+        if self.mode == "async":
             link["async"] = True
+        elif self.mode == "defer":
+            link["defer"] = True
+        elif self.mode != "block":
+            raise ValueError(
+                "Invalid mode for %r; expected 'block', 'async' or 'defer', "
+                "got %r instead"
+                % (self, self.mode)
+            )
 
         if self.ie_condition:
             from cocktail.html.ieconditionalcomment import IEConditionalComment
@@ -157,6 +167,19 @@ class Script(Resource):
 
         document.scripts_container.append(embed)
         return embed
+
+    def _get_async(self):
+        warn(
+            "Script.async is deprecated in favor of Script.mode",
+            DeprecationWarning,
+            stacklevel = 2
+        )
+        return self.mode == "async"
+
+    def _set_async(self, async):
+        self.mode = "async" if async else "block"
+
+    async = property(_get_async, _set_async)
 
 
 class StyleSheet(Resource):
