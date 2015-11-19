@@ -447,7 +447,7 @@ class ResourceBundle(ResourceAggregator):
             and ResourceAggregator.matches(self, resource)
         )
 
-    def changed(self):
+    def changed(self, added = (), removed = ()):
         self.__hash = None
 
     @property
