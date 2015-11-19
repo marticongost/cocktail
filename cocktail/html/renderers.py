@@ -37,7 +37,8 @@ class Renderer(object):
         "checked",
         "autofocus",
         "allowfullscreen",
-        "async"
+        "async",
+        "defer"
     ])
     outputs_xml = False
 
