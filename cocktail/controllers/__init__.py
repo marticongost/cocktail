@@ -62,9 +62,6 @@ try:
 except ImportError:
     pass
 
-import cocktail.controllers.switchhandler
-
-
 import cherrypy
 
 def apply_forwarded_url_scheme():
