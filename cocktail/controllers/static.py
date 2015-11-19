@@ -55,7 +55,7 @@ def register_content_type_handler(content_type, handler):
 
     :param handler: The function that produces the output for files of the
         indicated MIME type. It should take two parameters: the path to the
-        file to serve, and it's MIME type.
+        file to serve, and its MIME type.
     :type handler: callable
     """
     content_type_handlers._items[content_type] = handler
