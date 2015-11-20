@@ -15,12 +15,14 @@ import os
 import hashlib
 import urllib2
 from warnings import warn
+import mimetypes
 from pkg_resources import resource_filename
 from cocktail.modeling import (
     abstractmethod,
     InstrumentedOrderedSet,
     DictWrapper
 )
+from cocktail.preprocessing import preprocessors
 
 
 class Resource(object):
@@ -30,15 +32,29 @@ class Resource(object):
     extensions = {}
     file_path = None
 
-    def __init__(self, uri, mime_type = None, ie_condition = None, set = None):
+    def __init__(
+        self,
+        uri,
+        mime_type = None,
+        source_mime_type = None,
+        ie_condition = None,
+        set = None
+    ):
         self.__uri = uri
         self.__mime_type = mime_type or self.default_mime_type
+        self.__source_mime_type = source_mime_type or self.__mime_type
         self.__ie_condition = ie_condition
         self.__set = set
 
     @classmethod
-    def from_uri(cls, uri, mime_type = None, ie_condition = None, **kwargs):
-
+    def from_uri(
+        cls,
+        uri,
+        mime_type = None,
+        source_mime_type = None,
+        ie_condition = None,
+        **kwargs
+    ):
         resource_type = None
 
         # By mime type
@@ -59,9 +75,13 @@ class Resource(object):
                 % (uri, mime_type)
             )
 
+        if source_mime_type is None:
+            source_mime_type = mimetypes.guess_type(uri)[0]
+
         return resource_type(
             uri,
             mime_type = mime_type,
+            source_mime_type = source_mime_type,
             ie_condition = ie_condition,
             **kwargs
         )
@@ -73,6 +93,10 @@ class Resource(object):
     @property
     def mime_type(self):
         return self.__mime_type
+
+    @property
+    def source_mime_type(self):
+        return self.__source_mime_type
 
     @property
     def ie_condition(self):
@@ -118,6 +142,7 @@ class Script(Resource):
     def __init__(self,
         uri,
         mime_type = None,
+        source_mime_type = None,
         ie_condition = None,
         set = None,
         async = None
@@ -125,6 +150,7 @@ class Script(Resource):
         Resource.__init__(self,
             uri,
             mime_type = mime_type,
+            source_mime_type = source_mime_type,
             ie_condition = ie_condition
         )
         if async is not None:
@@ -217,8 +243,10 @@ class StyleSheet(Resource):
 
 Resource.extensions[".js"] = Script
 Resource.extensions[".css"] = StyleSheet
+Resource.extensions[".scss"] = StyleSheet
 Resource.mime_types["text/javascript"] = Script
 Resource.mime_types["text/css"] = StyleSheet
+Resource.mime_types["text/sass"] = StyleSheet
 
 
 class ResourceRepositories(DictWrapper):
@@ -288,7 +316,7 @@ resource_repositories.define(
 
 # Resource sets
 #------------------------------------------------------------------------------
-# TODO: Resource processing (minimization - with source maps!, CSS pre-processors)
+# TODO: minification, source maps
 
 default = object()
 
@@ -373,6 +401,7 @@ class ResourceAggregator(ResourceSet):
     download_remote_resources = False
     base_url = None
     http_user_agent = "cocktail.html.ResourceAggregator"
+    preprocessors = None
 
     def matches(self, resource):
         return (
@@ -409,16 +438,28 @@ class ResourceAggregator(ResourceSet):
             dest.write(self.file_glue)
 
     def write_resource_source(self, resource, dest):
-        chunk_size = self.read_chunk_size
-        src = self.open_resource(resource)
+
         try:
-            while True:
-                chunk = src.read(chunk_size)
-                if not chunk:
-                    break
-                dest.write(chunk)
-        finally:
-            src.close()
+            src_file = self.open_resource(resource)
+        except IOError:
+            return
+
+        preproc = self.preprocessors or preprocessors
+        output = preproc.preprocess(src_file, resource.source_mime_type)
+
+        if output:
+            mime_type, source = output
+            dest.write(source)
+        else:
+            chunk_size = self.read_chunk_size
+            try:
+                while True:
+                    chunk = src_file.read(chunk_size)
+                    if not chunk:
+                        break
+                    dest.write(chunk)
+            finally:
+                src_file.close()
 
     def open_resource(self, resource):
 
