@@ -64,31 +64,18 @@ class HTMLDocument(Element):
         self.title.collapsible = True
         self.head.append(self.title)
 
-        self.resources_container = Element(None)
-        self.head.append(self.resources_container)
-
         self.styles_container = Element(None)
-        self.resources_container.append(self.styles_container)
-
-        self.scripts_container = Element(None)
-        self.resources_container.append(self.scripts_container)
-
-        self.client_setup = Element("script")
-        self.client_setup["type"] = "text/javascript"
-        self.head.append(self.client_setup)
-
-        self.client_setup_container = Element(None)
-        self.client_setup.append(self.client_setup_container)
+        self.head.append(self.styles_container)
 
         self.body = IEWrapper("body")
         self.append(self.body)
 
-        self.javascript_enabled_script = Element("script")
-        self.javascript_enabled_script["type"] = "text/javascript"
-        self.javascript_enabled_script.append(
-            "document.body.className += ' scripted';"
-        )
-        self.body.append(self.javascript_enabled_script)
+        self.scripts_container = Element(None)
+
+        self.client_setup = Element("script")
+        self.client_setup["type"] = "text/javascript"
+        self.client_setup_container = Element(None)
+        self.client_setup.append(self.client_setup_container)
 
     def _ready(self):
 
@@ -109,6 +96,9 @@ class HTMLDocument(Element):
 
         for callback in self.metadata.document_ready_callbacks:
             callback(self)
+
+        self.body.append(self.scripts_container)
+        self.body.append(self.client_setup)
 
     def _add_language(self):
         language = self.metadata.language or get_language()
@@ -215,6 +205,9 @@ class HTMLDocument(Element):
                 self.metadata.resources.insert(0, uri)
 
             language = self.metadata.language or get_language()
+            self.client_setup.append(
+                "document.body.className += ' scripted';"
+            )
             self.client_setup.append(
                 "\t\tcocktail.setLanguage(%s);\n"
                 % dumps(language)
