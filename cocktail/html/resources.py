@@ -14,6 +14,7 @@ except ImportError:
 import os
 import hashlib
 import urllib2
+from shutil import copyfileobj
 from warnings import warn
 import mimetypes
 from pkg_resources import resource_filename
@@ -410,6 +411,10 @@ class ResourceAggregator(ResourceSet):
     http_user_agent = "cocktail.html.ResourceAggregator"
     file_publication = None
 
+    def __init__(self, **kwargs):
+        ResourceSet.__init__(self, **kwargs)
+        self.processors = []
+
     def matches(self, resource):
         return (
             ResourceSet.matches(self, resource)
@@ -454,6 +459,13 @@ class ResourceAggregator(ResourceSet):
         file_pub = self.file_publication or file_publication
         file_info = file_pub.produce_file(src_file, resource.source_mime_type)
         file = file_info["file"]
+
+        if self.processors:
+            buffer = StringIO()
+            copyfileobj(file, buffer)
+            for processor in self.processors:
+                buffer = processor(resource, buffer)
+            file = buffer
 
         # Copy the file, stripping source map information
         lines = file.readlines()
@@ -600,6 +612,7 @@ class ScriptBundle(ResourceBundle):
 
 
 class StyleBundle(ResourceBundle):
+
     file_extension = ".css"
     _default_mime_type = "text/css"
 
