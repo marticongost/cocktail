@@ -53,12 +53,13 @@ class FilePublication(object):
         processing_options = None
     ):
         file_info = self.produce_file(file, content_type, processing_options)
+        file = file_info["file"]
 
         if file is None:
             raise cherrypy.NotFound()
 
         return self.serve_raw_file(
-            file_info["file"],
+            file,
             content_type = file_info["content_type"],
             disposition = disposition,
             name = name
