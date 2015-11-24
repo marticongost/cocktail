@@ -22,7 +22,7 @@ from cocktail.modeling import (
     InstrumentedOrderedSet,
     DictWrapper
 )
-from cocktail.preprocessing import preprocessors
+from cocktail.controllers.filepublication import file_publication
 
 
 class Resource(object):
@@ -395,13 +395,12 @@ class LinkedResources(ResourceSet):
 
 class ResourceAggregator(ResourceSet):
 
-    read_chunk_size = 1024 * 4
     source_encoding = "utf-8"
     file_glue = "\n"
     download_remote_resources = False
     base_url = None
     http_user_agent = "cocktail.html.ResourceAggregator"
-    preprocessors = None
+    file_publication = None
 
     def matches(self, resource):
         return (
@@ -444,22 +443,18 @@ class ResourceAggregator(ResourceSet):
         except IOError:
             return
 
-        preproc = self.preprocessors or preprocessors
-        output = preproc.preprocess(src_file, resource.source_mime_type)
+        file_pub = self.file_publication or file_publication
+        file_info = file_pub.produce_file(src_file, resource.source_mime_type)
+        file = file_info["file"]
 
-        if output:
-            mime_type, source = output
-            dest.write(source)
-        else:
-            chunk_size = self.read_chunk_size
-            try:
-                while True:
-                    chunk = src_file.read(chunk_size)
-                    if not chunk:
-                        break
-                    dest.write(chunk)
-            finally:
-                src_file.close()
+        # Copy the file, stripping source map information
+        lines = file.readlines()
+
+        if lines:
+            if lines[-1].startswith("/*# sourceMappingURL="):
+                lines.pop(-1)
+            for line in lines:
+                dest.write(line)
 
     def open_resource(self, resource):
 
