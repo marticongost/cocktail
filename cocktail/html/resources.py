@@ -12,9 +12,11 @@ except ImportError:
     from StringIO import StringIO
 
 import os
+import re
 import hashlib
 import urllib2
 from shutil import copyfileobj
+from urlparse import urljoin
 from warnings import warn
 import mimetypes
 from pkg_resources import resource_filename
@@ -615,6 +617,41 @@ class StyleBundle(ResourceBundle):
 
     file_extension = ".css"
     _default_mime_type = "text/css"
+
+    url_re = re.compile(
+        r"""
+        url\(\s*
+        (?P<url>
+            '[^']+' # URL surrounded by single quotes
+          | "[^"]+" # URL surrounded by double quotes
+          |  [^)]+  # URL with no quotes
+        )
+        \)
+        """,
+        re.VERBOSE
+    )
+
+    def __init__(self, **kwargs):
+        ResourceBundle.__init__(self, **kwargs)
+        self.processors.append(self.fix_urls)
+
+    def fix_urls(self, resource, buffer):
+
+        def fix_url(match):
+            url = match.group("url").strip("'").strip('"').strip()
+            if "://" not in url:
+                url = urljoin(resource.uri, url)
+            return "url(%s)" % url
+
+        buffer.seek(0)
+        css = buffer.read()
+        css = self.url_re.sub(fix_url, css)
+
+        buffer.seek(0)
+        buffer.truncate()
+        buffer.write(css)
+        buffer.seek(0)
+        return buffer
 
 
 class ExcludedResources(ResourceSet):
