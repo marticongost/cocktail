@@ -53,6 +53,9 @@ setup(
         "httplib2",
         "PyStemmer"
     ],
+    extras_require = {
+        "sass": ["libsass"]
+    },
     packages = find_packages(),
     include_package_data = True,
 

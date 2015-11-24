@@ -14,12 +14,15 @@ except ImportError:
 import os
 import hashlib
 import urllib2
+from warnings import warn
+import mimetypes
 from pkg_resources import resource_filename
 from cocktail.modeling import (
     abstractmethod,
     InstrumentedOrderedSet,
     DictWrapper
 )
+from cocktail.controllers.filepublication import file_publication
 
 
 class Resource(object):
@@ -29,15 +32,29 @@ class Resource(object):
     extensions = {}
     file_path = None
 
-    def __init__(self, uri, mime_type = None, ie_condition = None, set = None):
+    def __init__(
+        self,
+        uri,
+        mime_type = None,
+        source_mime_type = None,
+        ie_condition = None,
+        set = None
+    ):
         self.__uri = uri
         self.__mime_type = mime_type or self.default_mime_type
+        self.__source_mime_type = source_mime_type or self.__mime_type
         self.__ie_condition = ie_condition
         self.__set = set
 
     @classmethod
-    def from_uri(cls, uri, mime_type = None, ie_condition = None, **kwargs):
-
+    def from_uri(
+        cls,
+        uri,
+        mime_type = None,
+        source_mime_type = None,
+        ie_condition = None,
+        **kwargs
+    ):
         resource_type = None
 
         # By mime type
@@ -58,9 +75,13 @@ class Resource(object):
                 % (uri, mime_type)
             )
 
+        if source_mime_type is None:
+            source_mime_type = mimetypes.guess_type(uri)[0]
+
         return resource_type(
             uri,
             mime_type = mime_type,
+            source_mime_type = source_mime_type,
             ie_condition = ie_condition,
             **kwargs
         )
@@ -72,6 +93,10 @@ class Resource(object):
     @property
     def mime_type(self):
         return self.__mime_type
+
+    @property
+    def source_mime_type(self):
+        return self.__source_mime_type
 
     @property
     def ie_condition(self):
@@ -112,21 +137,24 @@ class Resource(object):
 
 class Script(Resource):
     default_mime_type = "text/javascript"
-    async = False
+    mode = "block"
 
     def __init__(self,
         uri,
         mime_type = None,
+        source_mime_type = None,
         ie_condition = None,
         set = None,
-        async = False
+        async = None
     ):
         Resource.__init__(self,
             uri,
             mime_type = mime_type,
+            source_mime_type = source_mime_type,
             ie_condition = ie_condition
         )
-        self.async = async
+        if async is not None:
+            self.async = async
 
     def link(self, document, url_processor = None):
         from cocktail.html.element import Element
@@ -135,8 +163,16 @@ class Script(Resource):
         link["type"] = self.mime_type
         link["src"] = self._process_url(self.uri, url_processor)
 
-        if self.async:
-            link["async"] = "true"
+        if self.mode == "async":
+            link["async"] = True
+        elif self.mode == "defer":
+            link["defer"] = True
+        elif self.mode != "block":
+            raise ValueError(
+                "Invalid mode for %r; expected 'block', 'async' or 'defer', "
+                "got %r instead"
+                % (self, self.mode)
+            )
 
         if self.ie_condition:
             from cocktail.html.ieconditionalcomment import IEConditionalComment
@@ -157,6 +193,19 @@ class Script(Resource):
 
         document.scripts_container.append(embed)
         return embed
+
+    def _get_async(self):
+        warn(
+            "Script.async is deprecated in favor of Script.mode",
+            DeprecationWarning,
+            stacklevel = 2
+        )
+        return self.mode == "async"
+
+    def _set_async(self, async):
+        self.mode = "async" if async else "block"
+
+    async = property(_get_async, _set_async)
 
 
 class StyleSheet(Resource):
@@ -194,10 +243,10 @@ class StyleSheet(Resource):
 
 Resource.extensions[".js"] = Script
 Resource.extensions[".css"] = StyleSheet
-Resource.extensions[".sss"] = StyleSheet
+Resource.extensions[".scss"] = StyleSheet
 Resource.mime_types["text/javascript"] = Script
 Resource.mime_types["text/css"] = StyleSheet
-Resource.mime_types["text/switchcss"] = StyleSheet
+Resource.mime_types["text/sass"] = StyleSheet
 
 
 class ResourceRepositories(DictWrapper):
@@ -267,7 +316,7 @@ resource_repositories.define(
 
 # Resource sets
 #------------------------------------------------------------------------------
-# TODO: Resource processing (minimization - with source maps!, CSS pre-processors)
+# TODO: minification, source maps
 
 default = object()
 
@@ -346,12 +395,12 @@ class LinkedResources(ResourceSet):
 
 class ResourceAggregator(ResourceSet):
 
-    read_chunk_size = 1024 * 4
     source_encoding = "utf-8"
     file_glue = "\n"
     download_remote_resources = False
     base_url = None
     http_user_agent = "cocktail.html.ResourceAggregator"
+    file_publication = None
 
     def matches(self, resource):
         return (
@@ -388,16 +437,24 @@ class ResourceAggregator(ResourceSet):
             dest.write(self.file_glue)
 
     def write_resource_source(self, resource, dest):
-        chunk_size = self.read_chunk_size
-        src = self.open_resource(resource)
+
         try:
-            while True:
-                chunk = src.read(chunk_size)
-                if not chunk:
-                    break
-                dest.write(chunk)
-        finally:
-            src.close()
+            src_file = self.open_resource(resource)
+        except IOError:
+            return
+
+        file_pub = self.file_publication or file_publication
+        file_info = file_pub.produce_file(src_file, resource.source_mime_type)
+        file = file_info["file"]
+
+        # Copy the file, stripping source map information
+        lines = file.readlines()
+
+        if lines:
+            if lines[-1].startswith("/*# sourceMappingURL="):
+                lines.pop(-1)
+            for line in lines:
+                dest.write(line)
 
     def open_resource(self, resource):
 
@@ -447,7 +504,7 @@ class ResourceBundle(ResourceAggregator):
             and ResourceAggregator.matches(self, resource)
         )
 
-    def changed(self):
+    def changed(self, added = (), removed = ()):
         self.__hash = None
 
     @property

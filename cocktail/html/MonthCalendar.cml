@@ -129,8 +129,14 @@ from datetime import date, datetime, timedelta
             element.add_class("today")
         self.__cells[day] = element
         ?>
-        <span py:local_id="label">${day.day}</span>
+        <py:new
+            py:element="self.create_day_label(day)"
+            py:local_id="label"/>
     </td>
+
+    <span py:def="day_label" py:args="day">
+        ${day.day}
+    </span>
 
 </div>
 
