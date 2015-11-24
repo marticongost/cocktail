@@ -14,6 +14,7 @@ except ImportError:
 import os
 import hashlib
 from pkg_resources import resource_filename
+import cherrypy
 from cocktail.modeling import (
     abstractmethod,
     InstrumentedOrderedSet,
@@ -280,6 +281,7 @@ class ResourceSet(InstrumentedOrderedSet):
         resources = None,
         name = None,
         mime_type = default,
+        switch_param = None,
         **kwargs
     ):
         self.__name = name
@@ -304,6 +306,7 @@ class ResourceSet(InstrumentedOrderedSet):
                 "(multiple choices)"
             )
 
+        self.switch_param = switch_param
         InstrumentedOrderedSet.__init__(self, resources)
 
         for key, value in kwargs.iteritems():
@@ -327,6 +330,11 @@ class ResourceSet(InstrumentedOrderedSet):
         return (
             self._match_mime_type(resource.mime_type)
             and (not resource.set or resource.set == self.__name)
+            and (
+                not self.switch_param
+                or cherrypy.request.params.get(self.switch_param, "on")
+                   != "off"
+            )
         )
 
     @abstractmethod
