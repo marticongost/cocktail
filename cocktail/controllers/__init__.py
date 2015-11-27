@@ -12,6 +12,10 @@ from cocktail.controllers.requestproperty import (
     clear_request_properties
 )
 from cocktail.controllers.requesthandler import RequestHandler
+from cocktail.controllers.filepublication import (
+    FilePublication,
+    file_publication
+)
 from cocktail.controllers.static import (
     file_publisher,
     folder_publisher,
