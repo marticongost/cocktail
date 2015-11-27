@@ -6,7 +6,7 @@ u"""
 import os
 import mimetypes
 import cherrypy
-from cherrypy.lib import cptools, http
+from cherrypy.lib import cptools, http, file_generator_limited
 from cocktail.events import Event, when
 
 
