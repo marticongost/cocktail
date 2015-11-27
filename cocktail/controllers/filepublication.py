@@ -129,16 +129,12 @@ class FilePublication(object):
         if content_type is None:
 
             if path:
-                ext = ""
-                i = path.rfind('.')
-                if i != -1:
-                    ext = path[i:].lower()
-                content_type = mimetypes.types_map.get(ext)
+                content_type = mimetypes.guess_type(path)[0]
 
             if not content_type:
                 content_type = "text/plain"
 
-        response.headers['Content-Type'] = content_type
+        response.headers["Content-Type"] = content_type
 
         # Set the content disposition
         if disposition is not None:
