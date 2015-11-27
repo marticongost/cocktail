@@ -12,6 +12,8 @@ from cocktail.events import Event, when
 
 class FilePublication(object):
 
+    use_xsendfile = False
+
     def __init__(self):
         self.processors = []
 
@@ -146,6 +148,10 @@ class FilePublication(object):
             if name:
                 cd = '%s; filename="%s"' % (cd, name)
             response.headers["Content-Disposition"] = cd
+
+        if self.use_xsendfile and path:
+            response.headers["X-Sendfile"] = path
+            return ""
 
         # Find the size of the file
         if st is None:
