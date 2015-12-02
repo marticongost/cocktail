@@ -37,14 +37,18 @@ def format_error(error_type, error, traceback):
                 <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
                 <title>%(error_type)s</title>
                 <style type="text/css">
+                    html {
+                        background-color: #442F2F;
+                    }
                     body {
                         font-family: Arial, sans-serif;
                         background-color: #ebdada;
                         color: #333;
                         padding: 2em;
                         padding-top: 1.5em;
-                        margin: 0;
-                        border: 6px solid #a05757;
+                        margin: 1em;
+                        border: 1px solid #a05757;
+                        border-radius: 0.6em;
                     }
                     h1 {
                         font-size: 1.5em;
@@ -74,6 +78,7 @@ def format_error(error_type, error, traceback):
                     #error_desc {
                         display: inline-block;
                         border: 2px solid #a05757;
+                        border-radius: 0.3em;
                         background-color: #ddc7c7;
                         padding: 0.6em;
                         box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
