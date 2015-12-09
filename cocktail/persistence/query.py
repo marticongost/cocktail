@@ -1038,12 +1038,14 @@ expressions.EndsWithExpression.resolve_filter = \
 
 def _contains_resolution(self, query):
 
-    if isinstance(self.operands[0], Collection):
-        index, index_kw = query._get_expression_index(self)
+    subject = self.operands[0]
+
+    if isinstance(subject, Collection):
+        index, index_kw = query._get_expression_index(self, subject)
         if index is not None:
             def impl(dataset):
                 item = self.operands[1].eval()
-                k = self.operands[0].get_index_value(item)
+                k = subject.get_index_value(item)
                 dataset.intersection_update(
                     index.values(key = k, **index_kw)
                 )
@@ -1057,14 +1059,16 @@ expressions.ContainsExpression.resolve_filter = _contains_resolution
 
 def _contains_any_resolution(self, query):
 
-    if isinstance(self.operands[0], Collection):
-        index, index_kw = query._get_expression_index(self)
+    subject = self.operands[0]
+
+    if isinstance(subject, Collection):
+        index, index_kw = query._get_expression_index(self, subject)
         if index is not None:
             def impl(dataset):
                 subset = set()
 
-                for items in self.operands[1].eval():
-                    k = self.operands[0].get_index_value(item)
+                for item in self.operands[1].eval():
+                    k = subject.get_index_value(item)
                     subset.update(index.values(key = k, **index_kw))
 
                 dataset.intersection_update(subset)
@@ -1078,14 +1082,16 @@ expressions.ContainsAnyExpression.resolve_filter = _contains_any_resolution
 
 def _contains_all_resolution(self, query):
 
-    if isinstance(self.operands[0], Collection):
-        index, index_kw = query._get_expression_index(self)
+    subject = self.operands[0]
+
+    if isinstance(subject, Collection):
+        index, index_kw = query._get_expression_index(self, subject)
         if index is not None:
             def impl(dataset):
                 subset = None
 
-                for items in self.operands[1].eval():
-                    k = self.operands[0].get_index_value(item)
+                for item in self.operands[1].eval():
+                    k = subject.get_index_value(item)
                     k_items = index.values(key = k, **index_kw)
                     if subset is None:
                         subset = set(k_items)
@@ -1103,12 +1109,14 @@ expressions.ContainsAllExpression.resolve_filter = _contains_all_resolution
 
 def _lacks_resolution(self, query):
 
-    if isinstance(self.operands[0], Collection):
-        index, index_kw = query._get_expression_index(self)
+    subject = self.operands[0]
+
+    if isinstance(subject, Collection):
+        index, index_kw = query._get_expression_index(self, subject)
         if index is not None:
             def impl(dataset):
                 item = self.operands[1].eval()
-                k = self.operands[0].get_index_value(item)
+                k = subject.get_index_value(item)
                 dataset.difference_update(
                     index.values(key = k, **index_kw)
                 )
