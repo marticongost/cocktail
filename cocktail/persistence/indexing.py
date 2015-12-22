@@ -295,7 +295,6 @@ def _handle_inserting(event):
     # Regular indexes
     for member in obj.__class__.members().itervalues():
 
-        # Indexing
         if obj._should_index_member(member):
 
             if member.translated:
@@ -315,6 +314,30 @@ def _handle_inserting(event):
                             add_index_entry(obj, member, item)
                 else:
                     add_index_entry(obj, member, value)
+
+        # Index related ends
+        if isinstance(member, schema.Reference):
+            rel_end = member.related_end
+            if rel_end is not None:
+                rel_object = obj.get(member)
+                if (
+                    rel_object is not None
+                    and rel_object.is_inserted
+                    and rel_object._should_index_member(rel_end)
+                ):
+                    add_index_entry(rel_object, rel_end, obj)
+        elif isinstance(member, schema.Collection):
+            rel_end = member.related_end
+            if rel_end is not None:
+                rel_objects = obj.get(member)
+                if rel_objects:
+                    for rel_object in rel_objects:
+                        if (
+                            rel_object is not None
+                            and rel_object.is_inserted
+                            and rel_object._should_index_member(rel_end)
+                        ):
+                            add_index_entry(rel_object, rel_end, obj)
 
 @when(PersistentObject.deleting)
 def _handle_deleting(event):
