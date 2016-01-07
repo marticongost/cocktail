@@ -17,7 +17,7 @@ from traceback import extract_tb
     def _escape(self, value):
         if isinstance(value, unicode):
             value = value.encode("utf-8")
-        return escape(value)
+        return escape(value or ("<?" + ">"))
     ?>
 
     <?py
@@ -41,7 +41,7 @@ from traceback import extract_tb
             if self.exception is None:
                 element.visible = False
             else:
-                element.append(str(self.exception))
+                element.append(self._escape(str(self.exception)))
             ?>
         </py:ready>
     </div>
