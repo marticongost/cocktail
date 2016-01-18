@@ -56,6 +56,10 @@ class Member(Variable):
 
         Indicates if the member accepts multiple values, each in a different
         language.
+
+    .. attribute:: expression
+
+        An expression used by computed fields to produce their value.
     """
     __metaclass__ = EventHub
 
@@ -88,6 +92,7 @@ class Member(Variable):
     require_none = False
     enumeration = None
     normalization = None
+    expression = None
 
     # Instance data layout
     accessor = None
@@ -593,9 +598,16 @@ class Member(Variable):
     def extract_searchable_text(self, extractor):
         extractor.feed(self.translate_value(extractor.current.value))
 
-    __editable = EDITABLE
+    __editable = None
 
     def _get_editable(self):
+
+        if self.__editable is None:
+            if self.expression is None:
+                return EDITABLE
+            else:
+                return READ_ONLY
+
         return self.__editable
 
     def _set_editable(self, editable):

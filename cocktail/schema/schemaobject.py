@@ -273,6 +273,24 @@ class SchemaClass(EventHub, Schema):
             if instance is None:
                 return self.member
             else:
+                # Calculated field
+                expression = self.member.expression
+                if expression is not None:
+                    if getattr(expression, "im_self", None) is instance:
+                        if self.member.translated:
+                            return self.member.expression(instance, language)
+                        else:
+                            return self.member.expression(instance)
+                    else:
+                        if self.member.translated:
+                            return self.member.expression(
+                                self.member,
+                                instance,
+                                language
+                            )
+                        else:
+                            return self.member.expression(self.member, instance)
+
                 if self.member.translated:
                     for language in iter_language_chain(language):
                         target = instance.translations.get(language)

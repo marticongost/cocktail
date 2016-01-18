@@ -1,0 +1,71 @@
+
+.Traceback {
+    background-color: #F3D9D9;
+    padding: 2em;
+    color: #572828;
+    border: 1px solid #a05757;
+}
+
+.Traceback .traceback_entries {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.Traceback .traceback_entry {
+    padding: 0;
+    margin: 0;
+}
+
+.Traceback .traceback_entry + .traceback_entry {
+    margin-top: 1.5em;
+}
+
+.Traceback .error_location {
+    font-size: 1.4em;
+}
+
+.Traceback .error_location .error_file,
+.Traceback .error_location a.error_file {
+    color: #842020;
+    text-decoration: none;
+}
+
+.Traceback .error_location a.error_file:hover {
+    text-decoration: underline;
+}
+
+.Traceback .error_func {
+    font-weight: bold;
+}
+
+.Traceback .error_caller {
+    display: block;
+    margin-top: 0.5em;
+}
+
+
+.Traceback .exception_type {
+    display: inline-block;
+    color: #572828;
+    font-size: 1.8em;
+    font-weight: bold;
+    margin-bottom: 0.5em;
+}
+
+.Traceback .exception_message {
+    display: inline-block;
+    font-size: 1.5em;
+}
+
+.Traceback .exception_message:before {
+    content: '-';
+    margin: 0 0.5em;
+}
+
+.Traceback * + .traceback_entries {
+    margin-top: 1em;
+    padding-top: 1em;
+    border-top: 1px dotted #c0a6a6;
+}
+

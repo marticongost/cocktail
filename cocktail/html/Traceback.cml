@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?py
+import sys
+from cgi import escape
+from traceback import extract_tb
+?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:py="http://www.whads.com/ns/cocktail/templates">
+
+    <?py-class
+    exception = None
+    traceback = None
+    link_style = "disabled" # "disabled", "file_only", "file_and_line_number"
+
+    def _escape(self, value):
+        if isinstance(value, unicode):
+            value = value.encode("utf-8")
+        return escape(value or ("<?" + ">"))
+    ?>
+
+    <?py
+    self.add_resource("/cocktail/styles/Traceback.css")
+    ?>
+
+    <div py:id="exception_type">
+        <py:ready>
+            <?py
+            if self.exception is None:
+                element.visible = False
+            else:
+                element.append(self.exception.__class__.__name__)
+            ?>
+        </py:ready>
+    </div>
+
+    <div py:id="exception_message">
+        <py:ready>
+            <?py
+            if self.exception is None:
+                element.visible = False
+            else:
+                element.append(self._escape(str(self.exception)))
+            ?>
+        </py:ready>
+    </div>
+
+    <ul py:id="traceback_entries">
+        <py:ready>
+            <py:new
+                py:element="self.create_traceback_entry(file, num, func, caller)"
+                py:for="file, num, func, caller in extract_tb(self.traceback)"/>
+        </py:ready>
+    </ul>
+
+    <li py:def="traceback_entry" py:args="file, num, func, caller">
+
+        <div py:local_id="error_location">
+            <a py:local_id="error_file">
+                <?py
+                if self.link_style == "disabled":
+                    element.tag = "span"
+                elif self.link_style == "file_only":
+                    element["href"] = "file://%s" % file
+                elif self.link_style == "file_and_line_number":
+                    element["href"] = "sourcefile://%s:%d" % (file, num)
+                else:
+                    raise ValueError(
+                        "Invalid Traceback.link_style value; expected one of "
+                        "'disabled', 'file_only' or 'file_and_line_number', got "
+                        "%r instead"
+                        % self.link_style
+                    )
+                ?>
+                ${self._escape(file)}
+            </a>
+            ${", line %d, in " % num}
+            <span py:local_id="error_func">${self._escape(func)}</span>
+        </div>
+
+        <code py:local_id="error_caller">
+            ${self._escape(caller)}
+        </code>
+    </li>
+
+</div>
+
