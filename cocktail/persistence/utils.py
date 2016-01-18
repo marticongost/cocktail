@@ -14,6 +14,8 @@ def undo_last_transaction():
 def solidify_defaults(cls):
     for instance in cls.select():
         for member in cls.members().itervalues():
+            if member.expression is not None:
+                continue
             if member.translated:
                 for language in instance.translations:
                     instance.get(member, language)
