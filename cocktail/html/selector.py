@@ -75,10 +75,23 @@ class Selector(Element):
         if isinstance(member, schema.Collection):
             member = member.items
 
+        if (
+            self.ui_generator
+            and self.ui_generator.schema
+            and self.ui_generator.data
+        ):
+            parent_context = ValidationContext(
+                self.ui_generator.schema,
+                self.ui_generator.data
+            )
+        else:
+            parent_context = None
+
         context = ValidationContext(
             member,
             self.value,
-            persistent_object = self.persistent_object
+            persistent_object = self.persistent_object,
+            parent_context = parent_context
         )
 
         return member.get_possible_values(context)
