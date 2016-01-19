@@ -668,8 +668,6 @@ class Schema(Member):
     def translate_group(self, group):
 
         def get_label(schema):
-            if not isinstance(schema, Schema):
-                return None
 
             if schema.name:
                 label = translations(
@@ -690,11 +688,10 @@ class Schema(Member):
             return label
 
         source_schema = self.source_member
-        while source_schema is not None:
-            label = get_label(source_schema)
-            source_schema = source_schema.source_member
+        if source_schema and hasattr(source_schema, "translate_group"):
+            return source_schema.translate_group(group)
 
-        return label
+        return None
 
     def insert_group(self, group, before = None, after = None):
 
