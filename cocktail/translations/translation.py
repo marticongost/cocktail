@@ -117,7 +117,7 @@ def add_fallback_language(language, fallback_language):
     language_chain.next()
     fallback_languages.extend(language_chain)
     fallback_languages.append(fallback_language)
-    set_fallback_languages(language, fallback_language)
+    set_fallback_languages(language, fallback_languages)
 
 def clear_fallback_languages():
     _thread_data.fallback = {}
