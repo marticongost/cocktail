@@ -105,12 +105,13 @@ class ProgressBar(object):
     pending_char = "*"
     pending_style = {"foreground": "dark_gray"}
 
-    def __init__(self, total_cycles, label = None):
+    def __init__(self, total_cycles, label = None, visible = True):
         self.__first_iteration = True
         self.__last_update = None
         self.progress = 0
         self.total_cycles = total_cycles
         self.label = label
+        self.visible = visible
 
     def __enter__(self):
         self.update()
@@ -120,6 +121,9 @@ class ProgressBar(object):
         self.finish()
 
     def update(self, cycles = 0, force = False):
+
+        if not self.visible:
+            return
 
         self.progress += cycles
 
