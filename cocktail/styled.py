@@ -111,6 +111,13 @@ class ProgressBar(object):
         self.progress = 0
         self.total_cycles = total_cycles
 
+    def __enter__(self):
+        self.update()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.finish()
+
     def update(self, cycles = 0, force = False):
 
         self.progress += cycles
