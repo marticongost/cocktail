@@ -142,13 +142,18 @@ class ProgressBar(object):
         else:
             line = self.get_progress_string()
 
+        label = self.label
+
         if self.__first_iteration:
             self.__first_iteration = False
-            if self.label:
-                print self.label
         else:
             if supported_platform:
                 line = "\033[1A\033[K" + line
+                if label:
+                    label = "\033[2A\033[K" + label + "\n"
+
+        if label:
+            print label
 
         print line
         sys.stdout.flush()
