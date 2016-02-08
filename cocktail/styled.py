@@ -120,6 +120,10 @@ class ProgressBar(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.finish()
 
+    def message(self, label):
+        self.label = label
+        self.update(force = True)
+
     def update(self, cycles = 0, force = False):
 
         if not self.visible:
