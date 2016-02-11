@@ -26,7 +26,6 @@ from cocktail.modeling import (
     InstrumentedOrderedSet,
     DictWrapper
 )
-from cocktail.controllers.filepublication import file_publication
 
 
 class Resource(object):
@@ -458,7 +457,11 @@ class ResourceAggregator(ResourceSet):
         except IOError:
             return
 
-        file_pub = self.file_publication or file_publication
+        file_pub = self.file_publication
+        if not file_pub:
+            from cocktail.controllers.filepublication \
+                import file_publication as file_pub
+
         file_info = file_pub.produce_file(src_file, resource.source_mime_type)
         file = file_info["file"]
 
