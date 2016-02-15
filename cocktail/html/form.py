@@ -348,9 +348,17 @@ class Form(Element, DataDisplay):
         return field_instance
 
     def insert_into_form(self, form, field_instance):
+        field_instance.tag = "fieldset"
+        if self.tag == "form":
+            self.tag = "div"
+
         label = getattr(field_instance, "label", None)
         if label is not None:
             label.tag = "legend"
+            required_mark = getattr(label, "required_mark", None)
+            if required_mark is not None:
+                required_mark.visible = False
+
         field_instance.append(self)
 
     def create_hidden_input(self, obj, member):

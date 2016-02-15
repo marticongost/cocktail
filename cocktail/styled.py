@@ -105,13 +105,29 @@ class ProgressBar(object):
     pending_char = "*"
     pending_style = {"foreground": "dark_gray"}
 
-    def __init__(self, total_cycles):
+    def __init__(self, total_cycles, label = None, visible = True):
         self.__first_iteration = True
         self.__last_update = None
         self.progress = 0
         self.total_cycles = total_cycles
+        self.label = label
+        self.visible = visible
+
+    def __enter__(self):
+        self.update()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.finish()
+
+    def message(self, label):
+        self.label = label
+        self.update(force = True)
 
     def update(self, cycles = 0, force = False):
+
+        if not self.visible:
+            return
 
         self.progress += cycles
 
@@ -130,11 +146,18 @@ class ProgressBar(object):
         else:
             line = self.get_progress_string()
 
+        label = self.label
+
         if self.__first_iteration:
             self.__first_iteration = False
         else:
             if supported_platform:
                 line = "\033[1A\033[K" + line
+                if label:
+                    label = "\033[2A\033[K" + label + "\n"
+
+        if label:
+            print label
 
         print line
         sys.stdout.flush()
