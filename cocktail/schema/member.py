@@ -446,7 +446,11 @@ class Member(Variable):
         """
         if not isinstance(expr, type):
             if isinstance(expr, Expression):
-                return expr.eval(context.get_object(-2))
+                return expr.eval(
+                    context.get_object(-2)
+                    if context.parent_context
+                    else None
+                )
             elif callable(expr):
                 return expr(context)
 
