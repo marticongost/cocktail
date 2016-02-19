@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:py="http://www.whads.com/ns/cocktail/templates">
+
+    <?py-class
+    min_value = None
+    max_value = None
+    star_text = u"★"
+    ?>
+
+    <?py
+    self.add_resource("/cocktail/scripts/RatingBox.js")
+    self.add_resource("/cocktail/styles/RatingBox.css")
+    ?>
+
+    <py:ready>
+        <?py
+        self.require_id()
+
+        if self.member:
+            if isinstance(self.member.min, int):
+                self.min_value = self.member.min
+            if isinstance(self.member.max, int):
+                self.max_value = self.member.max
+        ?>
+    </py:ready>
+
+    <py:cocktail.html.NumberBox py:id="number_box"/>
+
+    <?py
+    self.data_binding_delegate = self.number_box
+    ?>
+
+    <ul py:id="stars" py:client_model="cocktail.html.RatingBox.stars-@{self['id']}">
+        <py:ready>
+            <py:new
+                py:element="self.create_star(value)"
+                py:for="value in range(self.min_value, self.max_value + 1)"/>
+        </py:ready>
+    </ul>
+
+    <li
+        py:def="star" py:args="value"
+        data-star-value="${value}">
+        <py:new
+            py:local_id="button"
+            py:element="self.create_star_button(value)"/>
+    </li>
+
+    <button
+        py:def="star_button" py:args="value"
+        type="button">
+        <py:new
+            py:local_id="label"
+            py:element="self.create_star_label(value)"/>
+    </button>
+
+    <span py:def="star_label" py:args="value">
+        ${self.star_text}
+    </span>
+
+</div>
+
