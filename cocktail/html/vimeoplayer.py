@@ -30,7 +30,6 @@ class VimeoPlayer(Element):
         if self.javascript_api:
             self.require_id()
             self.add_class("scriptable_video_player")
-            self.add_resource("/cocktail/scripts/froogaloop2.min.js")
             self.add_resource("/cocktail/scripts/VimeoPlayer.js")
 
         self["src"] = self.get_video_url()

@@ -7,58 +7,100 @@
 @since:			November 2012
 -----------------------------------------------------------------------------*/
 
+(function () {
+
+    jQuery(window).on("message", function (e) {
+
+        e = e.originalEvent;
+
+        try {
+            var data = JSON.parse(e.data);
+            var messageType = data.event || data.method;
+        }
+        catch (error)  {}
+
+        if (!(/^https?:\/\/player.vimeo.com/).test(e.origin)) {
+            return false;
+        }
+
+        var $player = jQuery("#" + data.player_id);
+
+        if (messageType == "ready") {
+            if (!$player.data("vimeoPlayerReady")) {
+                $player
+                    .data("vimeoPlayerReady", true)
+                    .trigger("playerReady");
+            }
+            else {
+                return false;
+            }
+        }
+        else if (messageType == "play") {
+            $player.trigger("playing");
+        }
+        else if (messageType == "pause") {
+            $player.trigger("pause");
+        }
+        else if (messageType == "finish") {
+            $player.trigger("ended");
+        }
+    });
+})();
+
 cocktail.bind(".VimeoPlayer.scriptable_video_player", function ($player) {
 
-    var playerReady = false;
-    var ctl = Froogaloop(this);
+    cocktail.requireId(this);
 
-    ctl.addEvent("ready", function () {
-
-        ctl.addEvent("play", function () {
-            $player.addClass("prevent_autoplay");
-        });
-
-        ctl.addEvent("finish", function () {
-            $player.removeClass("prevent_autoplay");
-        });
-
-        playerReady = true;
-        $player.trigger("playerReady");
+    $player.on("playerReady", function () {
+        postMessage("addEventListener", "play");
+        postMessage("addEventListener", "pause");
+        postMessage("addEventListener", "finish");
     });
 
-    this.vimeoAPI = function (callback) {
-        if (playerReady) {
-            callback(ctl);
+    $player.on("playing", function () {
+        $player.addClass("prevent_autoplay");
+    });
+
+    $player.on("ended", function () {
+        $player.removeClass("prevent_autoplay");
+    });
+
+    function whenPlayerReady(callback) {
+        if ($player.data("vimeoPlayerReady")) {
+            callback();
         }
         else {
-            $player.one("playerReady", function () { callback(ctl); });
+            $player.one("playerReady", callback);
         }
     }
 
-    this.vimeoCommand = function () {
-        var args = arguments;
-        this.vimeoAPI(function (ctl) {
-            ctl.api.apply(ctl, args);
+    function postMessage(method, value /* = null */) {
+        var data = JSON.stringify({
+            method: method,
+            value: value === undefined ? null : value
         });
+        $player[0].contentWindow.postMessage(data, "*");
     }
 
     this.play = function () {
-        this.vimeoCommand("play");
+        whenPlayerReady(function () { postMessage("play"); });
     }
 
     this.pause = function () {
-        this.vimeoCommand("pause");
+        whenPlayerReady(function () { postMessage("pause"); });
     }
 
     this.stop = function () {
-        this.vimeoAPI(function (ctl) {
-            ctl.api("seekTo", 0);
-            ctl.api("pause");
+        whenPlayerReady(function () {
+            postMessage("seekTo", 0);
+            postMessage("pause");
         });
     }
 
     this.seekTo = function (seconds) {
-        this.vimeoCommand("seekTo", seconds);
+        whenPlayerReady(function () {
+            postMessage("seekTo", seconds);
+        });
     }
 });
 
