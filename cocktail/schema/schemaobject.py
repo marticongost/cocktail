@@ -734,6 +734,11 @@ class SchemaObject(object):
 
         if self.__class__.descriptive_member:
             desc = self.get(self.__class__.descriptive_member, language)
+            if desc:
+                desc = self.__class__.descriptive_member.translate_value(
+                    desc,
+                    language
+                )
 
         if not desc and not kwargs.get("discard_generic_translation", False):
 
