@@ -300,6 +300,13 @@ class SASSPreprocessor(object):
                     filename = base_path,
                     source_map_filename = map_path
                 )
+
+                if isinstance(css, unicode):
+                    css = css.encode("utf-8")
+
+                if isinstance(source_map, unicode):
+                    source_map = source_map.encode("utf-8")
+
                 open(css_path, "w").write(css)
                 open(map_path, "w").write(source_map)
 
