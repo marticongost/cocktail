@@ -358,10 +358,7 @@ class MSExcelMemberColumn(MSExcelColumn):
 
 
 def description_or_raw_value(obj, member, value, language = None):
-    if (
-        "translate_value" not in member.__dict__
-        and member.__class__.translate_value is not schema.Member.translate_value
-    ):
+    if member.__class__.translate_value is not schema.Member.translate_value:
         desc = member.translate_value(value, language = language)
         return desc or value
     else:
