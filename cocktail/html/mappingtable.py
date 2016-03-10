@@ -3,6 +3,7 @@ u"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
+from collections import Counter
 from cocktail.translations import get_language
 from cocktail.html import Element, TranslatedValue, templates
 
@@ -15,7 +16,9 @@ class MappingTable(Element):
     def _ready(self):
         if self.value and self.member:
 
-            if self.sorted:
+            if isinstance(self.value, Counter):
+                items = self.value.most_common()
+            elif self.sorted:
                 items = self.value.items()
                 items.sort()
             else:
