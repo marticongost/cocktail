@@ -107,3 +107,41 @@ def add_html5_outline_classes(html):
     descend(doc, None)
     return unicode(doc)
 
+inline_elements = {
+    "b",
+    "big",
+    "i",
+    "small",
+    "tt",
+    "abbr",
+    "acronym",
+    "cite",
+    "code",
+    "dfn",
+    "em",
+    "kbd",
+    "strong",
+    "samp",
+    "time",
+    "var",
+    "a",
+    "bdo",
+    "br",
+    "img",
+    "map",
+    "object",
+    "q",
+    "script",
+    "span",
+    "sub",
+    "sup",
+    "button",
+    "input",
+    "label",
+    "select",
+    "textarea"
+}
+
+def is_inline_element(tag):
+    return tag in inline_elements
+
