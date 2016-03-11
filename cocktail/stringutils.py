@@ -79,6 +79,7 @@ class HTMLPlainTextExtractor(HTMLParser):
 
     def _push(self, chunk):
         if chunk:
+            chunk = chunk.replace(u"\xa0", u" ")
             if self.__chunks and self.__chunks[-1].endswith("\n"):
                 chunk = chunk.lstrip()
                 if chunk and self.__depth:
