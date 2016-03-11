@@ -367,7 +367,6 @@ class SearchExpression(Expression):
         if languages is None:
             languages = [get_language()]
 
-        added_language_neutral_text = False
         subject_tokens = set()
 
         stemming = self.stemming
@@ -395,23 +394,9 @@ class SearchExpression(Expression):
                 )
 
                 if get_searchable_text is not None:
-                    if not added_language_neutral_text:
-                        subject_tokens.update(
-                            iter_tokens(
-                                get_searchable_text(languages = (None,)),
-                                None
-                            )
-                        )
-                        added_language_neutral_text = True
+                    lang_text = get_searchable_text(languages = (language,))
 
-                    subject_tokens.update(
-                        iter_tokens(
-                            get_searchable_text(languages = (language,)),
-                            language
-                        )
-                    )
-                else:
-                    subject_tokens.update(iter_tokens(lang_text, language))
+                subject_tokens.update(iter_tokens(lang_text, language))
 
         for language in languages:
             query_tokens = words.get_unique_stems(self.query, language)
