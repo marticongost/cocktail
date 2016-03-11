@@ -263,6 +263,9 @@ class GlobalSearchFilter(UserFilter):
         else:
             languages = self.available_languages
 
+        if None not in languages:
+            languages = [None] + list(languages)
+
         return Self.search(self.value, languages = languages)
 
 
