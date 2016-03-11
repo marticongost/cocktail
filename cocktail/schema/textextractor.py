@@ -35,8 +35,7 @@ class TextExtractor(object):
             raise ValueError("The text extraction stack is empty")
 
         if obj.__class__.translated:
-            if self.__languages is None:
-                 yield None
+            yield None
             for language in obj.iter_translations(
                 include_derived = self.__include_derived_languages,
                 languages = self.__languages
