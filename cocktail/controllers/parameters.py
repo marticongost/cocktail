@@ -935,25 +935,28 @@ class FormSchemaReader(object):
         if value is not None:
 
             if not isinstance(value, cgi.FieldStorage):
-                for norm in [self.normalization, member.normalization]:
-                    if norm:
-                        if isinstance(value, basestring):
-                            value = norm(value)
-                        elif isinstance(value, list):
-                            value = [
-                                (
-                                    norm(part)
-                                    if isinstance(part, basestring)
-                                    else part
-                                )
-                                for part in value
-                            ]
+                norm = self.normalization
+                if norm:
+                    if isinstance(value, basestring):
+                        value = norm(value)
+                    elif isinstance(value, list):
+                        value = [
+                            (
+                                norm(part)
+                                if isinstance(part, basestring)
+                                else part
+                            )
+                            for part in value
+                        ]
 
             if value == "":
                 value = None
 
         if member.parse_request_value:
             value = member.parse_request_value(self, value)
+
+        if member.normalization:
+            value = member.normalization(value)
 
         if value is None:
             if self.implicit_booleans \
