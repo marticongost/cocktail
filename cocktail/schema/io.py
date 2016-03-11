@@ -10,6 +10,7 @@ Provides a method to export collections to different mime_types.
 import os
 import pyExcelerator
 from decimal import Decimal
+from collections import Counter
 from cocktail.modeling import ListWrapper, SetWrapper, DictWrapper
 from cocktail.translations import translations, get_language
 from cocktail.typemapping import TypeMapping
@@ -168,6 +169,12 @@ class MSExcelExporter(object):
                 for k, v in value.iteritems()
             )
 
+        def multiline_count(value):
+            return u"\n".join(
+                u"%s: %s" % (k, v)
+                for k, v in value.most_common()
+            )
+
         self.type_exporters = TypeMapping((
             (object, lambda value: unicode(value)),
             (str, lambda value: value.encode("utf-8")),
@@ -182,6 +189,7 @@ class MSExcelExporter(object):
             (set, multiline),
             (ListWrapper, multiline),
             (SetWrapper, multiline),
+            (Counter, multiline_count),
             (dict, multiline_mapping),
             (DictWrapper, multiline_mapping)
         ))
@@ -350,10 +358,7 @@ class MSExcelMemberColumn(MSExcelColumn):
 
 
 def description_or_raw_value(obj, member, value, language = None):
-    if (
-        "translate_value" not in member.__dict__
-        and member.__class__.translate_value is not schema.Member.translate_value
-    ):
+    if member.__class__.translate_value is not schema.Member.translate_value:
         desc = member.translate_value(value, language = language)
         return desc or value
     else:
