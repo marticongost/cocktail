@@ -118,7 +118,8 @@ class ProgressBar(object):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.finish()
+        if exc_val is None:
+            self.finish()
 
     def message(self, label):
         self.label = label
