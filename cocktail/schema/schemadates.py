@@ -30,7 +30,6 @@ class BaseDateTime(Schema, RangedMember):
     """Base class for all members that handle date and/or time values."""
     _is_date = False
     _is_time = False
-    language_agnostic_text_extraction = False
     text_search = False
 
     def __init__(self, *args, **kwargs):
@@ -93,7 +92,10 @@ class BaseDateTime(Schema, RangedMember):
         return None
 
     def extract_searchable_text(self, extractor):
-        pass
+        Member.extract_searchable_text(self, extractor)
+
+    def _infer_is_language_dependant(self):
+        return True
 
 
 class DateTime(BaseDateTime):

@@ -104,10 +104,19 @@ class Collection(RelationMember):
         if member.items is None:
             member.items = Reference(type = member.related_end.schema)
 
+    def _infer_is_language_dependant(self):
+        return self.items and self.items.language_dependant
+
     def extract_searchable_text(self, extractor):
         if self.items:
-            for item in extractor.current.value:
-                extractor.extract(self.items, item)
+            if self.items.language_dependant:
+                for language in extractor.iter_node_languages():
+                    if language is not None:
+                        for item in extractor.current.value:
+                            extractor.extract(self.items, item, language)
+            else:
+                for item in extractor.current.value:
+                    extractor.extract(self.items, item)
 
     # Relational operators
     #--------------------------------------------------------------------------

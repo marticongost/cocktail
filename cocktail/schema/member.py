@@ -111,7 +111,7 @@ class Member(Variable):
 
     # Wether the member is included in full text searches
     text_search = False
-    language_agnostic_text_extraction = False
+    __language_dependant = None
 
     # Attributes that deserve special treatment when performing a deep copy
     _special_copy_keys = set([
@@ -602,8 +602,38 @@ class Member(Variable):
 
         return explanation
 
+    def _get_language_dependant(self):
+        explicit_state = self.__language_dependant
+        return (
+            self._infer_is_language_dependant()
+            if explicit_state is None
+            else explicit_state
+        )
+
+    def _set_language_dependant(self, value):
+        self.__language_dependant = value
+
+    def _infer_is_language_dependant(self):
+        return (
+            self.translated
+            or (
+                self.translatable_enumeration
+                and self.enumeration is not None
+            )
+        )
+
+    language_dependant = property(
+        _get_language_dependant,
+        _set_language_dependant
+    )
+
     def extract_searchable_text(self, extractor):
-        extractor.feed(self.translate_value(extractor.current.value))
+        extractor.feed(
+            self.translate_value(
+                extractor.current.value,
+                language = extractor.current.language
+            )
+        )
 
     __editable = None
 

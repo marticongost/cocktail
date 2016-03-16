@@ -109,7 +109,6 @@ class RelationMember(Member):
     bidirectional = False
     related_key = None
     relation_constraints = None
-    language_agnostic_text_extraction = True
     _integral = None
     _many = False
     __related_end = None
