@@ -823,8 +823,13 @@ class SchemaObject(object):
         extractor.extract(self.__class__, self)
         return extractor
 
-    def get_searchable_text(self, **kwargs):
-        return unicode(self.create_text_extractor(**kwargs))
+    def get_searchable_text(self, languages = None, **kwargs):
+        return unicode(
+            self.create_text_extractor(
+                languages = languages,
+                **kwargs
+            )
+        )
 
     copy_excluded_members = frozenset()
 

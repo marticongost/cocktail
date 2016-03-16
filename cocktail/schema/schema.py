@@ -50,7 +50,6 @@ class Schema(Member):
     groups_order = []
     integral = False
     text_search = True
-    language_agnostic_text_extraction = True
 
     member_added = Event("""
         An event triggered when a member is added to the schema.
@@ -725,12 +724,15 @@ class Schema(Member):
 
         for member in self.iter_members():
             if member.text_search:
-                if member.language_agnostic_text_extraction:
-                    value = get(obj, member)
-                    extractor.extract(member, value)
-                else:
+                print member, member.language_dependant
+                if member.language_dependant:
                     for language in extractor.iter_node_languages():
-                        if member.translated == (language is not None):
+                        if language is not None:
                             value = get(obj, member, language = language)
+                            print language, value
                             extractor.extract(member, value, language)
+                else:
+                    value = get(obj, member)
+                    print value
+                    extractor.extract(member, value)
 

@@ -29,13 +29,36 @@ class TextExtractor(object):
 
     def iter_node_languages(self):
 
-        try:
-            obj = self.__stack[-1].value
-        except IndexError:
+        if not self.__stack:
+            raise ValueError("The text extraction stack is empty")
+
+        if self.__stack[-1].member.translated:
+            return self.iter_object_languages()
+        else:
+            return self.iter_extractor_languages()
+
+    def iter_extractor_languages(self):
+        if self.__languages:
+            for language in self.__languages:
+                if self.__include_derived_languages:
+                    for derived_language in descend_language_tree(
+                        language,
+                        include_self = True
+                    ):
+                        yield derived_language
+                else:
+                    yield language
+
+    def iter_object_languages(self):
+
+        for node in reversed(self.__stack):
+            if isinstance(node.value.__class__, Schema):
+                obj = node.value
+                break
+        else:
             raise ValueError("The text extraction stack is empty")
 
         if obj.__class__.translated:
-            yield None
             for language in obj.iter_translations(
                 include_derived = self.__include_derived_languages,
                 languages = self.__languages
@@ -109,6 +132,9 @@ class TextExtractor(object):
 
     def feed(self, text):
 
+        if self.__languages and self.current.language not in self.__languages:
+            return False
+
         try:
             node = self.__stack[-1]
         except IndexError:
@@ -129,7 +155,7 @@ class TextExtractor(object):
             try:
                 text = unicode(text)
             except UnicodeDecodeError:
-                return
+                return False
 
         if not node.text:
             self.__nodes.append(node)
@@ -139,6 +165,8 @@ class TextExtractor(object):
         if self.verbose:
             print (" " * 4 * len(self.__stack)) + "Feeding",
             print styled(text, "brown")
+
+        return True
 
     def __unicode__(self):
         return u" ".join(
