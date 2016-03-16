@@ -37,18 +37,6 @@ class String(Member):
     _format = None
     translatable_enumeration = True
 
-    def translate_value(self, value, language = None, **kwargs):
-
-        if value and self.translatable_enumeration and self.enumeration:
-            return translations(self, suffix = "=" + value)
-
-        return Member.translate_value(
-            self,
-            value,
-            language = language,
-            **kwargs
-        )
-
     def _get_format(self):
         return self._format
 

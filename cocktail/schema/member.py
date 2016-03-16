@@ -107,6 +107,7 @@ class Member(Variable):
     translated = False
     translation = None
     translation_source = None
+    translatable_enumeration = False
 
     # Wether the member is included in full text searches
     text_search = False
@@ -542,6 +543,12 @@ class Member(Variable):
                 language = language,
                 suffix = "=none",
                 **kwargs
+            )
+        elif value and self.translatable_enumeration and self.enumeration:
+            return translations(
+                self,
+                language = language,
+                suffix = "=%s" % value
             )
         else:
             return unicode(value)
