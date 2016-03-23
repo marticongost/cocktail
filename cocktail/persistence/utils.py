@@ -13,7 +13,7 @@ def undo_last_transaction():
 
 def solidify_defaults(cls):
     for instance in cls.select():
-        for member in cls.members().itervalues():
+        for member in instance.__class__.iter_members():
             if member.translated:
                 for language in instance.translations:
                     instance.get(member, language)
