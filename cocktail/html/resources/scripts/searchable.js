@@ -25,10 +25,10 @@ cocktail.searchable = function (searchable, params /* = null */) {
     searchable.getSearchableText = function (item) {
         var text = [];
         function descend(node) {
-            if (node.nodeType == Document.TEXT_NODE) {
+            if (node.nodeType == 3) { // Text node
                 text.push(node.nodeValue);
             }
-            else if (node.nodeType == Document.ELEMENT_NODE) {
+            else if (node.nodeType == 1) { // Element node
                 for (var i = 0; i < node.childNodes.length; i++) {
                     descend(node.childNodes[i]);
                 }
@@ -237,7 +237,7 @@ cocktail.searchable = function (searchable, params /* = null */) {
         function highlightElement(element) {
             for (var i = 0; i < element.childNodes.length; i++) {
                 var node = element.childNodes[i];
-                if (node.nodeType == Document.TEXT_NODE) {
+                if (node.nodeType == 3) { // Text node
                     var text = node.nodeValue;
                     var normText = searchable.normalizeText(text);
                     var matches = searchable.matchTerms(normText, terms, true);
@@ -270,7 +270,7 @@ cocktail.searchable = function (searchable, params /* = null */) {
                         }
                     }
                 }
-                else if (node.nodeType == Document.ELEMENT_NODE) {
+                else if (node.nodeType == 1) { // Element node
                     highlightElement(node);
                 }
             }
