@@ -1453,19 +1453,19 @@ translations.define("cocktail.schema.exceptions.MinValueError-instance",
         u"El camp <em>%s</em> ha de ser igual o superior a %s"
         % (
             member_identifier(instance),
-            instance.member.translate_value(instance.max)
+            instance.member.translate_value(instance.min)
         ),
     es = lambda instance:
         u"El campo <em>%s</em> debe ser igual o superior a %s"
         % (
             member_identifier(instance),
-            instance.member.translate_value(instance.max)
+            instance.member.translate_value(instance.min)
         ),
     en = lambda instance:
         u"The <em>%s</em> field must be greater or equal than %s"
         % (
             member_identifier(instance),
-            instance.member.translate_value(instance.max)
+            instance.member.translate_value(instance.min)
         )
 )
 
