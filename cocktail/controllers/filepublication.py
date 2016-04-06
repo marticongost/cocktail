@@ -260,6 +260,8 @@ file_publication = FilePublication()
 
 class SASSPreprocessor(object):
 
+    sass_compiler_options = {}
+
     def __call__(self, file_info):
 
         path = file_info["path"]
@@ -298,7 +300,8 @@ class SASSPreprocessor(object):
             ):
                 css, source_map = sass.compile(
                     filename = base_path,
-                    source_map_filename = map_path
+                    source_map_filename = map_path,
+                    **self.get_sass_compiler_options()
                 )
 
                 if isinstance(css, unicode):
@@ -312,6 +315,8 @@ class SASSPreprocessor(object):
 
             file_info["file"] = open(path)
 
+    def get_sass_compiler_options(self):
+        return self.sass_compiler_options.copy()
 
 try:
     import sass
