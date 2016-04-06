@@ -19,8 +19,8 @@ from cocktail.schema import Integer
     ?>
 
     <?py
-    self.add_resource("/cocktail/scripts/jquery.cookie.js")
-    self.add_resource("/cocktail/scripts/TextSizeBar.js")
+    self.add_resource("cocktail://scripts/jquery.cookie.js")
+    self.add_resource("cocktail://scripts/TextSizeBar.js")
 
     @self.when_document_ready
     def modify_document_size(document):

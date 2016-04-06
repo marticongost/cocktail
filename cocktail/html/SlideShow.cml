@@ -16,7 +16,7 @@
     ?>
 
     <?py
-    self.add_resource("/cocktail/scripts/SlideShow.js")
+    self.add_resource("cocktail://scripts/SlideShow.js")
     ?>
 
     <py:ready>

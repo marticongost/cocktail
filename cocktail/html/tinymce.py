@@ -39,7 +39,7 @@ class TinyMCE(Element):
         return params
 
     def _build(self):
-        self.add_resource("/cocktail/scripts/tinymce/js/tinymce/tinymce.min.js")
+        self.add_resource("cocktail://scripts/tinymce/js/tinymce/tinymce.min.js")
         self.add_client_code("tinymce.init(this.tinymceSettings);")
         self.textarea = templates.new("cocktail.html.TextArea")
         self.data_binding_delegate = self.textarea

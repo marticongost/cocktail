@@ -16,7 +16,7 @@ class MaskedInputBox(TextBox):
             self.input_mask = self.member.input_mask
 
         if self.input_mask:
-            self.add_resource("/cocktail/scripts/jquery.inputmask.js")
+            self.add_resource("cocktail://scripts/jquery.inputmask.js")
             self.set_client_param("inputMask", self.input_mask)
             self.add_client_code("jQuery(this).inputmask(this.inputMask)")
 

@@ -9,6 +9,6 @@ from cocktail.html.textbox import TextBox
 class ColorPicker(TextBox):
 
     def _build(self):
-        self.add_resource("/cocktail/styles/colorpicker.css")
-        self.add_resource("/cocktail/scripts/colorpicker.js")
+        self.add_resource("cocktail://styles/colorpicker.css")
+        self.add_resource("cocktail://scripts/colorpicker.js")
 

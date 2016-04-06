@@ -19,10 +19,10 @@ from cocktail import schema
     ?>
 
     <?py
-    self.add_resource("/cocktail/valums-ajax-upload/fileuploader.css")
-    self.add_resource("/cocktail/styles/AsyncFileUploader.css")
-    self.add_resource("/cocktail/valums-ajax-upload/fileuploader.js")
-    self.add_resource("/cocktail/scripts/AsyncFileUploader.js")
+    self.add_resource("cocktail://valums-ajax-upload/fileuploader.css")
+    self.add_resource("cocktail://styles/AsyncFileUploader.css")
+    self.add_resource("cocktail://valums-ajax-upload/fileuploader.js")
+    self.add_resource("cocktail://scripts/AsyncFileUploader.js")
     ?>
 
     <py:ready>
