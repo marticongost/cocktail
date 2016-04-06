@@ -16,7 +16,7 @@
     ?>
 
     <?py
-    self.add_resource("/cocktail/scripts/swfobject.js")
+    self.add_resource("cocktail://scripts/swfobject.js")
     self.flash_vars = self.flash_vars.copy()
     self.flash_params = self.flash_params.copy()
     self.flash_attributes = self.flash_attributes.copy()

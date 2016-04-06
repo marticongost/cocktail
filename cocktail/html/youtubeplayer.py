@@ -28,7 +28,7 @@ class YouTubePlayer(Element):
 
         if self.javascript_api:
             self.add_class("scriptable_video_player")
-            self.add_resource("/cocktail/scripts/YouTubePlayer.js")
+            self.add_resource("cocktail://scripts/YouTubePlayer.js")
             self.add_resource(
                 ("https" if self.https else "http")
                 + "://youtube.com/player_api",

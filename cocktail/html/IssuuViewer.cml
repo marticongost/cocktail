@@ -23,7 +23,7 @@
         if self.page_number:
             self.set_client_param("pageNumber", self.page_number)
             self.set_client_param("configId", self.config_id)
-            self.add_resource("/cocktail/scripts/IssuuViewer.js")
+            self.add_resource("cocktail://scripts/IssuuViewer.js")
         ?>
     </py:ready>
 

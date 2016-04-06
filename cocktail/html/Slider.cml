@@ -10,7 +10,7 @@
     ?>
 
     <?py
-    self.add_resource("/cocktail/scripts/Slider.js")
+    self.add_resource("cocktail://scripts/Slider.js")
     ?>
 
     <py:ready>
