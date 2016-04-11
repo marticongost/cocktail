@@ -17,7 +17,7 @@ from datetime import date
     ?>
 
     <?py
-    self.add_resource("/cocktail/scripts/CompoundDateSelector.js")
+    self.add_resource("cocktail://scripts/CompoundDateSelector.js")
     ?>
 
     <py:ready>

@@ -26,10 +26,6 @@ class HTMLDocument(Element):
     element as a full page.
     """
     __core_scripts_added = False
-    core_scripts = [
-        Script("/cocktail/scripts/jquery.js"),
-        Script("/cocktail/scripts/core.js")
-    ]
 
     tag = "html"
     styled_class = False
@@ -206,12 +202,18 @@ class HTMLDocument(Element):
 
         return resource_sets
 
+    def get_core_scripts(self):
+        return [
+            Script("cocktail://scripts/jquery.js"),
+            Script("cocktail://scripts/core.js")
+        ]
+
     def _add_core_scripts(self):
 
         if not self.__core_scripts_added:
             self.__core_scripts_added = True
 
-            for uri in reversed(self.core_scripts):
+            for uri in reversed(self.get_core_scripts()):
                 self.metadata.resources.insert(0, uri)
 
             language = self.metadata.language or get_language()

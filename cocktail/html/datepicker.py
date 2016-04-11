@@ -7,6 +7,7 @@ u"""
 @since:			September 2008
 """
 from cocktail.translations.translation import translations
+from cocktail.html.resources import resource_repositories
 from cocktail.html.textbox import TextBox
 from cocktail.schema.schemadates import Date, DateTime, Time
 
@@ -15,10 +16,10 @@ class DatePicker(TextBox):
 
     def __init__(self, *args, **kwargs):
         TextBox.__init__(self, *args, **kwargs)
-        self.add_resource("/cocktail/scripts/jquery-ui.js")
-        self.add_resource("/cocktail/scripts/ui.datepicker-lang.js")
-        self.add_resource("/cocktail/scripts/jquery.maskedinput.js")
-        self.add_resource("/cocktail/scripts/DatePicker.js")
+        self.add_resource("cocktail://scripts/jquery-ui.js")
+        self.add_resource("cocktail://scripts/ui.datepicker-lang.js")
+        self.add_resource("cocktail://scripts/jquery.maskedinput.js")
+        self.add_resource("cocktail://scripts/DatePicker.js")
         self.date_picker_params = {}
 
     def _ready(self):
@@ -46,7 +47,9 @@ class DatePicker(TextBox):
             "ShowAnim": "slideDown",
             "dateFormat": self.get_jformat(),
             "changeFirstDay": False,
-            "buttonImage": "/cocktail/images/calendar.png",
+            "buttonImage": resource_repositories.normalize_uri(
+                "cocktail://images/calendar.png"
+            ),
             "buttonImageOnly": True,
             "defaultValue": self["value"],
             "showOn": "both",

@@ -9,9 +9,9 @@
     ?>
 
     <?py
-    self.add_resource("/cocktail/scripts/xregexp.js")
-    self.add_resource("/cocktail/scripts/searchable.js")
-    self.add_resource("/cocktail/scripts/DrillDownSelector.js")
+    self.add_resource("cocktail://scripts/xregexp.js")
+    self.add_resource("cocktail://scripts/searchable.js")
+    self.add_resource("cocktail://scripts/DrillDownSelector.js")
     self.levels = list(self.levels)
     ?>
 

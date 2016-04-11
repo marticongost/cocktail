@@ -21,7 +21,7 @@ from traceback import extract_tb
     ?>
 
     <?py
-    self.add_resource("/cocktail/styles/Traceback.css")
+    self.add_resource("cocktail://styles/Traceback.css")
     ?>
 
     <div py:id="exception_type">

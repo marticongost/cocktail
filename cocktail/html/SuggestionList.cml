@@ -40,7 +40,7 @@ custom_value = object()
     ?>
 
     <?py
-    self.add_resource("/cocktail/scripts/SuggestionList.js")
+    self.add_resource("cocktail://scripts/SuggestionList.js")
     ?>
 
     <py:binding>

@@ -13,7 +13,7 @@ from cocktail.html.textarea import TextArea
 
 class CodeEditor(TextArea):
 
-    resources_uri = "/cocktail/codemirror/"
+    resources_uri = "cocktail://codemirror/"
 
     base_settings = {
         "path": resources_uri + "js/",

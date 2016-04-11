@@ -42,10 +42,10 @@ from cocktail.html.selectable import selectable, MULTIPLE_SELECTION
     ?>
 
     <?py
-    self.add_resource("/cocktail/scripts/selectable.js")
-    self.add_resource("/cocktail/scripts/xregexp.js")
-    self.add_resource("/cocktail/scripts/searchable.js")
-    self.add_resource("/cocktail/scripts/SplitSelector.js")
+    self.add_resource("cocktail://scripts/selectable.js")
+    self.add_resource("cocktail://scripts/xregexp.js")
+    self.add_resource("cocktail://scripts/searchable.js")
+    self.add_resource("cocktail://scripts/SplitSelector.js")
     ?>
 
     <py:ready>
@@ -78,10 +78,15 @@ from cocktail.html.selectable import selectable, MULTIPLE_SELECTION
                 @{self.get_selected_items_heading()}
             </py:with>
             <py:with py:element="element.split_panel_toolbar.toggle_button">
-                <py:with py:element="element.button_icon" src="/cocktail/images/right.png"/>
+
+                <py:with
+                    py:element="element.button_icon"
+                    src="${normalize_resource_uri('cocktail://images/right.png')}"/>
+
                 <py:with py:element="element.button_label">
                     @{self.get_selected_items_toggle_button_label()}
                 </py:with>
+
             </py:with>
         </py:new>
         <py:new
@@ -91,10 +96,15 @@ from cocktail.html.selectable import selectable, MULTIPLE_SELECTION
                 @{self.get_eligible_items_heading()}
             </py:with>
             <py:with py:element="element.split_panel_toolbar.toggle_button">
-                <py:with py:element="element.button_icon" src="/cocktail/images/left.png"/>
+
+                <py:with
+                    py:element="element.button_icon"
+                    src="${normalize_resource_uri('cocktail://images/left.png')}"/>
+
                 <py:with py:element="element.button_label">
                     @{self.get_eligible_items_toggle_button_label()}
                 </py:with>
+
             </py:with>
         </py:new>
     </div>

@@ -1,0 +1,173 @@
+
+@import "utils";
+
+$grid-definition: ();
+$current-grid-size: null;
+$grid-margin: 50px;
+
+@mixin define-grid($definition, $col-count: 12) {
+
+    $max-width: null;
+
+    @each $size, $size-properties in $definition {
+
+        $min-width: map-get($size-properties, min-width);
+        $col-width: map-get($size-properties, col-width);
+        $col-spacing: map-get($size-properties, col-spacing);
+
+        // Obtain derived properties
+        @if $min-width == null {
+            @if $col-width == null {
+                @error "Error calculating grid: can't ommit both min-width and col-width";
+            }
+            @if $col-spacing == null {
+                @error "Error calculating grid: can't ommit both min-width and col-spacing";
+            }
+            $min-width: $col-width * $col-count + ($col-count - 1) * $col-spacing;
+        }
+        @else if $col-width == null {
+            @if $col-spacing == null {
+                @error "Error calculating grid: can't ommit both col-width and min-width";
+            }
+            $col-width: ($min-width - (($col-count - 1) * $col-spacing)) / $col-count;
+        }
+        @else if $col-spacing == null {
+            $col-spacing: ($min-width - ($col-count * $col-width)) / ($col-count - 1);
+        }
+
+        $size-properties: map-merge(
+            $size-properties,
+            (
+                min-width: $min-width,
+                max-width: $max-width,
+                col-width: $col-width,
+                col-spacing: $col-spacing
+            )
+        );
+
+        $definition: map-merge($definition, ($size: $size-properties));
+
+        @if $min-width != null {
+            $max-width: $min-width - 1px;
+        }
+    }
+
+    $grid-definition: $definition !global;
+}
+
+@mixin show-grid() {
+    @debug "== GRID ==";
+    @each $size, $size-properties in $grid-definition {
+        @debug "";
+        @debug "-- " + $size + " --";
+        @each $key, $value in $size-properties {
+            @debug "#{$key}: #{$value}";
+        }
+    }
+}
+
+@function grid-size-media-query($size, $media-query: "") {
+
+    $size-properties: map-get($grid-definition, $size);
+    $min-width: map-get($size-properties, min-width);
+    $max-width: map-get($size-properties, max-width);
+
+    @if ($min-width != null and $min-width > 0) {
+        $media-query: join-media-query($media-query, "(min-width: #{$min-width + $grid-margin})");
+    }
+
+    @if ($max-width != null and $max-width > 0) {
+        $media-query: join-media-query($media-query, "(max-width: #{$max-width + $grid-margin})");
+    }
+
+    @return $media-query;
+}
+
+@function grid-size-matches($size, $expr) {
+
+    @if $expr == "any-size" {
+        @return true;
+    }
+
+    $operator: null;
+    $operand: null;
+
+    @if type-of($expr) == "string" {
+        $operator: "eq";
+        $operand: $expr;
+    }
+    @else {
+        $operator: nth($expr, 1);
+        $operand: nth($expr, 2);
+    }
+
+    $grid-sizes: map-keys($grid-definition);
+    $pos1: index($grid-sizes, $size);
+    $pos2: index($grid-sizes, $operand);
+
+    @if $operator == 'eq' {
+        @return $pos1 == $pos2;
+    }
+    @else if $operator == 'ne' {
+        @return $pos1 != $pos2;
+    }
+    @else if $operator == 'gt' {
+        @return $pos1 < $pos2;
+    }
+    @else if $operator == 'ge' {
+        @return $pos1 <= $pos2;
+    }
+    @else if $operator == 'lt' {
+        @return $pos1 > $pos2;
+    }
+    @else if $operator == 'le' {
+        @return $pos1 >= $pos2;
+    }
+}
+
+@mixin grid($expr: "any-size") {
+    @each $size, $size-properties in $grid-definition {
+        @if grid-size-matches($size, $expr) {
+            @media #{grid-size-media-query($size, "screen")} {
+                $current-grid-size: $size !global;
+                @content;
+            }
+        }
+    }
+}
+
+@function grid-columns($n, $size: null) {
+    @if $size == null {
+        $size: $current-grid-size;
+    }
+    @if not $size {
+        @error "No grid size selected";
+    }
+    $size-properties: map-get($grid-definition, $size);
+    $col-width: map-get($size-properties, col-width);
+    $col-spacing: map-get($size-properties, col-spacing);
+    @return $col-width * $n + $col-spacing * ($n - 1);
+}
+
+@function grid-spacing($size: null) {
+    @if $size == null {
+        $size: $current-grid-size;
+    }
+    @if not $size {
+        @error "No grid size selected";
+    }
+    $size-properties: map-get($grid-definition, $size);
+    @return map-get($size-properties, col-spacing);
+}
+
+@function grid-width($size: null) {
+    @if $size == null {
+        $size: $current-grid-size;
+    }
+    @if not $size {
+        @error "No grid size selected";
+    }
+    $size-properties: map-get($grid-definition, $size);
+    @return map-get($size-properties, min-width);
+}
+

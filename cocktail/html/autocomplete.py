@@ -26,10 +26,10 @@ class Autocomplete(Element):
     select_text_on_focus = True
 
     def _build(self):
-        self.add_resource("/cocktail/styles/Autocomplete.css")
-        self.add_resource("/cocktail/scripts/xregexp.js")
-        self.add_resource("/cocktail/scripts/searchable.js")
-        self.add_resource("/cocktail/scripts/Autocomplete.js")
+        self.add_resource("cocktail://styles/Autocomplete.css")
+        self.add_resource("cocktail://scripts/xregexp.js")
+        self.add_resource("cocktail://scripts/searchable.js")
+        self.add_resource("cocktail://scripts/Autocomplete.js")
         self.text_box = self.create_text_box()
         self.append(self.text_box)
         self.data_binding_delegate = self.text_box

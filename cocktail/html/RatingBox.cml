@@ -11,8 +11,8 @@
     ?>
 
     <?py
-    self.add_resource("/cocktail/scripts/RatingBox.js")
-    self.add_resource("/cocktail/styles/RatingBox.css")
+    self.add_resource("cocktail://scripts/RatingBox.js")
+    self.add_resource("cocktail://styles/RatingBox.css")
     ?>
 
     <py:ready>

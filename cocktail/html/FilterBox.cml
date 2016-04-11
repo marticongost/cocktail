@@ -40,9 +40,9 @@ from cocktail.controllers.userfilter import user_filters_registry
     ?>
 
     <?py
-    self.add_resource("/cocktail/scripts/xregexp.js")
-    self.add_resource("/cocktail/scripts/searchable.js")
-    self.add_resource("/cocktail/scripts/FilterBox.js")
+    self.add_resource("cocktail://scripts/xregexp.js")
+    self.add_resource("cocktail://scripts/searchable.js")
+    self.add_resource("cocktail://scripts/FilterBox.js")
     ?>
 
     <div py:id="filter_list">

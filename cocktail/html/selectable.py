@@ -20,8 +20,9 @@ def selectable(
     exclusive = True):
 
     element.add_resource(
-        "/cocktail/scripts/jquery.disable.text.select.pack.js")
-    element.add_resource("/cocktail/scripts/selectable.js")
+        "cocktail://scripts/jquery.disable.text.select.pack.js"
+    )
+    element.add_resource("cocktail://scripts/selectable.js")
 
     element.set_client_variable(
         "cocktail.NO_SELECTION", NO_SELECTION)
