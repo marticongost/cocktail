@@ -1,0 +1,16 @@
+
+@function join-media-query($query1, $query2) {
+    @if $query1 and $query2 {
+        @return $query1 + " and " + $query2;
+    }
+    @else if $query1 {
+        @return $query1;
+    }
+    @else if $query2 {
+        @return $query2;
+    }
+    @else {
+        @return "";
+    }
+}
+

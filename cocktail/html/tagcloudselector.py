@@ -25,7 +25,7 @@ class TagCloudSelector(Selector):
 
     def _build(self):
         Element._build(self)
-        self.add_resource("/cocktail/scripts/TagCloudSelector.js")
+        self.add_resource("cocktail://scripts/TagCloudSelector.js")
 
     def _ready(self):
 

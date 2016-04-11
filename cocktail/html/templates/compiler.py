@@ -12,6 +12,7 @@ from cocktail.modeling import refine, extend, call_base, getter, DictWrapper
 from cocktail.translations import translations, get_language
 from cocktail.html.element import default, PlaceHolder
 from cocktail.html.overlay import register_overlay
+from cocktail.html.resources import resource_repositories
 from cocktail.html.templates.sourcecodewriter import SourceCodeWriter
 
 WHITESPACE_EXPR = re.compile(r"\s*")
@@ -112,6 +113,7 @@ class TemplateCompiler(object):
             "pkg_name": self.pkg_name,
             "class_name": self.class_name,
             "loader": self.loader,
+            "normalize_resource_uri": resource_repositories.normalize_uri,
             "PlaceHolder": PlaceHolder,
             "translations": translations,
             "get_language": get_language,

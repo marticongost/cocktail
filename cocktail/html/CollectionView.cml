@@ -35,8 +35,8 @@ from cocktail.html.datadisplay import MULTIPLE_SELECTION
     ?>
 
     <?py
-    self.add_resource("/cocktail/scripts/jquery.cookie.js")
-    self.add_resource("/cocktail/scripts/CollectionView.js")
+    self.add_resource("cocktail://scripts/jquery.cookie.js")
+    self.add_resource("cocktail://scripts/CollectionView.js")
     self.add_client_translation("cocktail.html.CollectionView selection options")
     self.add_client_translation("cocktail.html.CollectionView select all")
     self.add_client_translation("cocktail.html.CollectionView clear selection")

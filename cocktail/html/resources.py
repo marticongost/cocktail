@@ -43,7 +43,7 @@ class Resource(object):
         ie_condition = None,
         set = None
     ):
-        self.__uri = uri
+        self.__uri = resource_repositories.normalize_uri(uri)
         self.__mime_type = mime_type or self.default_mime_type
         self.__source_mime_type = source_mime_type or self.__mime_type
         self.__ie_condition = ie_condition
@@ -254,26 +254,12 @@ Resource.mime_types["text/sass"] = StyleSheet
 
 class ResourceRepositories(DictWrapper):
 
-    def define(self, repository_name, uri_pattern, repository_path):
-
-        if isinstance(uri_pattern, basestring):
-            pattern_components = uri_pattern.strip("/").split("/")
-            size = len(pattern_components)
-            def matcher(components):
-                if components[:size] == pattern_components:
-                    return components[size:]
-        elif callable(uri_pattern):
-            matcher = uri_pattern
-        else:
-            raise TypeError(
-                "Resource repository patterns must be specified using a "
-                "string or a callable; got %s instead"
-                % type(uri_pattern)
-            )
-
-        self._items[repository_name] = (matcher, repository_path)
+    def define(self, repository_name, root_uri, repository_path):
+        self._items[repository_name] = (root_uri, repository_path)
 
     def locate(self, resource):
+
+        file_path = None
 
         if isinstance(resource, Resource):
             if resource.file_path:
@@ -283,7 +269,7 @@ class ResourceRepositories(DictWrapper):
             resource_uri = resource
             resource = None
 
-        if not resource_uri or "://" in resource_uri:
+        if not resource_uri:
             return None
 
         qs_pos = resource_uri.rfind("?")
@@ -294,26 +280,64 @@ class ResourceRepositories(DictWrapper):
         if hash_pos != -1:
             resource_uri = resource_uri[:hash_pos]
 
-        resource_uri = resource_uri.strip("/")
-        resource_path_components = resource_uri.split("/")
-        file_path = None
+        if "://" in resource_uri:
+            scheme, resource_uri = resource_uri.split("://")
+            repo = self.get(scheme)
 
-        for match_repository_uri, repository_path in self.itervalues():
-            match = match_repository_uri(resource_path_components)
-            if match is not None:
-                file_path = os.path.join(repository_path, *match)
-                break
+            if repo:
+                file_path = os.path.join(
+                    repo[1],
+                    *resource_uri.strip("/").split("/")
+                )
+            else:
+                return None
+
+        if not file_path:
+
+            resource_uri = resource_uri.strip("/")
+            resource_uri_components = resource_uri.split("/")
+
+            for repo_uri, repo_path in self.itervalues():
+                repo_uri_components = repo_uri.strip("/").split("/")
+                if (
+                    resource_uri_components[:len(repo_uri_components)]
+                    == repo_uri_components
+                ):
+                    file_path = os.path.join(
+                        repo_path,
+                        *resource_uri_components[len(repo_uri_components):]
+                    )
+                    break
 
         if resource:
             resource.file_path = file_path
 
         return file_path
 
+    def normalize_uri(self, uri):
+
+        if "://" in uri:
+            scheme, uri = uri.split("://", 1)
+            repo = self.get(scheme)
+            if repo:
+                return repo[0] + "/" + uri
+
+        return uri
+
+    def is_repository_uri(self, uri):
+
+        if "://" in uri:
+            scheme, uri = uri.split("://", 1)
+            return scheme in self
+
+        return False
+
+
 resource_repositories = ResourceRepositories()
 
 resource_repositories.define(
     "cocktail",
-    "/cocktail",
+    "/resources/cocktail",
     resource_filename("cocktail.html", "resources")
 )
 

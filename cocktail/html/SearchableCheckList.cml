@@ -29,9 +29,9 @@
     ?>
 
     <?py
-    self.add_resource("/cocktail/scripts/xregexp.js")
-    self.add_resource("/cocktail/scripts/searchable.js")
-    self.add_resource("/cocktail/scripts/SearchableCheckList.js")
+    self.add_resource("cocktail://scripts/xregexp.js")
+    self.add_resource("cocktail://scripts/searchable.js")
+    self.add_resource("cocktail://scripts/SearchableCheckList.js")
     self.searchable_options = self.searchable_options.copy()
     ?>
 

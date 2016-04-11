@@ -5,13 +5,16 @@
     xmlns:py="http://www.whads.com/ns/cocktail/templates">
 
     <?py
-    self.add_resource("/cocktail/scripts/DropdownPanel.js")
-    self.add_resource("/cocktail/styles/DropdownPanel.css")
+    self.add_resource("cocktail://scripts/DropdownPanel.js")
+    self.add_resource("cocktail://styles/DropdownPanel.css")
     ?>
 
     <button py:id="button" type="button">
         <div py:id="label"></div>
-        <img py:id="dropdown_arrow" src="/cocktail/images/dropdown.png" alt=""/>
+        <img
+            py:id="dropdown_arrow"
+            src="${normalize_resource_uri('cocktail://images/dropdown.png')}"
+            alt=""/>
     </button>
 
     <div py:id="panel_wrapper">
