@@ -724,15 +724,12 @@ class Schema(Member):
 
         for member in self.iter_members():
             if member.text_search:
-                print member, member.language_dependant
                 if member.language_dependant:
                     for language in extractor.iter_node_languages():
                         if language is not None:
                             value = get(obj, member, language = language)
-                            print language, value
                             extractor.extract(member, value, language)
                 else:
                     value = get(obj, member)
-                    print value
                     extractor.extract(member, value)
 
