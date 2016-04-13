@@ -21,7 +21,7 @@ class Boolean(Member):
 
     def translate_value(self, value, language = None, **kwargs):
         if value is None:
-            return u""
+            return Member.translate_value(self, value, language, **kwargs)
         else:
             return translations(value, language, **kwargs)
 
