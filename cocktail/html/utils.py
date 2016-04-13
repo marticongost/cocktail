@@ -73,6 +73,9 @@ _html5_sectioning_tags = set(["section", "article", "nav", "aside"])
 _html5_headings = set(["h1", "h2", "h3", "h4", "h5", "h6"])
 _html5_outline_root_regex = re.compile(r"\boutline_root\b")
 
+def is_sectioning_content(tag):
+    return tag in _html5_sectioning_tags
+
 def add_html5_outline_classes(html):
     doc = bs4.BeautifulSoup(html, "lxml")
 
