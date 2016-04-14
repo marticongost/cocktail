@@ -262,6 +262,7 @@ file_publication = FilePublication()
 class SASSPreprocessor(object):
 
     sass_compiler_options = {}
+    ignore_cached_files = False
 
     def __call__(self, file_info):
 
@@ -296,7 +297,8 @@ class SASSPreprocessor(object):
                 map_st = None
 
             if (
-                (css_st is None or scss_st.st_mtime > css_st.st_mtime)
+                self.ignore_cached_files
+                or (css_st is None or scss_st.st_mtime > css_st.st_mtime)
                 or (map_st is None or scss_st.st_mtime > map_st.st_mtime)
             ):
                 css, source_map = sass.compile(
