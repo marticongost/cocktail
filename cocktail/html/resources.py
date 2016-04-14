@@ -317,10 +317,10 @@ class ResourceRepositories(DictWrapper):
     def normalize_uri(self, uri):
 
         if "://" in uri:
-            scheme, uri = uri.split("://", 1)
+            scheme, resource_path = uri.split("://", 1)
             repo = self.get(scheme)
             if repo:
-                return repo[0] + "/" + uri
+                return repo[0] + "/" + resource_path
 
         return uri
 
