@@ -5,7 +5,11 @@ u"""
 """
 from cocktail.styled import styled
 from collections import namedtuple
-from cocktail.translations import get_language, descend_language_tree
+from cocktail.translations import (
+    get_language,
+    descend_language_tree,
+    iter_language_chain
+)
 from cocktail.schema.schema import Schema
 
 
@@ -23,6 +27,15 @@ class TextExtractor(object):
         self.__stack = []
         self.__visited = set()
         self.__nodes = []
+
+        if languages is None:
+            self.__accepted_languages = None
+        elif include_derived_languages:
+            self.__accepted_languages = set()
+            for language in languages:
+                self.__accepted_languages.update(descend_language_tree(language))
+        else:
+            self.__accepted_languages = set(languages)
 
         if verbose is not None:
             self.verbose = verbose
@@ -132,7 +145,10 @@ class TextExtractor(object):
 
     def feed(self, text):
 
-        if self.__languages and self.current.language not in self.__languages:
+        if (
+            self.__accepted_languages is not None
+            and self.current.language not in self.__accepted_languages
+        ):
             return False
 
         try:
