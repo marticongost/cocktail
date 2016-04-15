@@ -704,7 +704,15 @@ class SchemaObject(object):
         if bidirectional is not None:
             self.bidirectional = bidirectional
 
-        self.__class__.init_instance(self, values, SchemaObjectAccessor)
+        self.__class__.init_instance(
+            self,
+            values,
+            SchemaObjectAccessor,
+            excluded_members =
+                {self.__class__.translations}
+                if self.__class__.translated
+                else None
+        )
         self.__class__.instantiated(instance = self, values = values)
 
     def __repr__(self):
