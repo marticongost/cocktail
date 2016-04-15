@@ -43,6 +43,9 @@ class Resource(object):
         ie_condition = None,
         set = None
     ):
+        if not uri:
+            raise ValueError("Can't create a resource with an empty URI")
+
         self.__uri = resource_repositories.normalize_uri(uri)
         self.__mime_type = mime_type or self.default_mime_type
         self.__source_mime_type = source_mime_type or self.__mime_type

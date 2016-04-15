@@ -685,13 +685,6 @@ class ElementResourcesTestCase(TestCase):
         e.add_resource(r2)
         self.assertEquals(e.resources, [r1, r2])
 
-    def test_add_resource_without_uri(self):
-
-        from cocktail.html.element import Element
-        from cocktail.html.resources import Resource
-
-        self.assertRaises(ValueError, Element().add_resource, Resource(None))
-
     def test_remove_uri(self):
 
         from cocktail.html.element import Element
