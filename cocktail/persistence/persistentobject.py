@@ -186,6 +186,18 @@ class PersistentObject(SchemaObject, Persistent):
         return id
 
     @classmethod
+    def new(cls, *args, **kwargs):
+        """A convenience method that creates and inserts an instance of the
+        class.
+
+        @return: The created instance.
+        @rtype: L{PersistentObject}
+        """
+        instance = cls(*args, **kwargs)
+        instance.insert()
+        return instance
+
+    @classmethod
     def get_instance(cls, id = None, **criteria):
         """Obtains an instance of the class, using one of its unique indexes.
 

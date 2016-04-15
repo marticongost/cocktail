@@ -328,6 +328,12 @@ class SchemaClass(EventHub, Schema):
 
             member = self.member
 
+            # Set multiple translations at once
+            if member.translated and isinstance(value, TranslatedValues):
+                for lang, lang_value in value.iteritems():
+                    self.__set__(instance, lang_value, lang)
+                return
+
             if member.translated or member.translation_source:
 
                 if member.translation_source:
@@ -704,7 +710,15 @@ class SchemaObject(object):
         if bidirectional is not None:
             self.bidirectional = bidirectional
 
-        self.__class__.init_instance(self, values, SchemaObjectAccessor)
+        self.__class__.init_instance(
+            self,
+            values,
+            SchemaObjectAccessor,
+            excluded_members =
+                {self.__class__.translations}
+                if self.__class__.translated
+                else None
+        )
         self.__class__.instantiated(instance = self, values = values)
 
     def __repr__(self):
@@ -1087,6 +1101,10 @@ class SchemaObjectAccessor(MemberAccessor):
 
 
 SchemaObjectAccessor.register()
+
+
+class TranslatedValues(dict):
+    """A class used to set the value of multiple translations at once."""
 
 
 class TranslationMapping(DictWrapper):
