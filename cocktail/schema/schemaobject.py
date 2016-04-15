@@ -328,6 +328,12 @@ class SchemaClass(EventHub, Schema):
 
             member = self.member
 
+            # Set multiple translations at once
+            if member.translated and isinstance(value, TranslatedValues):
+                for lang, lang_value in value.iteritems():
+                    self.__set__(instance, lang_value, lang)
+                return
+
             if member.translated or member.translation_source:
 
                 if member.translation_source:
@@ -1095,6 +1101,10 @@ class SchemaObjectAccessor(MemberAccessor):
 
 
 SchemaObjectAccessor.register()
+
+
+class TranslatedValues(dict):
+    """A class used to set the value of multiple translations at once."""
 
 
 class TranslationMapping(DictWrapper):

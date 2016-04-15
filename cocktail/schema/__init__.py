@@ -79,6 +79,7 @@ from cocktail.schema.schemaobject import (
     SchemaObject,
     SchemaClass,
     SchemaObjectAccessor,
+    TranslatedValues,
     TranslationMapping,
     DO_NOT_COPY,
     SHALLOW_COPY,
