@@ -13,6 +13,22 @@
     navigation_controls = False
     bullet_controls = False
     starting_slide = "first"
+    next_slide_button_image = None
+    next_slide_button_text = "&gt;"
+    previous_slide_button_image = None
+    previous_slide_button_text = "&lt;"
+
+    def create_previous_slide_button_content(self):
+        if self.previous_slide_button_image:
+            return Element("img", src = normalize_resource_uri(self.previous_slide_button_image))
+        else:
+            return self.previous_slide_button_text
+
+    def create_next_slide_button_content(self):
+        if self.next_slide_button_image:
+            return Element("img", src = normalize_resource_uri(self.next_slide_button_image))
+        else:
+            return self.next_slide_button_text
     ?>
 
     <?py
@@ -38,13 +54,23 @@
         py:element="self.create_navigation_button()"
         py:id="previous_slide_button"
         py:visible="@{self.navigation_controls}"
-        py:client_model="cocktail.html.SlideShow.previousSlideButton">&lt;</py:new>
+        py:client_model="cocktail.html.SlideShow.previousSlideButton">
+        <py:ready>
+            <py:new
+                py:element="self.create_previous_slide_button_content()"/>
+        </py:ready>
+    </py:new>
 
     <py:new
         py:element="self.create_navigation_button()"
         py:id="next_slide_button"
         py:visible="@{self.navigation_controls}"
-        py:client_model="cocktail.html.SlideShow.nextSlideButton">&gt;</py:new>
+        py:client_model="cocktail.html.SlideShow.nextSlideButton">
+        <py:ready>
+            <py:new
+                py:element="self.create_next_slide_button_content()"/>
+        </py:ready>
+    </py:new>
 
     <div
         py:id="bullets"
