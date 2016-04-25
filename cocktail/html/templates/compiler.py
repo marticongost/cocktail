@@ -61,11 +61,13 @@ class TemplateCompiler(object):
             self.__source.write("def __init__(self, *args, **kwargs):")
             with self.__source.indented_block():
                 self.__initialization_source = self.__source.nest()
+                self.__initialization_source.write("element = self")
                 self.__custom_initialization_source = self.__source.nest()
 
             self.__source.write("def _build(self):")
             with self.__source.indented_block():
                 self.__build_source = self.__source.nest()
+                self.__build_source.write("element = self")
 
             self.__class_source = self.__source.nest()
 
