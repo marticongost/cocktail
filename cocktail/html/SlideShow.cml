@@ -50,27 +50,27 @@
 
     <div py:id="slides"></div>
 
-    <py:new
-        py:element="self.create_navigation_button()"
-        py:id="previous_slide_button"
-        py:visible="@{self.navigation_controls}"
-        py:client_model="cocktail.html.SlideShow.previousSlideButton">
-        <py:ready>
-            <py:new
-                py:element="self.create_previous_slide_button_content()"/>
-        </py:ready>
-    </py:new>
+    <div py:id="navigation_buttons" py:client_model="cocktail.html.SlideShow.navigationButtons">
+        <py:new
+            py:element="self.create_navigation_button()"
+            py:id="previous_slide_button"
+            py:visible="@{self.navigation_controls}">
+            <py:ready>
+                <py:new
+                    py:element="self.create_previous_slide_button_content()"/>
+            </py:ready>
+        </py:new>
 
-    <py:new
-        py:element="self.create_navigation_button()"
-        py:id="next_slide_button"
-        py:visible="@{self.navigation_controls}"
-        py:client_model="cocktail.html.SlideShow.nextSlideButton">
-        <py:ready>
-            <py:new
-                py:element="self.create_next_slide_button_content()"/>
-        </py:ready>
-    </py:new>
+        <py:new
+            py:element="self.create_navigation_button()"
+            py:id="next_slide_button"
+            py:visible="@{self.navigation_controls}">
+            <py:ready>
+                <py:new
+                    py:element="self.create_next_slide_button_content()"/>
+            </py:ready>
+        </py:new>
+    </div>
 
     <div
         py:id="bullets"

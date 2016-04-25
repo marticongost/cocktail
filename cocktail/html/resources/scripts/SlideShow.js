@@ -43,12 +43,14 @@ cocktail.bind(".SlideShow", function ($slideShow) {
 
     // Create navigation controls
     if (this.navigationControls) {
-        jQuery(cocktail.instantiate("cocktail.html.SlideShow.previousSlideButton"))
-            .appendTo($slideShow)
+
+        var $buttons = jQuery(cocktail.instantiate("cocktail.html.SlideShow.navigationButtons"))
+            .appendTo($slideShow);
+
+        $buttons.find(".previous_slide_button")
             .click(function () { $slideShow.get(0).selectPrevSlide(); });
 
-        jQuery(cocktail.instantiate("cocktail.html.SlideShow.nextSlideButton"))
-            .appendTo($slideShow)
+        $buttons.find(".next_slide_button")
             .click(function () { $slideShow.get(0).selectNextSlide(); });
     }
 
