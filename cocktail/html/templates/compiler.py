@@ -541,13 +541,19 @@ class TemplateCompiler(object):
 
     def DefaultHandler(self, data):
 
-        for pi in ("<?py", "<?py-class", "<?py-init"):
+        for pi in ("<?py", "<?py-class", "<?py-init", "<?resource"):
             if data.startswith(pi) and data[len(pi)] in (" \n\r\t"):
                 break
         else:
             return
 
         data = data[len(pi) + 1:-2]
+
+        if pi == "<?resource":
+            source = self.__stack[-1].source_block
+            source.write("element.add_resource(%r)" % data.strip())
+            return
+
         lines = data.split("\n")
 
         for line in lines:
