@@ -146,6 +146,17 @@ $grid-margin: 50px;
     }
 }
 
+@mixin grid-centered {
+    @include grid(gt grid-min-size()) {
+        width: grid-width();
+        margin-left: auto;
+        margin-right: auto;
+    }
+    @include grid(grid-min-size()) {
+        width: auto;
+    }
+}
+
 @function grid-columns($n, $size: null) {
     @if $size == null {
         $size: $current-grid-size;
