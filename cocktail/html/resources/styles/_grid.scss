@@ -157,6 +157,38 @@ $grid-margin: 50px;
     }
 }
 
+@mixin grid-row($expr: null, $compact: false) {
+
+    @if $expr == null {
+        $expr: gt grid-min-size();
+    }
+
+    @if $expr == "any-size" and not $compact {
+        display: table;
+    }
+    @else {
+        @include grid($expr) {
+            display: table;
+            @if not $compact {
+                border-spacing: grid-spacing() 0;
+                margin-left: -(grid-spacing());
+                margin-right: -(grid-spacing());
+            }
+        }
+    }
+}
+
+@mixin grid-cell($columns, $expr: null, $spacing: 0) {
+    @if $expr == null {
+        $expr: gt grid-min-size();
+    }
+    @include grid($expr) {
+        display: table-cell;
+        width: grid-columns($columns) + $spacing * grid-spacing();
+        @content;
+    }
+}
+
 @function grid-columns($n, $size: null) {
     @if $size == null {
         $size: $current-grid-size;
