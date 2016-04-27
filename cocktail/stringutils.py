@@ -65,6 +65,29 @@ def normalize(string, normalization_map = None):
 def random_string(length, source = letters + digits + "!?.-$#&@*"):
     return "".join(choice(source) for i in xrange(length))
 
+def normalize_indentation(string):
+
+    indentation = None
+    lines = string.split("\n")
+    norm_lines = []
+
+    for i, line in enumerate(lines):
+        stripped_line = line.lstrip()
+        if not indentation and not stripped_line:
+            continue
+        else:
+            if not indentation:
+                indentation = line[:len(line) - len(stripped_line)]
+            elif not line.startswith(indentation) and stripped_line:
+                raise ValueError(
+                    "Indentation error in line %d (%s)"
+                    % (i + 1, stripped_line)
+                )
+
+            norm_lines.append(line[len(indentation):])
+
+    return u"\n".join(norm_lines)
+
 
 class HTMLPlainTextExtractor(HTMLParser):
 
