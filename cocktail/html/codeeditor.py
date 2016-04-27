@@ -6,8 +6,6 @@
 @organization:	Whads/Accent SL
 @since:			November 2009
 """
-from simplejson import dumps
-from cocktail.html import Element
 from cocktail.html.textarea import TextArea
 
 
@@ -31,6 +29,7 @@ class CodeEditor(TextArea):
 
         self.add_resource("cocktail://codemirror/lib/codemirror.css")
         self.add_resource("cocktail://codemirror/lib/codemirror.js")
+        self.add_resource("cocktail://scripts/CodeEditor.js")
 
         settings = self.default_settings.copy()
         submode_info = self.submodes.get(self.syntax)
@@ -52,8 +51,5 @@ class CodeEditor(TextArea):
 
         settings.update(self.editor_settings)
         settings.setdefault("mode", submode)
-        self.add_client_code(
-            "CodeMirror.fromTextArea(this, %s)"
-            % dumps(settings)
-        )
+        self.set_client_param("codeMirrorSettings", settings)
 
