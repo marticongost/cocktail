@@ -8,7 +8,7 @@ import mimetypes
 import cherrypy
 from cherrypy.lib import cptools, http, file_generator_limited
 from cocktail.events import Event, when
-from cocktail.html.resources import resource_repositories
+from cocktail.html.resources import resource_repositories, compile_sass
 
 
 class FilePublication(object):
@@ -301,7 +301,7 @@ class SASSPreprocessor(object):
                 or (css_st is None or scss_st.st_mtime > css_st.st_mtime)
                 or (map_st is None or scss_st.st_mtime > map_st.st_mtime)
             ):
-                css, source_map = sass.compile(
+                css, source_map = compile_sass(
                     filename = base_path,
                     source_map_filename = map_path,
                     **self.get_sass_compiler_options()
@@ -319,23 +319,7 @@ class SASSPreprocessor(object):
             file_info["file"] = open(path)
 
     def get_sass_compiler_options(self):
-        options = self.sass_compiler_options.copy()
-        options["importers"] = [(0, self._resolve_sass_import)]
-        return options
-
-    def _resolve_sass_import(self, uri):
-
-        if resource_repositories.is_repository_uri(uri):
-
-            if not uri.endswith(".scss"):
-                uri += ".scss"
-
-            location = resource_repositories.locate(uri)
-            if os.path.exists(location):
-                return ((location,),)
-            else:
-                path, file_name = os.path.split(location)
-                return ((os.path.join(path, "_" + file_name),),)
+        return self.sass_compiler_options.copy()
 
 
 try:

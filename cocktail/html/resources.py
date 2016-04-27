@@ -11,6 +11,11 @@ try:
 except ImportError:
     from StringIO import StringIO
 
+try:
+    import sass
+except ImportError, sass_import_error:
+    sass = None
+
 import os
 import re
 import hashlib
@@ -26,6 +31,33 @@ from cocktail.modeling import (
     InstrumentedOrderedSet,
     DictWrapper
 )
+
+def compile_sass(**kwargs):
+
+    if sass is None:
+        raise sass_import_error
+
+    importers = kwargs.get("importers")
+    if importers is None:
+        importers = []
+        kwargs["importers"] = importers
+
+    importers.insert(0, (0, resolve_sass_import))
+    return sass.compile(**kwargs)
+
+def resolve_sass_import(uri):
+
+    if resource_repositories.is_repository_uri(uri):
+
+        if not uri.endswith(".scss"):
+            uri += ".scss"
+
+        location = resource_repositories.locate(uri)
+        if os.path.exists(location):
+            return ((location,),)
+        else:
+            path, file_name = os.path.split(location)
+            return ((os.path.join(path, "_" + file_name),),)
 
 
 class Resource(object):
