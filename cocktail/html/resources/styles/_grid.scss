@@ -66,6 +66,16 @@ $grid-margin: 50px;
     }
 }
 
+@function grid-max-size() {
+    $sizes: map-keys($grid-definition);
+    @return nth($sizes, 1);
+}
+
+@function grid-min-size() {
+    $sizes: map-keys($grid-definition);
+    @return nth($sizes, length($sizes));
+}
+
 @function grid-size-media-query($size, $media-query: "") {
 
     $size-properties: map-get($grid-definition, $size);
