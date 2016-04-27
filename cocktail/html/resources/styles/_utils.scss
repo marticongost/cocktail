@@ -27,3 +27,11 @@
     }
 }
 
+@mixin clear-children-float {
+    &:after {
+      content: "";
+      display: table;
+      clear: both;
+    }
+}
+
