@@ -9,6 +9,26 @@
 
 cocktail.bind(".CodeEditor", function ($editor) {
 
+    // Toggle fullscreen
+    if (!this.codeMirrorSettings.extraKeys) {
+        this.codeMirrorSettings.extraKeys = {};
+    }
+
+    if (!this.codeMirrorSettings.extraKeys.F11) {
+        this.codeMirrorSettings.extraKeys.F11 = function (cm) {
+            cm.setOption("fullScreen", !cm.getOption("fullScreen"));
+        }
+    }
+
+    if (!this.codeMirrorSettings.extraKeys.Esc) {
+        this.codeMirrorSettings.extraKeys.Esc = function (cm) {
+            if (cm.getOption("fullScreen")) {
+                cm.setOption("fullScreen", false);
+            }
+        }
+    }
+
+    // Initialize CodeMirror
     var $container = $editor.parent();
     var editor = CodeMirror.fromTextArea(this, this.codeMirrorSettings);
 
