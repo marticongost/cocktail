@@ -31,6 +31,8 @@ class CodeEditor(TextArea):
 
         self.add_resource("cocktail://codemirror/lib/codemirror.css")
         self.add_resource("cocktail://codemirror/lib/codemirror.js")
+        self.add_resource("cocktail://codemirror/addon/display/fullscreen.css")
+        self.add_resource("cocktail://codemirror/addon/display/fullscreen.js")
         self.add_resource("cocktail://scripts/CodeEditor.js")
 
         settings = self.default_settings.copy()
