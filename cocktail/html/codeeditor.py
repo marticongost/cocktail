@@ -11,7 +11,9 @@ from cocktail.html.textarea import TextArea
 
 class CodeEditor(TextArea):
 
-    default_settings = {}
+    default_settings = {
+        "indentUnit": 4
+    }
     syntax_settings = {}
     editor_settings = {}
     syntax = None
