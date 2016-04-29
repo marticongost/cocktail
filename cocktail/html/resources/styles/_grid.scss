@@ -184,6 +184,7 @@ $grid-margin: 50px;
     }
     @include grid($expr) {
         display: table-cell;
+        vertical-align: top;
         width: grid-columns($columns) + $spacing * grid-spacing();
         @content;
     }
