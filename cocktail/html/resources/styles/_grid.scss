@@ -226,3 +226,63 @@ $grid-margin: 50px;
     @return map-get($size-properties, min-width);
 }
 
+@mixin grid-rulers($id: "rulers", $ruler-color: "#a00") {
+
+    .GridRulers {
+        $ruler-color: #9544ab;
+        $ruler-border: 1px solid $ruler-color;
+        display: none;
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        z-index: 100000;
+
+        &:target {
+            display: block;
+        }
+
+        &, * {
+            box-sizing: border-box;
+        }
+
+        .columns {
+            @include grid-centered;
+            height: 100%;
+            white-space: nowrap;
+
+            .column {
+                height: 100%;
+                display: inline-block;
+                vertical-align: top;
+
+                .column_body {
+                    @include grid {
+                        width: grid-columns(1);
+                    }
+                    display: inline-block;
+                    vertical-align: top;
+                    height: 100%;
+                    border-left: $ruler-border;
+                    background-color: rgba(lighten($ruler-color, 20), 0.3);
+                }
+
+                .column_spacing {
+                    @include grid {
+                        width: grid-spacing();
+                    }
+                    display: inline-block;
+                    vertical-align: top;
+                    height: 100%;
+                    border-left: 1px dotted $ruler-color;
+                }
+
+                &:last-child {
+                    border-right: $ruler-border;
+                }
+            }
+        }
+    }
+}
+
