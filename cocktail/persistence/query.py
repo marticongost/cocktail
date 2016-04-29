@@ -41,6 +41,7 @@ class Query(object):
     """A query over a set of persistent objects."""
 
     verbose = False
+    watch = None
 
     styles = {
         "header":
@@ -73,6 +74,10 @@ class Query(object):
             ),
         "results":
             (lambda n: " " * 4 + styled(n, style = "bold")),
+        "watch_present":
+            (lambda: " " * 4 + styled("Object found", "white", "green")),
+        "watch_missing":
+            (lambda: " " * 4 + styled("Object missing", "white", "magenta")),
         "timing":
             (lambda s: " " * 4 + ("%.4fs" % s))
     }
@@ -316,7 +321,9 @@ class Query(object):
     #--------------------------------------------------------------------------
     def execute(self, _sorted = True, _sliced = True):
 
-        if self.verbose:
+        verbose = self.verbose or self.watch
+
+        if verbose:
 
             if self.nesting:
                 print
@@ -345,7 +352,7 @@ class Query(object):
         ):
             dataset = self.__cached_results
 
-            if self.verbose:
+            if verbose:
                 self._verbose_message("cached", "cached")
 
         # New data set
@@ -360,7 +367,7 @@ class Query(object):
                 dataset = (obj.id for obj in self.__base_collection)
 
             # Apply filters
-            if self.verbose:
+            if verbose:
                 start = time()
                 print
                 self._verbose_message("phase", "Applying filters")
@@ -368,13 +375,13 @@ class Query(object):
             if self.__filters:
                 dataset = self._apply_filters(dataset)
 
-            if self.verbose:
+            if verbose:
                 self._verbose_message("timing", time() - start)
 
         # Apply order
         if _sorted and not (self.cached and self.__cached_results_sorted):
 
-            if self.verbose:
+            if verbose:
                 start = time()
                 print
                 self._verbose_message("phase", "Applying order")
@@ -399,21 +406,21 @@ class Query(object):
             else:
                 dataset = self._apply_order(dataset)
 
-            if self.verbose:
+            if verbose:
                 self._verbose_message("timing", time() - start)
 
         # Apply range
         if _sliced \
         and self.range \
         and not (self.cached and self.__cached_results_sliced):
-            if self.verbose:
+            if verbose:
                 start = time()
                 print
                 self._verbose_message("phase", "Applying range")
 
             dataset = self._apply_range(dataset)
 
-            if self.verbose:
+            if verbose:
                 self._verbose_message("timing", time() - start)
 
         # Store results for further requests
@@ -424,7 +431,7 @@ class Query(object):
             self.__cached_results_sorted = _sorted
             self.__cached_results_sliced = _sliced
 
-        if self.verbose:
+        if verbose:
             print
 
         return dataset
@@ -433,7 +440,17 @@ class Query(object):
 
         type_index = self.type.index
 
-        if self.verbose:
+        if self.watch:
+            if not isinstance(self.watch, int):
+                watched_id = self.watch.id
+            else:
+                watched_id = self.watch
+        else:
+            watched_id = None
+
+        verbose = self.verbose or watched_id
+
+        if verbose:
             if not isinstance(dataset, set):
                 dataset = set(dataset)
             self._verbose_message("initial_dataset", dataset)
@@ -454,7 +471,7 @@ class Query(object):
             # all remaining filters)
             if custom_impl is None or len(dataset) == 1:
 
-                if self.verbose:
+                if verbose:
                     self._verbose_message("eval", expr)
 
                 dataset.intersection_update(
@@ -466,12 +483,18 @@ class Query(object):
             # Custom filter implementation
             else:
 
-                if self.verbose:
+                if verbose:
                     self._verbose_message("resolve", expr)
 
                 dataset = custom_impl(dataset)
 
-            if self.verbose:
+            if verbose:
+                if watched_id:
+                    if watched_id in dataset:
+                        self._verbose_message("watch_present")
+                    else:
+                        self._verbose_message("watch_missing")
+
                 self._verbose_message("results", len(dataset))
 
         return dataset
