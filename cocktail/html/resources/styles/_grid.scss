@@ -250,6 +250,23 @@ $grid-margin: 50px;
             display: block;
         }
 
+        &:after {
+            display: block;
+            z-index: 100000;
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            padding: 10px;
+            background-color: $ruler-color;
+            color: white;
+            font-weight: bold;
+            font-family: sans-serif;
+            font-size: 16px;
+            @include grid {
+                content: '#{grid-size()}';
+            }
+        }
+
         &, * {
             box-sizing: border-box;
         }
