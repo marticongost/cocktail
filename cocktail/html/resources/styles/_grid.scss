@@ -194,6 +194,10 @@ $grid-margin: 50px;
     }
 }
 
+@function grid-size() {
+    @return $current-grid-size;
+}
+
 @function grid-columns($n, $size: null) {
     @if $size == null {
         $size: $current-grid-size;
