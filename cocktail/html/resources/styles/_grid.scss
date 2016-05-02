@@ -165,10 +165,12 @@ $grid-margin: 50px;
 
     @if $expr == "any-size" and not $compact {
         display: table;
+        table-layout: fixed;
     }
     @else {
         @include grid($expr) {
             display: table;
+            table-layout: fixed;
             @if not $compact {
                 border-spacing: grid-spacing() 0;
                 margin-left: -(grid-spacing());
@@ -185,6 +187,7 @@ $grid-margin: 50px;
     }
     @include grid($expr) {
         display: table-cell;
+        table-layout: fixed;
         vertical-align: top;
         width: grid-columns($columns) + $spacing * grid-spacing();
         @content;
