@@ -35,3 +35,9 @@
     }
 }
 
+@mixin scripting-enabled {
+    body.scripted & {
+        @content;
+    }
+}
+
