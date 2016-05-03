@@ -73,6 +73,9 @@ $grid-margin: 50px;
 
 @function grid-min-size() {
     $sizes: map-keys($grid-definition);
+    @if length($sizes) == 0 {
+        @return null;
+    }
     @return nth($sizes, length($sizes));
 }
 
