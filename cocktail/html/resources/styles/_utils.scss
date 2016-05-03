@@ -41,3 +41,14 @@
     }
 }
 
+@mixin transparent-button {
+    &,
+    &:hover {
+        padding: 0;
+        border: none;
+        box-shadow: none;
+        background-color: transparent;
+        background-image: none;
+    }
+}
+
