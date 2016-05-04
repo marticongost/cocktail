@@ -263,10 +263,9 @@ $grid-margin: 50px;
     @return map-get($size-properties, min-width);
 }
 
-@mixin grid-rulers($id: "rulers", $ruler-color: "#a00") {
+@mixin grid-rulers($id: "rulers", $ruler-color: #a00) {
 
     .GridRulers {
-        $ruler-color: #9544ab;
         $ruler-border: 1px solid $ruler-color;
         display: none;
         position: fixed;
