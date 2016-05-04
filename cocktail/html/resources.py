@@ -31,33 +31,78 @@ from cocktail.modeling import (
     InstrumentedOrderedSet,
     DictWrapper
 )
+from cocktail.events import Event, EventInfo
 
-def compile_sass(**kwargs):
 
-    if sass is None:
-        raise sass_import_error
+class SASS(object):
 
-    importers = kwargs.get("importers")
-    if importers is None:
-        importers = []
-        kwargs["importers"] = importers
+    class ResolvingImportEventInfo(EventInfo):
 
-    importers.insert(0, (0, resolve_sass_import))
-    return sass.compile(**kwargs)
+        uri = None
+        path = None
+        code = None
+        source_map = None
 
-def resolve_sass_import(uri):
+        def add_code(self, code):
+            if self.code is None:
+                self.code = [code]
+            else:
+                self.code.append(code)
 
-    if resource_repositories.is_repository_uri(uri):
+        @property
+        def resolution(self):
 
-        if not uri.endswith(".scss"):
-            uri += ".scss"
+            if self.path:
+                resolution = [self.path]
+            elif self.code:
+                resolution = [self.uri]
+            else:
+                return None
 
-        location = resource_repositories.locate(uri)
-        if os.path.exists(location):
-            return ((location,),)
-        else:
-            path, file_name = os.path.split(location)
-            return ((os.path.join(path, "_" + file_name),),)
+            if self.code is not None:
+                resolution.append("".join(self.code))
+
+                if self.source_map:
+                    resolution.append(self.source_map)
+
+            return [tuple(resolution)]
+
+    resolving_import = Event(event_info_class = ResolvingImportEventInfo)
+
+    @classmethod
+    def compile(cls, **kwargs):
+
+        if sass is None:
+            raise sass_import_error
+
+        importers = kwargs.get("importers")
+        if importers is None:
+            importers = []
+            kwargs["importers"] = importers
+
+        importers.insert(0, (0, cls.resolve_import))
+        return sass.compile(**kwargs)
+
+    @classmethod
+    def resolve_import(cls, uri):
+
+        e = cls.resolving_import(uri = uri)
+        resolution = e.resolution
+
+        if resolution is None:
+            if resource_repositories.is_repository_uri(uri):
+
+                if not uri.endswith(".scss"):
+                    uri += ".scss"
+
+                location = resource_repositories.locate(uri)
+                if os.path.exists(location):
+                    resolution = ((location,),)
+                else:
+                    path, file_name = os.path.split(location)
+                    resolution = ((os.path.join(path, "_" + file_name),),)
+
+        return resolution
 
 
 class Resource(object):
