@@ -61,9 +61,13 @@
 }
 
 @mixin dropdown-menu($transition: 'fade-in') {
-    @include horizontal-list;
+    @include clear-list-styles;
+    display: table;
 
     & > li {
+        display: table-cell;
+        text-align: center;
+        vertical-align: middle;
 
         & > ul {
             @include clear-list-styles;
