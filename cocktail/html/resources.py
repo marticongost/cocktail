@@ -34,7 +34,7 @@ from cocktail.modeling import (
 from cocktail.events import Event, EventInfo
 
 
-class SASS(object):
+class SASSCompilation(object):
 
     class ResolvingImportEventInfo(EventInfo):
 
@@ -69,8 +69,10 @@ class SASS(object):
 
     resolving_import = Event(event_info_class = ResolvingImportEventInfo)
 
-    @classmethod
-    def compile(cls, **kwargs):
+    def __init__(self):
+        self.__imported_uris = set()
+
+    def compile(self, **kwargs):
 
         if sass is None:
             raise sass_import_error
@@ -80,13 +82,18 @@ class SASS(object):
             importers = []
             kwargs["importers"] = importers
 
-        importers.insert(0, (0, cls.resolve_import))
+        importers.insert(0, (0, self.resolve_import))
         return sass.compile(**kwargs)
 
-    @classmethod
-    def resolve_import(cls, uri):
+    def resolve_import(self, uri):
 
-        e = cls.resolving_import(uri = uri)
+        # Prevent importing dependencies more than once
+        if uri in self.__imported_uris:
+            return ((uri, ""),)
+        else:
+            self.__imported_uris.add(uri)
+
+        e = self.resolving_import(uri = uri)
         resolution = e.resolution
 
         if resolution is None:
