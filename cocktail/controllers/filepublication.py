@@ -8,7 +8,7 @@ import mimetypes
 import cherrypy
 from cherrypy.lib import cptools, http, file_generator_limited
 from cocktail.events import Event, when
-from cocktail.html.resources import resource_repositories, SASS
+from cocktail.html.resources import resource_repositories, SASSCompilation
 
 
 class FilePublication(object):
@@ -301,7 +301,7 @@ class SASSPreprocessor(object):
                 or (css_st is None or scss_st.st_mtime > css_st.st_mtime)
                 or (map_st is None or scss_st.st_mtime > map_st.st_mtime)
             ):
-                css, source_map = SASS.compile(
+                css, source_map = SASSCompilation().compile(
                     filename = base_path,
                     source_map_filename = map_path,
                     **self.get_sass_compiler_options()
