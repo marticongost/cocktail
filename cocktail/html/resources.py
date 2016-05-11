@@ -20,6 +20,7 @@ import os
 import re
 import hashlib
 import urllib2
+from threading import local
 from shutil import copyfileobj
 from urlparse import urljoin
 from warnings import warn
@@ -33,8 +34,18 @@ from cocktail.modeling import (
 )
 from cocktail.events import Event, EventInfo
 
+_thread_data = local()
+
+def get_theme():
+    return getattr(_thread_data, "theme", "default")
+
+def set_theme(theme):
+    _thread_data.theme = theme or "default"
+
 
 class SASSCompilation(object):
+
+    validating_theme = Event()
 
     class ResolvingImportEventInfo(EventInfo):
 
@@ -69,8 +80,25 @@ class SASSCompilation(object):
 
     resolving_import = Event(event_info_class = ResolvingImportEventInfo)
 
-    def __init__(self):
+    def __init__(self, theme = None):
+
+        if theme is None:
+            theme = get_theme()
+
+        if theme != "default":
+            theme_is_valid = self.validating_theme(
+                theme = theme,
+                valid = False
+            ).valid
+            if not theme_is_valid:
+                raise InvalidSASSTheme(theme)
+
         self.__imported_uris = set()
+        self.__theme = theme
+
+    @property
+    def theme(self):
+        return self.__theme
 
     def compile(self, **kwargs):
 
@@ -93,7 +121,7 @@ class SASSCompilation(object):
         else:
             self.__imported_uris.add(uri)
 
-        e = self.resolving_import(uri = uri)
+        e = self.resolving_import(uri = uri, theme = self.__theme)
         resolution = e.resolution
 
         if resolution is None:
@@ -110,6 +138,17 @@ class SASSCompilation(object):
                     resolution = ((os.path.join(path, "_" + file_name),),)
 
         return resolution
+
+
+class InvalidSASSTheme(Exception):
+
+    def __init__(self, theme):
+        Exception.__init__(self, "%r is not a valid theme identifier" % theme)
+        self.__theme = theme
+
+    @property
+    def theme(self):
+        return self.__theme
 
 
 class Resource(object):
@@ -403,11 +442,17 @@ class ResourceRepositories(DictWrapper):
 
     def normalize_uri(self, uri):
 
+        # Resolve custom URI schemes
         if "://" in uri:
             scheme, resource_path = uri.split("://", 1)
             repo = self.get(scheme)
             if repo:
-                return repo[0] + "/" + resource_path
+                uri = repo[0] + "/" + resource_path
+
+        # Inject the active theme into SASS URIs
+        sass_suffix = ".scss.css"
+        if uri.endswith(sass_suffix):
+            uri = "%s.%s.scss.css" % (uri[:-len(sass_suffix)], get_theme())
 
         return uri
 

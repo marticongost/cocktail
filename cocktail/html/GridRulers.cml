@@ -4,6 +4,8 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:py="http://www.whads.com/ns/cocktail/templates">
 
+    <?resource cocktail://styles/GridRulers.scss.css ?>
+
     <?py-class
     column_count = 12
     id = "rulers"
