@@ -272,14 +272,23 @@ class SASSPreprocessor(object):
             return
 
         base_path, ext = os.path.splitext(path)
-        if not base_path.endswith(".scss"):
-            return
-
         if ext not in (".css", ".map"):
             return
 
+        inner_path, inner_ext = os.path.splitext(base_path)
+        if inner_ext != ".scss":
+            return
+
+        base_name, theme = os.path.splitext(inner_path)
+        scss_path = base_name + ".scss"
+
+        if not theme:
+            theme = "default"
+        else:
+            theme = theme.lstrip(".")
+
         try:
-            scss_st = os.stat(base_path)
+            scss_st = os.stat(scss_path)
         except OSError:
             pass
         else:
@@ -301,8 +310,9 @@ class SASSPreprocessor(object):
                 or (css_st is None or scss_st.st_mtime > css_st.st_mtime)
                 or (map_st is None or scss_st.st_mtime > map_st.st_mtime)
             ):
-                css, source_map = SASSCompilation().compile(
-                    filename = base_path,
+                sass = SASSCompilation(theme = theme)
+                css, source_map = sass.compile(
+                    filename = scss_path,
                     source_map_filename = map_path,
                     **self.get_sass_compiler_options()
                 )
