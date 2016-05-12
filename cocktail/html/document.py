@@ -106,6 +106,8 @@ class HTMLDocument(Element):
         for callback in self.metadata.document_ready_callbacks:
             callback(self)
 
+        Element._ready(self)
+
     def _add_language(self):
         language = self.metadata.language or get_language()
         if language:
