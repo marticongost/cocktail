@@ -11,6 +11,7 @@ from datetime import datetime, date, timedelta
 from decimal import Decimal
 from cocktail.pkgutils import get_full_name
 from cocktail.stringutils import decapitalize
+from cocktail.memoryutils import format_bytes
 from cocktail.translations.translation import translations
 from cocktail.translations.helpers import (
     ca_possessive,
@@ -1716,6 +1717,29 @@ translations.define(
             member_identifier(instance),
             instance.max_width or u"∞",
             instance.max_height or u"∞"
+        )
+)
+
+translations.define(
+    "cocktail.controllers.fileupload.FileSizeTooBigError-instance",
+    ca = lambda instance:
+        u"El fitxer <em>%s</em> és massa gran: la mida màxima permesa és de %s"
+        % (
+            member_identifier(instance),
+            format_bytes(instance.max_size)
+        ),
+    es = lambda instance:
+        u"El fichero <em>%s</em> es demasiado grande: el tamaño máximo "
+        u"permitido es de %s"
+        % (
+            member_identifier(instance),
+            format_bytes(instance.max_size)
+        ),
+    en = lambda instance:
+        u"<em>%s</em> is too big: the maximum allowed size is %s"
+        % (
+            member_identifier(instance),
+            format_bytes(instance.max_size)
         )
 )
 
