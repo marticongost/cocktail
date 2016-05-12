@@ -4,3 +4,5 @@ u"""
 emphasis in declarative programming.
 """
 
+__version__ = "1.7.1"
+

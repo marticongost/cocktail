@@ -359,9 +359,14 @@ cocktail.waitForImages = function (element) {
     var deferreds = [];
     jQuery(element).find("img").each(function () {
         var deferred = jQuery.Deferred();
-        jQuery(this).on("load", function () {
+        if (this.complete) {
             deferred.resolve();
-        });
+        }
+        else {
+            jQuery(this).on("load", function () {
+                deferred.resolve();
+            });
+        }
         deferreds.push(deferred);
     });
     return jQuery.when.apply(jQuery, deferreds);
