@@ -9,7 +9,10 @@ u"""
 import cherrypy
 import hashlib
 from mimetypes import guess_type
+from cocktail.memoryutils import parse_bytes, format_bytes
 from cocktail import schema
+from cocktail.schema.exceptions import ValidationError
+
 
 class FileUpload(schema.Schema):
 
@@ -20,6 +23,7 @@ class FileUpload(schema.Schema):
     chunk_size = 8192
     normalization = None
     hash_algorithm = None
+    __max_size = None
 
     async = False
     async_uploader = None
@@ -64,6 +68,26 @@ class FileUpload(schema.Schema):
         copy = schema.Schema.__deepcopy__(self, memo)
         copy.async_uploader = self.async_uploader
         return copy
+
+    def _get_max_size(self):
+        return self.__max_size
+
+    def _set_max_size(self, max_size):
+
+        if isinstance(max_size, basestring):
+            max_size = parse_bytes(max_size)
+
+        self.__max_size = max_size
+
+    max_size = property(
+        _get_max_size,
+        _set_max_size,
+        doc = """Gets or sets the maximum size allowed for this upload.
+
+        Can be set to an integer (indicating a number of bytes) or to a string
+        using a format accepted by L{cocktail.memory_utils.parse_bytes}.
+        """
+    )
 
     def parse_request_value(self, reader, value):
 
@@ -174,4 +198,26 @@ class FileUpload(schema.Schema):
 
     def _create_default_instance(self):
         return None
+
+    def _default_validation(self, context):
+
+        for error in schema.Schema._default_validation(self, context):
+            yield error
+
+        file_size = context.get_value("file_size")
+
+        if file_size:
+            max_size = self.resolve_constraint(self.max_size, context)
+            if max_size and file_size > max_size:
+                yield FileSizeTooBigError(context, max_size)
+
+
+class FileSizeTooBigError(ValidationError):
+
+    def __init__(self, context, max_size):
+        ValidationError.__init__(self, context)
+        self.max_size = max_size
+
+    def __str__(self):
+        return "%s (shouldn't exceed %s)" % format_bytes(self.max_size)
 
