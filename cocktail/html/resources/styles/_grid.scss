@@ -197,6 +197,33 @@ $grid-margin: 50px;
     }
 }
 
+@mixin grid-fit($columns, $expr: null, $spacing-right: 1, $spacing-left: 0) {
+
+    @if $expr == null {
+        $expr: gt grid-min-size();
+    }
+
+    @include grid($expr) {
+        display: inline-block;
+        vertical-align: top;
+        width: grid-columns($columns);
+
+        @if $spacing-left {
+            * + & {
+                margin-left: grid-spacing() * $spacing-left;
+            }
+        }
+
+        @if $spacing-right {
+            & + * {
+                margin-left: grid-spacing() * $spacing-right;
+            }
+        }
+
+        @content;
+    }
+}
+
 @mixin grid-items($expr: null) {
 
     @if $expr == null {
