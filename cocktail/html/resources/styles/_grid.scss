@@ -208,13 +208,13 @@ $grid-margin: 50px;
         vertical-align: top;
         width: grid-columns($columns);
 
-        @if $spacing-left {
+        @if $spacing-left > 0 {
             * + & {
                 margin-left: grid-spacing() * $spacing-left;
             }
         }
 
-        @if $spacing-right {
+        @if $spacing-right > 0 {
             & + * {
                 margin-left: grid-spacing() * $spacing-right;
             }
