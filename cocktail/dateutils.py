@@ -52,7 +52,12 @@ def add_time(value, time_fragment = None):
 
 class CalendarPage(tuple):
 
-    def __new__(type, year, month):
+    def __new__(type, *args):
+        if len(args) == 1:
+            year = args[0].year
+            month = args[0].month
+        else:
+            year, month = args
         return tuple.__new__(type, (year, month))
 
     def __repr__(self):
