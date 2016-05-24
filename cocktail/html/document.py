@@ -7,7 +7,7 @@ from simplejson import dumps
 from cocktail.translations import translations, get_language
 from cocktail.html.element import Element, Content
 from cocktail.html.ieconditionalcomment import IEConditionalComment, IEWrapper
-from cocktail.html.resources import Script, StyleSheet
+from cocktail.html.resources import Script, StyleSheet, resource_repositories
 from cocktail.html.rendering import Rendering
 from cocktail.html.utils import rendering_html5, rendering_xml
 from cocktail.html.documentmetadata import DocumentMetadata
@@ -240,7 +240,15 @@ class HTMLDocument(Element):
 
         if self.metadata.client_variables:
             self._add_core_scripts()
-
+            self.client_setup_container.append(
+                "\t\tcocktail.resourceRepositories = %s;\n" % dumps(
+                    dict(
+                        (repo_name, repo_data[0] + "/")
+                        for repo_name, repo_data
+                        in resource_repositories.iteritems()
+                    )
+                )
+            )
             for key, value in self.metadata.client_variables.iteritems():
                 self.client_setup_container.append(
                     "\t\tcocktail.setVariable(%s, %s);\n" % (

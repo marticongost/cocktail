@@ -811,3 +811,15 @@ cocktail.bind("[accesskey]", function () {
     }
 });
 
+cocktail.normalizeResourceURI = function (uri) {
+    var i = uri.indexOf("://");
+    if (i != -1) {
+        var scheme = uri.substr(0, i);
+        var repoURI = cocktail.resourceRepositories[scheme];
+        if (repoURI) {
+            uri = repoURI + uri.substr(i + 3);
+        }
+    }
+    return uri;
+}
+
