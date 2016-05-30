@@ -70,6 +70,10 @@
         text-align: center;
         vertical-align: middle;
 
+        & > a {
+            display: block;
+        }
+
         & > ul {
             @include clear-list-styles;
             position: absolute;
