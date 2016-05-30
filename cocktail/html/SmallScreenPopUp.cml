@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:py="http://www.whads.com/ns/cocktail/templates"
+    data-popup-state="closed">
+
+    <?resource cocktail://scripts/SmallScreenPopUp.js ?>
+    <?resource cocktail://styles/SmallScreenPopUp.scss.css ?>
+
+    <?py-class
+    popup_close_button_image = "cocktail://images/close-small-screen-popup.png"
+    popup_close_button_text = u"❌"
+
+    def create_popup_close_button_content(self):
+        if self.popup_close_button_image:
+            return Element("img",
+                src = normalize_resource_uri(self.popup_close_button_image)
+            )
+        else:
+            return self.popup_close_button_text
+    ?>
+
+    <div py:id="popup_content"/>
+
+    <py:binding>
+        <?py
+        self.require_id()
+        ?>
+    </py:binding>
+
+    <button
+        py:id="popup_button"
+        py:client_model="cocktail.html.SmallScreenPopUp.popupButton-@{self['id']}"
+        type="button">
+        <div py:id="popup_label"/>
+    </button>
+
+    <div
+        py:id="popup_panel"
+        py:client_model="cocktail.html.SmallScreenPopUp.popupPanel-@{self['id']}">
+        <button
+            py:id="popup_close_button"
+            type="button">
+            <py:ready>
+                <?py
+                element.append(self.create_popup_close_button_content())
+                ?>
+            </py:ready>
+        </button>
+        <div py:id="popup_panel_content">
+            <py:cocktail.html.Clone py:source="${self.popup_content}"/>
+        </div>
+    </div>
+
+</div>
+

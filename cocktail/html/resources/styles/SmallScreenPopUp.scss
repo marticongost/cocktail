@@ -1,0 +1,64 @@
+
+@import "cocktail://styles/grid";
+@import "theme://";
+
+.SmallScreenPopUp {
+
+    .popup_button {
+        display: none;
+
+        @include scripting-enabled {
+            @include grid(grid-min-size()) {
+                display: inline-block;
+            }
+        }
+    }
+
+    & > .popup_content {
+        @include scripting-enabled {
+            @include grid(grid-min-size()) {
+                display: none;
+            }
+        }
+    }
+
+    .popup_panel {
+        $padding: 5px;
+        $button-radius: 15px;
+        display: none;
+        position: fixed;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        padding: $padding;
+        background-color: white;
+        z-index: 1000;
+        overflow: auto;
+
+        @media speech {
+            display: none;
+        }
+
+        .popup_close_button {
+            position: absolute;
+            top: $padding;
+            right: $padding;
+            border-radius: $button-radius;
+            width: $button-radius * 2;
+            height: $button-radius * 2;
+            font-size: $button-radius;
+            background-color: black;
+            color: white;
+        }
+    }
+
+    &[data-popup-state='open'] {
+        .popup_panel {
+            @include grid(grid-min-size()) {
+                display: block;
+            }
+        }
+    }
+}
+
