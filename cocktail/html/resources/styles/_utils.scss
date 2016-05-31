@@ -1,4 +1,10 @@
 
+@mixin theme($theme-id) {
+    @if $active-theme == $theme-id {
+        @content;
+    }
+}
+
 @function join-media-query($query1, $query2) {
     @if $query1 and $query2 {
         @return $query1 + " and " + $query2;
