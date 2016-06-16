@@ -19,7 +19,7 @@ class DatePicker(TextBox):
         self.add_resource("cocktail://scripts/jquery-ui.js")
         self.add_resource("cocktail://scripts/ui.datepicker-lang.js")
         self.add_resource("cocktail://scripts/jquery.maskedinput.js")
-        self.add_resource("cocktail://scripts/DatePicker.js")
+        self.add_resource("cocktail://scripts/datepicker.js")
         self.date_picker_params = {}
 
     def _ready(self):
@@ -40,7 +40,7 @@ class DatePicker(TextBox):
             self.set_client_param("datePickerParams", params)
 
     def get_jformat(self):
-        return translations("jquery_date format")
+        return translations("cocktail.jquery_date_format")
 
     def get_default_params(self):
         return {

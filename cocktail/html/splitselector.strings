@@ -1,0 +1,27 @@
+
+[cocktail.html.SplitSelector]
+
+    [selected_items_panel]
+
+        [heading]
+        ca: Seleccionats
+        es: Seleccionados
+        en: Selected
+
+        [toggle_button]
+        ca: Treure
+        es: Quitar
+        en: Remove
+
+    [eligible_items_panel]
+
+        [heading]
+        ca: No seleccionats
+        es: No seleccionados
+        en: Not selected
+
+        [toggle_button]
+        ca: Afegir
+        es: Añadir
+        en: Add
+

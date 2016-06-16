@@ -1,0 +1,22 @@
+[cocktail.html.Pager]
+
+    [first_button]
+    ca: Primera pàgina
+    es: Primera página
+    en: First page
+
+    [last_button]
+    ca: Última pàgina
+    es: Última página
+    en: Last page
+
+    [next_button]
+    ca: Pàgina següent
+    es: Página siguiente
+    en: Next page
+
+    [previous_button]
+    ca: Pàgina anterior
+    es: Página anterior
+    en: Previous page
+

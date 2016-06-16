@@ -9,19 +9,8 @@ u"""
 from itertools import chain
 from cocktail.modeling import getter, cached_getter
 from cocktail.pkgutils import resolve
-from cocktail.schema import (
-    Schema,
-    SchemaObject,
-    Member,
-    Number,
-    BaseDateTime,
-    String,
-    Boolean,
-    Collection,
-    Reference,
-    RelationMember,
-    EDITABLE
-)
+from cocktail.translations import translations
+from cocktail import schema
 from cocktail.schema.expressions import (
     CustomExpression,
     Self,
@@ -34,13 +23,15 @@ from cocktail.persistence import PersistentObject
 from cocktail.controllers import viewstate
 from cocktail.controllers.parameters import serialize_parameter
 from cocktail.html import templates
-from cocktail.translations import translations
+from cocktail.translations import translations, translate_locale
+
+translations.load_bundle("cocktail.controllers.userfilter")
 
 # TODO: Search can be used to indirectly access restricted members
 
 # Extension property used to establish the user interface for a member in
 # searches
-Member.search_control = None
+schema.Member.search_control = None
 
 
 class UserFilter(object):
@@ -84,45 +75,51 @@ class MemberFilter(UserFilter):
     def members(self):
         return (self.member,)
 
-    def _add_language_to_schema(self, schema):
+    def _add_language_to_schema(self, target_schema):
         if self.member.translated:
-            schema.add_member(String("language",
-                required = True,
-                enumeration = self.available_languages
-            ))
+            target_schema.add_member(
+                schema.String(
+                    "language",
+                    required = True,
+                    enumeration = self.available_languages,
+                    translate_value = (
+                        lambda value, language = None, **kwargs:
+                            "" if not value
+                            else translate_locale(value, language = language)
+                    ),
+                    search_control = "cocktail.html.DropdownSelector"
+                )
+            )
 
-    def _add_member_to_schema(self, schema):
+    def _add_member_to_schema(self, target_schema):
 
         source_member = self.member
 
-        if isinstance(source_member, Collection):
+        if isinstance(source_member, schema.Collection):
             source_member = source_member.items
 
         value_member = source_member.copy()
         value_member.name = "value"
         value_member.translated = False
         value_member.default = None
-        value_member.editable = EDITABLE
+        value_member.editable = schema.EDITABLE
 
         # Remove the bidirectional flag from relations
-        if isinstance(value_member, RelationMember):
+        if isinstance(value_member, schema.RelationMember):
             value_member.bidirectional = False
 
         # Restricting relation cycles doesn't serve any purpose when collecting
         # the value of a user filter
-        if isinstance(value_member, Reference):
+        if isinstance(value_member, schema.Reference):
             value_member.cycles_allowed = True
 
-        schema.add_member(value_member)
+        target_schema.add_member(value_member)
 
     def _get_member_expression(self):
         if self.language:
             return self.member.translated_into(self.language)
         else:
             return self.member
-
-    def __translate__(self, language, **kwargs):
-        return translations(self.member, language, **kwargs)
 
 
 class BooleanFilter(MemberFilter):
@@ -131,11 +128,11 @@ class BooleanFilter(MemberFilter):
 
     @cached_getter
     def schema(self):
-        schema = Schema()
-        schema.name = "UserFilter"
-        self._add_language_to_schema(schema)
-        self._add_member_to_schema(schema)
-        return schema
+        filter_schema = schema.Schema()
+        filter_schema.name = "cocktail.controllers.userfilter.BooleanFilter"
+        self._add_language_to_schema(filter_schema)
+        self._add_member_to_schema(filter_schema)
+        return filter_schema
 
     @getter
     def expression(self):
@@ -152,16 +149,19 @@ class BinaryFilter(MemberFilter):
 
     @cached_getter
     def schema(self):
-        schema = Schema()
-        schema.name = "UserFilter"
-        self._add_language_to_schema(schema)
-        schema.add_member(String("operator",
-            required = True,
-            enumeration = self.operators,
-            default = self.operators[0] if self.operators else None
-        ))
-        self._add_member_to_schema(schema)
-        return schema
+        filter_schema = schema.Schema()
+        filter_schema.name = "cocktail.controllers.userfilter.BinaryFilter"
+        self._add_language_to_schema(filter_schema)
+        filter_schema.add_member(
+            schema.String("operator",
+                required = True,
+                enumeration = self.operators,
+                default = self.operators[0] if self.operators else None,
+                search_control = "cocktail.html.DropdownSelector"
+            )
+        )
+        self._add_member_to_schema(filter_schema)
+        return filter_schema
 
 
 class EqualityFilter(BinaryFilter):
@@ -201,11 +201,11 @@ class StringFilter(ComparisonFilter):
 
     @cached_getter
     def schema(self):
-        schema = ComparisonFilter.schema(self)
+        filter_schema = ComparisonFilter.schema(self)
         # Remove validations
-        value = schema.get_member("value")
+        value = filter_schema.get_member("value")
         value.min = value.max = value.format = None
-        return schema
+        return filter_schema
 
     @getter
     def expression(self):
@@ -235,8 +235,8 @@ class GlobalSearchFilter(UserFilter):
 
     @cached_getter
     def schema(self):
-        schema = Schema()
-        schema.name = "UserFilter"
+        filter_schema = schema.Schema()
+        filter_schema.name = "cocktail.controllers.userfilter.GlobalSearchFilter"
 
         if any(
             content_type.translated
@@ -244,13 +244,24 @@ class GlobalSearchFilter(UserFilter):
                 [self.content_type], self.content_type.derived_schemas()
             )
         ):
-            schema.members_order = ["value", "language"]
-            schema.add_member(String("language",
-                enumeration = self.available_languages
-            ))
+            filter_schema.members_order = ["value", "language"]
+            filter_schema.add_member(
+                schema.String("language",
+                    enumeration = self.available_languages,
+                    translate_value = (
+                        lambda value, language = None, **kwargs:
+                        "" if not value
+                        else translations(
+                            "cocktail.controllers.userfilter.GlobalSearchFilter.translated_into",
+                            locale = value,
+                            language = language
+                        )
+                    )
+                )
+            )
 
-        schema.add_member(String("value", required = True))
-        return schema
+        filter_schema.add_member(schema.String("value", required = True))
+        return filter_schema
 
     @getter
     def expression(self):
@@ -273,9 +284,9 @@ class CollectionFilter(BinaryFilter):
 
     operators = ("cn", "nc")
 
-    def _add_member_to_schema(self, schema):
-        BinaryFilter._add_member_to_schema(self, schema)
-        value_member = schema["value"]
+    def _add_member_to_schema(self, target_schema):
+        BinaryFilter._add_member_to_schema(self, target_schema)
+        value_member = target_schema["value"]
         value_member.required = True
 
     @getter
@@ -285,7 +296,7 @@ class CollectionFilter(BinaryFilter):
 
             related_value = self.value.get(self.member.related_end)
 
-            if isinstance(self.member.related_end, Collection):
+            if isinstance(self.member.related_end, schema.Collection):
                 collection = related_value or set()
             else:
                 collection = set() if related_value is None else related_value
@@ -303,66 +314,6 @@ class CollectionFilter(BinaryFilter):
                 return CustomExpression(lambda item:
                     self.value not in (item.get(self.member) or set())
                 )
-
-
-class MultipleChoiceFilter(MemberFilter):
-
-    repeatable = False
-    search_control = "cocktail.html.MultipleChoiceSelector"
-
-    @cached_getter
-    def schema(self):
-
-        if isinstance(self.member, Reference):
-            order = self.member.default_order
-        elif isinstance(self.member, Collection):
-            order = self.member.items.default_order
-
-        return Schema("UserFilter", members = [
-            Collection("values",
-                items = Reference(
-                    required = True,
-                    type = self.member.related_type,
-                    default_order = order
-                ),
-                min = 1,
-                required = True
-            )
-        ])
-
-    @getter
-    def expression(self):
-
-        member = self.member
-
-        if not self.member.bidirectional \
-        and isinstance(self.member, Collection):
-            values = self.values
-            expression = CustomExpression(
-                lambda item: item.get(member) in values
-            )
-
-        else:
-            subset = set()
-
-            if isinstance(self.member, Reference):
-                query = self.content_type.select
-                by_key = True
-                for value in self.values:
-                    subset.update(
-                        query(member.equal(value)).execute()
-                    )
-
-            elif isinstance(self.member, Collection):
-                by_key = False
-                rel_member = member.related_end
-                for value in self.values:
-                    subset.update(value.get(rel_member))
-
-            expression = Self.one_of(subset)
-            expression.by_key = by_key
-
-        return expression
 
 
 class DateTimeRangeFilter(UserFilter):
@@ -390,7 +341,10 @@ class DateTimeRangeFilter(UserFilter):
         end_date = self.end_date_member.copy()
         end_date.name = "end_date"
 
-        return Schema("DateTimeRangeFilter", members = [start_date, end_date])
+        return schema.Schema(
+            "cocktail.controllers.userfilter.DateTimeRangeFilter",
+            members = [start_date, end_date]
+        )
 
     @getter
     def expression(self):
@@ -415,18 +369,21 @@ class DescendsFromFilter(UserFilter):
     @cached_getter
     def schema(self):
 
-        return Schema("DescendsFromFilter", members = [
-            Reference(
-                "root",
-                required = True,
-                type = self.relation.schema
-            ),
-            Boolean(
-                "include_self",
-                required = True,
-                default = True
-            )
-        ])
+        return schema.Schema(
+            "cocktail.controllers.userfilter.DescendsFromFilter",
+            members = [
+                schema.Reference(
+                    "root",
+                    required = True,
+                    type = self.relation.schema
+                ),
+                schema.Boolean(
+                    "include_self",
+                    required = True,
+                    default = True
+                )
+            ]
+        )
 
     @cached_getter
     def expression(self):
@@ -436,20 +393,21 @@ class DescendsFromFilter(UserFilter):
 
 
 # An extension property used to associate user filter types with members
-Member.user_filter = EqualityFilter
-Number.user_filter = ComparisonFilter
-BaseDateTime.user_filter = ComparisonFilter
-String.user_filter = StringFilter
-Boolean.user_filter = BooleanFilter
-Collection.user_filter = CollectionFilter
+schema.Member.user_filter = EqualityFilter
+schema.Number.user_filter = ComparisonFilter
+schema.BaseDateTime.user_filter = ComparisonFilter
+schema.String.user_filter = StringFilter
+schema.Boolean.user_filter = BooleanFilter
+schema.Collection.user_filter = CollectionFilter
 
 # An extension property used to determine which members should be searchable
-Member.searchable = True
+schema.Member.searchable = True
 
 # An extension property used to determine which members have their search
 # controls enabled by default
-Member.promoted_search = False
-Member.promoted_search_list = None
+schema.Member.promoted_search = False
+schema.Member.promoted_search_list = None
+
 
 class UserFiltersRegistry(object):
 
@@ -497,7 +455,7 @@ class UserFiltersRegistry(object):
 
     def get_new_filter_view_state(self, content_type, filters, new_filter):
 
-        if isinstance(new_filter, Member):
+        if isinstance(new_filter, schema.Member):
             new_filter = self._create_member_filter(content_type, new_filter)
 
         index = len(filters)
@@ -551,4 +509,10 @@ class UserFiltersRegistry(object):
 
 user_filters_registry = UserFiltersRegistry()
 user_filters_registry.add(PersistentObject, GlobalSearchFilter)
+
+# Translation
+#------------------------------------------------------------------------------
+@translations.instances_of(MemberFilter)
+def translate_member_filter(member_filter, **kwargs):
+    return translations(member_filter.member, **kwargs)
 

@@ -15,10 +15,11 @@ from cocktail.translations import (
     require_language,
     iter_language_chain,
     descend_language_tree,
+    translate_locale,
     NoActiveLanguageError
 )
 from cocktail.schema.schema import Schema
-from cocktail.schema.member import Member
+from cocktail.schema.member import Member, translate_member
 from cocktail.schema.schemareference import Reference
 from cocktail.schema.schemastrings import String
 from cocktail.schema.schemarelations import _update_relation
@@ -98,6 +99,9 @@ class SchemaClass(EventHub, Schema):
             cls.translation._declared = True
 
         cls.declared()
+        if cls.translation_source is None:
+            bundle_path = cls.full_name.rsplit(".", 1)[0]
+            translations.request_bundle(bundle_path)
 
     def inherit(cls, *bases):
 
@@ -168,27 +172,17 @@ class SchemaClass(EventHub, Schema):
             cls.translation.add_member(member.translation)
 
     def _create_translations_member(cls):
-        translations_member = Mapping(
+        return TranslationsMember(
             name = "translations",
             required = True,
-            keys = String(required = True),
-            values = Reference(
-                type = cls.translation,
+            keys = String(
+                required = True,
                 translate_value = lambda value, language = None, **kwargs:
-                    "" if not value else translations("locale",
-                        locale = value,
-                        language = language,
-                        **kwargs
-                    )
+                    "" if not value else translate_locale(value, language)
             ),
+            values = Reference(type = cls.translation),
             produce_default = TranslationMapping
         )
-
-        @refine(translations_member)
-        def __translate__(self, language):
-            return translations("Translations", language)
-
-        return translations_member
 
     def _create_translation_schema(cls, members):
 
@@ -517,6 +511,19 @@ class SchemaClass(EventHub, Schema):
             return collection
 
 
+class TranslationsMember(Mapping):
+    pass
+
+
+@translations.instances_of(TranslationsMember)
+def translate_translations_member(member, **kwargs):
+    return (
+        translate_member(member, **kwargs)
+        or translations(
+            "cocktail.schema.TranslationsMember.generic_translation"
+        )
+    )
+
 @classmethod
 def _init_translation(cls,
     instance,
@@ -741,28 +748,6 @@ class SchemaObject(object):
             label = label.encode("utf-8")
 
         return label
-
-    def __translate__(self, language, **kwargs):
-
-        desc = None
-
-        if self.__class__.descriptive_member:
-            desc = self.get(self.__class__.descriptive_member, language)
-            if desc:
-                desc = self.__class__.descriptive_member.translate_value(
-                    desc,
-                    language
-                )
-
-        if not desc and not kwargs.get("discard_generic_translation", False):
-
-            desc = translations(self.__class__.name, language, **kwargs)
-
-            if self.__class__.primary_member:
-                desc += " #" \
-                    + str(getattr(self, self.__class__.primary_member.name))
-
-        return desc
 
     def get(self, member, language = None):
 
@@ -1193,4 +1178,30 @@ class TranslationMapping(DictWrapper):
         if kwargs:
             for key, value in kwargs.iteritems():
                 self[key] = value
+
+
+# Translation
+#------------------------------------------------------------------------------
+
+@translations.instances_of(SchemaObject)
+def translate_schema_object(obj, **kwargs):
+
+    desc = None
+
+    # Descriptive member
+    desc_member = obj.__class__.descriptive_member
+    if desc_member:
+        desc_value = obj.get(desc_member)
+        if desc_value:
+            desc = desc_member.translate_value(desc_value)
+
+    # Generic translation
+    if not desc and not kwargs.get("discard_generic_translation", False):
+
+        desc = translations(obj.__class__, **kwargs)
+
+        if obj.__class__.primary_member:
+            desc += " #" + str(getattr(obj, obj.__class__.primary_member.name))
+
+    return desc
 

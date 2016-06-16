@@ -1,0 +1,13 @@
+
+[cocktail.html.Slider]
+
+    [previous_button]
+    ca: Anterior
+    es: Anterior
+    en: Previous
+
+    [next_button]
+    ca: Següent
+    es: Siguiente
+    en: Next
+

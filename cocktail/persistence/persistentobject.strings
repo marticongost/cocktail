@@ -1,0 +1,8 @@
+
+[cocktail.persistence.persistentobject]
+
+    [UniqueValueError.instance(error)]
+    ca: El valor indicat pel camp ${error.member_desc()} ja existeix a la base de dades
+    es: El valor indicado para el campo ${error.member_desc()} ya existe en la base de datos
+    en: The value of the ${error.member_desc()} field is already in use
+

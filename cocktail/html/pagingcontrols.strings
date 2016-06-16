@@ -1,0 +1,13 @@
+
+[cocktail.html.PagingControls]
+
+    [item_count(page_range, total_count)]
+    ca: <strong>${page_range[0]}-${page_range[1]}</strong> de ${total_count}
+    es: <strong>${page_range[0]}-${page_range[1]}</strong> de ${total_count}
+    en: <strong>${page_range[0]}-${page_range[1]}</strong> of ${total_count}
+
+    [results_per_page]
+    ca: Resultats per pàgina
+    es: Resultados por página
+    en: Results per page
+

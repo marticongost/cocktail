@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?py
+from cocktail.html.selectable import selectable, MULTIPLE_SELECTION
+?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:py="http://www.whads.com/ns/cocktail/templates">
+
+    <?py-class
+    items = None
+    search_threshold = 10
+
+    def should_enable_search(self):
+        if not self.items:
+            return False
+
+        if not self.search_threshold:
+            return True
+
+        if self.grouped:
+            item_count = sum(
+                len(group_items)
+                for group, group_items in self.items
+            )
+        else:
+            item_count = len(self.items)
+
+        return item_count >= self.search_threshold
+
+    def get_selected_items_heading(self):
+        return translations("cocktail.html.SplitSelector.selected_items_panel.heading")
+
+    def get_selected_items_toggle_button_label(self):
+        return translations("cocktail.html.SplitSelector.selected_items_panel.toggle_button")
+
+    def get_eligible_items_heading(self):
+        return translations("cocktail.html.SplitSelector.eligible_items_panel.heading")
+
+    def get_eligible_items_toggle_button_label(self):
+        return translations("cocktail.html.SplitSelector.eligible_items_panel.toggle_button")
+    ?>
+
+    <?resource cocktail://scripts/selectable.js ?>
+    <?resource cocktail://scripts/xregexp.js ?>
+    <?resource cocktail://scripts/searchable.js ?>
+    <?resource cocktail://scripts/splitselector.js ?>
+
+    <py:ready>
+        <?py
+        if self.should_enable_search:
+            self.add_class("search_enabled")
+        ?>
+    </py:ready>
+
+    <div
+        py:id="search_controls"
+        py:client_model="cocktail.html.SplitSelector.searchControls">
+        <input py:id="search_box" type="search"/>
+    </div>
+
+    <py:cocktail.html.CheckList
+        py:id="check_list"
+        py:items="@{self.items}"
+        py:apply_selectable_behavior="${False}"/>
+
+    <?py
+    self.data_binding_delegate = self.check_list
+    ?>
+
+    <div py:id="split_panels" py:client_model="cocktail.html.SplitSelector.splitPanels">
+        <py:new
+            py:id="selected_items_panel"
+            py:element="self.create_split_panel()">
+            <py:with py:element="element.split_panel_heading">
+                @{self.get_selected_items_heading()}
+            </py:with>
+            <py:with py:element="element.split_panel_toolbar.toggle_button">
+
+                <py:with
+                    py:element="element.button_icon"
+                    src="${normalize_resource_uri('cocktail://images/right.png')}"/>
+
+                <py:with py:element="element.button_label">
+                    @{self.get_selected_items_toggle_button_label()}
+                </py:with>
+
+            </py:with>
+        </py:new>
+        <py:new
+            py:id="eligible_items_panel"
+            py:element="self.create_split_panel()">
+            <py:with py:element="element.split_panel_heading">
+                @{self.get_eligible_items_heading()}
+            </py:with>
+            <py:with py:element="element.split_panel_toolbar.toggle_button">
+
+                <py:with
+                    py:element="element.button_icon"
+                    src="${normalize_resource_uri('cocktail://images/left.png')}"/>
+
+                <py:with py:element="element.button_label">
+                    @{self.get_eligible_items_toggle_button_label()}
+                </py:with>
+
+            </py:with>
+        </py:new>
+    </div>
+
+    <div py:def="split_panel">
+        <div py:local_id="split_panel_heading"/>
+        <div py:local_id="split_panel_toolbar">
+            <button type="button" py:local_id="toggle_button">
+                <img py:local_id="button_icon"/>
+                <span py:local_id="button_label"/>
+            </button>
+        </div>
+        <div py:local_id="split_panel_content">
+            <?py
+            selectable(
+                element,
+                mode = MULTIPLE_SELECTION,
+                exclusive = True
+            )
+            ?>
+        </div>
+    </div>
+
+</div>
+

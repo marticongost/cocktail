@@ -17,6 +17,8 @@ from cocktail.controllers.uriutils import try_decode, percent_encode_uri
 from cocktail.controllers.viewstate import get_state
 from cocktail.controllers.dispatcher import StopRequest
 
+translations.load_bundle("cocktail.controllers.location")
+
 
 class URLEmptyHash(object):
 
@@ -202,12 +204,14 @@ class Location(object):
             method = self.method
 
         with language_context(get_language() or "en"):
-            trans_prefix = "cocktail.controllers.Location.client_redirect"
-            title = translations(trans_prefix + "_title")
-            control_label = translations(trans_prefix + "_control")
+            trans_prefix = "cocktail.controllers.Location.client_redirect."
+            title = translations(trans_prefix + "title")
+            control_label = translations(trans_prefix + "control")
             explanation = translations(
-                trans_prefix + "_explanation",
-                control = translations(trans_prefix + "_control-" + method)
+                trans_prefix + ".explanation",
+                control = translations(
+                    trans_prefix + ".control.description." + method
+                )
             )
 
         if method == "GET":

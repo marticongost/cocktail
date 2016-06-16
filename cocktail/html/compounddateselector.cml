@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?py
+from datetime import date
+from cocktail.translations import month_name
+?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:py="http://www.whads.com/ns/cocktail/templates">
+
+    <?py-class
+    year_offset = -100
+    year_span = 100
+
+    def get_year_range(self):
+        min_year = date.today().year + self.year_offset
+        return range(min_year + self.year_span, min_year, -1)
+    ?>
+
+    <?py
+    self.add_resource("cocktail://scripts/compounddateselector.js")
+    ?>
+
+    <py:ready>
+        <?py
+        self.require_id()
+
+        self.set_client_param(
+            "dateFormat",
+            self.member.request_date_format or translations("cocktail.date_format")
+        )
+        ?>
+    </py:ready>
+
+    <py:cocktail.html.TextBox
+        py:id="text_box"/>
+
+    <?py
+    self.data_binding_delegate = self.text_box
+    ?>
+
+    <div py:id="controls" py:client_model="cocktail.html.CompoundDateSelector-@{str(self['id'])}.controls">
+        <select py:id="day_selector">
+            <option/>
+            <py:ready>
+                <option py:for="i in range(1, 32)" value="${str(i).zfill(2)}">${i}</option>
+            </py:ready>
+        </select>
+        <select py:id="month_selector">
+            <option/>
+            <py:ready>
+                <option py:for="i in range(1, 13)" value="${str(i).zfill(2)}">${month_name(i)}</option>
+            </py:ready>
+        </select>
+        <select py:id="year_selector">
+            <option/>
+            <py:ready>
+                <option py:for="i in self.get_year_range()">${i}</option>
+            </py:ready>
+        </select>
+    </div>
+
+</div>
+

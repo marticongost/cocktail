@@ -1,0 +1,15 @@
+
+[cocktail.html.SearchableCheckList]
+
+    [search_controls]
+
+        [select_all_link]
+        ca: Seleccionar-ho tot
+        es: Seleccionarlo todo
+        en: Select all
+
+        [empty_selection_link]
+        ca: Buidar la selecció
+        es: Vaciar la selección
+        en: Empty the selection
+

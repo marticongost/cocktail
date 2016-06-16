@@ -9,6 +9,8 @@ u"""
 from __future__ import with_statement
 from threading import local
 from contextlib import contextmanager
+from collections import Mapping
+from pkg_resources import resource_filename
 from cocktail.modeling import (
     getter,
     DictWrapper,
@@ -16,17 +18,16 @@ from cocktail.modeling import (
     OrderedSet
 )
 from cocktail.pkgutils import get_full_name
+from .parser import TranslationsFileParser
 
 _thread_data = local()
 
 @contextmanager
 def language_context(language):
-
-    if language:
-        prev_language = get_language()
-        set_language(language)
-
     try:
+        if language:
+            prev_language = get_language()
+            set_language(language)
         yield None
     finally:
         if language:
@@ -132,138 +133,160 @@ def clear_fallback_languages():
     _thread_data.derived = {}
 
 
-class TranslationsRepository(DictWrapper):
 
-    def __init__(self):
-        self.__translations = {}
-        DictWrapper.__init__(self, self.__translations)
+class Translations(object):
 
-    def __setitem__(self, language, translation):
-        self.__translations[language] = translation
-        translation.language = language
+    def __init__(self, *args, **kwargs):
+        self.definitions = {}
+        self.__loaded_bundles = set()
 
-    def define(self, obj, **strings):
+    def define(self, key, value = None, **per_language_values):
 
-        for language, string in strings.iteritems():
-            translation = self.__translations.get(language)
+        if value is not None and per_language_values:
+            raise ValueError(
+                "Can't specify both 'value' and 'per_language_values'"
+            )
 
-            if translation is None:
-                translation = Translation(language)
-                self.__translations[language] = translation
+        self.definitions[key] = per_language_values or value
 
-            translation[obj] = string
+    def set(self, key, language, value):
+        per_language_values = self.definitions.get(key)
+        if per_language_values is None:
+            per_language_values = {}
+            self.definitions[key] = per_language_values
+        per_language_values[language] = value
 
-    def clear_key(self, obj):
-        """Remove all translations of the given key for all languages."""
-        for trans in self.__translations.itervalues():
+    def instances_of(self, cls):
+
+        def decorator(func):
             try:
-                del trans[obj]
-            except KeyError:
-                pass
+                class_name = get_full_name(cls)
+            except:
+                class_name = cls.__name__
 
-    def copy_key(self, source, dest, overwrite = True):
-        """Copy the translated strings of the given key into another key."""
-        for trans in self.__translations.itervalues():
-            string = trans(source)
-            if string and (overwrite or not trans(dest)):
-                trans[dest] = string
+            self.definitions[class_name + ".instance"] = func
+            return func
 
-    def __call__(self, obj,
+        return decorator
+
+    def load_bundle(self, bundle_path, **kwargs):
+
+        if bundle_path not in self.__loaded_bundles:
+            self.__loaded_bundles.add(bundle_path)
+
+            pkg_name, file_name = bundle_path.rsplit(".", 1)
+            file_path = resource_filename(pkg_name, file_name + ".strings")
+
+            with open(file_path, "r") as bundle_file:
+                parser = TranslationsFileParser(
+                    bundle_file,
+                    file_path = file_path,
+                    **kwargs
+                )
+                for key, language, value in parser:
+                    if language is None:
+                        self.definitions[key] = value
+                    else:
+                        self.set(key, language, value)
+
+    def request_bundle(self, bundle_path, **kwargs):
+        try:
+            self.load_bundle(bundle_path, **kwargs)
+        except IOError:
+            pass
+
+    def __iter_class_names(self, cls):
+
+        mro = getattr(cls, "__mro__", None)
+        if mro is None:
+            mro = (cls,)
+
+        for cls in mro:
+
+            try:
+                class_name = get_full_name(cls)
+            except:
+                class_name = cls.__name__
+
+            yield class_name
+
+    def __call__(
+        self,
+        obj,
         language = None,
         default = "",
         chain = None,
-        **kwargs):
+        **kwargs
+    ):
+        translation = None
 
-        language = require_language(language)
+        # Look for a explicit definition for the given value
+        if isinstance(obj, basestring):
+            translation = self.definitions.get(obj, None)
+        else:
+            # Translation of class instances
+            for class_name in self.__iter_class_names(obj.__class__):
+                translation = self.definitions.get(
+                    class_name + ".instance"
+                )
+                if translation:
+                    break
 
-        # Translation method
-        translation_method = getattr(obj, "__translate__", None)
+            # Translation of class references
+            if not translation and isinstance(obj, type):
+                for class_name in self.__iter_class_names(obj):
+                    translation = self(
+                        class_name,
+                        language = language,
+                        **kwargs
+                    )
+                    if translation:
+                        break
 
-        if translation_method:
-            for lang in iter_language_chain(language):
-                value = translation_method(lang, **kwargs)
-                if value:
-                    return value
-
-        # Translation key
-        for lang in iter_language_chain(language):
-            translation = self.__translations.get(lang, None)
-            if translation is not None:
-                value = translation(obj, **kwargs)
-                if value:
-                    return value
-
-        # Per-type translation
-        if not isinstance(obj, basestring) and hasattr(obj.__class__, "mro"):
-
-            for cls in obj.__class__.mro():
-                try:
-                    type_key = get_full_name(cls) + "-instance"
-                except:
-                    type_key = cls.__name__ + "-instance"
-
+        # Resolve the obtained translation
+        if translation:
+            if callable(translation):
+                with language_context(language):
+                    if isinstance(obj, basestring):
+                        translation = translation(**kwargs)
+                    else:
+                        translation = translation(obj, **kwargs)
+            elif isinstance(translation, Mapping):
+                definitions = translation
+                translation = None
+                prev_lang = language or get_language()
                 for lang in iter_language_chain(language):
-                    value = self(type_key, lang, instance = obj, **kwargs)
-                    if value:
-                        return value
+                    translation = definitions.get(lang)
+                    if translation:
+                        if callable(translation):
+                            with language_context(prev_lang):
+                                if isinstance(obj, basestring):
+                                    translation = translation(**kwargs)
+                                else:
+                                    translation = translation(obj, **kwargs)
+                            if translation:
+                                break
+                        else:
+                            if kwargs:
+                                translation = translation % kwargs
+                            break
+            elif kwargs:
+                translation = translation % kwargs
 
         # Custom translation chain
-        if chain is not None:
-            value = self(chain, language, default, **kwargs)
-            if value:
-                return value
+        if not translation and chain is not None:
+            translation = self(
+                chain,
+                language = language,
+                **kwargs
+            )
 
-        # Object specific translation chain
-        object_chain = getattr(obj, "translation_chain", None)
-        if object_chain is not None:
-            value = self(object_chain, language, default, **kwargs)
-            if value:
-                return value
+        if not translation:
+            translation = unicode(default)
 
-        # Explicit default
-        return unicode(default) if default != "" else ""
+        return translation or ""
 
-translations = TranslationsRepository()
-
-
-class Translation(DictWrapper):
-
-    language = None
-
-    def __init__(self, language):
-        self.__language = language
-        self.__strings = {}
-        DictWrapper.__init__(self, self.__strings)
-
-    @getter
-    def language(self):
-        return self.__language
-
-    def __setitem__(self, obj, string):
-        self.__strings[obj] = string
-
-    def __delitem__(self, obj):
-        del self.__strings[obj]
-
-    def __call__(self, obj, **kwargs):
-
-        try:
-            value = self.__strings.get(obj, "")
-        except TypeError:
-            return ""
-
-        if value:
-
-            # Custom python expression
-            if callable(value):
-                with language_context(self.__language):
-                    value = value(**kwargs)
-
-            # String formatting
-            elif kwargs:
-                value = value % kwargs
-
-        return value
+translations = Translations()
 
 
 class NoActiveLanguageError(Exception):

@@ -9,9 +9,12 @@ u"""
 import cherrypy
 import hashlib
 from mimetypes import guess_type
+from cocktail.translations import translations
 from cocktail.memoryutils import parse_bytes, format_bytes
 from cocktail import schema
 from cocktail.schema.exceptions import ValidationError
+
+translations.load_bundle("cocktail.controllers.fileupload")
 
 
 class FileUpload(schema.Schema):

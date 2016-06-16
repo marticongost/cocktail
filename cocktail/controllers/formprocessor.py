@@ -5,6 +5,7 @@ u"""Provides the `FormProcessor` and `Form` classes.
 """
 import cherrypy
 from cocktail.modeling import getter, cached_getter, camel_to_underscore
+from cocktail.pkgutils import get_full_name
 from cocktail import schema
 from cocktail.persistence import PersistentClass, transactional
 from cocktail.controllers.parameters import get_parameter
@@ -141,7 +142,7 @@ class Form(object):
         and isinstance(source_instance, schema.SchemaObject):
             return source_instance.__class__
 
-        return schema.Schema(self.__class__.__name__)
+        return schema.Schema(get_full_name(self.__class__))
 
     @cached_getter
     def form_id(self):
