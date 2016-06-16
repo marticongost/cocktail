@@ -100,3 +100,6 @@ from cocktail.schema.searchhighlighter import SearchHighlighter
 from cocktail.schema.validationcontext import ValidationContext
 from cocktail.schema.differences import diff
 
+from cocktail.translations import translations
+translations.load_bundle("cocktail.schema.package")
+

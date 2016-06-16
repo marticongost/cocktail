@@ -14,6 +14,6 @@ class IBANBox(TextBox):
     def _build(self):
         TextBox._build(self)
         self.add_resource("cocktail://scripts/jquery.inputmask.js")
-        self.add_resource("cocktail://scripts/IBANBox.js")
+        self.add_resource("cocktail://scripts/ibanbox.js")
         self.set_client_param("lengthByCountry", IBAN.length_by_country)
 

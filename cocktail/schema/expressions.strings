@@ -1,0 +1,338 @@
+
+@init
+from cocktail.translations import translate_locale
+
+def _op_translation_factory(format):
+
+    def operation_translator(instance, **kwargs):
+
+        from cocktail.schema.expressions import Constant
+
+        if len(instance.operands) == 2 \
+        and getattr(instance.operands[0], "translate_value", None) \
+        and isinstance(instance.operands[1], Constant):
+            operands = (
+                translations(instance.operands[0], **kwargs),
+                instance.operands[0].translate_value(
+                    instance.operands[1].value,
+                    **kwargs
+                ) or u"Ø"
+            )
+        else:
+            operands = tuple(
+                translations(operand, **kwargs)
+                for operand in instance.operands
+            )
+
+        return format % operands
+
+    return operation_translator
+
+translations.define("cocktail.schema.expressions.EqualExpression.instance",
+    ca = _op_translation_factory(u"%s igual a %s"),
+    es = _op_translation_factory(u"%s igual a %s"),
+    en = _op_translation_factory(u"%s equals %s")
+)
+
+translations.define("cocktail.schema.expressions.NotEqualExpression.instance",
+    ca = _op_translation_factory(u"%s diferent de %s"),
+    es = _op_translation_factory(u"%s distinto de %s"),
+    en = _op_translation_factory(u"%s not equals %s")
+)
+
+translations.define("cocktail.schema.expressions.GreaterExpression.instance",
+    ca = _op_translation_factory(u"%s major que %s"),
+    es = _op_translation_factory(u"%s mayor que %s"),
+    en = _op_translation_factory(u"%s greater than %s")
+)
+
+translations.define(
+    "cocktail.schema.expressions.GreaterEqualExpression.instance",
+    ca = _op_translation_factory(u"%s major o igual que %s"),
+    es = _op_translation_factory(u"%s mayor o igual que %s"),
+    en = _op_translation_factory(u"%s greater or equal than %s")
+)
+
+translations.define("cocktail.schema.expressions.LowerExpression.instance",
+    ca = _op_translation_factory(u"%s menor que %s"),
+    es = _op_translation_factory(u"%s menor que %s"),
+    en = _op_translation_factory(u"%s lower than %s")
+)
+
+translations.define(
+    "cocktail.schema.expressions.LowerEqualExpression.instance",
+    ca = _op_translation_factory(u"%s menor o igual que %s"),
+    es = _op_translation_factory(u"%s menor o igual que %s"),
+    en = _op_translation_factory(u"%s lower or equal than %s")
+)
+
+translations.define(
+    "cocktail.schema.expressions.StartsWithExpression.instance",
+    ca = _op_translation_factory(u"%s comença per %s"),
+    es = _op_translation_factory(u"%s empieza por %s"),
+    en = _op_translation_factory(u"%s starts with %s")
+)
+
+translations.define(
+    "cocktail.schema.expressions.EndsWithExpression.instance",
+    ca = _op_translation_factory(u"%s acaba per %s"),
+    es = _op_translation_factory(u"%s acaba en %s"),
+    en = _op_translation_factory(u"%s ends with %s")
+)
+
+translations.define(
+    "cocktail.schema.expressions.ContainsExpression.instance",
+    ca = _op_translation_factory(u"%s conté les paraules %s"),
+    es = _op_translation_factory(u"%s contiene las palabras %s"),
+    en = _op_translation_factory(u"%s contains search query %s")
+)
+
+translations.define(
+    "cocktail.schema.expressions.AddExpression.instance",
+    ca = _op_translation_factory(u"%s mes %s"),
+    es = _op_translation_factory(u"%s mas %s"),
+    en = _op_translation_factory(u"%s plus %s")
+)
+
+translations.define(
+    "cocktail.schema.expressions.SubtractExpression.instance",
+    ca = _op_translation_factory(u"%s menys %s"),
+    es = _op_translation_factory(u"%s menos %s"),
+    en = _op_translation_factory(u"%s minus %s")
+)
+
+translations.define(
+    "cocktail.schema.expressions.ProductExpression.instance",
+    ca = _op_translation_factory(u"%s pers %s"),
+    es = _op_translation_factory(u"%s por %s"),
+    en = _op_translation_factory(u"%s multiplied by %s")
+)
+
+translations.define(
+    "cocktail.schema.expressions.DivisionExpression.instance",
+    ca = _op_translation_factory(u"%s entre %s"),
+    es = _op_translation_factory(u"%s entre %s"),
+    en = _op_translation_factory(u"%s divided by %s")
+)
+
+translations.define(
+    "cocktail.schema.expressions.AndExpression.instance",
+    ca = _op_translation_factory(u"%s i %s"),
+    es = _op_translation_factory(u"%s y %s"),
+    en = _op_translation_factory(u"%s and %s")
+)
+
+translations.define(
+    "cocktail.schema.expressions.OrExpression.instance",
+    ca = _op_translation_factory(u"%s o %s"),
+    es = _op_translation_factory(u"%s o %s"),
+    en = _op_translation_factory(u"%s or %s")
+)
+
+translations.define(
+    "cocktail.schema.expressions.NotExpression.instance",
+    ca = _op_translation_factory(u"no %s"),
+    es = _op_translation_factory(u"no %s"),
+    en = _op_translation_factory(u"not %s")
+)
+
+translations.define(
+    "cocktail.schema.expressions.NegativeExpression.instance",
+    ca = _op_translation_factory(u"-%s"),
+    es = _op_translation_factory(u"-%s"),
+    en = _op_translation_factory(u"-%s")
+)
+
+translations.define(
+    "cocktail.schema.expressions.PositiveExpression.instance",
+    ca = _op_translation_factory(u"+%s"),
+    es = _op_translation_factory(u"+%s"),
+    en = _op_translation_factory(u"+%s")
+)
+
+def _global_search_languages(expr):
+    return either(map(translate_locale, expr.languages))
+
+def _list_op_translation_factory(format, join):
+
+    def list_op_translation(instance, **kwargs):
+        rel = instance.operands[0]
+        items = instance.operands[1]
+
+        if isinstance(items, Constant):
+            items = items.value
+
+        item_translator = getattr(rel, "translate_value", translations)
+
+        return format % (
+            translations(rel, **kwargs),
+            join(
+                item_translator(item, **kwargs)
+                for item in items
+            )
+        )
+
+    return list_op_translation
+
+translations.define(
+    "cocktail.schema.expressions.InclusionExpression.instance",
+    ca = _list_op_translation_factory(u"%s és %s", either),
+    es = _list_op_translation_factory(u"%s es %s", either),
+    en = _list_op_translation_factory(u"%s is one of %s", either)
+)
+
+translations.define(
+    "cocktail.schema.expressions.ExclusionExpression.instance",
+    ca = _list_op_translation_factory(u"%s no és %s", either),
+    es = _list_op_translation_factory(u"%s no es %s", either),
+    en = _list_op_translation_factory(u"%s is not %s", either)
+)
+
+translations.define(
+    "cocktail.schema.expressions.ContainsExpression.instance",
+    ca = _op_translation_factory(u"%s conté %s"),
+    es = _op_translation_factory(u"%s contiene %s"),
+    en = _op_translation_factory(u"%s contains %s")
+)
+
+translations.define(
+    "cocktail.schema.expressions.MatchExpression.instance",
+    ca = _op_translation_factory(u"%s passa l'expressió regular %s"),
+    es = _op_translation_factory(u"%s pasa la expresión regular %s"),
+    en = _op_translation_factory(u"%s matches regular expression %s")
+)
+
+translations.define(
+    "cocktail.schema.expressions.AnyExpression.instance",
+    ca = lambda instance, **kwargs:
+        u"té %s" % translations(instance.relation, **kwargs)
+        + (
+            u" que compleixen (%s)" % u", ".join(
+                translations(filter, **kwargs)
+                for filter in instance.filters
+            )
+            if instance.filters else ""
+        ),
+    es = lambda instance, **kwargs:
+        u"tiene %s" % translations(instance.relation, **kwargs)
+        + (
+            u" que cumplen (%s)" % u", ".join(
+                translations(filter, **kwargs)
+                for filter in instance.filters
+            )
+            if instance.filters else ""
+        ),
+    en = lambda instance, **kwargs:
+        u"has %s" % translations(instance.relation, **kwargs)
+        + (
+            u" matching (%s)" % u", ".join(
+                translations(filter, **kwargs)
+                for filter in instance.filters
+            )
+            if instance.filters else ""
+        )
+)
+
+translations.define(
+    "cocktail.schema.expressions.AllExpression.instance",
+    ca = lambda instance, **kwargs:
+        u"%s compleixen (%s)" % (
+            translations(instance.relation, **kwargs),
+            u", ".join(
+                translations(filter, **kwargs)
+                for filter in instance.filters
+            )
+        ),
+    es = lambda instance, **kwargs:
+        u"%s cumplen (%s)" % (
+            translations(instance.relation, **kwargs),
+            u", ".join(
+                translations(filter, **kwargs)
+                for filter in instance.filters
+            )
+        ),
+    en = lambda instance, **kwargs:
+        u"%s match (%s)" % (
+            translations(instance.relation, **kwargs),
+            u", ".join(
+                translations(filter, **kwargs)
+                for filter in instance.filters
+            )
+        )
+)
+
+translations.define(
+    "cocktail.schema.expressions.AllExpression.instance",
+    ca = lambda instance, **kwargs:
+        u"%s compleix (%s)" % (
+            translations(instance.relation, **kwargs),
+            u", ".join(
+                translations(filter, **kwargs)
+                for filter in instance.filters
+            )
+        ),
+    es = lambda instance, **kwargs:
+        u"%s cumple (%s)" % (
+            translations(instance.relation, **kwargs),
+            u", ".join(
+                translations(filter, **kwargs)
+                for filter in instance.filters
+            )
+        ),
+    en = lambda instance, **kwargs:
+        u"%s matches (%s)" % (
+            translations(instance.relation, **kwargs),
+            u", ".join(
+                translations(filter, **kwargs)
+                for filter in instance.filters
+            )
+        )
+)
+
+translations.define(
+    "cocktail.schema.expressions.RangeIntersectionExpression.instance",
+    ca = _op_translation_factory(
+        u"(%s, %s) coincideix amb l'interval (%s, %s)"
+    ),
+    es = _op_translation_factory(
+        u"(%s, %s) coincide con el intervalo (%s, %s)"
+    ),
+    en = _op_translation_factory(
+        u"(%s, %s) intersects with range (%s, %s)"
+    )
+)
+
+translations.define(
+    "cocktail.schema.expressions.IsInstanceExpression.instance",
+    ca = _op_translation_factory(u"%s és de tipus %s"),
+    es = _op_translation_factory(u"%s es de tipo %s"),
+    en = _op_translation_factory(u"%s is instance of %s")
+)
+
+translations.define(
+    "cocktail.schema.expressions.IsInstanceExpression.instance",
+    ca = _op_translation_factory(u"%s no és de tipus %s"),
+    es = _op_translation_factory(u"%s no es de tipo %s"),
+    en = _op_translation_factory(u"%s is not instance of %s")
+)
+
+translations.define(
+    "cocktail.schema.expressions.DescendsFromExpression.instance",
+    ca = _op_translation_factory(u"%s descendeix de %s"),
+    es = _op_translation_factory(u"%s desciende de %s"),
+    en = _op_translation_factory(u"%s descends from %s")
+)
+@end
+
+[cocktail.schema.expressions]
+
+    [SelfExpression.instance]
+    ca: l'element avaluat
+    es: el elemento evaluado
+    en: the evaluated item
+
+    [GlobalSearchExpression.instance(expr)]
+    ca: conté les paraules "${expr.search_string}" en ${_global_search_languages(expr)}
+    es: contiene las palabras "${expr.search_string}" en ${_global_search_languages(expr)}
+    en: contains the words "${expr.search_string}" in ${_global_search_languages(expr)}
+

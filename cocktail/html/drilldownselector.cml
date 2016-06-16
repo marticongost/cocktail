@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<py:cocktail.html.RadioSelector
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:py="http://www.whads.com/ns/cocktail/templates">
+
+    <?py-class
+    levels = []
+    ?>
+
+    <?resource cocktail://scripts/xregexp.js ?>
+    <?resource cocktail://scripts/searchable.js ?>
+    <?resource cocktail://scripts/drilldownselector.js ?>
+
+    <?py
+    self.levels = list(self.levels)
+    ?>
+
+    <py:ready>
+        <?py
+        self.set_client_param("levels", self.levels)
+        ?>
+    </py:ready>
+
+</py:cocktail.html.RadioSelector>
+

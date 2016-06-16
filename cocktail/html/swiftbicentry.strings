@@ -1,0 +1,41 @@
+
+[cocktail.html.SWIFTBICEntry]
+
+    [swiftbic_explanation]
+
+        [summary]
+        ca: Què és el BIC?
+        es: ¿Qué es el BIC?
+        en: About BIC codes
+
+        [detail]
+        ca:
+            <p>
+                BIC és un format internacional per identificar entitats
+                bancàries. A vegades també s'anomena <em>codi SWIFT</em>.
+                Normalment, <strong>el codi BIC apareix a la llibreta o a extractes
+                bancaris</strong>. En cas contrari, posi's en contacte amb
+                l'entitat bancària.
+            </p>
+        es:
+            <p>
+                BIC es un formato internacional para identificar entidades
+                bancarias. A veces también se conoce como <em>código SWIFT</em>.
+                Normalmente <strong>el código BIC aparece en la libreta o en
+                extractos bancarios</strong>. De no ser así, póngase en contacto
+                la entidad bancaria.
+            </p>
+        en:
+            <p>
+                BIC is an international format used to specify financial and
+                banking entities. The term <em>SWIFT code</em> is sometimes used
+                interchangeably. Usually <strong>BIC codes can be found on
+                bankbooks or on bank statements</strong>. Otherwise, please contact
+                the bank to request it.
+            </p>
+
+    [swiftbic_explanation_dialog_close_button]
+    ca: Tancar
+    es: Cerrar
+    en: Close
+

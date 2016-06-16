@@ -11,7 +11,7 @@ from cocktail.html import templates
 class CollectionEditor(Element):
 
     def _build(self):
-        self.add_resource("cocktail://scripts/CollectionEditor.js")
+        self.add_resource("cocktail://scripts/collectioneditor.js")
         self.entries = self.create_entries()
         self.append(self.entries)
         self.add_button = self.create_add_button()

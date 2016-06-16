@@ -698,7 +698,7 @@ class OrderTestCase(TempStorageMixin, TestCase):
 
     def test_default_sorting_for_related_objects(self):
 
-        from cocktail.translations import set_language
+        from cocktail.translations import set_language, translations
         from cocktail import schema
         from cocktail.persistence import PersistentObject
 
@@ -710,8 +710,9 @@ class OrderTestCase(TempStorageMixin, TestCase):
             last_name = schema.String()
             movies = schema.Collection(bidirectional = True)
 
-            def __translate__(self, language, **kwargs):
-                return (self.last_name, self.first_name)
+        @translations.instances_of(Actor)
+        def translate_actor(self, **kwargs):
+            return self.last_name + ", " + self.first_name
 
         class Movie(PersistentObject):
 
@@ -748,9 +749,6 @@ class OrderTestCase(TempStorageMixin, TestCase):
         class Review(PersistentObject):
             points = schema.Integer()
             project = schema.Reference(bidirectional = True)
-
-            def __translate__(self, language, **kwargs):
-                return str(self.points)
 
             def get_ordering_key(self):
                 return self.points

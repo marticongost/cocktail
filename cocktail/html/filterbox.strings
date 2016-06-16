@@ -1,0 +1,28 @@
+
+[cocktail.html.FilterBox]
+
+    [add_filter]
+    ca: Afegir filtre
+    es: Añadir filtro
+    en: Add filter
+
+    [remove_filters]
+    ca: Treure filtres
+    es: Quitar filtros
+    en: Remove filters
+
+    [delete_button]
+    ca: Treure el filtre
+    es: Quitar el filtro
+    en: Remove this filter
+
+    [discard_filters]
+    ca: Descartar
+    es: Descartar
+    en: Discard
+
+    [apply_filters]
+    ca: Cercar
+    es: Buscar
+    en: Search
+

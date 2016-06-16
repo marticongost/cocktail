@@ -1,0 +1,63 @@
+
+[cocktail.html.CollectionView]
+
+    [search]
+    ca: Cerca
+    es: Búsqueda
+    en: Search
+
+    [search_results]
+    ca: Resultats de la cerca:
+    es: Resultados de la búsqueda:
+    en: Search results:
+
+    [no_search_results]
+    ca: La cerca no conté cap element.
+    es: La búsqueda no contiene ningún elemento.
+    en: The search has no matches.
+
+    [no_results]
+    ca: La vista activa no conté cap element.
+    es: La vista activa no contiene ningún elemento.
+    en: The current view has no matching items.
+
+    [members_dropdown]
+    ca: Camps
+    es: Campos
+    en: Fields
+
+        [shortcut]
+        ca: c
+        es: c
+        en: f
+
+    [languages_dropdown]
+    ca: Idiomes
+    es: Idiomas
+    en: Languages
+
+        [shortcut]
+        ca: i
+        es: i
+        en: l
+
+    [page_size(size)]
+    ca: ${size} resultats per pàgina
+    es: ${size} resultados por pàgina
+    en: ${size} results per page
+
+    [selection_options]
+    ca: Seleccionar:
+    es: Seleccionar:
+    en: Select:
+
+    [select_all]
+    ca: Tots
+    es: Todos
+    en: All
+
+    [clear_selection]
+    ca: Cap
+    es: Ninguno
+    en: None
+

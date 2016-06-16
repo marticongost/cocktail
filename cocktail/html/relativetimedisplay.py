@@ -3,7 +3,7 @@ u"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
-from cocktail.translations.strings import DATE_STYLE_ABBR
+from cocktail.translations import DATE_STYLE_ABBR
 from cocktail import schema
 from cocktail.html.valuedisplay import ValueDisplay
 

@@ -21,7 +21,7 @@ class MappingEditor(Element):
     def _ready(self):
 
         if not self.fixed_entries:
-            self.add_resource("cocktail://scripts/MappingEditor.js")
+            self.add_resource("cocktail://scripts/mappingeditor.js")
 
         if self.ui_generator:
             self.keys_ui_generator.base_ui_generators = [self.ui_generator]

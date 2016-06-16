@@ -1,0 +1,125 @@
+
+@init
+import re
+from decimal import Decimal
+
+def _thousands_parser(thousands_sep, fraction_sep):
+
+    expr = re.compile(r"^[-+]?((\d{1,3}(\%s\d{3})*)|\d+)(\%s\d+)?$"
+                    % (thousands_sep, fraction_sep))
+
+    def parser(value):
+
+        if not expr.match(value):
+            raise ValueError("Invalid decimal literal: %s" % value)
+
+        value = value.replace(thousands_sep, "")
+
+        if fraction_sep != ".":
+            value = value.replace(fraction_sep, ".")
+
+        return Decimal(value)
+
+    return parser
+
+def _serialize_thousands(value, thousands_sep, fraction_sep):
+
+    sign, num, precision = value.as_tuple()
+    num = list(num)
+    if abs(precision) > len(num):
+        num = [0] * (abs(precision) - len(num)) + num
+    pos = len(num) + precision
+    integer = num[:pos]
+    fraction = num[pos:]
+
+    blocks = []
+
+    while integer:
+        blocks.insert(0, "".join(str(i) for i in integer[-3:]))
+        integer = integer[:-3]
+
+    if blocks:
+        serialized_value = thousands_sep.join(blocks)
+    else:
+        serialized_value = "0"
+
+    if fraction:
+        serialized_value += fraction_sep \
+                          + str("".join(str(i) for i in fraction))
+
+    if sign:
+        serialized_value = "-" + serialized_value
+
+    return serialized_value
+
+translations.define("cocktail.decimal_parser",
+    ca = lambda: _thousands_parser(".", ","),
+    es = lambda: _thousands_parser(".", ","),
+    en = lambda: _thousands_parser(",", "."),
+    de = lambda: _thousands_parser(".", ","),
+    fr = lambda: _thousands_parser(".", ","),
+    pt = lambda: _thousands_parser(".", ",")
+)
+
+translations.define("decimal.Decimal.instance",
+    ca = lambda instance: _serialize_thousands(instance, ".", ","),
+    es = lambda instance: _serialize_thousands(instance, ".", ","),
+    en = lambda instance: _serialize_thousands(instance, ",", "."),
+    de = lambda instance: _serialize_thousands(instance, ".", ","),
+    fr = lambda instance: _serialize_thousands(instance, ".", ","),
+    pt = lambda instance: _serialize_thousands(instance, ".", ",")
+)
+@end
+
+[bool.instance(value)]
+@switch value
+
+    [true]
+    @case True
+    ca: Sí
+    es: Sí
+    en: Yes
+
+    [false]
+    @case False
+    ca: No
+    es: No
+    en: No
+
+[Exception.instance(error)]
+ca: Error inesperat (${error.__class__.__name__}: ${error})
+es: Error inesperado (${error.__class__.__name__}: ${error})
+en: Unexpected error (${error.__class__.__name__}: ${error})
+
+[cocktail]
+
+    [stock]
+
+        [submit]
+        ca: Confirmar
+        es: Confirmar
+        en: Submit
+        pt: Enviar
+        de: Abschicken
+        pl: Zatwierdź
+        nl: Bevestig
+
+        [accept]
+        ca: Acceptar
+        es: Aceptar
+        en: Accept
+
+        [cancel]
+        ca: Cancel·lar
+        es: Cancelar
+        en: Cancel
+
+        [select]
+        ca: Seleccionar
+        es: Seleccionar
+        en: Select
+
+    [ordinal(number)]
+    en: ${number}${{1: "st", 2: "nd", 3: "rd"}.get(number % (10 < number % 100 < 14 or 10), "th")}
+    fr: ${number}${"er" if number == 1 else ''}
+

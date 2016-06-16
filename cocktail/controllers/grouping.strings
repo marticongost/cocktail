@@ -1,0 +1,63 @@
+
+@init
+from cocktail.translations import month_name, DATE_STYLE_TEXT
+@end
+
+[cocktail.controllers.grouping]
+
+    [MemberGrouping]
+
+        [ascending]
+        ca: Ascendent
+        es: Ascendiente
+        en: Ascending
+
+        [descending]
+        ca: Descendent
+        es: Descendiente
+        en: Descending
+
+        [default_variant]
+        ca: Per valor
+        es: Por valor
+        en: By value
+
+    [DateGrouping]
+
+        [variants]
+
+            [year]
+            ca: Per any
+            es: Por año
+            en: By year
+
+            [month]
+            ca: Per mes
+            es: Por mes
+            en: By month
+
+            [day]
+            ca: Per dia
+            es: Por día
+            en: By day
+
+            [hour]
+            ca: Per hora
+            es: Por hora
+            en: By hour
+
+        [value(grouping, value)]
+        @switch grouping.variant
+
+            [year]
+            @case "year"
+            *: value.year
+
+            [month]
+            @case "month"
+            *: ${month_name(value)} ${value.year}
+
+            [default]
+            @default
+            *: t{value, style = DATE_STYLE_TEXT}
+

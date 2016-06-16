@@ -41,19 +41,6 @@ class Grouping(object):
     def __repr__(self):
         return "%s(key = %r)" % (self.__class__.__name__, self.key)
 
-    def __translate__(self, language, **kwargs):
-
-        if self.__parent_group:
-            parent_translation = self.__parent_group.get_child_group_label(
-                self,
-                language,
-                **kwargs
-            )
-            if parent_translation:
-                return parent_translation
-
-        return self.get_group_label(language, **kwargs)
-
     def get_group_label(self, language, **kwargs):
         return translations(self.key, language)
 
@@ -87,6 +74,10 @@ class Grouping(object):
             self.__items.insert(item)
         else:
             self.__items.append(item)
+
+    @property
+    def parent_group(self):
+        return self.__parent_group
 
     @property
     def groups(self):
@@ -194,4 +185,20 @@ class GroupByMember(Grouping):
 
     def get_sorting_key(self):
         return normalize(translations(self))
+
+
+# Translation
+#------------------------------------------------------------------------------
+@translations.instances_of(Grouping)
+def translate_grouping(grouping, **kwargs):
+
+    if grouping.parent_group:
+        parent_translation = grouping.parent_group.get_child_group_label(
+            grouping,
+            **kwargs
+        )
+        if parent_translation:
+            return parent_translation
+
+    return grouping.get_group_label(language, **kwargs)
 

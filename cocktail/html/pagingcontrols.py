@@ -62,18 +62,18 @@ class PagingControls(Element):
             if self.page_size_editable:
                 self.page_size_control = self.create_page_size_control()
                 self.page_size_control.place_after(self.pager)
-
-                self.page_size_control.input["value"] = \
-                    str(self.page_size)
+                self.page_size_control.input["value"] = str(self.page_size)
 
             # Item count
-            self.item_count.append(translations("Item count",
-                page_range = (
-                    1 + self.page * self.page_size,
-                    min(subset_count, (self.page + 1) * self.page_size)
-                ),
-                item_count = subset_count
-            ))
+            self.item_count.append(
+                translations("cocktail.html.PagingControls.item_count",
+                    page_range = (
+                        1 + self.page * self.page_size,
+                        min(subset_count, (self.page + 1) * self.page_size)
+                    ),
+                    total_count = subset_count
+                )
+            )
         else:
             self.visible = False
 
@@ -85,7 +85,7 @@ class PagingControls(Element):
 
         control = Element()
         control.add_class("page_size")
-        control.append(translations("Results per page"))
+        control.append(translations("cocktail.html.PagingControls.results_per_page"))
 
         control.input = Element("input", type = "text")
         control.input["name"] = self.page_size_param_name

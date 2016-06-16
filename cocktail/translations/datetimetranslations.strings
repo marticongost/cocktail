@@ -1,0 +1,346 @@
+
+[cocktail]
+
+    [date_format]
+    ca: %d/%m/%Y
+    es: %d/%m/%Y
+    en: %m/%d/%Y
+    de: %d/%m/%Y
+    fr: %d/%m/%Y
+    pt: %d/%m/%Y
+
+    [jquery_date_format]
+    ca: dd/mm/yy
+    es: dd/mm/yy
+    en: mm/dd/yy
+    fr: dd/mm/yy
+
+    [months]
+
+        [1]
+            [name]
+            ca: Gener
+            es: Enero
+            en: January
+            fr: Janvier
+            pt: Janeiro
+            de: Januar
+            pl: Styczeń
+            nl: Januari
+
+            [abbr]
+            ca: Gen
+            es: Ene
+            en: Jan
+            fr: Jan
+            pt: Jan
+
+        [2]
+            [name]
+            ca: Febrer
+            es: Febrero
+            en: February
+            fr: Février
+            pt: Fevereiro
+            de: Februar
+            pl: Luty
+            nl: februari
+
+            [abbr]
+            ca: Feb
+            es: Feb
+            en: Feb
+            fr: Fév
+            pt: Fev
+
+        [3]
+            [name]
+            ca: Març
+            es: Marzo
+            en: March
+            fr: Mars
+            pt: Março
+            de: März
+            pl: Marzec
+            nl: maart
+
+            [abbr]
+            ca: Mar
+            es: Mar
+            en: Mar
+            fr: Mar
+            pt: Mar
+
+        [4]
+            [name]
+            ca: Abril
+            es: Abril
+            en: April
+            fr: Avril
+            pt: Abril
+            de: April
+            pl: Kwiecień
+            nl: april
+
+            [abbr]
+            ca: Abr
+            es: Abr
+            en: Apr
+            fr: Avr
+            pt: Abr
+
+        [5]
+            [name]
+            ca: Maig
+            es: Mayo
+            en: May
+            fr: Mai
+            pt: Maio
+            de: Mai
+            pl: Maj
+            nl: mei
+
+            [abbr]
+            ca: Mai
+            es: May
+            en: May
+            fr: Mai
+            pt: Mai
+
+        [6]
+            [name]
+            ca: Juny
+            es: Junio
+            en: June
+            fr: Juin
+            pt: Junho
+            de: Juni
+            pl: Czerwiec
+            nl: juni
+
+            [abbr]
+            ca: Jun
+            es: Jun
+            en: Jun
+            fr: Jun
+            pt: Jun
+
+        [7]
+            [name]
+            ca: Juliol
+            es: Julio
+            en: July
+            fr: Juillet
+            pt: Julho
+            de: Juli
+            pl: Lipiec
+            nl: juli
+
+            [abbr]
+            ca: Jul
+            es: Jul
+            en: Jul
+            fr: Jul
+            pt: Jul
+
+        [8]
+            [name]
+            ca: Agost
+            es: Agosto
+            en: August
+            fr: Août
+            pt: Agosto
+            de: August
+            pl: Sierpień
+            nl: augustus
+
+            [abbr]
+            ca: Ago
+            es: Ago
+            en: Aug
+            fr: Aoû
+            pt: Ago
+
+        [9]
+            [name]
+            ca: Setembre
+            es: Septiembre
+            en: September
+            fr: Septembre
+            pt: Setembro
+            de: September
+            pl: Wrzesień
+            nl: september
+
+            [abbr]
+            ca: Set
+            es: Sep
+            en: Sep
+            fr: Sep
+            pt: Set
+
+        [10]
+            [name]
+            ca: Octubre
+            es: Octubre
+            en: October
+            fr: Octobre
+            pt: Outubro
+            de: Oktober
+            pl: Październik
+            nl: oktober
+
+            [abbr]
+            ca: Oct
+            es: Oct
+            en: Oct
+            fr: Oct
+            pt: Out
+
+        [11]
+            [name]
+            ca: Novembre
+            es: Noviembre
+            en: November
+            fr: Novembre
+            pt: Novembro
+            de: November
+            pl: Listopad
+            nl: november
+
+            [abbr]
+            ca: Nov
+            es: Nov
+            en: Nov
+            fr: Nov
+            pt: Nov
+
+        [12]
+            [name]
+            ca: Desembre
+            es: Diciembre
+            en: December
+            fr: Décembre
+            pt: Dezembro
+            de: Dezember
+            pl: Grudzień
+            nl: december
+
+            [abbr]
+            ca: Des
+            es: Dic
+            en: Dec
+            fr: Déc
+            pt: Dez
+
+    [weekdays]
+
+        [0]
+            [name]
+            ca: Dilluns
+            es: Lunes
+            en: Monday
+            fr: Lundi
+
+            [abbr]
+            ca: Dl
+            es: Lun
+            en: Mon
+            fr: Lun
+
+        [1]
+            [name]
+            ca: Dimarts
+            es: Martes
+            en: Tuesday
+            fr: Mardi
+
+            [abbr]
+            ca: Dt
+            es: Mar
+            en: Tue
+            fr: Mar
+
+        [2]
+            [name]
+            ca: Dimecres
+            es: Miércoles
+            en: Wednesday
+            fr: Mercredi
+
+            [abbr]
+            ca: Dc
+            es: Mié
+            en: Wed
+            fr: Mer
+
+        [3]
+            [name]
+            ca: Dijous
+            es: Jueves
+            en: Thursday
+            fr: Jeudi
+
+            [abbr]
+            ca: Dj
+            es: Jue
+            en: Thu
+            fr: Jeu
+
+        [4]
+            [name]
+            ca: Divendres
+            es: Viernes
+            en: Friday
+            fr: Vendredi
+
+            [abbr]
+            ca: Dv
+            es: Vie
+            en: Fri
+            fr: Ven
+
+        [5]
+            [name]
+            ca: Dissabte
+            es: Sábado
+            en: Saturday
+            fr: Samedi
+
+            [abbr]
+            ca: Ds
+            es: Sáb
+            en: Sat
+            fr: Sam
+
+        [6]
+            [name]
+            ca: Diumenge
+            es: Domingo
+            en: Sunday
+            fr: Dimanche
+
+            [abbr]
+            ca: Dg
+            es: Dom
+            en: Sun
+            fr: Dim
+
+    [today]
+    ca: Avui
+    es: Hoy
+    en: Today
+    fr: Aujourd'hui
+
+    [yesterday]
+    ca: Ahir
+    es: Ayer
+    en: Yesterday
+    fr: Hier
+
+    [tomorrow]
+    ca: Demà
+    es: Mañana
+    en: Tomorrow
+    fr: Demain
+

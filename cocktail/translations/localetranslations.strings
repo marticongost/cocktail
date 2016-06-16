@@ -1,0 +1,116 @@
+
+[cocktail]
+
+    [locales]
+
+        [ca]
+        ca: Català
+        es: Catalán
+        en: Catalan
+
+        [es]
+        ca: Castellà
+        es: Español
+        en: Spanish
+
+        [en]
+        ca: Anglès
+        es: Inglés
+        en: English
+
+        [fr]
+        ca: Francès
+        es: Francés
+        en: French
+        fr: Français
+
+        [de]
+        ca: Alemany
+        es: Alemán
+        en: German
+        de: Deutsch
+
+        [pt]
+        ca: Portuguès
+        es: Portugués
+        en: Portuguese
+        pt: Português
+
+        [it]
+        ca: Italià
+        es: Italiano
+        en: Italian
+        it: Italiano
+
+        [ru]
+        ca: Rus
+        es: Ruso
+        en: Russian
+        ru: Ру́сский язы́к
+
+        [pl]
+        ca: Polac
+        es: Polaco
+        en: Polish
+        pl: Polski
+
+        [nl]
+        ca: Holandès
+        es: Holandés
+        en: Dutch
+        nl: Nederlands
+
+        [tr]
+        ca: Turc
+        es: Turco
+        en: Turkish
+        tr: Türkçe
+
+        [ko]
+        ca: Coreà
+        es: Coreano
+        en: Korean
+        ko: Hanguk
+
+        [ja]
+        ca: Japonès
+        es: Japonés
+        en: Japanese
+        jp: 日本語
+
+        [zh]
+        ca: Xinès
+        es: Chino
+        en: Chinese
+        cn: 汉语
+
+        [cs]
+        ca: Txec
+        es: Checo
+        en: Czech
+
+        [hu]
+        ca: Húngar
+        es: Húngaro
+        en: Hungarian
+
+        [el]
+        ca: Grec
+        es: Griego
+        en: Greek
+
+        [no]
+        ca: Norueg
+        es: Noruego
+        en: Norwegian
+
+        [sv]
+        ca: Suec
+        es: Sueco
+        en: Swedish
+
+        [ro]
+        ca: Romanès
+        es: Rumano
+        en: Romanian
+

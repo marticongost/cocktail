@@ -213,7 +213,10 @@ class TemplateLoader(object):
             exist.
         """
         try:
-            path = resource_filename(pkg_name, class_name + self.extension)
+            path = resource_filename(
+                pkg_name,
+                class_name.lower() + self.extension
+            )
         except ImportError:
             path = None
 

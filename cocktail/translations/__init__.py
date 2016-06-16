@@ -7,9 +7,8 @@ Definition of multi-language string catalogs.
 @organization:	Whads/Accent SL
 @since:			July 2008
 """
-from cocktail.translations.translation import (
-    TranslationsRepository,
-    Translation,
+from .translation import (
+    translations,
     language_context,
     get_language,
     set_language,
@@ -21,13 +20,21 @@ from cocktail.translations.translation import (
     clear_fallback_languages,
     set_fallback_languages,
     add_fallback_language,
-    NoActiveLanguageError,
-    translations
+    NoActiveLanguageError
 )
-from cocktail.translations.wordprocessing import words
-from cocktail.translations.strings import (
+from .wordprocessing import words
+
+translations.load_bundle("cocktail.translations.package")
+
+from .datetimetranslations import (
     DATE_STYLE_NUMBERS,
     DATE_STYLE_ABBR,
-    DATE_STYLE_TEXT
+    DATE_STYLE_TEXT,
+    month_name,
+    month_abbr,
+    weekday_name,
+    weekday_abbr,
+    translate_date_range
 )
+from .localetranslations import translate_locale, translate_locale_component
 
