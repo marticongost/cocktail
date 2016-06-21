@@ -35,8 +35,6 @@ class Reference(RelationMember):
             return RelationMember.translate_value(
                 self, value, language, **kwargs
             )
-        elif isinstance(value, Schema) and value.name:
-            return translations(value.name, language, **kwargs)
         else:
             return translations(value, language, **kwargs)
 

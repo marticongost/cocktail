@@ -17,7 +17,8 @@ from cocktail.html.datadisplay import (
 from cocktail.translations import (
     translations,
     get_language,
-    language_context
+    language_context,
+    translate_locale
 )
 from cocktail.schema import Collection, Mapping, get
 from cocktail.schema.expressions import (
@@ -88,7 +89,7 @@ class Table(Element, CollectionDisplay):
             self._grouping_member_translation = \
                 u"(" + translations(self.grouping.member) + u")"
             self._remove_grouping_translation = \
-                translations("cocktail.html.Table remove grouping")
+                translations("cocktail.html.Table.remove_grouping")
 
         self._fill_head()
         self._fill_body()
@@ -380,7 +381,7 @@ class Table(Element, CollectionDisplay):
     def create_translation_label(self, language):
         label = Element("span")
         label.add_class("translation")
-        label.append(u"(" + translations("locale", locale = language) + u")")
+        label.append(u"(" + translate_locale(language) + u")")
         return label
 
     def add_header_ui(self, header, column, language):

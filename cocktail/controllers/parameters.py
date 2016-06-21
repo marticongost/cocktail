@@ -145,7 +145,7 @@ schema.Float.parse_request_value = parse_float
 def parse_decimal(self, reader, value):
 
     if value is not None:
-        parser = translations("Decimal parser")
+        parser = translations("cocktail.decimal_parser")
 
         try:
             value = parser(value)
@@ -198,7 +198,7 @@ except ImportError:
 def parse_date(self, reader, value):
 
     if value is not None:
-        format = self.request_date_format or translations("date format")
+        format = self.request_date_format or translations("cocktail.date_format")
 
         try:
             value = datetime.date(*time.strptime(value[:10], format)[0:3])
@@ -208,7 +208,7 @@ def parse_date(self, reader, value):
     return value
 
 def serialize_date(self, value):
-    format = self.request_date_format or translations("date format")
+    format = self.request_date_format or translations("cocktail.date_format")
     return value.strftime(format)
 
 Date.request_date_format = None
@@ -218,7 +218,7 @@ Date.serialize_request_value = serialize_date
 def parse_datetime(self, reader, value):
 
     if value is not None:
-        date_format = self.request_date_format or translations("date format")
+        date_format = self.request_date_format or translations("cocktail.date_format")
         time_format = "%H:%M:%S"
         try:
             value = datetime.datetime.strptime(
@@ -234,7 +234,7 @@ def parse_datetime(self, reader, value):
     return value
 
 def serialize_datetime(self, value):
-    format = (self.request_date_format or translations("date format"))
+    format = (self.request_date_format or translations("cocktail.date_format"))
     format += " %H:%M:%S"
     return value.strftime(format)
 

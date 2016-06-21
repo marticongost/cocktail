@@ -9,7 +9,8 @@ Provides classes to describe members that take dates and times as values.
 """
 import datetime
 from calendar import monthrange
-from cocktail.schema.member import Member
+from cocktail.translations import translations
+from cocktail.schema.member import Member, translate_member
 from cocktail.schema.schema import Schema
 from cocktail.schema.rangedmember import RangedMember
 from cocktail.schema.schemanumbers import Integer
@@ -132,4 +133,7 @@ class Date(BaseDateTime):
 class Time(BaseDateTime):
     type = datetime.time
     _is_time = True
+
+
+translations.instances_of(BaseDateTime)(translate_member)
 

@@ -3,6 +3,7 @@ u"""Helper functions for translating strings into multiple languages.
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
+from decimal import Decimal
 from cocktail.modeling import ListWrapper
 from cocktail.translations.translation import get_language
 
@@ -62,8 +63,15 @@ def either(sequence):
     return either_func(sequence)
 
 def plural2(count, singular, plural):
+
+    if not isinstance(count, (int, float, Decimal)):
+        count = len(count)
+
     if count == 1:
         return singular
     else:
-        return plural
+        try:
+            return plural % count
+        except TypeError:
+            return plural
 

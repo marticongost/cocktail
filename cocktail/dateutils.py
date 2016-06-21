@@ -7,6 +7,7 @@
 @since:			February 2010
 """
 import datetime
+from cocktail.translations import translations, month_name, month_abbr
 
 HOUR_SECONDS = 60 * 60
 DAY_SECONDS = HOUR_SECONDS * 24
@@ -101,4 +102,12 @@ class CalendarPage(tuple):
 
     def time_range(self):
         return (self.start_time(), (self + 1).start_time())
+
+
+@translations.instances_of(CalendarPage)
+def _translate_calendar_page(page, abbreviated = False):
+    return u"%s %d" % (
+        (month_abbr if abbreviated else month_name)(page[1]),
+        page[0]
+    )
 

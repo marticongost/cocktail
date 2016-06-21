@@ -666,12 +666,16 @@ class Schema(Member):
 
     def translate_group(self, group):
 
+        if group:
+            suffix = ".groups." + group
+        else:
+            suffix = ".generic_group"
+
         def get_label(schema):
 
             if schema.name:
                 label = translations(
-                    schema.name
-                    + (("." + group) if group else "-generic_group")
+                    getattr(schema, "full_name", schema.name) + suffix
                 )
                 if label:
                     return label
@@ -732,4 +736,20 @@ class Schema(Member):
                 else:
                     value = get(obj, member)
                     extractor.extract(member, value)
+
+
+@translations.instances_of(Schema)
+def translate_schema(schema, **kwargs):
+
+    translation = None
+
+    schema_name = getattr(schema, "full_name", schema.name)
+    if schema_name:
+        key = schema_name + kwargs.get("suffix", "")
+        translation = translations(key, **kwargs)
+
+    if not translation and schema.source_member:
+        translation = translations(schema.source_member, **kwargs)
+
+    return translation
 

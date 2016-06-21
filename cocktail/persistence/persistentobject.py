@@ -40,6 +40,8 @@ from cocktail.persistence.persistentrelations import (
     PersistentRelationMapping
 )
 
+translations.load_bundle("cocktail.persistence.persistentobject")
+
 # Add an extension property to allow relations to block a delete operation if
 # the relation is not empty
 schema.RelationMember.block_delete = False

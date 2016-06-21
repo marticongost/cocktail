@@ -76,7 +76,7 @@ def normalize_indentation(string):
         if not indentation and not stripped_line:
             continue
         else:
-            if not indentation:
+            if indentation is None:
                 indentation = line[:len(line) - len(stripped_line)]
             elif not line.startswith(indentation) and stripped_line:
                 raise ValueError(

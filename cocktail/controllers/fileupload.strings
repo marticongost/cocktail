@@ -1,0 +1,12 @@
+
+@init
+from cocktail.memoryutils import format_bytes
+@end
+
+[cocktail.controllers.fileupload]
+
+    [FileSizeTooBigError.instance(error)]
+    ca: El fitxer ${error.member_desc()} és massa gran: la mida màxima permesa és de ${format_bytes(error.max_size)}
+    es: El fichero ${error.member_desc()} es demasiado grande: el tamaño máximo permitido es de ${format_bytes(error.max_size)}
+    en: ${error.member_desc()} is too big: the maximum allowed size is ${format_bytes(error.max_size)}
+

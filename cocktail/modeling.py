@@ -29,6 +29,16 @@ def camel_to_underscore(name):
     s1 = _first_cap_re.sub(r'\1_\2', name)
     return _all_cap_re.sub(r'\1_\2', s1).lower()
 
+def arguments():
+    """Call within a function to obtain a tuple containing its args/kwargs."""
+    # Adapted from a script by Kelly Yancey
+    # http://kbyanc.blogspot.com.es/2007/07/python-aggregating-function-arguments.html
+    from inspect import getargvalues, stack
+    posname, kwname, args = getargvalues(stack()[1][0])[-3:]
+    posargs = args.pop(posname, [])
+    args.update(args.pop(kwname, []))
+    return posargs, args
+
 def overrides(source_method):
     """A decorator that helps preserving metada when overriding methods."""
     def decorator(override):

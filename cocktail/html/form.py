@@ -8,7 +8,7 @@ u"""
 """
 from cocktail.translations import get_language, language_context
 from cocktail.modeling import getter, ListWrapper
-from cocktail.translations import translations
+from cocktail.translations import translations, translate_locale
 from cocktail import schema
 from cocktail.persistence import PersistentObject
 from cocktail.controllers.fileupload import FileUpload
@@ -121,7 +121,7 @@ class Form(Element, DataDisplay):
         self.submit_button = Element("button")
         self.submit_button["value"] = "true"
         self.submit_button["type"] = "submit"
-        self.submit_button.append(translations("Submit"))
+        self.submit_button.append(translations("cocktail.stock.submit"))
         self.buttons.append(self.submit_button)
         self.default_button = self.submit_button
 
@@ -414,7 +414,7 @@ class Form(Element, DataDisplay):
     def create_language_label(self, member, language):
         label = Element("span")
         label.add_class("field_language")
-        text = translations("locale", locale = language)
+        text = translate_locale(language)
 
         if self.redundant_translation_labels:
             text = "(" + text + ")"

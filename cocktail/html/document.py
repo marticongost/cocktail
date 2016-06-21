@@ -267,10 +267,7 @@ class HTMLDocument(Element):
                 "".join(
                     "\t\tcocktail.setTranslation(%s, %s);\n" % (
                         dumps(key),
-                        dumps(translations[language][key])
-                            if language in translations
-                            and key in translations[language]
-                            else ""
+                        dumps(translations(key, language))
                     )
                     for key in self.metadata.client_translations
                 )

@@ -18,8 +18,8 @@ class TranslationsTestCase(TestCase):
         set_language(None)
 
     def test_returns_empty_string_for_undefined_key(self):
-        from cocktail.translations import TranslationsRepository
-        translations = TranslationsRepository()
+        from cocktail.translations.translation import Translations
+        translations = Translations()
         translations.define("parrot", es = u"Loro")
         assert translations("parrot", "en") == ""
 

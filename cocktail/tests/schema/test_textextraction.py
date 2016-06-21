@@ -94,20 +94,22 @@ class TextExtractionTestCase(TestCase):
         from cocktail import schema
         from cocktail.translations import translations
 
-        translations.define("Model.field3=icecream",
-            es = u"Helado",
-            en = u"Ice cream"
-        )
-
-        translations.define("Model.field3=pie",
-            es = u"Pastel",
-            en = u"Pie"
-        )
-
         class Model(schema.SchemaObject):
             field1 = schema.String()
             field2 = schema.String(translated = True)
             field3 = schema.String(enumeration = ["icecream", "pie"])
+
+        translations.define(
+            Model.full_name + ".members.field3.values.icecream",
+            es = u"Helado",
+            en = u"Ice cream"
+        )
+
+        translations.define(
+            Model.full_name + ".members.field3.values.pie",
+            es = u"Pastel",
+            en = u"Pie"
+        )
 
         obj = Model()
         obj.field1 = "Foobar"
@@ -125,18 +127,20 @@ class TextExtractionTestCase(TestCase):
         from cocktail import schema
         from cocktail.translations import translations
 
-        translations.define("Model1.field1=cat",
+        class Model1(schema.SchemaObject):
+            field1 = schema.String(enumeration = ["cat", "dog"])
+
+        translations.define(
+            Model1.full_name + ".members.field1.values.cat",
             es = u"Gato",
             en = u"Cat"
         )
 
-        translations.define("Model1.field1=dog",
+        translations.define(
+            Model1.full_name + ".members.field1.values.dog",
             es = u"Perro",
             en = u"Dog"
         )
-
-        class Model1(schema.SchemaObject):
-            field1 = schema.String(enumeration = ["cat", "dog"])
 
         obj1 = Model1()
 

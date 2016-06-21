@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:py="http://www.whads.com/ns/cocktail/templates">
+
+    <?resource cocktail://scripts/dropdownpanel.js ?>
+    <?resource cocktail://styles/dropdownpanel.css ?>
+
+    <button py:id="button" type="button">
+        <div py:id="label"></div>
+        <img
+            py:id="dropdown_arrow"
+            src="${normalize_resource_uri('cocktail://images/dropdown.png')}"
+            alt=""/>
+    </button>
+
+    <div py:id="panel_wrapper">
+        <div py:id="panel"></div>
+    </div>
+
+</div>
+
