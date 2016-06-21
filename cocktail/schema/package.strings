@@ -1,0 +1,13 @@
+
+[cocktail.schema]
+
+    [qualified_member(member)]
+    ca: t{member} ${ca_possessive(translations(member.schema))}
+    es: t{member} de t{member.schema}
+    en: t{member.schema} t{member}
+
+    [schemaobject.TranslationsMember.default_member_translation]
+    ca: Traduccions
+    es: Traducciones
+    en: Translations
+

@@ -108,6 +108,7 @@ class Member(Variable):
     translation = None
     translation_source = None
     translatable_enumeration = False
+    custom_translation_key = None
 
     # Wether the member is included in full text searches
     text_search = False
@@ -502,105 +503,50 @@ class Member(Variable):
             if enumeration:
                 return enumeration
 
-    def __translate__(self, language, qualified = False, **kwargs):
-        if self.schema:
-            if qualified:
-                return translations("cocktail.schema.Member qualified",
-                    member = self,
-                    language = language,
-                    **kwargs
-                )
-            else:
-                suffix = kwargs.get("suffix", "")
-
-                if self.schema.name:
-                    translation = translations(
-                        self.schema.name + "." + self.name + suffix,
-                        language,
-                        chain = self.source_member,
-                        **kwargs
-                    )
-                else:
-                    translation = None
-
-                if not translation:
-                    for cls in self.schema.__class__.__mro__:
-                        translation = translations(
-                            cls.__name__ + "." + self.name + suffix,
-                            language,
-                            chain = self.source_member,
-                            **kwargs
-                        )
-                        if translation:
-                            break
-
-                return translation
-
     def translate_value(self, value, language = None, **kwargs):
         if value is None:
             return translations(
                 self,
                 language = language,
-                suffix = "=none",
+                suffix = ".none",
                 **kwargs
             )
         elif value and self.translatable_enumeration and self.enumeration:
             return translations(
                 self,
                 language = language,
-                suffix = "=%s" % value
+                suffix = ".values.%s" % value
             )
         else:
             return unicode(value)
 
     def translate_error(self, error, language = None, **kwargs):
 
-        # Error translations can be overriden on a per-member basis
-        if self.schema and self.name:
+        for error_class in error.__class__.__mro__:
+
             try:
-                class_name = get_full_name(error.__class__)
+                error_class_name = get_full_name(error.__class__)
             except Exception, ex:
-                class_name = error.__class__.__name__
+                error_class_name = error.__class__.__name__
 
-            trans = translations(
-                "%s-error: %s" % (self.get_qualified_name(), class_name),
-                instance = error,
-                language = language,
-                **kwargs
+            error_translation = translations(
+                self,
+                suffix = ".errors." + error_class_name,
+                language = language
             )
-            if trans:
-                return trans
-
-        # If the member is a copy of another member, inherit its custom
-        # translations
-        if self.source_member:
-            return self.source_member.translate_error(
-                error,
-                language = language,
-                **kwargs
-            )
+            if error_translation:
+                return error_translation
 
         # No custom translation for the error, return the stock description
         return translations(error, language = language, **kwargs)
 
     def get_member_explanation(self, language = None, **kwargs):
-
-        explanation = None
-
-        if self.schema and self.schema.name:
-            explanation = translations(
-                self.schema.name + "." + self.name + "-explanation",
-                language,
-                **kwargs
-            )
-
-        if not explanation and self.source_member:
-            explanation = self.source_member.get_member_explanation(
-                language,
-                **kwargs
-            )
-
-        return explanation
+        return translations(
+            self,
+            language = language,
+            suffix = ".explanation",
+            **kwargs
+        )
 
     def _get_language_dependant(self):
         explicit_state = self.__language_dependant
@@ -668,4 +614,63 @@ class DynamicDefault(object):
 
     def __call__(self):
         return self.factory()
+
+
+@translations.instances_of(Member)
+def translate_member(
+    member,
+    suffix = "",
+    qualified = False,
+    include_type_default = True,
+    **kwargs
+):
+    if qualified:
+        return translations("cocktail.schema.qualified_member", member = member)
+
+    translation = None
+
+    if member.schema and member.name:
+        schema_name = getattr(member.schema, "full_name", member.schema.name)
+        if schema_name:
+            key = (
+                schema_name
+                + ".members."
+                + member.name
+                + suffix
+            )
+            translation = translations(
+                key,
+                member = member,
+                **kwargs
+            )
+
+    if not translation and member.source_member:
+        translation = translations(
+            member.source_member,
+            suffix = suffix,
+            include_type_default = False,
+            **kwargs
+        )
+
+    if not translation and member.custom_translation_key:
+        translation = translations(
+            member.custom_translation_key + suffix,
+            member = member,
+            **kwargs
+        )
+
+    if not translation and include_type_default:
+        for member_type in member.__class__.__mro__:
+            if issubclass(member_type, Member) and member_type is not Member:
+                translation = translations(
+                    get_full_name(member_type)
+                        + ".default_member_translation"
+                        + suffix,
+                    member = member,
+                    **kwargs
+                )
+                if translation:
+                    break
+
+    return translation
 

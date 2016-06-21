@@ -70,6 +70,10 @@ class TemplateCompiler(object):
                 self.__build_source.write("element = self")
 
             self.__class_source = self.__source.nest()
+            self.__class_source.write("_view_name = '%s.%s'" % (
+                pkg_name,
+                class_name
+            ))
 
         self.__end_source = self.__source.nest()
 
@@ -224,6 +228,9 @@ class TemplateCompiler(object):
                     None)
 
                 if overlay_class:
+                    self.__global_source.write(
+                        "translations.request_bundle('%s')" % overlay_class
+                    )
                     self.__end_source.write(
                         "register_overlay(%r, %r)" % (
                             overlay_class,

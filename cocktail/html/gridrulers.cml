@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:py="http://www.whads.com/ns/cocktail/templates">
+
+    <?resource cocktail://styles/gridrulers.scss.css ?>
+
+    <?py-class
+    column_count = 12
+    id = "rulers"
+    ?>
+
+    <py:ready>
+        <?py
+        element["id"] = self.id
+        ?>
+    </py:ready>
+
+    <div py:id="columns">
+        <py:ready>
+            <py:new py:element="self.create_column(i)" py:for="i in range(self.column_count)"/>
+        </py:ready>
+    </div>
+
+    <div py:def="column" py:args="i">
+        <div py:local_id="column_body"/>
+        <div py:local_id="column_spacing">
+            <?py
+            if i + 1 == self.column_count:
+                element.visible = False
+            ?>
+        </div>
+    </div>
+
+</div>
+

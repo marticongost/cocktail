@@ -12,6 +12,7 @@ from cocktail.modeling import (
 )
 from cocktail.iteration import first
 from cocktail.pkgutils import get_full_name
+from cocktail.translations import translations
 from cocktail.caching.utils import nearest_expiration
 from cocktail.html.viewnames import get_view_full_name, split_view_name
 from cocktail.html import renderers
@@ -224,7 +225,7 @@ class Element(object):
 
         def __init__(cls, name, bases, members):
             type.__init__(cls, name, bases, members)
-            cls._view_name = None
+            cls._view_name = members.get("_view_name")
 
             if "overlays_enabled" not in members:
                 cls.overlays_enabled = True
@@ -245,6 +246,11 @@ class Element(object):
                     css_classes.append(c.__name__)
 
             cls.class_css = css_classes and " ".join(css_classes) or None
+
+            # Load translation bundles
+            translations.request_bundle(cls.view_name.lower())
+
+    _view_name = None
 
     @classgetter
     def view_name(cls):

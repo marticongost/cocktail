@@ -18,6 +18,8 @@ from cocktail.translations import (
 from cocktail.schema.accessors import get_accessor
 from cocktail.stringutils import normalize
 
+translations.load_bundle("cocktail.schema.expressions")
+
 
 class Expression(object):
 
@@ -197,13 +199,6 @@ class Constant(Expression):
 
     def eval(self, context = None, accessor = None):
         return self.value
-
-    def __translate__(self, language, **kwargs):
-        if self.value is None:
-            return u"Ø"
-        else:
-            return translations(self.value, language, **kwargs) \
-                or unicode(self.value)
 
 
 class Variable(Expression):
@@ -700,4 +695,15 @@ class DescendsFromExpression(Expression):
                         return False
 
             return find(b, a, self.relation, self.include_self)
+
+
+# Translation
+#------------------------------------------------------------------------------
+
+@translations.instances_of(Constant)
+def translate_constant(expr, **kwargs):
+    if expr.value is None:
+        return u"Ø"
+    else:
+        return translations(expr.value, **kwargs) or unicode(expr.value)
 

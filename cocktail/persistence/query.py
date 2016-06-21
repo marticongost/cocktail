@@ -16,7 +16,12 @@ from BTrees.OOBTree import OOTreeSet, OOSet
 from cocktail.styled import styled
 from cocktail.modeling import getter, ListWrapper
 from cocktail.stringutils import normalize
-from cocktail.translations import get_language, require_language, words
+from cocktail.translations import (
+    translations,
+    get_language,
+    require_language,
+    words
+)
 from cocktail.schema import (
     Member,
     Collection,
@@ -1501,4 +1506,38 @@ def _search_resolution(self, query):
         return ((-1, 1), impl)
 
 expressions.SearchExpression.resolve_filter = _search_resolution
+
+# Translation
+#------------------------------------------------------------------------------
+def _query_translation_factory(filtered_format):
+
+    def translate_query(instance, **kwargs):
+
+        subject = translations(instance.type, suffix = ".plural", **kwargs)
+
+        if instance.filters:
+            return filtered_format % {
+                "subject": subject,
+                "filters": u", ".join(
+                    translations(filter)
+                    for filter in instance.filters
+                )
+            }
+        else:
+            return subject
+
+    return translate_query
+
+translations.define(
+    "cocktail.persistence.query.Query.instance",
+    ca = _query_translation_factory(
+        "%(subject)s que compleixen: %(filters)s"
+    ),
+    es = _query_translation_factory(
+        "%(subject)s que cumplan: %(filters)s"
+    ),
+    en = _query_translation_factory(
+        "%(subject)s filtered by: %(filters)s"
+    )
+)
 

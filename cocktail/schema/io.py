@@ -12,7 +12,7 @@ import pyExcelerator
 from decimal import Decimal
 from collections import Counter
 from cocktail.modeling import ListWrapper, SetWrapper, DictWrapper
-from cocktail.translations import translations, get_language
+from cocktail.translations import translations, get_language, translate_locale
 from cocktail.typemapping import TypeMapping
 from cocktail import schema
 
@@ -227,7 +227,7 @@ class MSExcelExporter(object):
         if language:
             return u"%s (%s)" % (
                 translations(member),
-                translations("locale", locale = language)
+                translate_locale(language)
             )
         else:
             return translations(member)

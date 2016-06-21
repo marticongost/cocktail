@@ -4,7 +4,10 @@ u"""
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
 from PIL import ImageFile
+from cocktail.translations import translations
 from cocktail.schema.exceptions import ValidationError
+
+translations.load_bundle("cocktail.controllers.imageupload")
 
 def get_image_size(path):
     """Find the size in pixels of the given image file, loading as little of

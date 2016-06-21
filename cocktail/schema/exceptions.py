@@ -8,6 +8,10 @@ Declares exception classes specific to the package.
 @since:			March 2008
 """
 from cocktail.modeling import getter
+from cocktail.stringutils import decapitalize
+from cocktail.translations import translations, translate_locale
+
+translations.load_bundle("cocktail.schema.exceptions")
 
 
 class SchemaIntegrityError(Exception):
@@ -96,6 +100,57 @@ class ValidationError(Exception):
         @type: L{Member<cocktail.schema.Member>} collection
         """
         return [self.member]
+
+    def member_desc(self):
+        return u"<em>%s</em>" % self.translate_member()
+
+    def translate_member(self):
+
+        from cocktail import schema
+
+        path = list(self.context.path())
+        desc = []
+
+        for i, context in enumerate(path):
+            if isinstance(context.member, schema.Schema) and (
+                (i == 0 and len(path) > 1)
+                or (
+                    context.parent_context
+                    and isinstance(
+                        context.parent_context.member,
+                        schema.RelationMember
+                    )
+                )
+            ):
+                continue
+
+            label = decapitalize(translations(context.member))
+
+            if context.collection_index is not None:
+                if isinstance(context.collection_index, int):
+                    label += u" %d" % (context.collection_index + 1)
+                elif (
+                    context.parent_context
+                    and isinstance(context.parent_context.member, schema.Mapping)
+                    and context.parent_context.member.keys
+                ):
+                    key_label = context.parent_context.member.keys.translate_value(
+                        context.collection_index
+                    )
+                    if label:
+                        if key_label:
+                            label = u"%s: %s" % (key_label, label)
+                    else:
+                        label = key_label
+                else:
+                    label = u"%s: %s" % (context.collection_index, label)
+
+            if self.language:
+                label += u" (%s)" % translate_locale(self.language)
+
+            desc.append(label.strip())
+
+        return u" » ".join(desc)
 
 
 class ValueRequiredError(ValidationError):
