@@ -752,6 +752,8 @@ class Query(object):
                     if index == 0:
                         break
                     index -= 1
+                else:
+                    return None
                 return self.type.index[id]
 
     def select(self,
