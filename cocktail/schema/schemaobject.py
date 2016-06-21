@@ -392,12 +392,14 @@ class SchemaClass(EventHub, Schema):
                 changed = True
 
             if changed:
+                change_context = {}
                 event = instance.changing(
                     member = member.translation_source or member,
                     language = language,
                     value = value,
                     previous_value = previous_value,
-                    translation_changes = translation_changes
+                    translation_changes = translation_changes,
+                    change_context = change_context
                 )
 
                 value = event.value
@@ -408,7 +410,8 @@ class SchemaClass(EventHub, Schema):
                         language = instance.language,
                         value = value,
                         previous_value = previous_value,
-                        translation_changes = translation_changes
+                        translation_changes = translation_changes,
+                        change_context = change_context
                     )
 
                 value = event.value
@@ -482,7 +485,8 @@ class SchemaClass(EventHub, Schema):
                     previous_value = previous_value,
                     translation_changes = translation_changes,
                     added = None,
-                    removed = None
+                    removed = None,
+                    change_context = change_context
                 )
 
                 if member.translation_source:
@@ -493,7 +497,8 @@ class SchemaClass(EventHub, Schema):
                         previous_value = previous_value,
                         translation_changes = translation_changes,
                         added = None,
-                        removed = None
+                        removed = None,
+                        change_context = change_context
                     )
 
         def instrument_collection(self, collection, owner, member):
@@ -609,6 +614,12 @@ class SchemaObject(object):
             that will be affected by this change, and their respective values
             before the change takes effect. Will be None if the changed member
             is not translatable.
+
+        @ivar change_context: A dictionary containing arbitrary key / value
+            pairs. It is shared with the L{changed} event, which makes it
+            possible to pass information between both events; the typical use
+            case for this involves storing object state during the L{changing}
+            event so it can be read by L{changed} event handlers.
         """)
 
     changed = Event(doc = """
@@ -636,6 +647,12 @@ class SchemaObject(object):
             that will be affected by this change, and their respective values
             before the change took effect. Will be None if the changed member
             is not translatable.
+
+        @ivar change_context: A dictionary containing arbitrary key / value
+            pairs. It is shared with the L{changing} event, which makes it
+            possible to pass information between both events; the typical use
+            case for this involves storing object state during the L{changing}
+            event so it can be read by L{changed} event handlers.
         """)
 
     collection_item_added = Event(doc = """
