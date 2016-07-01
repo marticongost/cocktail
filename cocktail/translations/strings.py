@@ -145,38 +145,24 @@ translations.define("Filters",
 )
 
 translations.define(
-    "cocktail.controllers.Location.client_redirect_title",
+    "cocktail.controllers.redirection.post_redirection.title",
     ca = u"Redirecció",
     es = u"Redirección",
     en = u"Redirecting"
 )
 
 translations.define(
-    "cocktail.controllers.Location.client_redirect_explanation",
+    "cocktail.controllers.redirection.post_redirection.explanation",
     ca = u"S'està redirigint la petició. Si no ets automàticament redirigit, "
-         u"prem %(control)s per continuar navegant pel web.",
+         u"prem el botó per continuar navegant pel web.",
     es = u"Se está redirigiendo la petición. Si no eres automáticamente "
-         u"redirigido pulsa %(control)s para proseguir con la navegación.",
+         u"redirigido pulsa el botón para proseguir con la navegación.",
     en = u"Redirection in process. If you aren't redirected automatically "
-         u"press %(control)s to proceed."
+         u"press the button to proceed."
 )
 
 translations.define(
-    "cocktail.controllers.Location.client_redirect_control-GET",
-    ca = u"el botó",
-    es = u"el botón",
-    en = u"the button"
-)
-
-translations.define(
-    "cocktail.controllers.Location.client_redirect_control-POST",
-    ca = u"l'enllaç",
-    es = u"el enlace",
-    en = u"the link"
-)
-
-translations.define(
-    "cocktail.controllers.Location.client_redirect_control",
+    "cocktail.controllers.redirection.post_redirection.submit_button",
     ca = u"Continuar",
     es = u"Continuar",
     en = u"Continue"
