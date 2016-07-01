@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <?py
-from cocktail.controllers import Location
+from cocktail.controllers import get_request_url
 ?>
 
 <div
@@ -57,7 +57,7 @@ from cocktail.controllers import Location
 
     <div
         class="fb-like"
-        data-href="@{self.href or unicode(Location.get_current(relative = False))}"
+        data-href="@{self.href or get_request_url()}"
         data-send="@{'true' if self.send else 'false'}"
         data-layout="@{self.layout}"
         data-show-faces="@{'true' if self.show_faces else 'false'}"
