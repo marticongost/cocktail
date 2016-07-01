@@ -7,6 +7,12 @@ Utilities for writing application controllers.
 @organization:	Whads/Accent SL
 @since:			July 2008
 """
+from .request import (
+    get_request_url,
+    get_request_root_url,
+    get_request_url_builder,
+    get_request_root_url_builder
+)
 from cocktail.controllers.requestproperty import (
     request_property,
     clear_request_properties
@@ -33,6 +39,10 @@ from cocktail.controllers.uriutils import (
     make_uri,
     try_decode,
     percent_encode_uri
+)
+from cocktail.controllers.redirection import (
+    reload_request_url,
+    post_redirection
 )
 from cocktail.controllers.location import Location
 from cocktail.controllers.viewstate import (
