@@ -34,6 +34,10 @@ class Pager(Element):
     pagination = None
     user_collection = None
 
+    def __init__(self, *args, **kwargs):
+        Element.__init__(self, *args, **kwargs)
+        self.button_characters = self.button_characters.copy()
+
     def _build(self):
 
         # Aproximate layout:
