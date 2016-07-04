@@ -7,6 +7,7 @@ u"""
 @since:			October 2008
 """
 from __future__ import with_statement
+from warnings import warn
 from cgi import parse_qs
 from urllib import urlencode
 from urlparse import urlparse
@@ -40,6 +41,14 @@ class Location(object):
     empty_hash = URLEmptyHash()
 
     def __init__(self, url = None):
+
+        warn(
+            "The Location class is deprecated, use the cocktail.urls module "
+            "instead.",
+            DeprecationWarning,
+            stacklevel = 2
+        )
+
         self.query_string = {}
         self.form_data = {}
 
