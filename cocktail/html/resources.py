@@ -648,11 +648,8 @@ class ResourceAggregator(ResourceSet):
         if self.download_remote_resources:
             url = resource.uri
             if "://" not in url:
-                base_url = self.base_url
-                if not base_url:
-                    from cocktail.controllers.location import Location
-                    base_url = unicode(Location.get_current_host())
-                url = base_url + url
+                from cocktail.controllers import get_request_root_url
+                url = get_request_root_url().merge(url)
             request = urllib2.Request(url)
             request.add_header("User-Agent", self.http_user_agent)
             return urllib2.urlopen(request)
