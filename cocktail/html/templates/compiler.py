@@ -122,6 +122,18 @@ class TemplateCompiler(object):
             "normalize_resource_uri": resource_repositories.normalize_uri,
             "PlaceHolder": PlaceHolder,
             "translations": translations,
+            "view_translations": (
+                lambda key, *args, **kwargs:
+                    translations(
+                        (
+                            ("%s.%s.%s" % (self.pkg_name, self.class_name, key))
+                            if isinstance(key, basestring)
+                            else key
+                        ),
+                        *args,
+                        **kwargs
+                    )
+            ),
             "get_language": get_language,
             "refine": refine, # obsolete; use extend/call_base instead
             "extend": extend,
