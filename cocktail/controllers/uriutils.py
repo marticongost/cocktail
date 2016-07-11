@@ -3,12 +3,20 @@ u"""
 
 .. moduleauthor:: Jordi Fernández <jordi.fernandez@whads.com>
 """
+from warnings import warn
 from decimal import Decimal
 from fractions import Fraction
 from urllib import quote
 
 
 def make_uri(*args, **kwargs):
+
+    warn(
+        "The make_uri() function is deprecated, use the cocktail.urls module "
+        "instead.",
+        DeprecationWarning,
+        stacklevel = 2
+    )
 
     uri = u"/".join(unicode(arg).strip(u"/") for arg in args)
 
@@ -82,6 +90,13 @@ def percent_encode(c):
     Adapted from a script by Joe Gregorio (joe@bitworking.org) under the MIT
     license.
     """
+    warn(
+        "The make_uri() function is deprecated, use the cocktail.urls module "
+        "or the urllib.quote() function instead.",
+        DeprecationWarning,
+        stacklevel = 2
+    )
+
     i = ord(c)
     for low, high in percent_encode_escape_range:
         if i < low:
