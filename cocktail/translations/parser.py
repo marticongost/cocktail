@@ -77,7 +77,8 @@ class TranslationsFileParser(object):
             "ca_apostrophe": ca_apostrophe,
             "ca_possessive": ca_possessive,
             "ca_possessive_with_article": ca_possessive_with_article,
-            "arguments": arguments
+            "arguments": arguments,
+            "_expr_value": _expr_value
         }
 
     @property
@@ -383,7 +384,7 @@ class TranslationsFileParser(object):
                 if part_type == self.LITERAL:
                     code += 'u"%s"' % part_value.replace('"', '\\"')
                 elif part_type == self.EXPRESSION:
-                    code += "unicode(" + part_value + ")"
+                    code += "_expr_value(" + part_value + ")"
                 elif part_type == self.TRANSLATION_EXPRESSION:
                     code += u"translations(%s)" % part_value
                 glue = " + "
@@ -514,4 +515,8 @@ class TranslationsFileSyntaxError(Exception):
         self.line = line
         self.line_number = line_number
         self.reason = reason
+
+
+def _expr_value(value):
+    return u"" if value is None else unicode(value)
 
