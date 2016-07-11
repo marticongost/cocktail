@@ -18,7 +18,7 @@ from os.path import join
 import shlex
 from collections import Sequence
 import cherrypy
-from cocktail.controllers.location import Location
+from cocktail.controllers.request import get_request_url
 from cocktail.controllers.static import serve_file
 
 _lock = Lock()
@@ -60,7 +60,7 @@ def handler_profiler(
         for expr in filter:
 
             if isinstance(expr, basestring):
-                url = unicode(Location.get_current())
+                url = get_request_url()
                 if expr.startswith("!"):
                     reg_expr = re.compile(expr[1:])
                     match = not reg_expr.search(url)
