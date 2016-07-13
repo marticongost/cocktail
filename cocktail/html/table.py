@@ -16,6 +16,7 @@ from cocktail.html.datadisplay import (
 )
 from cocktail.translations import (
     translations,
+    directionality,
     get_language,
     language_context,
     translate_locale
@@ -421,6 +422,9 @@ class Table(Element, CollectionDisplay):
 
     def create_cell(self, item, column, language = None):
         cell = Element("td")
+
+        if language:
+            cell["dir"] = directionality.get(language)
 
         if (
             self.order

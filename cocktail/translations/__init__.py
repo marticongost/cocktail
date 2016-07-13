@@ -23,6 +23,7 @@ from .translation import (
     NoActiveLanguageError
 )
 from .wordprocessing import words
+from . import directionality
 
 translations.load_bundle("cocktail.translations.package")
 

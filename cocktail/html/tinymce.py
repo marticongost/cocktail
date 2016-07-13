@@ -8,7 +8,7 @@ u"""
 """
 from warnings import warn
 from simplejson import dumps
-from cocktail.translations import get_language
+from cocktail.translations import get_language, directionality
 from cocktail.html import Element, templates
 
 
@@ -49,6 +49,12 @@ class TinyMCE(Element):
     def _ready(self):
         Element._ready(self)
         params = self.aggregate_tinymce_params()
+
+        if self.language:
+            params.setdefault(
+                "directionality",
+                directionality.get(self.language)
+            )
 
         # Override essential TinyMCE parameters
         params["mode"] = "exact"
