@@ -4,7 +4,7 @@ u"""Defines the `HTMLDocument` class.
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
 from simplejson import dumps
-from cocktail.translations import translations, get_language
+from cocktail.translations import translations, get_language, directionality
 from cocktail.html.element import Element, Content
 from cocktail.html.ieconditionalcomment import IEConditionalComment, IEWrapper
 from cocktail.html.resources import Script, StyleSheet, resource_repositories
@@ -114,6 +114,8 @@ class HTMLDocument(Element):
             self["lang"] = language
             if rendering_xml():
                 self["xml:lang"] = language
+
+        self["dir"] = directionality.get(language)
 
     def _add_meta(self):
 

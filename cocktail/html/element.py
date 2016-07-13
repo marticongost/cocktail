@@ -12,7 +12,7 @@ from cocktail.modeling import (
 )
 from cocktail.iteration import first
 from cocktail.pkgutils import get_full_name
-from cocktail.translations import translations
+from cocktail.translations import translations, directionality
 from cocktail.caching.utils import nearest_expiration
 from cocktail.html.viewnames import get_view_full_name, split_view_name
 from cocktail.html import renderers
@@ -530,12 +530,16 @@ class Element(object):
 
         if self.data_binding_delegate:
             self.init_data_binding_delegate(self.data_binding_delegate)
-        elif (
-            self.name
-            and self.tag in self.tags_with_name
-            and not self["name"]
-        ):
-            self["name"] = self.name
+        else:
+            if (
+                self.name
+                and self.tag in self.tags_with_name
+                and not self["name"]
+            ):
+                self["name"] = self.name
+
+            if self.language:
+                self["dir"] = directionality.get(self.language)
 
     def init_data_binding_delegate(self, delegate):
         delegate.member = self.member
