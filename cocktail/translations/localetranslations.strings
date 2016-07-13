@@ -114,3 +114,15 @@
         es: Rumano
         en: Romanian
 
+        [ar]
+        ca: Àrab
+        es: Árabe
+        en: Arab
+        ar: العربية
+
+        [he]
+        ca: Hebreu
+        es: Hebreo
+        en: Hebrew
+        he: עברית
+
