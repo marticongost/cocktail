@@ -104,3 +104,124 @@
     }
 }
 
+// Mixins for bidirectional content
+@mixin ltr {
+    html[dir='ltr'] & {
+        @content;
+    }
+}
+
+@mixin rtl {
+    html[dir='rtl'] & {
+        @content;
+    }
+}
+
+@mixin position-start($value) {
+    @include ltr {
+        left: $value;
+    }
+    @include rtl {
+        right: $value;
+    }
+}
+
+@mixin position-end($value) {
+    @include ltr {
+        right: $value;
+    }
+    @include rtl {
+        left: $value;
+    }
+}
+
+@mixin margin-start($value) {
+    @include ltr {
+        margin-left: $value;
+    }
+    @include rtl {
+        margin-right: $value;
+    }
+}
+
+@mixin margin-end($value) {
+    @include ltr {
+        margin-right: $value;
+    }
+    @include rtl {
+        margin-left: $value;
+    }
+}
+
+@mixin padding-start($value) {
+    @include ltr {
+        padding-left: $value;
+    }
+    @include rtl {
+        padding-right: $value;
+    }
+}
+
+@mixin padding-end($value) {
+    @include ltr {
+        padding-right: $value;
+    }
+    @include rtl {
+        padding-left: $value;
+    }
+}
+
+@mixin float-start {
+    @include ltr {
+        float: left;
+    }
+    @include rtl {
+        float: right;
+    }
+}
+
+@mixin float-end {
+    @include ltr {
+        float: right;
+    }
+    @include rtl {
+        float: end;
+    }
+}
+
+@mixin clear-start {
+    @include ltr {
+        clear: left;
+    }
+    @include rtl {
+        clear: right;
+    }
+}
+
+@mixin clear-end {
+    @include ltr {
+        clear: right;
+    }
+    @include rtl {
+        clear: left;
+    }
+}
+
+@mixin text-align-start {
+    @include ltr {
+        text-align: left;
+    }
+    @include rtl {
+        text-align: right;
+    }
+}
+
+@mixin text-align-end {
+    @include ltr {
+        text-align: right;
+    }
+    @include rtl {
+        text-align: left;
+    }
+}
+
