@@ -98,14 +98,14 @@ def _read_mapping_request_value(self, reader):
         mapping_type = self.default_type or self.type
         keys = reader.read(
             schema.Collection(
-                param_name + "-keys",
+                self.name + "-keys",
                 items = self.keys,
                 default_type = list
             )
         )
         values = reader.read(
             schema.Collection(
-                param_name + "-values",
+                self.name + "-values",
                 items = self.values,
                 default_type = list
             )
