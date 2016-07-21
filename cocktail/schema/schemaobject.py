@@ -377,116 +377,84 @@ class SchemaClass(EventHub, Schema):
 
             value = self.normalization(instance, member, value)
 
-            try:
-                changed = (
-                    type(value) is not type(previous_value)
-                    or (value != previous_value)
-                )
-            except TypeError:
-                changed = True
+            # Collections require special treatment
+            if self._is_collection and not self._translations_collection:
 
-            if changed:
-                change_context = {}
-                event = instance.changing(
-                    member = member.translation_source or member,
-                    language = language,
-                    value = value,
-                    previous_value = previous_value,
-                    translation_changes = translation_changes,
-                    change_context = change_context
-                )
+                collection = previous_value
 
-                value = event.value
+                # When setting the collection for the first time, wrap it with
+                # an instrumented instance of the appropiate type
+                if value is not None and collection is None:
+                    coll_type = self.get_instrumented_collection_type(value)
+                    if coll_type:
+                        collection = coll_type(None, instance, member)
+                        setattr(target, self.__priv_key, collection)
 
-                if member.translation_source:
-                    event = instance.translated_object.changing(
-                        member = member.translation_source,
-                        language = instance.language,
+                if isinstance(collection, RelationCollection):
+                    collection.set_content(value)
+                else:
+                    setattr(target, self.__priv_key, value)
+
+            # Regular values
+            else:
+                try:
+                    changed = (
+                        type(value) is not type(previous_value)
+                        or (value != previous_value)
+                    )
+                except TypeError:
+                    changed = True
+
+                # Trigger the 'changing' event
+                if changed:
+                    change_context = {}
+                    event = instance.changing(
+                        member = member.translation_source or member,
+                        language = language,
                         value = value,
                         previous_value = previous_value,
                         translation_changes = translation_changes,
                         change_context = change_context
                     )
 
-                value = event.value
+                    value = event.value
 
-            preserve_value = False
+                    if member.translation_source:
+                        event = instance.translated_object.changing(
+                            member = member.translation_source,
+                            language = instance.language,
+                            value = value,
+                            previous_value = previous_value,
+                            translation_changes = translation_changes,
+                            change_context = change_context
+                        )
 
-            # Collections require special treatment:
-            if self._is_collection and not self._translations_collection:
+                    value = event.value
 
-                # When setting the collection for the first time, wrap it with an
-                # instrumented instance of the appropiate type
-                if previous_value is None \
-                or not isinstance(previous_value, RelationCollection):
-                    value = self.instrument_collection(value, target, member)
-                    setattr(target, self.__priv_key, value)
-
-                    if self._bidirectional_collection and value:
-                        for item in value:
-                            _update_relation("relate", instance, item, member)
-
-                # If a collection is already set on the element, update it instead
-                # of just replacing it (this will invoke add/delete hooks on the
-                # collection, and update the opposite end of the relation)
-                else:
-                    changed = value != previous_value
-                    if value is None:
-                        setattr(target, self.__priv_key, value)
-                        # Set an existing collection to None: unrelate all
-                        # its items
-                        if self._bidirectional_collection \
-                        and previous_value is not None:
-                            for previously_related_item in previous_value:
-                                _update_relation(
-                                    "unrelate",
-                                    instance,
-                                    previously_related_item,
-                                    member
-                                )
-                    else:
-                        previous_value.set_content(value)
-                        preserve_value = True
-
-            # Set the value
-            else:
                 setattr(target, self.__priv_key, value)
 
-            # Update the opposite end of a bidirectional reference
-            if self._bidirectional_reference and value != previous_value:
+                # Update the opposite end of a bidirectional reference
+                if self._bidirectional_reference and value != previous_value:
 
-                # TODO: translated bidirectional references
-                if previous_value is not None:
-                    _update_relation(
-                        "unrelate", instance, previous_value, member,
-                        relocation = value is not None
-                    )
+                    # TODO: translated bidirectional references
+                    if previous_value is not None:
+                        _update_relation(
+                            "unrelate", instance, previous_value, member,
+                            relocation = value is not None
+                        )
 
-                if value is not None:
-                    _update_relation("relate", instance, value, member)
+                    if value is not None:
+                        _update_relation("relate", instance, value, member)
 
-            if not preserve_value:
                 try:
                     changed = (value != previous_value)
                 except TypeError:
                     changed = True
 
-            if changed:
-                instance.changed(
-                    member = member.translation_source or member,
-                    language = language,
-                    value = value,
-                    previous_value = previous_value,
-                    translation_changes = translation_changes,
-                    added = None,
-                    removed = None,
-                    change_context = change_context
-                )
-
-                if member.translation_source:
-                    instance.translated_object.changed(
-                        member = member.translation_source,
-                        language = instance.language,
+                if changed:
+                    instance.changed(
+                        member = member.translation_source or member,
+                        language = language,
                         value = value,
                         previous_value = previous_value,
                         translation_changes = translation_changes,
@@ -495,25 +463,37 @@ class SchemaClass(EventHub, Schema):
                         change_context = change_context
                     )
 
-        def instrument_collection(self, collection, owner, member):
+                    if member.translation_source:
+                        instance.translated_object.changed(
+                            member = member.translation_source,
+                            language = instance.language,
+                            value = value,
+                            previous_value = previous_value,
+                            translation_changes = translation_changes,
+                            added = None,
+                            removed = None,
+                            change_context = change_context
+                        )
+
+        def get_instrumented_collection_type(self, collection):
 
             # Lists
             if isinstance(collection, list):
-                collection = RelationList(collection, owner, member)
+                return RelationList
 
             # Sets
             elif isinstance(collection, set):
-                collection = RelationSet(collection, owner, member)
+                return RelationSet
 
             # Ordered sets
             elif isinstance(collection, OrderedSet):
-                collection = RelationOrderedSet(collection, owner, member)
+                return RelationOrderedSet
 
             # Mappings
             elif isinstance(collection, dict):
-                collection = RelationMapping(collection, owner, member)
+                return RelationMapping
 
-            return collection
+            return collection.__class__
 
 
 class TranslationsMember(Mapping):
@@ -612,15 +592,21 @@ class SchemaObject(object):
 
         @ivar value: The new value assigned to the member. Modifying this
             attribute *will* change the value which is finally assigned to the
-            member.
+            member. Will be None for collections.
 
         @ivar previous_value: The current value for the affected member, before
-            any change takes place.
+            any change takes place. Will be None for collections.
 
         @ivar translation_changes: A dictionary indicating the translations
             that will be affected by this change, and their respective values
             before the change takes effect. Will be None if the changed member
             is not translatable.
+
+        @ivar added: Only for collections. A collection of all the items added
+            to the collection.
+
+        @ivar removed: Only for collections. A collection of all the items
+            removed from the collection.
 
         @ivar change_context: A dictionary containing arbitrary key / value
             pairs. It is shared with the L{changed} event, which makes it
@@ -639,10 +625,11 @@ class SchemaObject(object):
             affected by the change.
         @type language: str
 
-        @ivar value: The new value assigned to the member.
+        @ivar value: The new value assigned to the member. Will be None for
+            collections.
 
         @ivar previous_value: The value that the member had before the current
-            change.
+            change. Will be None for collections.
 
         @ivar added: Only for collections. A collection of all the items added
             to the collection.
@@ -1146,7 +1133,6 @@ class TranslationMapping(DictWrapper):
                 language = key,
                 translation = value
             )
-            self.item_removed(item)
 
         self._items.clear()
 

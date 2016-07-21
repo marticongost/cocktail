@@ -112,55 +112,9 @@ class RelationMapping(RelationCollection, InstrumentedDict):
                 "the collection hasn't overriden its get_item_key() method."
                 % item)
 
-    def item_added(self, item):
-        RelationCollection.item_added(self, item[1])
-
-    def item_removed(self, item):
-        RelationCollection.item_removed(self, item[1])
-
     def add(self, item):
         self[self.get_item_key(item)] = item
 
     def remove(self, item):
         del self[self.get_item_key(item)]
-
-    def set_content(self, new_content):
-
-        if new_content is None:
-            added = []
-            removed = self._items.items()
-            self.clear()
-        else:
-            added = []
-            removed = []
-            previous_content = self._items
-
-            if isinstance(new_content, (dict, DictWrapper)):
-                new_content = new_content.iteritems()
-            else:
-                new_content = (
-                    (self.get_item_key(item), item)
-                    for item in new_content
-                )
-
-            self._items = dict(new_content)
-
-            for key, old_value in previous_content.iteritems():
-                if (
-                    key not in self._items
-                    or self._items.get(key) != old_value
-                ):
-                    removed.append((key, old_value))
-                    self.item_removed((key, old_value))
-
-            for key, new_value in self._items.iteritems():
-                if (
-                    key not in previous_content
-                    or previous_content.get(key) != new_value
-                ):
-                    added.append((key, new_value))
-                    self.item_added((key, new_value))
-
-        if added or removed:
-            self.changed(added = added, removed = removed)
 

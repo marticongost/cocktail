@@ -682,7 +682,7 @@ class ResourceBundle(ResourceAggregator):
             and ResourceAggregator.matches(self, resource)
         )
 
-    def changed(self, added = (), removed = ()):
+    def changed(self, added, changed, context):
         self.__hash = None
 
     @property
