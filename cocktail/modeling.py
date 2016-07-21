@@ -12,6 +12,8 @@ import types
 from copy import copy, deepcopy
 from threading import local, Lock, RLock
 from frozendict import frozendict
+from difflib import SequenceMatcher
+from collections import Sized
 from cocktail.typemapping import TypeMapping
 
 _thread_data = local()
@@ -735,13 +737,10 @@ class OrderedDict(DictWrapper):
 
 class InstrumentedCollection(object):
 
-    def item_added(self, item):
+    def changing(self, added, removed, context):
         pass
 
-    def item_removed(self, item):
-        pass
-
-    def changed(self, added, removed):
+    def changed(self, added, removed, context):
         pass
 
 
@@ -750,64 +749,134 @@ class InstrumentedList(ListWrapper, InstrumentedCollection):
     def __init__(self, items = None):
         ListWrapper.__init__(self, items)
 
-    def append(self, item, _trigger_changed = True):
+    def append(self, item):
+        added = [item]
+        removed = []
+        context = {}
+        self.changing(added, removed, context)
         self._items.append(item)
-        self.item_added(item)
-
-        if _trigger_changed:
-            self.changed(added = (item,), removed = ())
+        self.changed(added, removed, context)
 
     def insert(self, index, item):
+        added = [item]
+        removed = []
+        context = {}
+        self.changing(added, removed, context)
         self._items.insert(index, item)
-        self.item_added(item)
-        self.changed(added = (item,), removed = ())
+        self.changed(added, removed, context)
 
     def extend(self, items):
-        self._items.extend(items)
-        for item in items:
-            self.item_added(item)
-        self.changed(added = items, removed = ())
+
+        if items:
+            if not isinstance(items, Sized):
+                items = list(items)
+
+            added = items
+            removed = []
+            context = {}
+            self.changing(added, removed, context)
+            self._items.extend(items)
+            self.changed(added, removed, context)
 
     def remove(self, item):
+        added = []
+        removed = [item]
+        context = {}
+        self.changing(added, removed, context)
         self._items.remove(item)
-        self.item_removed(item)
-        self.changed(added = (), removed = (item,))
+        self.changed(added, removed, context)
 
-    def pop(self, index, _trigger_changed = True):
+    def pop(self, index):
+        added = []
+        removed = [self._items[index]]
+        context = {}
+        self.changing(added, removed, context)
         item = self._items.pop(index)
-        self.item_removed(item)
-
-        if _trigger_changed:
-            self.changed(added = (), removed = (item,))
-
+        self.changed(added, removed, context)
         return item
+
+    def clear(self):
+        if self._items:
+            added = []
+            removed = list(self._items)
+            context = {}
+            self.changing(added, removed, context)
+            del self._items[:]
+            self.changed(added, removed, context)
 
     def __setitem__(self, index, item):
 
         prev_item = self._items[index]
+        different = (item != prev_item)
 
-        if item != prev_item:
-            self._items[index] = item
-            self.item_removed(prev_item)
-            self.item_added(item)
-            self.changed(added = (item,), removed = (prev_item,))
+        if different:
+            added = [item]
+            removed = [prev_item]
+            context = {}
+            self.changing(added, removed, context)
+
+        self._items[index] = item
+
+        if different:
+            self.changed(added, removed, context)
 
     def __delitem__(self, index):
-
-        removed = []
-
         if isinstance(index, slice):
-            items = self._items[index]
-            self._items.__delitem__(index)
-            for item in items:
-                removed.append(item)
-                self.item_removed(item)
+            removed = self._items[index]
+            if removed:
+                added = []
+                context = {}
+                self.changing(added, removed, context)
+                self._items.__delitem__(index)
+                self.changed(added, removed, context)
         else:
-            item = self._items.pop(index, _trigger_changed = False)
-            removed.append(item)
-            self.item_removed(item)
+            item = self._items[index]
+            added = []
+            removed = [item]
+            context = {}
+            self.changing(added, removed, context)
+            del self._items[index]
+            self.changed(added, removed, context)
 
-        self.changed(added = (), removed = removed)
+    def set_content(self, new_content):
+
+        if not new_content:
+            self.clear()
+        else:
+            if (
+                not hasattr(new_content, "__iter__")
+                or not hasattr(new_content, "__getitem__")
+            ):
+                raise TypeError(
+                    "%s is not a valid collection for a relation list"
+                    % new_content
+                )
+
+            previous_content = self._items
+            diff = SequenceMatcher(None, previous_content, new_content)
+            added = []
+            removed = []
+
+            for tag, alo, ahi, blo, bhi in diff.get_opcodes():
+                if tag == "replace":
+                    for item in previous_content[alo:ahi]:
+                        removed.append(item)
+                    for item in new_content[blo:bhi]:
+                        added.append(item)
+                elif tag == "delete":
+                    for item in previous_content[alo:ahi]:
+                        removed.append(item)
+                elif tag == "insert":
+                    for item in new_content[blo:bhi]:
+                        added.append(item)
+                elif tag == "equal":
+                    pass
+
+            if added or removed:
+                context = {}
+                self.changing(added, removed, context)
+                self._items = new_content
+                self.changed(added, removed, context)
 
 
 class InstrumentedOrderedSet(ListWrapper, InstrumentedCollection):
@@ -820,60 +889,124 @@ class InstrumentedOrderedSet(ListWrapper, InstrumentedCollection):
             )
         ListWrapper.__init__(self, items or OrderedSet())
 
-    def append(self, item, relocate = False, _trigger_changed = True):
-        if self._items.append(item, relocate):
-            self.item_added(item)
-            if _trigger_changed:
-                self.changed(added = (item,), removed = ())
+    def append(self, item, relocate = False):
+        if relocate or item not in self._items:
+            added = [item]
+            removed = []
+            context = {}
+            self.changing(added, removed, context)
+            self._items.append(item, relocate)
+            self.changed(added, removed, context)
+            return True
+        else:
+            return False
 
     def insert(self, index, item, relocate = False):
-        if self._items.insert(index, item, relocate):
-            self.item_added(item)
-            self.changed(added = (item,), removed = ())
+        if relocate or item not in self._items:
+            added = [item]
+            removed = []
+            context = {}
+            self.changing(added, removed, context)
+            self._items.insert(index, item, relocate)
+            self.changed(added, removed, context)
+            return True
+        else:
+            return False
 
     def extend(self, items, relocate = False):
-        for item in items:
-            added = []
-            if self.append(item, relocate, _trigger_changed = False):
-                added.append(item)
-            if added:
-                self.changed(added = added, removed = ())
+
+        if relocate:
+            added = items
+        else:
+            added = [item for item in items if item not in self._items]
+
+        if added:
+            removed = []
+            context = {}
+            self.changing(added, removed, context)
+            self._items.extend(added)
+            self.changed(added, removed, context)
 
     def remove(self, item):
+
+        if item not in self._items:
+            raise ValueError("%r not in %r" % (item, self))
+
+        added = []
+        removed = [item]
+        context = {}
+        self.changing(added, removed, context)
         self._items.remove(item)
-        self.item_removed(item)
-        self.changed(added = (), removed = (item,))
+        self.changed(added, removed, context)
 
-    def pop(self, index, _trigger_changed = True):
+    def pop(self, index):
+        added = []
+        removed = [self._items[index]]
+        context = {}
+        self.changing(added, removed, context)
         item = self._items.pop(index)
-        self.item_removed(item)
-
-        if _trigger_changed:
-            self.changed(added = (), removed = (item,))
-
+        self.changed(added, removed, context)
         return item
 
     def __setitem__(self, index, item):
-
         if item not in self._items:
             prev_item = self._items[index]
+            added = [item]
+            prev_item = [prev_item]
+            context = {}
+            self.changing(added, removed, context)
             self._items[index] = item
-            self.item_removed(prev_item)
-            self.item_added(item)
-            self.changed(added = (item,), removed = (prev_item,))
+            self.changed(added, removed, context)
 
     def __delitem__(self, index):
-
         if isinstance(index, slice):
             items = self._items[index]
-            self._items.__delitem__(index)
-            for item in items:
-                self.item_removed(item)
+            if items:
+                added = []
+                removed = items
+                context = {}
+                self.changing(added, removed, context)
+                self._items.__delitem__(index)
+                self.changed(added, removed, context)
         else:
-            item = self._items.pop(index, _trigger_changed = False)
-            self.item_removed(item)
+            added = []
+            removed = [self._items[index]]
+            context = {}
+            self.changing(added, removed, context)
+            del self._items[index]
+            self.changed(added, removed, context)
 
-        self.changed(added = (), removed = (item,))
+    def clear(self):
+        if self._items:
+            added = []
+            removed = self._items
+            context = {}
+            self.changing(added, removed, context)
+            self._items = OrderedSet()
+            self.changed(added, removed, context)
+
+    def set_content(self, new_content):
+
+        changed = False
+
+        if not new_content:
+            self.clear()
+        else:
+            changed = (new_content != self._items)
+            previous_set = set(self._items)
+            new_set = set(new_content)
+
+            if not isinstance(new_content, OrderedSet):
+                new_content = OrderedSet(new_content)
+
+            removed = previous_set - new_set
+            added = new_set - previous_set
+            context = {}
+
+            self.changing(added, removed, context)
+            self._items = new_content
+            self.changed(added, removed, context)
+
 
 
 class InstrumentedSet(SetWrapper, InstrumentedCollection):
@@ -883,85 +1016,118 @@ class InstrumentedSet(SetWrapper, InstrumentedCollection):
 
     def add(self, item):
         if item not in self._items:
+            added = {item}
+            removed = set()
+            context = {}
+            self.changing(added, removed, context)
             self._items.add(item)
-            self.item_added(item)
-            self.changed(added = (item,), removed = ())
+            self.changed(added, removed, context)
 
     def clear(self):
-        items = list(self._items)
-        self._items.clear()
-
-        if items:
-            for item in items:
-                self.item_removed(item)
-
-            self.changed(added = (), removed = items)
+        if self._items:
+            added = set()
+            removed = set(self._items)
+            context = {}
+            self.changing(added, removed, context)
+            self._items.clear()
+            self.changed(added, removed, context)
 
     def difference_update(self, other_set):
-        items = self._items & other_set
-        self._items.difference_update(other_set)
-
-        if items:
-            for item in items:
-                self.item_removed(item)
-
-            self.changed(added = (), removed = items)
+        removed = self._items & other_set
+        if removed:
+            added = set()
+            context = {}
+            self.changing(added, removed, context)
+            self._items.difference_update(other_set)
+            self.changed(added, removed, context)
 
     def discard(self, item):
         if item in self._items:
-            self._items.remove(item)
-            self.item_removed(item)
-            self.changed(added = (), removed = (item,))
+            added = set()
+            removed = {item}
+            context = {}
+            self.changing(added, removed, context)
+            self._items.discard(item)
+            self.changed(added, removed, context)
 
     def intersection_update(self, other_set):
-        items = self._items - other_set
-        self._items.intersection_update(other_set)
-
-        if items:
-            for item in items:
-                self.item_removed(item)
-
-            self.changed(added = (), removed = items)
+        removed = self._items - other_set
+        if removed:
+            added = set()
+            context = {}
+            self.changing(added, removed, context)
+            self._items.intersection_update(other_set)
+            self.changed(added, removed, context)
 
     def pop(self):
-        item = self._items.pop()
-        self.item_removed(item)
-        self.changed(added = (), removed = (item,))
+
+        for item in self._items:
+            break
+        else:
+            raise KeyError("Can't pop from an empty set")
+
+        added = set()
+        removed = {item}
+        self.changing(added, removed, context)
+        self._items.remove(item)
+        self.changed(added, removed, context)
         return item
 
     def remove(self, item):
+
+        if item not in self._items:
+            raise KeyError("%r not in set" % item)
+
+        added = set()
+        removed = {item}
+        context = {}
+        self.changing(added, removed, context)
         self._items.remove(item)
-        self.item_removed(item)
-        self.changed(added = (), removed = (item,))
+        self.changed(added, removed, context)
 
     def symmetric_difference_update(self, other_set):
 
-        removed_items = self._items & other_set
-        added_items = other_set - self._items
-        self._items.difference_update(removed_items)
-        self._items.update(added_items)
+        removed = self._items & other_set
+        added = other_set - self._items
 
-        for item in removed_items:
-            self.item_removed(item)
-
-        for item in added_items:
-            self.item_added(item)
-
-        if removed_items or added_items:
-            self.changed(added = added_items, removed = removed_items)
+        if removed or added:
+            context = {}
+            self.changing(added, removed, context)
+            self._items.difference_update(removed_items)
+            self._items.update(added_items)
+            self.changed(added, removed, context)
 
     def update(self, other_set):
+
         if not isinstance(other_set, (set, SetWrapper)):
             other_set = set(other_set)
 
-        items = other_set - self._items
-        self._items.update(items)
+        added = other_set - self._items
 
-        if items:
-            for item in items:
-                self.item_added(item)
+        if added:
+            removed = set()
+            context = {}
+            self.changing(added, removed, context)
+            self._items.update(added)
+            self.changed(added, removed, context)
 
-            self.changed(added = items, removed = ())
+    def set_content(self, new_content):
+
+        if not new_content:
+            self.clear()
+        else:
+            if not isinstance(new_content, set):
+                new_content = set(new_content)
+
+            previous_content = self._items
+            removed = previous_content - new_content
+            added = new_content - previous_content
+
+            if added or removed:
+                context = {}
+                self.changing(added, removed, context)
+                self._items = new_content
+                self.changed(added, removed, context)
 
 
 class InstrumentedDict(DictWrapper, InstrumentedCollection):
@@ -971,55 +1137,75 @@ class InstrumentedDict(DictWrapper, InstrumentedCollection):
 
     def __setitem__(self, key, value):
         prev_value = self._items.get(key, _undefined)
+        different = (value != prev_value)
+
+        if different:
+            added = [(key, value)]
+            if prev_value is _undefined:
+                removed = []
+            else:
+                removed = [(key, prev_value)]
+            context = {}
+            self.changing(added, removed, context)
+
         self._items.__setitem__(key, value)
 
-        if value != prev_value:
-
-            if prev_value is not _undefined:
-                self.item_removed((key, prev_value))
-                removed = ((key, prev_value),)
-            else:
-                removed = ()
-
-            self.item_added((key, value))
-            self.changed(added = ((key, value),), removed = removed)
+        if different:
+            self.changed(added, removed, context)
 
     def __delitem__(self, key):
-        value = self._items.pop(key)
-        item = (key, value)
-        self.item_removed(item)
-        self.changed(added = (), removed = (item,))
+        try:
+            value = self._items[key]
+        except KeyError:
+            raise
+        else:
+            added = []
+            removed = [(key, value)]
+            self.changing(added, removed, context)
+            del self._items[key]
+            self.changed(added, removed, context)
 
     def clear(self):
-        items = self._items.items()
-        self._items.clear()
-
-        if items:
-            for item in items:
-                self.item_removed(item)
-
-            self.changed(added = (), removed = items)
+        removed = self._items.items()
+        if removed:
+            added = []
+            context = {}
+            self.changing(added, removed, context)
+            self._items.clear()
+            self.changed(added, removed, context)
 
     def pop(self, key, default = _undefined):
 
-        value = self._items.get(key, _undefined)
-
-        if value is _undefined:
-            if default is _undefined:
-                raise KeyError(key)
-            value = default
+        try:
+            value = self._items[key]
+        except KeyError:
+            pass
         else:
-            del self._items[key]
-            item = (key, value)
-            self.item_removed(item)
-            self.changed(added = (), removed = (item,))
+            added = []
+            removed = [(key, value)]
+            context = {}
+            self.changing(added, removed, context)
+            item = self._items.pop(key, default)
+            self.changed(added, removed, context)
 
-        return value
+        if item is _undefined:
+            raise KeyError("%r not in %r" % (key, self))
+
+        return item
 
     def popitem(self):
-        item = self._items.popitem()
-        self.item_removed(item)
-        self.changed(added = (), removed = (item,))
+
+        for item in self._items.iteritems():
+            break
+        else:
+            raise KeyError("Can't pop from an empty dictionary")
+
+        added = []
+        removed = [item]
+        context = {}
+        self.changing(added, removed, context)
+        del self._items[item[0]]
+        self.changed(added, removed, context)
         return item
 
     def update(self, *args, **kwargs):
@@ -1035,29 +1221,76 @@ class InstrumentedDict(DictWrapper, InstrumentedCollection):
                     % len(args)
                 )
 
-            items = args.items()
+            items = args[0]
 
         if kwargs:
             if items is None:
-                items = kwargs.items()
+                items = kwargs
             else:
-                items.extend(kwargs.iteritems())
+                items = dict(items)
+                items.update(kwargs)
 
-        for key, value in items:
-            prev_value = self._items.get(key, _undefined)
-            self._items.__setitem__(key, value)
+        if items:
+            added = []
+            removed = []
 
-            if value != prev_value:
+            for key, value in items.iteritems():
+                try:
+                    prev_value = self._items[key]
+                except KeyError:
+                    added.append((key, value))
+                else:
+                    if value != prev_value:
+                        added.append((key, value))
+                        removed.append((key, prev_value))
 
-                if prev_value is not _undefined:
-                    removed.append((key, prev_value))
-                    self.item_removed((key, prev_value))
+            if added or removed:
+                context = {}
+                self.changing(added, removed, context)
 
-                added.append((key, value))
-                self.item_added((key, value))
+            self._items.update(items)
 
-        if added or removed:
-            self.changed(added = added, removed = removed)
+            if added or removed:
+                self.changed(added, removed, context)
+
+    def set_content(self, new_content):
+        if not new_content:
+            self.clear()
+        else:
+            added = []
+            removed = []
+            previous_content = self._items
+
+            if isinstance(new_content, (dict, DictWrapper)):
+                new_content = dict(new_content)
+            else:
+                new_content = dict(
+                    (self.get_item_key(item), item)
+                    for item in new_content
+                )
+
+            for key, old_value in previous_content.iteritems():
+                if (
+                    key not in self._items
+                    or new_content.get(key) != old_value
+                ):
+                    removed.append((key, old_value))
+
+            for key, new_value in new_content.iteritems():
+                if (
+                    key not in previous_content
+                    or previous_content.get(key) != new_value
+                ):
+                    added.append((key, new_value))
+
+            if added or removed:
+                context = {}
+                self.changed(added, removed, context)
+
+            self._items = new_content
+
+            if added or removed:
+                self.changing(added, removed, context)
 
 
 # Thread safe collections

@@ -69,12 +69,11 @@ class PersistentRelationCollection(Persistent):
 
     _items = property(_get_items, _set_items)
 
-    def item_added(self, item):
-        self._base_collection_class.item_added(self, item)
-        self._p_changed = True
+    def changing(self, added, removed, context):
+        self._base_collection_class.changing(self, added, removed, context)
 
-    def item_removed(self, item):
-        self._base_collection_class.item_removed(self, item)
+    def changed(self, added, removed, context):
+        self._base_collection_class.changed(self, added, removed, context)
         self._p_changed = True
 
 

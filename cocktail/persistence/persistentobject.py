@@ -113,28 +113,20 @@ class PersistentClass(SchemaClass):
 
     class MemberDescriptor(SchemaClass.MemberDescriptor):
 
-        def instrument_collection(self, collection, owner, member):
+        def get_instrumented_collection_type(self, collection):
 
             # Lists
             if isinstance(collection, (list, PersistentList)):
-                collection = PersistentRelationList(
-                    collection, owner, member
-                )
+                return PersistentRelationList
             # Sets
             elif isinstance(collection, (set, PersistentSet)):
-                collection = PersistentRelationSet(
-                    collection, owner, member
-                )
+                return PersistentRelationSet
             # Ordered sets
             elif isinstance(collection, (OrderedSet, PersistentOrderedSet)):
-                collection = PersistentRelationOrderedSet(
-                    collection, owner, member
-                )
+                return PersistentRelationOrderedSet
             # Mappings
             elif isinstance(collection, (dict, PersistentMapping)):
-                collection = PersistentRelationMapping(
-                    collection, owner, member
-                )
+                return PersistentRelationMapping
 
             return collection
 

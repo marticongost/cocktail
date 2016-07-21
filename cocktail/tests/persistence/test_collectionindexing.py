@@ -228,9 +228,20 @@ class ReferenceCollectionIndexing(TempStorageMixin, TestCase):
         from cocktail.persistence import PersistentObject
 
         class Document(PersistentObject):
-            pass
+
+            instance_count = 0
+
+            def __init__(self, *args, **kwargs):
+                PersistentObject.__init__(self, *args, **kwargs)
+                self.__class__.instance_count += 1
+                self.number = self.instance_count
+
+            def __repr__(self):
+                return "Document %d" % self.number
 
         class Tag(PersistentObject):
+
+            instance_count = 0
 
             documents = schema.Collection(
                 items = schema.Reference(type = Document),
@@ -239,6 +250,14 @@ class ReferenceCollectionIndexing(TempStorageMixin, TestCase):
                 ),
                 indexed = True
             )
+
+            def __init__(self, *args, **kwargs):
+                PersistentObject.__init__(self, *args, **kwargs)
+                self.__class__.instance_count += 1
+                self.number = self.instance_count
+
+            def __repr__(self):
+                return "Tag %d" % self.number
 
         self.Document = Document
         self.Tag = Tag

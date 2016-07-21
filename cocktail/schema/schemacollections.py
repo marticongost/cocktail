@@ -7,7 +7,6 @@ Provides a class to describe members that handle sets of values.
 @organization:	Whads/Accent SL
 @since:			March 2008
 """
-from difflib import SequenceMatcher
 from cocktail.modeling import (
     getter,
     GenericMethod,
@@ -291,30 +290,49 @@ class RelationCollection(object):
     owner = None
     member = None
 
-    def item_added(self, item):
-        self.owner.collection_item_added(
-            member = self.member,
-            item = item
-        )
-        if self.member.related_end:
-            _update_relation("relate", self.owner, item, self.member)
-
-    def item_removed(self, item):
-        self.owner.collection_item_removed(
-            member = self.member,
-            item = item
-        )
-        if self.member.related_end:
-            _update_relation("unrelate", self.owner, item, self.member)
-
-    def changed(self, added, removed):
-        self.owner.changed(
+    def changing(self, added, removed, context):
+        self.owner.changing(
             member = self.member,
             previous_value = None,
             added = added,
             removed = removed,
             language = None,
-            value = self
+            value = self,
+            change_context = context
+        )
+
+    def changed(self, added, removed, context):
+
+        member = self.member
+        owner = self.owner
+        rel_end = member.related_end
+
+        for item in removed:
+            owner.collection_item_removed(
+                member = member,
+                item = item,
+                change_context = context
+            )
+            if rel_end:
+                _update_relation("unrelate", owner, item, member)
+
+        for item in added:
+            owner.collection_item_added(
+                member = member,
+                item = item,
+                change_context = context
+            )
+            if rel_end:
+                _update_relation("relate", owner, item, member)
+
+        owner.changed(
+            member = member,
+            previous_value = None,
+            added = added,
+            removed = removed,
+            language = None,
+            value = self,
+            change_context = context
         )
 
 
@@ -328,50 +346,6 @@ class RelationList(RelationCollection, InstrumentedList):
     def add(self, item):
         self.append(item)
 
-    def set_content(self, new_content):
-
-        if not new_content:
-            added = []
-            removed = list(self._items)
-            while self._items:
-                self.pop(0, _trigger_changed = False)
-        else:
-            if not hasattr(new_content, "__iter__") \
-            or not hasattr(new_content, "__getitem__"):
-                raise TypeError(
-                    "%s is not a valid collection for a relation list"
-                    % new_content
-                )
-
-            diff = SequenceMatcher(None, self._items, new_content)
-            previous_content = self._items
-            self._items = new_content
-            changed = False
-            added = []
-            removed = []
-
-            for tag, alo, ahi, blo, bhi in diff.get_opcodes():
-                if tag == "replace":
-                    for item in previous_content[alo:ahi]:
-                        removed.append(item)
-                        self.item_removed(item)
-                    for item in new_content[blo:bhi]:
-                        added.append(item)
-                        self.item_added(item)
-                elif tag == "delete":
-                    for item in previous_content[alo:ahi]:
-                        removed.append(item)
-                        self.item_removed(item)
-                elif tag == "insert":
-                    for item in new_content[blo:bhi]:
-                        added.append(item)
-                        self.item_added(item)
-                elif tag == "equal":
-                    pass
-
-        if added or removed:
-            self.changed(added = added, removed = removed)
-
 
 class RelationSet(RelationCollection, InstrumentedSet):
 
@@ -379,30 +353,6 @@ class RelationSet(RelationCollection, InstrumentedSet):
         self.owner = owner
         self.member = member
         InstrumentedSet.__init__(self, items)
-
-    def set_content(self, new_content):
-
-        if new_content is None:
-            added = set()
-            removed = set(self._items)
-            self.clear()
-        else:
-            if not isinstance(new_content, set):
-                new_content = set(new_content)
-
-            previous_content = self._items
-            self._items = new_content
-
-            removed = previous_content - new_content
-            for item in removed:
-                self.item_removed(item)
-
-            added = new_content - previous_content
-            for item in added:
-                self.item_added(item)
-
-        if added or removed:
-            self.changed(added = added, removed = removed)
 
 
 class RelationOrderedSet(RelationCollection, InstrumentedOrderedSet):
@@ -414,35 +364,4 @@ class RelationOrderedSet(RelationCollection, InstrumentedOrderedSet):
 
     def add(self, item):
         self.append(item)
-
-    def set_content(self, new_content):
-
-        changed = False
-
-        if new_content is None:
-            added = set()
-            removed = set(self._items)
-            while self._items:
-                changed = True
-                self.pop(0, _trigger_changed = False)
-        else:
-            changed = (new_content != self._items)
-            previous_set = set(self._items)
-            new_set = set(new_content)
-
-            if not isinstance(new_content, OrderedSet):
-                new_content = OrderedSet(new_content)
-
-            self._items = new_content
-
-            removed = previous_set - new_set
-            for item in removed:
-                self.item_removed(item)
-
-            added = new_set - previous_set
-            for item in added:
-                self.item_added(item)
-
-        if changed:
-            self.changed(added = added, removed = removed)
 
