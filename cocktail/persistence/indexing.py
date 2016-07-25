@@ -19,6 +19,7 @@ from cocktail.persistence.index import SingleValueIndex, MultipleValuesIndex
 from cocktail.persistence.persistentobject import (
     PersistentObject, PersistentClass
 )
+from cocktail.persistence.utils import is_broken
 
 # Index properties
 #------------------------------------------------------------------------------
@@ -400,6 +401,9 @@ def _handle_removing_translation(event):
                                 break
 
 def add_index_entry(obj, member, value, language = None):
+
+    if is_broken(obj) or is_broken(value):
+        return
 
     k = member.get_index_value(value)
 
