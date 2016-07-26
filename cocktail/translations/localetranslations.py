@@ -41,5 +41,6 @@ def translate_locale_component(locale, component, index, language = None):
     if index == 0:
         return translations("cocktail.locales." + component, language)
 
-translations.definitions["cocktail.locale_component"] = translate_locale
+translations.definitions["cocktail.locale_component"] = \
+    translate_locale_component
 
