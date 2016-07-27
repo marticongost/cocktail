@@ -383,7 +383,7 @@ class Path(unicode):
         other = Path(other)
 
         if other.relative:
-            return self.__class__(unicode(self) + "/" + unicode(other))
+            return self.pop().append(other)
         else:
             return other
 
