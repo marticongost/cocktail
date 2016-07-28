@@ -383,7 +383,10 @@ class Path(unicode):
         other = Path(other)
 
         if other.relative:
-            return self.pop().append(other)
+            path = self
+            if self.segments:
+                path = self.pop()
+            return path.append(other)
         else:
             return other
 
