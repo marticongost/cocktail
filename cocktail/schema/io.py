@@ -255,7 +255,7 @@ class MSExcelExporter(object):
         self,
         collection,
         export_schema,
-        members,
+        members = None,
         languages = None
     ):
         workbook = pyExcelerator.Workbook()
@@ -265,6 +265,9 @@ class MSExcelExporter(object):
             languages = [get_language()]
 
         if isinstance(export_schema, schema.Schema):
+
+            if members is None:
+                members = export_schema.ordered_members()
 
             # Determine columns
             columns = self.get_columns(
