@@ -24,6 +24,7 @@ from cocktail.html.rendering import (
 from cocktail.html.documentmetadata import DocumentMetadata
 from cocktail.html.resources import Resource
 from cocktail.html.overlay import apply_overlays
+from .utils import serialize_value
 
 default = object()
 
@@ -856,7 +857,7 @@ class Element(object):
         :type child: `Element` or basestring
         """
         if not isinstance(child, Element):
-            child = Content(unicode(child))
+            child = Content(serialize_value(child))
         else:
             child.release()
 
