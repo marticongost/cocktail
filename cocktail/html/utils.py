@@ -151,7 +151,9 @@ def is_inline_element(tag):
     return tag in inline_elements
 
 def serialize_value(value):
-    if isinstance(value, URL):
+    if value is None:
+        return ""
+    elif isinstance(value, URL):
         return str(value)
     elif isinstance(value, (str, unicode)):
         return value
