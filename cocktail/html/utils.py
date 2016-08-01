@@ -5,7 +5,9 @@ u"""Utilities covering typical HTML design patterns.
 """
 import re
 from itertools import izip, cycle
+from decimal import Decimal
 import bs4
+from cocktail.urls import URL
 from cocktail.html.rendering import get_current_rendering
 
 def alternate_classes(element, classes = ("odd", "even")):
@@ -147,4 +149,14 @@ inline_elements = {
 
 def is_inline_element(tag):
     return tag in inline_elements
+
+def serialize_value(value):
+    if isinstance(value, URL):
+        return str(value)
+    elif isinstance(value, (str, unicode)):
+        return value
+    elif isinstance(value, (int, float, Decimal)):
+        return unicode(value)
+    else:
+        raise ValueError("Can't serialize %r" % value)
 

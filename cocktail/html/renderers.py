@@ -7,7 +7,7 @@ u"""
 @since:			November 2007
 """
 from cocktail.caching.utils import nearest_expiration
-from cocktail.html.utils import escape_attrib
+from cocktail.html.utils import escape_attrib, serialize_value
 
 XHTML1_STRICT = u"""<!DOCTYPE html
 PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
@@ -68,7 +68,7 @@ class Renderer(object):
                         if value:
                             self._write_flag(key, out)
                     else:
-                        value = escape_attrib(unicode(value))
+                        value = escape_attrib(serialize_value(value))
                         out(key + u'="' + value + u'"')
 
             # Single tag closure
