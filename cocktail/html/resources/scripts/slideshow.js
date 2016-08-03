@@ -44,7 +44,7 @@ cocktail.bind(".SlideShow", function ($slideShow) {
     // Create navigation controls
     if (this.navigationControls) {
 
-        var $buttons = jQuery(cocktail.instantiate("cocktail.html.SlideShow.navigationButtons"))
+        var $buttons = jQuery(cocktail.instantiate("cocktail.html.SlideShow.navigationButtons-" + this.id))
             .appendTo($slideShow);
 
         $buttons.find(".previous_slide_button")
@@ -63,7 +63,7 @@ cocktail.bind(".SlideShow", function ($slideShow) {
             jQuery(jQuery(".bullet",$slideShow).get(index)).addClass("selected");
         }
 
-        jQuery(cocktail.instantiate("cocktail.html.SlideShow.bulletSlideButtons"))
+        jQuery(cocktail.instantiate("cocktail.html.SlideShow.bulletSlideButtons-" + this.id))
             .appendTo($slideShow);
 
         jQuery.each(jQuery(".bullet",$slideShow),function (index,bullet) {
