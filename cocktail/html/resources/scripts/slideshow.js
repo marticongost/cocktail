@@ -236,11 +236,14 @@ cocktail.bind(".SlideShow", function ($slideShow) {
                     callback();
                 }
             }
-        );
+        }
+    }
+
+    if ($slideShow.css("position") == "static") {
+        $slideShow.css({"position": "relative"});
     }
 
     $slideShow
-        .css({"position": "relative"})
         .mouseenter(function () {
             this.stop();
         })
