@@ -60,13 +60,13 @@ cocktail.bind(".SlideShow", function ($slideShow) {
         this.selectBullet = function () {
             jQuery(".bullet",$slideShow).removeClass("selected");
             var index = $slideShow.find(this.slidesSelector).index(current);
-            jQuery(jQuery(".bullet",$slideShow).get(index)).addClass("selected");
+            jQuery(jQuery(".bullet", $slideShow).get(index)).addClass("selected");
         }
 
         jQuery(cocktail.instantiate("cocktail.html.SlideShow.bulletSlideButtons-" + this.id))
             .appendTo($slideShow);
 
-        jQuery.each(jQuery(".bullet",$slideShow),function (index,bullet) {
+        jQuery.each(jQuery(".bullet", $slideShow), function (index, bullet) {
             jQuery(bullet).click(function () {
                 $slideShow.get(0).selectSlide(index);
             });
