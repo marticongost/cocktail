@@ -154,7 +154,7 @@ cocktail.bind(".SlideShow", function ($slideShow) {
         this.selectSlide(this.getPrevSlide());
     }
 
-    this.selectSlide = function (slide) {
+    this.selectSlide = function (slide, options /* optional */) {
 
         if (typeof(slide) == "number") {
             slide = $slideShow.find(this.slidesSelector).get(slide);
@@ -165,7 +165,7 @@ cocktail.bind(".SlideShow", function ($slideShow) {
         }
 
         if (current) {
-            this._hideSlide(current);
+            this._hideSlide(current, options);
         }
 
         var previous = current;
@@ -173,7 +173,8 @@ cocktail.bind(".SlideShow", function ($slideShow) {
 
         $slideShow.trigger("beforeSlideChange", {
             previous: previous,
-            current: slide
+            current: slide,
+            options: options
         });
 
         if (this.bulletControls) {
@@ -181,60 +182,84 @@ cocktail.bind(".SlideShow", function ($slideShow) {
         }
 
         if (slide) {
-            this._showSlide(slide, function () {
+            this._showSlide(slide, options, function () {
                 $slideShow.trigger("afterSlideChange", {
                     previous: previous,
-                    current: slide
+                    current: slide,
+                    options: options
                 });
             });
         }
 
         $slideShow.trigger("slideSelected", {
             previous: previous,
-            current: slide
+            current: slide,
+            options: options
         });
     }
 
-    this._hideSlide = function (slide) {
+    this._hideSlide = function (slide, options) {
 
+        var animated = !(options && options.animated !== undefined && !options.animated);
         var $slide = jQuery(slide);
+
         $slide.parent().height($slide.parent().height());
 
-        $slide
-            .addClass("loosingFocus")
-            .css({
-                "position": "absolute",
-                "top": 0,
-                "left": 0,
-                "right": 0,
-                "bottom": 0
-            });
+        if (!animated) {
+            $slide.addClass("loosingFocus");
+        }
 
-        cocktail.slideShowTransitions[this.transitionEffect].hide(
-            this,
-            slide,
-            function () {
-                jQuery(this).removeClass("loosingFocus");
-            }
-        );
+        $slide.css({
+            "position": "absolute",
+            "top": 0,
+            "left": 0,
+            "right": 0,
+            "bottom": 0
+        });
+
+        if (animated) {
+            cocktail.slideShowTransitions[this.transitionEffect].hide(
+                this,
+                slide,
+                function () {
+                    jQuery(this).removeClass("loosingFocus");
+                }
+            );
+        }
+        else {
+            $slide.hide();
+        }
     }
 
-    this._showSlide = function (slide, callback) {
-        $slideShow.addClass("inTransition");
+    this._showSlide = function (slide, options, callback) {
 
-        jQuery(slide)
-            .addClass("gainingFocus")
-            .css({"position": "relative"});
+        var animated = !(options && options.animated !== undefined && !options.animated);
+        var $slide = jQuery(slide);
 
-        cocktail.slideShowTransitions[this.transitionEffect].show(
-            this,
-            slide,
-            function () {
-                jQuery(this).removeClass("gainingFocus");
-                $slideShow.removeClass("inTransition");
-                if (callback) {
-                    callback();
+        if (animated) {
+            $slideShow.addClass("inTransition");
+            $slide.addClass("gainingFocus");
+        }
+
+        $slide.css({"position": "relative"});
+
+        if (animated) {
+            cocktail.slideShowTransitions[this.transitionEffect].show(
+                this,
+                slide,
+                function () {
+                    jQuery(this).removeClass("gainingFocus");
+                    $slideShow.removeClass("inTransition");
+                    if (callback) {
+                        callback();
+                    }
                 }
+            );
+        }
+        else {
+            $slide.show();
+            if (callback) {
+                callback();
             }
         }
     }
