@@ -35,6 +35,7 @@
 
     <py:ready>
         <?py
+        self.require_id()
         self.set_client_param("autoplay", self.autoplay)
         self.set_client_param("interval", self.interval)
         self.set_client_param("transitionEffect", self.transition_effect)
@@ -48,7 +49,7 @@
 
     <div py:id="slides"></div>
 
-    <div py:id="navigation_buttons" py:client_model="cocktail.html.SlideShow.navigationButtons">
+    <div py:id="navigation_buttons" py:client_model="cocktail.html.SlideShow.navigationButtons-@{self['id']}">
         <py:new
             py:element="self.create_navigation_button()"
             py:id="previous_slide_button"
@@ -73,7 +74,7 @@
     <div
         py:id="bullets"
         py:visible="@{self.bullet_controls}"
-        py:client_model="cocktail.html.SlideShow.bulletSlideButtons">
+        py:client_model="cocktail.html.SlideShow.bulletSlideButtons-@{self['id']}">
         <div py:id="bullets_layer">
             <py:ready>
                 <py:new
