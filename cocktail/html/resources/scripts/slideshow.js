@@ -278,6 +278,14 @@ cocktail.bind(".SlideShow", function ($slideShow) {
         $slideShow.find(".bullets")[method]();
     }
 
+    this.addSlide = function (slide) {
+        $slideShow.find(".slides").append(slide);
+        jQuery(slide)
+            .css({"position": "absolute"})
+            .hide();
+        this._toggleControls();
+    }
+
     this._toggleControls();
 });
 
