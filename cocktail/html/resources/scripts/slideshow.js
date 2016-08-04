@@ -308,10 +308,11 @@ cocktail.bind(".SlideShow", function ($slideShow) {
 
     this.addSlide = function (slide) {
         $slideShow.find(".slides").append(slide);
-        jQuery(slide)
+        var $slide = jQuery(slide)
             .css({"position": "absolute"})
             .hide();
         this._toggleControls();
+        return $slide;
     }
 
     this._toggleControls();
