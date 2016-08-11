@@ -139,8 +139,11 @@ class TreeView(Element):
         children = self.get_expanded_children(item)
 
         if self.create_empty_containers or children:
+            entry.add_class("branch")
             entry.container = self.create_children_container(item, children)
             entry.append(entry.container)
+        else:
+            entry.add_class("leaf")
 
         return entry
 
