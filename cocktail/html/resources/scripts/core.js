@@ -297,6 +297,13 @@ cocktail.__dialogBackground = null;
 
 cocktail.showDialog = function (content, params /* = null */) {
 
+    var $body = jQuery(document.body);
+    var replacing = $body.is(".modal");
+
+    if (replacing) {
+        cocktail.closeDialog({maintainModalState: true});
+    }
+
     var $content = jQuery(content);
     content = $content[0];
     var dialogParent = params && params.parent && jQuery(params.parent)[0] || cocktail.rootElement;
@@ -319,7 +326,9 @@ cocktail.showDialog = function (content, params /* = null */) {
     dialogParent.appendChild(cocktail.__dialogBackground);
 
     $content.addClass("dialog");
-    jQuery(document.body).addClass("modal");
+    if (!replacing) {
+        $body.addClass("modal");
+    }
 
     var closeMode = params && params.closeMode || "detach";
     $content.data("cocktailDialogCloseMode", closeMode);
@@ -338,6 +347,17 @@ cocktail.showDialog = function (content, params /* = null */) {
 
     if (!params || params.center || params.center === undefined) {
         cocktail.center(content);
+    }
+
+    if (params && params.animation == "fade") {
+        if (!replacing) {
+            jQuery(cocktail.__dialogBackground)
+                .css("opacity", 0)
+                .animate({"opacity": 1}, 1000);
+        }
+        $content
+            .css("opacity", 0)
+            .animate({"opacity": 1}, 1000);
     }
 
     $content.trigger("dialogOpened");
@@ -372,17 +392,21 @@ cocktail.waitForImages = function (element) {
     return jQuery.when.apply(jQuery, deferreds);
 }
 
-cocktail.closeDialog = function () {
+cocktail.closeDialog = function (params) {
 
+    var maintainModalState = params && params.maintainModalState;
     var $dialog = jQuery(".dialog");
     var $dialogBackground = jQuery(".dialog-background");
 
     $dialog.trigger({
         type: "dialogClosing",
-        background: $dialogBackground[0]
+        background: $dialogBackground[0],
+        parameters: params
     });
 
-    $dialogBackground.detach();
+    if (!maintainModalState) {
+        $dialogBackground.detach();
+    }
 
     var closeMode = $dialog.data("cocktailDialogCloseMode");
     if (closeMode == "detach") {
@@ -394,10 +418,13 @@ cocktail.closeDialog = function () {
 
     $dialog.trigger({
         type: "dialogClosed",
-        background: $dialogBackground[0]
+        background: $dialogBackground[0],
+        parameters: params
     });
 
-    jQuery(document.body).removeClass("modal");
+    if (!maintainModalState) {
+        jQuery(document.body).removeClass("modal");
+    }
 }
 
 cocktail.createElement = function (tag, name, type) {
