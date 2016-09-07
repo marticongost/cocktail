@@ -240,17 +240,19 @@ class HTMLDocument(Element):
 
     def _add_client_variables(self):
 
-        if self.metadata.client_variables:
-            self._add_core_scripts()
-            self.client_setup_container.append(
-                "\t\tcocktail.resourceRepositories = %s;\n" % dumps(
-                    dict(
-                        (repo_name, repo_data[0] + "/")
-                        for repo_name, repo_data
-                        in resource_repositories.iteritems()
-                    )
+
+        self._add_core_scripts()
+        self.client_setup_container.append(
+            "\t\tcocktail.resourceRepositories = %s;\n" % dumps(
+                dict(
+                    (repo_name, repo_data[0] + "/")
+                    for repo_name, repo_data
+                    in resource_repositories.iteritems()
                 )
             )
+        )
+
+        if self.metadata.client_variables:
             for key, value in self.metadata.client_variables.iteritems():
                 self.client_setup_container.append(
                     "\t\tcocktail.setVariable(%s, %s);\n" % (
