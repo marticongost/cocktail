@@ -146,6 +146,9 @@ class Query(object):
         """
         return self.__type
 
+    def is_subset(self):
+        return bool(self.__base_collection is not None or self.__filters)
+
     def _get_base_collection(self):
         if self.__base_collection is None:
             return self.type.index.values()
