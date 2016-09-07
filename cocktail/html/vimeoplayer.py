@@ -28,8 +28,11 @@ class VimeoPlayer(Element):
     def _ready(self):
 
         if self.javascript_api:
-            self.require_id()
             self.add_class("scriptable_video_player")
+            self.add_resource(
+                "%s://player.vimeo.com/api/player.js"
+                % ("https" if self.https else "http")
+            )
             self.add_resource("cocktail://scripts/vimeoplayer.js")
 
         self["src"] = self.get_video_url()
@@ -51,14 +54,10 @@ class VimeoPlayer(Element):
         params = [
             "autoplay=%d" % self.vimeo_autoplay,
             "loop=%d" % self.vimeo_loop,
-            "api=%d" % self.javascript_api,
             "title=%d" % self.vimeo_title,
             "byline=%d" % self.vimeo_byline,
             "portrait=%d" % self.vimeo_portrait
         ]
-
-        if self.javascript_api:
-            params.append("player_id=" + self["id"])
 
         if self.vimeo_color:
             params.append("color=" + self.vimeo_color.lstrip("#"))

@@ -5,7 +5,7 @@ u"""
 """
 from collections import Iterable, Mapping, OrderedDict
 from itertools import izip
-from urllib import quote
+from urllib import quote, unquote
 from urlparse import urlparse
 from frozendict import frozendict
 
@@ -47,7 +47,7 @@ class URL(unicode):
 
             # Decode byte strings
             elif isinstance(url, str):
-                return cls.__new__(cls, url.decode(ENCODING))
+                return cls.__new__(cls, unquote(url).decode(ENCODING))
 
             else:
                 raise ValueError(
@@ -273,12 +273,20 @@ class URLBuilder(object):
             hostname = self.hostname,
             port = self.port,
             path = prefix + u"/".join(
-                unicode(item) if isinstance(item, int) else item
+                self._normalize_path_component(item)
                 for item in self.path
             ),
             query = self.query,
             fragment = self.fragment
         )
+
+    def _normalize_path_component(self, component):
+        if isinstance(component, int):
+            return unicode(component)
+        elif isinstance(component, str):
+            return unquote(component).decode(ENCODING)
+        else:
+            return component
 
 
 class Path(unicode):
@@ -292,7 +300,7 @@ class Path(unicode):
             return path
 
         elif isinstance(path, str):
-            return cls(path.decode(ENCODING))
+            return cls(unquote(path).decode(ENCODING))
 
         elif isinstance(path, unicode):
 
@@ -383,7 +391,10 @@ class Path(unicode):
         other = Path(other)
 
         if other.relative:
-            return self.__class__(unicode(self) + "/" + unicode(other))
+            path = self
+            if self.segments:
+                path = self.pop()
+            return path.append(other)
         else:
             return other
 
@@ -450,7 +461,7 @@ class QueryString(unicode):
 
         # Decode and parse byte strings
         elif isinstance(query, str):
-            return cls.__new__(cls, query.decode(ENCODING))
+            return cls.__new__(cls, unquote(query).decode(ENCODING))
 
         # Parse unicode strings
         elif isinstance(query, unicode):
@@ -512,7 +523,7 @@ class QueryString(unicode):
             if isinstance(query, basestring):
                 query_string = query
                 if isinstance(query_string, str):
-                    query_string = query_string.decode(ENCODING)
+                    query_string = unquote(query_string).decode(ENCODING)
                 query_string = query_string.lstrip("?").lstrip("&")
                 b = _parse_query_string(query_string, OrderedDict)
             elif isinstance(query, QueryString):
@@ -550,7 +561,7 @@ class QueryString(unicode):
 
 def _normalize_query_string_value(value):
     if isinstance(value, str):
-        return (value.decode(ENCODING),)
+        return (unquote(value).decode(ENCODING),)
     elif isinstance(value, unicode):
         return (value,)
     elif isinstance(value, int):
@@ -558,7 +569,7 @@ def _normalize_query_string_value(value):
     elif isinstance(value, Iterable):
         return tuple(
             (
-                item.decode(ENCODING)
+                unquote(item).decode(ENCODING)
                 if isinstance(item, str)
                 else item
             )

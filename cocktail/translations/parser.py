@@ -376,7 +376,7 @@ class TranslationsFileParser(object):
             value = parts[0][0]
         else:
             func_name = self.__node.func_name
-            func_args = self.__node.func_args
+            func_args = self.__node.func_args or "*args, **kwargs"
             code = "def %s(%s):\n    return " % (func_name, func_args)
             glue = ""
             for part_value, part_type in parts:

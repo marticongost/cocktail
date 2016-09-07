@@ -87,3 +87,13 @@ def apply_forwarded_url_scheme():
         cherrypy.request.base = '%s://%s' % (forwarded_scheme, rest)
 
 cherrypy.request.hooks.attach("on_start_resource", apply_forwarded_url_scheme)
+
+# Make the autoreloading mechanism in the CherryPy server observe .strings
+# files
+from cocktail.events import when
+from cocktail.translations import translations
+
+@when(translations.bundle_loaded)
+def track_bundle_files(e):
+    cherrypy.engine.autoreload.files.add(e.file_path)
+
