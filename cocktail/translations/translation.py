@@ -11,6 +11,7 @@ from threading import local
 from contextlib import contextmanager
 from collections import Mapping
 from pkg_resources import resource_filename
+from cocktail.events import Event
 from cocktail.modeling import (
     getter,
     DictWrapper,
@@ -136,6 +137,8 @@ def clear_fallback_languages():
 
 class Translations(object):
 
+    bundle_loaded = Event()
+
     def __init__(self, *args, **kwargs):
         self.definitions = {}
         self.__loaded_bundles = set()
@@ -188,6 +191,8 @@ class Translations(object):
                         self.definitions[key] = value
                     else:
                         self.set(key, language, value)
+
+            self.bundle_loaded(file_path = file_path)
 
     def request_bundle(self, bundle_path, **kwargs):
         try:

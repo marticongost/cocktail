@@ -13,7 +13,7 @@ custom_value = object()
     def get_label_for_custom_value(self):
 
         if self.member:
-            label = translations(self.member, suffix = "-custom_value")
+            label = translations(self.member, suffix = ".custom_value")
 
         if not label:
             label = translations("cocktail.html.SuggestionList.custom_value")

@@ -241,7 +241,8 @@ class TemplateCompiler(object):
 
                 if overlay_class:
                     self.__global_source.write(
-                        "translations.request_bundle('%s')" % overlay_class
+                        "translations.request_bundle('%s')"
+                        % (self.pkg_name + "." + self.class_name.lower())
                     )
                     self.__end_source.write(
                         "register_overlay(%r, %r)" % (

@@ -199,7 +199,7 @@ class Form(object):
         if self.model is None:
             raise ValueError("No form model specified for %s" % self)
 
-        adapted_schema = schema.Schema(self.form_id)
+        adapted_schema = schema.Schema(get_full_name(self.__class__))
         return self.adapter.export_schema(self.model, adapted_schema)
 
     @cached_getter
