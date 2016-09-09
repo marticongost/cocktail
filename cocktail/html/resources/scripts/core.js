@@ -737,7 +737,7 @@ cocktail.focusPrevious = function (item) {
     }
 }
 
-cocktail.declare = function (dottedName) {
+cocktail.declare = function (dottedName, content /* optional */) {
     var obj;
     var parts = dottedName.split(".");
     var visitedParts = [];
@@ -758,6 +758,13 @@ cocktail.declare = function (dottedName) {
         }
         container = obj;
     }
+
+    if (content) {
+        for (var k in content) {
+            obj[k] = content[k];
+        }
+    }
+
     return obj;
 }
 
