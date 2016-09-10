@@ -1179,7 +1179,7 @@ class InstrumentedDict(DictWrapper, InstrumentedCollection):
         try:
             value = self._items[key]
         except KeyError:
-            pass
+            item = default
         else:
             added = []
             removed = [(key, value)]
