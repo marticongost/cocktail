@@ -350,7 +350,11 @@ class TranslationsFileParser(object):
                 i += 1
 
             else:
-                match = self.python_string_expr.match(code, i)
+                if depth:
+                    match = self.python_string_expr.match(code, i)
+                else:
+                    match = None
+
                 if match:
                     i = match.end()
                 else:
