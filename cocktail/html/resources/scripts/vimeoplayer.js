@@ -12,7 +12,6 @@ cocktail.bind(".VimeoPlayer.scriptable_video_player", function ($player) {
     this.vimeoPlayer = new Vimeo.Player($player);
 
     this.play = function () {
-        console.log("PLAY");
         this.vimeoPlayer.play();
     }
 
@@ -21,7 +20,6 @@ cocktail.bind(".VimeoPlayer.scriptable_video_player", function ($player) {
     }
 
     this.stop = function () {
-        console.log("STOP");
         this.vimeoPlayer.setCurrentTime(0);
         this.vimeoPlayer.pause();
     }
