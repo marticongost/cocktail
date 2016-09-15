@@ -74,7 +74,16 @@ class TemplateCompiler(object):
         self._pop()
 
     def compile(self, xml):
-        self.__parser.Parse(xml, True)
+        try:
+            self.__parser.Parse(xml, True)
+        except expat.ExpatError, e:
+            raise ParseError(
+                "Error parsing template %s.%s: %s" % (
+                self.pkg_name,
+                self.class_name,
+                e.message
+            )
+        )
 
     def _parse_error(self, reason):
         raise ParseError(
