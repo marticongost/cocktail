@@ -18,10 +18,11 @@ cocktail.infiniteScroll = function (params) {
     var nextPageURL = $element.find(nextPageSelector).attr("href");
     var direction = params.direction || "portrait";
     var autoTrigger = params.autoTrigger === undefined ? true : params.autoTrigger;
+    var triggerDistance = params.triggerDistance || 1.5;
     var contentRequest;
 
     var overflowCheck = params.overflowCheck || function (viewportOffset, viewportSize, contentSize) {
-        return viewportOffset >= contentSize - viewportSize * 2;
+        return viewportOffset >= contentSize - viewportSize * triggerDistance;
     };
 
     var insertContent = params.insertContent || function ($content) {
