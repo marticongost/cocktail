@@ -20,6 +20,8 @@ cocktail.infiniteScroll = function (params) {
     var autoTrigger = params.autoTrigger === undefined ? true : params.autoTrigger;
     var triggerDistance = params.triggerDistance || 1.5;
     var contentRequest;
+    var animation = params.animation === undefined ? "fadeIn" : params.animation;
+    var animationDuration = params.animationDuration || 1000;
 
     var overflowCheck = params.overflowCheck || function (viewportOffset, viewportSize, contentSize) {
         return viewportOffset >= contentSize - viewportSize * triggerDistance;
@@ -92,6 +94,11 @@ cocktail.infiniteScroll = function (params) {
                 });
 
                 insertContent($content);
+
+                if (animation == "fadeIn") {
+                    $content.hide();
+                    $content.fadeIn({duration: animationDuration});
+                }
 
                 $element.trigger({
                     type: "infiniteScrollContentInserted",
