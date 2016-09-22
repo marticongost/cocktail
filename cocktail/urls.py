@@ -468,6 +468,11 @@ class QueryString(unicode):
             query_string = query.lstrip("?").lstrip("&")
             fields = _parse_query_string(query_string)
 
+        # Generate a query string from an ordered mapping
+        elif isinstance(query, OrderedDict):
+            fields = _normalize_query_string_mapping(query, OrderedDict)
+            query_string = _join_query_string_values(fields)
+
         # Generate a query string from a mapping
         elif isinstance(query, Mapping):
             fields = _normalize_query_string_mapping(query)
