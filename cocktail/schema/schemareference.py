@@ -28,7 +28,7 @@ class Reference(RelationMember):
     __class_family = None
 
     cycles_allowed = True
-    default_order = None
+    default_order = "__auto__"
 
     def translate_value(self, value, language = None, **kwargs):
         if value is None:
@@ -156,10 +156,10 @@ class Reference(RelationMember):
                 if values is not None:
                     query.base_collection = values
 
-                order = (
-                    self.default_order
-                    or getattr(self.type, "descriptive_member", None)
-                )
+                order = self.default_order
+
+                if order == "__auto__":
+                    order = getattr(self.type, "descriptive_member", None)
 
                 if order is not None:
                     if isinstance(order, (basestring, Member)):
