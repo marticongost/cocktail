@@ -3,21 +3,19 @@ u"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
-from cocktail.translations import translations
+from cocktail.translations import format_money
 from cocktail.schema.schemanumbers import Decimal
-
-
-def format_money(value, currency):
-    if value == "" or value is None:
-        return ""
-    else:
-        return translations(value) + " " + currency
 
 
 class Money(Decimal):
 
-    currency = u"€"
+    currency = u"EUR"
 
-    def translate_value(self, value, language = None, **kwargs):
-        return format_money(value, self.currency)
+    def translate_value(self, value, language = None, format = "sign", **kwargs):
+        return format_money(
+            value,
+            self.currency,
+            format = format,
+            language = language
+        )
 
