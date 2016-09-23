@@ -35,6 +35,7 @@ from cocktail.schema.schemanumbers import (
 )
 from cocktail.schema.memberreference import MemberReference
 from cocktail.schema.money import Money
+from cocktail.schema.currency import Currency
 from cocktail.schema.month import Month
 from cocktail.schema.calendarpage import CalendarPage
 try:
