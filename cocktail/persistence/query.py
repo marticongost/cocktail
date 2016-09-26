@@ -82,15 +82,17 @@ class Query(object):
             (lambda s: " " * 4 + ("%.4fs" % s))
     }
 
-    def __init__(self,
+    def __init__(
+        self,
         type,
         filters = None,
         order = None,
         range = None,
         base_collection = None,
         cached = True,
-        verbose = None):
-
+        verbose = None,
+        description = None
+    ):
         self.__type = type
         self.__filters = None
         self.__order = None
@@ -107,6 +109,7 @@ class Query(object):
         self.base_collection = base_collection
         self.cached = cached
         self.nesting = 0
+        self.description = description
 
         if verbose is not None:
             self.verbose = verbose
@@ -327,9 +330,16 @@ class Query(object):
 
             if self.nesting:
                 print
-                self._verbose_message("nested_header", "Nested query")
+                heading = u"Nested query"
+                heading_style = "nested_header"
             else:
-                self._verbose_message("header", "Query")
+                heading = u"Query"
+                heading_style = "header"
+
+            if self.description:
+                heading += u": " + self.description
+
+            self._verbose_message(heading_style, heading)
 
             self._verbose_message("attrib", "type", self.type.full_name)
 
@@ -756,12 +766,14 @@ class Query(object):
                     return None
                 return self.type.index[id]
 
-    def select(self,
+    def select(
+        self,
         filters = inherit,
         order = inherit,
         range = inherit,
-        verbose = inherit):
-
+        verbose = inherit,
+        description = inherit
+    ):
         child_query = self.__class__(
             self.__type,
             self.filters
@@ -770,7 +782,10 @@ class Query(object):
             self.order if order is inherit else order,
             self.range if range is inherit else range,
             self.__base_collection,
-            verbose = self.verbose if verbose is inherit else verbose)
+            verbose = self.verbose if verbose is inherit else verbose,
+            description =
+                self.description if description is inherit else description
+        )
 
         if filters is inherit:
             child_query.__cached_results = self.__cached_results
