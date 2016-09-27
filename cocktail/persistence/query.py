@@ -50,36 +50,37 @@ class Query(object):
             (lambda t: styled(t.ljust(76), "black", "violet")),
         "attrib":
             (lambda k, v:
-                " " * 4
-                + styled((k + ":").ljust(15), style = "bold")
-                + str(v)
+                styled((k + ":").ljust(15), style = "bold") + str(v)
             ),
         "cached":
-            (lambda t: " " * 4 + styled(t, "black", "bright_green")),
+            (lambda t: styled(t, "black", "bright_green")),
         "phase":
-            (lambda t: " " * 4 + styled(t, "white", "black", "underline")),
+            (lambda t: styled(t, "white", "black", "underline")),
         "eval":
-            (lambda expr: " " * 4 + styled("Eval: ", "magenta") + str(expr)),
+            (lambda expr: styled("Eval ", "magenta") + str(expr)),
         "initial_dataset":
             (lambda dataset:
-                " " * 4
-                + "Initial dataset: "
+                "Initial dataset: "
                 + styled(len(dataset), style = "bold")
             ),
         "resolve":
             (lambda expr:
-                " " * 4
-                + styled("Resolve: ", "bright_green")
+                styled("Resolve ", "bright_green")
                 + str(expr)
             ),
         "results":
-            (lambda n: " " * 4 + styled(n, style = "bold")),
+            (lambda n, t:
+                u"↳ %s %s" % (
+                    styled(n, style = "bold"),
+                    styled("(%.4fs)" % t, "brown")
+                )
+            ),
         "watch_present":
-            (lambda: " " * 4 + styled("Object found", "white", "green")),
+            (lambda: styled("Object found", "white", "green")),
         "watch_missing":
-            (lambda: " " * 4 + styled("Object missing", "white", "magenta")),
+            (lambda: styled("Object missing", "white", "magenta")),
         "timing":
-            (lambda s: " " * 4 + ("%.4fs" % s))
+            (lambda s: styled("%.4fs" % s, "brown"))
     }
 
     def __init__(
@@ -332,7 +333,6 @@ class Query(object):
         if verbose:
 
             if self.nesting:
-                print
                 heading = u"Nested query"
                 heading_style = "nested_header"
             else:
@@ -342,6 +342,7 @@ class Query(object):
             if self.description:
                 heading += u": " + self.description
 
+            print
             self._verbose_message(heading_style, heading)
 
             self._verbose_message("attrib", "type", self.type.full_name)
@@ -389,6 +390,7 @@ class Query(object):
                 dataset = self._apply_filters(dataset)
 
             if verbose:
+                print
                 self._verbose_message("timing", time() - start)
 
         # Apply order
@@ -478,6 +480,9 @@ class Query(object):
             if not dataset:
                 break
 
+            if verbose:
+                start = time()
+
             # Default filter implementation. Used when no custom transformation
             # function is provided, or if the dataset has been reduced to a
             # single item (to spare the intersection between the results for
@@ -485,6 +490,7 @@ class Query(object):
             if custom_impl is None or len(dataset) == 1:
 
                 if verbose:
+                    print
                     self._verbose_message("eval", expr)
 
                 dataset.intersection_update(
@@ -497,6 +503,7 @@ class Query(object):
             else:
 
                 if verbose:
+                    print
                     self._verbose_message("resolve", expr)
 
                 dataset = custom_impl(dataset)
@@ -508,7 +515,7 @@ class Query(object):
                     else:
                         self._verbose_message("watch_missing")
 
-                self._verbose_message("results", len(dataset))
+                self._verbose_message("results", len(dataset), time() - start)
 
         return dataset
 
@@ -1035,6 +1042,11 @@ def _inclusion_resolution(self, query):
 
     subject = self.operands[0]
     subset = self.operands[1].eval()
+
+    if isinstance(subset, Query):
+        subset = subset.select()
+        subset.nesting = query.nesting + 1
+
     ids = ids_from_subset(subset, self.by_key)
 
     if subject is expressions.Self:
@@ -1068,6 +1080,11 @@ def _exclusion_resolution(self, query):
 
     subject = self.operands[0]
     subset = self.operands[1].eval()
+
+    if isinstance(subset, Query):
+        subset = subset.select()
+        subset.nesting = query.nesting + 1
+
     ids = ids_from_subset(subset, self.by_key)
 
     if subject is expressions.Self:
