@@ -22,12 +22,13 @@ class MemoryCacheStorage(CacheStorage):
     verbose_invalidation = False
     verbose_memory_usage = False
 
-    def __init__(self):
+    def __init__(self, memory_limit = None):
         self.__lock = RLock()
         self.__dict = {}
         self.__oldest_entry = None
         self.__newest_entry = None
         self.__entries_by_tag = {}
+        self.memory_limit = memory_limit
 
     @property
     def memory_usage(self):
