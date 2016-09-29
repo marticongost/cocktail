@@ -35,6 +35,11 @@ class TinyMCE(Element):
             if class_params:
                 params.update(class_params)
 
+        if self.member:
+            member_params = getattr(self.member, "tinymce_params")
+            if member_params:
+                params.update(member_params)
+
         params.update(self.tinymce_params)
         return params
 
