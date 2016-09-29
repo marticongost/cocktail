@@ -5,6 +5,16 @@
     }
 }
 
+@mixin top-bottom($property, $value) {
+    #{$property}-top: $value;
+    #{$property}-bottom: $value;
+}
+
+@mixin left-right($property, $value) {
+    #{$property}-top: $value;
+    #{$property}-bottom: $value;
+}
+
 @function join-media-query($query1, $query2) {
     @if $query1 and $query2 {
         @return $query1 + " and " + $query2;
