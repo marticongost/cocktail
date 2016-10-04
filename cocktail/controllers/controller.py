@@ -30,7 +30,11 @@ class Controller(RequestHandler):
     #------------------------------------------------------------------------------
     exposed = True
 
-    def __call__(self, **kwargs):
+    def __call__(self, *args, **kwargs):
+
+        if args:
+            raise cherrypy.NotFound()
+
         try:
             if self.ready:
                 self.submit()
