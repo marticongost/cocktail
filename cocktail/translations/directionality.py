@@ -14,6 +14,7 @@ defaults = {
 }
 
 def get(locale):
+    locale = locale.split("-", 1)[0]
     mapping = getattr(_thread_data, "directionality", None)
     direction = None if mapping is None else mapping.get(locale)
     if direction is None:
