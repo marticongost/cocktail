@@ -15,7 +15,7 @@ from .dispatcher import StopRequest
 
 translations.load_bundle("cocktail.controllers.redirection")
 
-def redirection(destination, status = None):
+def redirect(destination, status = None):
     """Redirect the current request to the given URL."""
 
     if isinstance(destination, URLBuilder):

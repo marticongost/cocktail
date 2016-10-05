@@ -41,7 +41,7 @@ from cocktail.controllers.uriutils import (
     percent_encode_uri
 )
 from cocktail.controllers.redirection import (
-    redirection,
+    redirect,
     reload_request_url,
     post_redirection
 )
