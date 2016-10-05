@@ -9,10 +9,21 @@ from cocktail.translations import (
     language_context,
     get_language
 )
+from cocktail.urls import URL, URLBuilder
 from .request import get_request_url
 from .dispatcher import StopRequest
 
 translations.load_bundle("cocktail.controllers.redirection")
+
+def redirect(destination, status = None):
+    """Redirect the current request to the given URL."""
+
+    if isinstance(destination, URLBuilder):
+        destination = destination.get_url()
+    elif not isinstance(destination, URL):
+        destination = URL(destination)
+
+    raise cherrypy.HTTPRedirect(str(destination), status = status)
 
 def reload_request_url():
     """Redirect to the current URL using a GET request."""
