@@ -59,7 +59,7 @@ def join(sequence):
     return join_func(sequence)
 
 def either(sequence):
-    either_func = globals()[get_language() + "_join"]
+    either_func = globals()[get_language() + "_either"]
     return either_func(sequence)
 
 def plural2(count, singular, plural):
