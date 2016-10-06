@@ -5,7 +5,7 @@ u"""Helper functions for translating strings into multiple languages.
 """
 from decimal import Decimal
 from cocktail.modeling import ListWrapper
-from cocktail.translations.translation import get_language
+from cocktail.translations.translation import get_language, iter_language_chain
 
 CA_APOSTROPHE_LETTERS = u"haàeèéiíoòóuú"
 
@@ -55,12 +55,22 @@ fr_join = create_join_function("fr", u", ", u" et ")
 fr_either = create_join_function("fr", u", ", u" ou ")
 
 def join(sequence):
-    join_func = globals()[get_language() + "_join"]
-    return join_func(sequence)
+    g = globals()
+    for lang in iter_language_chain():
+        join_func = g.get(lang + "_join")
+        if join_func:
+            return join_func(sequence)
+
+    raise ValueError("No join function for language " + get_language())
 
 def either(sequence):
-    either_func = globals()[get_language() + "_either"]
-    return either_func(sequence)
+    g = globals()
+    for lang in iter_language_chain():
+        join_func = g.get(lang + "_either")
+        if join_func:
+            return join_func(sequence)
+
+    raise ValueError("No either function for language " + get_language())
 
 def plural2(count, singular, plural):
 
