@@ -1202,6 +1202,9 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
         xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
         xhr.setRequestHeader("X-File-Name", encodeURIComponent(name));
         xhr.setRequestHeader("Content-Type", "application/octet-stream");
+        if (cocktail.csrfprotection) {
+            cocktail.csrfprotection.setupRequest(xhr);
+        }
         xhr.send(file);
     },
     _onComplete: function(id, xhr){

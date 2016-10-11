@@ -69,6 +69,12 @@ from cocktail.controllers.sessions import session
 import cocktail.controllers.grouping
 import cocktail.controllers.erroremail
 import cocktail.controllers.handlerprofiler
+from .csrfprotection import (
+    CSRFProtection,
+    CSRFTokenError,
+    get_csrf_protection,
+    set_csrf_protection
+)
 
 # The ZODB debugger needs collections.Counter, and therefore is not available
 # under Python 2.6
