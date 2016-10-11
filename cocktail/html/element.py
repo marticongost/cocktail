@@ -12,6 +12,7 @@ from cocktail.modeling import (
 )
 from cocktail.iteration import first
 from cocktail.pkgutils import get_full_name
+from cocktail.events import EventHub, Event, when
 from cocktail.translations import translations, directionality
 from cocktail.caching.utils import nearest_expiration
 from cocktail.html.viewnames import get_view_full_name, split_view_name
@@ -154,6 +155,9 @@ class Element(object):
         propagated to. This is useful to have container elements with a control
         nested within them.
     """
+    binding_stage = Event()
+    ready_stage = Event()
+
     tag = "div"
     page_doctype = None
     page_title = None
@@ -210,8 +214,6 @@ class Element(object):
         self.__client_translations = None
         self.__is_bound = False
         self.__is_ready = False
-        self.__binding_handlers = None
-        self.__ready_handlers = None
         self.__document_ready_callbacks = None
 
         if tag is not default:
@@ -222,10 +224,10 @@ class Element(object):
 
         self._build()
 
-    class __metaclass__(type):
+    class __metaclass__(EventHub):
 
         def __init__(cls, name, bases, members):
-            type.__init__(cls, name, bases, members)
+            EventHub.__init__(cls, name, bases, members)
             cls._view_name = members.get("_view_name")
 
             if "overlays_enabled" not in members:
@@ -353,7 +355,9 @@ class Element(object):
         if document_metadata is None:
             document_metadata = DocumentMetadata()
 
-        self.when_ready(self.require_id)
+        @when(self.ready_stage)
+        def require_id(e):
+            self.require_id()
 
         content = self.render(
             renderer = renderer,
@@ -467,18 +471,14 @@ class Element(object):
         won't be when rendering an element from cached content.
 
         The method will first invoke the element's `_binding` method, and then
-        any function scheduled with `when_binding`.
+        trigger its `binding_stage` event.
 
         It is safe to call this method more than once, but any invocation after
         the first will produce no effect.
         """
         if not self.__is_bound:
             self._binding()
-
-            if self.__binding_handlers:
-                for handler in self.__binding_handlers:
-                    handler()
-
+            self.binding_stage()
             self._data_binding()
             self.__is_bound = True
 
@@ -491,17 +491,20 @@ class Element(object):
             not receive any parameter.
         :type handler: callable
         """
-        if self.__binding_handlers is None:
-            self.__binding_handlers = [handler]
-        else:
-            self.__binding_handlers.append(handler)
+        warn(
+            "cocktail.html.Element.when_binding has been deprecated in "
+            "favor of the cocktail.html.Element.binding_stage event",
+            DeprecationWarning,
+            stacklevel = 2
+        )
+        self.binding_stage.append(lambda e: handler())
 
     def _binding(self):
         """A method invoked when the element reaches the `bind` stage.
 
         This is a placeholder method, to implement late initialization for the
-        element. It's an alternative to `when_binding`, and can be more
-        convenient when defining initialization logic at the class level.
+        element. It's an alternative to the `binding_stage` event, and can be
+        more convenient when defining initialization logic at the class level.
         Implementors should always call the overriden method from their bases.
 
         See `bind` and `ready` for more details on late initialization.
@@ -574,7 +577,7 @@ class Element(object):
         content.
 
         The method will first invoke `bind`, then the element's `_ready`
-        method, and then any function scheduled with `when_ready`.
+        method, and then trigger the `ready_stage` event.
 
         It is safe to call this method more than once, but any invocation after
         the first will produce no effect. Likewise, the implicit call to `bind`
@@ -585,10 +588,7 @@ class Element(object):
             self.bind()
 
             self._ready()
-
-            if self.__ready_handlers:
-                for handler in self.__ready_handlers:
-                    handler()
+            self.ready_stage()
 
             if self.member:
                 self.add_class(self.member.__class__.__name__)
@@ -606,17 +606,20 @@ class Element(object):
             not receive any parameter.
         :type handler: callable
         """
-        if self.__ready_handlers is None:
-            self.__ready_handlers = [handler]
-        else:
-            self.__ready_handlers.append(handler)
+        warn(
+            "cocktail.html.Element.when_ready has been deprecated in "
+            "favor of the cocktail.html.Element.ready_stage event",
+            DeprecationWarning,
+            stacklevel = 2
+        )
+        self.ready_stage.append(lambda e: handler())
 
     def _ready(self):
         """A method invoked when the element reaches the `ready` stage.
 
         This is a placeholder method, to implement late initialization for the
-        element. It's an alternative to `when_ready`, and can be more
-        convenient when defining initialization logic at the class level.
+        element. It's an alternative to the `ready_stage` event, and can be
+        more convenient when defining initialization logic at the class level.
         Implementors should always call the overriden method from their bases.
 
         See `bind` and `ready` for more details on late initialization.

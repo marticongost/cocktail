@@ -7,6 +7,7 @@ u"""
 @since:			September 2008
 """
 from cocktail.modeling import getter
+from cocktail.events import when
 from cocktail.translations import translations
 from cocktail.html import Element
 from cocktail.controllers.viewstate import view_state
@@ -140,8 +141,8 @@ class Pager(Element):
         )
         button.icon["title"] = button.icon["alt"]
 
-        @button.icon.when_ready
-        def set_button_style():
+        @when(button.icon.ready_stage)
+        def set_button_style(e):
             if self.button_style == "characters":
                 button.icon.tag = "span"
                 button.icon["src"] = None

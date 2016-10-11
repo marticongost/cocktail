@@ -76,14 +76,15 @@ class CacheTestCase(TestCase):
 
     def test_cached_content_includes_resources(self):
 
+        from cocktail.events import when
         from cocktail.html.element import Element
 
         e = Element()
         e.cached = True
         e.cache_key = "test"
 
-        @e.when_ready
-        def add_resources():
+        @when(e.ready_stage)
+        def add_resources(event):
             child = Element()
             child.add_resource("foo.js")
             e.append(child)
@@ -94,14 +95,15 @@ class CacheTestCase(TestCase):
 
     def test_cached_content_includes_client_parameters(self):
 
+        from cocktail.events import when
         from cocktail.html.element import Element
 
         e = Element()
         e.cached = True
         e.cache_key = "test"
 
-        @e.when_ready
-        def add_resources():
+        @when(e.ready_stage)
+        def add_resources(event):
             child = Element()
             child.set_client_param("foo", "bar")
             e.append(child)
@@ -112,14 +114,15 @@ class CacheTestCase(TestCase):
 
     def test_cached_content_includes_client_variables(self):
 
+        from cocktail.events import when
         from cocktail.html.element import Element
 
         e = Element()
         e.cached = True
         e.cache_key = "test"
 
-        @e.when_ready
-        def add_resources():
+        @when(e.ready_stage)
+        def add_resources(event):
             child = Element()
             child.set_client_variable("foo", "bar")
             e.append(child)
@@ -130,14 +133,15 @@ class CacheTestCase(TestCase):
 
     def test_cached_content_includes_head_elements(self):
 
+        from cocktail.events import when
         from cocktail.html.element import Element
 
         e = Element()
         e.cached = True
         e.cache_key = "test"
 
-        @e.when_ready
-        def add_resources():
+        @when(e.ready_stage)
+        def add_resources(event):
             child = Element()
             child.add_head_element(Element("foo"))
             e.append(child)
@@ -148,14 +152,15 @@ class CacheTestCase(TestCase):
 
     def test_cached_content_includes_meta_tags(self):
 
+        from cocktail.events import when
         from cocktail.html.element import Element
 
         e = Element()
         e.cached = True
         e.cache_key = lambda: "test"
 
-        @e.when_ready
-        def add_resources():
+        @when(e.ready_stage)
+        def add_resources(event):
             child = Element()
             child.set_meta("foo", "bar")
             e.append(child)
@@ -166,14 +171,15 @@ class CacheTestCase(TestCase):
 
     def test_cached_content_includes_client_translations(self):
 
+        from cocktail.events import when
         from cocktail.html.element import Element
 
         e = Element()
         e.cached = True
         e.cache_key = "test"
 
-        @e.when_ready
-        def add_resources():
+        @when(e.ready_stage)
+        def add_resources(event):
             child = Element()
             child.add_client_translation("foo")
             e.append(child)

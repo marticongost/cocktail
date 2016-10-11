@@ -8,6 +8,7 @@ u"""
 """
 import re
 from xml.parsers import expat
+from cocktail.events import when
 from cocktail.modeling import refine, extend, call_base, getter, DictWrapper
 from cocktail.translations import translations, get_language
 from cocktail.html.element import default, PlaceHolder
@@ -143,6 +144,7 @@ class TemplateCompiler(object):
                         **kwargs
                     )
             ),
+            "when": when,
             "get_language": get_language,
             "refine": refine, # obsolete; use extend/call_base instead
             "extend": extend,
@@ -263,8 +265,8 @@ class TemplateCompiler(object):
             elif tag in ("ready", "binding"):
                 is_content = False
                 is_new = False
-                source.write("@%s.when_%s" % (parent_id, tag))
-                source.write("def _handler():")
+                source.write("@when(%s.%s_stage)" % (parent_id, tag))
+                source.write("def _handler(e):")
                 source.indent()
 
                 parent_id = self._get_parent_id()
@@ -688,8 +690,8 @@ class TemplateCompiler(object):
                 source.write(assignment)
 
         if place_holders:
-            source.write("@%s.when_binding" % id)
-            source.write("def _bindings():")
+            source.write("@when(%s.binding_stage)" % id)
+            source.write("def _bindings(e):")
             source.indent()
 
             parent_id = self._get_parent_id()
