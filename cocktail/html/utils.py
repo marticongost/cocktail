@@ -7,21 +7,22 @@ import re
 from itertools import izip, cycle
 from decimal import Decimal
 import bs4
+from cocktail.events import when
 from cocktail.urls import URL
 from cocktail.html.rendering import get_current_rendering
 
 def alternate_classes(element, classes = ("odd", "even")):
 
-    @element.when_ready
-    def alternate_classes_handler():
+    @when(element.ready_stage)
+    def alternate_classes_handler(e):
         children = (child for child in element.children if child.rendered)
         for child, cls in izip(children, cycle(classes)):
             child.add_class(cls)
 
 def first_last_classes(element, first_class = "first", last_class = "last"):
 
-    @element.when_ready
-    def first_last_classes_handler():
+    @when(element.ready_stage)
+    def first_last_classes_handler(e):
         for child in element.children:
             if child.rendered:
                 child.add_class(first_class)
@@ -47,15 +48,15 @@ def rendering_html5():
 
 def html5_tag(element, tag):
 
-    @element.when_ready
-    def set_html5_alternative_tag():
+    @when(element.ready_stage)
+    def set_html5_alternative_tag(e):
         if rendering_html5():
             element.tag = tag
 
 def html5_attr(element, key, value):
 
-    @element.when_ready
-    def set_html5_attribute():
+    @when(element.ready_stage)
+    def set_html5_attribute(e):
         if rendering_html5():
             element[key] = value
 
