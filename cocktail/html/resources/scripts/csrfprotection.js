@@ -28,30 +28,32 @@ jQuery(function () {
         );
     }
 
-    // Inject the token into posted forms. Take care of the formmethod attribute!
-    jQuery(document)
-        .on("click", "[formmethod]", function (e) {
-            jQuery(this).closest("form").data("cocktail-form-method", this.getAttribute("formmethod"));
-        })
-        .on("submit", "form", function (e) {
-            var $form = jQuery(this);
-            var method = $form.data("cocktail-form-method") || this.method;
-
-            if (method && method.toUpperCase() == "POST") {
-                if (!$form.find("[name='" + cocktail.csrfprotection.field + "']").length) {
-                    var hidden = document.createElement("input");
-                    hidden.type = "hidden";
-                    hidden.name = cocktail.csrfprotection.field;
-                    hidden.value = cocktail.csrfprotection.token;
-                    $form.append(hidden);
-                }
-            }
-        });
-
     // Inject a header with the token into all Ajax requests
     // (only works on requests made through the jQuery API)
     jQuery.ajaxPrefilter(function (options, originalOptions, xhr) {
         cocktail.csrfprotection.setupRequest(xhr);
+    });
+});
+
+// Inject the token into posted forms. Take care of the formmethod attribute!
+cocktail.bind("[formmethod]", function($element) {
+    $element.click(function(e) {
+        jQuery(this).closest("form").data("cocktail-form-method", this.getAttribute("formmethod"));
+    });
+});
+
+cocktail.bind("form", function($form) {
+    $form.submit( function (e) {
+        var method = $form.data("cocktail-form-method") || this.method;
+        if (method && method.toUpperCase() == "POST") {
+            if (!$form.find("[name='" + cocktail.csrfprotection.field + "']").length) {
+                var hidden = document.createElement("input");
+                hidden.type = "hidden";
+                hidden.name = cocktail.csrfprotection.field;
+                hidden.value = cocktail.csrfprotection.token;
+                $form.append(hidden);
+            }
+        }
     });
 });
 
