@@ -20,7 +20,7 @@ from cocktail.persistence.utils import is_broken
 
 migration_steps = DictWrapper(OrderedDict())
 
-def migrate(verbose = False):
+def migrate(verbose = False, commit = False):
     """Executes all migration steps that haven't been executed yet, in the
     correct order.
 
@@ -29,7 +29,7 @@ def migrate(verbose = False):
     :type verbose: bool
     """
     for step in migration_steps.itervalues():
-        step.execute(verbose = verbose)
+        step.execute(verbose = verbose, commit = commit)
 
 def mark_all_migrations_as_executed():
     """Flags all migration steps as already executed."""
@@ -74,7 +74,7 @@ class MigrationStep(object):
         """A unique identifier for the migration step."""
         return self.__id
 
-    def execute(self, verbose = False):
+    def execute(self, verbose = False, commit = False):
         """Executes the migration step on the current datastore.
 
         :param verbose: When set to True, the migration step will print out
@@ -102,6 +102,9 @@ class MigrationStep(object):
             )
 
         self.executing(verbose = verbose)
+
+        if commit:
+            datastore.commit()
 
         return True
 
