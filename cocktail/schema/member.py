@@ -511,7 +511,11 @@ class Member(Variable):
                 suffix = ".none",
                 **kwargs
             )
-        elif value and self.translatable_enumeration and self.enumeration:
+        elif (
+            (value or value == 0)
+            and self.translatable_enumeration
+            and self.enumeration
+        ):
             return translations(
                 self,
                 language = language,
