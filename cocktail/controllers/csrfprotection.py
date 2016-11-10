@@ -62,8 +62,7 @@ def _csrf_token_injection():
 
         # Insert the script that will inject the token into POST requests
         content_type = cherrypy.response.headers.get("Content-Type")
-        content_type = content_type.split(";", 1)[0]
-        if content_type == "text/html":
+        if not content_type or content_type.split(";", 1)[0] == "text/html":
             code = (
                 ni("""
                 <script type="text/javascript" src="%s"></script>
