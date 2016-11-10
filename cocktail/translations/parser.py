@@ -377,7 +377,7 @@ class TranslationsFileParser(object):
         if i != start:
             yield code[start:], self.LITERAL
 
-    def _get_expression(self, value):
+    def _get_expression(self, value, requirements = None):
 
         clean_value = value.strip()
         clean_value = self.whitespace_norm_expr.sub(" ", clean_value)
@@ -388,13 +388,13 @@ class TranslationsFileParser(object):
 
         is_constant = len(parts) == 1 and parts[0][1] == self.LITERAL
 
-        if is_constant:
+        if is_constant and not requirements:
             value = parts[0][0]
         else:
             func_name = self.__node.func_name
             func_args = self.__node.func_args or "*args, **kwargs"
             code = "def %s(%s):\n    return " % (func_name, func_args)
-            glue = ""
+            glue = "(" if requirements else ""
             for part_value, part_type in parts:
                 code += glue
                 if part_type == self.LITERAL:
@@ -404,6 +404,12 @@ class TranslationsFileParser(object):
                 elif part_type == self.TRANSLATION_EXPRESSION:
                     code += u"translations(%s)" % part_value
                 glue = " + "
+
+            if requirements:
+                code = "%s) if %s else None" % (
+                    code,
+                    u" and ".join(requirements)
+                )
 
             context = self._exec_code(code, copy_context = True)
             value = context[func_name]
@@ -508,16 +514,13 @@ class TranslationsFileNode(object):
             )
         else:
             for locale, values in self.definitions.iteritems():
-                expr = self.parser._get_expression(u"\n".join(values))
-                if self.requirements:
-                    expr = "(%s) if %s else None" % (
-                        expr,
-                        u" and ".join(self.requirements)
-                    )
                 yield (
                     self.path,
                     None if locale == "*" else locale,
-                    expr
+                    self.parser._get_expression(
+                        u"\n".join(values),
+                        requirements = self.requirements
+                    )
                 )
 
 
