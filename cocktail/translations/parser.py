@@ -152,6 +152,18 @@ class TranslationsFileParser(object):
             elif self.__init_code is not None:
                 self.__init_code.append(line)
 
+            # @requires directive
+            elif sline.startswith("@requires "):
+
+                if not self.__node:
+                    self._syntax_error(
+                        "@requires directives must be attached to translation "
+                        "keys"
+                    )
+
+                req_expr = sline[len("@requires "):].strip()
+                self.__node.requirements.append(req_expr)
+
             # @switch directive
             elif sline.startswith("@switch "):
 
@@ -430,6 +442,7 @@ class TranslationsFileNode(object):
         self.parent = parent
         self.path = key if parent is None else parent.path + "." + key
         self.func_args = func_args
+        self.requirements = []
         self.switch_condition = None
         self.switch_value = None
         self.switch_cases = []
@@ -495,10 +508,16 @@ class TranslationsFileNode(object):
             )
         else:
             for locale, values in self.definitions.iteritems():
+                expr = self.parser._get_expression(u"\n".join(values))
+                if self.requirements:
+                    expr = "(%s) if %s else None" % (
+                        expr,
+                        u" and ".join(self.requirements)
+                    )
                 yield (
                     self.path,
                     None if locale == "*" else locale,
-                    self.parser._get_expression(u"\n".join(values))
+                    expr
                 )
 
 
