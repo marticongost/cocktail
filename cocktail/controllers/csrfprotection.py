@@ -81,7 +81,14 @@ def _csrf_token_injection():
                     dumps(_protection.header)
                 )
             )
-            html = u"".join(cherrypy.response.body)
+            html = u"".join(
+                (
+                    chunk.decode("utf-8")
+                    if isinstance(chunk, str)
+                    else chunk
+                )
+                for chunk in cherrypy.response.body
+            )
             pos = html.find("</head>")
             if pos == -1:
                 pos = html.find("</body>")
