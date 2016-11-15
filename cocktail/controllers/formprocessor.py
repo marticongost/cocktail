@@ -199,7 +199,10 @@ class Form(object):
         if self.model is None:
             raise ValueError("No form model specified for %s" % self)
 
-        adapted_schema = schema.Schema(name = self.get_schema_name())
+        adapted_schema = schema.Schema(
+            name = self.get_schema_name(),
+            schema_aliases = self.get_schema_aliases()
+        )
         return self.adapter.export_schema(self.model, adapted_schema)
 
     def get_schema_name(self):
@@ -210,6 +213,18 @@ class Form(object):
             )
         else:
             return get_full_name(self.__class__)
+
+    def get_schema_aliases(self):
+
+        if not self.controller:
+            return []
+
+        return [
+            get_full_name(cls) + "." + self.__class__.__name__
+            for cls in self.controller.__class__.__mro__
+            if cls is not FormProcessor
+            and issubclass(cls, FormProcessor)
+        ]
 
     @cached_getter
     def data(self):
