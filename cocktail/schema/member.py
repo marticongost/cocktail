@@ -631,8 +631,6 @@ def translate_member(
     if qualified:
         return translations("cocktail.schema.qualified_member", member = member)
 
-    translation = None
-
     if member.schema and member.name:
         schema_name = getattr(member.schema, "full_name", member.schema.name)
         if schema_name:
@@ -647,23 +645,44 @@ def translate_member(
                 member = member,
                 **kwargs
             )
+            if translation:
+                return translation
 
-    if not translation and member.source_member:
+    for schema_alias in member.schema.schema_aliases:
+        key = (
+            schema_alias
+            + ".members."
+            + member.name
+            + suffix
+        )
+        translation = translations(
+            key,
+            member = member,
+            **kwargs
+        )
+        if translation:
+            return translation
+
+    if member.source_member:
         translation = translations(
             member.source_member,
             suffix = suffix,
             include_type_default = False,
             **kwargs
         )
+        if translation:
+            return translation
 
-    if not translation and member.custom_translation_key:
+    if member.custom_translation_key:
         translation = translations(
             member.custom_translation_key + suffix,
             member = member,
             **kwargs
         )
+        if translation:
+            return translation
 
-    if not translation and include_type_default:
+    if include_type_default:
         for member_type in member.__class__.__mro__:
             if issubclass(member_type, Member) and member_type is not Member:
                 translation = translations(
@@ -674,7 +693,7 @@ def translate_member(
                     **kwargs
                 )
                 if translation:
-                    break
+                    return translation
 
-    return translation
+    return None
 
