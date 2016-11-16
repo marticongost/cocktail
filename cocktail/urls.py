@@ -5,7 +5,7 @@ u"""
 """
 from collections import Iterable, Mapping, OrderedDict
 from itertools import izip
-from urllib import quote, unquote
+from urllib import quote, unquote, unquote_plus
 from urlparse import urlparse
 from frozendict import frozendict
 
@@ -461,11 +461,11 @@ class QueryString(unicode):
 
         # Decode and parse byte strings
         elif isinstance(query, str):
-            return cls.__new__(cls, unquote(query).decode(ENCODING))
+            return cls.__new__(cls, query.decode(ENCODING))
 
         # Parse unicode strings
         elif isinstance(query, unicode):
-            query_string = query.lstrip("?").lstrip("&")
+            query_string = unquote_plus(query.lstrip("?").lstrip("&"))
             fields = _parse_query_string(query_string)
 
         # Generate a query string from an ordered mapping
