@@ -19,11 +19,11 @@ def redirect(destination, status = None):
     """Redirect the current request to the given URL."""
 
     if isinstance(destination, URLBuilder):
-        destination = destination.get_url()
-    elif not isinstance(destination, URL):
-        destination = URL(destination)
+        destination = str(destination.get_url())
+    elif not isinstance(destination, str):
+        destination = str(destination)
 
-    raise cherrypy.HTTPRedirect(str(destination), status = status)
+    raise cherrypy.HTTPRedirect(destination, status = status)
 
 def reload_request_url():
     """Redirect to the current URL using a GET request."""
