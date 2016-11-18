@@ -16,6 +16,7 @@ from .helpers import (
 DATE_STYLE_NUMBERS = 1
 DATE_STYLE_ABBR = 2
 DATE_STYLE_TEXT = 3
+DATE_STYLE_COMPACT_TEXT = 4
 
 translations.load_bundle("cocktail.translations.datetimetranslations")
 
@@ -74,6 +75,14 @@ def _date_instance_ca(instance, style = DATE_STYLE_NUMBERS, relative = False):
         if not relative or today.year != instance.year:
             desc += u" de %d" % instance.year
         return desc
+    elif style == DATE_STYLE_COMPACT_TEXT:
+        desc = u"%s %s" % (
+            instance.day,
+            month_name(instance).lower(),
+        )
+        if not relative or today.year != instance.year:
+            desc += u" %d" % instance.year
+        return desc
 
 def _date_instance_es(instance, style = DATE_STYLE_NUMBERS, relative = False):
 
@@ -106,6 +115,14 @@ def _date_instance_es(instance, style = DATE_STYLE_NUMBERS, relative = False):
         desc = u"%s de %s" % (instance.day, month_name(instance).lower())
         if not relative or today.year != instance.year:
             desc += u" de %d" % instance.year
+        return desc
+    elif style == DATE_STYLE_COMPACT_TEXT:
+        desc = u"%s %s" % (
+            instance.day,
+            month_name(instance).lower(),
+        )
+        if not relative or today.year != instance.year:
+            desc += u" %d" % instance.year
         return desc
 
 def _date_instance_en(instance, style = DATE_STYLE_NUMBERS, relative = False):
@@ -140,6 +157,14 @@ def _date_instance_en(instance, style = DATE_STYLE_NUMBERS, relative = False):
         if not relative or today.year != instance.year:
             desc += u", %d" % instance.year
         return desc
+    elif style == DATE_STYLE_COMPACT_TEXT:
+        desc = u"%s %s" % (
+            month_name(instance).lower(),
+            instance.day,
+        )
+        if not relative or today.year != instance.year:
+            desc += u" %d" % instance.year
+        return desc
 
 def _date_instance_fr(instance, style = DATE_STYLE_NUMBERS, relative = False):
 
@@ -171,13 +196,17 @@ def _date_instance_fr(instance, style = DATE_STYLE_NUMBERS, relative = False):
         if not relative or today.year != instance.year:
             desc += u" %d" % instance.year
         return desc
-    elif style == DATE_STYLE_TEXT:
+    elif style in (DATE_STYLE_TEXT, DATE_STYLE_COMPACT_TEXT):
         desc = u"%s %s" % (instance.day, month_name(instance).lower())
         if not relative or today.year != instance.year:
             desc += u" %d" % instance.year
         return desc
 
 def _date_instance_pt(instance, style = DATE_STYLE_NUMBERS, relative = False):
+
+    if relative:
+        today = date.today()
+
     if style == DATE_STYLE_NUMBERS:
         return instance.strftime(translations("cocktail.date_format"))
     elif style == DATE_STYLE_ABBR:
@@ -192,6 +221,11 @@ def _date_instance_pt(instance, style = DATE_STYLE_NUMBERS, relative = False):
             month_name(instance).lower(),
             instance.year
         )
+    elif style == DATE_STYLE_COMPACT_TEXT:
+        desc = u"%s %s" % (instance.day, month_name(instance).lower())
+        if not relative or today.year != instance.year:
+            desc += u" %d" % instance.year
+        return desc
 
 translations.define("datetime.date.instance",
     ca = _date_instance_ca,

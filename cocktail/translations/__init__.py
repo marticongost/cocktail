@@ -31,6 +31,7 @@ from .datetimetranslations import (
     DATE_STYLE_NUMBERS,
     DATE_STYLE_ABBR,
     DATE_STYLE_TEXT,
+    DATE_STYLE_COMPACT_TEXT,
     month_name,
     month_abbr,
     weekday_name,
