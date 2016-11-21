@@ -2,6 +2,7 @@
 <?py
 import calendar
 from datetime import date, datetime, timedelta
+from cocktail.translations import weekday_name, weekday_abbr
 ?>
 
 <div
@@ -93,10 +94,13 @@ from datetime import date, datetime, timedelta
             <tr>
                 <py:ready>
                     <?py
-                    header_style = " abbr" if self.abbreviated_headers else ""
+                    if self.abbreviated_headers:
+                        get_column_label = weekday_abbr
+                    else:
+                        get_column_label = weekday_name
                     ?>
                     <th py:for="week_day in range(7)">
-                        ${translations("weekday %d%s" % (week_day, header_style))}
+                        ${get_column_label(week_day)}
                     </th>
                 </py:ready>
             </tr>
