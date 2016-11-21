@@ -631,11 +631,32 @@ def translate_member(
     if qualified:
         return translations("cocktail.schema.qualified_member", member = member)
 
-    if member.schema and member.name:
-        schema_name = getattr(member.schema, "full_name", member.schema.name)
-        if schema_name:
+    if member.schema:
+
+        if member.name:
+            schema_name = getattr(
+                member.schema,
+                "full_name",
+                member.schema.name
+            )
+            if schema_name:
+                key = (
+                    schema_name
+                    + ".members."
+                    + member.name
+                    + suffix
+                )
+                translation = translations(
+                    key,
+                    member = member,
+                    **kwargs
+                )
+                if translation:
+                    return translation
+
+        for schema_alias in member.schema.schema_aliases:
             key = (
-                schema_name
+                schema_alias
                 + ".members."
                 + member.name
                 + suffix
@@ -647,21 +668,6 @@ def translate_member(
             )
             if translation:
                 return translation
-
-    for schema_alias in member.schema.schema_aliases:
-        key = (
-            schema_alias
-            + ".members."
-            + member.name
-            + suffix
-        )
-        translation = translations(
-            key,
-            member = member,
-            **kwargs
-        )
-        if translation:
-            return translation
 
     if member.source_member:
         translation = translations(
