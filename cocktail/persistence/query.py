@@ -772,7 +772,7 @@ class Query(object):
                     index -= 1
                 else:
                     return None
-                return self.type.index[id]
+            return self.type.index[id]
 
     def select(
         self,
