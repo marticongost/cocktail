@@ -7,6 +7,7 @@ from types import GeneratorType
 import cherrypy
 from json import dumps
 from string import letters, digits
+from cocktail.events import Event
 from cocktail.stringutils import random_string, normalize_indentation as ni
 from cocktail.html import resource_repositories
 from .sessions import session
@@ -49,7 +50,7 @@ cherrypy.request.hooks.attach("before_handler", _csrf_token_validation)
 # requests).
 def _csrf_token_injection():
 
-    if not _protection or not _protection.should_apply():
+    if not _protection or not _protection.should_inject():
         return
 
     # Generate the code and send it to the client in a cookie
@@ -130,7 +131,9 @@ class CSRFProtection(object):
     field = "__cocktail_csrf_token"
     header = "X-Cocktail-CSRF-Token"
 
-    def should_apply(self):
+    deciding_injection = Event()
+
+    def should_inject(self):
         """Specifies wether the protection scheme should be applied to the
         current request.
 
@@ -139,7 +142,12 @@ class CSRFProtection(object):
         :return: True if the scheme should be enabled, False otherwise.
         :rtype: True
         """
-        return True
+        try:
+            self.deciding_injection()
+        except CSRFProtectionExemption:
+            return False
+        else:
+            return True
 
     def should_require_token(self):
         """Specifies wether the current request should be protected.
@@ -219,6 +227,12 @@ class CSRFProtection(object):
         :type received_token: str
         """
         raise CSRFTokenError()
+
+
+class CSRFProtectionExemption(Exception):
+    """An exception raised by the `CSRFProtection.deciding_injection` to
+    prevent the protection scheme from being injected into the current request.
+    """
 
 
 class CSRFTokenError(cherrypy.HTTPError):
