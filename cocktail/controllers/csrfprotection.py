@@ -49,52 +49,53 @@ cherrypy.request.hooks.attach("before_handler", _csrf_token_validation)
 # requests).
 def _csrf_token_injection():
 
-    if _protection:
+    if not _protection or not _protection.should_apply():
+        return
 
-        # Generate the code and send it to the client in a cookie
-        cookie = cherrypy.request.cookie.get(_protection.cookie_name)
-        cookie_token = cookie and cookie.value
-        session_token = _protection.get_session_token()
+    # Generate the code and send it to the client in a cookie
+    cookie = cherrypy.request.cookie.get(_protection.cookie_name)
+    cookie_token = cookie and cookie.value
+    session_token = _protection.get_session_token()
 
-        if cookie_token != session_token:
-            cherrypy.response.cookie[_protection.cookie_name] = session_token
-            cherrypy.response.cookie[_protection.cookie_name]["path"] = "/"
+    if cookie_token != session_token:
+        cherrypy.response.cookie[_protection.cookie_name] = session_token
+        cherrypy.response.cookie[_protection.cookie_name]["path"] = "/"
 
-        # Insert the script that will inject the token into POST requests
-        content_type = cherrypy.response.headers.get("Content-Type")
-        if not content_type or content_type.split(";", 1)[0] == "text/html":
-            code = (
-                ni("""
-                <script type="text/javascript" src="%s"></script>
-                <script type="text/javascript">
-                cocktail.setVariable("cocktail.csrfprotection.cookieName", %s);
-                cocktail.setVariable("cocktail.csrfprotection.field", %s);
-                cocktail.setVariable("cocktail.csrfprotection.header", %s);
-                </script>
-                """)
-                % (
-                    resource_repositories.normalize_uri(
-                        "cocktail://scripts/csrfprotection.js"
-                    ),
-                    dumps(_protection.cookie_name),
-                    dumps(_protection.field),
-                    dumps(_protection.header)
-                )
+    # Insert the script that will inject the token into POST requests
+    content_type = cherrypy.response.headers.get("Content-Type")
+    if not content_type or content_type.split(";", 1)[0] == "text/html":
+        code = (
+            ni("""
+            <script type="text/javascript" src="%s"></script>
+            <script type="text/javascript">
+            cocktail.setVariable("cocktail.csrfprotection.cookieName", %s);
+            cocktail.setVariable("cocktail.csrfprotection.field", %s);
+            cocktail.setVariable("cocktail.csrfprotection.header", %s);
+            </script>
+            """)
+            % (
+                resource_repositories.normalize_uri(
+                    "cocktail://scripts/csrfprotection.js"
+                ),
+                dumps(_protection.cookie_name),
+                dumps(_protection.field),
+                dumps(_protection.header)
             )
-            html = u"".join(
-                (
-                    chunk.decode("utf-8")
-                    if isinstance(chunk, str)
-                    else chunk
-                )
-                for chunk in cherrypy.response.body
+        )
+        html = u"".join(
+            (
+                chunk.decode("utf-8")
+                if isinstance(chunk, str)
+                else chunk
             )
-            pos = html.find("</head>")
-            if pos == -1:
-                pos = html.find("</body>")
-            if pos != -1:
-                html = html[:pos] + code + html[pos:]
-            cherrypy.response.body = [html]
+            for chunk in cherrypy.response.body
+        )
+        pos = html.find("</head>")
+        if pos == -1:
+            pos = html.find("</body>")
+        if pos != -1:
+            html = html[:pos] + code + html[pos:]
+        cherrypy.response.body = [html]
 
 cherrypy.request.hooks.attach("before_finalize", _csrf_token_injection)
 
@@ -128,6 +129,17 @@ class CSRFProtection(object):
     token_length = 40
     field = "__cocktail_csrf_token"
     header = "X-Cocktail-CSRF-Token"
+
+    def should_apply(self):
+        """Specifies wether the protection scheme should be applied to the
+        current request.
+
+        All requests are protected by default.
+
+        :return: True if the scheme should be enabled, False otherwise.
+        :rtype: True
+        """
+        return True
 
     def should_require_token(self):
         """Specifies wether the current request should be protected.
