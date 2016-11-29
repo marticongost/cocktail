@@ -69,9 +69,13 @@ class TreeView(Element):
 
             if self.filter_item(item):
                 accessibility = ACCESSIBLE
-            elif (self.max_depth is None or self.max_depth > depth) and any(
-                self._is_accessible(child, depth + 1)
-                for child in self.get_child_items(item)
+            elif (
+                self.display_filtered_containers
+                and (self.max_depth is None or self.max_depth > depth)
+                and any(
+                    self._is_accessible(child, depth + 1)
+                    for child in self.get_child_items(item)
+                )
             ):
                 accessibility = ACCESSIBLE_DESCENDANTS
             else:
