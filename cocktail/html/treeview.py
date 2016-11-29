@@ -28,6 +28,7 @@ class TreeView(Element):
     selection = None
     expanded = True
     max_depth = None
+    highlighted_selection = True
     create_empty_containers = False
     display_filtered_containers = True
     filter_item = None
@@ -90,12 +91,13 @@ class TreeView(Element):
         Element._ready(self)
 
         # Find the selected path
-        self._expanded = set()
-        item = self.selection
+        if not (self.expanded and not self.highlighted_selection):
+            self._expanded = set()
+            item = self.selection
 
-        while item is not None:
-            self._expanded.add(item)
-            item = self.get_parent_item(item)
+            while item is not None:
+                self._expanded.add(item)
+                item = self.get_parent_item(item)
 
         if self.root is not None:
             if self.root_visibility == self.SINGLE_ROOT:
@@ -127,7 +129,8 @@ class TreeView(Element):
         entry = Element("li")
 
         if (
-            not (
+            self.highlighted_selection
+            and not (
                 self.root_visibility == self.MERGED_ROOT
                 and item is self.root
                 and self.selection is not self.root
