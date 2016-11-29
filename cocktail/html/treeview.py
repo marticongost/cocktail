@@ -33,6 +33,10 @@ class TreeView(Element):
     filter_item = None
     __item_access = None
 
+    def __init__(self, *args, **kwargs):
+        self.__item_access = {}
+        Element.__init__(self, *args, **kwargs)
+
     def _get_root_visible(self):
         return self.root_visibility not in (
             self.HIDDEN_ROOT,
@@ -51,9 +55,6 @@ class TreeView(Element):
     root_visible = property(_get_root_visible, _set_root_visible)
 
     def _is_accessible(self, item, depth = None):
-
-        if self.__item_access is None:
-            self.__item_access = {}
 
         accessibility = self.__item_access.get(item)
 
