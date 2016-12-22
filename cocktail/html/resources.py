@@ -175,6 +175,9 @@ class Resource(object):
         self.__ie_condition = ie_condition
         self.__set = set
 
+    def __repr__(self):
+        return "%s(%r)" % (self.__class__.__name__, self.__uri)
+
     @classmethod
     def from_uri(
         cls,
