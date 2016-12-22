@@ -613,8 +613,8 @@ class ResourceAggregator(ResourceSet):
 
         try:
             src_file = self.open_resource(resource)
-        except IOError:
-            return
+        except ResourceNotFound, e:
+            src_file = e.path
 
         file_pub = self.file_publication
         if not file_pub:
@@ -623,6 +623,9 @@ class ResourceAggregator(ResourceSet):
 
         file_info = file_pub.produce_file(src_file, resource.source_mime_type)
         file = file_info["file"]
+
+        if file is None:
+            return
 
         if self.processors:
             buffer = StringIO()
@@ -645,7 +648,10 @@ class ResourceAggregator(ResourceSet):
         # Look for a local file
         resource_file_path = resource_repositories.locate(resource)
         if resource_file_path:
-            return open(resource_file_path)
+            try:
+                return open(resource_file_path)
+            except IOError:
+                raise ResourceNotFound(resource, resource_file_path)
 
         # Download remote resources
         if self.download_remote_resources:
@@ -817,4 +823,11 @@ class ExcludedResources(ResourceSet):
 
     def insert_into_document(self, document):
         pass
+
+
+class ResourceNotFound(Exception):
+
+    def __init__(self, resource, path = None):
+        self.resource = resource
+        self.path = path
 
