@@ -67,8 +67,12 @@ class HandlerActivator(object):
                         if args and args[0] == "self":
                             args = args[1:]
 
-                        if len(self.args) < len(args) \
-                        or (len(self.args) > len(args) and not varargs):
+                        defaults_count = defaults and len(defaults) or 0
+
+                        if (
+                            len(self.args) + defaults_count < len(args)
+                            or len(self.args) > len(args) and not varargs
+                        ):
                             raise cherrypy.NotFound()
 
                     raise
