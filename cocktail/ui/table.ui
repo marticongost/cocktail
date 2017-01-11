@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <?resource cocktail.ui://styles/table.scss.css ?>
+    <?resource cocktail.ui://scripts/table.js ?>
+
+    <div ui:id="loadingSign">
+        <?translation ?>
+    </div>
+
+    <table ui:id="table">
+
+        <thead ui:id="head">
+            <tr ui:id="headingsRow"/>
+        </thead>
+
+        <tbody ui:id="body"/>
+
+        <th ui:component="Heading">
+            <span ui:id="label"/>
+            <span ui:id="languageLabel"/>
+        </th>
+
+    </table>
+
+</div>
+

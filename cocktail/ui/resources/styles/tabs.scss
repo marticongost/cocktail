@@ -1,0 +1,8 @@
+
+.cocktail-ui-Tabs-Tab {
+
+    &[data-selected='false'] {
+        display: none !important;
+    }
+}
+

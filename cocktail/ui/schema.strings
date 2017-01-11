@@ -1,0 +1,13 @@
+
+[cocktail.schema.Boolean.instance]
+
+    [true]
+    ca: Sí
+    es: Sí
+    en: Yes
+
+    [false]
+    ca: No
+    es: No
+    en: No
+

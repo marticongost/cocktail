@@ -1,0 +1,42 @@
+
+.cocktail-ui-Table-table {
+    display: flex;
+    flex-direction: column;
+}
+
+.cocktail-ui-Table[data-datastate='loading'] .cocktail-ui-Table-table,
+.cocktail-ui-Table:not([data-datastate='loading']) .cocktail-ui-Table-loadingSign {
+    display: none !important;
+}
+
+.cocktail-ui-Table-head {
+    display: block;
+    flex: 0 0 auto;
+}
+
+.cocktail-ui-Table-headingsRow {
+    display: flex;
+
+    & > th {
+        display: block;
+        flex: 1;
+    }
+}
+
+.cocktail-ui-Table-body {
+    display: block;
+    overflow: scroll;
+    overflow-x: hidden;
+    flex: 1 1 auto;
+
+    & > tr {
+        display: flex;
+        // width set through javascript, to compensate for the scrollbar width
+
+        & > td {
+            display: block;
+            flex: 1;
+        }
+    }
+}
+
