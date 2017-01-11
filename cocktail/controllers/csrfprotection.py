@@ -67,20 +67,21 @@ def _csrf_token_injection():
     if not content_type or content_type.split(";", 1)[0] == "text/html":
         code = (
             ni("""
-            <script type="text/javascript" src="%s"></script>
             <script type="text/javascript">
+            cocktail.declare("cocktail.csrfprotection");
             cocktail.setVariable("cocktail.csrfprotection.cookieName", %s);
             cocktail.setVariable("cocktail.csrfprotection.field", %s);
             cocktail.setVariable("cocktail.csrfprotection.header", %s);
             </script>
+            <script type="text/javascript" src="%s"></script>
             """)
             % (
-                resource_repositories.normalize_uri(
-                    "cocktail://scripts/csrfprotection.js"
-                ),
                 dumps(_protection.cookie_name),
                 dumps(_protection.field),
-                dumps(_protection.header)
+                dumps(_protection.header),
+                resource_repositories.normalize_uri(
+                    "cocktail://scripts/csrfprotection.js"
+                )
             )
         )
         html = u"".join(
