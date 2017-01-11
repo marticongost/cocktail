@@ -7,9 +7,7 @@
 @since:         October 2016
 -----------------------------------------------------------------------------*/
 
-cocktail.declare("cocktail.csrfprotection");
-
-jQuery(function () {
+(function () {
 
     // Obtain the token from the cookie sent by the server
     function getCookie(name) {
@@ -19,20 +17,20 @@ jQuery(function () {
     }
 
     cocktail.csrfprotection.token = getCookie(cocktail.csrfprotection.cookieName);
+})();
 
-    // Method to decorate XHR objects
-    cocktail.csrfprotection.setupRequest = function (xhr) {
-        xhr.setRequestHeader(
-            cocktail.csrfprotection.header,
-            cocktail.csrfprotection.token
-        );
-    }
+// Method to decorate XHR objects
+cocktail.csrfprotection.setupRequest = function (xhr) {
+    xhr.setRequestHeader(
+        cocktail.csrfprotection.header,
+        cocktail.csrfprotection.token
+    );
+}
 
-    // Inject a header with the token into all Ajax requests
-    // (only works on requests made through the jQuery API)
-    jQuery.ajaxPrefilter(function (options, originalOptions, xhr) {
-        cocktail.csrfprotection.setupRequest(xhr);
-    });
+// Inject a header with the token into all Ajax requests
+// (only works on requests made through the jQuery API)
+jQuery.ajaxPrefilter(function (options, originalOptions, xhr) {
+    cocktail.csrfprotection.setupRequest(xhr);
 });
 
 // Inject the token into posted forms. Take care of the formmethod attribute!
