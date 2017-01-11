@@ -172,7 +172,7 @@ class Translations(object):
 
         return decorator
 
-    def load_bundle(self, bundle_path, **kwargs):
+    def load_bundle(self, bundle_path, callback = None, **kwargs):
 
         if bundle_path not in self.__loaded_bundles:
             self.__loaded_bundles.add(bundle_path)
@@ -187,6 +187,8 @@ class Translations(object):
                     **kwargs
                 )
                 for key, language, value in parser:
+                    if callback:
+                        callback(key, language, value)
                     if language is None:
                         self.definitions[key] = value
                     else:
