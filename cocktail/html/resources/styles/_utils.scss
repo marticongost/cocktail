@@ -16,13 +16,15 @@
 }
 
 @function join-media-query($query1, $query2) {
-    @if $query1 and $query2 {
+    $hasValue1: $query1 != "" and $query1 != null;
+    $hasValue2: $query2 != "" and $query2 != null;
+    @if $hasValue1 and $hasValue2 != "" {
         @return $query1 + " and " + $query2;
     }
-    @else if $query1 {
+    @else if $hasValue1 {
         @return $query1;
     }
-    @else if $query2 {
+    @else if $hasValue2 {
         @return $query2;
     }
     @else {
