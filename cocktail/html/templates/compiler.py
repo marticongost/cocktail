@@ -7,6 +7,7 @@ u"""
 @since:			February 2008
 """
 import re
+import weakref
 from xml.parsers import expat
 from cocktail.events import when
 from cocktail.modeling import refine, extend, call_base, getter, DictWrapper
@@ -87,6 +88,7 @@ class TemplateCompiler(object):
         self._push()
         self.compile(xml)
         self._pop()
+        self.__parser = None
 
     def compile(self, xml):
         try:
@@ -149,7 +151,8 @@ class TemplateCompiler(object):
             "refine": refine, # obsolete; use extend/call_base instead
             "extend": extend,
             "call_base": call_base,
-            "register_overlay": register_overlay
+            "register_overlay": register_overlay,
+            "weakref": weakref
         }
 
     def add_class_reference(self, reference):
@@ -265,14 +268,15 @@ class TemplateCompiler(object):
             elif tag in ("ready", "binding"):
                 is_content = False
                 is_new = False
+                source.write("_self_ref = weakref.ref(self)")
                 source.write("@when(%s.%s_stage)" % (parent_id, tag))
                 source.write("def _handler(e):")
                 source.indent()
-
+                source.write("self = _self_ref()")
+                source.write("element = e.source")
                 parent_id = self._get_parent_id()
                 if parent_id:
-                    source.write("element = " + parent_id)
-
+                    source.write(parent_id + " = element")
                 frame.close_actions.append(source.unindent)
 
             elif tag == "with":
@@ -677,9 +681,9 @@ class TemplateCompiler(object):
             value_source = " + ".join(chunks) or '""'
 
             if is_template_attrib:
-                assignment = '%s.%s = %s' % (id, name, value_source)
+                assignment = 'element.%s = %s' % (name, value_source)
             else:
-                assignment = '%s["%s"] = %s' % (id, name, value_source)
+                assignment = 'element["%s"] = %s' % (name, value_source)
 
             if is_placeholder:
                 if place_holders is None:
@@ -690,17 +694,19 @@ class TemplateCompiler(object):
                 source.write(assignment)
 
         if place_holders:
+            source.write("_self_ref = weakref.ref(self)")
             source.write("@when(%s.binding_stage)" % id)
             source.write("def _bindings(e):")
             source.indent()
+            source.write("element = e.source")
+            source.write("self = _self_ref()")
 
             parent_id = self._get_parent_id()
             if parent_id:
-                source.write("element = " + parent_id)
+                source.write(parent_id + " = element")
 
-            if place_holders:
-                for assignment in place_holders:
-                    source.write(assignment)
+            for assignment in place_holders:
+                source.write(assignment)
 
             source.unindent()
 

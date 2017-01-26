@@ -352,7 +352,7 @@ class Element(object):
 
         @when(self.ready_stage)
         def require_id(e):
-            self.require_id()
+            e.source.require_id()
 
         content = self.render(
             renderer = renderer,
@@ -477,23 +477,6 @@ class Element(object):
             self._data_binding()
             self.__is_bound = True
 
-    def when_binding(self, handler):
-        """Call the given function when the element reaches the `bind` stage.
-
-        See `bind` and `ready` for more details on late initialization.
-
-        :param handler: The function that will be invoked. It should
-            not receive any parameter.
-        :type handler: callable
-        """
-        warn(
-            "cocktail.html.Element.when_binding has been deprecated in "
-            "favor of the cocktail.html.Element.binding_stage event",
-            DeprecationWarning,
-            stacklevel = 2
-        )
-        self.binding_stage.append(lambda e: handler())
-
     def _binding(self):
         """A method invoked when the element reaches the `bind` stage.
 
@@ -591,23 +574,6 @@ class Element(object):
             self.__transmit_client_params()
             self.__transmit_client_code()
             self.__is_ready = True
-
-    def when_ready(self, handler):
-        """Call the given function when the element reaches the `ready` stage.
-
-        See `bind` and `ready` for more details on late initialization.
-
-        :param handler: The function that will be invoked. It should
-            not receive any parameter.
-        :type handler: callable
-        """
-        warn(
-            "cocktail.html.Element.when_ready has been deprecated in "
-            "favor of the cocktail.html.Element.ready_stage event",
-            DeprecationWarning,
-            stacklevel = 2
-        )
-        self.ready_stage.append(lambda e: handler())
 
     def _ready(self):
         """A method invoked when the element reaches the `ready` stage.
