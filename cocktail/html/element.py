@@ -261,25 +261,18 @@ class Element(object):
             cls._view_name = get_view_full_name(get_full_name(cls))
         return cls._view_name
 
-    def __str__(self):
+    def __repr__(self):
 
-        if self.tag is None:
-            return "html block"
-        else:
-            desc = "<" + self.tag
+        try:
+            class_name = self["class"]
+        except AttributeError:
+            class_name = None
 
-            id = self["id"]
-
-            if id:
-                desc += " id='%s'" % id
-
-            css = self["class"]
-
-            if css:
-                desc += " class='%s'" % css
-
-            desc += ">"
-            return desc
+        return "%s(%s%s)" % (
+            self.__class__.__name__,
+            repr(self.tag),
+            (", class=" + repr(class_name)) if class_name else ""
+        )
 
     # Rendering
     #--------------------------------------------------------------------------
@@ -337,11 +330,13 @@ class Element(object):
             cache
         )
 
-        return document.render(
+        html = document.render(
             renderer = renderer,
             collect_metadata = False,
             cache = None
         )
+        document.dispose()
+        return html
 
     def create_html_document(self,
         renderer = None,
@@ -357,7 +352,7 @@ class Element(object):
 
         @when(self.ready_stage)
         def require_id(e):
-            self.require_id()
+            e.source.require_id()
 
         content = self.render(
             renderer = renderer,
@@ -482,23 +477,6 @@ class Element(object):
             self._data_binding()
             self.__is_bound = True
 
-    def when_binding(self, handler):
-        """Call the given function when the element reaches the `bind` stage.
-
-        See `bind` and `ready` for more details on late initialization.
-
-        :param handler: The function that will be invoked. It should
-            not receive any parameter.
-        :type handler: callable
-        """
-        warn(
-            "cocktail.html.Element.when_binding has been deprecated in "
-            "favor of the cocktail.html.Element.binding_stage event",
-            DeprecationWarning,
-            stacklevel = 2
-        )
-        self.binding_stage.append(lambda e: handler())
-
     def _binding(self):
         """A method invoked when the element reaches the `bind` stage.
 
@@ -596,23 +574,6 @@ class Element(object):
             self.__transmit_client_params()
             self.__transmit_client_code()
             self.__is_ready = True
-
-    def when_ready(self, handler):
-        """Call the given function when the element reaches the `ready` stage.
-
-        See `bind` and `ready` for more details on late initialization.
-
-        :param handler: The function that will be invoked. It should
-            not receive any parameter.
-        :type handler: callable
-        """
-        warn(
-            "cocktail.html.Element.when_ready has been deprecated in "
-            "favor of the cocktail.html.Element.ready_stage event",
-            DeprecationWarning,
-            stacklevel = 2
-        )
-        self.ready_stage.append(lambda e: handler())
 
     def _ready(self):
         """A method invoked when the element reaches the `ready` stage.
@@ -1509,6 +1470,17 @@ class Element(object):
             self.__client_translations = set()
         self.__client_translations.add(key)
 
+    def dispose(self):
+        try:
+            children = self.__children
+        except AttributeError:
+            pass
+        else:
+            if children is not None:
+                for child in children:
+                    child.dispose()
+
+        self.__dict__.clear()
 
 class Content(Element):
     """A piece of arbitrary HTML content.

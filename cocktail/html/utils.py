@@ -23,6 +23,7 @@ def first_last_classes(element, first_class = "first", last_class = "last"):
 
     @when(element.ready_stage)
     def first_last_classes_handler(e):
+        element = e.source
         for child in element.children:
             if child.rendered:
                 child.add_class(first_class)
