@@ -28,10 +28,15 @@ class TreeView(Element):
     selection = None
     expanded = True
     max_depth = None
+    highlighted_selection = True
     create_empty_containers = False
     display_filtered_containers = True
     filter_item = None
     __item_access = None
+
+    def __init__(self, *args, **kwargs):
+        self.__item_access = {}
+        Element.__init__(self, *args, **kwargs)
 
     def _get_root_visible(self):
         return self.root_visibility not in (
@@ -52,9 +57,6 @@ class TreeView(Element):
 
     def _is_accessible(self, item, depth = None):
 
-        if self.__item_access is None:
-            self.__item_access = {}
-
         accessibility = self.__item_access.get(item)
 
         if accessibility is None:
@@ -68,9 +70,13 @@ class TreeView(Element):
 
             if self.filter_item(item):
                 accessibility = ACCESSIBLE
-            elif (self.max_depth is None or self.max_depth > depth) and any(
-                self._is_accessible(child, depth + 1)
-                for child in self.get_child_items(item)
+            elif (
+                self.display_filtered_containers
+                and (self.max_depth is None or self.max_depth > depth)
+                and any(
+                    self._is_accessible(child, depth + 1)
+                    for child in self.get_child_items(item)
+                )
             ):
                 accessibility = ACCESSIBLE_DESCENDANTS
             else:
@@ -85,12 +91,13 @@ class TreeView(Element):
         Element._ready(self)
 
         # Find the selected path
-        self._expanded = set()
-        item = self.selection
+        if not (self.expanded and not self.highlighted_selection):
+            self._expanded = set()
+            item = self.selection
 
-        while item is not None:
-            self._expanded.add(item)
-            item = self.get_parent_item(item)
+            while item is not None:
+                self._expanded.add(item)
+                item = self.get_parent_item(item)
 
         if self.root is not None:
             if self.root_visibility == self.SINGLE_ROOT:
@@ -122,7 +129,8 @@ class TreeView(Element):
         entry = Element("li")
 
         if (
-            not (
+            self.highlighted_selection
+            and not (
                 self.root_visibility == self.MERGED_ROOT
                 and item is self.root
                 and self.selection is not self.root
