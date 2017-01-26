@@ -62,17 +62,6 @@ class UIGenerator(object):
         else:
             self.__member_type_displays = dict(member_type_displays)
 
-    def __repr__(self):
-        desc = self.__class__.__name__
-        if self.__display_property:
-            desc += "<%s>" % self.__display_property
-        if self.base_ui_generators:
-            desc += "(%s)" % ", ".join(
-                UIGenerator.__repr__(ui_generator)
-                for ui_generator in self.base_ui_generators
-            )
-        return desc
-
     @property
     def display_property(self):
         return self.__display_property

@@ -261,25 +261,18 @@ class Element(object):
             cls._view_name = get_view_full_name(get_full_name(cls))
         return cls._view_name
 
-    def __str__(self):
+    def __repr__(self):
 
-        if self.tag is None:
-            return "html block"
-        else:
-            desc = "<" + self.tag
+        try:
+            class_name = self["class"]
+        except AttributeError:
+            class_name = None
 
-            id = self["id"]
-
-            if id:
-                desc += " id='%s'" % id
-
-            css = self["class"]
-
-            if css:
-                desc += " class='%s'" % css
-
-            desc += ">"
-            return desc
+        return "%s(%s%s)" % (
+            self.__class__.__name__,
+            repr(self.tag),
+            (", class=" + repr(class_name)) if class_name else ""
+        )
 
     # Rendering
     #--------------------------------------------------------------------------
