@@ -141,7 +141,7 @@ $grid-margin: 50px;
 @mixin grid($expr: "any-size") {
     @each $size, $size-properties in $grid-definition {
         @if grid-size-matches($size, $expr) {
-            @media #{grid-size-media-query($size, "screen")} {
+            @media #{grid-size-media-query($size)} {
                 $current-grid-size: $size !global;
                 @content;
             }
