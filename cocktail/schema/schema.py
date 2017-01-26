@@ -44,6 +44,7 @@ class Schema(Member):
         is a shallow list; to obtain the full inheritance tree, use the
         L{ascend_inheritance} method instead.
     """
+    schema_aliases = ()
     primary_member = None
     descriptive_member = None
     members_order = None
