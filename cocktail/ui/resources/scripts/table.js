@@ -11,7 +11,7 @@ cocktail.ui.dataBound(cocktail.ui.Table);
 
 cocktail.ui.Table.define({
 
-    [cocktail.ui.INITIALIZE]: function () {
+    [cocktail.ui.INITIALIZE]() {
 
         this.dataState = "pending";
         this.columnsReady = false;
@@ -58,7 +58,7 @@ cocktail.ui.Table.define({
 
     visibleColumns: null,
 
-    update: function () {
+    update() {
 
         let table = this;
         this.dataState = "loading";
@@ -79,7 +79,7 @@ cocktail.ui.Table.define({
             });
     },
 
-    createColumns: function () {
+    createColumns() {
         for (let member of this.member.members()) {
             let languages = member.translated ? this.languages : [null];
             for (let language of languages) {
@@ -89,7 +89,7 @@ cocktail.ui.Table.define({
         }
     },
 
-    createHeading: function (member, language = null) {
+    createHeading(member, language = null) {
         let heading = this.Heading();
         heading.member = member;
         heading.language = language;
@@ -104,14 +104,14 @@ cocktail.ui.Table.define({
         return heading;
     },
 
-    setRows: function (records) {
+    setRows(records) {
         for (let record of records) {
             let row = this.createRow(record);
             this.body.appendChild(row);
         }
     },
 
-    createRow: function (record) {
+    createRow(record) {
         let row = document.createElement("tr");
         for (let member of this.member.members()) {
             let languages = member.translated ? this.languages : [null];
@@ -123,7 +123,7 @@ cocktail.ui.Table.define({
         return row;
     },
 
-    createCell: function (record, member, language) {
+    createCell(record, member, language) {
 
         let cell = document.createElement("td");
         cell.member = member;
