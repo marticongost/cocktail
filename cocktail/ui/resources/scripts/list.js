@@ -8,10 +8,12 @@
 -----------------------------------------------------------------------------*/
 
 cocktail.ui.List.define({
+
     value: new cocktail.ui.Property(),
     member: new cocktail.ui.Property(),
     language: new cocktail.ui.Property(),
-    update: function () {
+
+    update() {
         while (this.firstChild) {
             this.removeChild(this.firstChild);
         }
@@ -22,13 +24,15 @@ cocktail.ui.List.define({
             }
         }
     },
-    createEntry: function (item) {
+
+    createEntry(item) {
         let entry = this.Entry();
         entry.item = item;
         entry.innerHTML = this.translateItem(item);
         return entry;
     },
-    translateItem: function (item) {
+
+    translateItem(item) {
         return this.member.items.translateValue(item);
     }
 });
