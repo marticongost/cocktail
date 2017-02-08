@@ -17,7 +17,7 @@ setup(
     install_requires = [
         "simplejson",
         "ZODB3==3.8",
-        "cherrypy>=3",
+        "cherrypy==3.1.2",
         "buffet>=1.0",
         "nose",
         "selenium",
