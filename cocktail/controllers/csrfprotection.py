@@ -133,6 +133,7 @@ class CSRFProtection(object):
     header = "X-Cocktail-CSRF-Token"
 
     deciding_injection = Event()
+    deciding_validation = Event()
 
     def should_inject(self):
         """Specifies wether the protection scheme should be applied to the
@@ -158,7 +159,12 @@ class CSRFProtection(object):
         :return: True if the request should be protected, False otherwise.
         :rtype: True
         """
-        return cherrypy.request.method == "POST"
+        try:
+            self.deciding_validation()
+        except CSRFProtectionExemption:
+            return False
+        else:
+            return cherrypy.request.method == "POST"
 
     def generate_token(self):
         """Generate a Synchronizer Token.
