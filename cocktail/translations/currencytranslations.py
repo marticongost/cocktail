@@ -3,9 +3,15 @@ u"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
+from decimal import Decimal
 from .translation import translations
 
 translations.load_bundle("cocktail.translations.currencytranslations")
+
+currency_precision = {
+    "EUR": 2,
+    "USD": 2
+}
 
 def translate_currency(currency, language = None):
     return translations("cocktail.currencies." + currency, language = language)
@@ -17,8 +23,17 @@ def format_money(
     amount,
     currency,
     format = "sign",
+    decimals = "auto",
     language = None
 ):
+    if decimals == "auto":
+        decimals = currency_precision.get(currency, 0)
+
+    if decimals is not None:
+        if not isinstance(amount, Decimal):
+            amount = Decimal(amount)
+        amount = amount.quantize(Decimal("1." + "0" * decimals))
+
     amount_label = translations(amount, language = language)
 
     if format == "sign":
