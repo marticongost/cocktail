@@ -681,6 +681,11 @@ class Schema(Member):
                 if label:
                     return label
 
+                for alias in schema.schema_aliases:
+                    label = translations(alias + suffix)
+                    if label:
+                        return label
+
             for base in schema.bases:
                 label = get_label(base)
                 if label:
@@ -753,4 +758,3 @@ def translate_schema(schema, **kwargs):
         translation = translations(schema.source_member, **kwargs)
 
     return translation
-
