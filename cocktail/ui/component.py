@@ -11,9 +11,14 @@ from cocktail.html import (
     HTMLDocument,
     DocumentMetadata,
     Element,
-    Script
+    Script,
+    StyleSheet
 )
 from .componentloader import ComponentLoader
+from .exceptions import ComponentFileError
+
+POLYFILL_URI = "//cdnjs.cloudflare.com/ajax/libs/document-register-element/" \
+               "1.1.1/document-register-element.js"
 
 
 class Component(object):
@@ -23,20 +28,29 @@ class Component(object):
     __full_name = None
     __package_name = None
     __name = None
+    __tag = None
     __css_class = None
     __parent = None
     __source_file = None
 
     def __init__(self, registry, full_name, parent = None):
+
+        name_with_dashes = full_name.replace(".", "-")
+
         self.__registry = registry
         self.__full_name = full_name
-        self.__css_class = full_name.replace(".", "-")
+        self.__tag = name_with_dashes.lower()
+        self.__css_class = name_with_dashes
         self.__package_name, self.__name = full_name.rsplit(".", 1)
+
         if parent:
             self.__parent = parent
             self.__source_file = parent.__source_file
         else:
-            self.__source_file = registry.get_component_source_file(full_name)
+            try:
+                self.__source_file = registry.get_component_source_file(full_name)
+            except ImportError:
+                raise ComponentFileError(full_name)
 
     def __repr__(self):
         return "%s <%s>" % (self.__class__.__name__, self.__full_name)
@@ -56,6 +70,10 @@ class Component(object):
     @property
     def full_name(self):
         return self.__full_name
+
+    @property
+    def tag(self):
+        return self.__tag
 
     @property
     def css_class(self):
@@ -95,6 +113,26 @@ class Component(object):
             return self.__state.base_component
         else:
             return None
+
+    def ascend_ancestry(self, include_self = False):
+
+        if include_self:
+            yield self
+
+        ancestor = self.base_component
+        while ancestor:
+            yield ancestor
+            ancestor = ancestor.base_component
+
+    def descend_ancestry(self, include_self = False):
+
+        base = self.base_component
+        if base:
+            for ancestor in base.descend_ancestry(True):
+                yield ancestor
+
+        if include_self:
+            yield self
 
     def dependencies(self, recursive = True, include_self = False):
 
@@ -169,6 +207,7 @@ class Component(object):
     def create_html_document(self):
         document = HTMLDocument()
         document.metadata = DocumentMetadata()
+        document.metadata.resources.append(Script(POLYFILL_URI))
         document.metadata.resources.append(UIScript(self))
         return document
 
@@ -199,8 +238,13 @@ class UIScript(Script):
 
         # Collect all the required components
         for component in self.root_component.dependencies(include_self = True):
+            components_script.append("\n")
             components_script.append(component.get_source())
-            document.metadata.resources.extend(component.resources)
+            document.metadata.resources.extend(
+                resource
+                for resource in component.resources
+                if not isinstance(resource, StyleSheet)
+            )
 
             for trans_key in component.translation_keys:
                 if trans_key.endswith(".*"):
@@ -236,7 +280,7 @@ class UIScript(Script):
             type = "text/javascript",
             children = [
                 """
-                cocktail.ui.root = %s();
+                cocktail.ui.root = %s.create();
                 document.body.appendChild(cocktail.ui.root);
                 """
                 % self.root_component.full_name

@@ -23,9 +23,14 @@ class SourceCodeWriter(object):
             for content in self.__content
         )
 
-    def write(self, *line):
+    def write(self, *text):
         indent_str = self.indent_str * self.indentation
-        self.__content.append(indent_str + u"".join(line))
+        for line in u"".join(text).split(self.line_separator):
+            self.__content.append(indent_str + line)
+
+    def write_lines(self, *lines):
+        for line in lines:
+            self.write(line)
 
     def nest(self, indent = 0):
         child = self.__class__(self.indentation + indent)
@@ -42,12 +47,23 @@ class SourceCodeWriter(object):
         self.indentation -= 1
 
     @contextmanager
-    def indented_block(self):
+    def indented_block(self, opening = None, closure = None):
+        if opening:
+            self.write(opening)
         self.indentation += 1
         try:
-            yield None
+            yield self
         finally:
             self.indentation -= 1
+            if closure:
+                self.write(closure)
+
+    def braces(self, opening = None):
+        if opening:
+            opening += " {"
+        else:
+            opening = "{"
+        return self.indented_block(opening, "}")
 
     def linejump(self, lines = 1):
         for i in xrange(lines):

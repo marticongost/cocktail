@@ -6,6 +6,7 @@ u"""
 from pkg_resources import resource_filename
 from threading import RLock
 from .component import Component
+from .exceptions import ComponentFileError
 
 
 class ComponentRegistry(object):
@@ -17,7 +18,7 @@ class ComponentRegistry(object):
         self.__components = {}
         self.__lock = RLock()
 
-    def get(self, full_name):
+    def get(self, full_name, referrer = None, reference_type = None):
 
         already_existed = True
 
@@ -29,9 +30,15 @@ class ComponentRegistry(object):
                     component = self.__components[full_name]
                 except KeyError:
                     already_existed = False
-                    component = Component(self, full_name)
-                    self.__components[full_name] = component
-                    component.load()
+                    try:
+                        component = Component(self, full_name)
+                        self.__components[full_name] = component
+                        component.load()
+                    except ComponentFileError, e:
+                        if e.full_name == full_name:
+                            e.referrer = referrer
+                            e.reference_type = reference_type
+                        raise e
 
         if self.auto_reload:
             for dep in component.dependencies(include_self = already_existed):
