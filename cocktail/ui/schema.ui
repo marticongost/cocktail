@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<module xmlns="http://www.whads.com/ns/cocktail/ui">
-    <?resource cocktail.ui://scripts/schema.js ?>
-</module>
+<ui:module xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:resource href="cocktail.ui://scripts/schema.js"/>
+
+</ui:module>
 

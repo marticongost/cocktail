@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:resource href="cocktail.ui://styles/tab.scss.css"/>
+
+    <ui:property
+        name="selected"
+        type="boolean"
+        reflected="true"
+        default="false">
+
+        <?on changed
+        this.button.setAttribute("selected", cocktail.ui.property.types.boolean.serialize(newValue));
+
+        if (this.tabs && !cocktail.ui.propertyIsChanging(this.tabs, "selectedTab")) {
+            this.tabs.selectedTab = newValue ? this : null;
+        }
+
+        if (newValue && !this.revealed) {
+            this.revealed = true;
+            cocktail.ui.trigger(this, "tabRevealed");
+        }
+        ?>
+    </ui:property>
+
+    <?class
+    connectedCallback() {
+        this.tabs = this.parentNode;
+        this.tabs.strip.appendChild(this.button);
+    }
+
+    disconnectedCallback() {
+        if (this.tabs) {
+            this.tabs.strip.removeChild(this.button);
+            this.selected = false;
+            if (this == this.tabs.selectedTab) {
+                this.tabs.selectedTab = null;
+            }
+            this.tabs = null;
+        }
+    }
+    ?>
+
+    <button id="button" type="button" ui:placement="none" selected="false">
+        <?js
+        element.tab = this;
+        ?>
+        <?on click
+        if (this.tab.tabs) {
+            this.tab.tabs.selectedTab = this.tab;
+        }
+        ?>
+    </button>
+
+    <slot id="content"/>
+
+</div>
+

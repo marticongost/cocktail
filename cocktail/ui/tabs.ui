@@ -4,15 +4,35 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:ui="http://www.whads.com/ns/cocktail/ui">
 
-    <?resource cocktail.ui://styles/tabs.scss.css ?>
-    <?resource cocktail.ui://scripts/tabs.js ?>
+    <ui:resource href="cocktail.ui://styles/tabs.scss.css"/>
 
-    <div ui:id="strip"/>
-    <div ui:id="content"/>
+    <?class
+    connectedCallback() {
+        if (!this.selectedTab && this.firstChild) {
+            this.firstChild.selected = true;
+        }
+    }
+    ?>
 
-    <div ui:component="Tab">
-        <button ui:component="Button" type="button" />
-        <ui:Button ui:id="button" ui:placement="none"/>
+    <ui:property name="selectedTab">
+        <?on changed
+        if (oldValue) {
+            if (!cocktail.ui.propertyIsChanging(oldValue, "selected")) {
+                oldValue.selected = false;
+            }
+        }
+        if (newValue) {
+            if (!cocktail.ui.propertyIsChanging(newValue, "selected")) {
+                newValue.selected = true;
+            }
+        }
+        ?>
+    </ui:property>
+
+    <div id="strip"/>
+
+    <div id="content">
+        <slot id="contentSlot"/>
     </div>
 
 </div>

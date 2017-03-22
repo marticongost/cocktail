@@ -9,50 +9,24 @@
 
 cocktail.declare("cocktail.ui");
 
-for (let key of ["INITIALIZE", "ADD", "COMPONENT", "COMPONENTS", "ID", "OWNER"]) {
-    cocktail.ui[key] = Symbol("cocktail.ui." + key);
-}
+cocktail.ui.component = function (fullName, cls, baseTag = null) {
+    cls.fullName = fullName;
+    cls.tag = fullName.replace(/\./g, "-").toLowerCase();
+    cls.baseTag = baseTag;
+    cocktail.setVariable(fullName, cls);
 
-cocktail.ui._root = function (component, element) {
-    if (typeof(element) == "string") {
-        element = document.createElement(element);
-    }
-    element[cocktail.ui.COMPONENT] = component;
-    let set = element[cocktail.ui.COMPONENTS];
-    if (set === undefined) {
-        set = new Set([component]);
-        element[cocktail.ui.COMPONENTS] = set;
+    if (baseTag) {
+        customElements.define(cls.tag, cls, {extends: baseTag});
     }
     else {
-        set.add(component);
+        customElements.define(cls.tag, cls);
     }
-    element.classList.add(component.cssClassName);
-    component.setInstanceMembers(element);
-    return element;
+
+    return cls;
 }
 
-cocktail.ui._elem = function (owner, partId, element) {
-    if (typeof(element) == "string") {
-        element = document.createElement(element);
-    }
-    let component = owner[cocktail.ui.COMPONENT];
-    if (partId) {
-        owner[partId] = element;
-    }
-    element.classList.add(component.cssClassName + "-" + partId);
-    element[cocktail.ui.ID] = partId;
-    element[cocktail.ui.OWNER] = owner;
-    return element;
-}
-
-cocktail.ui.add = function (parentNode, child) {
-    let method = parentNode[cocktail.ui.ADD];
-    if (method) {
-        method.call(parentNode, child);
-    }
-    else {
-        parentNode.appendChild(child);
-    }
+cocktail.ui.getShadow = function (element) {
+    return element.shadowRoot || element.getRootNode();
 }
 
 cocktail.ui.insertTranslation = function (element, key) {
@@ -63,7 +37,7 @@ cocktail.ui.insertTranslation = function (element, key) {
 }
 
 cocktail.ui.trigger = function (obj, eventType, detail = null) {
-    obj.dispatchEvent(new CustomEvent(eventType, {detail}));
+    obj.dispatchEvent(new CustomEvent(eventType, {detail: detail}));
 }
 
 cocktail.ui.isInstance = function (element, component) {
@@ -73,238 +47,258 @@ cocktail.ui.isInstance = function (element, component) {
 
 cocktail.ui.closestInstance = function (element, component) {
     do {
-        if (cocktail.ui.isInstance(element, component)) {
+        if (element instanceof component) {
             return element;
         }
         element = element.parentNode;
     }
     while (element);
+    return null;
 }
 
-/* Components
------------------------------------------------------------------------------*/
-cocktail.ui.Component = {
-    extend(fullName, createInstance, parentComponent = null) {
-        let component = function () {
-            let instance = createInstance.call(component);
-            let initializer = instance[cocktail.ui.INITIALIZE];
-            if (initializer) {
-                initializer.call(instance);
-            }
-            return instance;
-        }
-        cocktail.setVariable(fullName, component);
-        component.__proto__ = this;
-        component.createInstance = createInstance;
-        component.baseComponent = this;
-        component.parentComponent = parentComponent;
-        component.instanceMembers = {};
-        component.fullName = fullName;
-        component.cssClassName = fullName.replace(/\./g, "-");
+cocktail.ui.isComponent = function (obj) {
+    return Boolean(
+        typeof(obj) == "function"
+        && obj.prototype instanceof HTMLElement
+        && obj.fullName
+    );
+}
 
-        if (parentComponent) {
-            let name = fullName.substr(fullName.lastIndexOf(".") + 1);
-            parentComponent.instanceMembers[name] = component;
-        }
+cocktail.ui.createDisplay = function (display, context) {
+    let element = cocktail.ui.isComponent(display) ? display.create() : display();
+    Object.assign(element, context);
+    return element;
+}
 
-        return component;
-    },
-    define(members) {
-        for (let key of Reflect.ownKeys(members)) {
-            let value = members[key];
-            if (value instanceof cocktail.ui.ComponentMember) {
-                value.attach(this, key);
-            }
-            else {
-                this.instanceMembers[key] = value;
-            }
+cocktail.ui.propertyIsChanging = function (instance, propertyName) {
+    return instance.constructor[propertyName]._changingInstances.has(instance);
+}
+
+cocktail.ui.property = function (component, name, options = null) {
+
+    // Add a static object to the class constructor to provide access to symbols
+    // and metadata used by the property
+    let meta = {
+        GET: Symbol(component.fullName + ".GET"),
+        SET: Symbol(component.fullName + ".SET"),
+        VALUE: Symbol(component.fullName + ".VALUE"),
+        reflected: options && options.reflected || false,
+        eventName: name + "Changed"
+    };
+
+    // Determine the type of the property (used in attribute serialization /
+    // deserialization)
+    if (options) {
+        meta.type = options.type;
+        if (typeof(meta.type) == "string") {
+            meta.type = cocktail.ui.property.types[meta.type];
         }
-    },
-    *iterInheritance() {
-        let component = this;
-        while (component) {
-            yield component;
-            component = component.baseComponent;
+    }
+
+    if (!meta.type) {
+        meta.type = cocktail.ui.property.types.string;
+    }
+
+    // Keep a set of weak references to component instances whose value is
+    // being modified. Useful to prevent infinite recursion in property -
+    // attribute reflection and bidirectionally interlocked properties.
+    Object.defineProperty(meta, "_changingInstances", {
+        value: new WeakSet(),
+        enumerable: false,
+        configurable: false
+    });
+
+    // Property getter
+    let descriptorGetter = function () {
+        let getter = this[meta.GET];
+        if (getter) {
+            return getter.call(this);
         }
-    },
-    setInstanceMembers(instance) {
-        if (this.instanceMembers) {
-            for (let key of Reflect.ownKeys(this.instanceMembers)) {
-                let value = this.instanceMembers[key];
-                if (value instanceof cocktail.ui.ComponentMember) {
-                    value.initInstance(instance);
+        else {
+            return this[meta.VALUE];
+        }
+    }
+
+    // Property setter
+    let descriptorSetter = null;
+    if (options && options.set === null) {
+        descriptorSetter = undefined; // read-only property
+    }
+    else {
+        descriptorSetter = function (value) {
+            let oldValue = this[name];
+
+            // Keep track of which instances are being changed
+            try {
+                meta._changingInstances.add(this);
+
+                // Set the new value
+                let setter = this[meta.SET];
+                if (setter) {
+                    setter.call(this, value);
                 }
                 else {
-                    instance[key] = value;
+                    this[meta.VALUE] = value;
+                }
+
+                // Track value changes
+                let newValue = this[name];
+                if (newValue !== oldValue) {
+
+                    // Reflect the property's value to its DOM attribute
+                    if (meta.reflected) {
+                        this.setAttribute(name, meta.type.serialize(newValue));
+                    }
+
+                    // Trigger a changed event
+                    cocktail.ui.trigger(this, meta.eventName, {
+                        oldValue: oldValue,
+                        newValue: newValue
+                    });
                 }
             }
-        }
-    }
-}
-
-/* Component members
------------------------------------------------------------------------------*/
-cocktail.ui.ComponentMember = class ComponentMember {
-
-    attach(component, key) {
-        component.instanceMembers[key] = this;
-        this.component = component;
-        this.key = key;
-    }
-
-    initInstance(instance) {}
-}
-
-/* Component accessors
------------------------------------------------------------------------------*/
-cocktail.ui.Accessor = class Accessor extends cocktail.ui.ComponentMember {
-
-    setAccessorMethods(params = null) {
-        if (!params || params.get === undefined) {
-            this.get = this.getValue;
-        }
-        else {
-            this.get = params.get;
-        }
-
-        if (!params || params.set === undefined) {
-            this.set = this.setValue;
-        }
-        else {
-            this.set = params.set;
-        }
-    }
-
-    initInstance(instance) {
-        let accessor = this;
-        let dfn = {
-            enumerable: true,
-            get: function () {
-                return accessor.get(this);
+            finally {
+                meta._changingInstances.delete(this);
             }
-        };
-        if (this.set !== null) {
-            dfn.set = function (value) {
-                accessor.set(this, value);
-            };
         }
-        Object.defineProperty(instance, this.key, dfn);
     }
 
-    getValue(obj) {}
-    setValue(obj, value) {}
+    // Enable attribute observation for properties with attribute reflection
+    // enabled
+    if (meta.reflected) {
+        if (!component.observedAttributes) {
+            component.observedAttributes = [];
+        }
+        component.observedAttributes.push(name);
+    }
+
+    // Install the given getter and setter methods
+    let getterImpl = options && options.get;
+    if (getterImpl) {
+        component.prototype[meta.GET] = getterImpl;
+    }
+
+    let setterImpl = options && options.set;
+    if (setterImpl) {
+        component.prototype[meta.SET] = setterImpl;
+    }
+
+    // Attach the property to the component
+    component[name] = meta;
+    Object.defineProperty(component.prototype, name, {
+        get: descriptorGetter,
+        set: descriptorSetter,
+        enumerable: true
+    });
 }
 
-/* Component properties
------------------------------------------------------------------------------*/
-cocktail.ui.Property = class Property extends cocktail.ui.Accessor {
-
-    constructor(params = null) {
-        super(params);
-        this.symbol = Symbol();
-        this.getDefault = params && params.getDefault;
-        this.setAccessorMethods(params);
-    }
-
-    getValue(obj) {
-        let value = obj[this.symbol];
-        if (value === undefined) {
-            value = this.getDefault ? this.getDefault(obj) : this.defaultValue;
-            obj[this.symbol] = obj;
+cocktail.ui.property.types = {
+    string: {
+        serialize(value) {
+            return String(value);
+        },
+        parse(value) {
+            return value;
         }
-        return value;
-    }
-
-    setValue(obj, value, triggerEvent = true) {
-        let prevValue = this.getValue(obj);
-        obj[this.symbol] = value;
-        if (triggerEvent && value != prevValue) {
-            cocktail.ui.trigger(
-                    obj,
-                    this.key + "Changed",
-                    {previous: prevValue, value: value}
-                    );
+    },
+    number: {
+        serialize(value) {
+            return String(value);
+        },
+        parse(value) {
+            return Number(value);
         }
-    }
-}
-
-cocktail.ui.Property.prototype.defaultValue = null;
-
-/* Component attributes
------------------------------------------------------------------------------*/
-cocktail.ui.Attribute = class Attribute extends cocktail.ui.Accessor {
-
-    constructor(params) {
-        super();
-        this.setAccessorMethods(params);
-    }
-
-    attach(component, key) {
-        super.attach(component, key);
-        this.attributeName = `data-${key.toLowerCase()}`;
-    }
-
-    getValue(obj) {
-        let value = obj.getAttribute(this.attributeName);
-        if (value !== null) {
-            value = this.parseValue(value);
+    },
+    boolean: {
+        serialize(value) {
+            return value ? "true" : "false";
+        },
+        parse(value) {
+            if (value == "true") {
+                return true;
+            }
+            else if (value == "false") {
+                return false;
+            }
+            else {
+                return undefined;
+            }
         }
-        return value;
-    }
-
-    setValue(obj, value, triggerEvent = true) {
-        let prevValue = this.getValue(obj);
-        obj.setAttribute(this.attributeName, this.serializeValue(value));
-        if (triggerEvent && value != prevValue) {
-            cocktail.ui.trigger(
-                    obj,
-                    this.key + "Changed",
-                    {previous: prevValue, value: value}
-                    );
+    },
+    identifiers: {
+        serialize(value) {
+            return value ? value.join(" ") : "";
+        },
+        parse(value) {
+            return new Set(value.split(/\s+/g));
         }
-    }
-
-    parseValue(value) {
-        return value;
-    }
-
-    serializeValue(value) {
-        return String(value);
     }
 }
 
-/* String attributes
------------------------------------------------------------------------------*/
-cocktail.ui.StringAttribute = class StringAttribute extends cocktail.ui.Attribute {
-
-    constructor(params) {
-        super();
-        this.setAccessorMethods(params);
-    }
-}
-
-/* Boolean attributes
------------------------------------------------------------------------------*/
-cocktail.ui.BooleanAttribute = class BooleanAttribute extends cocktail.ui.Attribute {
-
-    constructor(params) {
-        super();
-        this.setAccessorMethods(params);
-    }
-
-    parseValue(value) {
-        if (value === "true") {
-            return true;
-        }
-        else if (value == "false") {
-            return false;
+cocktail.ui.componentStaticMembers = {
+    embeddedStyles: null,
+    create(properties = null) {
+        let instance;
+        if (this.baseTag) {
+            instance = document.createElement(this.baseTag, {is: this.tag});
         }
         else {
-            return undefined;
+            instance = new this();
+        }
+        instance.initialize();
+        if (properties) {
+            Object.assign(instance, properties);
+        }
+        return instance;
+    }
+}
+
+cocktail.ui.componentMembers = {
+    initialize() {
+        this.attachShadow({mode: "open"});
+
+        // Linked CSS
+        for (let uri of this.constructor.linkedStyleSheets) {
+            let link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = uri;
+            this.shadowRoot.appendChild(link);
+        }
+
+        // Embedded CSS
+        let css = this.constructor.embeddedStyles;
+        if (css) {
+            let styles = document.createElement('style');
+            styles.type = 'text/css';
+            styles.textContent = css;
+            this.shadowRoot.appendChild(styles);
+        }
+    },
+    attributeChangedCallback(attrName, oldValue, newValue) {
+        let propertyMeta = this.constructor[attrName];
+        if (propertyMeta && propertyMeta.reflected && !propertyMeta._changingInstances.has(this)) {
+            this[attrName] = propertyMeta.type.parse(newValue);
         }
     }
 }
 
+cocktail.ui.base = new Proxy({}, {
+    get: function (target, name) {
+        let cls = target[name];
+        if (!cls) {
+            let iface = window[name];
+            if (!iface) {
+                throw "Unknown HTML element interface: " + name;
+            }
+            cls = class extends iface {};
+            cls.linkedStyleSheets = [];
+            Object.assign(cls, cocktail.ui.componentStaticMembers);
+            Object.assign(cls.prototype, cocktail.ui.componentMembers);
+            target[name] = cls;
+        }
+        return cls;
+    }
+});
 
 /* Requests
 -----------------------------------------------------------------------------*/
@@ -410,12 +404,8 @@ cocktail.ui.HTTPDataSource = class HTTPDataSource extends cocktail.ui.DataSource
 /* Data binding
 -----------------------------------------------------------------------------*/
 cocktail.ui.dataBound = function (component) {
-    component.define(cocktail.ui.dataBound.componentProperties);
-}
-
-cocktail.ui.dataBound.componentProperties = {
-    dataSource: new cocktail.ui.Property(),
-    dataState: new cocktail.ui.StringAttribute()
+    cocktail.ui.property(component, "dataSource", {reflected: true});
+    cocktail.ui.property(component, "dataState", {reflected: true});
 }
 
 cocktail.ui.DISPLAY = Symbol("cocktail.ui.DISPLAY");

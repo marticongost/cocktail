@@ -12,35 +12,9 @@ cocktail.ui.dataBound(cocktail.ui.Table);
 cocktail.ui.Table.define({
 
     [cocktail.ui.INITIALIZE]() {
-
         this.dataState = "pending";
         this.columnsReady = false;
-
-        function getScrollbarWidth() {
-
-            if (!cocktail.ui.Table.scrollbarWidth) {
-
-                let outer = document.createElement("div");
-                outer.style.visibility = "hidden";
-                outer.style.width = "100px";
-                document.body.appendChild(outer);
-
-                let widthNoScroll = outer.offsetWidth;
-                outer.style.overflow = "scroll";
-
-                let inner = document.createElement("div");
-                inner.style.width = "100%";
-                outer.appendChild(inner);
-
-                let widthWithScroll = inner.offsetWidth;
-                outer.parentNode.removeChild(outer);
-
-                cocktail.ui.Table.scrollbarWidth = widthNoScroll - widthWithScroll;
-            }
-            return cocktail.ui.Table.scrollbarWidth;
-        }
-
-        this.headingsRow.style.width = `calc(100% - ${getScrollbarWidth()}px)`;
+        this.headingsRow.style.width =  `calc(100% - ${cocktail.getScrollbarWidth()}px)`;
     },
 
     member: new cocktail.ui.Property({
