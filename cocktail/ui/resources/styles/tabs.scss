@@ -1,6 +1,6 @@
 
-$active-border-color: #bbb;
-$inactive-border-color: #c8c8c8;
+$active-border-color: #c5c5c5;
+$inactive-border-color: #d5d5d5;
 
 :host {
     box-sizing: border-box;
@@ -36,14 +36,14 @@ $inactive-border-color: #c8c8c8;
 
         &[selected='false'] {
             background-color: #eaeaea;
-            background-image: linear-gradient(#f5f5f5, #e5e5e5);
+            background-image: linear-gradient(#efefef, #e5e5e5);
             border: 1px solid $inactive-border-color;
             border-bottom-color: $active-border-color;
             cursor: pointer;
 
             &:hover {
                 color: #333;
-                background-image: none;
+                background-image: linear-gradient(#f5f5f5, #eaeaea);
                 background-color: #f5f5f5;
             }
         }
