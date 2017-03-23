@@ -227,6 +227,9 @@ cocktail.ui.property.types = {
     },
     identifiers: {
         serialize(value) {
+            if (value instanceof Set) {
+                value = [...value];
+            }
             return value ? value.join(" ") : "";
         },
         parse(value) {
