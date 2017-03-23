@@ -745,7 +745,7 @@ class StackNode(object):
     # be False on <ui:with> clauses)
     is_new = False
 
-    # Wether the node represents an elements based on a component
+    # Wether the node represents an element based on a component
     is_component = False
 
     # Wether the node represents a component's root element
