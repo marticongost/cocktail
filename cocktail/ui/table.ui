@@ -24,15 +24,6 @@
     <ui:property name="visibleColumns"/>
 
     <?class
-    connectedCallback() {
-        let table = this;
-        // Execute after the browser has calculated the element's layout;
-        // otherwise, the scrollbar size calculation is off
-        setTimeout(function () {
-            table.headingsRow.style.width = `calc(100% - ${table.body.offsetWidth - table.body.clientWidth}px)`;
-        }, 1);
-    }
-
     update() {
 
         let table = this;
@@ -82,6 +73,12 @@
             let row = this.createRow(record);
             this.body.appendChild(row);
         }
+
+        // Subtract the scrollbar width from the headings row
+        let table = this;
+        setTimeout(function () {
+            table.headingsRow.style.width = `calc(100% - ${table.body.offsetWidth - table.body.clientWidth}px)`;
+        }, 1);
     }
 
     clearRows() {
