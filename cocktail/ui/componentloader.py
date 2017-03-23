@@ -571,6 +571,20 @@ class ComponentLoader(object):
                     % (node.ref, attrib_name, attrib_value)
                 )
 
+        # Add text
+        if element.text and element.text.strip():
+            self.init_source.write(
+                "%s.appendChild(document.createTextNode(%s));"
+                % (node.ref, dumps(element.text))
+            )
+
+        # Add tail text
+        if element.tail and element.tail.strip():
+            node.parent.write(
+                "%s.appendChild(document.createTextNode(%s));"
+                % (node.parent.ref, dumps(element.tail))
+            )
+
         # Process child elements
         for child in element:
             child_name = self.parse_node(child)
