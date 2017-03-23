@@ -116,6 +116,7 @@ class ComponentLoader(object):
         self.init_source = None
         self.init_tail_source = None
         self.body_source = None
+        self.decoration_source = None
         self.tail_source = None
         self.__stack = None
         self.__context_change_stack = []
@@ -149,6 +150,7 @@ class ComponentLoader(object):
         self.init_source = None
         self.init_tail_source = None
         self.body_source = None
+        self.declaration_source = None
         self.tail_source = None
         self.__stack = None
         self.__context_change_stack = None
@@ -179,30 +181,35 @@ class ComponentLoader(object):
             iface = self.tag_interfaces.get(local_name, "HTMLElement")
             base_name = "cocktail.ui.base." + iface
 
+        if not self.is_module:
+            self.source.write("{")
+            self.source.indent()
+
         self.head_source = self.source.nest()
 
         if not self.is_module:
 
             # Component class declaration
-            self.source.write("cocktail.ui.component(")
-            self.source.indent()
-            self.source.write("'%s'," % self.component.full_name)
             self.source.write(
-                "class %s extends %s {" % (
+                "let cls = class %s extends %s {" % (
                     self.component.name,
                     base_name
                 )
             )
             self.body_source = self.source.nest(1)
+            self.source.write("}")
+            self.decoration_source = self.source.nest()
 
             if is_ui_node:
-                self.source.write("}")
+                self.source.write(
+                    "cocktail.ui.component('%s', cls);"
+                    % self.component.full_name
+                )
             else:
-                self.source.write("},")
-                self.source.write("'%s'" % local_name)
-
-            self.source.unindent()
-            self.source.write(");")
+                self.source.write(
+                    "cocktail.ui.component('%s', cls, '%s');"
+                    % (self.component.full_name, local_name)
+                )
 
             # Component initializer
             self.body_source.write("initialize() {")
@@ -251,6 +258,10 @@ class ComponentLoader(object):
                             % dumps(uris)
                         )
 
+        if not self.is_module:
+            self.source.unindent()
+            self.source.write("}")
+
     def parse_node(self, node):
         if node.tag is ProcessingInstruction:
             self.parse_processing_instruction(node)
@@ -296,6 +307,8 @@ class ComponentLoader(object):
                 node.is_translation_requirement = True
             elif local_name == "resource":
                 node.is_resource = True
+            elif local_name == "decoratedBy":
+                node.is_decorator = True
             elif local_name == "requires":
                 node.is_requirement = True
 
@@ -303,6 +316,7 @@ class ComponentLoader(object):
             not node.is_content
             and not node.is_property
             and not node.is_resource
+            and not node.is_decorator
             and not node.is_translation
             and not node.is_translation_requirement
             and not node.is_requirement
@@ -397,17 +411,16 @@ class ComponentLoader(object):
 
             if prop_options:
                 self.tail_source.write(
-                    "cocktail.ui.property(%s, '%s', %s);"
+                    "cocktail.ui.property(cls, '%s', %s);"
                     % (
-                        self.component.full_name,
                         node.prop_name,
                         dumps(prop_options)
                     )
                 )
             else:
                 self.tail_source.write(
-                    "cocktail.ui.property(%s, '%s');"
-                    % (self.component.full_name, node.prop_name)
+                    "cocktail.ui.property(cls, '%s');"
+                    % node.prop_name
                 )
 
         # Translations
@@ -452,6 +465,15 @@ class ComponentLoader(object):
                 )
             resource = Resource.from_uri(uri)
             self.resources.append(resource)
+
+        # Decorator
+        elif node.is_decorator:
+            function = attributes.pop("function", None)
+            if not function:
+                self.trigger_parser_error(
+                    "'decoratedBy' clause without a 'function' attribute"
+                )
+            self.decoration_source.write("cls = %s(cls);" % function)
 
         # Requirement
         elif node.is_requirement:
@@ -693,6 +715,10 @@ class StackNode(object):
 
     # Wether the node is a resource inclusion
     is_resource = False
+
+    # Wether the node is a reference to a decorator (a function modifying the
+    # resulting component)
+    is_decorator = False
 
     # Wether the node represents a DOM element in the component
     is_element = False
