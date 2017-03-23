@@ -565,7 +565,7 @@ class ComponentLoader(object):
             if self.is_module:
                 self.trigger_parser_error("Modules can't have attributes")
 
-            if attrib_ns is None or attrib_ns == self.xhtml_ns:
+            if attrib_ns is None or attrib_ns in (self.xhtml_ns, self.ui_ns):
                 self.init_tail_source.write(
                     '%s.setAttribute("%s", "%s");'
                     % (node.ref, attrib_name, attrib_value)
