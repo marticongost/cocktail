@@ -406,6 +406,7 @@ cocktail.ui.HTTPDataSource = class HTTPDataSource extends cocktail.ui.DataSource
 cocktail.ui.dataBound = function (component) {
     cocktail.ui.property(component, "dataSource", {reflected: true});
     cocktail.ui.property(component, "dataState", {reflected: true});
+    return component;
 }
 
 cocktail.ui.DISPLAY = Symbol("cocktail.ui.DISPLAY");
