@@ -7,6 +7,7 @@ import os
 import re
 from time import time
 from json import dumps
+from collections import OrderedDict
 from lxml.etree import parse, QName, ProcessingInstruction
 from cocktail.stringutils import normalize_indentation
 from cocktail.modeling import OrderedSet
@@ -111,12 +112,14 @@ class ComponentLoader(object):
         self.is_module = False
         self.resources = OrderedSet()
         self.translation_keys = set()
+        self.decorators = []
+        self.properties = OrderedDict()
         self.source = SourceCodeWriter()
         self.head_source = None
         self.init_source = None
         self.init_tail_source = None
         self.body_source = None
-        self.decoration_source = None
+        self.registration_source = None
         self.tail_source = None
         self.__stack = None
         self.__context_change_stack = []
@@ -133,7 +136,8 @@ class ComponentLoader(object):
                 component.full_name.lower(),
                 callback = (
                     lambda key, lang, value: self.translation_keys.add(key)
-                )
+                ),
+                reload = True
             )
 
         self.parse_document(node)
@@ -145,12 +149,14 @@ class ComponentLoader(object):
         self.subcomponents = None
         self.resources = None
         self.translation_keys = None
+        self.decorators = None
+        self.properties = None
         self.source = None
         self.head_source = None
         self.init_source = None
         self.init_tail_source = None
         self.body_source = None
-        self.declaration_source = None
+        self.registration_source = None
         self.tail_source = None
         self.__stack = None
         self.__context_change_stack = None
@@ -197,19 +203,8 @@ class ComponentLoader(object):
                 )
             )
             self.body_source = self.source.nest(1)
+            self.body_source.write("static get observedAttributes() { return this[cocktail.ui.OBSERVED_ATTRIBUTES]; }")
             self.source.write("}")
-            self.decoration_source = self.source.nest()
-
-            if is_ui_node:
-                self.source.write(
-                    "cocktail.ui.component('%s', cls);"
-                    % self.component.full_name
-                )
-            else:
-                self.source.write(
-                    "cocktail.ui.component('%s', cls, '%s');"
-                    % (self.component.full_name, local_name)
-                )
 
             # Component initializer
             self.body_source.write("initialize() {")
@@ -223,8 +218,64 @@ class ComponentLoader(object):
             self.init_tail_source = self.body_source.nest(1)
             self.body_source.write("}")
 
+        self.registration_source = self.source.nest()
         self.tail_source = self.source.nest()
         self.parse_element(node)
+
+        if not self.is_module:
+            self.registration_source.write(
+                "cocktail.ui.component({"
+            )
+            self.registration_source.indent()
+            self.registration_source.write(
+                "fullName: %s," % dumps(self.component.full_name)
+            )
+            self.registration_source.write(
+                "cls: cls%s" % (
+                    "," if not is_ui_node or self.decorators or self.properties else ""
+                )
+            )
+
+            if not is_ui_node:
+                self.registration_source.write(
+                    "baseTag: %s%s" % (
+                        dumps(local_name),
+                        "," if self.decorators or self.properties else ""
+                    )
+                )
+
+            if self.decorators:
+                self.registration_source.write("decorators: [")
+                self.registration_source.indent()
+
+                for decorator in self.decorators[:-1]:
+                    self.registration_source.write(decorator + ",")
+
+                self.registration_source.write(self.decorators[-1])
+                self.registration_source.unindent()
+                self.registration_source.write(
+                    "]," if self.properties else "]"
+                )
+
+            if self.properties:
+                self.registration_source.write("properties: {")
+                self.registration_source.indent()
+
+                props = self.properties.items()
+                for prop_name, prop_params in props[:-1]:
+                    self.registration_source.write(
+                        "%s: %s," % (prop_name, dumps(prop_params))
+                    )
+
+                self.registration_source.write(
+                    "%s: %s," % (props[-1][0], dumps(props[-1][1]))
+                )
+
+                self.registration_source.unindent()
+                self.registration_source.write("}")
+
+            self.registration_source.unindent()
+            self.registration_source.write("});")
 
         # Embed styles
 
@@ -409,19 +460,7 @@ class ComponentLoader(object):
                     % (node.prop_name, dumps(default))
                 )
 
-            if prop_options:
-                self.tail_source.write(
-                    "cocktail.ui.property(cls, '%s', %s);"
-                    % (
-                        node.prop_name,
-                        dumps(prop_options)
-                    )
-                )
-            else:
-                self.tail_source.write(
-                    "cocktail.ui.property(cls, '%s');"
-                    % node.prop_name
-                )
+            self.properties[node.prop_name] = prop_options
 
         # Translations
         # Translation keys
@@ -471,12 +510,20 @@ class ComponentLoader(object):
 
         # Decorator
         elif node.is_decorator:
+
+            if not node.parent or not node.parent.is_root:
+                self.trigger_parser_error(
+                    "'decoratedBy' directives must be placed directly descend "
+                    "from a component's root element"
+                )
+
             function = attributes.pop("function", None)
             if not function:
                 self.trigger_parser_error(
                     "'decoratedBy' clause without a 'function' attribute"
                 )
-            self.decoration_source.write("cls = %s(cls);" % function)
+
+            self.decorators.append(function)
 
         # Requirement
         elif node.is_requirement:
