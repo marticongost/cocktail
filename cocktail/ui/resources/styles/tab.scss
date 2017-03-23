@@ -2,13 +2,10 @@
 :host {
     box-sizing: border-box;
     display: block;
-    position: absolute;
-    left: 0;
-    top: 0;
-    right: 0;
-    bottom: 0;
+    flex: 1 1 auto;
     contain: content;
     overflow: auto;
+    background-color: white;
 }
 
 :host([selected='false']) {

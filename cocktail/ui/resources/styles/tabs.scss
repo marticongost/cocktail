@@ -1,5 +1,6 @@
 
-$border-color: #ddd;
+$active-border-color: #bbb;
+$inactive-border-color: #c8c8c8;
 
 :host {
     box-sizing: border-box;
@@ -9,7 +10,7 @@ $border-color: #ddd;
 }
 
 #strip {
-    border-bottom: 1px solid $border-color;
+    border-bottom: 1px solid $active-border-color;
     padding: 4px;
     padding-bottom: 0;
     flex: 0 0 auto;
@@ -21,7 +22,6 @@ $border-color: #ddd;
         padding: 6px 12px;
         border-top-left-radius: 4px;
         border-top-right-radius: 4px;
-        border: 1px solid $border-color;
 
         &:focus {
             outline: none;
@@ -29,17 +29,22 @@ $border-color: #ddd;
 
         &[selected='true'] {
             background-color: white;
+            border: 1px solid $active-border-color;
             border-bottom-color: white;
             color: #333;
         }
 
         &[selected='false'] {
             background-color: #eaeaea;
+            background-image: linear-gradient(#f5f5f5, #e5e5e5);
+            border: 1px solid $inactive-border-color;
+            border-bottom-color: $active-border-color;
             cursor: pointer;
 
             &:hover {
                 color: #333;
-                background-color: #f4f4f4;
+                background-image: none;
+                background-color: #f5f5f5;
             }
         }
 
@@ -51,7 +56,9 @@ $border-color: #ddd;
 
 #content {
     flex: 1 1 auto;
-    margin: 16px;
+    display: flex;
+    padding: 16px;
     contain: content;
+    background-color: white;
 }
 
