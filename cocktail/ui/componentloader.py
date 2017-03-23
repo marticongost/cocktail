@@ -433,10 +433,13 @@ class ComponentLoader(object):
                 )
 
             key = self.component.full_name
-            key_qualifier = attributes.pop("key", None)
+            custom_key = attributes.pop("key", None)
 
-            if key_qualifier:
-                key += "." + key_qualifier
+            if custom_key:
+                if custom_key.startswith("."):
+                    key += custom_key
+                else:
+                    key = custom_key
             else:
                 if not node.parent.id:
                     self.trigger_parser_error(
