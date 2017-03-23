@@ -77,9 +77,16 @@
     }
 
     setRows(records) {
+        this.clearRows();
         for (let record of records) {
             let row = this.createRow(record);
             this.body.appendChild(row);
+        }
+    }
+
+    clearRows() {
+        while (this.body.lastChild) {
+            this.body.remove(this.body.lastChild);
         }
     }
 
