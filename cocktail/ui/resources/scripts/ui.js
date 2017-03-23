@@ -9,14 +9,36 @@
 
 cocktail.declare("cocktail.ui");
 
-cocktail.ui.component = function (fullName, cls, baseTag = null) {
-    cls.fullName = fullName;
-    cls.tag = fullName.replace(/\./g, "-").toLowerCase();
-    cls.baseTag = baseTag;
-    cocktail.setVariable(fullName, cls);
+cocktail.ui.OBSERVED_ATTRIBUTES = Symbol("cocktail.ui.OBSERVED_ATTRIBUTES");
 
-    if (baseTag) {
-        customElements.define(cls.tag, cls, {extends: baseTag});
+cocktail.ui.component = function (params) {
+
+    params.tag = params.fullName.replace(/\./g, "-").toLowerCase();
+
+    if (params.decorators) {
+        if (!params.properties) {
+            params.properties = {};
+        }
+        for (let decorator of params.decorators) {
+            decorator(params);
+        }
+    }
+
+    let cls = params.cls;
+    cls.fullName = params.fullName;
+    cls.tag = params.tag;
+    cls.baseTag = params.baseTag;
+    cls[cocktail.ui.OBSERVED_ATTRIBUTES] = [];
+    cocktail.setVariable(params.fullName, cls);
+
+    if (params.properties) {
+        for (let propName in params.properties) {
+            cocktail.ui.property(cls, propName, params.properties[propName]);
+        }
+    }
+
+    if (cls.baseTag) {
+        customElements.define(cls.tag, cls, {extends: cls.baseTag});
     }
     else {
         customElements.define(cls.tag, cls);
@@ -50,10 +72,9 @@ cocktail.ui.closestInstance = function (element, component) {
         if (element instanceof component) {
             return element;
         }
-        element = element.parentNode;
+        element = element.parentNode || element.host;
     }
     while (element);
-    return null;
 }
 
 cocktail.ui.isComponent = function (obj) {
@@ -166,10 +187,7 @@ cocktail.ui.property = function (component, name, options = null) {
     // Enable attribute observation for properties with attribute reflection
     // enabled
     if (meta.reflected) {
-        if (!component.observedAttributes) {
-            component.observedAttributes = [];
-        }
-        component.observedAttributes.push(name);
+        component[cocktail.ui.OBSERVED_ATTRIBUTES].push(name);
     }
 
     // Install the given getter and setter methods
@@ -406,10 +424,9 @@ cocktail.ui.HTTPDataSource = class HTTPDataSource extends cocktail.ui.DataSource
 
 /* Data binding
 -----------------------------------------------------------------------------*/
-cocktail.ui.dataBound = function (component) {
-    cocktail.ui.property(component, "dataSource", {reflected: true});
-    cocktail.ui.property(component, "dataState", {reflected: true});
-    return component;
+cocktail.ui.dataBound = function (registration) {
+    registration.properties["dataSource"] = {};
+    registration.properties["dataState"] = {reflected: true};
 }
 
 cocktail.ui.DISPLAY = Symbol("cocktail.ui.DISPLAY");
