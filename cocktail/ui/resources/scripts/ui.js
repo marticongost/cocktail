@@ -47,6 +47,19 @@ cocktail.ui.component = function (params) {
     return cls;
 }
 
+cocktail.ui._getObservedAttributes = function (cls) {
+    let attributes = [];
+    let clsAttributes;
+    while (cls) {
+        clsAttributes = cls[cocktail.ui.OBSERVED_ATTRIBUTES];
+        if (clsAttributes) {
+            attributes.push(...clsAttributes);
+        }
+        cls = Object.getPrototypeOf(cls);
+    }
+    return attributes;
+}
+
 cocktail.ui.getShadow = function (element) {
     return element.shadowRoot || element.getRootNode();
 }
