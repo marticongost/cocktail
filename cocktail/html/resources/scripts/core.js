@@ -882,3 +882,14 @@ cocktail.getScrollbarWidth = function () {
     return cocktail._scrollbarWidth;
 }
 
+cocktail.loadSVG = function (url, container) {
+    var child;
+    while (child = container.lastChild) {
+        container.removeChild(child);
+    }
+    return jQuery.ajax({url: cocktail.normalizeResourceURI(url)})
+        .done(function (xml) {
+            container.appendChild(xml.documentElement);
+        });
+}
+
