@@ -402,6 +402,7 @@ class ComponentLoader(object):
                 )
                 subcomponent.load(element)
                 self.subcomponents[subcomponent_name] = subcomponent
+                self.__stack = self.__stack.parent
                 return
 
         # Placement
