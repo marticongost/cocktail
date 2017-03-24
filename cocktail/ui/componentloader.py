@@ -203,7 +203,10 @@ class ComponentLoader(object):
                 )
             )
             self.body_source = self.source.nest(1)
-            self.body_source.write("static get observedAttributes() { return this[cocktail.ui.OBSERVED_ATTRIBUTES]; }")
+            self.body_source.write(
+                "static get observedAttributes() { "
+                "return cocktail.ui._getObservedAttributes(this); }"
+            )
             self.source.write("}")
 
             # Component initializer
