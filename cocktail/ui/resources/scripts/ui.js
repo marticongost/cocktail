@@ -27,6 +27,7 @@ cocktail.ui.component = function (params) {
     let cls = params.cls;
     cls.fullName = params.fullName;
     cls.tag = params.tag;
+    cls.parentComponent = params.parentComponent;
     cls.baseTag = params.baseTag;
     cls[cocktail.ui.OBSERVED_ATTRIBUTES] = [];
     cocktail.setVariable(params.fullName, cls);
@@ -289,14 +290,22 @@ cocktail.ui.componentStaticMembers = {
 
 cocktail.ui.componentMembers = {
     initialize() {
-        this.attachShadow({mode: "open"});
+
+        let root;
+
+        if (this.constructor.parentComponent) {
+            root = this;
+        }
+        else {
+            root = this.attachShadow({mode: "open"});
+        }
 
         // Linked CSS
         for (let uri of this.constructor.linkedStyleSheets) {
             let link = document.createElement('link');
             link.rel = 'stylesheet';
             link.href = uri;
-            this.shadowRoot.appendChild(link);
+            root.appendChild(link);
         }
 
         // Embedded CSS
@@ -305,7 +314,7 @@ cocktail.ui.componentMembers = {
             let styles = document.createElement('style');
             styles.type = 'text/css';
             styles.textContent = css;
-            this.shadowRoot.appendChild(styles);
+            root.appendChild(styles);
         }
     },
     attributeChangedCallback(attrName, oldValue, newValue) {
