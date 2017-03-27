@@ -11,6 +11,7 @@
     ru: ${amount}${currency}
     cn: ${amount}${currency}
     tr: ${amount}${currency}
+    pt: ${amount}${currency}
 
     [currencies]
 
