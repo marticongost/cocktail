@@ -2,5 +2,9 @@
 #list {
     margin: 0;
     padding-left: 1rem;
+
+    li + li {
+        margin-top: 5px;
+    }
 }
 
