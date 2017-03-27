@@ -193,7 +193,7 @@
 
         getMember(name) {
             let member = null;
-            for (let schema = this; !member; schema = schema[BASE]) {
+            for (let schema = this; !member && schema; schema = schema[BASE]) {
                 member = this[MEMBER_MAP].get(name);
             }
             return member;
