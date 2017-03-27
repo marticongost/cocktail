@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<ul
+<div
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:resource href="cocktail.ui://styles/list.scss.css"/>
 
     <ui:property name="value"/>
     <ui:property name="member"/>
@@ -11,12 +13,12 @@
     <?class
     update() {
         while (this.firstChild) {
-            this.removeChild(this.firstChild);
+            this.list.removeChild(this.firstChild);
         }
         if (this.value) {
             for (let item of this.value) {
                 let entry = this.createEntry(item);
-                this.appendChild(entry);
+                this.list.appendChild(entry);
             }
         }
     }
@@ -24,7 +26,7 @@
     createEntry(item) {
         let entry = this.constructor.Entry.create();
         entry.item = item;
-        entry.innerHTML = this.translateItem(item);
+        entry.label.innerHTML = this.translateItem(item);
         return entry;
     }
 
@@ -33,7 +35,11 @@
     }
     ?>
 
-    <li ui:component="Entry"/>
+    <ul id="list">
+        <li ui:component="Entry">
+            <span id="label"/>
+        </li>
+    </ul>
 
-</ul>
+</div>
 
