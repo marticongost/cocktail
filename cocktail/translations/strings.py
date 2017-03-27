@@ -215,7 +215,8 @@ translations.define("date format",
     en = "%m/%d/%Y",
     de = "%d/%m/%Y",
     fr = "%d/%m/%Y",
-    pt = "%d/%m/%Y"
+    pt = "%d/%m/%Y",
+    nl = "%d/%m/%Y"
 )
 
 translations.define("jquery_date format",
@@ -229,84 +230,108 @@ translations.define("month 1 abbr",
     ca = u"Gen",
     es = u"Ene",
     en = u"Jan",
-    pt = u"Jan"
+    pt = u"Jan",
+    de = u"Jan",
+    nl = u"Jan."
 )
 
 translations.define("month 2 abbr",
     ca = u"Feb",
     es = u"Feb",
     en = u"Feb",
-    pt = u"Fev"
+    pt = u"Fev",
+    de = u"Feb",
+    nl = u"Feb."
 )
 
 translations.define("month 3 abbr",
     ca = u"Mar",
     es = u"Mar",
     en = u"Mar",
-    pt = u"Mar"
+    pt = u"Mar",
+    de = u"März",
+    nl = u"Maart"
 )
 
 translations.define("month 4 abbr",
     ca = u"Abr",
     es = u"Abr",
     en = u"Apr",
-    pt = u"Abr"
+    pt = u"Abr",
+    de = u"Apr",
+    nl = u"April"
 )
 
 translations.define("month 5 abbr",
     ca = u"Mai",
     es = u"May",
     en = u"May",
-    pt = u"Mai"
+    pt = u"Mai",
+    de = u"Mai",
+    nl = u"Mei"
 )
 
 translations.define("month 6 abbr",
     ca = u"Jun",
     es = u"Jun",
     en = u"Jun",
-    pt = u"Jun"
+    pt = u"Jun",
+    de = u"Juni",
+    nl = u"Juni"
 )
 
 translations.define("month 7 abbr",
     ca = u"Jul",
     es = u"Jul",
     en = u"Jul",
-    pt = u"Jul"
+    pt = u"Jul",
+    de = u"Juli",
+    nl = u"Juli"
 )
 
 translations.define("month 8 abbr",
     ca = u"Ago",
     es = u"Ago",
     en = u"Aug",
-    pt = u"Ago"
+    pt = u"Ago",
+    de = u"Aug",
+    nl = u"Aug."
 )
 
 translations.define("month 9 abbr",
     ca = u"Set",
     es = u"Sep",
     en = u"Sep",
-    pt = u"Set"
+    pt = u"Set",
+    de = u"Sept",
+    nl = u"Sept"
 )
 
 translations.define("month 10 abbr",
     ca = u"Oct",
     es = u"Oct",
     en = u"Oct",
-    pt = u"Out"
+    pt = u"Out",
+    de = u"Okt",
+    nl = u"Okt."
 )
 
 translations.define("month 11 abbr",
     ca = u"Nov",
     es = u"Nov",
     en = u"Nov",
-    pt = u"Nov"
+    pt = u"Nov",
+    de = u"Nov",
+    nl = u"Nov."
 )
 
 translations.define("month 12 abbr",
     ca = u"Des",
     es = u"Dic",
     en = u"Dec",
-    pt = u"Dez"
+    pt = u"Dez",
+    de = u"Dez",
+    nl = u"Dec."
 )
 
 # -------- FULLTEXT TRANSLATIONS OF MONTHS
@@ -317,7 +342,7 @@ translations.define("month 1",
     pt = u"Janeiro",
     de = u"Januar",
     pl = u"Styczeń",
-    nl = u"januari"
+    nl = u"Januari"
 )
 
 translations.define("month 2",
@@ -327,7 +352,7 @@ translations.define("month 2",
     pt = u"Fevereiro",
     de = u"Februar",
     pl = u"Luty",
-    nl = u"februari"
+    nl = u"Februari"
 )
 
 translations.define("month 3",
@@ -337,7 +362,7 @@ translations.define("month 3",
     pt = u"Março",
     de = u"März",
     pl = u"Marzec",
-    nl = u"maart"
+    nl = u"Maart"
 )
 
 translations.define("month 4",
@@ -347,7 +372,7 @@ translations.define("month 4",
     pt = u"Abril",
     de = u"April",
     pl = u"Kwiecień",
-    nl = u"april"
+    nl = u"April"
 )
 
 translations.define("month 5",
@@ -357,7 +382,7 @@ translations.define("month 5",
     pt = u"Maio",
     de = u"Mai",
     pl = u"Maj",
-    nl = u"mei"
+    nl = u"Mei"
 )
 
 translations.define("month 6",
@@ -367,7 +392,7 @@ translations.define("month 6",
     pt = u"Junho",
     de = u"Juni",
     pl = u"Czerwiec",
-    nl = u"juni"
+    nl = u"Juni"
 )
 
 translations.define("month 7",
@@ -377,7 +402,7 @@ translations.define("month 7",
     pt = u"Julho",
     de = u"Juli",
     pl = u"Lipiec",
-    nl = u"juli"
+    nl = u"Juli"
 )
 
 translations.define("month 8",
@@ -387,7 +412,7 @@ translations.define("month 8",
     pt = u"Agosto",
     de = u"August",
     pl = u"Sierpień",
-    nl = u"augustus"
+    nl = u"Augustus"
 )
 
 translations.define("month 9",
@@ -397,7 +422,7 @@ translations.define("month 9",
     pt = u"Setembro",
     de = u"September",
     pl = u"Wrzesień",
-    nl = u"september"
+    nl = u"September"
 )
 
 translations.define("month 10",
@@ -407,7 +432,7 @@ translations.define("month 10",
     pt = u"Outubro",
     de = u"Oktober",
     pl = u"Październik",
-    nl = u"oktober"
+    nl = u"Oktober"
 )
 
 translations.define("month 11",
@@ -417,7 +442,7 @@ translations.define("month 11",
     pt = u"Novembro",
     de = u"November",
     pl = u"Listopad",
-    nl = u"november"
+    nl = u"November"
 )
 
 translations.define("month 12",
@@ -427,7 +452,7 @@ translations.define("month 12",
     pt = u"Dezembro",
     de = u"Dezember",
     pl = u"Grudzień",
-    nl = u"december"
+    nl = u"December"
 )
 
 # -------- ABBREVIATED TRANSLATIONS OF WEEKDAYS
@@ -524,11 +549,45 @@ def _date_instance_pt(instance, style = DATE_STYLE_NUMBERS):
             instance.year
         )
 
+def _date_instance_de(instance, style = DATE_STYLE_NUMBERS):
+    if style == DATE_STYLE_NUMBERS:
+        return instance.strftime(translations("date format"))
+    elif style == DATE_STYLE_ABBR:
+        return u"%s. %s %s" % (
+            instance.day,
+            translations(u"month %s abbr" % instance.month),
+            instance.year
+        )
+    elif style == DATE_STYLE_TEXT:
+        return u"%s. %s %s" % (
+            instance.day,
+            translations(u"month %s" % instance.month),
+            instance.year
+        )
+
+def _date_instance_nl(instance, style = DATE_STYLE_NUMBERS):
+    if style == DATE_STYLE_NUMBERS:
+        return instance.strftime(translations("date format"))
+    elif style == DATE_STYLE_ABBR:
+        return u"%s %s %s" % (
+            instance.day,
+            translations(u"month %s abbr" % instance.month).lower(),
+            instance.year
+        )
+    elif style == DATE_STYLE_TEXT:
+        return u"%s %s %s" % (
+            instance.day,
+            translations(u"month %s" % instance.month).lower(),
+            instance.year
+        )
+
 translations.define("date-instance",
     ca = _date_instance_ca,
     es = _date_instance_es,
     en = _date_instance_en,
-    pt = _date_instance_pt
+    pt = _date_instance_pt,
+    de = _date_instance_de,
+    nl = _date_instance_nl
 )
 
 translations.define("datetime-instance",
