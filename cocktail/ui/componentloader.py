@@ -218,6 +218,10 @@ class ComponentLoader(object):
                 "this.classList.add('%s');"
                 % self.component.css_class
             )
+            if self.component.parent:
+                self.init_source.write(
+                    "this.classList.add('%s');" % self.component.name
+                )
             self.init_tail_source = self.body_source.nest(1)
             self.body_source.write("}")
 
@@ -233,6 +237,12 @@ class ComponentLoader(object):
             self.registration_source.write(
                 "fullName: %s," % dumps(self.component.full_name)
             )
+
+            if self.component.parent:
+                self.registration_source.write(
+                    "parentComponent: %s," % self.component.parent.full_name
+                )
+
             self.registration_source.write(
                 "cls: cls%s" % (
                     "," if not is_ui_node or self.decorators or self.properties else ""
@@ -336,6 +346,8 @@ class ComponentLoader(object):
                 node.container = "this"
             elif node.parent.parent:
                 node.container = node.parent.ref
+            elif self.component.parent:
+                node.container = "this"
             else:
                 node.container = "this.shadowRoot"
         else:
@@ -586,9 +598,14 @@ class ComponentLoader(object):
                 self.init_source.write(
                     "%s = %s;" % (node.ref, instantiation)
                 )
-                self.init_source.write(
-                    "%s.id = '%s';" % (node.ref, node.id)
-                )
+                if self.component.parent:
+                    self.init_source.write(
+                        "%s.classList.add('%s');" % (node.ref, node.id)
+                    )
+                else:
+                    self.init_source.write(
+                        "%s.id = '%s';" % (node.ref, node.id)
+                    )
             else:
                 self.init_source.write(
                     "let %s = %s;" % (node.ref, instantiation)
