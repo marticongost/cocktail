@@ -200,13 +200,14 @@ class Component(object):
         if prev_state:
             prev_state.dispose()
 
-    def render_page(self):
-        document = self.create_html_document()
+    def render_page(self, title = ""):
+        document = self.create_html_document(title = title)
         return document.render(collect_metadata = False)
 
-    def create_html_document(self):
+    def create_html_document(self, title = ""):
         document = HTMLDocument()
         document.metadata = DocumentMetadata()
+        document.metadata.page_title = title
         document.metadata.resources.append(Script(POLYFILL_URI))
         document.metadata.resources.append(UIScript(self))
         return document
