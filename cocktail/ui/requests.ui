@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ui:module xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:resource href="cocktail.ui://scripts/requests.js"/>
+
+</ui:module>
+

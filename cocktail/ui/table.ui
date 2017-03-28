@@ -6,8 +6,9 @@
     dataState="pending"
     columnsReady="false">
 
-    <ui:resource href="cocktail.ui://styles/table.scss.css"/>
+    <ui:requires component="cocktail.ui.databinding"/>
     <ui:decoratedBy function="cocktail.ui.dataBound"/>
+    <ui:resource href="cocktail.ui://styles/table.scss.css"/>
 
     <ui:property name="member">
         <?on change
