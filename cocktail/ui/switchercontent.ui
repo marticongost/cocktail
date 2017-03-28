@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:resource href="cocktail.ui://styles/switchercontent.scss.css"/>
+
+    <ui:property
+        name="selected"
+        type="boolean"
+        reflected="true"
+        default="false">
+
+        <?on changed
+        if (this.switcher && !cocktail.ui.propertyIsChanging(this.switcher, "selectedContent")) {
+            this.switcher.selectedContent = newValue ? this : null;
+        }
+
+        if (newValue && !this.revealed) {
+            this.revealed = true;
+            cocktail.ui.trigger(this, "revealed");
+        }
+        ?>
+    </ui:property>
+
+    <ui:property name="selectingInitialContent" type="boolean" default="true" reflected="true"/>
+
+    <?class
+    get switcher() {
+        return this.parentNode;
+    }
+
+    disconnectedCallback() {
+        this.selected = false;
+    }
+    ?>
+
+    <slot id="content"/>
+
+</div>
+
