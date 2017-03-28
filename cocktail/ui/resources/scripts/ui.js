@@ -114,6 +114,8 @@ cocktail.ui.property = function (component, name, options = null) {
     // Add a static object to the class constructor to provide access to symbols
     // and metadata used by the property
     let meta = {
+        name: name,
+        component: component,
         GET: Symbol(`${component.fullName}.${name}.GET`),
         SET: Symbol(`${component.fullName}.${name}.SET`),
         VALUE: Symbol(`${component.fullName}.${name}.VALUE`),
@@ -201,7 +203,8 @@ cocktail.ui.property = function (component, name, options = null) {
     // Enable attribute observation for properties with attribute reflection
     // enabled
     if (meta.reflected) {
-        component[cocktail.ui.OBSERVED_ATTRIBUTES].push(name);
+        meta.attributeName = name.toLowerCase();
+        component[cocktail.ui.OBSERVED_ATTRIBUTES].push(meta.attributeName);
     }
 
     // Install the given getter and setter methods
@@ -217,6 +220,7 @@ cocktail.ui.property = function (component, name, options = null) {
 
     // Attach the property to the component
     component[name] = meta;
+    component["_attr_" + name.toLowerCase()] = meta;
     Object.defineProperty(component.prototype, name, {
         get: descriptorGetter,
         set: descriptorSetter,
@@ -318,9 +322,9 @@ cocktail.ui.componentMembers = {
         }
     },
     attributeChangedCallback(attrName, oldValue, newValue) {
-        let propertyMeta = this.constructor[attrName];
+        let propertyMeta = this.constructor["_attr_" + attrName];
         if (propertyMeta && propertyMeta.reflected && !propertyMeta._changingInstances.has(this)) {
-            this[attrName] = propertyMeta.type.parse(newValue);
+            this[propertyMeta.name] = propertyMeta.type.parse(newValue);
         }
     }
 }
