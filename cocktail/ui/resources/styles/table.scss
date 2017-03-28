@@ -66,6 +66,21 @@ th {
         & + th {
             border-left: 1px solid #ddd;
         }
+
+        .languageLabel {
+            margin-left: 0.4rem;
+            font-size: 0.8rem;
+            color: #777;
+            font-weight: normal;
+
+            &:before {
+                content: '(';
+            }
+
+            &:after {
+                content: ')';
+            }
+        }
     }
 }
 
