@@ -4,7 +4,7 @@
     flex-direction: column;
 }
 
-:host([dataState='loading']) {
+:host([empty='true']) {
 
     #table {
         display: none;
@@ -16,6 +16,20 @@
     #loadingSign {
         display: none;
     }
+}
+
+:host(:not([dataState='error'])) {
+
+    #errorBox {
+        display: none;
+    }
+}
+
+#loadingSign {
+    background-color: #ece6da;
+    padding: 1rem;
+    text-align: center;
+    color: #706347;
 }
 
 #table {
