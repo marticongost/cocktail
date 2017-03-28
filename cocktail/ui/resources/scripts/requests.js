@@ -14,7 +14,12 @@ cocktail.ui.request = function (params) {
     let promise = new Promise(function (resolve, reject) {
 
         xhr.onload = function () {
-            resolve(xhr);
+            if (xhr.status >= 200 && xhr.status <= 299) {
+                resolve(xhr);
+            }
+            else {
+                reject(new cocktail.ui.RequestError(xhr));
+            }
         }
 
         xhr.onerror = function () {
@@ -48,5 +53,16 @@ cocktail.ui.request = function (params) {
 
     promise.xhr = xhr;
     return promise;
+}
+
+cocktail.ui.RequestError = class RequestError {
+
+    constructor(xhr) {
+        this.xhr = xhr;
+    }
+
+    toString() {
+        return "Request error"
+    }
 }
 
