@@ -11,7 +11,7 @@
     <ui:resource href="cocktail.ui://styles/table.scss.css"/>
 
     <ui:property name="member">
-        <?on change
+        <?on changed
         this.visibleColumns = new Set(newValue.members());
         ?>
     </ui:property>
