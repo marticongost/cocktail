@@ -273,7 +273,7 @@ class UIScript(Script):
                 "cocktail.ui.translations = %s;" % dumps(trans_map)
             )
 
-        document.scripts_container.append(components_script)
+        components_script.place_after(document.scripts_container)
 
         # Instantiate the root component
         instantiation_script = Element(
