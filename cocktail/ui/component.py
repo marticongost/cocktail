@@ -18,7 +18,7 @@ from .componentloader import ComponentLoader
 from .exceptions import ComponentFileError
 
 POLYFILL_URI = "//cdnjs.cloudflare.com/ajax/libs/document-register-element/" \
-               "1.1.1/document-register-element.js"
+               "1.4.1/document-register-element.js"
 
 
 class Component(object):
