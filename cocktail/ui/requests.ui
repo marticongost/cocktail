@@ -2,6 +2,7 @@
 
 <ui:module xmlns:ui="http://www.whads.com/ns/cocktail/ui">
 
+    <ui:resource href="cocktail://scripts/uri.js"/>
     <ui:resource href="cocktail.ui://scripts/requests.js"/>
 
 </ui:module>

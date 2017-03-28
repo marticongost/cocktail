@@ -26,7 +26,18 @@ cocktail.ui.request = function (params) {
             reject(xhr);
         }
 
-        xhr.open(params.method || "GET", params.url);
+        let url = params.url;
+
+        if (params.parameters) {
+            let urlBuilder = URI(url);
+            for (let key in params.parameters) {
+                urlBuilder.removeSearch(key);
+                urlBuilder.addSearch(key, params.parameters[key]);
+            }
+            url = urlBuilder.toString();
+        }
+
+        xhr.open(params.method || "GET", url);
 
         let data = params.data;
         let headers = params.headers || {};
