@@ -209,9 +209,7 @@
 
     </table>
 
-    <div id="loadingSign">
-        <ui:translation/>
-    </div>
+    <ui:cocktail.ui.LoadingSign id="loadingSign"/>
 
     <div id="errorBox">
         <ui:translation/>
