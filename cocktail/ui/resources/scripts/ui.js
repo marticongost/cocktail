@@ -114,9 +114,9 @@ cocktail.ui.property = function (component, name, options = null) {
     // Add a static object to the class constructor to provide access to symbols
     // and metadata used by the property
     let meta = {
-        GET: Symbol(component.fullName + ".GET"),
-        SET: Symbol(component.fullName + ".SET"),
-        VALUE: Symbol(component.fullName + ".VALUE"),
+        GET: Symbol(`${component.fullName}.${name}.GET`),
+        SET: Symbol(`${component.fullName}.${name}.SET`),
+        VALUE: Symbol(`${component.fullName}.${name}.VALUE`),
         reflected: options && options.reflected || false,
         eventName: name + "Changed"
     };
