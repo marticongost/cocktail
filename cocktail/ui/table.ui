@@ -9,6 +9,7 @@
     <ui:requires component="cocktail.ui.databinding"/>
     <ui:decoratedBy function="cocktail.ui.dataBound"/>
     <ui:resource href="cocktail.ui://styles/table.scss.css"/>
+    <ui:resource href="cocktail.ui://scripts/scrollwatcher.js"/>
 
     <ui:property name="member">
         <?on changed
@@ -24,10 +25,34 @@
 
     <ui:property name="visibleColumns"/>
 
+    <ui:property name="paging" type="string" reflected="true">
+        <?on changed
+        if (newValue == "infiniteScroll") {
+            this.scrollWatcher.target = this.body;
+        }
+
+        if (oldValue == "infiniteScroll") {
+            this.scrollWatcher.target = null;
+        }
+        ?>
+    </ui:property>
+
+    <ui:property name="empty" type="boolean" default="true" reflected="true"/>
+    <ui:property name="page" type="number" default="0" reflected="true"/>
+    <ui:property name="pageSize" type="number" default="100" reflected="true"/>
+    <ui:property name="pageParameter" type="string" default="page" reflected="true"/>
+    <ui:property name="pageSizeParameter" type="string" default="page_size" reflected="true"/>
+
     <?class
     update() {
+        this.loadPage(this.page);
+    }
+
+    loadPage(page) {
 
         let table = this;
+        let append = (this.paging == "infiniteScroll");
+
         this.dataState = "loading";
 
         if (!this.columnsReady) {
@@ -35,12 +60,32 @@
             this.columnsReady = true;
         }
 
-        this.dataSource
-            .load()
+        return this.dataSource
+            .load({
+                parameters: {
+                    [this.pageParameter]: page,
+                    [this.pageSizeParameter]: this.pageSize
+                }
+            })
             .then(function (data) {
-                table.setRows(data);
+                if (append) {
+                    table.addRows(data);
+                }
+                else {
+                    table.setRows(data);
+                }
                 table.dataState = "loaded";
             })
+            .catch(function (error) {
+                table.dataState = "error";
+                table.errorMessage.innerText = error.toString();
+                cocktail.ui.trigger(table, "error", {error: error});
+            });
+    }
+
+    loadNextPage() {
+        let nextPage = this.page + 1;
+        this.loadPage(nextPage).then(() => this.page = nextPage);
     }
 
     createColumns() {
@@ -70,9 +115,20 @@
 
     setRows(records) {
         this.clearRows();
+        this.addRows(records);
+    }
+
+    addRows(records) {
+
+        let row;
+
         for (let record of records) {
-            let row = this.createRow(record);
+            row = this.createRow(record);
             this.body.appendChild(row);
+        }
+
+        if (row) {
+            this.empty = false;
         }
 
         // Subtract the scrollbar width from the headings row
@@ -125,9 +181,14 @@
     }
     ?>
 
-    <div id="loadingSign">
-        <ui:translation/>
-    </div>
+    <?js
+    let table = this;
+    this.scrollWatcher = new cocktail.ui.ScrollWatcher();
+    this.scrollWatcher.callback = function () {
+        table.loadNextPage();
+        this.reset();
+    }
+    ?>
 
     <table id="table">
 
@@ -143,6 +204,15 @@
         </th>
 
     </table>
+
+    <div id="loadingSign">
+        <ui:translation/>
+    </div>
+
+    <div id="errorBox">
+        <ui:translation/>
+        <div id="errorMessage"/>
+    </div>
 
 </div>
 
