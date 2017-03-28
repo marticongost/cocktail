@@ -164,7 +164,7 @@
         cell.setAttribute("data-column", member.name);
 
         // Render the value using a custom component, if available, or fall
-        // back to a string reprensetation
+        // back to a string representation
         let value = this.dataSource.getValue(record, member, language);
         let displayFactory = member[cocktail.ui.DISPLAY];
 
