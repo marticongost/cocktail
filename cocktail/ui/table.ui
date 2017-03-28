@@ -60,13 +60,16 @@
             this.columnsReady = true;
         }
 
+        let parameters = {
+            [this.pageParameter]: page
+        }
+
+        if (this.pageSizeParameter) {
+            parameters[this.pageSizeParameter] = this.pageSize;
+        }
+
         return this.dataSource
-            .load({
-                parameters: {
-                    [this.pageParameter]: page,
-                    [this.pageSizeParameter]: this.pageSize
-                }
-            })
+            .load({parameters})
             .then(function (data) {
                 if (append) {
                     table.addRows(data);
