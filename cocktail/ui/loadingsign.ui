@@ -4,8 +4,6 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:ui="http://www.whads.com/ns/cocktail/ui">
 
-    <ui:resource href="cocktail.ui://styles/loadingsign.scss.css"/>
-
     <div id="spinner">
         <?js
         cocktail.loadSVG("cocktail.ui://images/spinner.svg", element)

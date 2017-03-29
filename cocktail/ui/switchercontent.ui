@@ -4,8 +4,6 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:ui="http://www.whads.com/ns/cocktail/ui">
 
-    <ui:resource href="cocktail.ui://styles/switchercontent.scss.css"/>
-
     <ui:property
         name="selected"
         type="boolean"

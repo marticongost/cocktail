@@ -614,6 +614,45 @@ class ComponentLoader(object):
         if node.is_element:
             node.after_declaration_source = self.init_source.nest()
 
+        # Inject the theme's stylesheet for the element
+        if node.is_element:
+            theme = self.component.registry.theme
+            sheet = None
+
+            if node.is_root:
+                if not self.component.parent:
+                    sheet = theme.get_stylesheet(self.component)
+                    if sheet:
+                        self.resources.append(sheet)
+            elif (
+                node.is_component
+                and node.is_new
+                and node.id
+            ):
+                sheet = theme.get_stylesheet(self.component, node.id)
+                if sheet:
+                    with self.init_source.braces() as block:
+                        if self.style_inclusion == "embed":
+                            embedder = EmbeddedResources()
+                            css = embedder.get_resource_source(sheet)
+                            block.write(
+                                "let styleSheet = "
+                                "document.createElement('style');"
+                            )
+                            block.write("styleSheet.type = 'text/css';")
+                            block.write("styleSheet.innerText = %s;" % dumps(css))
+                        elif self.style_inclusion == "link":
+                            block.write(
+                                "let styleSheet = "
+                                "document.createElement('link');"
+                            )
+                            block.write("styleSheet.rel = 'stylesheet';")
+                            block.write("styleSheet.type = 'text/css';")
+                            block.write(
+                                "styleSheet.href = %s;" % dumps(sheet.uri)
+                            )
+                        block.write("%s.shadowRoot.appendChild(styleSheet);" % node.ref)
+
         # Assign attributes
         for attrib_name, attrib_value in attributes.iteritems():
 
