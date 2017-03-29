@@ -8,7 +8,6 @@
 
     <ui:requires component="cocktail.ui.databinding"/>
     <ui:decoratedBy function="cocktail.ui.dataBound"/>
-    <ui:resource href="cocktail.ui://styles/table.scss.css"/>
     <ui:resource href="cocktail.ui://scripts/scrollwatcher.js"/>
 
     <ui:property name="member">

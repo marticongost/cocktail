@@ -6,12 +6,14 @@ u"""
 from pkg_resources import resource_filename
 from threading import RLock
 from .component import Component
+from .theme import default_theme
 from .exceptions import ComponentFileError
 
 
 class ComponentRegistry(object):
 
     file_extension = ".ui"
+    theme = default_theme
     auto_reload = True
 
     def __init__(self):
