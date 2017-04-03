@@ -348,6 +348,7 @@ default_edit_control = EditControlGenerator("edit_control", {
     schema.Boolean: "cocktail.html.CheckBox",
     schema.Reference: "cocktail.html.DropdownSelector",
     schema.BaseDateTime: "cocktail.html.DatePicker",
+    schema.CalendarPage: "cocktail.html.MonthBox",
     schema.Number: "cocktail.html.NumberBox",
     schema.Decimal: "cocktail.html.TextBox",
     schema.Money: "cocktail.html.MoneyBox",
