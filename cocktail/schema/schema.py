@@ -745,16 +745,16 @@ class Schema(Member):
 
 
 @translations.instances_of(Schema)
-def translate_schema(schema, **kwargs):
+def translate_schema(schema, suffix = None, **kwargs):
 
     translation = None
 
     schema_name = getattr(schema, "full_name", schema.name)
     if schema_name:
-        key = schema_name + kwargs.get("suffix", "")
+        key = schema_name + (suffix or "")
         translation = translations(key, **kwargs)
 
     if not translation and schema.source_member:
-        translation = translations(schema.source_member, **kwargs)
+        translation = translations(schema.source_member, suffix = suffix, **kwargs)
 
     return translation
