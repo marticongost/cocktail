@@ -120,7 +120,10 @@ cocktail.ui.property = function (component, name, options = null) {
         SET: Symbol(`${component.fullName}.${name}.SET`),
         VALUE: Symbol(`${component.fullName}.${name}.VALUE`),
         reflected: options && options.reflected || false,
-        eventName: name + "Changed"
+        eventName: name + "Changed",
+        getType: function (obj) {
+            return (typeof(this.type) == "function") ? this.type(obj) : this.type;
+        }
     };
 
     // Determine the type of the property (used in attribute serialization /
@@ -184,7 +187,7 @@ cocktail.ui.property = function (component, name, options = null) {
 
                     // Reflect the property's value to its DOM attribute
                     if (meta.reflected) {
-                        this.setAttribute(name, meta.type.serialize(newValue));
+                        this.setAttribute(name, meta.getType(this).serializeValue(newValue));
                     }
 
                     // Trigger a changed event
@@ -230,26 +233,26 @@ cocktail.ui.property = function (component, name, options = null) {
 
 cocktail.ui.property.types = {
     string: {
-        serialize(value) {
+        serializeValue(value) {
             return String(value);
         },
-        parse(value) {
+        parseValue(value) {
             return value;
         }
     },
     number: {
-        serialize(value) {
+        serializeValue(value) {
             return String(value);
         },
-        parse(value) {
+        parseValue(value) {
             return Number(value);
         }
     },
     boolean: {
-        serialize(value) {
+        serializeValue(value) {
             return value ? "true" : "false";
         },
-        parse(value) {
+        parseValue(value) {
             if (value == "true") {
                 return true;
             }
@@ -262,13 +265,13 @@ cocktail.ui.property.types = {
         }
     },
     identifiers: {
-        serialize(value) {
+        serializeValue(value) {
             if (value instanceof Set) {
                 value = [...value];
             }
             return value ? value.join(" ") : "";
         },
-        parse(value) {
+        parseValue(value) {
             return new Set(value.split(/\s+/g));
         }
     }
