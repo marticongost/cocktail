@@ -281,7 +281,7 @@ class ComponentLoader(object):
                     )
 
                 self.registration_source.write(
-                    "%s: %s," % (props[-1][0], dumps(props[-1][1]))
+                    "%s: %s" % (props[-1][0], dumps(props[-1][1]))
                 )
 
                 self.registration_source.unindent()
@@ -474,6 +474,18 @@ class ComponentLoader(object):
                 self.init_tail_source.write(
                     "this.setAttribute('%s', %s);"
                     % (node.prop_name, dumps(default))
+                )
+
+            final = attributes.pop("final", "false")
+            if final == "true":
+                prop_options["isFinal"] = True
+            elif final == "false":
+                pass
+            else:
+                self.trigger_parser_error(
+                    "Invalid value for 'final': expected true or false, "
+                    "got %s instead"
+                    % final
                 )
 
             self.properties[node.prop_name] = prop_options
