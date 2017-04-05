@@ -120,6 +120,7 @@ cocktail.ui.property = function (component, name, options = null) {
         SET: Symbol(`${component.fullName}.${name}.SET`),
         VALUE: Symbol(`${component.fullName}.${name}.VALUE`),
         reflected: options && options.reflected || false,
+        isFinal: options && options.isFinal || false,
         eventName: name + "Changed",
         getType: function (obj) {
             return (typeof(this.type) == "function") ? this.type(obj) : this.type;
@@ -170,6 +171,10 @@ cocktail.ui.property = function (component, name, options = null) {
     else {
         descriptorSetter = function (value) {
             let oldValue = this[name];
+
+            if (oldValue !== undefined && meta.isFinal) {
+                throw new cocktail.ui.FinalPropertyChangedError(meta);
+            }
 
             // Keep track of which instances are being changed
             try {
@@ -277,6 +282,17 @@ cocktail.ui.property.types = {
         parseValue(value) {
             return new Set(value.split(/\s+/g));
         }
+    }
+}
+
+cocktail.ui.FinalPropertyChangedError = class FinalPropertyChangedError {
+
+    constructor(property) {
+        this.property = property;
+    }
+
+    toString() {
+        return `${this.property} has been marked as being final, but its value has been changed.`;
     }
 }
 
