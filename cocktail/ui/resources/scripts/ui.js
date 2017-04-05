@@ -72,6 +72,13 @@ cocktail.ui.insertTranslation = function (element, key) {
     }
 }
 
+cocktail.ui.empty = function (element) {
+    let child;
+    while (child = element.lastChild) {
+        element.removeChild(child);
+    }
+}
+
 cocktail.ui.trigger = function (obj, eventType, detail = null) {
     obj.dispatchEvent(new CustomEvent(eventType, {detail: detail}));
 }
