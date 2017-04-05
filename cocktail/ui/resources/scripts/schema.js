@@ -30,6 +30,7 @@
     cocktail.schema.Member = class Member {
 
         constructor(parameters = null) {
+            this.primary = false;
             this.initialize(parameters);
         }
 
@@ -218,6 +219,10 @@
             member[OWNER] = this;
             member[MEMBERSHIP_TYPE] = pkg.membershipTypes.member;
             this[MEMBER_MAP].set(name, member);
+
+            if (member.primary) {
+                this.primaryMember = member;
+            }
 
             if (member.descriptive) {
                 this.descriptiveMember = member;
