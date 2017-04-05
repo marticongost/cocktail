@@ -322,9 +322,9 @@ cocktail.ui.componentMembers = {
         }
     },
     attributeChangedCallback(attrName, oldValue, newValue) {
-        let propertyMeta = this.constructor["_attr_" + attrName];
-        if (propertyMeta && propertyMeta.reflected && !propertyMeta._changingInstances.has(this)) {
-            this[propertyMeta.name] = propertyMeta.type.parse(newValue);
+        let property = this.constructor["_attr_" + attrName];
+        if (property && property.reflected && !property._changingInstances.has(this)) {
+            this[property.name] = property.getType(this).parseValue(newValue);
         }
     }
 }
