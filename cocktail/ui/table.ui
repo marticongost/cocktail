@@ -142,9 +142,7 @@
     }
 
     clearRows() {
-        while (this.body.lastChild) {
-            this.body.remove(this.body.lastChild);
-        }
+        cocktail.ui.empty(this.body);
     }
 
     createRow(record) {
