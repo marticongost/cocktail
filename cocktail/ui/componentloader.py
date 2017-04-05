@@ -225,6 +225,9 @@ class ComponentLoader(object):
             self.init_tail_source = self.body_source.nest(1)
             self.body_source.write("}")
 
+            with self.body_source.braces("get parentInstance()") as body:
+                body.write("return this.getRootNode().host;")
+
         self.registration_source = self.source.nest()
         self.tail_source = self.source.nest()
         self.parse_element(node)
