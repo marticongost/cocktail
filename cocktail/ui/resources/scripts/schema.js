@@ -281,6 +281,18 @@
     }
 
     cocktail.schema.Number = class Number extends cocktail.schema.Member {
+
+        constructor(parameters = null) {
+            super(parameters);
+            if (parameters) {
+                this.min = parameters.min === undefined ? null : parameters.min;
+                this.max = parameters.max === undefined ? null : parameters.max;
+            }
+            else {
+                this.min = null;
+                this.max = null;
+            }
+        }
     }
 
     cocktail.schema.Integer = class Integer extends cocktail.schema.Number {
