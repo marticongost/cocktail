@@ -106,6 +106,15 @@
             return value;
         }
 
+        getPossibleValues(obj = null) {
+            if (this.enumeration) {
+                return this.enumeration;
+            }
+            else {
+                return null;
+            }
+        }
+
         translate() {
             let translation = cocktail.ui.translations[this.translationKey];
             if (translation) {
@@ -278,6 +287,11 @@
 
     cocktail.schema.Boolean = class Boolean extends cocktail.schema.Member {
 
+        getPossibleValues(obj = null) {
+            let values = super.getPossibleValues(obj);
+            return (values === null) ? [true, false] : values;
+        }
+
         parseValue(value) {
             if (value == "true") {
                 return true;
@@ -335,6 +349,19 @@
         parseValue(value) {
             value = parseInt(value);
             return isNaN(value) ? undefined : value;
+        }
+
+        getPossibleValues(obj = null) {
+            let values = super.getPossibleValues(obj);
+            if (values === null) {
+                if (this.min !== null && this.max !== null) {
+                    values = [];
+                    for (var i = this.min; i <= this.max; i++) {
+                        values.push(i);
+                    }
+                }
+            }
+            return values;
         }
     }
 
