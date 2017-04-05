@@ -741,20 +741,37 @@ class ComponentLoader(object):
             event = pi.text.split(None, 1)[0]
             listener = pi.text[len(event):].rstrip()
             listener = normalize_indentation(listener.rstrip())
+            event_parts = event.split(":")
 
-            if self.__stack.is_property:
-                ref = self.__stack.parent.ref
-                event = self.__stack.prop_name + event[0].upper() + event[1:]
-                source = self.__stack.parent.after_declaration_source
-            else:
+            if len(event_parts) == 1:
+                if self.__stack.is_property:
+                    is_property = True
+                    ref = self.__stack.parent.ref
+                    event = (
+                        self.__stack.prop_name
+                        + event[0].upper()
+                        + event[1:]
+                    )
+                    source = self.__stack.parent.after_declaration_source
+                else:
+                    is_property = False
+                    ref = self.__stack.ref
+                    source = self.__stack.after_declaration_source
+
+            elif len(event_parts) == 2:
+                is_property = True
+                property, event = event_parts
+                event = property + event[0].upper() + event[1:]
                 ref = self.__stack.ref
                 source = self.__stack.after_declaration_source
+            else:
+                self.trigger_parser_error("Invalid event name")
 
             with source.indented_block(
                 "%s.addEventListener('%s', function (e) {" % (ref, event),
                 "});"
             ) as b:
-                if self.__stack.is_property:
+                if is_property:
                     b.write("let oldValue = e.detail.oldValue;")
                     b.write("let newValue = e.detail.newValue;")
 
