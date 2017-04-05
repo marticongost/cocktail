@@ -123,6 +123,9 @@ cocktail.ui.property = function (component, name, options = null) {
         eventName: name + "Changed",
         getType: function (obj) {
             return (typeof(this.type) == "function") ? this.type(obj) : this.type;
+        },
+        toString: function () {
+            return `Property(${this.component.fullName}.${this.name})`;
         }
     };
 
