@@ -98,6 +98,14 @@
             }
         }
 
+        serializeValue(value) {
+            return String(value);
+        }
+
+        parseValue(value) {
+            return value;
+        }
+
         translate() {
             let translation = cocktail.ui.translations[this.translationKey];
             if (translation) {
@@ -110,7 +118,7 @@
         }
 
         translateValue(value) {
-            if (value === undefined) {
+            if (value === undefined || value === null) {
                 return "";
             }
             else {
@@ -270,6 +278,33 @@
 
     cocktail.schema.Boolean = class Boolean extends cocktail.schema.Member {
 
+        parseValue(value) {
+            if (value == "true") {
+                return true;
+            }
+            else if (value == "false") {
+                return false;
+            }
+            else if (value == "null") {
+                return null;
+            }
+            else {
+                return undefined;
+            }
+        }
+
+        serializeValue(value) {
+            if (value === null) {
+                return "null";
+            }
+            else if (value === undefined) {
+                return "";
+            }
+            else {
+                return value ? "true" : "false";
+            }
+        }
+
         translateValue(value) {
             return cocktail.ui.translations[
                 "cocktail.schema.Boolean.instance." + (value ? "true" : "false")
@@ -296,9 +331,19 @@
     }
 
     cocktail.schema.Integer = class Integer extends cocktail.schema.Number {
+
+        parseValue(value) {
+            value = parseInt(value);
+            return isNaN(value) ? undefined : value;
+        }
     }
 
     cocktail.schema.Float = class Float extends cocktail.schema.Number {
+
+        parseValue(value) {
+            value = parseFloat(value);
+            return isNaN(value) ? undefined : value;
+        }
     }
 
     cocktail.schema.Reference = class Reference extends cocktail.schema.Member {
