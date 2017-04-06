@@ -46,6 +46,7 @@ def set_theme(theme):
 class SASSCompilation(object):
 
     validating_theme = Event()
+    custom_functions = {}
 
     class ResolvingImportEventInfo(EventInfo):
 
@@ -111,6 +112,14 @@ class SASSCompilation(object):
             kwargs["importers"] = importers
 
         importers.insert(0, (0, self.resolve_import))
+
+        custom_functions = self.custom_functions
+        extra_custom_functions = kwargs.get("custom_functions")
+        if extra_custom_functions is not None:
+            custom_functions = custom_functions.copy()
+            custom_functions.update(extra_custom_functions)
+
+        kwargs["custom_functions"] = custom_functions
         return sass.compile(**kwargs)
 
     def resolve_import(self, uri):
