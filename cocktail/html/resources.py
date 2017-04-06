@@ -485,6 +485,9 @@ resource_repositories.define(
     resource_filename("cocktail.html", "resources")
 )
 
+SASSCompilation.custom_functions["url"] = \
+    lambda url: 'url("%s")' % resource_repositories.normalize_uri(url)
+
 # Resource sets
 #------------------------------------------------------------------------------
 # TODO: minification, source maps
