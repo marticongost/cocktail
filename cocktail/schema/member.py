@@ -632,6 +632,9 @@ def translate_member(
     if qualified:
         return translations("cocktail.schema.qualified_member", member = member)
 
+    if suffix is None:
+        suffix = ""
+
     if member.schema:
 
         if member.name:
