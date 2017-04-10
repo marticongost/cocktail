@@ -9,6 +9,7 @@ u"""
 from time import time
 from warnings import warn
 from itertools import chain, islice
+from collections import deque
 from BTrees.IIBTree import IIBTree
 from BTrees.OIBTree import OIBTree
 from BTrees.IOBTree import IOTreeSet, IOSet
@@ -767,6 +768,11 @@ class Query(object):
             results = self.execute()
             if hasattr(results, "__getitem__"):
                 id = results[index]
+            elif index < 0:
+                queue = deque([], -index)
+                for id in results:
+                    queue.append(id)
+                return self.type.index[queue[0]]
             else:
                 for id in results:
                     if index == 0:
