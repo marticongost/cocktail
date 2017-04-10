@@ -723,21 +723,27 @@ class Query(object):
         # Retrieve a single item
         else:
             results = self.execute()
+
             if hasattr(results, "__getitem__"):
                 id = results[index]
             elif index < 0:
-                queue = deque([], -index)
-                for id in results:
-                    queue.append(id)
-                return self.type.index[queue[0]]
+                queue = deque(results, -index)
+                if len(queue) == -index:
+                    id = queue[0]
+                else:
+                    return None
             else:
                 for id in results:
                     if index == 0:
                         break
                     index -= 1
-                return self.type.index[id]
+                else:
+                    return None
 
-    def select(self,
+            return self.type.index[id]
+
+    def select(
+        self,
         filters = inherit,
         order = inherit,
         range = inherit,
