@@ -153,8 +153,14 @@ class Member(Variable):
         self.name = name
         self.__doc__ = doc
 
+        validations = kwargs.pop("validations", None)
+
         for key, value in kwargs.iteritems():
             setattr(self, key, value)
+
+        if validations is not None:
+            for validation in validations:
+                self.add_validation(validation)
 
     def __eq__(self, other):
         return self is other
