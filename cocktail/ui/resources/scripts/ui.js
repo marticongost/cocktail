@@ -369,7 +369,10 @@ cocktail.ui.componentMembers = {
             root = this;
         }
         else {
-            root = this.attachShadow({mode: "open"});
+            root = this.attachShadow({
+                mode: "open",
+                delegatesFocus: this.constructor.delegatesFocus
+            });
         }
 
         // Linked CSS
