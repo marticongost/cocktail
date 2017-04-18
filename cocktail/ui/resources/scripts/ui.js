@@ -51,7 +51,7 @@ cocktail.ui.component = function (params) {
 
     if (params.properties) {
         for (let propName in params.properties) {
-            cocktail.ui.property(cls, propName, params.properties[propName]);
+            new cocktail.ui.Property(cls, propName, params.properties[propName]);
         }
     }
 
@@ -133,159 +133,229 @@ cocktail.ui.createDisplay = function (display, context) {
     return element;
 }
 
-cocktail.ui.propertyIsChanging = function (instance, propertyName) {
-    return instance.constructor[propertyName]._changingInstances.has(instance);
-}
+{
+    let PROPERTY_COMPONENT = Symbol("cocktail.ui.PROPERTY_COMPONENT");
+    let PROPERTY_NAME = Symbol("cocktail.ui.PROPERTY_NAME");
+    let PROPERTY_TYPE = Symbol("cocktail.ui.PROPERTY_TYPE");
+    let PROPERTY_GET = Symbol("cocktail.ui.PROPERTY_GET");
+    let PROPERTY_SET = Symbol("cocktail.ui.PROPERTY_SET");
+    let PROPERTY_VALUE = Symbol("cocktail.ui.PROPERTY_VALUE");
+    let PROPERTY_REFLECTED = Symbol("cocktail.ui.PROPERTY_REFLECTED");
+    let PROPERTY_IS_FINAL = Symbol("cocktail.ui.PROPERTY_IS_FINAL");
+    let PROPERTY_EVENT_OPTIONS = Symbol("cocktail.ui.PROPERTY_EVENT_OPTIONS");
+    let PROPERTY_NORMALIZATION = Symbol("cocktail.ui.PROPERTY_NORMALIZATION");
+    let PROPERTY_CHANGED_CALLBACK = Symbol("cocktail.ui.PROPERTY_CHANGED_CALLBACK");
+    let PROPERTY_CHANGING_INSTANCES = Symbol("cocktail.ui.PROPERTY_CHANGING_INSTANCES");
 
-cocktail.ui.property = function (component, name, options = null) {
+    cocktail.ui.Property = class Property {
 
-    // Add a static object to the class constructor to provide access to symbols
-    // and metadata used by the property
-    let meta = {
-        name: name,
-        component: component,
-        GET: Symbol(`${component.fullName}.${name}.GET`),
-        SET: Symbol(`${component.fullName}.${name}.SET`),
-        VALUE: Symbol(`${component.fullName}.${name}.VALUE`),
-        reflected: options && options.reflected || false,
-        isFinal: options && options.isFinal || false,
-        eventName: name + "Changed",
-        eventOptions: {
-            composed: options && options.eventIsComposed,
-            bubbles: options && options.eventBubbles
-        },
-        normalization: options && options.normalization,
-        changedCallback: options && options.changedCallback,
-        getType: function (obj) {
-            return (typeof(this.type) == "function") ? this.type(obj) : this.type;
-        },
-        toString: function () {
-            return `Property(${this.component.fullName}.${this.name})`;
-        }
-    };
+        constructor(component, name, options = null) {
 
-    // Determine the type of the property (used in attribute serialization /
-    // deserialization)
-    if (options) {
-        meta.type = options.type;
-        if (typeof(meta.type) == "string") {
-            meta.type = cocktail.ui.property.types[meta.type];
-        }
-    }
+            let property = this;
 
-    if (!meta.type) {
-        meta.type = cocktail.ui.property.types.string;
-    }
+            this[PROPERTY_COMPONENT] = component;
+            this[PROPERTY_NAME] = name;
+            this[PROPERTY_GET] = Symbol(`${component.fullName}.${name}.GET`);
+            this[PROPERTY_SET] = Symbol(`${component.fullName}.${name}.SET`);
+            this[PROPERTY_VALUE] = Symbol(`${component.fullName}.${name}.VALUE`);
+            this[PROPERTY_REFLECTED] = options && options.reflected || false;
+            this[PROPERTY_IS_FINAL] = options && options.isFinal || false;
+            this[PROPERTY_EVENT_OPTIONS] = {
+                composed: options && options.eventIsComposed,
+                bubbles: options && options.eventBubbles
+            }
+            this[PROPERTY_NORMALIZATION] = options && options.normalization;
+            this[PROPERTY_CHANGED_CALLBACK] = options && options.changedCallback;
 
-    // Keep a set of weak references to component instances whose value is
-    // being modified. Useful to prevent infinite recursion in property -
-    // attribute reflection and bidirectionally interlocked properties.
-    Object.defineProperty(meta, "_changingInstances", {
-        value: new WeakSet(),
-        enumerable: false,
-        configurable: false
-    });
-
-    // Property getter
-    let descriptorGetter = function () {
-        let getter = this[meta.GET];
-        if (getter) {
-            return getter.call(this);
-        }
-        else {
-            return this[meta.VALUE];
-        }
-    }
-
-    // Property setter
-    let descriptorSetter = null;
-    if (options && options.set === null) {
-        descriptorSetter = undefined; // read-only property
-    }
-    else {
-        descriptorSetter = function (value) {
-            let oldValue = this[name];
-
-            if (oldValue !== undefined && meta.isFinal) {
-                throw new cocktail.ui.FinalPropertyChangedError(meta);
+            // Determine the type of the property (used in attribute serialization /
+            // deserialization)
+            let type;
+            if (options) {
+                type = options.type;
+                if (typeof(type) == "string") {
+                    type = cocktail.ui.Property.types[type];
+                }
             }
 
-            // Keep track of which instances are being changed
-            try {
-                meta._changingInstances.add(this);
+            if (!type) {
+                type = cocktail.ui.Property.types.string;
+            }
 
-                // Normalization
-                if (meta.normalization) {
-                    value = meta.normalization.call(this, value);
-                }
+            this[PROPERTY_TYPE] = type;
 
-                // Set the new value
-                let setter = this[meta.SET];
-                if (setter) {
-                    setter.call(this, value);
+            // Keep a set of weak references to component instances whose value is
+            // being modified. Useful to prevent infinite recursion in property -
+            // attribute reflection and bidirectionally interlocked properties.
+            this[PROPERTY_CHANGING_INSTANCES] = new WeakSet();
+
+            // Property getter
+            let descriptorGetter = function () {
+                let getter = this[property[PROPERTY_GET]];
+                if (getter) {
+                    return getter.call(this);
                 }
                 else {
-                    this[meta.VALUE] = value;
-                }
-
-                // Track value changes
-                let newValue = this[name];
-                if (newValue !== oldValue) {
-
-                    // Reflect the property's value to its DOM attribute
-                    if (meta.reflected) {
-                        this.setAttribute(name, meta.getType(this).serializeValue(newValue));
-                    }
-
-                    // Change callback
-                    if (meta.changedCallback) {
-                        meta.changedCallback.call(this, oldValue, newValue);
-                    }
-
-                    // Trigger a changed event
-                    cocktail.ui.trigger(
-                        this,
-                        meta.eventName,
-                        {oldValue: oldValue, newValue: newValue},
-                        meta.eventOptions
-                    );
+                    return this[property[PROPERTY_VALUE]];
                 }
             }
-            finally {
-                meta._changingInstances.delete(this);
+
+            // Property setter
+            let descriptorSetter = null;
+            if (options && options.set === null) {
+                descriptorSetter = undefined; // read-only property
             }
+            else {
+                descriptorSetter = function (value) {
+                    let oldValue = this[name];
+
+                    if (oldValue !== undefined && property[PROPERTY_IS_FINAL]) {
+                        throw new cocktail.ui.FinalPropertyChangedError(property);
+                    }
+
+                    // Keep track of which instances are being changed
+                    try {
+                        property[PROPERTY_CHANGING_INSTANCES].add(this);
+
+                        // Normalization
+                        let normalization = property[PROPERTY_NORMALIZATION];
+                        if (normalization) {
+                            value = normalization.call(this, value);
+                        }
+
+                        // Set the new value
+                        let setter = this[property.SET];
+                        if (setter) {
+                            setter.call(this, value);
+                        }
+                        else {
+                            this[property[PROPERTY_VALUE]] = value;
+                        }
+
+                        // Track value changes
+                        let newValue = this[name];
+                        if (newValue !== oldValue) {
+
+                            // Reflect the property's value to its DOM attribute
+                            if (property[PROPERTY_REFLECTED]) {
+                                this.setAttribute(name, property.getType(this).serializeValue(newValue));
+                            }
+
+                            // Change callback
+                            let changedCallback = property[PROPERTY_CHANGED_CALLBACK];
+                            if (changedCallback) {
+                                changedCallback.call(this, oldValue, newValue);
+                            }
+
+                            // Trigger a changed event
+                            cocktail.ui.trigger(
+                                this,
+                                property.eventName,
+                                {oldValue: oldValue, newValue: newValue},
+                                property.eventOptions
+                            );
+                        }
+                    }
+                    finally {
+                        property[PROPERTY_CHANGING_INSTANCES].delete(this);
+                    }
+                }
+            }
+
+            // Enable attribute observation for properties with attribute reflection
+            // enabled
+            if (this[PROPERTY_REFLECTED]) {
+                component[cocktail.ui.OBSERVED_ATTRIBUTES].push(this.attributeName);
+            }
+
+            // Install the given getter and setter methods
+            let getterImpl = options && options.get;
+            if (getterImpl) {
+                component.prototype[this[PROPERTY_GET]] = getterImpl;
+            }
+
+            let setterImpl = options && options.set;
+            if (setterImpl) {
+                component.prototype[this[PROPERTY_SET]] = setterImpl;
+            }
+
+            // Attach the property to the component
+            component[name] = this;
+            component["_attr_" + name.toLowerCase()] = property;
+            Object.defineProperty(component.prototype, name, {
+                get: descriptorGetter,
+                set: descriptorSetter,
+                enumerable: true
+            });
+        }
+
+        get component() {
+            return this[PROPERTY_COMPONENT];
+        }
+
+        get name() {
+            return this[PROPERTY_NAME];
+        }
+
+        get type() {
+            return this[PROPERTY_TYPE];
+        }
+
+        get GET() {
+            return this[PROPERTY_GET];
+        }
+
+        get SET() {
+            return this[PROPERTY_SET];
+        }
+
+        get VALUE() {
+            return this[PROPERTY_VALUE];
+        }
+
+        get reflected() {
+            return this[PROPERTY_REFLECTED];
+        }
+
+        get isFinal() {
+            return this[PROPERTY_IS_FINAL];
+        }
+
+        get attributeName() {
+            return this[PROPERTY_NAME].toLowerCase();
+        }
+
+        get eventName() {
+            return this[PROPERTY_NAME] + "Changed";
+        }
+
+        get eventOptions() {
+            return this[PROPERTY_EVENT_OPTIONS];
+        }
+
+        get normalization() {
+            return this[PROPERTY_NORMALIZATION];
+        }
+
+        get changedCallback() {
+            return this[PROPERTY_CHANGED_CALLBACK];
+        }
+
+        toString() {
+            return `Property(${this.component.fullName}.${this.name})`;
+        }
+
+        getType(obj) {
+            let type = this[PROPERTY_TYPE];
+            return (typeof(type) == "function") ? type(obj) : type;
+        }
+
+        isChanging(instance) {
+            return this[PROPERTY_CHANGING_INSTANCES].has(instance);
         }
     }
-
-    // Enable attribute observation for properties with attribute reflection
-    // enabled
-    if (meta.reflected) {
-        meta.attributeName = name.toLowerCase();
-        component[cocktail.ui.OBSERVED_ATTRIBUTES].push(meta.attributeName);
-    }
-
-    // Install the given getter and setter methods
-    let getterImpl = options && options.get;
-    if (getterImpl) {
-        component.prototype[meta.GET] = getterImpl;
-    }
-
-    let setterImpl = options && options.set;
-    if (setterImpl) {
-        component.prototype[meta.SET] = setterImpl;
-    }
-
-    // Attach the property to the component
-    component[name] = meta;
-    component["_attr_" + name.toLowerCase()] = meta;
-    Object.defineProperty(component.prototype, name, {
-        get: descriptorGetter,
-        set: descriptorSetter,
-        enumerable: true
-    });
 }
 
-cocktail.ui.property.types = {
+cocktail.ui.Property.types = {
     string: {
         serializeValue(value) {
             return String(value);
@@ -394,7 +464,7 @@ cocktail.ui.componentMembers = {
     },
     attributeChangedCallback(attrName, oldValue, newValue) {
         let property = this.constructor["_attr_" + attrName];
-        if (property && property.reflected && !property._changingInstances.has(this)) {
+        if (property && property.reflected && !property.isChanging(this)) {
             this[property.name] = property.getType(this).parseValue(newValue);
         }
     }

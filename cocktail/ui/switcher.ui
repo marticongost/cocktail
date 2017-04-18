@@ -7,12 +7,12 @@
     <ui:property name="selectedContent">
         <?on changed
         if (oldValue) {
-            if (!cocktail.ui.propertyIsChanging(oldValue, "selected")) {
+            if (!cocktail.ui.SwitcherContent.selected.isChanging(oldValue)) {
                 oldValue.selected = false;
             }
         }
         if (newValue) {
-            if (!cocktail.ui.propertyIsChanging(newValue, "selected")) {
+            if (!cocktail.ui.SwitcherContent.selected.isChanging(newValue)) {
                 newValue.selected = true;
             }
             newValue.selectingInitialContent = !oldValue;

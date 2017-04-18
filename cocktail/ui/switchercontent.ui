@@ -11,7 +11,7 @@
         default="false">
 
         <?on changed
-        if (this.switcher && !cocktail.ui.propertyIsChanging(this.switcher, "selectedContent")) {
+        if (this.switcher && !cocktail.ui.Switcher.selectedContent.isChanging(this.switcher)) {
             this.switcher.selectedContent = newValue ? this : null;
         }
 
