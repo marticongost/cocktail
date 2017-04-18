@@ -9,7 +9,7 @@
 
 cocktail.ui.DISPLAY = Symbol("cocktail.ui.DISPLAY");
 
-cocktail.ui.dataBound = function (registration) {
+cocktail.ui.dataSourceConsumer = function (registration) {
     registration.properties["dataSource"] = {};
     registration.properties["dataState"] = {reflected: true};
 }
