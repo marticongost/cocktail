@@ -158,14 +158,16 @@ class Component(object):
         if include_self:
             dependencies.append(self)
 
-            subcomponents = self.__state.subcomponents.itervalues()
-            if recursive:
-                for subcomponent in subcomponents:
-                    dependencies.extend(
-                        subcomponent.dependencies(include_self = True)
-                    )
-            else:
-                dependencies.extend(subcomponents)
+            if self.__state:
+                subcomponents = self.__state.subcomponents.itervalues()
+
+                if recursive:
+                    for subcomponent in subcomponents:
+                        dependencies.extend(
+                            subcomponent.dependencies(include_self = True)
+                        )
+                else:
+                    dependencies.extend(subcomponents)
 
         return dependencies
 
