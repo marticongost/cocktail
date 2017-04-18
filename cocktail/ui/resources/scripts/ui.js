@@ -11,6 +11,17 @@ cocktail.declare("cocktail.ui");
 
 cocktail.ui.OBSERVED_ATTRIBUTES = Symbol("cocktail.ui.OBSERVED_ATTRIBUTES");
 
+cocktail.ui.ComponentError = class ComponentError {
+
+    constructor(message) {
+        this.message = message;
+    }
+
+    toString() {
+        return this.message;
+    }
+}
+
 cocktail.ui.component = function (params) {
 
     params.tag = params.fullName.replace(/\./g, "-").toLowerCase();
@@ -20,6 +31,12 @@ cocktail.ui.component = function (params) {
             params.properties = {};
         }
         for (let decorator of params.decorators) {
+            if (!decorator) {
+                console.log(params);
+                throw new cocktail.ui.ComponentError(
+                    `Component ${params.fullName} references an inexistent decorator`
+                );
+            }
             decorator(params);
         }
     }
