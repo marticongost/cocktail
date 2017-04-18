@@ -12,7 +12,6 @@
     box-sizing: border-box;
     display: block;
     flex: 1 1 auto;
-    contain: content;
 }
 
 :host([selected='false']) {
