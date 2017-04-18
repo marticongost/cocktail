@@ -3,7 +3,7 @@
 <ui:module xmlns:ui="http://www.whads.com/ns/cocktail/ui">
 
     <ui:requires component="cocktail.ui.requests"/>
-    <ui:resource href="cocktail.ui://scripts/databinding.js"/>
+    <ui:resource href="cocktail.ui://scripts/datasources.js"/>
 
 </ui:module>
 

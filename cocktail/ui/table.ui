@@ -6,8 +6,8 @@
     dataState="pending"
     columnsReady="false">
 
-    <ui:requires component="cocktail.ui.databinding"/>
-    <ui:decoratedBy function="cocktail.ui.dataBound"/>
+    <ui:requires component="cocktail.ui.datasources"/>
+    <ui:decoratedBy function="cocktail.ui.dataSourceConsumer"/>
     <ui:resource href="cocktail.ui://scripts/scrollwatcher.js"/>
 
     <ui:property name="member">
@@ -162,7 +162,7 @@
         let cell = document.createElement("td");
         cell.member = member;
         cell.language = language;
-        cell.setAttribute("data-column", member.name);
+        cell.setAttribute("column", member.name);
 
         // Render the value using a custom component, if available, or fall
         // back to a string representation
