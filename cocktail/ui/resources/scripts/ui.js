@@ -137,6 +137,7 @@ cocktail.ui.property = function (component, name, options = null) {
             composed: options && options.eventIsComposed,
             bubbles: options && options.eventBubbles
         },
+        normalization: options && options.normalization,
         changedCallback: options && options.changedCallback,
         getType: function (obj) {
             return (typeof(this.type) == "function") ? this.type(obj) : this.type;
@@ -195,6 +196,11 @@ cocktail.ui.property = function (component, name, options = null) {
             // Keep track of which instances are being changed
             try {
                 meta._changingInstances.add(this);
+
+                // Normalization
+                if (meta.normalization) {
+                    value = meta.normalization.call(this, value);
+                }
 
                 // Set the new value
                 let setter = this[meta.SET];
