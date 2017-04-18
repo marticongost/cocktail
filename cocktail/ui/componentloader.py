@@ -491,6 +491,30 @@ class ComponentLoader(object):
                     % final
                 )
 
+            event_is_composed = attributes.pop("eventIsComposed", "false")
+            if event_is_composed == "true":
+                prop_options["eventIsComposed"] = True
+            elif event_is_composed == "false":
+                pass
+            else:
+                self.trigger_parser_error(
+                    "Invalid value for 'eventIsComposed': "
+                    "expected true or false, got %s instead"
+                    % event_is_composed
+                )
+
+            event_bubbles = attributes.pop("eventBubbles", "false")
+            if event_bubbles == "true":
+                prop_options["eventBubbles"] = True
+            elif event_bubbles == "false":
+                pass
+            else:
+                self.trigger_parser_error(
+                    "Invalid value for 'eventBubbles': "
+                    "expected true or false, got %s instead"
+                    % event_bubbles
+                )
+
             self.properties[node.prop_name] = prop_options
 
         # Translations

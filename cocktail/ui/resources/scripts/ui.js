@@ -79,8 +79,12 @@ cocktail.ui.empty = function (element) {
     }
 }
 
-cocktail.ui.trigger = function (obj, eventType, detail = null) {
-    obj.dispatchEvent(new CustomEvent(eventType, {detail: detail}));
+cocktail.ui.trigger = function (obj, eventType, detail = null, options = null) {
+    if (!options) {
+        options = {};
+    }
+    options.detail = detail;
+    obj.dispatchEvent(new CustomEvent(eventType, options));
 }
 
 cocktail.ui.isInstance = function (element, component) {
@@ -129,6 +133,10 @@ cocktail.ui.property = function (component, name, options = null) {
         reflected: options && options.reflected || false,
         isFinal: options && options.isFinal || false,
         eventName: name + "Changed",
+        eventOptions: {
+            composed: options && options.eventIsComposed,
+            bubbles: options && options.eventBubbles
+        },
         getType: function (obj) {
             return (typeof(this.type) == "function") ? this.type(obj) : this.type;
         },
@@ -206,10 +214,12 @@ cocktail.ui.property = function (component, name, options = null) {
                     }
 
                     // Trigger a changed event
-                    cocktail.ui.trigger(this, meta.eventName, {
-                        oldValue: oldValue,
-                        newValue: newValue
-                    });
+                    cocktail.ui.trigger(
+                        this,
+                        meta.eventName,
+                        {oldValue: oldValue, newValue: newValue},
+                        meta.eventOptions
+                    );
                 }
             }
             finally {
