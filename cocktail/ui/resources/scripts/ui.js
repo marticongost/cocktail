@@ -137,6 +137,7 @@ cocktail.ui.property = function (component, name, options = null) {
             composed: options && options.eventIsComposed,
             bubbles: options && options.eventBubbles
         },
+        changedCallback: options && options.changedCallback,
         getType: function (obj) {
             return (typeof(this.type) == "function") ? this.type(obj) : this.type;
         },
@@ -211,6 +212,11 @@ cocktail.ui.property = function (component, name, options = null) {
                     // Reflect the property's value to its DOM attribute
                     if (meta.reflected) {
                         this.setAttribute(name, meta.getType(this).serializeValue(newValue));
+                    }
+
+                    // Change callback
+                    if (meta.changedCallback) {
+                        meta.changedCallback.call(this, oldValue, newValue);
                     }
 
                     // Trigger a changed event
