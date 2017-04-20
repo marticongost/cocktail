@@ -6,7 +6,7 @@ u"""
 import os
 from json import dumps
 from cocktail.modeling import OrderedSet
-from cocktail.translations import translations
+from cocktail.translations import translations, get_language, translate_locale
 from cocktail.html import (
     HTMLDocument,
     DocumentMetadata,
@@ -202,28 +202,32 @@ class Component(object):
         if prev_state:
             prev_state.dispose()
 
-    def render_page(self, title = ""):
-        document = self.create_html_document(title = title)
+    def render_page(self, title = "", locales = None):
+        document = self.create_html_document(
+            title = title,
+            locales = locales
+        )
         return document.render(collect_metadata = False)
 
-    def create_html_document(self, title = ""):
+    def create_html_document(self, title = "", locales = None):
         document = HTMLDocument()
         document.metadata = DocumentMetadata()
         document.metadata.page_title = title
         document.metadata.resources.append(Script(POLYFILL_URI))
-        document.metadata.resources.append(UIScript(self))
+        document.metadata.resources.append(UIScript(self, locales = locales))
         return document
 
 
 class UIScript(Script):
 
-    def __init__(self, root_component):
+    def __init__(self, root_component, locales = None):
         Script.__init__(
             self,
             "cocktail.ui://scripts/ui.js",
             mime_type = "text/javascript"
         )
         self.root_component = root_component
+        self.locales = locales
 
     def link(self, document, url_processor = None):
         Script.link(self, document, url_processor = url_processor)
@@ -262,14 +266,24 @@ class UIScript(Script):
                         translation_keys.add(trans_key)
                         break
 
+        # Locales
+        locales = self.locales or [get_language()]
+        components_script.append(
+            "cocktail.ui.locales = %s;" % dumps(locales)
+        )
+
         # Export translation keys
-        if translation_keys:
+        if translation_keys or locales:
 
             trans_map = {}
             for trans_key in translation_keys:
                 trans_value = translations(trans_key)
                 if trans_value:
                     trans_map[trans_key] = trans_value
+
+            for locale in locales:
+                trans_map["cocktail.locales." + locale] = \
+                    translate_locale(locale)
 
             components_script.append(
                 "cocktail.ui.translations = %s;" % dumps(trans_map)
