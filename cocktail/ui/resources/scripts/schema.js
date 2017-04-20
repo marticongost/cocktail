@@ -457,6 +457,28 @@
         }
     }
 
+    cocktail.schema.Locale = class Locale extends cocktail.schema.String {
+
+        constructor(parameters = null) {
+            if (!parameters) {
+                parameters = {};
+            }
+            if (parameters.enumeration === undefined) {
+                parameters.enumeration = cocktail.ui.locales;
+            }
+            super(parameters);
+        }
+
+        translateValue(value) {
+            if (value) {
+                return cocktail.ui.translations["cocktail.locales." + value];
+            }
+            else {
+                return super.translateValue(value);
+            }
+        }
+    }
+
     cocktail.schema.Error = class Error {
     }
 
