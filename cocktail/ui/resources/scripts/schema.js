@@ -539,6 +539,7 @@
     cocktail.schema.AnonymousMemberError = class AnonymousMemberError extends cocktail.schema.Error {
 
         constructor(member, schema) {
+            super();
             this.member = member;
             this.schema = schema;
         }
@@ -551,12 +552,26 @@
     cocktail.schema.DuplicateMemberNameError = class DuplicateMemberNameError extends cocktail.schema.Error {
 
         constructor(member, schema) {
+            super();
             this.member = member;
             this.schema = schema;
         }
 
         toString() {
             return `${this.schema} already contains a member called ${this.member.name}`;
+        }
+    }
+
+    cocktail.schema.MemberRelocationError = class MemberRelocationError extends cocktail.schema.Error {
+
+        constructor(member, schema) {
+            super();
+            this.member = member;
+            this.schema = schema;
+        }
+
+        toString() {
+            return `Can't move ${this.member} to ${this.schema}, it is already part of a schema`;
         }
     }
 }
