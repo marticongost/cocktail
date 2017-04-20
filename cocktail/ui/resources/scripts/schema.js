@@ -39,6 +39,9 @@
                 for (let k in parameters) {
                     this.applyParameter(k, parameters[k]);
                 }
+                for (let k of Object.getOwnPropertySymbols(parameters)) {
+                    this.applyParameter(k, parameters[k]);
+                }
             }
         }
 
