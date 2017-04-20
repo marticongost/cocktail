@@ -249,7 +249,7 @@
         }
 
         translateValue(value) {
-            if (this.descriptiveMember) {
+            if (value && this.descriptiveMember) {
                 let descriptiveValue = value[this.descriptiveMember.name];
                 if (descriptiveValue && this.descriptiveMember.translated) {
                     descriptiveValue = descriptiveValue[cocktail.getLanguage()];
@@ -257,7 +257,7 @@
                 return this.descriptiveMember.translateValue(descriptiveValue);
             }
             else {
-                return this.name;
+                return super.translateValue(value);
             }
         }
 
