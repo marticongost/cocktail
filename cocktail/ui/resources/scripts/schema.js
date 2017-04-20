@@ -21,7 +21,7 @@
     let ITEMS = Symbol("cocktail.schema.ITEMS");
 
     pkg.MEMBERS = Symbol("cocktail.schema.MEMBERS");
-    pkg.EXCLUDE = Symbol("cocktail.schema.EXCLUDE");
+    pkg.MEMBER_PARAMETERS = Symbol("cocktail.schema.MEMBER_PARAMETERS");
 
     pkg.membershipTypes = {
         member: Symbol("cocktail.schema.membershipTypes.member")
@@ -263,18 +263,27 @@
 
         copyAttribute(copy, key, value, parameters) {
             if (key == MEMBER_MAP) {
-                let membersParameters = parameters ? parameters[pkg.MEMBERS] : null;
-                let implicitCopy = parameters ? parameters[pkg.IMPLICIT_COPY] : !membersParameters;
 
-                for (let member of this.members()) {
-                    let memberParameters = membersParameters ? membersParameters[member.name] : null;
-                    if (memberParameters == pkg.EXCLUDE) {
-                        continue;
+                let members = parameters && parameters[pkg.MEMBERS] || this.members();
+                let memberParameters = parameters ? parameters[pkg.MEMBER_PARAMETERS] : null;
+
+                for (let sourceMember of members) {
+
+                    if (typeof(sourceMember) == "string") {
+                        sourceMember = this.getMember(sourceMember)
                     }
-                    if (memberParameters || implicitCopy) {
-                        let memberCopy = member.copy(memberParameters);
-                        copy.addMember(memberCopy);
+
+                    let targetMember;
+
+                    if (sourceMember.schema === this) {
+                        let params = memberParameters && memberParameters[sourceMember.name];
+                        targetMember = sourceMember.copy(params);
                     }
+                    else {
+                        targetMember = sourceMember;
+                    }
+
+                    copy.addMember(targetMember);
                 }
             }
             else if (key != BASE && key != "descriptiveMember") {
