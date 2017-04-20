@@ -423,6 +423,38 @@
                 return super.translateValue(value);
             }
         }
+
+        parseValue(value) {
+            if (value) {
+                return Array.from(
+                    this.splitValue(value),
+                    item => this.items.parseValue(item)
+                );
+            }
+            else {
+                return [];
+            }
+        }
+
+        serializeValue(value) {
+            if (!value) {
+                return "";
+            }
+            return this.joinValue(
+                Array.from(value, item => this.items.serializeValue(item))
+            );
+        }
+
+        splitValue(value) {
+            return value.split(/\s+/);
+        }
+
+        joinValue(value) {
+            if (!(value instanceof Array)) {
+                value = Array.from(value);
+            }
+            return value.join(" ");
+        }
     }
 
     cocktail.schema.Error = class Error {
