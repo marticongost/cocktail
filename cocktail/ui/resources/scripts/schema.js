@@ -479,6 +479,48 @@
         }
     }
 
+    cocktail.schema.MemberReference = class MemberReference extends cocktail.schema.Member {
+
+        constructor(parameters = null) {
+            super(parameters);
+        }
+
+        getPossibleValues(obj = null) {
+            let values = super.getPossibleValues(obj);
+            if (!values && this.sourceSchema) {
+                values = new Set(this.sourceSchema.members());
+            }
+            return values;
+        }
+
+        parseValue(value) {
+
+            if (!value) {
+                return null;
+            }
+
+            if (!this.sourceSchema) {
+                return undefined;
+            }
+
+            return this.sourceSchema.getMember(value);
+        }
+
+        serializeValue(value) {
+            if (value) {
+                value = value.name;
+            }
+            return value;
+        }
+
+        translateValue(value) {
+            if (value) {
+                return value.translate();
+            }
+            return super.translateValue(value);
+        }
+    }
+
     cocktail.schema.Error = class Error {
     }
 
