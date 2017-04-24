@@ -119,6 +119,7 @@ class Form(Element, DataDisplay):
         self.append(self.buttons)
 
         self.submit_button = Element("button")
+        self.submit_button.add_class("submit_button")
         self.submit_button["value"] = "true"
         self.submit_button["type"] = "submit"
         self.submit_button.append(translations("cocktail.stock.submit"))
