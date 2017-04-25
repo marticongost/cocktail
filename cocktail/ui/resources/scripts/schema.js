@@ -223,6 +223,14 @@
             return member;
         }
 
+        requireMember(name) {
+            let member = this.getMember(name);
+            if (!member) {
+                throw new cocktail.schema.MemberNotFoundError(this, name);
+            }
+            return member;
+        }
+
         addMember(member) {
 
             let currentOwner = member[OWNER];
@@ -587,6 +595,19 @@
 
         toString() {
             return `Can't move ${this.member} to ${this.schema}, it is already part of a schema`;
+        }
+    }
+
+    cocktail.schema.MemberNotFoundError = class MemberNotFoundError extends cocktail.schema.Error {
+
+        constructor(schema, memberName) {
+            super();
+            this.schema = schema;
+            this.memberName = memberName;
+        }
+
+        toString() {
+            return `${this.schema} contains no member with name "${this.memberName}"`;
         }
     }
 }
