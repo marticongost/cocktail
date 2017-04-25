@@ -160,7 +160,10 @@
         }
 
         copyAttribute(copy, key, value, parameters) {
-            if (key != OWNER && key != MEMBERSHIP_TYPE) {
+            if (key == "name") {
+                copy[NAME] = value;
+            }
+            else if (key != OWNER && key != MEMBERSHIP_TYPE) {
                 copy[key] = value;
             }
         }
