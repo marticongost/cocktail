@@ -56,6 +56,7 @@
         ?>
     </ui:property>
 
+    <ui:property name="resultCount" reflected="false"/>
     <ui:property name="empty" type="boolean" default="true" reflected="true"/>
     <ui:property name="page" type="number" default="0" reflected="true"/>
     <ui:property name="pageSize" type="number" default="100" reflected="true"/>
@@ -86,11 +87,12 @@
         return this.dataSource
             .load(this.getDataSourceOptions(page))
             .then(function (data) {
+                table.resultCount = data.count;
                 if (append) {
-                    table.addRows(data);
+                    table.addRows(data.records);
                 }
                 else {
-                    table.setRows(data);
+                    table.setRows(data.records);
                 }
                 table.dataState = "loaded";
             })

@@ -114,7 +114,11 @@
                 return this.enumeration;
             }
             else if (this.dataSource) {
-                return this.dataSource.load();
+                return new Promise((resolve, reject) => {
+                    this.dataSource.load()
+                        .then((data) => resolve(data.records))
+                        .catch((error) => reject(error));
+                });
             }
             else {
                 return null;
@@ -442,7 +446,11 @@
             if (!values) {
                 const type = this.type;
                 if (type && type.dataSource) {
-                    values = type.dataSource.load();
+                    values = new Promise((resolve, reject) => {
+                        type.dataSource.load()
+                            .then((data) => resolve(data.records))
+                            .catch((error) => reject(error));
+                    });
                 }
             }
             return values;

@@ -25,6 +25,9 @@
             ["searchValues", "value"]
         );
 
+        // Synchronize the result count
+        cocktail.ui.link(newValue, this, "resultCount");
+
         cocktail.ui.link(
             newValue,
             this.searchForm,
@@ -45,6 +48,14 @@
         applyDataFromDisplay();
         ?>
 
+    </ui:property>
+
+    <ui:property
+        name="resultCount"
+        reflected="false">
+        <?on changed
+        this.resultCountLabel.innerHTML = newValue ? newValue.label : "";
+        ?>
     </ui:property>
 
     <ui:property
@@ -120,6 +131,8 @@
         </ui:cocktail.ui.Button>
 
     </ui:cocktail.ui.DropdownPanel>
+
+    <div id="resultCountLabel"/>
 
 </div>
 
