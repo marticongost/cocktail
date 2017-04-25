@@ -343,9 +343,14 @@
         }
 
         translateValue(value) {
-            return cocktail.ui.translations[
-                "cocktail.schema.Boolean.instance." + (value ? "true" : "false")
-            ];
+            if (value !== null && value !== undefined) {
+                return cocktail.ui.translations[
+                    "cocktail.schema.Boolean.instance." + (value ? "true" : "false")
+                ];
+            }
+            else {
+                return super.translateValue(value);
+            }
         }
     }
 
