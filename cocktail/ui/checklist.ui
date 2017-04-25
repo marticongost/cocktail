@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:requires component="cocktail.ui.datadisplay"/>
+    <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
+
+    <?head
+    let ENTRY_MAP = Symbol("cocktail.ui.CheckList.ENTRY_MAP");
+    let SELECTING_ENTRY = Symbol("cocktail.ui.CheckList.SELECTING_ENTRY");
+    ?>
+
+    <?tail
+    cls.InexistentEntryError = class InexistentEntryError {
+
+        constructor(checkList, value) {
+            this.checkList = checkList;
+            this.value = value;
+        }
+
+        toString() {
+            return `Can't find an entry with value ${this.value} in ${this.checkList}`;
+        }
+    }
+    ?>
+
+    <?class
+    getEntry(value) {
+        let items = this.dataBinding && this.dataBinding.member && this.dataBinding.member.items;
+        if (items) {
+            value = items.serializeValue(value);
+            return this[ENTRY_MAP].get(value);
+        }
+        return null;
+    }
+
+    clearEntries() {
+        this[ENTRY_MAP].clear();
+        let child;
+        cocktail.ui.empty(this.entries);
+    }
+
+    createEntries() {
+        this.clearEntries();
+        let items = this.dataBinding && this.dataBinding.member && this.dataBinding.member.items;
+        if (items) {
+            let possibleValuesResolution = Promise.resolve(items.getPossibleValues());
+            possibleValuesResolution.then((values) => this.addEntries(values));
+        }
+    }
+
+    addEntries(values) {
+        if (values) {
+            for (let value of values) {
+                this.addEntry(value);
+            }
+        }
+    }
+
+    addEntry(value) {
+        let entry = this.createEntry(value);
+        this[ENTRY_MAP].set(this.dataBinding.member.items.serializeValue(value), entry);
+        this.entries.appendChild(entry);
+    }
+
+    createEntry(value, prepend = false) {
+        let entry = this.constructor.Entry.create();
+        entry.entryValue = value;
+        entry.input.value = this.dataBinding.member.items.serializeValue(value);
+        if (this.value instanceof Array) {
+            entry.input.checked = this.value.indexOf(value) != 1;
+        }
+        else if (this.value instanceof Set) {
+            entry.input.checked = this.value.has(value);
+        }
+        entry.labelText.innerHTML = this.dataBinding.member.items.translateValue(value);
+        return entry;
+    }
+
+    isSelected(value) {
+        let entry = this.getEntry(value);
+        return entry ? entry.input.checked : null;
+    }
+
+    setSelected(value, selected) {
+
+        let entry = this.getEntry(value);
+
+        if (entry) {
+            entry.input.checked = selected;
+            let selection = new Set(this.value || []);
+
+            if (selected) {
+                selection.add(value);
+            }
+            else {
+                selection.delete(value);
+            }
+
+            this[SELECTING_ENTRY] = true;
+            try {
+                this.value = selection;
+            }
+            finally {
+                this[SELECTING_ENTRY] = false;
+            }
+        }
+        else {
+            throw new cls.InexistentEntryError(this, value);
+        }
+    }
+    ?>
+
+    <?on value:changed
+    if (this.dataBinding && this.dataBinding.member && !this[SELECTING_ENTRY]) {
+        let selectedValues = new Set();
+        if (newValue) {
+            for (let item of newValue) {
+                selectedValues.add(this.dataBinding.member.items.serializeValue(item));
+            }
+        }
+        for (let entry of this.entries.children) {
+            entry.input.checked = selectedValues.has(entry.input.value);
+        }
+    }
+    ?>
+
+    <?on dataBinding:changed
+    this.createEntries();
+    ?>
+
+    <?js
+    this[ENTRY_MAP] = new Map();
+    ?>
+
+    <ul id="entries"/>
+
+    <li ui:component="Entry">
+
+        <input id="input" type="checkbox">
+            <?on change
+            instance.parentInstance.setSelected(instance.entryValue, this.checked);
+            ?>
+        </input>
+
+        <label id="label">
+            <?js
+            element.setAttribute("for", cocktail.requireId(this.input));
+            ?>
+            <span id="labelText"/>
+        </label>
+    </li>
+
+</div>
+

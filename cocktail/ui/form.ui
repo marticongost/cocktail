@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<form
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:requires component="cocktail.ui.datadisplay"/>
+    <ui:requires component="cocktail.ui.CheckBox"/>
+    <ui:requires component="cocktail.ui.CheckList"/>
+    <ui:requires component="cocktail.ui.DropdownSelector"/>
+    <ui:requires component="cocktail.ui.NumberInput"/>
+    <ui:requires component="cocktail.ui.TextInput"/>
+
+    <ui:property
+        name="formLayout"
+        type="string"
+        reflected="true"
+        default="column"/>
+
+    <ui:property
+        name="formLabelDisposition"
+        type="string"
+        reflected="true"/>
+
+    <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
+
+    <?head
+    const FIELD_MAP = Symbol("cocktail.ui.Form.FIELD_MAP");
+
+    {
+        const formControl = cocktail.ui.formControl;
+        cocktail.schema.String[formControl] = cocktail.ui.TextInput;
+        cocktail.schema.Number[formControl] = cocktail.ui.NumberInput;
+        cocktail.schema.Boolean[formControl] = cocktail.ui.CheckInput;
+        cocktail.schema.Reference[formControl] = cocktail.ui.DropdownSelector;
+        cocktail.schema.Collection[formControl] = cocktail.ui.CheckList;
+        cocktail.schema.Locale[formControl] = cocktail.ui.DropdownSelector;
+    }
+    ?>
+
+    <?class
+    get fields() {
+        return this[FIELD_MAP];
+    }
+
+    createFields() {
+        for (let member of this.dataBinding.member.members()) {
+            this.addField(member);
+        }
+    }
+
+    addField(member) {
+        let field = this.createField(member);
+        cocktail.ui.link(
+            this,
+            field,
+            "value",
+            (form, field) => {
+                if (form.value && field.dataBinding) {
+                    field.value = form.value[field.dataBinding.member.name];
+                }
+            },
+            (field, form) => {
+                if (field.dataBinding) {
+                    let formValue = form.value ? cocktail.ui.copyValue(form.value) : {};
+                    formValue[field.dataBinding.member.name] = field.value;
+                    form.value = formValue;
+                }
+            }
+        );
+        this[FIELD_MAP].set(member.name, field);
+        this.fieldsContainer.appendChild(field);
+    }
+
+    createField(member) {
+        let field;
+        if (member.translated) {
+            field = this.constructor.FieldTranslations.create();
+        }
+        else {
+            field = this.constructor.Field.create()
+        }
+        field.formLabelDisposition = this.formLabelDisposition;
+        field.uiGenerator = this.uiGenerator;
+        field.dataBinding = this.dataBinding.child(
+            this.dataBinding.value,
+            member
+        );
+        return field;
+    }
+
+    removeFields() {
+        this[FIELD_MAP].clear();
+        cocktail.ui.empty(this.fieldsContainer);
+    }
+    ?>
+
+    <?js
+    this[FIELD_MAP] = new Map();
+    this.uiGenerator = cocktail.ui.formControls;
+    ?>
+
+    <?on dataBinding:changed
+    this.removeFields();
+    this.createFields();
+    ?>
+
+    <div id="fieldsContainer"/>
+
+    <div ui:component="Field">
+
+        <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
+
+        <ui:property
+            name="formLabelDisposition"
+            type="string"
+            reflected="true"
+            default="normal"/>
+
+        <ui:property
+            name="uiGenerator"
+            reflected="false">
+            <?on changed
+            this.makeControl();
+            ?>
+        </ui:property>
+
+
+        <?class
+        makeControl() {
+
+            // Remove the previous control
+            if (this.control) {
+                cocktail.ui.removeLink(this, this.control, "value");
+                this.control.parentNode.removeChild(this.control);
+                this.control = null;
+            }
+
+            // Create the control once the field has been given a data binding
+            // and has been attached to a form
+            if (this.dataBinding && this.uiGenerator) {
+                this.control = this.uiGenerator.createDisplay(this.dataBinding);
+                cocktail.ui.link(this, this.control, "value");
+                this.controlContainer.appendChild(this.control);
+                if (!this.formLabelDisposition) {
+                    this.formLabelDisposition = (
+                        this.control.formLabelDisposition
+                        || this.dataBinding.member[cocktail.ui.formLabelDisposition]
+                    );
+                }
+            }
+        }
+        ?>
+
+        <?on dataBinding:changed
+
+        // Set the field label
+        this.label.innerHTML = newValue.member.translate();
+
+        // Create the new field control
+        this.makeControl();
+        ?>
+
+        <label id="label"/>
+        <div id="controlContainer"/>
+
+    </div>
+
+    <div ui:component="FieldTranslations">
+
+        <?head
+        const LANGUAGES_MAP = Symbol("cocktail.ui.TranslatedField.LANGUAGES_MAP");
+        ?>
+
+        <ui:property name="member" final="true">
+            <?on changed
+            this.label.innerHTML = newValue.translate();
+            this.fillLanguageFields();
+            ?>
+        </ui:property>
+
+        <ui:property name="object" final="true">
+            <?on changed
+            this.fillLanguageFields();
+            ?>
+        </ui:property>
+
+        <ui:property name="languages" final="true">
+            <?on changed
+            this.fillLanguageFields();
+            ?>
+        </ui:property>
+
+        <?class
+        getLanguageField(language) {
+            return this[LANGUAGES_MAP].get(language);
+        }
+
+        fillLanguageFields() {
+            if (!this.member || !this.object || !this.languages) {
+                return;
+            }
+            for (let language of this.languages) {
+                let field = this.createTranslation(language);
+                this[LANGUAGES_MAP].set(language, field);
+                this.translations.appendChild(field);
+            }
+        }
+
+        createTranslation(language) {
+            let field = this.constructor.Translation.create();
+            field.member = this.member;
+            field.object = this.object;
+            field.value = this.object[this.member.name][language];
+            field.language = language;
+            return field;
+        }
+        ?>
+
+        <?js
+        this[LANGUAGES_MAP] = new Map();
+        ?>
+
+        <div id="label"/>
+        <div id="translations"/>
+
+        <div ui:component="Translation">
+
+            <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
+
+            <?on language:changed
+            // TODO: translate locales
+            this.label.innerHTML = language;
+            ?>
+
+            <?on dataBinding
+            let form = this.parentInstance.parentInstance;
+            this.control = form.uiGenerator.createDisplay(this.object, this.member, this.value, this.language);
+            this.controlContainer.appendChild(this.control);
+            ?>
+
+            <label id="label"/>
+            <div id="controlContainer"/>
+
+        </div>
+
+    </div>
+
+</form>
+

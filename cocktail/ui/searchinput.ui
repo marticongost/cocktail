@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ui:cocktail.ui.Input
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui"
+    formLabelDisposition="hidden">
+
+    <span id="icon">
+        <?js
+        cocktail.loadSVG("cocktail.ui://images/search.svg", element);
+        ?>
+    </span>
+
+    <ui:with ui:element="input" type="search"/>
+
+</ui:cocktail.ui.Input>
+

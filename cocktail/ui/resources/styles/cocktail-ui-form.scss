@@ -1,0 +1,62 @@
+
+:host([formLayout='column']) {
+}
+
+:host([formLayout='row']) {
+
+    #fieldsContainer {
+        display: flex;
+        flex-direction: row;
+
+        .Field {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+
+            & + .Field {
+                &[formLabelDisposition='hidden'] {
+                    margin-left: 1em;
+                }
+
+                &[formLabelDisposition='normal'] {
+                    margin-left: 2em;
+                }
+            }
+
+            .label + .controlContainer {
+                margin-left: 1em;
+            }
+        }
+    }
+}
+
+:host([formLayout='verticalTable']) {
+
+    #fieldsContainer {
+        display: table;
+
+        .Field {
+            display: table-row;
+
+            .label {
+                display: table-cell;
+            }
+
+            .controlContainer {
+                display: table-cell;
+            }
+        }
+    }
+}
+
+:host([formLayout='horizontalTable']) {
+    #fieldsContainer {
+        display: flex;
+        flex-direction: row;
+    }
+}
+
+.Field[formLabelDisposition='hidden'] .label {
+    display: none !important;
+}
+

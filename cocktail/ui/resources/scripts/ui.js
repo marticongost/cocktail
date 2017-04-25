@@ -134,6 +134,113 @@ cocktail.ui.createDisplay = function (display, context) {
 }
 
 {
+    const LINKS = Symbol("cocktail.ui.LINKS");
+
+    let setLink = function (source, target, property, synchronization) {
+
+        let links = source[LINKS];
+        if (links === undefined) {
+            links = new Map();
+            source[LINKS] = links;
+        }
+
+        let propertyLinks = links.get(property);
+        if (propertyLinks === undefined) {
+            propertyLinks = new Map();
+            links.set(property, propertyLinks);
+        }
+
+        propertyLinks.set(target, synchronization);
+    }
+
+    let clearLink = function (source, target, property) {
+
+        let links = source[LINKS];
+        if (links !== undefined) {
+            let propertyLinks = links.get(property);
+            if (propertyLinks !== undefined) {
+                propertyLinks.delete(target);
+                if (!propertyLinks.size) {
+                    links.delete(property);
+                    if (!links.size) {
+                        delete source[LINKS];
+                    }
+                }
+            }
+        }
+    }
+
+    cocktail.ui.link = function (source, target, property, exporter = null, importer = null, initialize = true) {
+
+        let sourceProperty, targetProperty;
+
+        if (property instanceof Array) {
+            [sourceProperty, targetProperty] = property;
+        }
+        else {
+            sourceProperty = property;
+            targetProperty = property;
+        }
+
+        if (sourceProperty instanceof cocktail.ui.Property) {
+            sourceProperty = sourceProperty.name;
+        }
+
+        if (targetProperty instanceof cocktail.ui.Property) {
+            targetProperty = targetProperty.name;
+        }
+
+        let exportSync = exporter ? {customSync: exporter} : {property: targetProperty};
+        let importSync = importer ? {customSync: importer} : {property: sourceProperty};
+
+        setLink(source, target, sourceProperty, exportSync);
+        setLink(target, source, targetProperty, importSync);
+
+        // Set the initial value
+        if (initialize) {
+            exportSync.running = true;
+            try {
+                if (exporter) {
+                    exporter(source, target);
+                }
+                else {
+                    target[targetProperty] = source[sourceProperty];
+                }
+            }
+            finally {
+                exportSync.running = false;
+            }
+        }
+    }
+
+    cocktail.ui.removeLink = function (source, target, synchronization) {
+
+        let sourceProperty, targetProperty;
+
+        if (typeof(synchronization) == "string") {
+            sourceProperty = synchronization;
+            targetProperty = synchronization;
+        }
+        else if (synchronization instanceof cocktail.ui.Property) {
+            sourceProperty = synchronization.name;
+            targetProperty = synchronization.name;
+        }
+        else {
+            sourceProperty = synchronization.sourceProperty;
+            if (sourceProperty instanceof cocktail.ui.Property) {
+                sourceProperty = sourceProperty.name;
+            }
+
+            targetProperty = synchronization.targetProperty;
+            if (targetProperty instanceof cocktail.ui.Property) {
+                targetProperty = targetProperty.name;
+            }
+        }
+
+        clearLink(source, target, sourceProperty);
+        clearLink(target, source, targetProperty);
+    }
+
     let PROPERTY_COMPONENT = Symbol("cocktail.ui.PROPERTY_COMPONENT");
     let PROPERTY_NAME = Symbol("cocktail.ui.PROPERTY_NAME");
     let PROPERTY_TYPE = Symbol("cocktail.ui.PROPERTY_TYPE");
@@ -253,6 +360,30 @@ cocktail.ui.createDisplay = function (display, context) {
                                 {oldValue: oldValue, newValue: newValue},
                                 property.eventOptions
                             );
+
+                            // Propagate the change to linked properties
+                            let links = this[LINKS];
+                            if (links) {
+                                let propertyLinks = links.get(name);
+                                if (propertyLinks) {
+                                    for (let [linkedTarget, synchronization] of propertyLinks.entries()) {
+                                        if (!synchronization.running) {
+                                            synchronization.running = true;
+                                            try {
+                                                if (synchronization.customSync) {
+                                                    synchronization.customSync(this, linkedTarget);
+                                                }
+                                                else {
+                                                    linkedTarget[synchronization.property] = newValue;
+                                                }
+                                            }
+                                            finally {
+                                                synchronization.running = false;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                     finally {

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:requires component="cocktail.ui.datadisplay"/>
+    <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
+
+    <?tail
+    cls.delegatesFocus = true;
+    ?>
+
+    <?on value:changed
+    if (this.dataBinding) {
+        this.input.value = this.dataBinding.member.serializeValue(newValue);
+    }
+    ?>
+
+    <input id="input">
+        <?on change
+        instance.setAttribute("value", this.value);
+        ?>
+    </input>
+
+</div>
+
