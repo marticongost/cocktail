@@ -420,11 +420,20 @@
         }
 
         translateValue(value) {
-            if (this.type && typeof(value) == "object") {
+
+            if (value && this.type) {
                 return this.type.translateValue(value);
             }
+
+            return super.translateValue(value);
+        }
+
+        serializeValue(value) {
+            if (!value) {
+                return "";
+            }
             else {
-                super.translateValue(value);
+                return value[this.type.primaryMember.name];
             }
         }
 
