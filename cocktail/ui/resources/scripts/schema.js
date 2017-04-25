@@ -130,8 +130,8 @@
         }
 
         translateValue(value) {
-            if (value === undefined || value === null) {
-                return "";
+            if (value === undefined || value === null || value === "") {
+                return this.translate(".none");
             }
             else {
                 return value;
