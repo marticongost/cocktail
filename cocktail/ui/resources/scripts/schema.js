@@ -118,13 +118,13 @@
             }
         }
 
-        translate() {
-            let translation = cocktail.ui.translations[this.translationKey];
+        translate(suffix = "") {
+            let translation = cocktail.ui.translations[this.translationKey + suffix];
             if (translation) {
                 return translation;
             }
             else if (this[SOURCE_MEMBER]) {
-                return this[SOURCE_MEMBER].translate();
+                return this[SOURCE_MEMBER].translate(suffix);
             }
             return "";
         }
