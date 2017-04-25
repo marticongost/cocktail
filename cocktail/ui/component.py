@@ -268,9 +268,11 @@ class UIScript(Script):
 
         # Locales
         locales = self.locales or [get_language()]
-        components_script.append(
+        declarations_script = Element("script", type = "text/javascript")
+        declarations_script.append(
             "cocktail.ui.locales = %s;" % dumps(locales)
         )
+        document.scripts_container.append(declarations_script)
 
         # Export translation keys
         if translation_keys or locales:
@@ -285,7 +287,7 @@ class UIScript(Script):
                 trans_map["cocktail.locales." + locale] = \
                     translate_locale(locale)
 
-            components_script.append(
+            declarations_script.append(
                 "cocktail.ui.translations = %s;" % dumps(trans_map)
             )
 
