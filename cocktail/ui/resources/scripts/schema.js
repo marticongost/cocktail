@@ -113,6 +113,9 @@
             if (this.enumeration) {
                 return this.enumeration;
             }
+            else if (this.dataSource) {
+                return this.dataSource.load();
+            }
             else {
                 return null;
             }
@@ -423,6 +426,17 @@
             else {
                 super.translateValue(value);
             }
+        }
+
+        getPossibleValues(obj = null) {
+            let values = super.getPossibleValues(obj);
+            if (!values) {
+                const type = this.type;
+                if (type && type.dataSource) {
+                    values = type.dataSource.load();
+                }
+            }
+            return values;
         }
     }
 
