@@ -1,10 +1,7 @@
 #-*- coding: utf-8 -*-
 u"""
 
-@author:		Martí Congost
-@contact:		marti.congost@whads.com
-@organization:	Whads/Accent SL
-@since:			February 2008
+.. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
 from contextlib import contextmanager
 

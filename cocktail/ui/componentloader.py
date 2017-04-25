@@ -18,7 +18,7 @@ from cocktail.html.resources import (
     EmbeddedResources,
     SASSCompilation
 )
-from cocktail.html.templates.sourcecodewriter import SourceCodeWriter
+from cocktail.sourcecodewriter import SourceCodeWriter
 from .exceptions import ComponentFileError, ParseError
 
 js_number_expr = re.compile(r"^[-+]?(\d+(\.\d*)?|(\d*\.)?\d+)$")
