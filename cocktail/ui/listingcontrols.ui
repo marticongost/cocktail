@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:property
+        name="display"
+        reflected="false"
+        final="true">
+
+        <?on changed
+        let applyDataFromDisplay = () => {
+            if (this.display.dataBinding) {
+                this.schema = this.display.dataBinding.member;
+                this.localesList.value = this.display.visibleLocales;
+                this.membersList.value = this.display.visibleMembers;
+            }
+        }
+
+        // Synchronize search values / schema
+        cocktail.ui.link(
+            newValue,
+            this.searchForm,
+            ["searchValues", "value"]
+        );
+
+        cocktail.ui.link(
+            newValue,
+            this.searchForm,
+            ["searchSchema", "dataBinding"],
+            (display, searchForm) => {
+                if (display.searchSchema) {
+                    searchForm.dataBinding = {member: display.searchSchema, value: display.searchValues};
+                }
+            },
+            (searchForm, display) => {
+                display.searchSchema = searchForm.dataBinding.member;
+            }
+        );
+
+        newValue.addEventListener("dataBindingChanged", applyDataFromDisplay);
+        newValue.addEventListener("visibleLocalesChanged", applyDataFromDisplay);
+        newValue.addEventListener("visibleMembersChanged", applyDataFromDisplay);
+        applyDataFromDisplay();
+        ?>
+
+    </ui:property>
+
+    <ui:property
+        name="schema"
+        reflected="false">
+        <?on changed
+        if (newValue) {
+            this.membersList.dataBinding = {
+                member: new cocktail.schema.Collection({
+                    items: new cocktail.schema.MemberReference({
+                        sourceSchema: newValue
+                    })
+                })
+            }
+        }
+        ?>
+    </ui:property>
+
+    <ui:property
+        name="searchEnabled"
+        type="boolean"
+        reflected="true"
+        default="false"/>
+
+    <ui:cocktail.ui.Form
+        id="searchForm"
+        formLayout="row">
+        <?on dataBinding:changed
+        instance.searchEnabled = Boolean(newValue);
+        ?>
+    </ui:cocktail.ui.Form>
+
+    <ui:cocktail.ui.DropdownPanel id="localesPanel" footerVisible="true">
+
+        <span slot="label">
+            <ui:translation key=".localesPanel"/>
+        </span>
+
+        <ui:cocktail.ui.CheckList id="localesList">
+            <?js
+            element.dataBinding = {
+                member: new cocktail.schema.Collection({
+                    items: new cocktail.schema.Locale()
+                })
+            }
+            ?>
+        </ui:cocktail.ui.CheckList>
+
+        <ui:cocktail.ui.Button id="applyLocalesButton" slot="footer">
+            <ui:translation/>
+            <?on click
+            instance.display.visibleLocales = instance.localesList.value;
+            instance.localesPanel.expanded = false;
+            ?>
+        </ui:cocktail.ui.Button>
+
+    </ui:cocktail.ui.DropdownPanel>
+
+    <ui:cocktail.ui.DropdownPanel id="membersPanel" footerVisible="true">
+
+        <span slot="label">
+            <ui:translation key=".membersPanel"/>
+        </span>
+
+        <ui:cocktail.ui.CheckList id="membersList"/>
+
+        <ui:cocktail.ui.Button id="applyMembersButton" slot="footer">
+            <ui:translation/>
+            <?on click
+            instance.display.visibleMembers = instance.membersList.value;
+            instance.membersPanel.expanded = false;
+            ?>
+        </ui:cocktail.ui.Button>
+
+    </ui:cocktail.ui.DropdownPanel>
+
+</div>
+

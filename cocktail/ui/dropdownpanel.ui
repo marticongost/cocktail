@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:property
+        name="expanded"
+        type="boolean"
+        default="false"
+        reflected="true">
+
+        <?on changed
+        if (cls.current && cls.current !== instance && newValue) {
+            cls.current.expanded = false;
+        }
+        instance.expanded = newValue;
+        cls.current = newValue ? instance : null;
+        ?>
+
+    </ui:property>
+
+    <ui:property
+        name="footerVisible"
+        type="boolean"
+        default="false"
+        reflected="true"/>
+
+    <?tail
+    window.addEventListener("click", function () {
+        if (cls.current) {
+            cls.current.expanded = false;
+        }
+    });
+
+    cls.delegatesFocus = true;
+    ?>
+
+    <button id="button">
+        <?on click
+        instance.expanded = !instance.expanded;
+        event.stopPropagation();
+        ?>
+        <span id="label">
+            <slot name="label"/>
+        </span>
+        <span id="arrow">
+            <?js
+            cocktail.loadSVG(cocktail.normalizeResourceURI("cocktail.ui://images/dropdown.svg"), element);
+            ?>
+        </span>
+    </button>
+
+    <div id="panelWrapper">
+        <div id="panel">
+            <?on click
+            event.stopPropagation();
+            ?>
+            <div id="panelContent">
+                <slot/>
+            </div>
+            <div id="footer">
+                <slot name="footer"/>
+            </div>
+        </div>
+    </div>
+
+</div>
+

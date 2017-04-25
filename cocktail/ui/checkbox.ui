@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:requires component="cocktail.ui.datadisplay"/>
+    <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
+
+    <?on value:changed
+    if (this.member) {
+        this.input.checked = Boolean(newValue);
+    }
+    ?>
+
+    <input id="input" type="checkbox">
+        <?on change
+        instance.value = this.checked;
+        ?>
+    </input>
+
+</div>
+

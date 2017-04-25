@@ -6,20 +6,43 @@
     dataState="pending"
     columnsReady="false">
 
+    <ui:requires component="cocktail.ui.datadisplay"/>
+    <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
     <ui:requires component="cocktail.ui.datasources"/>
     <ui:decoratedBy function="cocktail.ui.dataSourceConsumer"/>
     <ui:resource href="cocktail.ui://scripts/scrollwatcher.js"/>
 
-    <ui:property name="member">
+    <?on dataBinding:changed
+    if (!this.visibleMembers) {
+        this.visibleMembers = new Set(newValue.member.members());
+    }
+    ?>
+
+    <ui:property
+        name="visibleLocales"
+        type="identifiers"
+        reflected="true"
+        default="[]">
         <?on changed
-        this.visibleColumns = new Set(newValue.members());
+        if (this.dataBinding && this.dataSource) {
+            this.reset();
+        }
         ?>
     </ui:property>
 
-    <ui:property name="languages" type="identifiers" reflected="true" default="[]"/>
-    <ui:property name="languagesParameter" type="string" default="languages" reflected="true"/>
+    <ui:property name="localesParameter" type="string" default="locales" reflected="true"/>
 
-    <ui:property name="visibleColumns"/>
+    <ui:property
+        name="visibleMembers"
+        reflected="false">
+        <?on changed
+        if (this.dataBinding && this.dataSource) {
+            this.reset();
+        }
+        ?>
+    </ui:property>
+
+    <ui:property name="membersParameter" type="string" default="members" reflected="true"/>
 
     <ui:property name="paging" type="string" reflected="true">
         <?on changed
@@ -39,6 +62,14 @@
     <ui:property name="pageParameter" type="string" default="page" reflected="true"/>
     <ui:property name="pageSizeParameter" type="string" default="page_size" reflected="true"/>
 
+    <ui:property name="searchValues" reflected="false">
+        <?on changed
+        this.reload();
+        ?>
+    </ui:property>
+
+    <ui:property name="searchSchema" reflected="false"/>
+
     <?class
     update() {
         this.loadPage(this.page);
@@ -50,26 +81,10 @@
         let append = (this.paging == "infiniteScroll");
 
         this.dataState = "loading";
-
-        if (!this.columnsReady) {
-            this.createColumns();
-            this.columnsReady = true;
-        }
-
-        let parameters = {
-            [this.pageParameter]: page
-        }
-
-        if (this.pageSizeParameter) {
-            parameters[this.pageSizeParameter] = this.pageSize;
-        }
-
-        if (this.languagesParameter) {
-            parameters[this.languagesParameter] = Array(...this.languages);
-        }
+        this.createColumns();
 
         return this.dataSource
-            .load({parameters})
+            .load(this.getDataSourceOptions(page))
             .then(function (data) {
                 if (append) {
                     table.addRows(data);
@@ -86,15 +101,67 @@
             });
     }
 
+    getDataSourceOptions(page) {
+
+        let options = {
+            parameters: {[this.pageParameter]: page}
+        }
+
+        if (this.pageSizeParameter) {
+            options.parameters[this.pageSizeParameter] = this.pageSize;
+        }
+
+        if (this.localesParameter) {
+            options.parameters[this.localesParameter] = Array(...this.visibleLocales);
+        }
+
+        if (this.membersParameter) {
+            options.parameters[this.membersParameter] = Array.from(this.visibleMembers, member => member.name);
+        }
+
+        if (this.searchSchema && this.searchValues) {
+            this.addSearchParameter(options);
+        }
+
+        return options;
+    }
+
+    addSearchParameter(options) {
+        for (let member of this.searchSchema.members()) {
+            let value = this.searchValues[member.name];
+            if (value !== null && value !== undefined && value !== "") {
+                this.addSearchCriteriaParameter(options, member, value);
+            }
+        }
+    }
+
+    addSearchCriteriaParameter(options, member, value) {
+        let paramName = this.getSearchCriteriaParameterName(member);
+        let paramValue = this.getSearchCriteriaParameterValue(member, value);
+        options.parameters[paramName] = paramValue;
+    }
+
+    getSearchCriteriaParameterName(member) {
+        return "search_" + member.name;
+    }
+
+    getSearchCriteriaParameterValue(member, value) {
+        return member.serializeValue(value);
+    }
+
     loadNextPage() {
         let nextPage = this.page + 1;
         this.loadPage(nextPage).then(() => this.page = nextPage);
     }
 
     createColumns() {
-        for (let member of this.member.members()) {
-            let languages = member.translated ? this.languages : [null];
-            for (let language of languages) {
+        if (this.columnsReady) {
+            return;
+        }
+        this.columnsReady = true;
+        for (let member of this.visibleMembers) {
+            let locales = member.translated ? this.visibleLocales: [null];
+            for (let language of locales) {
                 let heading = this.createHeading(member, language);
                 this.headingsRow.appendChild(heading);
             }
@@ -108,7 +175,7 @@
         heading.setAttribute("column", member.name);
         heading.label.innerHTML = member.translate();
         if (language) {
-            heading.languageLabel.innerHTML = language; // TODO: translate this
+            heading.languageLabel.innerHTML = cocktail.ui.translations["cocktail.locales." + language];
         }
         else {
             heading.languageLabel.style.display = "none";
@@ -141,15 +208,32 @@
         }, 1);
     }
 
+    reset() {
+        this.clear();
+        this.createColumns();
+        this.update();
+    }
+
+    clear() {
+        cocktail.ui.empty(this.headingsRow);
+        this.columnsReady = false;
+        this.clearRows();
+    }
+
     clearRows() {
         cocktail.ui.empty(this.body);
     }
 
+    reload() {
+        this.clearRows();
+        this.loadPage(0).then(() => this.page = 0);
+    }
+
     createRow(record) {
         let row = document.createElement("tr");
-        for (let member of this.member.members()) {
-            let languages = member.translated ? this.languages : [null];
-            for (let language of languages) {
+        for (let member of this.visibleMembers) {
+            let locales = member.translated ? this.visibleLocales : [null];
+            for (let language of locales) {
                 let cell = this.createCell(record, member, language);
                 row.appendChild(cell);
             }
@@ -167,17 +251,20 @@
         // Render the value using a custom component, if available, or fall
         // back to a string representation
         let value = this.dataSource.getValue(record, member, language);
-        let displayFactory = member[cocktail.ui.DISPLAY];
-
-        if (displayFactory) {
-            let display = cocktail.ui.createDisplay(displayFactory, {object: record, member, language, value});
+        let display = cocktail.ui.displays.createDisplay(
+            new cocktail.ui.DataBinding(
+                record,
+                member,
+                language,
+                value
+            )
+        );
+        if (display) {
             cell.appendChild(display);
-            display.update();
         }
         else {
             cell.innerHTML = member.translateValue(value);
         }
-
         return cell;
     }
     ?>

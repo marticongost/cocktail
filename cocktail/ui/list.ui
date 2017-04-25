@@ -4,21 +4,26 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:ui="http://www.whads.com/ns/cocktail/ui">
 
-    <ui:property name="value"/>
-    <ui:property name="member"/>
-    <ui:property name="language"/>
+    <ui:requires component="cocktail.ui.datadisplay"/>
+    <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
 
     <?class
-    update() {
-        while (this.firstChild) {
-            this.list.removeChild(this.firstChild);
-        }
-        if (this.value) {
+    clear() {
+        cocktail.ui.empty(this.list);
+    }
+
+    createEntries() {
+        if (this.dataBinding && this.value) {
             for (let item of this.value) {
-                let entry = this.createEntry(item);
-                this.list.appendChild(entry);
+                this.addEntry(item);
             }
         }
+    }
+
+    addEntry(item) {
+        let entry = this.createEntry(item);
+        this.list.appendChild(entry);
+        return entry;
     }
 
     createEntry(item) {
@@ -29,8 +34,12 @@
     }
 
     translateItem(item) {
-        return this.member.items.translateValue(item);
+        return this.dataBinding.member.items.translateValue(item);
     }
+    ?>
+
+    <?on value:changed
+    this.createEntries();
     ?>
 
     <ul id="list">
