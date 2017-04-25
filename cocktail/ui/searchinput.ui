@@ -11,7 +11,11 @@
         ?>
     </span>
 
-    <ui:with ui:element="input" type="search"/>
+    <ui:with ui:element="input" type="search">
+        <?on search
+        instance.setAttribute("value", this.value);
+        ?>
+    </ui:with>
 
 </ui:cocktail.ui.Input>
 
