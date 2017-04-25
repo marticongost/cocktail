@@ -284,7 +284,7 @@
                 for (let sourceMember of members) {
 
                     if (typeof(sourceMember) == "string") {
-                        sourceMember = this.getMember(sourceMember)
+                        sourceMember = this.requireMember(sourceMember)
                     }
 
                     let targetMember;
