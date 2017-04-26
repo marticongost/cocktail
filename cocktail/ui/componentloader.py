@@ -561,7 +561,10 @@ class ComponentLoader(object):
                     "'resource' clause without an 'href' attribute"
                 )
             resource = Resource.from_uri(uri)
-            self.resources.append(resource)
+            if node.parent.is_root or not isinstance(resource, StyleSheet):
+                self.resources.append(resource)
+            else:
+                self.insert_stylesheet(node.parent, resource)
 
         # Decorator
         elif node.is_decorator:
@@ -670,27 +673,7 @@ class ComponentLoader(object):
             ):
                 sheet = theme.get_stylesheet(self.component, node.id)
                 if sheet:
-                    with self.init_source.braces() as block:
-                        if self.style_inclusion == "embed":
-                            embedder = EmbeddedResources()
-                            css = embedder.get_resource_source(sheet)
-                            block.write(
-                                "let styleSheet = "
-                                "document.createElement('style');"
-                            )
-                            block.write("styleSheet.type = 'text/css';")
-                            block.write("styleSheet.innerText = %s;" % dumps(css))
-                        elif self.style_inclusion == "link":
-                            block.write(
-                                "let styleSheet = "
-                                "document.createElement('link');"
-                            )
-                            block.write("styleSheet.rel = 'stylesheet';")
-                            block.write("styleSheet.type = 'text/css';")
-                            block.write(
-                                "styleSheet.href = %s;" % dumps(sheet.uri)
-                            )
-                        block.write("%s.shadowRoot.appendChild(styleSheet);" % node.ref)
+                    self.insert_stylesheet(node, sheet)
 
         # Assign attributes
         for attrib_name, attrib_value in attributes.iteritems():
@@ -837,6 +820,32 @@ class ComponentLoader(object):
                 "cocktail.ui.getShadow(%s).appendChild(styles);"
                 % self.__stack.ref
             )
+
+    def insert_stylesheet(self, node, resource):
+
+        with self.init_source.braces() as block:
+
+            if self.style_inclusion == "embed":
+                embedder = EmbeddedResources()
+                css = embedder.get_resource_source(resource)
+                block.write(
+                    "let styleSheet = "
+                    "document.createElement('style');"
+                )
+                block.write("styleSheet.type = 'text/css';")
+                block.write("styleSheet.innerText = %s;" % dumps(css))
+            elif self.style_inclusion == "link":
+                block.write(
+                    "let styleSheet = "
+                    "document.createElement('link');"
+                )
+                block.write("styleSheet.rel = 'stylesheet';")
+                block.write("styleSheet.type = 'text/css';")
+                block.write(
+                    "styleSheet.href = %s;" % dumps(resource.uri)
+                )
+
+            block.write("%s.shadowRoot.appendChild(styleSheet);" % node.ref)
 
     def trigger_parser_error(self, message):
 
