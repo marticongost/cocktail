@@ -132,13 +132,7 @@ class ComponentLoader(object):
             node = document.getroot()
 
         if component.parent is None:
-            translations.request_bundle(
-                component.full_name.lower(),
-                callback = (
-                    lambda key, lang, value: self.translation_keys.add(key)
-                ),
-                reload = True
-            )
+            self.require_translation_bundle(component.full_name.lower())
 
         self.parse_document(node)
 
@@ -374,6 +368,8 @@ class ComponentLoader(object):
                 node.is_translation = True
             elif local_name == "requires-translation":
                 node.is_translation_requirement = True
+            elif local_name == "requires-translation-bundle":
+                node.is_translation_bundle_requirement = True
             elif local_name == "resource":
                 node.is_resource = True
             elif local_name == "decoratedBy":
@@ -388,6 +384,7 @@ class ComponentLoader(object):
             and not node.is_decorator
             and not node.is_translation
             and not node.is_translation_requirement
+            and not node.is_translation_bundle_requirement
             and not node.is_requirement
             and not self.is_module
         )
@@ -517,7 +514,17 @@ class ComponentLoader(object):
 
             self.properties[node.prop_name] = prop_options
 
-        # Translations
+        # Translation bundles
+        elif node.is_translation_bundle_requirement:
+            bundle = attributes.pop("name", None)
+
+            if not bundle:
+                self.trigger_parser_error(
+                    "requires-translation-bundle without a 'name' attribute"
+                )
+
+            self.require_translation_bundle(bundle)
+
         # Translation keys
         elif node.is_translation or node.is_translation_requirement:
 
@@ -847,6 +854,15 @@ class ComponentLoader(object):
 
             block.write("%s.shadowRoot.appendChild(styleSheet);" % node.ref)
 
+    def require_translation_bundle(self, bundle):
+        translations.request_bundle(
+            bundle,
+            callback = (
+                lambda key, lang, value: self.translation_keys.add(key)
+            ),
+            reload = True
+        )
+
     def trigger_parser_error(self, message):
 
         if self.__stack:
@@ -894,6 +910,9 @@ class StackNode(object):
 
     # Wether the node is a translation dependency declaration
     is_translation_requirement = False
+
+    # Wether the node is a translation bundle dependency declaration
+    is_translation_bundle_requirement = False
 
     # Wether the node is a requirement declaration
     is_requirement = False
