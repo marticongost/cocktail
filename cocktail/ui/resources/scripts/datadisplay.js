@@ -220,6 +220,12 @@ cocktail.ui.displays = new cocktail.ui.UIGenerator("cocktail.ui.display");
 cocktail.ui.formControls = new cocktail.ui.UIGenerator("cocktail.ui.formControl");
 cocktail.ui.formLabelDisposition = Symbol("cocktail.ui.formLabelDisposition");
 
+// A symbol that controls wether a member should be included in the default selection
+// of visible members on controls that allow toggling member visibility (such as
+// cocktail.ui.Table)
+cocktail.ui.listedByDefault = Symbol("cocktail.ui.listedByDefault");
+cocktail.schema.Member.prototype[cocktail.ui.listedByDefault] = true;
+
 cocktail.ui.COPY_VALUE = Symbol("cocktail.ui.COPY_VALUE");
 
 cocktail.ui.copyValue = function (value) {

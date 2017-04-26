@@ -14,7 +14,11 @@
 
     <?on dataBinding:changed
     if (!this.visibleMembers) {
-        this.visibleMembers = new Set(newValue.member.members());
+        this.visibleMembers = new Set(
+            Array.from(newValue.member.members()).filter(
+                (member) => member[cocktail.ui.listedByDefault]
+            )
+        );
     }
     ?>
 
