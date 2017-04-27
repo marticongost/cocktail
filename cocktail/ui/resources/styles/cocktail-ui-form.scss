@@ -23,8 +23,10 @@
                 }
             }
 
-            .label + .controlContainer {
-                margin-left: 1em;
+            &[formLabelDisposition='normal'] {
+                .label + .controlContainer {
+                    margin-left: 1em;
+                }
             }
         }
     }
