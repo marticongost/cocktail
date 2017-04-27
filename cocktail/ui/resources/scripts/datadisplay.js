@@ -12,10 +12,6 @@
 
         let proto = parameters.cls.prototype;
 
-        let defaultSynchronization = (source, target) => {
-            target.value = source.value;
-        }
-
         parameters.properties.dataBinding = {
 
             // Accept arbitrary objects.
