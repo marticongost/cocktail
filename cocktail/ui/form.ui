@@ -18,7 +18,7 @@
         default="column"/>
 
     <ui:property
-        name="formLabelDisposition"
+        name="fieldsLabelDisposition"
         type="string"
         reflected="true"/>
 
@@ -80,7 +80,7 @@
         else {
             field = this.constructor.Field.create()
         }
-        field.formLabelDisposition = this.formLabelDisposition;
+        field.formLabelDisposition = this.fieldsLabelDisposition;
         field.uiGenerator = this.uiGenerator;
         field.dataBinding = this.dataBinding.child(
             this.dataBinding.value,
@@ -111,20 +111,9 @@
 
         <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
 
-        <ui:property
-            name="formLabelDisposition"
-            type="string"
-            reflected="true"
-            default="normal"/>
-
-        <ui:property
-            name="uiGenerator"
-            reflected="false">
-            <?on changed
-            this.makeControl();
-            ?>
-        </ui:property>
-
+        <?on uiGenerator:changed
+        this.makeControl();
+        ?>
 
         <?class
         makeControl() {

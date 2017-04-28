@@ -119,7 +119,7 @@ class ComponentLoader(object):
         self.init_source = None
         self.init_tail_source = None
         self.body_source = None
-        self.registration_source = None
+        self.declaration_source = None
         self.tail_source = None
         self.__stack = None
         self.__context_change_stack = []
@@ -150,7 +150,7 @@ class ComponentLoader(object):
         self.init_source = None
         self.init_tail_source = None
         self.body_source = None
-        self.registration_source = None
+        self.declaration_source = None
         self.tail_source = None
         self.__stack = None
         self.__context_change_stack = None
@@ -178,8 +178,8 @@ class ComponentLoader(object):
                     reference_type = "base"
                 )
         else:
-            iface = self.tag_interfaces.get(local_name, "HTMLElement")
-            base_name = "cocktail.ui.base." + iface
+            base_name = self.tag_interfaces.get(local_name, "HTMLElement")
+            base_name = "cocktail.ui.base.%s" % base_name
 
         if not self.is_module:
             self.source.write("{")
@@ -190,105 +190,82 @@ class ComponentLoader(object):
         if not self.is_module:
 
             # Component class declaration
-            self.source.write(
-                "let cls = class %s extends %s {" % (
-                    self.component.name,
-                    base_name
-                )
-            )
-            self.body_source = self.source.nest(1)
-            self.body_source.write(
-                "static get observedAttributes() { "
-                "return cocktail.ui._getObservedAttributes(this); }"
-            )
-            self.source.write("}")
+            with self.source.braces("let cls = cocktail.ui.component(", ");"):
+                self.declaration_source = self.source.nest()
 
-            # Component initializer
-            self.body_source.write("initialize() {")
-            self.init_source = self.body_source.nest(1)
-            self.init_source.write("super.initialize();")
-            self.init_source.write("let instance = this;")
-            self.init_source.write(
-                "this.classList.add('%s');"
-                % self.component.css_class
-            )
-            if self.component.parent:
+                self.body_source = self.source.nest(1)
+                self.body_source.write(
+                    "static get observedAttributes() { "
+                    "return cocktail.ui._getObservedAttributes(this); }"
+                )
+
+                # Component initializer
+                self.body_source.write("initialize() {")
+                self.init_source = self.body_source.nest(1)
+                self.init_source.write("super.initialize();")
+                self.init_source.write("let instance = this;")
                 self.init_source.write(
-                    "this.classList.add('%s');" % self.component.name
+                    "this.classList.add('%s');"
+                    % self.component.css_class
                 )
-            self.init_tail_source = self.body_source.nest(1)
-            self.body_source.write("}")
+                if self.component.parent:
+                    self.init_source.write(
+                        "this.classList.add('%s');" % self.component.name
+                    )
+                self.init_tail_source = self.body_source.nest(1)
+                self.body_source.write("}")
 
-            with self.body_source.braces("get parentInstance()") as body:
-                body.write("return this.getRootNode().host;")
+                self.source.write("}")
 
-        self.registration_source = self.source.nest()
         self.tail_source = self.source.nest()
         self.parse_element(node)
 
         if not self.is_module:
-            self.registration_source.write(
-                "cocktail.ui.component({"
-            )
-            self.registration_source.indent()
-            self.registration_source.write(
+
+            self.declaration_source.write(
                 "fullName: %s," % dumps(self.component.full_name)
             )
 
             if self.component.parent:
-                self.registration_source.write(
+                self.declaration_source.write(
                     "parentComponent: %s," % self.component.parent.full_name
                 )
 
-            self.registration_source.write(
-                "cls: cls%s" % (
-                    "," if not is_ui_node or self.decorators or self.properties else ""
+            if not is_ui_node:
+                self.declaration_source.write(
+                    "baseTag: %s," % dumps(local_name)
+                )
+
+            base_expr = base_name
+
+            for decorator in self.decorators:
+                base_expr = "%s(%s)" % (decorator, base_expr)
+
+            self.declaration_source.write(
+                "cls: class %s extends %s {" % (
+                    self.component.name,
+                    base_expr
                 )
             )
 
-            if not is_ui_node:
-                self.registration_source.write(
-                    "baseTag: %s%s" % (
-                        dumps(local_name),
-                        "," if self.decorators or self.properties else ""
-                    )
-                )
+            with self.body_source.braces(
+                "static get componentProperties()"
+            ) as b:
+                if self.properties:
+                    with b.braces("return", ";") as b:
+                        props = self.properties.items()
+                        for prop_name, prop_params in props[:-1]:
+                            b.write(
+                                "%s: %s," % (prop_name, dumps(prop_params))
+                            )
 
-            if self.decorators:
-                self.registration_source.write("decorators: [")
-                self.registration_source.indent()
-
-                for decorator in self.decorators[:-1]:
-                    self.registration_source.write(decorator + ",")
-
-                self.registration_source.write(self.decorators[-1])
-                self.registration_source.unindent()
-                self.registration_source.write(
-                    "]," if self.properties else "]"
-                )
-
-            if self.properties:
-                self.registration_source.write("properties: {")
-                self.registration_source.indent()
-
-                props = self.properties.items()
-                for prop_name, prop_params in props[:-1]:
-                    self.registration_source.write(
-                        "%s: %s," % (prop_name, dumps(prop_params))
-                    )
-
-                self.registration_source.write(
-                    "%s: %s" % (props[-1][0], dumps(props[-1][1]))
-                )
-
-                self.registration_source.unindent()
-                self.registration_source.write("}")
-
-            self.registration_source.unindent()
-            self.registration_source.write("});")
+                        b.write(
+                            "%s: %s" % (props[-1][0], dumps(props[-1][1]))
+                        )
+                else:
+                    b.write("return {};")
 
         # Embed styles
-
         if not self.is_module:
             if self.style_inclusion == "embed":
                 embedder = EmbeddedResources()
