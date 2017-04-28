@@ -7,66 +7,63 @@
 @since:         March 2017
 -----------------------------------------------------------------------------*/
 
-{
-    cocktail.ui.dataDisplay = function (parameters) {
+cocktail.ui.dataDisplay = (cls) => class DataDisplay extends cls {
 
-        let proto = parameters.cls.prototype;
+    static get componentProperties() {
+        return {
+            dataBinding: {
 
-        parameters.properties.dataBinding = {
+                // Accept arbitrary objects.
+                // This allows to set the property using an object literal, instead of
+                // having to instantiate cocktail.ui.DataBinding explicitly.
+                normalization: function (value) {
+                    if (value && !(value instanceof cocktail.ui.DataBinding)) {
+                        value = new cocktail.ui.DataBinding(
+                            value.object,
+                            value.member,
+                            value.language,
+                            value.value
+                        );
+                    }
+                    return value;
+                },
+                changedCallback: function (oldValue, newValue) {
+                    if (newValue) {
 
-            // Accept arbitrary objects.
-            // This allows to set the property using an object literal, instead of
-            // having to instantiate cocktail.ui.DataBinding explicitly.
-            normalization: function (value) {
-                if (value && !(value instanceof cocktail.ui.DataBinding)) {
-                    value = new cocktail.ui.DataBinding(
-                        value.object,
-                        value.member,
-                        value.language,
-                        value.value
-                    );
-                }
-                return value;
-            },
-            changedCallback: function (oldValue, newValue) {
-                if (newValue) {
+                        // Set the display's value when a new data context is assigned
+                        this.value = newValue.value;
 
-                    // Set the display's value when a new data context is assigned
-                    this.value = newValue.value;
+                        // Reflect the context in the display's attributes
+                        if (newValue.member.name) {
+                            this.setAttribute("member", newValue.member.name);
+                        }
+                        else {
+                            this.removeAttribute("member");
+                        }
 
-                    // Reflect the context in the display's attributes
-                    if (newValue.member.name) {
-                        this.setAttribute("member", newValue.member.name);
+                        if (newValue.language) {
+                            this.setAttribute("language", newValue.language);
+                        }
+                        else {
+                            this.removeAttribute("language");
+                        }
                     }
                     else {
                         this.removeAttribute("member");
-                    }
-
-                    if (newValue.language) {
-                        this.setAttribute("language", newValue.language);
-                    }
-                    else {
                         this.removeAttribute("language");
                     }
                 }
-                else {
-                    this.removeAttribute("member");
-                    this.removeAttribute("language");
-                }
+            },
+            uiGenerator: {},
+            value: {
+                type: (obj) => obj.dataBinding.member,
+                reflected: true
+            },
+            formLabelDisposition: {
+                type: "string",
+                reflected: true
             }
-        };
-
-        parameters.properties.uiGenerator = {};
-
-        parameters.properties.value = {
-            type: (obj) => obj.dataBinding.member,
-            reflected: true
-        };
-
-        parameters.properties.formLabelDisposition = {
-            type: "string",
-            reflected: true
-        };
+        }
     }
 }
 

@@ -7,9 +7,14 @@
 @since:         March 2017
 -----------------------------------------------------------------------------*/
 
-cocktail.ui.dataSourceConsumer = function (registration) {
-    registration.properties["dataSource"] = {};
-    registration.properties["dataState"] = {reflected: true};
+cocktail.ui.dataSourceConsumer = (cls) => class DataSourceConsumer extends cls {
+
+    static get componentProperties() {
+        return {
+            dataSource: {},
+            dataState: {reflected: true}
+        };
+    }
 }
 
 cocktail.ui.DataSource = class DataSource {
