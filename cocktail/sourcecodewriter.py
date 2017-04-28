@@ -58,12 +58,19 @@ class SourceCodeWriter(object):
             if closure:
                 self.write(closure)
 
-    def braces(self, opening = None):
+    def braces(self, opening = None, closure = None):
+
         if opening:
             opening += " {"
         else:
             opening = "{"
-        return self.indented_block(opening, "}")
+
+        if closure:
+            closure = "}" + closure
+        else:
+            closure = "}"
+
+        return self.indented_block(opening, closure)
 
     def linejump(self, lines = 1):
         for i in xrange(lines):
