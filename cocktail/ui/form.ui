@@ -47,6 +47,7 @@
         for (let member of this.dataBinding.member.members()) {
             this.addField(member);
         }
+        cocktail.ui.trigger(this, "fieldsReady");
     }
 
     addField(member) {
