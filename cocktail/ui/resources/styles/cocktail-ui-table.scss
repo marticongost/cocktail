@@ -1,4 +1,7 @@
 
+$selection-background: #666 !default;
+$selection-foreground: white !default;
+
 :host {
     display: flex;
     flex-direction: column;
@@ -9,6 +12,10 @@
     #table {
         display: none;
     }
+}
+
+:host(:not([selectionType='none'])) {
+    user-select: none;
 }
 
 :host(:not([dataState='loading'])) {
@@ -90,6 +97,10 @@ th {
     overflow-x: hidden;
     flex: 1 1 auto;
 
+    &:focus {
+        outline: none;
+    }
+
     & > tr {
         display: flex;
 
@@ -97,6 +108,11 @@ th {
             display: block;
             flex: 1;
             padding: 6px;
+        }
+
+        &[selected] > td {
+            background: $selection-background;
+            color: $selection-foreground;
         }
 
         &:nth-child(odd) {
