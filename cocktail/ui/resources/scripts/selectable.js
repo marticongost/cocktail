@@ -154,11 +154,11 @@
                 let target;
 
                 // Home
-                if (e.which == 36) {
+                if (e.which == 36 && !e.ctrlKey && !e.altKey) {
                     target = this.getFirstSelectableElement();
                 }
                 // End
-                else if (e.which == 35) {
+                else if (e.which == 35 && !e.ctrlKey && !e.altKey) {
                     target = this.getLastSelectableElement();
                 }
                 else {
