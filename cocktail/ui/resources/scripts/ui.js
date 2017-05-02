@@ -622,5 +622,29 @@ cocktail.declare("cocktail.ui");
             return `${this.property} has been marked as being final, but its value has been changed.`;
         }
     }
+
+    cocktail.ui.getFocusedElement = function () {
+        let element;
+        for (element of cocktail.ui.iterFocusedPath());
+        return element;
+    }
+
+    cocktail.ui.iterFocusedPath = function* () {
+        let element = document.activeElement;
+        do {
+            yield element;
+            element = element.shadowRoot && element.shadowRoot.activeElement;
+        }
+        while (element);
+    }
+
+    cocktail.ui.isFocused = function (element) {
+        for (let node of cocktail.ui.iterFocusedPath()) {
+            if (element === node) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
