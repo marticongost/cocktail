@@ -115,6 +115,7 @@
 
                     this.selectionCursor = target;
                     e.preventDefault();
+                    e.stopPropagation();
                 }
             });
 
@@ -131,7 +132,7 @@
                 ) {
                     cocktail.ui.trigger(this, "activated", {selection: Array.from(this.selectedElements)});
                     e.preventDefault();
-                    return;
+                    e.stopPropagation();
                 }
 
                 let multiple = (this.selectionType == "multiple");
@@ -148,7 +149,7 @@
                         this.selectionCursor = elements[elements.length - 1];
                     }
                     e.preventDefault();
-                    return false;
+                    e.stopPropagation();
                 }
 
                 let target;
@@ -198,6 +199,7 @@
                     this.selectionCursor = target;
                     target.scrollIntoViewIfNeeded(false);
                     e.preventDefault();
+                    e.stopPropagation();
                 }
             });
         }
