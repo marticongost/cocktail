@@ -8,6 +8,9 @@
 -----------------------------------------------------------------------------*/
 
 {
+    const PREV_CLICK_ELEMENT = Symbol();
+    const PREV_CLICK_TIME = Symbol();
+
     cocktail.ui.selectable = (cls) => class Selectable extends cls {
 
         static get componentProperties() {
@@ -41,6 +44,9 @@
                 },
                 selectionCursor: {
                     reflected: false
+                },
+                activationDoubleClickDelay: {
+                    type: "number"
                 }
             }
         }
@@ -52,6 +58,7 @@
             this[this.constructor.selectedElements.VALUE] = new Set();
             this.selectionType = "single";
             this.selectionAxis = "vertical";
+            this.activationDoubleClickDelay = 200;
 
             this.addEventListener("click", (e) => {
 
@@ -62,10 +69,14 @@
                 let target = this.getSelectableElementInPath(e.path);
 
                 if (target) {
+
                     let multiple = (this.selectionType == "multiple");
+
+                    // Ctrl + click: toggle selection
                     if (multiple && e.ctrlKey) {
                         this.setElementSelected(target, !this.selectedElements.has(target));
                     }
+                    // Shift + click: range selection
                     else if (multiple && e.shiftKey) {
                         this.setRangeSelected(
                             this.selectionCursor || this.getFirstSelectableElement(),
@@ -73,9 +84,22 @@
                             true
                         );
                     }
+                    // Regular click: replace selection
                     else {
                         this.selectedElements = [target];
                     }
+
+                    // Double click activation
+                    let now = new Date();
+                    if (
+                        target == this[PREV_CLICK_ELEMENT]
+                        && now - this[PREV_CLICK_TIME] <= this.activationDoubleClickDelay
+                    ) {
+                        cocktail.ui.trigger(this, "activated", {selection: [target]});
+                    }
+                    this[PREV_CLICK_ELEMENT] = target;
+                    this[PREV_CLICK_TIME] = now;
+
                     this.selectionCursor = target;
                     e.preventDefault();
                 }
@@ -84,6 +108,12 @@
             this.addEventListener("keydown", (e) => {
 
                 if (this.selectionType == "none") {
+                    return;
+                }
+
+                if (e.which == 13 && this.selectedElements.size) {
+                    cocktail.ui.trigger(this, "activated", {selection: Array.from(this.selectedElements)});
+                    e.preventDefault();
                     return;
                 }
 
