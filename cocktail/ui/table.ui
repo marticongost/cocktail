@@ -6,11 +6,19 @@
     dataState="pending"
     columnsReady="false">
 
+    <ui:requires component="cocktail.ui.selectable"/>
     <ui:requires component="cocktail.ui.datadisplay"/>
-    <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
     <ui:requires component="cocktail.ui.datasources"/>
+
+    <ui:decoratedBy function="cocktail.ui.selectable"/>
+    <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
     <ui:decoratedBy function="cocktail.ui.dataSourceConsumer"/>
+
     <ui:resource href="cocktail.ui://scripts/scrollwatcher.js"/>
+
+    <?tail
+    cls.delegatesFocus = true;
+    ?>
 
     <?on dataBinding:changed
     if (!this.visibleMembers) {
@@ -290,7 +298,7 @@
             <tr id="headingsRow"/>
         </thead>
 
-        <tbody id="body"/>
+        <tbody id="body" tabindex="-1"/>
 
         <th ui:component="Heading">
             <span id="label"/>
@@ -305,6 +313,10 @@
         <ui:translation/>
         <div id="errorMessage"/>
     </div>
+
+    <?js
+    this.selectionContainer = this.body;
+    ?>
 
 </div>
 
