@@ -152,36 +152,42 @@
                     e.stopPropagation();
                 }
 
-                let target;
+                let axis = this.selectionAxis;
+                let target, direction;
 
                 // Home
                 if (e.which == 36 && !e.ctrlKey && !e.altKey) {
                     target = this.getFirstSelectableElement();
+                    direction = (axis == "vertical" ? "up" : "left");
                 }
                 // End
                 else if (e.which == 35 && !e.ctrlKey && !e.altKey) {
                     target = this.getLastSelectableElement();
+                    direction = (axis == "vertical" ? "bottom" : "right");
                 }
                 else {
-                    let axis = this.selectionAxis;
                     if (axis == "vertical") {
                         // Up
                         if (e.which == 38) {
                             target = this.getPreviousSelectableElement();
+                            direction = "up";
                         }
                         // Down
                         else if (e.which == 40) {
                             target = this.getNextSelectableElement();
+                            direction = "bottom";
                         }
                     }
                     else if (axis == "horizontal") {
                         // Left
                         if (e.which == 37) {
                             target = this.getPreviousSelectableElement();
+                            direction = "left";
                         }
                         // Right
                         else if (e.which == 39) {
                             target = this.getNextSelectableElement();
+                            direction = "right";
                         }
                     }
                 }
@@ -200,6 +206,11 @@
                     target.scrollIntoViewIfNeeded(false);
                     e.preventDefault();
                     e.stopPropagation();
+                }
+                else if (direction) {
+                    cocktail.ui.trigger(this, "keyboardSelectionOverflow", {
+                        direction: direction
+                    });
                 }
             });
         }
