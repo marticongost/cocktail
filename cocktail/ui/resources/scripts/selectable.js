@@ -21,11 +21,15 @@
                     changedCallback: function (oldValue, newValue) {
                         let [added, removed] = cocktail.sets.addedRemoved(oldValue, newValue);
                         if (added.size || removed.size) {
-                            for (let item of removed) {
+                            let item;
+                            for (item of removed) {
                                 item.removeAttribute("selected");
                             }
-                            for (let item of added) {
+                            for (item of added) {
                                 item.setAttribute("selected", "");
+                            }
+                            if (added.size) {
+                                this.selectionCursor = item;
                             }
                             cocktail.ui.trigger(this, "selectionChanged", {
                                 added: added,
