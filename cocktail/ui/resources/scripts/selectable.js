@@ -49,6 +49,10 @@
                 selectionCursor: {
                     reflected: false
                 },
+                activationType: {
+                    type: "string",
+                    reflected: true
+                },
                 activationDoubleClickDelay: {
                     type: "number"
                 }
@@ -62,6 +66,7 @@
             this[this.constructor.selectedElements.VALUE] = new Set();
             this.selectionType = "single";
             this.selectionAxis = "vertical";
+            this.activationType = "doubleClick";
             this.activationDoubleClickDelay = 200;
 
             this.addEventListener("click", (e) => {
@@ -96,8 +101,12 @@
                     // Double click activation
                     let now = new Date();
                     if (
-                        target == this[PREV_CLICK_ELEMENT]
-                        && now - this[PREV_CLICK_TIME] <= this.activationDoubleClickDelay
+                        this.activationType == "singleClick"
+                        || (
+                            this.activationType == "doubleClick"
+                            && target == this[PREV_CLICK_ELEMENT]
+                            && now - this[PREV_CLICK_TIME] <= this.activationDoubleClickDelay
+                        )
                     ) {
                         cocktail.ui.trigger(this, "activated", {selection: [target]});
                     }
@@ -115,7 +124,11 @@
                     return;
                 }
 
-                if (e.which == 13 && this.selectedElements.size) {
+                if (
+                    e.which == 13
+                    && this.activationType != "none"
+                    && this.selectedElements.size
+                ) {
                     cocktail.ui.trigger(this, "activated", {selection: Array.from(this.selectedElements)});
                     e.preventDefault();
                     return;
