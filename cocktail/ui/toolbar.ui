@@ -110,7 +110,16 @@
 
         <ui:property
             name="state"
-            reflected="true"/>
+            reflected="true">
+            <?on changed
+            if (oldValue == "disabled") {
+                this.button.disabled = false;
+            }
+            else if (newValue == "disabled") {
+                this.button.disabled = true;
+            }
+            ?>
+        </ui:property>
 
         <button
             id="button"
