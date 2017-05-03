@@ -246,6 +246,7 @@
 
     createRow(record) {
         let row = document.createElement("tr");
+        row.value = record;
         for (let member of this.visibleMembers) {
             let locales = member.translated ? this.visibleLocales : [null];
             for (let language of locales) {
