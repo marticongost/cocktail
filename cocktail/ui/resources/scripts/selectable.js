@@ -215,6 +215,10 @@
             });
         }
 
+        get selectedValues() {
+            return Array.from(this.selectedElements, (element) => element.value);
+        }
+
         getSelectableElements() {
             return this.selectionContainer.children;
         }
