@@ -16,6 +16,10 @@ $selection-foreground: white !default;
 
 :host(:not([selectionType='none'])) {
     user-select: none;
+
+    td {
+        cursor: default;
+    }
 }
 
 :host(:not([dataState='loading'])) {
