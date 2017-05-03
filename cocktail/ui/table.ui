@@ -300,7 +300,7 @@
             <tr id="headingsRow"/>
         </thead>
 
-        <tbody id="body" tabindex="-1"/>
+        <tbody id="body" tabindex="0"/>
 
         <th ui:component="Heading">
             <span id="label"/>
