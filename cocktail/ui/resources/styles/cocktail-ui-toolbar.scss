@@ -1,0 +1,66 @@
+
+@import "cocktail://styles/utils";
+
+$idle-color: #625c47;
+$highlight-color: #372f13;
+
+#entryList {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    align-content: stretch;
+    background-color: #f3f1e9;
+    border: 1px solid #e6e5df;
+}
+
+.Entry {
+    margin: 0;
+    padding: 0;
+
+    &[state='disabled'] {
+        opacity: 0.3;
+        pointer-events: none;
+    }
+}
+
+button {
+    border: none;
+    background: none;
+    padding: 0.5em 1em;
+    cursor: pointer;
+
+    &:hover {
+        background-color: #e8e4d7;
+
+        .label {
+            color: $highlight-color;
+        }
+
+        .icon svg * {
+            fill: $highlight-color !important;
+        }
+    }
+}
+
+.icon {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 0.5em;
+
+    svg {
+        width: 1.5em;
+        height: auto;
+
+        * {
+            fill: $idle-color !important;
+        }
+    }
+}
+
+.label {
+    font-size: 1em;
+    vertical-align: middle;
+    color: $idle-color;
+}
+

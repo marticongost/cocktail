@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:requires component="cocktail.ui.actions"/>
+
+    <ui:property
+        name="actions"
+        reflected="false">
+        <?on changed
+        this.reset();
+        ?>
+    </ui:property>
+
+    <?head
+    const SELECTION_CHANGED_HANDLER = Symbol();
+    ?>
+
+    <ui:property
+        name="selectable"
+        reflected="false">
+        <?on changed
+        if (oldValue) {
+            oldValue.removeEventListener(this[SELECTION_CHANGED_HANDLER])
+        }
+        if (newValue) {
+            newValue.addEventListener("selectionChanged", this[SELECTION_CHANGED_HANDLER]);
+        }
+        this[SELECTION_CHANGED_HANDLER](null);
+        ?>
+    </ui:property>
+
+    <?class
+    getActionContext() {
+        let selectable = this.selectable;
+        let selection;
+        if (selectable) {
+            selection = selectable.selectedValues;
+        }
+        else {
+            selection = [];
+        }
+        return {selectable, selection};
+    }
+
+    reset() {
+        this.clear();
+        this.createEntries();
+    }
+
+    clear() {
+        cocktail.ui.empty(this.entryList);
+    }
+
+    createEntries() {
+        let context = this.getActionContext();
+        for (let action of this.actions) {
+            let entry = this.createEntry(action);
+            this.entryList.appendChild(entry);
+            entry.state = action.getState(context);
+        }
+        cocktail.ui.trigger(this, "entriesReady");
+    }
+
+    createEntry(action) {
+        let entry = this.constructor.Entry.create();
+        entry.action = action;
+        return entry;
+    }
+    ?>
+
+    <?js
+    this[SELECTION_CHANGED_HANDLER] = function (e) {
+        for (let entry of instance.entryList.children) {
+            entry.state = entry.action.getState(instance.getActionContext());
+        }
+    }
+    ?>
+
+    <ul id="entryList"/>
+
+    <li ui:component="Entry">
+
+        <ui:property
+            name="action"
+            reflected="false">
+            <?on changed
+            if (newValue) {
+                this.setAttribute("action", newValue.id);
+                cocktail.loadSVG(newValue.iconURL, this.icon);
+                this.label.innerHTML = newValue.translate();
+            }
+            else {
+                this.removeAttribute("action");
+                cocktail.ui.empty(this.icon);
+                cocktail.ui.empty(this.label);
+            }
+            ?>
+        </ui:property>
+
+        <ui:property
+            name="state"
+            reflected="true"/>
+
+        <button
+            id="button"
+            type="button">
+
+            <span id="icon"/>
+            <span id="label"/>
+
+            <?on click
+            instance.action.invoke(instance.parentInstance.getActionContext());
+            ?>
+
+        </button>
+
+    </li>
+
+</div>
+
