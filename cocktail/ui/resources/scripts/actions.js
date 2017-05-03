@@ -36,6 +36,10 @@
             return cocktail.ui.translations["cocktail.ui.actions." + this[ID]];
         }
 
+        get shortcut() {
+            return cocktail.ui.translations["cocktail.ui.actions." + this[ID] + ".shortcut"];
+        }
+
         matches(actionBar) {
             return true;
         }

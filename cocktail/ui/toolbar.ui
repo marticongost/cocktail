@@ -90,7 +90,15 @@
             if (newValue) {
                 this.setAttribute("action", newValue.id);
                 cocktail.loadSVG(newValue.iconURL, this.icon);
-                this.label.innerHTML = newValue.translate();
+                let shortcut = newValue.shortcut;
+                let label = newValue.translate();
+                if (shortcut) {
+                    label = label.replace(new RegExp(shortcut, "i"), function (c) {
+                        return `<u>${c}</u>`;
+                    });
+                }
+                this.button.accessKey = shortcut;
+                this.label.innerHTML = label;
             }
             else {
                 this.removeAttribute("action");
