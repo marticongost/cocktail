@@ -102,7 +102,12 @@
         }
 
         serializeValue(value) {
-            return String(value);
+            if (value === null || value === undefined) {
+                return "";
+            }
+            else {
+                return String(value);
+            }
         }
 
         parseValue(value) {
