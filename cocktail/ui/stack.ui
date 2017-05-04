@@ -20,12 +20,14 @@
         if (stackTop) {
             stackTop.stackDescendants.appendChild(stackNode);
             stackNode[STACK_PARENT] = stackTop;
+            stackTop.isTopNode = false;
         }
         else {
             this.stackContent.appendChild(stackNode);
         }
 
         this[STACK_TOP] = stackNode;
+        stackNode.isTopNode = true;
         cocktail.ui.trigger(this, "stackNodePushed", {stackNode});
         return stackNode;
     }
@@ -48,6 +50,10 @@
                 this.stackContent.removeChild(stackNode);
             }
             this[STACK_TOP] = stackParent;
+
+            if (stackParent) {
+                stackParent.isTopNode = true;
+            }
 
             let triggerPoppedEvent = (node) => {
                 if (node.stackChild) {
@@ -106,6 +112,11 @@
             type="string"
             reflected="true"
             default="opening"/>
+
+        <ui:property
+            name="isTopNode"
+            type="boolean"
+            reflected="true"/>
 
         <?class
         get stackParent() {
