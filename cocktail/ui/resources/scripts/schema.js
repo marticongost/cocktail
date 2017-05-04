@@ -76,8 +76,8 @@
 
         get originalMember() {
             let member = this;
-            while (source = member[SOURCE_MEMBER]) {
-                member = source;
+            while (member[SOURCE_MEMBER]) {
+                member = member[SOURCE_MEMBER];
             }
             return member;
         }
