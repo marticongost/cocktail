@@ -34,15 +34,12 @@
 
     <?class
     getActionContext() {
+        let context = Object.assign({}, this.actionParameters);
         let selectable = this.selectable;
-        let selection;
-        if (selectable) {
-            selection = selectable.selectedValues;
-        }
-        else {
-            selection = [];
-        }
-        return {selectable, selection};
+        context.selectable = selectable;
+        context.toolbar = this;
+        context.selection = selectable ? selectable.selectedValues : [];
+        return context;
     }
 
     reset() {
@@ -72,6 +69,8 @@
     ?>
 
     <?js
+    this.actionParameters = {};
+
     this[SELECTION_CHANGED_HANDLER] = function (e) {
         for (let entry of instance.entryList.children) {
             entry.state = entry.action.getState(instance.getActionContext());
