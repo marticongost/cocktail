@@ -50,6 +50,12 @@
         return stackNode;
     }
 
+    clearStack() {
+        while (this[STACK_TOP]) {
+            this.pop();
+        }
+    }
+
     *iterStack() {
         let node = this.stackRoot;
         while (node) {
