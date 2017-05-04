@@ -31,12 +31,14 @@
     </ui:property>
 
     <?head
-    let OPTION_MAP = Symbol("cocktail.ui.DropdownSelector.OPTION_MAP");
+    const SERIALIZED_VALUE = Symbol("cocktail.ui.DropdownSelector.SERIALIZED_VALUE");
+    const OPTION_MAP = Symbol("cocktail.ui.DropdownSelector.OPTION_MAP");
     ?>
 
     <?class
     getOption(value) {
-        return this[OPTION_MAP].get(value) || null;
+        let serializedValue = String(this.dataBinding.member.serializeValue(value));
+        return this[OPTION_MAP].get(serializedValue) || null;
     }
 
     clearOptions() {
@@ -66,7 +68,9 @@
     addOption(value, prepend = false) {
 
         let option = this.createOption(value);
-        this[OPTION_MAP].set(value, option);
+        let serializedValue = this.dataBinding.member.serializeValue(value);
+
+        this[OPTION_MAP].set(option.value, option);
 
         if (prepend && this.select.firstChild) {
             this.select.insertBefore(option, this.select.firstChild);
@@ -83,7 +87,7 @@
         option.optionValue = value;
         option.value = this.dataBinding.member.serializeValue(value);
         option.innerHTML = this.getLabel(value);
-        option.selected = (value === this.value);
+        option.selected = (option.value === this[SERIALIZED_VALUE]);
         return option;
     }
 
@@ -102,6 +106,7 @@
         if (previousOption) {
             previousOption.selected = false;
         }
+        this[SERIALIZED_VALUE] = String(this.dataBinding.member.serializeValue(newValue));
         let newOption = this.getOption(newValue);
         if (newOption) {
             newOption.selected = true;
