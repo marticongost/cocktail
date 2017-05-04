@@ -43,6 +43,10 @@
         bottom: 0;
         position: absolute;
         display: flex;
+
+        &:empty {
+            display: none;
+        }
     }
 }
 
