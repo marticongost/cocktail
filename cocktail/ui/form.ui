@@ -81,6 +81,7 @@
         else {
             field = this.constructor.Field.create()
         }
+        field.classList.add("field");
         field.formLabelDisposition = this.fieldsLabelDisposition;
         field.uiGenerator = this.uiGenerator;
         field.dataBinding = this.dataBinding.child(

@@ -1,5 +1,16 @@
 
 :host([formLayout='column']) {
+
+    .field {
+
+        & + .field {
+            margin-top: 1em;
+        }
+
+        .label + .controlContainer {
+            margin-top: 0.3em;
+        }
+    }
 }
 
 :host([formLayout='row']) {
@@ -8,12 +19,12 @@
         display: flex;
         flex-direction: row;
 
-        .Field {
+        .field {
             display: flex;
             flex-direction: row;
             align-items: center;
 
-            & + .Field {
+            & + .field {
                 &[formLabelDisposition='hidden'] {
                     margin-left: 1em;
                 }
@@ -37,7 +48,7 @@
     #fieldsContainer {
         display: table;
 
-        .Field {
+        .field {
             display: table-row;
 
             .label {
@@ -58,7 +69,7 @@
     }
 }
 
-.Field[formLabelDisposition='hidden'] .label {
+.field[formLabelDisposition='hidden'] .label {
     display: none !important;
 }
 
