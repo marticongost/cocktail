@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <?head
+    const STACK_TOP = Symbol("cocktail.ui.Stack.STACK_TOP");
+    ?>
+
+    <?class
+    push(element) {
+
+        let stackNode = this.constructor.StackNode.create();
+        stackNode.stackNodeContent.appendChild(element);
+
+        let stackTop = this[STACK_TOP];
+
+        if (stackTop) {
+            stackTop.stackDescendants.appendChild(stackNode);
+        }
+        else {
+            this.stackContent.appendChild(stackNode);
+        }
+
+        this[STACK_TOP] = stackNode;
+        cocktail.ui.trigger(this, "stackNodePushed", {stackNode});
+        return stackNode;
+    }
+
+    pop() {
+        let stackNode = this[STACK_TOP];
+        if (!stackNode) {
+            throw new this.constructor.StackError();
+        }
+        let stackParent = stackNode.stackParent;
+        if (stackParent) {
+            stackParent.stackDescendants.remove(stackNode);
+        }
+        else {
+            this.stackContent.removeChild(stackNode);
+        }
+        this[STACK_TOP] = stackParent;
+        cocktail.ui.trigger(this, "stackNodePopped", {stackNode});
+        return stackNode;
+    }
+
+    *iterStack() {
+        let node = this.stackRoot;
+        while (node) {
+            yield node;
+            node = node.stackChild;
+        }
+    }
+
+    get stackRoot() {
+        return this.stackContent.firstChild;
+    }
+
+    get stackTop() {
+        return this[STACK_TOP];
+    }
+    ?>
+
+    <?tail
+    cls.StackError = class StackError {
+        toString() {
+            return "Can't pop from an empty stack";
+        }
+    }
+    ?>
+
+    <div id="stackContent"/>
+
+    <div ui:component="StackNode">
+
+        <?class
+        get stackParent() {
+            return this.parentNode && this.parentNode.parentNode
+        }
+
+        get stackChild() {
+            return this.stackDescendants.firstChild;
+        }
+
+        get stackElement() {
+            return this.stackNodeContent.firstChild;
+        }
+        ?>
+
+        <div id="stackNodeContent"/>
+        <div id="stackDescendants"/>
+    </div>
+
+</div>
+
