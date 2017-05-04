@@ -9,6 +9,30 @@
 
 cocktail.declare("cocktail.arrays");
 
+cocktail.arrays.equal = function (a, b) {
+    if (a.length != b.length) {
+        return false;
+    }
+    for (var i = 0; i < a.length; i++) {
+        if (a[i] !== b[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+cocktail.arrays.commonPrefix = function (a, b) {
+
+    let i = 0;
+    let prefix = [];
+
+    while (i < a.length && i < b.length && a[i] === b[i]) {
+        i++;
+    }
+
+    return a.slice(0, i);
+}
+
 cocktail.arrays.normalize = function (collection) {
     return collection instanceof Array ? collection : Array.from(collection);
 }
