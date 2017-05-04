@@ -720,12 +720,10 @@ class ComponentLoader(object):
         # Inlined javascript blocks
         if target == "js":
             value = normalize_indentation(pi.text.rstrip())
-            if self.__stack:
-                value = (
-                    "{let element = %s; %s}"
-                    % (self.__stack.ref, value)
-                )
-            self.init_source.write(value)
+            with self.init_source.braces():
+                if self.__stack:
+                    self.init_source.write("let element = %s;" % self.__stack.ref)
+                self.init_source.write(value)
 
         # Javascript blocks for the module head
         elif target == "head":
