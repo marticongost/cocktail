@@ -30,8 +30,10 @@
         return stackNode;
     }
 
-    pop() {
-        let stackNode = this[STACK_TOP];
+    pop(stackNode = null) {
+        if (!stackNode) {
+            stackNode = this[STACK_TOP];
+        }
 
         if (!stackNode) {
             throw new this.constructor.StackError();
@@ -46,7 +48,15 @@
                 this.stackContent.removeChild(stackNode);
             }
             this[STACK_TOP] = stackParent;
-            cocktail.ui.trigger(this, "stackNodePopped", {stackNode});
+
+            let triggerPoppedEvent = (node) => {
+                if (node.stackChild) {
+                    triggerPoppedEvent(node.stackChild);
+                }
+                cocktail.ui.trigger(this, "stackNodePopped", {stackNode: node});
+            }
+            triggerPoppedEvent(stackNode);
+
             if (!stackParent) {
                 cocktail.ui.trigger(this, "stackEmptied");
             }
