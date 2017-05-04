@@ -10,12 +10,17 @@
         name="actions"
         reflected="false">
         <?on changed
+        this[ACTION_MAP] = new Map();
+        for (let action of newValue) {
+            this[ACTION_MAP].set(action.id, action);
+        }
         this.reset();
         ?>
     </ui:property>
 
     <?head
     const SELECTION_CHANGED_HANDLER = Symbol();
+    const ACTION_MAP = Symbol();
     ?>
 
     <ui:property
@@ -33,6 +38,14 @@
     </ui:property>
 
     <?class
+    getAction(id) {
+        return this[ACTION_MAP].get(id);
+    }
+
+    invokeAction(id) {
+        this.getAction(id).invoke(this.getActionContext());
+    }
+
     getActionContext() {
         let context = Object.assign({}, this.actionParameters);
         let selectable = this.selectable;
