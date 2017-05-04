@@ -42,6 +42,9 @@
         }
         this[STACK_TOP] = stackParent;
         cocktail.ui.trigger(this, "stackNodePopped", {stackNode});
+        if (!stackParent) {
+            cocktail.ui.trigger(this, "stackEmptied");
+        }
         return stackNode;
     }
 
