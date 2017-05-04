@@ -179,6 +179,14 @@
                 copy[key] = value;
             }
         }
+
+        getDefaultValue(object = null, locale = null) {
+            let value = this.defaultValue;
+            if (value instanceof Function) {
+                value = value.call(this, object);
+            }
+            return value;
+        }
     }
 
     cocktail.schema.Member.prototype.descriptive = false;
@@ -315,6 +323,33 @@
             else if (key != BASE && key != "descriptiveMember") {
                 super.copyAttribute(copy, key, value, parameters);
             }
+        }
+
+        getDefaultValue(object = null, locale = null) {
+            return this.defaults();
+        }
+
+        defaults(object = null, locales = null) {
+            if (!object) {
+                object = {};
+            }
+            if (!locales) {
+                locales = cocktail.ui.locales;
+            }
+            for (let member of this.members()) {
+                let value;
+                if (member.translated) {
+                    value = {};
+                    for (let locale of locales) {
+                        value[locale] = member.getDefaultValue(object, locale);
+                    }
+                }
+                else {
+                    value = member.getDefaultValue(object);
+                }
+                object[member.name] = value;
+            }
+            return object;
         }
     }
 
