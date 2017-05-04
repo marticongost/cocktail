@@ -6,6 +6,7 @@
 
     <?head
     const STACK_TOP = Symbol("cocktail.ui.Stack.STACK_TOP");
+    const STACK_PARENT = Symbol("cocktail.ui.Stack.STACK_PARENT");
     ?>
 
     <?class
@@ -18,6 +19,7 @@
 
         if (stackTop) {
             stackTop.stackDescendants.appendChild(stackNode);
+            stackNode[STACK_PARENT] = stackTop;
         }
         else {
             this.stackContent.appendChild(stackNode);
@@ -33,9 +35,9 @@
         if (!stackNode) {
             throw new this.constructor.StackError();
         }
-        let stackParent = stackNode.stackParent;
+        let stackParent = stackNode[STACK_PARENT];
         if (stackParent) {
-            stackParent.stackDescendants.remove(stackNode);
+            stackParent.stackDescendants.removeChild(stackNode);
         }
         else {
             this.stackContent.removeChild(stackNode);
@@ -79,7 +81,7 @@
 
         <?class
         get stackParent() {
-            return this.parentNode && this.parentNode.parentNode
+            return this[STACK_PARENT];
         }
 
         get stackChild() {
