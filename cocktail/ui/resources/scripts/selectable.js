@@ -67,7 +67,7 @@
             this.selectionType = "single";
             this.selectionAxis = "vertical";
             this.activationType = "doubleClick";
-            this.activationDoubleClickDelay = 200;
+            this.activationDoubleClickDelay = 300;
 
             this.addEventListener("click", (e) => {
 
