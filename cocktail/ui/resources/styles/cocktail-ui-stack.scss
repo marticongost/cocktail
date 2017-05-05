@@ -1,7 +1,14 @@
 
+$fadeOpacity: 0.6;
+
 @keyframes slideContent {
     from { padding-top: 100%; }
     to { padding-top: 0%; }
+}
+
+@keyframes fade {
+    from { opacity: 1; }
+    to { opacity: $fadeOpacity; }
 }
 
 :host {
@@ -35,15 +42,30 @@
         animation: 0.5s reverse slideContent;
     }
 
-    &[isTopNode='true'] > .stackNodeContent {
-        border-color: #ccc;
+    &[animationState='childOpening'] {
+        & > .stackNodeContent {
+            animation: 0.5s fade;
+        }
+    }
+
+    &[animationState='childClosing'] {
+        & > .stackNodeContent {
+            animation: 0.5s reverse fade;
+        }
+    }
+
+    &[isTopNode='false'] {
+        background-color: white;
+        & > .stackNodeContent {
+            opacity: $fadeOpacity;
+        }
     }
 
     .stackNodeContent {
         flex: 1 1 auto;
         background-color: white;
         padding: 1em;
-        border: 1px solid #ddd;
+        border: 1px solid #ccc;
         box-shadow: 0 0 25px rgba(30,30,30,0.1);
     }
 

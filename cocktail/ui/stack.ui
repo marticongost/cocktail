@@ -21,6 +21,7 @@
             stackTop.stackDescendants.appendChild(stackNode);
             stackNode[STACK_PARENT] = stackTop;
             stackTop.isTopNode = false;
+            stackTop.animationState = "childOpening";
         }
         else {
             this.stackContent.appendChild(stackNode);
@@ -28,6 +29,7 @@
 
         this[STACK_TOP] = stackNode;
         stackNode.isTopNode = true;
+        stackNode.animationState = "opening";
         cocktail.ui.trigger(this, "stackNodePushed", {stackNode});
         return stackNode;
     }
@@ -41,8 +43,9 @@
             throw new this.constructor.StackError();
         }
 
+        let stackParent = stackNode[STACK_PARENT];
+
         stackNode.addEventListener("animationend", (e) => {
-            let stackParent = stackNode[STACK_PARENT];
             if (stackParent) {
                 stackParent.stackDescendants.removeChild(stackNode);
             }
@@ -68,6 +71,9 @@
             }
         });
         stackNode.animationState = "closing";
+        if (stackParent) {
+            stackParent.animationState = "childClosing";
+        }
 
         return stackNode;
     }
@@ -110,8 +116,7 @@
         <ui:property
             name="animationState"
             type="string"
-            reflected="true"
-            default="opening"/>
+            reflected="true"/>
 
         <ui:property
             name="isTopNode"
@@ -133,9 +138,7 @@
         ?>
 
         <?on animationend
-        if (this.animationState == "opening") {
-            this.animationState = "none";
-        }
+        this.animationState = "none";
         ?>
 
         <div id="stackNodeContent"/>
