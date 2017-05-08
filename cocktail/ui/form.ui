@@ -30,6 +30,8 @@
         reflected="true"
         default="false"/>
 
+    <ui:property name="locales"/>
+
     <?head
     const FIELD_MAP = Symbol("cocktail.ui.Form.FIELD_MAP");
     const FIELDS_READY = Symbol.for("cocktail.ui.Form.FIELDS_READY");
@@ -87,6 +89,7 @@
         let field;
         if (member.translated) {
             field = this.constructor.FieldTranslations.create();
+            field.locales = this.locales;
         }
         else {
             field = this.constructor.Field.create()
@@ -111,13 +114,14 @@
     acceptModifications() {
         this.modified = false;
         for (let field of this[FIELD_MAP].values()) {
-            field.modified = false;
+            field.acceptModifications();
         }
     }
     ?>
 
     <?js
     this[FIELD_MAP] = new Map();
+    this.locales = cocktail.ui.locales;
     this.displayFactory = cocktail.ui.formControls;
     this.readOnlyDisplayFactory = cocktail.ui.displays;
     ?>
@@ -158,6 +162,16 @@
         this.makeControl();
         ?>
 
+        <?on dataBinding:changed
+        this.readOnly = (newValue.member[cocktail.ui.editable] == cocktail.ui.READ_ONLY);
+
+        // Set the field label
+        this.label.innerHTML = newValue.member.translate();
+
+        // Create the new field control
+        this.makeControl();
+        ?>
+
         <?on value:changed
         if (this.parentInstance && this.parentInstance[FIELDS_READY]) {
             this.modified = true;
@@ -165,6 +179,10 @@
         ?>
 
         <?class
+        acceptModifications() {
+            this.modified = false;
+        }
+
         makeControl() {
 
             // Remove the previous control
@@ -194,16 +212,6 @@
         }
         ?>
 
-        <?on dataBinding:changed
-        this.readOnly = (newValue.member[cocktail.ui.editable] == cocktail.ui.READ_ONLY);
-
-        // Set the field label
-        this.label.innerHTML = newValue.member.translate();
-
-        // Create the new field control
-        this.makeControl();
-        ?>
-
         <label id="label"/>
         <div id="controlContainer"/>
 
@@ -211,57 +219,89 @@
 
     <div ui:component="FieldTranslations">
 
+        <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
+
+        <ui:property
+            name="modified"
+            type="boolean"
+            reflected="true"
+            default="false"/>
+
         <?head
-        const LANGUAGES_MAP = Symbol("cocktail.ui.TranslatedField.LANGUAGES_MAP");
+        const TRANSLATIONS_MAP = Symbol("cocktail.ui.Form.FieldTranslations.TRANSLATIONS_MAP");
         ?>
 
-        <ui:property name="member" final="true">
+        <?class
+        acceptModifications() {
+            this.modified = false;
+            for (let translation of this[TRANSLATIONS_MAP].values()) {
+                translation.acceptModifications();
+            }
+        }
+        ?>
+
+        <ui:property name="locales">
             <?on changed
-            this.label.innerHTML = newValue.translate();
-            this.fillLanguageFields();
+            this.updateTranslations();
             ?>
         </ui:property>
 
-        <ui:property name="object" final="true">
-            <?on changed
-            this.fillLanguageFields();
-            ?>
-        </ui:property>
-
-        <ui:property name="languages" final="true">
-            <?on changed
-            this.fillLanguageFields();
-            ?>
-        </ui:property>
+        <?on dataBinding:changed
+        this.label.innerHTML = newValue.member.translate();
+        this.updateTranslations();
+        ?>
 
         <?class
-        getLanguageField(language) {
-            return this[LANGUAGES_MAP].get(language);
+        getTranslation(locale) {
+            return this[TRANSLATIONS_MAP].get(locale);
         }
 
-        fillLanguageFields() {
-            if (!this.member || !this.object || !this.languages) {
+        updateTranslations() {
+            if (!this.dataBinding || !this.locales) {
                 return;
             }
-            for (let language of this.languages) {
-                let field = this.createTranslation(language);
-                this[LANGUAGES_MAP].set(language, field);
-                this.translations.appendChild(field);
+            for (let locale of this.locales) {
+                if (!this[TRANSLATIONS_MAP].has(locale)) {
+                    let translation = this.createTranslation(locale);
+                    cocktail.ui.link(
+                        this,
+                        translation,
+                        "value",
+                        (fieldTranslations, translation) => {
+                            if (fieldTranslations.value && fieldTranslations.dataBinding && translation.dataBinding) {
+                                translation.value = fieldTranslations.value[translation.dataBinding.language];
+                            }
+                        },
+                        (translation, fieldTranslations) => {
+                            if (translation.dataBinding) {
+                                let fieldTranslationsValue = fieldTranslations.value ? cocktail.ui.copyValue(fieldTranslations.value) : {};
+                                fieldTranslationsValue[translation.dataBinding.language] = translation.value;
+                                fieldTranslations.value = fieldTranslationsValue;
+                            }
+                        }
+                    );
+                    this[TRANSLATIONS_MAP].set(locale, translation);
+                    this.translations.appendChild(translation);
+                }
             }
         }
 
-        createTranslation(language) {
-            let field = this.constructor.Translation.create();
-            field.member = this.member;
-            field.object = this.object;
-            field.value = this.object[this.member.name][language];
-            field.language = language;
-            return field;
+        createTranslation(locale) {
+            let translation = cls.Translation.create();
+            translation.displayFactory = this.displayFactory;
+            translation.readOnlyDisplayFactory = this.readOnlyDisplayFactory;
+            translation.dataBinding = this.dataBinding.child(
+                this.dataBinding.object,
+                this.dataBinding.member,
+                locale,
+                this.dataBinding.value[locale]
+            );
+            return translation;
         }
         ?>
 
         <?js
-        this[LANGUAGES_MAP] = new Map();
+        this[TRANSLATIONS_MAP] = new Map();
         ?>
 
         <div id="label"/>
@@ -271,15 +311,74 @@
 
             <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
 
-            <?on language:changed
-            // TODO: translate locales
-            this.label.innerHTML = language;
+            <ui:property
+                name="modified"
+                type="boolean"
+                reflected="true"
+                default="false"/>
+
+            <ui:property
+                name="readOnly"
+                type="boolean"
+                reflected="true"/>
+
+            <?head
+            const FIELDS_READY = Symbol.for("cocktail.ui.Form.FIELDS_READY");
             ?>
 
-            <?on dataBinding
-            let form = this.parentInstance.parentInstance;
-            this.control = form.displayFactory.requireDisplay(this.object, this.member, this.value, this.language);
-            this.controlContainer.appendChild(this.control);
+            <?on displayFactory:changed
+            this.makeControl();
+            ?>
+
+            <?on dataBinding:changed
+            this.readOnly = (newValue.member[cocktail.ui.editable] == cocktail.ui.READ_ONLY);
+
+            // Set the field label
+            this.label.innerHTML = cocktail.ui.translations["cocktail.locales." + newValue.language];
+
+            // Create the new field control
+            this.makeControl();
+            ?>
+
+            <?on value:changed
+            let form = this.parentInstance && this.parentInstance.parentInstance;
+            if (form && form[FIELDS_READY]) {
+                this.modified = true;
+            }
+            ?>
+
+            <?class
+            acceptModifications() {
+                this.modified = false;
+            }
+
+            makeControl() {
+
+                // Remove the previous control
+                if (this.control) {
+                    cocktail.ui.removeLink(this, this.control, "value");
+                    this.control.parentNode.removeChild(this.control);
+                    this.control = null;
+                }
+
+                // Create the control once the field has been given a data binding
+                // and has been attached to a form
+                if (this.dataBinding && this.displayFactory) {
+                    let displayFactory = (
+                        this.dataBinding.member[cocktail.ui.editable] == cocktail.ui.READ_ONLY ?
+                        this.readOnlyDisplayFactory : this.displayFactory
+                    );
+                    this.control = displayFactory.requireDisplay(this.dataBinding);
+                    cocktail.ui.link(this, this.control, "value");
+                    this.controlContainer.appendChild(this.control);
+                    if (!this.formLabelDisposition) {
+                        this.formLabelDisposition = (
+                            this.control.formLabelDisposition
+                            || this.dataBinding.member[cocktail.ui.formLabelDisposition]
+                        );
+                    }
+                }
+            }
             ?>
 
             <label id="label"/>
