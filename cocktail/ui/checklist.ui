@@ -39,7 +39,6 @@
 
     clearEntries() {
         this[ENTRY_MAP].clear();
-        let child;
         cocktail.ui.empty(this.entries);
     }
 
