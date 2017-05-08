@@ -8,7 +8,7 @@
     .field {
 
         & + .field {
-            margin-top: 1em;
+            margin-top: 1.5em;
         }
 
         .label + .controlContainer {
@@ -75,5 +75,27 @@
 
 .field[formLabelDisposition='hidden'] .label {
     display: none !important;
+}
+
+.FieldTranslations {
+
+    & > .label {
+        margin-bottom: 0.5em;
+    }
+
+    .translations {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        margin: -0.5em -1em;
+
+        .Translation {
+            margin: 0.5em 1em;
+
+            .label {
+                font-size: 0.8em;
+            }
+        }
+    }
 }
 
