@@ -180,8 +180,14 @@ cocktail.ui.InvalidDataBindingError = class InvalidDataBindingError {
         }
 
         getCustomComponent(dataBinding) {
+
             let member = dataBinding.member;
             let component = member[this.symbol];
+
+            if (component && !cocktail.ui.isComponent(component)) {
+                component = component(dataBinding);
+            }
+
             if (!component) {
                 if (this[PARENT]) {
                     component = this[PARENT].getCustomComponent(dataBinding);
@@ -190,12 +196,19 @@ cocktail.ui.InvalidDataBindingError = class InvalidDataBindingError {
                     component = null;
                 }
             }
+
             return component;
         }
 
         getDefaultComponent(dataBinding) {
+
             let memberType = dataBinding.member.constructor;
             let component = memberType[this.symbol];
+
+            if (component && !cocktail.ui.isComponent(component)) {
+                component = component(dataBinding);
+            }
+
             if (!component) {
                 if (this[PARENT]) {
                     component = this[PARENT].getDefaultComponent(dataBinding);
@@ -204,6 +217,7 @@ cocktail.ui.InvalidDataBindingError = class InvalidDataBindingError {
                     component = null;
                 }
             }
+
             return component;
         }
     }
