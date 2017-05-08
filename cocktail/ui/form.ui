@@ -176,7 +176,7 @@
                     this.dataBinding.member[cocktail.ui.editable] == cocktail.ui.READ_ONLY ?
                     this.readOnlyDisplayFactory : this.displayFactory
                 );
-                this.control = displayFactory.createDisplay(this.dataBinding);
+                this.control = displayFactory.requireDisplay(this.dataBinding);
                 cocktail.ui.link(this, this.control, "value");
                 this.controlContainer.appendChild(this.control);
                 if (!this.formLabelDisposition) {
@@ -272,7 +272,7 @@
 
             <?on dataBinding
             let form = this.parentInstance.parentInstance;
-            this.control = form.displayFactory.createDisplay(this.object, this.member, this.value, this.language);
+            this.control = form.displayFactory.requireDisplay(this.object, this.member, this.value, this.language);
             this.controlContainer.appendChild(this.control);
             ?>
 
