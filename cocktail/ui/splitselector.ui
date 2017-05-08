@@ -158,14 +158,14 @@
         ?>
 
         <?on activated
-        this.toolbar.invokeAction("transfer");
+        this.actionList.invokeAction("transfer");
         ?>
 
-        <ui:cocktail.ui.Toolbar id="toolbar">
+        <ui:cocktail.ui.ActionList id="actionList">
             <?js
             element.selectable = instance;
             ?>
-        </ui:cocktail.ui.Toolbar>
+        </ui:cocktail.ui.ActionList>
 
         <ul id="entryList">
             <?js
@@ -183,7 +183,7 @@
         <ui:with ui:element="heading">
             <ui:translation/>
         </ui:with>
-        <ui:with ui:element="toolbar">
+        <ui:with ui:element="actionList">
             <?js
             element.actions = [
                 new class DeselectAction extends cocktail.ui.Action {
@@ -211,7 +211,7 @@
         <ui:with ui:element="heading">
             <ui:translation/>
         </ui:with>
-        <ui:with ui:element="toolbar">
+        <ui:with ui:element="actionList">
             <?js
             element.actions = [
                 new class SelectAction extends cocktail.ui.Action {
