@@ -26,6 +26,12 @@
         default="false"
         reflected="true"/>
 
+    <ui:property
+        name="panelAlignment"
+        type="string"
+        reflected="true"
+        default="start"/>
+
     <?tail
     window.addEventListener("click", function () {
         if (cls.current) {

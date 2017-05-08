@@ -53,12 +53,19 @@ $hpadding: 0.5rem;
 
 #panel {
     position: absolute;
-    left: 0;
     top: -$border-width;
     z-index: 1;
     border: $border;
     background-color: white;
     box-shadow: 5px 5px 15px rgba(0.4,0.4,0.4,0.1);
+
+    :host([panelAlignment='start']) & {
+        left: 0;
+    }
+
+    :host([panelAlignment='end']) & {
+        right: 0;
+    }
 }
 
 #panelContent {
