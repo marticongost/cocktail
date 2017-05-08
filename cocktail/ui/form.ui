@@ -91,7 +91,7 @@
         }
         field.classList.add("field");
         field.formLabelDisposition = this.fieldsLabelDisposition;
-        field.uiGenerator = this.uiGenerator;
+        field.displayFactory = this.displayFactory;
         field.dataBinding = this.dataBinding.child(
             this.dataBinding.value,
             member
@@ -115,7 +115,7 @@
 
     <?js
     this[FIELD_MAP] = new Map();
-    this.uiGenerator = cocktail.ui.formControls;
+    this.displayFactory = cocktail.ui.formControls;
     ?>
 
     <?on dataBinding:changed
@@ -145,7 +145,7 @@
         const FIELDS_READY = Symbol.for("cocktail.ui.Form.FIELDS_READY");
         ?>
 
-        <?on uiGenerator:changed
+        <?on displayFactory:changed
         this.makeControl();
         ?>
 
@@ -167,8 +167,8 @@
 
             // Create the control once the field has been given a data binding
             // and has been attached to a form
-            if (this.dataBinding && this.uiGenerator) {
-                this.control = this.uiGenerator.createDisplay(this.dataBinding);
+            if (this.dataBinding && this.displayFactory) {
+                this.control = this.displayFactory.createDisplay(this.dataBinding);
                 cocktail.ui.link(this, this.control, "value");
                 this.controlContainer.appendChild(this.control);
                 if (!this.formLabelDisposition) {
@@ -264,7 +264,7 @@
 
             <?on dataBinding
             let form = this.parentInstance.parentInstance;
-            this.control = form.uiGenerator.createDisplay(this.object, this.member, this.value, this.language);
+            this.control = form.displayFactory.createDisplay(this.object, this.member, this.value, this.language);
             this.controlContainer.appendChild(this.control);
             ?>
 
