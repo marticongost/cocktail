@@ -11,6 +11,8 @@
     <ui:requires component="cocktail.ui.NumberInput"/>
     <ui:requires component="cocktail.ui.TextInput"/>
 
+    <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
+
     <ui:property
         name="formLayout"
         type="string"
@@ -22,7 +24,11 @@
         type="string"
         reflected="true"/>
 
-    <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
+    <ui:property
+        name="modified"
+        type="boolean"
+        reflected="true"
+        default="false"/>
 
     <?head
     const FIELD_MAP = Symbol("cocktail.ui.Form.FIELD_MAP");
@@ -98,6 +104,13 @@
         this[FIELDS_READY] = false;
         cocktail.ui.empty(this.fieldsContainer);
     }
+
+    acceptModifications() {
+        this.modified = false;
+        for (let field of this[FIELD_MAP].values()) {
+            field.modified = false;
+        }
+    }
     ?>
 
     <?js
@@ -110,14 +123,36 @@
     this.createFields();
     ?>
 
+    <?on value:changed
+    if (this[FIELDS_READY]) {
+        this.modified = true;
+    }
+    ?>
+
     <div id="fieldsContainer"/>
 
     <div ui:component="Field">
 
         <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
 
+        <ui:property
+            name="modified"
+            type="boolean"
+            reflected="true"
+            default="false"/>
+
+        <?head
+        const FIELDS_READY = Symbol.for("cocktail.ui.Form.FIELDS_READY");
+        ?>
+
         <?on uiGenerator:changed
         this.makeControl();
+        ?>
+
+        <?on value:changed
+        if (this.parentInstance && this.parentInstance[FIELDS_READY]) {
+            this.modified = true;
+        }
         ?>
 
         <?class
