@@ -1,6 +1,5 @@
 
-$selection-background: #666 !default;
-$selection-foreground: white !default;
+@import "cocktail.ui://styles/common";
 
 :host {
     display: flex;
