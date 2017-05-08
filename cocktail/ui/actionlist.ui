@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:requires component="cocktail.ui.actions"/>
+
+    <ui:property
+        name="actions"
+        reflected="false">
+        <?on changed
+        this[ACTION_MAP] = new Map();
+        for (let action of newValue) {
+            this[ACTION_MAP].set(action.id, action);
+        }
+        this.reset();
+        ?>
+    </ui:property>
+
+    <?head
+    const SELECTION_CHANGED_HANDLER = Symbol();
+    const ACTION_MAP = Symbol();
+    ?>
+
+    <ui:property
+        name="selectable"
+        reflected="false">
+        <?on changed
+        if (oldValue) {
+            oldValue.removeEventListener(this[SELECTION_CHANGED_HANDLER])
+        }
+        if (newValue) {
+            newValue.addEventListener("selectionChanged", this[SELECTION_CHANGED_HANDLER]);
+        }
+        this[SELECTION_CHANGED_HANDLER](null);
+        ?>
+    </ui:property>
+
+    <?class
+    getAction(id) {
+        return this[ACTION_MAP].get(id);
+    }
+
+    invokeAction(id) {
+        this.getAction(id).invoke(this.getActionContext());
+    }
+
+    getActionContext() {
+        let context = Object.assign({}, this.actionParameters);
+        let selectable = this.selectable;
+        context.selectable = selectable;
+        context.actionList = this;
+        context.selection = selectable ? selectable.selectedValues : [];
+        return context;
+    }
+
+    reset() {
+        this.clear();
+        this.createEntries();
+    }
+
+    clear() {
+        cocktail.ui.empty(this.entryList);
+    }
+
+    createEntries() {
+        let context = this.getActionContext();
+        for (let action of this.actions) {
+            let entry = this.createEntry(action);
+            this.entryList.appendChild(entry);
+            entry.state = action.getState(context);
+        }
+        cocktail.ui.trigger(this, "entriesReady");
+    }
+
+    createEntry(action) {
+        let entry = this.constructor.Entry.create();
+        entry.action = action;
+        return entry;
+    }
+
+    updateEntries() {
+        for (let entry of this.entryList.children) {
+            entry.state = entry.action.getState(this.getActionContext());
+        }
+    }
+    ?>
+
+    <?js
+    this.actionParameters = {};
+
+    this[SELECTION_CHANGED_HANDLER] = function (e) {
+        instance.updateEntries();
+    }
+    ?>
+
+    <ul id="entryList"/>
+
+    <li ui:component="Entry">
+
+        <ui:property
+            name="action"
+            reflected="false">
+            <?on changed
+            if (newValue) {
+                this.setAttribute("action", newValue.id);
+                cocktail.loadSVG(newValue.iconURL, this.icon);
+                let shortcut = newValue.shortcut;
+                let label = newValue.translate();
+                if (shortcut) {
+                    label = label.replace(new RegExp(shortcut, "i"), function (c) {
+                        return `<u>${c}</u>`;
+                    });
+                }
+                this.button.accessKey = shortcut;
+                this.label.innerHTML = label;
+            }
+            else {
+                this.removeAttribute("action");
+                cocktail.ui.empty(this.icon);
+                cocktail.ui.empty(this.label);
+            }
+            ?>
+        </ui:property>
+
+        <ui:property
+            name="state"
+            reflected="true">
+            <?on changed
+            if (oldValue == "disabled") {
+                this.button.disabled = false;
+            }
+            else if (newValue == "disabled") {
+                this.button.disabled = true;
+            }
+            ?>
+        </ui:property>
+
+        <button
+            id="button"
+            type="button">
+
+            <span id="icon"/>
+            <span id="label"/>
+
+            <?on click
+            instance.action.invoke(instance.parentInstance.getActionContext());
+            ?>
+
+        </button>
+
+    </li>
+
+</div>
+

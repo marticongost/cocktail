@@ -1,0 +1,74 @@
+
+@import "cocktail://styles/utils";
+@import "cocktail.ui://styles/common";
+
+$idle-color: #625c47;
+$highlight-color: #372f13;
+
+#entryList {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    align-content: stretch;
+    background: $panel-background;
+    border: $panel-border;
+
+    :host-context(.cocktail-ui-Toolbar) & {
+        background: none;
+        border: none;
+    }
+}
+
+.Entry {
+    margin: 0;
+    padding: 0;
+
+    &[state='disabled'] {
+        opacity: 0.3;
+    }
+
+    button {
+        border: none;
+        background: none;
+        padding: 0.5em 1em;
+        cursor: pointer;
+    }
+
+    &:not([state='disabled']) {
+        button:hover {
+            background-color: #e8e4d7;
+
+            .label {
+                color: $highlight-color;
+            }
+
+            .icon svg * {
+                fill: $highlight-color !important;
+            }
+        }
+    }
+}
+
+
+.icon {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 0.5em;
+
+    svg {
+        width: 1.5em;
+        height: auto;
+
+        * {
+            fill: $idle-color !important;
+        }
+    }
+}
+
+.label {
+    font-size: 1em;
+    vertical-align: middle;
+    color: $idle-color;
+}
+
