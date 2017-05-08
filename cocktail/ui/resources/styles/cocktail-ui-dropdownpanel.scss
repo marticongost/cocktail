@@ -7,6 +7,7 @@ $hpadding: 0.5rem;
 
 :host {
     display: inline-block;
+    z-index: 2;
 }
 
 #button {
@@ -26,6 +27,7 @@ $hpadding: 0.5rem;
     :host([expanded='true']) & {
         border: $border;
         border-bottom: $border-width solid white;
+        background-color: white;
     }
 }
 
