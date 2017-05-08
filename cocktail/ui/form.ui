@@ -52,7 +52,9 @@
 
     createFields() {
         for (let member of this.dataBinding.member.members()) {
-            this.addField(member);
+            if (member[cocktail.ui.editable] != cocktail.ui.NOT_EDITABLE) {
+                this.addField(member);
+            }
         }
         this[FIELDS_READY] = true;
         cocktail.ui.trigger(this, "fieldsReady");
@@ -92,6 +94,7 @@
         field.classList.add("field");
         field.formLabelDisposition = this.fieldsLabelDisposition;
         field.displayFactory = this.displayFactory;
+        field.readOnlyDisplayFactory = this.readOnlyDisplayFactory;
         field.dataBinding = this.dataBinding.child(
             this.dataBinding.value,
             member
@@ -116,6 +119,7 @@
     <?js
     this[FIELD_MAP] = new Map();
     this.displayFactory = cocktail.ui.formControls;
+    this.readOnlyDisplayFactory = cocktail.ui.displays;
     ?>
 
     <?on dataBinding:changed
@@ -168,7 +172,11 @@
             // Create the control once the field has been given a data binding
             // and has been attached to a form
             if (this.dataBinding && this.displayFactory) {
-                this.control = this.displayFactory.createDisplay(this.dataBinding);
+                let displayFactory = (
+                    this.dataBinding.member[cocktail.ui.editable] == cocktail.ui.READ_ONLY ?
+                    this.readOnlyDisplayFactory : this.displayFactory
+                );
+                this.control = displayFactory.createDisplay(this.dataBinding);
                 cocktail.ui.link(this, this.control, "value");
                 this.controlContainer.appendChild(this.control);
                 if (!this.formLabelDisposition) {

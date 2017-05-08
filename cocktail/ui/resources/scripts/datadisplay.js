@@ -164,8 +164,8 @@ cocktail.ui.InvalidDataBindingError = class InvalidDataBindingError {
             return child;
         }
 
-        createDisplay(dataBinding) {
-            let component = this.getComponent(dataBinding);
+        createDisplay(dataBinding, parameters = null) {
+            let component = this.getComponent(dataBinding, parameters);
             let display;
             if (component) {
                 display = component.create();
@@ -175,22 +175,21 @@ cocktail.ui.InvalidDataBindingError = class InvalidDataBindingError {
             return display;
         }
 
-        getComponent(dataBinding) {
-            return this.getCustomComponent(dataBinding) || this.getDefaultComponent(dataBinding);
+        getComponent(dataBinding, parameters = null) {
+            return (
+                   this.getCustomComponent(dataBinding, parameters)
+                || this.getDefaultComponent(dataBinding, parameters)
+            );
         }
 
-        getCustomComponent(dataBinding) {
+        getCustomComponent(dataBinding, parameters = null) {
 
             let member = dataBinding.member;
-            let component = member[this.symbol];
-
-            if (component && !cocktail.ui.isComponent(component)) {
-                component = component(dataBinding);
-            }
+            let component = this.resolveComponent(member[this.symbol], dataBinding, parameters);
 
             if (!component) {
                 if (this[PARENT]) {
-                    component = this[PARENT].getCustomComponent(dataBinding);
+                    component = this[PARENT].getCustomComponent(dataBinding, parameters);
                 }
                 else {
                     component = null;
@@ -200,14 +199,10 @@ cocktail.ui.InvalidDataBindingError = class InvalidDataBindingError {
             return component;
         }
 
-        getDefaultComponent(dataBinding) {
+        getDefaultComponent(dataBinding, parameters = null) {
 
             let memberType = dataBinding.member.constructor;
-            let component = memberType[this.symbol];
-
-            if (component && !cocktail.ui.isComponent(component)) {
-                component = component(dataBinding);
-            }
+            let component = this.resolveComponent(memberType[this.symbol], dataBinding, parameters);
 
             if (!component) {
                 if (this[PARENT]) {
@@ -220,11 +215,32 @@ cocktail.ui.InvalidDataBindingError = class InvalidDataBindingError {
 
             return component;
         }
+
+        resolveComponent(component, dataBinding, parameters) {
+            if (component && !cocktail.ui.isComponent(component)) {
+                if (!parameters) {
+                    parameters = {};
+                }
+                if (parameters.wrapRawValues === undefined) {
+                    parameters.wrapRawValues = true;
+                }
+                component = component(dataBinding, parameters);
+            }
+            return component;
+        }
     }
 }
 
+// A display factory for read only values
 cocktail.ui.displays = new cocktail.ui.DisplayFactory("cocktail.ui.display");
+cocktail.schema.Member.prototype[cocktail.ui.display] =
+    (dataBinding, parameters) => parameters.wrapRawValues ? cocktail.ui.Value : null;
+
+// A display factory for editable values
 cocktail.ui.formControls = new cocktail.ui.DisplayFactory("cocktail.ui.formControl");
+
+// A symbol that allows members to specify their preferred disposition for their label
+// in a form
 cocktail.ui.formLabelDisposition = Symbol("cocktail.ui.formLabelDisposition");
 
 // A symbol that controls wether a member should be included in the default selection
@@ -232,4 +248,12 @@ cocktail.ui.formLabelDisposition = Symbol("cocktail.ui.formLabelDisposition");
 // cocktail.ui.Table)
 cocktail.ui.listedByDefault = Symbol("cocktail.ui.listedByDefault");
 cocktail.schema.Member.prototype[cocktail.ui.listedByDefault] = true;
+
+// A symbol that controls wether a member should be included in a form, or if it
+// should be presented as a read only field
+cocktail.ui.editable = Symbol("cocktail.ui.editable");
+cocktail.ui.EDITABLE = Symbol("cocktail.ui.EDITABLE");
+cocktail.ui.NOT_EDITABLE = Symbol("cocktail.ui.NOT_EDITABLE");
+cocktail.ui.READ_ONLY = Symbol("cocktail.ui.READ_ONLY");
+cocktail.schema.Member.prototype[cocktail.ui.editable] = cocktail.ui.EDITABLE;
 

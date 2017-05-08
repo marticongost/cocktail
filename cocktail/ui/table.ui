@@ -273,7 +273,8 @@
                 member,
                 language,
                 value
-            )
+            ),
+            {wrapRawValues: false}
         );
         if (display) {
             cell.appendChild(display);
