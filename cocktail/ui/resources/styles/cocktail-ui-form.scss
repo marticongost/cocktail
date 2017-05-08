@@ -1,4 +1,8 @@
 
+.field[readOnly='true'] .controlContainer {
+    color: #444;
+}
+
 :host([formLayout='column']) {
 
     .field {

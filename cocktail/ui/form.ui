@@ -145,6 +145,11 @@
             reflected="true"
             default="false"/>
 
+        <ui:property
+            name="readOnly"
+            type="boolean"
+            reflected="true"/>
+
         <?head
         const FIELDS_READY = Symbol.for("cocktail.ui.Form.FIELDS_READY");
         ?>
@@ -190,6 +195,7 @@
         ?>
 
         <?on dataBinding:changed
+        this.readOnly = (newValue.member[cocktail.ui.editable] == cocktail.ui.READ_ONLY);
 
         // Set the field label
         this.label.innerHTML = newValue.member.translate();
