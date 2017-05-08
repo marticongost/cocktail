@@ -1,0 +1,13 @@
+
+[cocktail.ui.SplitSelector]
+
+    [select]
+    ca: Afegir
+    es: Añadir
+    en: Add
+
+    [deselect]
+    ca: Treure
+    es: Quitar
+    en: Remove
+
