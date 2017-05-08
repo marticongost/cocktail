@@ -30,7 +30,15 @@
         reflected="true"
         default="false"/>
 
-    <ui:property name="locales"/>
+    <ui:property name="locales">
+        <?on changed
+        for (let field of this[FIELD_MAP].values()) {
+            if (field instanceof cls.FieldTranslations) {
+                field.locales = this.locales;
+            }
+        }
+        ?>
+    </ui:property>
 
     <?head
     const FIELD_MAP = Symbol("cocktail.ui.Form.FIELD_MAP");
@@ -257,32 +265,39 @@
         }
 
         updateTranslations() {
+
             if (!this.dataBinding || !this.locales) {
                 return;
             }
-            for (let locale of this.locales) {
-                if (!this[TRANSLATIONS_MAP].has(locale)) {
-                    let translation = this.createTranslation(locale);
-                    cocktail.ui.link(
-                        this,
-                        translation,
-                        "value",
-                        (fieldTranslations, translation) => {
-                            if (fieldTranslations.value && fieldTranslations.dataBinding && translation.dataBinding) {
-                                translation.value = fieldTranslations.value[translation.dataBinding.language];
-                            }
-                        },
-                        (translation, fieldTranslations) => {
-                            if (translation.dataBinding) {
-                                let fieldTranslationsValue = fieldTranslations.value ? cocktail.ui.copyValue(fieldTranslations.value) : {};
-                                fieldTranslationsValue[translation.dataBinding.language] = translation.value;
-                                fieldTranslations.value = fieldTranslationsValue;
-                            }
+
+            let newLocales = new Set(this.locales);
+            let [added, removed] = cocktail.sets.addedRemoved(this[TRANSLATIONS_MAP].keys(), newLocales);
+
+            for (let locale of added) {
+                let translation = this.createTranslation(locale);
+                cocktail.ui.link(
+                    this,
+                    translation,
+                    "value",
+                    (fieldTranslations, translation) => {
+                        if (fieldTranslations.value && fieldTranslations.dataBinding && translation.dataBinding) {
+                            translation.value = fieldTranslations.value[translation.dataBinding.language];
                         }
-                    );
-                    this[TRANSLATIONS_MAP].set(locale, translation);
-                    this.translations.appendChild(translation);
-                }
+                    },
+                    (translation, fieldTranslations) => {
+                        if (translation.dataBinding) {
+                            let fieldTranslationsValue = fieldTranslations.value ? cocktail.ui.copyValue(fieldTranslations.value) : {};
+                            fieldTranslationsValue[translation.dataBinding.language] = translation.value;
+                            fieldTranslations.value = fieldTranslationsValue;
+                        }
+                    }
+                );
+                this[TRANSLATIONS_MAP].set(locale, translation);
+                this.translations.appendChild(translation);
+            }
+
+            for (let [locale, translation] of this[TRANSLATIONS_MAP]) {
+                translation.visible = newLocales.has(locale);
             }
         }
 
@@ -319,6 +334,11 @@
 
             <ui:property
                 name="readOnly"
+                type="boolean"
+                reflected="true"/>
+
+            <ui:property
+                name="visible"
                 type="boolean"
                 reflected="true"/>
 
