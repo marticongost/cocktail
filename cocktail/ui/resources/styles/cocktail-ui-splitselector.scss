@@ -1,0 +1,47 @@
+
+@import "cocktail.ui://styles/common";
+
+:host {
+    display: flex;
+    flex-direction: row;
+}
+
+.Panel {
+
+    & + .Panel {
+        margin-left: 1em;
+    }
+}
+
+.entryList {
+    border: 1px solid #ccc;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: auto;
+    width: 15em;
+    height: 22em;
+}
+
+.Entry {
+    display: block;
+    padding: 0.3em 0.5em;
+    margin: 0;
+    font-size: 1em;
+    user-select: none;
+    cursor: default;
+
+    &[selected] {
+        background: $selection-background;
+
+        .label {
+            color: $selection-foreground;
+        }
+    }
+}
+
+#selectedEntriesPanel .Entry:not([chosen]),
+#availableEntriesPanel .Entry[chosen] {
+    display: none;
+}
+
