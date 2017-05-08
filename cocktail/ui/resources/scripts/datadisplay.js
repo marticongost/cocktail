@@ -54,7 +54,7 @@ cocktail.ui.dataDisplay = (cls) => class DataDisplay extends cls {
                     }
                 }
             },
-            uiGenerator: {},
+            displayFactory: {},
             value: {
                 type: (obj) => obj.dataBinding.member,
                 reflected: true
@@ -147,7 +147,7 @@ cocktail.ui.InvalidDataBindingError = class InvalidDataBindingError {
 {
     const PARENT = Symbol();
 
-    cocktail.ui.UIGenerator = class UIGenerator {
+    cocktail.ui.DisplayFactory = class DisplayFactory {
 
         constructor(symbolName) {
             this.symbol = Symbol(symbolName);
@@ -169,7 +169,7 @@ cocktail.ui.InvalidDataBindingError = class InvalidDataBindingError {
             let display;
             if (component) {
                 display = component.create();
-                display.uiGenerator = this;
+                display.displayFactory = this;
                 display.dataBinding = dataBinding;
             }
             return display;
@@ -223,8 +223,8 @@ cocktail.ui.InvalidDataBindingError = class InvalidDataBindingError {
     }
 }
 
-cocktail.ui.displays = new cocktail.ui.UIGenerator("cocktail.ui.display");
-cocktail.ui.formControls = new cocktail.ui.UIGenerator("cocktail.ui.formControl");
+cocktail.ui.displays = new cocktail.ui.DisplayFactory("cocktail.ui.display");
+cocktail.ui.formControls = new cocktail.ui.DisplayFactory("cocktail.ui.formControl");
 cocktail.ui.formLabelDisposition = Symbol("cocktail.ui.formLabelDisposition");
 
 // A symbol that controls wether a member should be included in the default selection
