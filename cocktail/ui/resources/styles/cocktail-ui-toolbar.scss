@@ -22,26 +22,29 @@ $highlight-color: #372f13;
     &[state='disabled'] {
         opacity: 0.3;
     }
-}
 
-button {
-    border: none;
-    background: none;
-    padding: 0.5em 1em;
-    cursor: pointer;
+    button {
+        border: none;
+        background: none;
+        padding: 0.5em 1em;
+        cursor: pointer;
+    }
 
-    &:hover {
-        background-color: #e8e4d7;
+    &:not([state='disabled']) {
+        button:hover {
+            background-color: #e8e4d7;
 
-        .label {
-            color: $highlight-color;
-        }
+            .label {
+                color: $highlight-color;
+            }
 
-        .icon svg * {
-            fill: $highlight-color !important;
+            .icon svg * {
+                fill: $highlight-color !important;
+            }
         }
     }
 }
+
 
 .icon {
     display: inline-block;
