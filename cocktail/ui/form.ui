@@ -26,6 +26,7 @@
 
     <?head
     const FIELD_MAP = Symbol("cocktail.ui.Form.FIELD_MAP");
+    const FIELDS_READY = Symbol.for("cocktail.ui.Form.FIELDS_READY");
 
     {
         const formControl = cocktail.ui.formControl;
@@ -47,6 +48,7 @@
         for (let member of this.dataBinding.member.members()) {
             this.addField(member);
         }
+        this[FIELDS_READY] = true;
         cocktail.ui.trigger(this, "fieldsReady");
     }
 
@@ -93,6 +95,7 @@
 
     removeFields() {
         this[FIELD_MAP].clear();
+        this[FIELDS_READY] = false;
         cocktail.ui.empty(this.fieldsContainer);
     }
     ?>
