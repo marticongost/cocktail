@@ -620,6 +620,18 @@
         }
     }
 
+    cocktail.schema.getLocales = function (object, schema) {
+        for (let member of schema.members()) {
+            if (member.translated) {
+                let value = object[member.name];
+                if (value && typeof(value) == "object") {
+                    return Object.keys(value);
+                }
+            }
+        }
+        return null;
+    }
+
     cocktail.schema.Error = class Error {
     }
 
