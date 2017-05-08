@@ -125,8 +125,8 @@ cocktail.ui.dataDisplay = (cls) => class DataDisplay extends cls {
             return value;
         }
 
-        child(object, member, language = null) {
-            let child = new this.constructor(object, member, language);
+        child(object, member, language = null, value = undefined) {
+            let child = new this.constructor(object, member, language, value);
             child[PARENT] = this;
             return child;
         }
