@@ -49,6 +49,10 @@
                 selectionCursor: {
                     reflected: false
                 },
+                selectableEntriesSelector: {
+                    type: "string",
+                    reflected: true
+                },
                 activationType: {
                     type: "string",
                     reflected: true
@@ -220,7 +224,15 @@
         }
 
         getSelectableElements() {
-            return this.selectionContainer.children;
+            let selector = this.selectableEntriesSelector;
+            if (selector) {
+                return Array.from(this.selectionContainer.children).filter(
+                    (child) => child.matches(selector)
+                );
+            }
+            else {
+                return this.selectionContainer.children;
+            }
         }
 
         getFirstSelectableElement() {
@@ -234,13 +246,19 @@
         }
 
         getNextSelectableElement(element = null) {
+
             if (!element) {
                 element = this.selectionCursor;
             }
+
             if (element) {
+                let selector = this.selectableEntriesSelector;
                 let next = element.nextSibling;
                 while (next) {
-                    if (next.nodeType == 1) {
+                    if (
+                        next.nodeType == 1
+                        && (!selector || next.matches(selector))
+                    ) {
                         return next;
                     }
                     next = next.nextSibling;
@@ -249,22 +267,30 @@
             else {
                 return this.getFirstSelectableElement();
             }
+
             return null;
         }
 
         getPreviousSelectableElement(element = null) {
+
             if (!element) {
                 element = this.selectionCursor;
             }
+
             if (element) {
+                let selector = this.selectableEntriesSelector;
                 let previous = element.previousSibling;
                 while (previous) {
-                    if (previous.nodeType == 1) {
+                    if (
+                        previous.nodeType == 1
+                        && (!selector || previous.matches(selector))
+                    ) {
                         return previous;
                     }
                     previous = previous.previousSibling;
                 }
             }
+
             return null;
         }
 
