@@ -2,5 +2,6 @@
 $selection-background: #666 !default;
 $selection-foreground: white !default;
 $panel-background: #f3f1e9 !default;
-$panel-border: 1px solid #e6e5df !default;
+$panel-border-color: #e6e5df;
+$panel-border: 1px solid $panel-border-color !default;
 
