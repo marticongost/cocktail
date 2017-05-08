@@ -175,6 +175,14 @@ cocktail.ui.InvalidDataBindingError = class InvalidDataBindingError {
             return display;
         }
 
+        requireDisplay(dataBinding, parameters = null) {
+            let display = this.createDisplay(dataBinding, parameters);
+            if (!display) {
+                throw new cocktail.ui.DisplayRequiredError(this, dataBinding, parameters);
+            }
+            return display;
+        }
+
         getComponent(dataBinding, parameters = null) {
             return (
                    this.getCustomComponent(dataBinding, parameters)
@@ -228,6 +236,19 @@ cocktail.ui.InvalidDataBindingError = class InvalidDataBindingError {
             }
             return component;
         }
+    }
+}
+
+cocktail.ui.DisplayRequiredError = class DisplayRequiredError {
+
+    constructor(displayFactory, dataBinding, parameters) {
+        this.displayFactory;
+        this.dataBinding = dataBinding;
+        this.parameters = parameters;
+    }
+
+    toString() {
+        return `${this.displayFactory} couldn't create a display for ${this.dataBinding.member}`;
     }
 }
 
