@@ -79,15 +79,19 @@
         entry.action = action;
         return entry;
     }
+
+    updateEntries() {
+        for (let entry of this.entryList.children) {
+            entry.state = entry.action.getState(this.getActionContext());
+        }
+    }
     ?>
 
     <?js
     this.actionParameters = {};
 
     this[SELECTION_CHANGED_HANDLER] = function (e) {
-        for (let entry of instance.entryList.children) {
-            entry.state = entry.action.getState(instance.getActionContext());
-        }
+        instance.updateEntries();
     }
     ?>
 
