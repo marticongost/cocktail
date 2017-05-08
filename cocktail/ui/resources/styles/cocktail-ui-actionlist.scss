@@ -18,6 +18,11 @@ $highlight-color: #372f13;
         background: none;
         border: none;
     }
+
+    :host-context(.cocktail-ui-DropdownPanel) & {
+        background: $panel-background;
+        border: $panel-border;
+    }
 }
 
 .Entry {
