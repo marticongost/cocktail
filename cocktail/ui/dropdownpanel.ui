@@ -36,6 +36,12 @@
     cls.delegatesFocus = true;
     ?>
 
+    <?on keydown
+    if (e.which == 27) {
+        this.expanded = false;
+    }
+    ?>
+
     <button id="button">
         <?on click
         instance.expanded = !instance.expanded;
