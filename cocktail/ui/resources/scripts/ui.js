@@ -9,6 +9,26 @@
 
 cocktail.declare("cocktail.ui");
 
+cocktail.ui.SPLASH_HIDE_DELAY = 500;
+
+cocktail.ui.splash = function (splash, rootElement) {
+
+    splash.container.appendChild(rootElement);
+    cocktail.ui.root = rootElement;
+    document.body.appendChild(splash);
+
+    window.addEventListener("load", () => {
+        window.setTimeout(
+            () => { splash.stage = "loaded"; },
+            cocktail.ui.SPLASH_HIDE_DELAY
+        );
+    });
+
+    splash.container.addEventListener("animationend", () => {
+        splash.stage = "hidden";
+    });
+}
+
 {
     const OBSERVED_ATTRIBUTES = Symbol("cocktail.ui.OBSERVED_ATTRIBUTES");
     const IS_COMPONENT = Symbol("cocktail.ui.IS_COMPONENT");

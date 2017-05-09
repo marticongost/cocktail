@@ -202,25 +202,43 @@ class Component(object):
         if prev_state:
             prev_state.dispose()
 
-    def render_page(self, title = "", locales = None):
+    def render_page(
+        self,
+        title = "",
+        locales = None,
+        splash = "cocktail.ui.Splash"
+    ):
         document = self.create_html_document(
             title = title,
-            locales = locales
+            locales = locales,
+            splash = splash
         )
         return document.render(collect_metadata = False)
 
-    def create_html_document(self, title = "", locales = None):
+    def create_html_document(
+        self,
+        title = "",
+        locales = None,
+        splash = "cocktail.ui.Splash"
+    ):
         document = HTMLDocument()
         document.metadata = DocumentMetadata()
         document.metadata.page_title = title
         document.metadata.resources.append(Script(POLYFILL_URI))
-        document.metadata.resources.append(UIScript(self, locales = locales))
+        document.metadata.resources.append(
+            UIScript(self, locales = locales, splash = splash)
+        )
         return document
 
 
 class UIScript(Script):
 
-    def __init__(self, root_component, locales = None):
+    def __init__(
+        self,
+        root_component,
+        locales = None,
+        splash = "cocktail.ui.Splash"
+    ):
         Script.__init__(
             self,
             "cocktail.ui://scripts/ui.js",
@@ -228,6 +246,7 @@ class UIScript(Script):
         )
         self.root_component = root_component
         self.locales = locales
+        self.splash = splash
 
     def link(self, document, url_processor = None):
         Script.link(self, document, url_processor = url_processor)
@@ -244,7 +263,18 @@ class UIScript(Script):
         components_script = Element("script", type = "text/javascript")
 
         # Collect all the required components
-        for component in self.root_component.dependencies(include_self = True):
+        dependencies = self.root_component.dependencies(
+            include_self = True
+        )
+
+        if self.splash:
+            dependencies.extend(
+                self.root_component.registry
+                    .get(self.splash)
+                    .dependencies(include_self = True)
+            )
+
+        for component in dependencies:
             components_script.append("\n")
             components_script.append(component.get_source())
             document.metadata.resources.extend(
@@ -297,13 +327,22 @@ class UIScript(Script):
         instantiation_script = Element(
             "script",
             type = "text/javascript",
-            children = [
-                """
-                cocktail.ui.root = %s.create();
-                document.body.appendChild(cocktail.ui.root);
-                """
-                % self.root_component.full_name
-            ]
+            children =
+                (
+                    "cocktail.ui.splash(%s.create(), %s.create())"
+                    % (
+                        self.splash,
+                        self.root_component.full_name
+                    )
+                )
+                if self.splash else
+                (
+                    """
+                    cocktail.ui.root = %s.create();
+                    document.body.appendChild(cocktail.ui.root);
+                    """
+                    % self.root_component.full_name
+                )
         )
         document.body.append(instantiation_script)
 
