@@ -146,6 +146,10 @@
 
         <ui:decoratedBy function="cocktail.ui.selectable"/>
 
+        <?head
+        const ENTRY_MAP = Symbol.for("cocktail.ui.SplitSelector.ENTRY_MAP");
+        ?>
+
         <?class
         get selectedValues() {
             return Array.from(this.selectedElements, (element) => element.entryValue);
@@ -154,10 +158,13 @@
         selectionActivated() {
             this.actionList.invokeAction("transfer");
         }
+
+        getEntry(locale) {
+            return this[ENTRY_MAP].get(locale);
+        }
         ?>
 
         <?js
-        const ENTRY_MAP = Symbol.for("cocktail.ui.SplitSelector.ENTRY_MAP");
         this[ENTRY_MAP] = new Map();
         ?>
 
