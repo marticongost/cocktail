@@ -4,10 +4,10 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:ui="http://www.whads.com/ns/cocktail/ui">
 
+    <ui:requires component="cocktail.ui.schema"/>
     <ui:requires component="cocktail.ui.Value"/>
 
     <ui:resource href="cocktail.ui://scripts/copy.js"/>
-    <ui:resource href="cocktail.ui://scripts/schema.js"/>
     <ui:resource href="cocktail.ui://scripts/datadisplay.js"/>
 
 </ui:module>
