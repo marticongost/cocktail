@@ -640,6 +640,42 @@
         return null;
     }
 
+    cocktail.schema.setLocales = function (object, schema, locales) {
+        for (let member of schema.members()) {
+            if (member.translated) {
+                let value = object[member.name];
+                if (value === undefined || value === null) {
+                    value = {};
+                }
+                if (typeof(value) == "object") {
+                    let [added, removed] = cocktail.sets.addedRemoved(Object.keys(value), locales);
+                    for (let locale of removed) {
+                        delete value[locale];
+                    }
+                    for (let locale of added) {
+                        value[locale] = member.getDefaultValue(object, locale);
+                    }
+                }
+            }
+            else if (member instanceof cocktail.schema.Collection) {
+                if (member.items && member.items instanceof cocktail.schema.Reference && member.items.type) {
+                    let value = object[member.name];
+                    if (value) {
+                        for (let item of value) {
+                            cocktail.schema.setLocales(item, member.items.type, locales);
+                        }
+                    }
+                }
+            }
+            else if (member instanceof cocktail.schema.Reference && member.type) {
+                let value = object[member.name];
+                if (value && typeof(value) == "object") {
+                    cocktail.schema.setLocales(value, member.type, locales);
+                }
+            }
+        }
+    }
+
     cocktail.schema.Error = class Error {
     }
 
