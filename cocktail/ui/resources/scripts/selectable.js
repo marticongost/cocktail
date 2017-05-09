@@ -112,7 +112,7 @@
                             && now - this[PREV_CLICK_TIME] <= this.activationDoubleClickDelay
                         )
                     ) {
-                        cocktail.ui.trigger(this, "activated", {selection: [target]});
+                        this.selectionActivated();
                     }
                     this[PREV_CLICK_ELEMENT] = target;
                     this[PREV_CLICK_TIME] = now;
@@ -134,7 +134,8 @@
                     && this.activationType != "none"
                     && this.selectedElements.size
                 ) {
-                    cocktail.ui.trigger(this, "activated", {selection: Array.from(this.selectedElements)});
+
+                    this.selectionActivated();
                     e.preventDefault();
                     e.stopPropagation();
                 }
@@ -217,6 +218,9 @@
                     });
                 }
             });
+        }
+
+        selectionActivated() {
         }
 
         get selectedValues() {

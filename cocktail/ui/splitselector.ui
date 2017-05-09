@@ -150,15 +150,15 @@
         get selectedValues() {
             return Array.from(this.selectedElements, (element) => element.entryValue);
         }
+
+        selectionActivated() {
+            this.actionList.invokeAction("transfer");
+        }
         ?>
 
         <?js
         const ENTRY_MAP = Symbol.for("cocktail.ui.SplitSelector.ENTRY_MAP");
         this[ENTRY_MAP] = new Map();
-        ?>
-
-        <?on activated
-        this.actionList.invokeAction("transfer");
         ?>
 
         <ui:cocktail.ui.ActionList id="actionList">
