@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <?head
+    const LOCALE_STATES = Symbol("cocktail.ui.TranslationsSelector.LOCALE_STATES");
+    const CHANGING_LOCALE_STATE = Symbol("cocktail.ui.TranslationsSelector.CHANGING_LOCALE_STATE");
+    ?>
+
+    <?class
+    *localesInState(searchedState) {
+        for (let [locale, localeState] of this[LOCALE_STATES]) {
+            if (localeState == searchedState) {
+                yield locale;
+            }
+        }
+    }
+
+    get visibleLocales() {
+        return new Set(this.localesInState("visible"));
+    }
+
+    get hiddenLocales() {
+        return new Set(this.localesInState("hidden"));
+    }
+
+    get undefinedLocales() {
+        return new Set(this.localesInState("undefined"));
+    }
+
+    getLocaleState(locale) {
+        return this[LOCALE_STATES].get(locale);
+    }
+
+    setLocaleState(locale, newState) {
+        let previousState = this[LOCALE_STATES].get(locale);
+        if (previousState != newState) {
+            this[LOCALE_STATES].set(locale, newState);
+            this[CHANGING_LOCALE_STATE] = true;
+            this.splitSelector.setSelected(locale, newState != "undefined");
+            this[CHANGING_LOCALE_STATE] = false;
+            for (let panel of [this.splitSelector.selectedEntriesPanel, this.splitSelector.availableEntriesPanel]) {
+                panel.getEntry(locale).setAttribute("localeState", newState);
+            }
+            cocktail.ui.trigger(this, "localeChanged", {previousState, newState});
+        }
+    }
+    ?>
+
+    <ui:property name="locales">
+        <?on changed
+        let localeStates = new Map();
+        let definedLocales = [];
+        for (let locale of newValue) {
+            let state = this[LOCALE_STATES].get(locale) || "undefined";
+            localeStates.set(locale, state);
+            if (state != "undefined") {
+                definedLocales.push(locale);
+            }
+        }
+        this[LOCALE_STATES] = localeStates;
+        this.splitSelector.dataBinding = {
+            member: new cocktail.schema.Collection({
+                items: new cocktail.schema.Locale({enumeration: newValue})
+            }),
+            value: definedLocales
+        }
+        for (let entry of this.splitSelector.shadowRoot.querySelectorAll("Entry")) {
+            entry.setAttribute("localeState", localeStates.get(entry.entryValue));
+        }
+        ?>
+    </ui:property>
+
+    <ui:cocktail.ui.SplitSelector id="splitSelector">
+
+        <?on value:changed
+        if (!instance[CHANGING_LOCALE_STATE]) {
+            let [added, removed] = cocktail.sets.addedRemoved(oldValue, newValue);
+
+            for (let locale of added) {
+                instance.setLocaleState(locale, "visible");
+            }
+
+            for (let locale of removed) {
+                instance.setLocaleState(locale, "undefined");
+            }
+        }
+        ?>
+
+        <ui:with ui:element="selectedEntriesPanel">
+            <?js
+            element.selectionActivated = function () {
+                let commonState;
+                for (let locale of this.selectedValues) {
+                    let localeState = instance.getLocaleState(locale);
+                    if (commonState && localeState != commonState) {
+                        return;
+                    }
+                    else {
+                        commonState = localeState;
+                    }
+                }
+                if (commonState == "visible") {
+                    this.actionList.invokeAction("hide");
+                }
+                else if (commonState == "hidden") {
+                    this.actionList.invokeAction("show");
+                }
+            }
+            ?>
+
+            <ui:with ui:element="actionList">
+                <?js
+                class TranslationSelectorAction extends cocktail.ui.Action {
+                    get iconURL() {
+                        return cocktail.normalizeResourceURI(`cocktail.ui://images/${this.id}.svg`);
+                    }
+                    translate() {
+                        return cocktail.ui.translations["cocktail.ui.TranslationsSelector.actions." + this.id];
+                    }
+                }
+
+                class ShowAction extends TranslationSelectorAction {
+                    getState(context) {
+                        if (!context.selection.some((locale) => instance.getLocaleState(locale) == "hidden")) {
+                            return "disabled";
+                        }
+                        return super.getState(context);
+                    }
+                    invoke(context) {
+                        for (let locale of context.selection) {
+                            instance.setLocaleState(locale, "visible");
+                        }
+                        context.actionList.updateEntries();
+                    }
+                }
+
+                class HideAction extends TranslationSelectorAction {
+                    getState(context) {
+                        if (!context.selection.some((locale) => instance.getLocaleState(locale) == "visible")) {
+                            return "disabled";
+                        }
+                        return super.getState(context)
+                    }
+                    invoke(context) {
+                        for (let locale of context.selection) {
+                            instance.setLocaleState(locale, "hidden");
+                        }
+                        context.actionList.updateEntries();
+                    }
+                }
+
+                element.addAction(new ShowAction("show"), "before transfer");
+                element.addAction(new HideAction("hide"), "after show");
+                ?>
+            </ui:with>
+        </ui:with>
+    </ui:cocktail.ui.SplitSelector>
+
+    <?js
+    this[LOCALE_STATES] = new Map();
+    ?>
+
+</div>
+
