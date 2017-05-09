@@ -28,6 +28,7 @@ $highlight-color: #372f13;
 .Entry {
     margin: 0;
     padding: 0;
+    white-space: nowrap;
 
     &[state='disabled'] {
         opacity: 0.3;
