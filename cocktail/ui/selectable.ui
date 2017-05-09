@@ -4,7 +4,7 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:ui="http://www.whads.com/ns/cocktail/ui">
 
-    <ui:resource href="cocktail://scripts/collections.js"/>
+    <ui:requires component="cocktail.ui.collections"/>
     <ui:resource href="cocktail.ui://scripts/selectable.js"/>
 
 </ui:module>
