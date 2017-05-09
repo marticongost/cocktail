@@ -1,0 +1,15 @@
+
+[cocktail.ui.TranslationsSelector]
+
+    [actions]
+
+        [show]
+        ca: Mostrar
+        es: Mostrar
+        en: Show
+
+        [hide]
+        ca: Ocultar
+        es: Ocultar
+        en: Hide
+
