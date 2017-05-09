@@ -554,6 +554,14 @@
             }
             return value.join(" ");
         }
+
+        getDefaultValue(object = null, locale = null) {
+            let defaultValue = super.getDefaultValue(object, locale);
+            if (defaultValue === undefined) {
+                defaultValue = [];
+            }
+            return defaultValue;
+        }
     }
 
     cocktail.schema.Locale = class Locale extends cocktail.schema.String {
