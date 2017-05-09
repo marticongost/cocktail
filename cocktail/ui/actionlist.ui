@@ -21,6 +21,29 @@
     <?head
     const SELECTION_CHANGED_HANDLER = Symbol();
     const ACTION_MAP = Symbol();
+    const ENTRY_MAP = Symbol();
+    ?>
+
+    <?tail
+    cls.ActionIdError = class ActionIdError {
+        super(actionList, actionId) {
+            this.actionList = actionList;
+            this.actionId = actionId;
+        }
+        toString() {
+            return `${this.actionList} doesn't contain an action with id ${this.actionId}`;
+        }
+    }
+
+    cls.ActionPositionError = class ActionPositionError {
+        super(actionList, position) {
+            this.actionList = actionList;
+            this.position = position;
+        }
+        toString() {
+            return `${this.position} is not a valid action position of ${this.actionList}`;
+        }
+    }
     ?>
 
     <ui:property
@@ -42,6 +65,31 @@
         return this[ACTION_MAP].get(id);
     }
 
+    requireAction(id) {
+        let action = this[ACTION_MAP].get(id);
+        if (!action) {
+            throw new cls.ActionIdError(this, id);
+        }
+        return action;
+    }
+
+    getEntry(id) {
+        return this[ENTRY_MAP].get(id);
+    }
+
+    requireEntry(id) {
+        let entry = this[ENTRY_MAP].get(id);
+        if (!entry) {
+            throw new cls.ActionIdError(this, id);
+        }
+        return entry;
+    }
+
+    addAction(action, position = null) {
+        this[ACTION_MAP].set(action.id, action);
+        this.addEntry(action, position);
+    }
+
     invokeAction(id) {
         this.getAction(id).invoke(this.getActionContext());
     }
@@ -61,22 +109,49 @@
     }
 
     clear() {
+        this[ENTRY_MAP] = new Map();
         cocktail.ui.empty(this.entryList);
     }
 
     createEntries() {
-        let context = this.getActionContext();
         for (let action of this.actions) {
-            let entry = this.createEntry(action);
-            this.entryList.appendChild(entry);
-            entry.state = action.getState(context);
+            this.addEntry(action);
         }
         cocktail.ui.trigger(this, "entriesReady");
+    }
+
+    addEntry(action, position = null) {
+
+        let entry = this.createEntry(action);
+
+        if (position === null) {
+            this.entryList.appendChild(entry);
+        }
+        else if (typeof(position) == "string") {
+            let [relativePosition, actionId] = position.split(" ");
+            let referenceEntry = this.requireEntry(actionId);
+
+            if (relativePosition == "after") {
+                referenceEntry = referenceEntry.nextSibling;
+            }
+            else if (relativePosition != "before") {
+                throw new cls.ActionPositionError(this, position);
+            }
+
+            this.entryList.insertBefore(entry, referenceEntry);
+        }
+        else {
+            throw new cls.ActionPositionError(this, position);
+        }
+
+        this[ENTRY_MAP].set(action.id, entry);
+        return entry;
     }
 
     createEntry(action) {
         let entry = this.constructor.Entry.create();
         entry.action = action;
+        entry.state = action.getState(this.getActionContext());
         return entry;
     }
 
