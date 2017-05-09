@@ -26,6 +26,16 @@
         return new Set(this.localesInState("hidden"));
     }
 
+    get definedLocales() {
+        let definedLocales = new Set();
+        for (let [locale, localeState] of this[LOCALE_STATES]) {
+            if (localeState != "undefined") {
+                definedLocales.add(locale);
+            }
+        }
+        return definedLocales;
+    }
+
     get undefinedLocales() {
         return new Set(this.localesInState("undefined"));
     }
