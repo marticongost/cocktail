@@ -331,6 +331,15 @@
             }
         }
 
+        get translated() {
+            for (let member of this.members()) {
+                if (member.translated) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         getDefaultValue(object = null, locale = null) {
             return this.defaults();
         }
