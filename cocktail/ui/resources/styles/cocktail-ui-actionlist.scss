@@ -26,6 +26,8 @@
     margin: 0;
     padding: 0;
     white-space: nowrap;
+    display: flex;
+    align-items: stretch;
 
     &[state='disabled'] {
         opacity: 0.3;
