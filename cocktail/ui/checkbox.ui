@@ -16,6 +16,12 @@
     this.input.checked = Boolean(newValue);
     ?>
 
+    <?class
+    formLabelClicked() {
+        this.value = !this.value;
+    }
+    ?>
+
     <input id="input" type="checkbox">
         <?on change
         instance.value = this.checked;

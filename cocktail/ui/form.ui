@@ -272,7 +272,17 @@
         }
         ?>
 
-        <label id="label"/>
+        <label id="label">
+            <?on click
+            if (instance.control.formLabelClicked) {
+                instance.control.formLabelClicked();
+            }
+            else {
+                instance.control.focus();
+            }
+            ?>
+        </label>
+
         <div id="controlContainer"/>
 
     </div>
@@ -453,7 +463,17 @@
             }
             ?>
 
-            <label id="label"/>
+            <label id="label">
+                <?on click
+                if (instance.control.formLabelClicked) {
+                    instance.control.formLabelClicked();
+                }
+                else {
+                    instance.control.focus();
+                }
+                ?>
+            </label>
+
             <div id="controlContainer"/>
 
         </div>
