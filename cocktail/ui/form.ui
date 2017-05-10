@@ -48,7 +48,7 @@
         const formControl = cocktail.ui.formControl;
         cocktail.schema.String[formControl] = cocktail.ui.TextInput;
         cocktail.schema.Number[formControl] = cocktail.ui.NumberInput;
-        cocktail.schema.Boolean[formControl] = cocktail.ui.CheckInput;
+        cocktail.schema.Boolean[formControl] = cocktail.ui.CheckBox;
         cocktail.schema.Reference[formControl] = cocktail.ui.DropdownSelector;
         cocktail.schema.Collection[formControl] = cocktail.ui.CheckList;
         cocktail.schema.Locale[formControl] = cocktail.ui.DropdownSelector;
