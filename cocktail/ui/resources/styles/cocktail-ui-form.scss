@@ -45,8 +45,10 @@ legend:not(:empty) + .fieldsContainer {
             margin-top: 1.5em;
         }
 
-        .label + .controlContainer {
-            margin-top: 0.3em;
+        &[labelDisposition='normal'] {
+            .label + .controlContainer {
+                margin-top: 0.3em;
+            }
         }
     }
 }
@@ -63,16 +65,16 @@ legend:not(:empty) + .fieldsContainer {
             align-items: center;
 
             & + .field {
-                &[formLabelDisposition='hidden'] {
+                &[labelDisposition='hidden'] {
                     margin-left: 1em;
                 }
 
-                &[formLabelDisposition='normal'] {
+                &[labelDisposition='normal'] {
                     margin-left: 2em;
                 }
             }
 
-            &[formLabelDisposition='normal'] {
+            &[labelDisposition='normal'] {
                 .label + .controlContainer {
                     margin-left: 1em;
                 }
@@ -107,7 +109,22 @@ legend:not(:empty) + .fieldsContainer {
     }
 }
 
-.field[formLabelDisposition='hidden'] .label {
+.field[labelDisposition='afterControl'] {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+
+    .controlContainer {
+        order: 1;
+        margin-right: 0.3em;
+    }
+
+    .label {
+        order: 2;
+    }
+}
+
+.field[labelDisposition='hidden'] .label {
     display: none !important;
 }
 

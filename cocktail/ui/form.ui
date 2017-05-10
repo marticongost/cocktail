@@ -147,7 +147,7 @@
             field = this.constructor.Field.create()
         }
         field.classList.add("field");
-        field.formLabelDisposition = this.fieldsLabelDisposition;
+        field.labelDisposition = this.fieldsLabelDisposition;
         field.displayFactory = this.displayFactory;
         field.readOnlyDisplayFactory = this.readOnlyDisplayFactory;
         field.dataBinding = this.dataBinding.child(
@@ -208,6 +208,11 @@
             type="boolean"
             reflected="true"/>
 
+        <ui:property
+            name="labelDisposition"
+            type="string"
+            reflected="true"/>
+
         <?head
         const FIELDS_READY = Symbol.for("cocktail.ui.Form.FIELDS_READY");
         ?>
@@ -256,10 +261,11 @@
                 this.control = displayFactory.requireDisplay(this.dataBinding);
                 cocktail.ui.link(this, this.control, "value");
                 this.controlContainer.appendChild(this.control);
-                if (!this.formLabelDisposition) {
-                    this.formLabelDisposition = (
-                        this.control.formLabelDisposition
-                        || this.dataBinding.member[cocktail.ui.formLabelDisposition]
+                if (!this.labelDisposition) {
+                    this.labelDisposition = (
+                        this.dataBinding.member[cocktail.ui.formLabelDisposition]
+                        || this.control.formLabelDisposition
+                        || "normal"
                     );
                 }
             }
