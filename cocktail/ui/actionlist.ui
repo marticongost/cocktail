@@ -99,7 +99,7 @@
         let selectable = this.selectable;
         context.selectable = selectable;
         context.actionList = this;
-        context.selection = selectable ? selectable.selectedValues : [];
+        context.selection = selectable ? selectable.selectedValues : context.selection || [];
         return context;
     }
 
