@@ -477,6 +477,14 @@
                 return "";
             }
             else {
+                if (!this.type) {
+                    throw new cocktail.schema.SerializationError(this, value, "no type defined for this member");
+                }
+
+                if (!this.type.primaryMember) {
+                    throw new cocktail.schema.SerializationError(this, value, `${this.type.name} has no primary member`);
+                }
+
                 return value[this.type.primaryMember.name];
             }
         }
@@ -740,6 +748,24 @@
 
         toString() {
             return `${this.schema} contains no member with name "${this.memberName}"`;
+        }
+    }
+
+    cocktail.schema.SerializationError = class ReferenceSerializationError extends cocktail.schema.Error {
+
+        constructor(member, value, reason = "") {
+            super();
+            this.member = member;
+            this.value = value;
+            this.reason = reason;
+        }
+
+        toString() {
+            let desc = `Can't serialize value ${this.value} for member ${this.member}`;
+            if (this.reason) {
+                desc += ` (${this.reason})`;
+            }
+            return desc;
         }
     }
 }
