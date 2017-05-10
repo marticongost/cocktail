@@ -13,9 +13,7 @@
     ?>
 
     <?on value:changed
-    if (this.member) {
-        this.input.checked = Boolean(newValue);
-    }
+    this.input.checked = Boolean(newValue);
     ?>
 
     <input id="input" type="checkbox">
