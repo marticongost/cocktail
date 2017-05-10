@@ -1,4 +1,6 @@
 
+@import "cocktail.ui://styles/common";
+
 $border-width: 1px;
 $border-color: #ddd;
 $border: $border-width solid $border-color;
@@ -31,6 +33,15 @@ $hpadding: 0.5rem;
     }
 }
 
+#label {
+    font-size: 0.9em;
+
+    :host-context(.cocktail-ui-Toolbar) &,
+    :host-context(.cocktail-ui-ActionList) & {
+        color: $panel-action-color;
+    }
+}
+
 #arrow {
     margin-left: 0.3rem;
 
@@ -39,6 +50,11 @@ $hpadding: 0.5rem;
 
         * {
             fill: #444;
+
+            :host-context(.cocktail-ui-Toolbar) &,
+            :host-context(.cocktail-ui-ActionList) & {
+                fill: $panel-action-color;
+            }
         }
     }
 }
