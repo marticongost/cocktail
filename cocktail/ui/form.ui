@@ -150,7 +150,7 @@
             field.locales = this.locales;
         }
         else {
-            field = this.constructor.Field.create()
+            field = this.constructor.Field.create();
         }
         field.classList.add("field");
         field.labelDisposition = this.fieldsLabelDisposition;
