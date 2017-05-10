@@ -1,6 +1,40 @@
 
+@import "cocktail.ui://styles/common";
+
 .field[readOnly='true'] .controlContainer {
     color: #444;
+}
+
+fieldset {
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+legend {
+    padding: 0;
+    margin: 0;
+    font-weight: bold;
+    font-size: 1.1em;
+    color: $heading-color;
+
+    &:empty {
+        display: none;
+    }
+}
+
+.fieldsContainer:not(:empty) + .groupsContainer:not(:empty) {
+    margin-top: 3em;
+}
+
+.Group + .Group {
+    margin-top: 3em;
+}
+
+legend:not(:empty) + .fieldsContainer {
+    border-top: 1px dotted lighten($heading-color, 30);
+    margin-top: 0.5em;
+    padding-top: 0.5em;
 }
 
 :host([formLayout='column']) {
