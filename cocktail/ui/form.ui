@@ -30,6 +30,12 @@
         reflected="true"
         default="false"/>
 
+    <ui:property
+        name="grouped"
+        type="boolean"
+        reflected="true"
+        default="true"/>
+
     <ui:property name="locales">
         <?on changed
         for (let field of this[FIELD_MAP].values()) {
@@ -41,6 +47,7 @@
     </ui:property>
 
     <?head
+    const GROUPS_MAP = Symbol("cocktail.ui.Form.GROUPS_MAP");
     const FIELD_MAP = Symbol("cocktail.ui.Form.FIELD_MAP");
     const FIELDS_READY = Symbol.for("cocktail.ui.Form.FIELDS_READY");
 
@@ -90,7 +97,44 @@
             }
         );
         this[FIELD_MAP].set(member.name, field);
-        this.fieldsContainer.appendChild(field);
+
+        let parent = this;
+        if (this.grouped) {
+            let groupId = member[cocktail.ui.group];
+            if (groupId) {
+                parent = this.requireGroup(groupId);
+            }
+        }
+        parent.fieldsContainer.appendChild(field);
+    }
+
+    getGroup(groupId) {
+        return this[GROUPS_MAP].get(groupId);
+    }
+
+    requireGroup(groupId) {
+
+        let group = this[GROUPS_MAP].get(groupId);
+
+        if (!group) {
+            group = this.createGroup(groupId);
+            this[GROUPS_MAP].set(groupId, group);
+
+            // Find the group's parent (another group or the form itself)
+            let pos = groupId.lastIndexOf(".");
+            let parentGroupId = (pos == -1) ? null : groupId.substr(0, pos);
+            let parent = parentGroupId ? this.requireGroup(parentGroupId) : this;
+            parent.groupsContainer.appendChild(group);
+        }
+
+        return group;
+    }
+
+    createGroup(groupId) {
+        let group = cls.Group.create();
+        group.groupId = groupId;
+        group.heading.innerHTML = this.dataBinding.member.translate(".groups." + groupId);
+        return group;
     }
 
     createField(member) {
@@ -129,6 +173,7 @@
 
     <?js
     this[FIELD_MAP] = new Map();
+    this[GROUPS_MAP] = new Map();
     this.locales = cocktail.ui.locales;
     this.displayFactory = cocktail.ui.formControls;
     this.readOnlyDisplayFactory = cocktail.ui.displays;
@@ -146,6 +191,7 @@
     ?>
 
     <div id="fieldsContainer"/>
+    <div id="groupsContainer"/>
 
     <div ui:component="Field">
 
@@ -405,6 +451,22 @@
             <div id="controlContainer"/>
 
         </div>
+
+    </div>
+
+    <div ui:component="Group">
+
+        <ui:property
+            name="groupId"
+            type="string"
+            reflected="true"
+            final="true"/>
+
+        <fieldset id="fieldset">
+            <legend id="heading"/>
+            <div id="fieldsContainer"/>
+            <div id="groupsContainer"/>
+        </fieldset>
 
     </div>
 

@@ -82,7 +82,8 @@
 
     <ui:cocktail.ui.Form
         id="searchForm"
-        formLayout="row">
+        formLayout="row"
+        grouped="false">
         <?on dataBinding:changed
         instance.searchEnabled = Boolean(newValue);
         ?>

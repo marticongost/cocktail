@@ -278,3 +278,7 @@ cocktail.ui.NOT_EDITABLE = Symbol("cocktail.ui.NOT_EDITABLE");
 cocktail.ui.READ_ONLY = Symbol("cocktail.ui.READ_ONLY");
 cocktail.schema.Member.prototype[cocktail.ui.editable] = cocktail.ui.EDITABLE;
 
+// A symbol that allows to distribute the members of a data display into different groups
+// (f. eg. form fieldsets)
+cocktail.ui.group = Symbol("cocktail.ui.group");
+
