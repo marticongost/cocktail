@@ -20,6 +20,12 @@
         default="column"/>
 
     <ui:property
+        name="groupsLayout"
+        type="string"
+        reflected="true"
+        default="column"/>
+
+    <ui:property
         name="fieldsLabelDisposition"
         type="string"
         reflected="true"/>

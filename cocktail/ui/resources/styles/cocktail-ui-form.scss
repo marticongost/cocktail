@@ -1,6 +1,8 @@
 
 @import "cocktail.ui://styles/common";
 
+$group-separation: 3em;
+
 .field[readOnly='true'] .controlContainer {
     color: #444;
 }
@@ -24,11 +26,24 @@ legend {
 }
 
 .fieldsContainer:not(:empty) + .groupsContainer:not(:empty) {
-    margin-top: 3em;
+    margin-top: $group-separation;
 }
 
 .Group + .Group {
-    margin-top: 3em;
+    margin-top: $group-separation;
+}
+
+:host([groupsLayout='row']) {
+
+    #groupsContainer {
+        display: flex;
+        flex-direction: row;
+
+        & > .Group + .Group {
+            margin-top: 0;
+            margin-left: 5em;
+        }
+    }
 }
 
 legend:not(:empty) + .fieldsContainer {
