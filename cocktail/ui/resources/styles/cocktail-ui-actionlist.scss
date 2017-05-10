@@ -2,9 +2,6 @@
 @import "cocktail://styles/utils";
 @import "cocktail.ui://styles/common";
 
-$idle-color: #625c47;
-$highlight-color: #372f13;
-
 #entryList {
     list-style-type: none;
     padding: 0;
@@ -39,6 +36,7 @@ $highlight-color: #372f13;
         background: none;
         padding: 0.5em 1em;
         cursor: pointer;
+        font-size: 0.9em;
     }
 
     &:not([state='disabled']) {
@@ -46,11 +44,11 @@ $highlight-color: #372f13;
             background-color: #e8e4d7;
 
             .label {
-                color: $highlight-color;
+                color: $panel-action-highlight-color;
             }
 
             .icon svg * {
-                fill: $highlight-color !important;
+                fill: $panel-action-highlight-color !important;
             }
         }
     }
@@ -67,7 +65,7 @@ $highlight-color: #372f13;
         height: auto;
 
         * {
-            fill: $idle-color !important;
+            fill: $panel-action-color !important;
         }
     }
 }
@@ -75,6 +73,6 @@ $highlight-color: #372f13;
 .label {
     font-size: 1em;
     vertical-align: middle;
-    color: $idle-color;
+    color: $panel-action-color;
 }
 
