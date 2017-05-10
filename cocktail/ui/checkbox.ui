@@ -8,6 +8,10 @@
     <ui:requires component="cocktail.ui.datadisplay"/>
     <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
 
+    <?tail
+    cls.delegatesFocus = true;
+    ?>
+
     <?on value:changed
     if (this.member) {
         this.input.checked = Boolean(newValue);

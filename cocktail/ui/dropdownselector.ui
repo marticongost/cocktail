@@ -96,6 +96,10 @@
     }
     ?>
 
+    <?tail
+    cls.delegatesFocus = true;
+    ?>
+
     <?on dataBinding:changed
     this.createOptions();
     ?>
