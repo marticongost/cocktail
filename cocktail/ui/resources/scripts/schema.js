@@ -645,7 +645,7 @@
                 }
             }
         }
-        return null;
+        return [];
     }
 
     cocktail.schema.setLocales = function (object, schema, locales) {
