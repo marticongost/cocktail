@@ -693,7 +693,7 @@ class ComponentLoader(object):
 
         # Add tail text
         if element.tail and element.tail.strip():
-            node.parent.write(
+            self.init_source.write(
                 "%s.appendChild(document.createTextNode(%s));"
                 % (node.parent.ref, dumps(element.tail))
             )
