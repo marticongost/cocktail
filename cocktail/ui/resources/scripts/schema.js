@@ -21,6 +21,7 @@
     let ITEMS = Symbol("cocktail.schema.ITEMS");
 
     pkg.MEMBERS = Symbol("cocktail.schema.MEMBERS");
+    pkg.PARAMETERS = Symbol("cocktail.schema.PARAMETERS");
     pkg.MEMBER_PARAMETERS = Symbol("cocktail.schema.MEMBER_PARAMETERS");
 
     pkg.membershipTypes = {
@@ -299,6 +300,7 @@
             if (key == MEMBER_MAP) {
 
                 let members = parameters && parameters[pkg.MEMBERS] || this.members();
+                let generalParameters = parameters ? parameters[pkg.PARAMETERS] : null;
                 let memberParameters = parameters ? parameters[pkg.MEMBER_PARAMETERS] : null;
 
                 for (let sourceMember of members) {
@@ -310,7 +312,11 @@
                     let targetMember;
 
                     if (sourceMember.schema === this) {
-                        let params = memberParameters && memberParameters[sourceMember.name];
+                        let params = Object.assign(
+                            {},
+                            generalParameters,
+                            memberParameters && memberParameters[sourceMember.name]
+                        );
                         targetMember = sourceMember.copy(params);
                     }
                     else {
