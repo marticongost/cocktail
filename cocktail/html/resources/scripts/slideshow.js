@@ -106,6 +106,7 @@ cocktail.bind(".SlideShow", function ($slideShow) {
     }
 
     this.setAutoplay = function (autoplay) {
+        this.autoplay = autoplay;
         if (autoplay) {
             if (!autoplayTimer) this.start();
         }

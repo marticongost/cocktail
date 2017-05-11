@@ -153,8 +153,14 @@ class Member(Variable):
         self.name = name
         self.__doc__ = doc
 
+        validations = kwargs.pop("validations", None)
+
         for key, value in kwargs.iteritems():
             setattr(self, key, value)
+
+        if validations is not None:
+            for validation in validations:
+                self.add_validation(validation)
 
     def __eq__(self, other):
         return self is other
@@ -536,6 +542,7 @@ class Member(Variable):
             error_translation = translations(
                 self,
                 suffix = ".errors." + error_class_name,
+                error = error,
                 language = language
             )
             if error_translation:
@@ -630,6 +637,9 @@ def translate_member(
 ):
     if qualified:
         return translations("cocktail.schema.qualified_member", member = member)
+
+    if suffix is None:
+        suffix = ""
 
     if member.schema:
 

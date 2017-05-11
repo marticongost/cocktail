@@ -6,6 +6,7 @@ u"""
 import os
 import mimetypes
 import cherrypy
+import rfc6266
 from cherrypy.lib import cptools, http, file_generator_limited
 from cocktail.events import Event, when
 from cocktail.html.resources import resource_repositories, SASSCompilation
@@ -143,7 +144,7 @@ class FilePublication(object):
             if not name and path:
                 name = os.path.basename(path)
             if name:
-                cd = '%s; filename="%s"' % (cd, name)
+                cd = rfc6266.build_header(name, cd)
             response.headers["Content-Disposition"] = cd
 
         if self.use_xsendfile and path:

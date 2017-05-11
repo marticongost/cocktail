@@ -11,6 +11,15 @@ from frozendict import frozendict
 
 ENCODING = "utf-8"
 
+def _decode(string):
+    try:
+        return string.decode("utf-8")
+    except UnicodeDecodeError, e:
+        try:
+            return string.decode("latin-1")
+        except UnicodeDecodeError:
+            raise e
+
 
 class URL(unicode):
 
@@ -47,7 +56,7 @@ class URL(unicode):
 
             # Decode byte strings
             elif isinstance(url, str):
-                return cls.__new__(cls, unquote(url).decode(ENCODING))
+                return cls.__new__(cls, _decode(unquote(url)))
 
             else:
                 raise ValueError(
@@ -284,7 +293,7 @@ class URLBuilder(object):
         if isinstance(component, int):
             return unicode(component)
         elif isinstance(component, str):
-            return unquote(component).decode(ENCODING)
+            return _decode(unquote(component))
         else:
             return component
 
@@ -300,7 +309,7 @@ class Path(unicode):
             return path
 
         elif isinstance(path, str):
-            return cls(unquote(path).decode(ENCODING))
+            return cls(_decode(unquote(path)))
 
         elif isinstance(path, unicode):
 
@@ -461,7 +470,7 @@ class QueryString(unicode):
 
         # Decode and parse byte strings
         elif isinstance(query, str):
-            return cls.__new__(cls, query.decode(ENCODING))
+            return cls.__new__(cls, _decode(query))
 
         # Parse unicode strings
         elif isinstance(query, unicode):
@@ -528,7 +537,7 @@ class QueryString(unicode):
             if isinstance(query, basestring):
                 query_string = query
                 if isinstance(query_string, str):
-                    query_string = unquote(query_string).decode(ENCODING)
+                    query_string = _decode(unquote(query_string))
                 query_string = query_string.lstrip("?").lstrip("&")
                 b = _parse_query_string(query_string, OrderedDict)
             elif isinstance(query, QueryString):
@@ -566,7 +575,7 @@ class QueryString(unicode):
 
 def _normalize_query_string_value(value):
     if isinstance(value, str):
-        return (unquote(value).decode(ENCODING),)
+        return (_decode(unquote(value)),)
     elif isinstance(value, unicode):
         return (value,)
     elif isinstance(value, int):
@@ -574,7 +583,7 @@ def _normalize_query_string_value(value):
     elif isinstance(value, Iterable):
         return tuple(
             (
-                unquote(item).decode(ENCODING)
+                _decode(unquote(item))
                 if isinstance(item, str)
                 else item
             )
