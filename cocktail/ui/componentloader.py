@@ -532,10 +532,21 @@ class ComponentLoader(object):
             self.translation_keys.add(key)
 
             if node.is_translation:
-                self.init_source.write(
-                    "cocktail.ui.insertTranslation(%s, '%s');"
-                    % (node.parent.ref, key)
-                )
+                translation_attribute = attributes.pop("attribute", None)
+                if translation_attribute:
+                    self.init_source.write(
+                        "%s.setAttribute(%s, cocktail.ui.translations[%s]);"
+                        % (
+                            node.parent.ref,
+                            dumps(translation_attribute),
+                            dumps(key)
+                        )
+                    )
+                else:
+                    self.init_source.write(
+                        "cocktail.ui.insertTranslation(%s, '%s');"
+                        % (node.parent.ref, key)
+                    )
 
         # Resource
         elif node.is_resource:
