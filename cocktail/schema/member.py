@@ -536,6 +536,7 @@ class Member(Variable):
             error_translation = translations(
                 self,
                 suffix = ".errors." + error_class_name,
+                error = error,
                 language = language
             )
             if error_translation:

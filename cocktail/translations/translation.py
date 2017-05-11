@@ -9,7 +9,7 @@ u"""
 from __future__ import with_statement
 from threading import local
 from contextlib import contextmanager
-from collections import Mapping
+from collections import Mapping, defaultdict
 from pkg_resources import resource_filename
 from cocktail.events import Event
 from cocktail.modeling import (
@@ -142,6 +142,7 @@ class Translations(object):
     def __init__(self, *args, **kwargs):
         self.definitions = {}
         self.__loaded_bundles = set()
+        self.__bundle_overrides = defaultdict(list)
 
     def define(self, key, value = None, **per_language_values):
 
@@ -194,11 +195,26 @@ class Translations(object):
 
             self.bundle_loaded(file_path = file_path)
 
+            overrides = self.__bundle_overrides.get(bundle_path)
+            if overrides:
+                for overrides_path, overrides_kwargs in overrides:
+                    self.load_bundle(overrides_path, **kwargs)
+
     def request_bundle(self, bundle_path, **kwargs):
         try:
             self.load_bundle(bundle_path, **kwargs)
         except IOError:
             pass
+
+    def override_bundle(
+        self,
+        original_bundle_path,
+        overrides_bundle_path,
+        **kwargs
+    ):
+        self.__bundle_overrides[original_bundle_path].append(
+            (overrides_bundle_path, kwargs)
+        )
 
     def __iter_class_names(self, cls):
 
