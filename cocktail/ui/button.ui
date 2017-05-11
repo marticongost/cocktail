@@ -4,6 +4,21 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:ui="http://www.whads.com/ns/cocktail/ui"
     type="button">
-    <slot/>
+
+    <ui:property
+        name="iconURL"
+        type="string"
+        reflected="true">
+        <?on changed
+        cocktail.loadSVG(newValue, this.icon);
+        ?>
+    </ui:property>
+
+    <span id="icon"/>
+
+    <span id="label">
+        <slot/>
+    </span>
+
 </button>
 
