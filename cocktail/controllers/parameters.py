@@ -462,7 +462,9 @@ schema.RegularExpression.serialize_request_value = serialize_regular_expression
 def parse_calendar_page(self, reader, value):
 
     if value is not None:
-        separator = getattr(self, "request_value_separator", ",")
+        separator = getattr(self, "request_value_separator", "-")
+        value = value.strip()
+
         chunks = value.split(separator)
         items = [reader.process_value(member, chunk)
                 for chunk, member in zip(chunks, self.items)]
@@ -474,6 +476,15 @@ def parse_calendar_page(self, reader, value):
     return value
 
 schema.CalendarPage.parse_request_value = parse_calendar_page
+
+def serialize_calendar_page(self, value):
+    if value:
+        separator = getattr(self, "request_value_separator", "-")
+        return "%d%s%02d" % (value[0], separator, value[1])
+    else:
+        return value
+
+schema.CalendarPage.serialize_request_value = serialize_calendar_page
 
 NORMALIZATION_DEFAULT = strip
 UNDEFINED_DEFAULT = "set_default"

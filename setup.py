@@ -47,7 +47,8 @@ setup(
         "BeautifulSoup4",
         "lxml",
         "httplib2",
-        "PyStemmer"
+        "PyStemmer",
+        "rfc6266"
     ],
     extras_require = {
         "sass": ["libsass"]

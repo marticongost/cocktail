@@ -330,13 +330,11 @@ class Element(object):
             cache
         )
 
-        html = document.render(
+        return document.render(
             renderer = renderer,
             collect_metadata = False,
             cache = None
         )
-        document.dispose()
-        return html
 
     def create_html_document(self,
         renderer = None,
@@ -1470,17 +1468,6 @@ class Element(object):
             self.__client_translations = set()
         self.__client_translations.add(key)
 
-    def dispose(self):
-        try:
-            children = self.__children
-        except AttributeError:
-            pass
-        else:
-            if children is not None:
-                for child in children:
-                    child.dispose()
-
-        self.__dict__.clear()
 
 class Content(Element):
     """A piece of arbitrary HTML content.
