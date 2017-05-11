@@ -33,6 +33,8 @@ cocktail.ui.splash = function (splash, rootElement) {
     const OBSERVED_ATTRIBUTES = Symbol("cocktail.ui.OBSERVED_ATTRIBUTES");
     const IS_COMPONENT = Symbol("cocktail.ui.IS_COMPONENT");
     const TYPES_SCOURED_FOR_PROPERTIES = new WeakSet();
+    let globalStyleSheet = null;
+    let globalStyleSheetResolved = false;
 
     cocktail.ui.component = function (parameters) {
 
@@ -110,7 +112,13 @@ cocktail.ui.splash = function (splash, rootElement) {
             }
 
             // Linked CSS
-            for (let uri of this.constructor.linkedStyleSheets) {
+            let linkedSheets = this.constructor.linkedStyleSheets;
+
+            if (cocktail.ui.globalStyleSheet) {
+                linkedSheets = [cocktail.ui.globalStyleSheet, ...linkedSheets];
+            }
+
+            for (let uri of linkedSheets) {
                 let link = document.createElement('link');
                 link.rel = 'stylesheet';
                 link.href = uri;
@@ -167,6 +175,20 @@ cocktail.ui.splash = function (splash, rootElement) {
         }
         return attributes;
     }
+
+    Object.defineProperty(cocktail.ui, "globalStyleSheet", {
+        get() {
+            if (globalStyleSheet && !globalStyleSheetResolved) {
+                globalStyleSheet = cocktail.normalizeResourceURI(globalStyleSheet);
+                globalStyleSheetResolved = true;
+            }
+            return globalStyleSheet;
+        },
+        set(value) {
+            globalStyleSheet = value;
+            globalStyleSheetResolved = false;
+        }
+    });
 
     cocktail.ui.getShadow = function (element) {
         return element.shadowRoot || element.getRootNode();

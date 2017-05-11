@@ -20,6 +20,8 @@ from .exceptions import ComponentFileError
 POLYFILL_URI = "//cdnjs.cloudflare.com/ajax/libs/document-register-element/" \
                "1.4.1/document-register-element.js"
 
+DEFAULT_GLOBAL_STYLE_SHEET = "cocktail.ui://styles/global.scss.css"
+
 
 class Component(object):
 
@@ -206,12 +208,14 @@ class Component(object):
         self,
         title = "",
         locales = None,
-        splash = "cocktail.ui.Splash"
+        splash = "cocktail.ui.Splash",
+        global_style_sheet = DEFAULT_GLOBAL_STYLE_SHEET
     ):
         document = self.create_html_document(
             title = title,
             locales = locales,
-            splash = splash
+            splash = splash,
+            global_style_sheet = global_style_sheet
         )
         return document.render(collect_metadata = False)
 
@@ -219,14 +223,20 @@ class Component(object):
         self,
         title = "",
         locales = None,
-        splash = "cocktail.ui.Splash"
+        splash = "cocktail.ui.Splash",
+        global_style_sheet = DEFAULT_GLOBAL_STYLE_SHEET
     ):
         document = HTMLDocument()
         document.metadata = DocumentMetadata()
         document.metadata.page_title = title
         document.metadata.resources.append(Script(POLYFILL_URI))
         document.metadata.resources.append(
-            UIScript(self, locales = locales, splash = splash)
+            UIScript(
+                self,
+                locales = locales,
+                splash = splash,
+                global_style_sheet = global_style_sheet
+            )
         )
         return document
 
@@ -237,7 +247,8 @@ class UIScript(Script):
         self,
         root_component,
         locales = None,
-        splash = "cocktail.ui.Splash"
+        splash = "cocktail.ui.Splash",
+        global_style_sheet = DEFAULT_GLOBAL_STYLE_SHEET
     ):
         Script.__init__(
             self,
@@ -247,6 +258,7 @@ class UIScript(Script):
         self.root_component = root_component
         self.locales = locales
         self.splash = splash
+        self.global_style_sheet = global_style_sheet
 
     def link(self, document, url_processor = None):
         Script.link(self, document, url_processor = url_processor)
@@ -296,9 +308,14 @@ class UIScript(Script):
                         translation_keys.add(trans_key)
                         break
 
-        # Locales
+        # Global declarations
         locales = self.locales or [get_language()]
         declarations_script = Element("script", type = "text/javascript")
+        if self.global_style_sheet:
+            declarations_script.append(
+                "cocktail.ui.globalStyleSheet = %s;"
+                % dumps(self.global_style_sheet)
+            )
         declarations_script.append(
             "cocktail.ui.locales = %s;" % dumps(locales)
         )
