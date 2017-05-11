@@ -43,7 +43,7 @@
 
     &:not([state='disabled']) {
         button:hover {
-            background-color: #e8e4d7;
+            background-color: $panel-hover-color;
 
             .label {
                 color: $panel-action-highlight-color;
