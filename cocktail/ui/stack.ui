@@ -44,15 +44,17 @@
         }
 
         let stackParent = stackNode[STACK_PARENT];
+        this[STACK_TOP] = stackParent;
 
         stackNode.addEventListener("animationend", (e) => {
-            if (stackParent) {
-                stackParent.stackDescendants.removeChild(stackNode);
+            if (stackNode.parentNode) {
+                if (stackParent) {
+                    stackParent.stackDescendants.removeChild(stackNode);
+                }
+                else {
+                    this.stackContent.removeChild(stackNode);
+                }
             }
-            else {
-                this.stackContent.removeChild(stackNode);
-            }
-            this[STACK_TOP] = stackParent;
 
             if (stackParent) {
                 stackParent.isTopNode = true;
@@ -70,6 +72,7 @@
                 cocktail.ui.trigger(this, "stackEmptied");
             }
         });
+
         stackNode.animationState = "closing";
         if (stackParent) {
             stackParent.animationState = "childClosing";
@@ -86,8 +89,8 @@
     }
 
     clearStack() {
-        while (this[STACK_TOP]) {
-            this.pop();
+        if (this[STACK_TOP]) {
+            this.pop(this[STACK_TOP]);
         }
     }
 
