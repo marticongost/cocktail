@@ -109,6 +109,15 @@
     get stackTop() {
         return this[STACK_TOP];
     }
+
+    getStackNode(depth) {
+        let node = this.stackRoot;
+        while (node && depth) {
+            node = node.stackChild;
+            depth--;
+        }
+        return node;
+    }
     ?>
 
     <?tail
