@@ -268,7 +268,8 @@ cocktail.navigation.StackNode = class StackNode extends cocktail.navigation.Node
                 waitForAnimation = stack.popAndWait(stackNodes[this.stackIndex]);
             }
         }
-        else {
+
+        if (!waitForAnimation) {
             waitForAnimation = Promise.resolve(null);
         }
 
