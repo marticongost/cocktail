@@ -286,7 +286,7 @@ cocktail.navigation.StackNode = class StackNode extends cocktail.navigation.Node
 
     activate() {
         // Pop any extra nodes
-        let stack = cocktail.ui.root.stack;
+        let stack = this.stack;
         let stackNodes = Array.from(stack.iterStack());
         if (stackNodes.length > this.stackIndex + 1) {
             stack.pop(stackNodes[this.stackIndex + 1]);
