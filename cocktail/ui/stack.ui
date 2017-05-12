@@ -78,6 +78,13 @@
         return stackNode;
     }
 
+    popAndWait(stackNode = null) {
+        return new Promise((resolve, reject) => {
+            stackNode = this.pop(stackNode);
+            stackNode.addEventListener("animationend", resolve, {once: true});
+        });
+    }
+
     clearStack() {
         while (this[STACK_TOP]) {
             this.pop();
