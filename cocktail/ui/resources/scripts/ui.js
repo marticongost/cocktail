@@ -691,5 +691,14 @@ cocktail.ui.splash = function (splash, rootElement) {
         }
         return false;
     }
+
+    cocktail.ui.setFlag = function (element, attribute, value) {
+        if (value) {
+            element.setAttribute(attribute, "");
+        }
+        else {
+            element.removeAttribute(attribute);
+        }
+    }
 }
 
