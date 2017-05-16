@@ -6,7 +6,7 @@
 
     <?head
     const STACK_TOP = Symbol("cocktail.ui.Stack.STACK_TOP");
-    const STACK_PARENT = Symbol("cocktail.ui.Stack.STACK_PARENT");
+    const STACK_PARENT = Symbol.for("cocktail.ui.Stack.STACK_PARENT");
     ?>
 
     <?class
@@ -140,6 +140,10 @@
     <div id="stackContent"/>
 
     <div ui:component="StackNode">
+
+        <?head
+        const STACK_PARENT = Symbol.for("cocktail.ui.Stack.STACK_PARENT");
+        ?>
 
         <ui:property
             name="animationState"
