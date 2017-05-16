@@ -31,10 +31,12 @@
         stackNode.isTopNode = true;
         stackNode.animationState = "opening";
         cocktail.ui.trigger(this, "stackNodePushed", {stackNode});
+        cocktail.ui.trigger(this, "stackChanged", {previousNode: stackTop, newNode: stackNode});
         return stackNode;
     }
 
     pop(stackNode = null) {
+
         if (!stackNode) {
             stackNode = this[STACK_TOP];
         }
@@ -43,8 +45,15 @@
             throw new this.constructor.StackError();
         }
 
+        const previousStackTop = this[STACK_TOP];
+
         let stackParent = stackNode[STACK_PARENT];
         this[STACK_TOP] = stackParent;
+
+        cocktail.ui.trigger(this, "stackChanged", {
+            previousNode: previousStackTop,
+            newNode: stackParent
+        });
 
         stackNode.addEventListener("animationend", (e) => {
             if (stackNode.parentNode) {
@@ -157,6 +166,14 @@
         ?>
 
         <?on animationend
+        const state = this.animationState;
+        if (state == "opening" || state == "childClosing") {
+            cocktail.ui.trigger(this.stackElement, "exposedInStack");
+        }
+        else if (state == "closing" || state == "childOpening") {
+            cocktail.ui.trigger(this.stackElement, "coveredInStack");
+        }
+
         this.animationState = "none";
         ?>
 
