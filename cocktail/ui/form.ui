@@ -83,6 +83,21 @@
         cocktail.ui.trigger(this, "fieldsReady");
     }
 
+    awaitFields() {
+        return new Promise((resolve, reject) => {
+            if (this[FIELDS_READY]) {
+                resolve(this.fields);
+            }
+            else {
+                this.addEventListener(
+                    "fieldsReady",
+                    () => { resolve(this.fields); },
+                    {once: true}
+                );
+            }
+        });
+    }
+
     addField(member) {
         let field = this.createField(member);
         cocktail.ui.link(
