@@ -10,6 +10,7 @@
 {
     const PREV_CLICK_ELEMENT = Symbol();
     const PREV_CLICK_TIME = Symbol();
+    const CONTENT_ONLY = ":not(link):not(script)";
 
     cocktail.ui.selectable = (cls) => class Selectable extends cls {
 
@@ -51,7 +52,10 @@
                 },
                 selectableEntriesSelector: {
                     type: "string",
-                    reflected: true
+                    reflected: true,
+                    normalization: function (value) {
+                        return value ? value + CONTENT_ONLY : CONTENT_ONLY;
+                    }
                 },
                 activationType: {
                     type: "string",
@@ -69,6 +73,7 @@
             this.selectionContainer = this;
             this[this.constructor.selectedElements.VALUE] = new Set();
             this.selectionType = "single";
+            this.selectableEntriesSelector = null;
             this.selectionAxis = "vertical";
             this.activationType = "doubleClick";
             this.activationDoubleClickDelay = 300;
