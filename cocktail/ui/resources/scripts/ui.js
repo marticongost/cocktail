@@ -138,7 +138,10 @@ cocktail.ui.splash = function (splash, rootElement) {
         attributeChangedCallback(attrName, oldValue, newValue) {
             let property = this.constructor["_attr_" + attrName];
             if (property && property.reflected && !property.isChanging(this)) {
-                this[property.name] = property.getType(this).parseValue(newValue);
+                let type = property.getType(this);
+                if (type) {
+                    this[property.name] = type.parseValue(newValue);
+                }
             }
         }
 
