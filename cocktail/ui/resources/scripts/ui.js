@@ -114,7 +114,7 @@ cocktail.ui.splash = function (splash, rootElement) {
             // Linked CSS
             let linkedSheets = this.constructor.linkedStyleSheets;
 
-            if (cocktail.ui.globalStyleSheet) {
+            if (cocktail.ui.globalStyleSheet && this.shadowRoot) {
                 linkedSheets = [cocktail.ui.globalStyleSheet, ...linkedSheets];
             }
 
