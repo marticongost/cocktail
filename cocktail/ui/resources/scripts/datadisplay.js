@@ -56,7 +56,7 @@ cocktail.ui.dataDisplay = (cls) => class DataDisplay extends cls {
             },
             displayFactory: {},
             value: {
-                type: (obj) => obj.dataBinding.member,
+                type: (obj) => obj.dataBinding && obj.dataBinding.member || cocktail.ui.Property.types.string,
                 reflected: true
             },
             formLabelDisposition: {
