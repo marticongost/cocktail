@@ -32,12 +32,20 @@
             return null;
         }
 
+        get translationPrefix() {
+            return "cocktail.ui.actions";
+        }
+
+        get translationKey() {
+            return `${this.translationPrefix}.${this[ID]}`;
+        }
+
         translate() {
-            return cocktail.ui.translations["cocktail.ui.actions." + this[ID]];
+            return cocktail.ui.translations[this.translationKey];
         }
 
         get shortcut() {
-            return cocktail.ui.translations["cocktail.ui.actions." + this[ID] + ".shortcut"];
+            return cocktail.ui.translations[this.translationKey + ".shortcut"];
         }
 
         matches(actionBar) {
