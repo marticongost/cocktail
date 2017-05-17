@@ -857,3 +857,39 @@ cocktail.normalizeResourceURI = function (uri) {
     return uri;
 }
 
+cocktail.getScrollbarWidth = function () {
+
+    if (!cocktail._scrollbarWidth) {
+
+        var outer = document.createElement("div");
+        outer.style.visibility = "hidden";
+        outer.style.width = "100px";
+        document.body.appendChild(outer);
+
+        var widthWithoutScroll = outer.offsetWidth;
+        outer.style.overflow = "scroll";
+
+        var inner = document.createElement("div");
+        inner.style.width = "100%";
+        outer.appendChild(inner);
+
+        var widthWithScroll = inner.offsetWidth;
+        outer.parentNode.removeChild(outer);
+
+        cocktail._scrollbarWidth = widthWithoutScroll - widthWithScroll;
+    }
+
+    return cocktail._scrollbarWidth;
+}
+
+cocktail.loadSVG = function (url, container) {
+    var child;
+    while (child = container.lastChild) {
+        container.removeChild(child);
+    }
+    return jQuery.ajax({url: cocktail.normalizeResourceURI(url)})
+        .done(function (xml) {
+            container.appendChild(xml.documentElement);
+        });
+}
+

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <?class
+    connectedCallback() {
+        if (!this.selectedTab && this.firstChild) {
+            this.firstChild.selected = true;
+        }
+    }
+    ?>
+
+    <ui:property name="selectedTab">
+        <?on changed
+        if (oldValue) {
+            if (!cocktail.ui.propertyIsChanging(oldValue, "selected")) {
+                oldValue.selected = false;
+            }
+        }
+        if (newValue) {
+            if (!cocktail.ui.propertyIsChanging(newValue, "selected")) {
+                newValue.selected = true;
+            }
+        }
+        ?>
+    </ui:property>
+
+    <div id="strip"/>
+
+    <div id="content">
+        <slot id="contentSlot"/>
+    </div>
+
+</div>
+

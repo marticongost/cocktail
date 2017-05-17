@@ -1,0 +1,171 @@
+
+@import "cocktail.ui://styles/common";
+
+$group-separation: 3em;
+
+.field[readOnly='true'] .controlContainer {
+    color: #444;
+}
+
+fieldset {
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+legend {
+    padding: 0;
+    margin: 0;
+    font-weight: bold;
+    font-size: 1.1em;
+    color: $heading-color;
+
+    &:empty {
+        display: none;
+    }
+}
+
+.fieldsContainer:not(:empty) + .groupsContainer:not(:empty) {
+    margin-top: $group-separation;
+}
+
+.Group + .Group {
+    margin-top: $group-separation;
+}
+
+:host([groupsLayout='row']) {
+
+    #groupsContainer {
+        display: flex;
+        flex-direction: row;
+
+        & > .Group + .Group {
+            margin-top: 0;
+            margin-left: 5em;
+        }
+    }
+}
+
+legend:not(:empty) + .fieldsContainer {
+    border-top: 1px dotted lighten($heading-color, 30);
+    margin-top: 0.5em;
+    padding-top: 0.5em;
+}
+
+:host([formLayout='column']) {
+
+    .field {
+
+        & + .field {
+            margin-top: 1.5em;
+        }
+
+        &[labelDisposition='normal'] {
+            .label + .controlContainer {
+                margin-top: 0.3em;
+            }
+        }
+    }
+}
+
+:host([formLayout='row']) {
+
+    #fieldsContainer {
+        display: flex;
+        flex-direction: row;
+
+        .field {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+
+            & + .field {
+                &[labelDisposition='hidden'] {
+                    margin-left: 1em;
+                }
+
+                &[labelDisposition='normal'] {
+                    margin-left: 2em;
+                }
+            }
+
+            &[labelDisposition='normal'] {
+                .label + .controlContainer {
+                    margin-left: 1em;
+                }
+            }
+        }
+    }
+}
+
+:host([formLayout='verticalTable']) {
+
+    #fieldsContainer {
+        display: table;
+
+        .field {
+            display: table-row;
+
+            .label {
+                display: table-cell;
+            }
+
+            .controlContainer {
+                display: table-cell;
+            }
+        }
+    }
+}
+
+:host([formLayout='horizontalTable']) {
+    #fieldsContainer {
+        display: flex;
+        flex-direction: row;
+    }
+}
+
+.field[labelDisposition='afterControl'] {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+
+    .controlContainer {
+        order: 1;
+        margin-right: 0.3em;
+    }
+
+    .label {
+        order: 2;
+    }
+}
+
+.field[labelDisposition='hidden'] .label {
+    display: none !important;
+}
+
+.FieldTranslations {
+
+    & > .label {
+        margin-bottom: 0.5em;
+    }
+
+    .translations {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        margin: -0.5em -1em;
+
+        .Translation {
+            margin: 0.5em 1em;
+
+            .label {
+                font-size: 0.8em;
+            }
+
+            &:not([visible='true']) {
+                display: none;
+            }
+        }
+    }
+}
+

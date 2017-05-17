@@ -1,0 +1,521 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<form
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:requires component="cocktail.ui.datadisplay"/>
+    <ui:requires component="cocktail.ui.CheckBox"/>
+    <ui:requires component="cocktail.ui.CheckList"/>
+    <ui:requires component="cocktail.ui.DropdownSelector"/>
+    <ui:requires component="cocktail.ui.NumberInput"/>
+    <ui:requires component="cocktail.ui.TextInput"/>
+
+    <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
+
+    <ui:property
+        name="formLayout"
+        type="string"
+        reflected="true"
+        default="column"/>
+
+    <ui:property
+        name="groupsLayout"
+        type="string"
+        reflected="true"
+        default="column"/>
+
+    <ui:property
+        name="fieldsLabelDisposition"
+        type="string"
+        reflected="true"/>
+
+    <ui:property
+        name="modified"
+        type="boolean"
+        reflected="true"
+        default="false"/>
+
+    <ui:property
+        name="grouped"
+        type="boolean"
+        reflected="true"
+        default="true"/>
+
+    <ui:property name="locales">
+        <?on changed
+        for (let field of this[FIELD_MAP].values()) {
+            if (field instanceof cls.FieldTranslations) {
+                field.locales = this.locales;
+            }
+        }
+        ?>
+    </ui:property>
+
+    <?head
+    const GROUPS_MAP = Symbol("cocktail.ui.Form.GROUPS_MAP");
+    const FIELD_MAP = Symbol("cocktail.ui.Form.FIELD_MAP");
+    const FIELDS_READY = Symbol.for("cocktail.ui.Form.FIELDS_READY");
+
+    {
+        const formControl = cocktail.ui.formControl;
+        cocktail.schema.String[formControl] = cocktail.ui.TextInput;
+        cocktail.schema.Number[formControl] = cocktail.ui.NumberInput;
+        cocktail.schema.Boolean[formControl] = cocktail.ui.CheckBox;
+        cocktail.schema.Reference[formControl] = cocktail.ui.DropdownSelector;
+        cocktail.schema.Collection[formControl] = cocktail.ui.CheckList;
+        cocktail.schema.Locale[formControl] = cocktail.ui.DropdownSelector;
+    }
+    ?>
+
+    <?class
+    get fields() {
+        return this[FIELD_MAP];
+    }
+
+    createFields() {
+        for (let member of this.dataBinding.member.members()) {
+            if (member[cocktail.ui.editable] != cocktail.ui.NOT_EDITABLE) {
+                this.addField(member);
+            }
+        }
+        this[FIELDS_READY] = true;
+        cocktail.ui.trigger(this, "fieldsReady");
+    }
+
+    awaitFields() {
+        return new Promise((resolve, reject) => {
+            if (this[FIELDS_READY]) {
+                resolve(this.fields);
+            }
+            else {
+                this.addEventListener(
+                    "fieldsReady",
+                    () => { resolve(this.fields); },
+                    {once: true}
+                );
+            }
+        });
+    }
+
+    addField(member) {
+        let field = this.createField(member);
+        cocktail.ui.link(
+            this,
+            field,
+            "value",
+            (form, field) => {
+                if (form.value && field.dataBinding) {
+                    field.value = form.value[field.dataBinding.member.name];
+                }
+            },
+            (field, form) => {
+                if (field.dataBinding) {
+                    let formValue = form.value ? cocktail.ui.copyValue(form.value) : {};
+                    formValue[field.dataBinding.member.name] = field.value;
+                    form.value = formValue;
+                }
+            }
+        );
+        this[FIELD_MAP].set(member.name, field);
+
+        let parent = this;
+        if (this.grouped) {
+            let groupId = member[cocktail.ui.group];
+            if (groupId) {
+                parent = this.requireGroup(groupId);
+            }
+        }
+        parent.fieldsContainer.appendChild(field);
+    }
+
+    getGroup(groupId) {
+        return this[GROUPS_MAP].get(groupId);
+    }
+
+    requireGroup(groupId) {
+
+        let group = this[GROUPS_MAP].get(groupId);
+
+        if (!group) {
+            group = this.createGroup(groupId);
+            this[GROUPS_MAP].set(groupId, group);
+
+            // Find the group's parent (another group or the form itself)
+            let pos = groupId.lastIndexOf(".");
+            let parentGroupId = (pos == -1) ? null : groupId.substr(0, pos);
+            let parent = parentGroupId ? this.requireGroup(parentGroupId) : this;
+            parent.groupsContainer.appendChild(group);
+        }
+
+        return group;
+    }
+
+    createGroup(groupId) {
+        let group = cls.Group.create();
+        group.groupId = groupId;
+        group.heading.innerHTML = this.dataBinding.member.translate(".groups." + groupId);
+        return group;
+    }
+
+    createField(member) {
+        let field;
+        if (member.translated) {
+            field = this.constructor.FieldTranslations.create();
+            field.locales = this.locales;
+        }
+        else {
+            field = this.constructor.Field.create();
+        }
+        field.classList.add("field");
+        field.labelDisposition = this.fieldsLabelDisposition;
+        field.displayFactory = this.displayFactory;
+        field.readOnlyDisplayFactory = this.readOnlyDisplayFactory;
+        field.dataBinding = this.dataBinding.child(
+            this.dataBinding.value,
+            member
+        );
+        return field;
+    }
+
+    removeFields() {
+        this[FIELD_MAP].clear();
+        this[FIELDS_READY] = false;
+        cocktail.ui.empty(this.fieldsContainer);
+    }
+
+    acceptModifications() {
+        this.modified = false;
+        for (let field of this[FIELD_MAP].values()) {
+            field.acceptModifications();
+        }
+    }
+    ?>
+
+    <?js
+    this[FIELD_MAP] = new Map();
+    this[GROUPS_MAP] = new Map();
+    this.locales = cocktail.ui.locales;
+    this.displayFactory = cocktail.ui.formControls;
+    this.readOnlyDisplayFactory = cocktail.ui.displays;
+    ?>
+
+    <?on dataBinding:changed
+    this.removeFields();
+    this.createFields();
+    ?>
+
+    <?on value:changed
+    if (this[FIELDS_READY]) {
+        this.modified = true;
+    }
+    ?>
+
+    <div id="fieldsContainer"/>
+    <div id="groupsContainer"/>
+
+    <div ui:component="Field">
+
+        <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
+
+        <ui:property
+            name="modified"
+            type="boolean"
+            reflected="true"
+            default="false"/>
+
+        <ui:property
+            name="readOnly"
+            type="boolean"
+            reflected="true"/>
+
+        <ui:property
+            name="labelDisposition"
+            type="string"
+            reflected="true"/>
+
+        <?head
+        const FIELDS_READY = Symbol.for("cocktail.ui.Form.FIELDS_READY");
+        ?>
+
+        <?on displayFactory:changed
+        this.makeControl();
+        ?>
+
+        <?on dataBinding:changed
+        this.readOnly = (newValue.member[cocktail.ui.editable] == cocktail.ui.READ_ONLY);
+
+        // Set the field label
+        this.label.innerHTML = newValue.member.translate();
+
+        // Create the new field control
+        this.makeControl();
+        ?>
+
+        <?on value:changed
+        if (this.parentInstance && this.parentInstance[FIELDS_READY]) {
+            this.modified = true;
+        }
+        ?>
+
+        <?class
+        acceptModifications() {
+            this.modified = false;
+        }
+
+        makeControl() {
+
+            // Remove the previous control
+            if (this.control) {
+                cocktail.ui.removeLink(this, this.control, "value");
+                this.control.parentNode.removeChild(this.control);
+                this.control = null;
+            }
+
+            // Create the control once the field has been given a data binding
+            // and has been attached to a form
+            if (this.dataBinding && this.displayFactory) {
+                let displayFactory = (
+                    this.dataBinding.member[cocktail.ui.editable] == cocktail.ui.READ_ONLY ?
+                    this.readOnlyDisplayFactory : this.displayFactory
+                );
+                this.control = displayFactory.requireDisplay(this.dataBinding);
+                cocktail.ui.link(this, this.control, "value");
+                this.controlContainer.appendChild(this.control);
+                if (!this.labelDisposition) {
+                    this.labelDisposition = (
+                        this.dataBinding.member[cocktail.ui.formLabelDisposition]
+                        || this.control.formLabelDisposition
+                        || "normal"
+                    );
+                }
+            }
+        }
+        ?>
+
+        <label id="label">
+            <?on click
+            if (instance.control.formLabelClicked) {
+                instance.control.formLabelClicked();
+            }
+            else {
+                instance.control.focus();
+            }
+            ?>
+        </label>
+
+        <div id="controlContainer"/>
+
+    </div>
+
+    <div ui:component="FieldTranslations">
+
+        <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
+
+        <ui:property
+            name="modified"
+            type="boolean"
+            reflected="true"
+            default="false"/>
+
+        <?head
+        const TRANSLATIONS_MAP = Symbol("cocktail.ui.Form.FieldTranslations.TRANSLATIONS_MAP");
+        ?>
+
+        <?class
+        acceptModifications() {
+            this.modified = false;
+            for (let translation of this[TRANSLATIONS_MAP].values()) {
+                translation.acceptModifications();
+            }
+        }
+        ?>
+
+        <ui:property name="locales">
+            <?on changed
+            this.updateTranslations();
+            ?>
+        </ui:property>
+
+        <?on dataBinding:changed
+        this.label.innerHTML = newValue.member.translate();
+        this.updateTranslations();
+        ?>
+
+        <?class
+        getTranslation(locale) {
+            return this[TRANSLATIONS_MAP].get(locale);
+        }
+
+        updateTranslations() {
+
+            if (!this.dataBinding || !this.locales) {
+                return;
+            }
+
+            let newLocales = new Set(this.locales);
+            let [added, removed] = cocktail.sets.addedRemoved(this[TRANSLATIONS_MAP].keys(), newLocales);
+
+            for (let locale of added) {
+                let translation = this.createTranslation(locale);
+                cocktail.ui.link(
+                    this,
+                    translation,
+                    "value",
+                    (fieldTranslations, translation) => {
+                        if (fieldTranslations.value && fieldTranslations.dataBinding && translation.dataBinding) {
+                            translation.value = fieldTranslations.value[translation.dataBinding.language];
+                        }
+                    },
+                    (translation, fieldTranslations) => {
+                        if (translation.dataBinding) {
+                            let fieldTranslationsValue = fieldTranslations.value ? cocktail.ui.copyValue(fieldTranslations.value) : {};
+                            fieldTranslationsValue[translation.dataBinding.language] = translation.value;
+                            fieldTranslations.value = fieldTranslationsValue;
+                        }
+                    }
+                );
+                this[TRANSLATIONS_MAP].set(locale, translation);
+                this.translations.appendChild(translation);
+            }
+
+            for (let [locale, translation] of this[TRANSLATIONS_MAP]) {
+                translation.visible = newLocales.has(locale);
+            }
+        }
+
+        createTranslation(locale) {
+            let translation = cls.Translation.create();
+            translation.displayFactory = this.displayFactory;
+            translation.readOnlyDisplayFactory = this.readOnlyDisplayFactory;
+            translation.dataBinding = this.dataBinding.child(
+                this.dataBinding.object,
+                this.dataBinding.member,
+                locale,
+                this.dataBinding.value[locale]
+            );
+            return translation;
+        }
+        ?>
+
+        <?js
+        this[TRANSLATIONS_MAP] = new Map();
+        ?>
+
+        <div id="label"/>
+        <div id="translations"/>
+
+        <div ui:component="Translation">
+
+            <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
+
+            <ui:property
+                name="modified"
+                type="boolean"
+                reflected="true"
+                default="false"/>
+
+            <ui:property
+                name="readOnly"
+                type="boolean"
+                reflected="true"/>
+
+            <ui:property
+                name="visible"
+                type="boolean"
+                reflected="true"/>
+
+            <?head
+            const FIELDS_READY = Symbol.for("cocktail.ui.Form.FIELDS_READY");
+            ?>
+
+            <?on displayFactory:changed
+            this.makeControl();
+            ?>
+
+            <?on dataBinding:changed
+            this.readOnly = (newValue.member[cocktail.ui.editable] == cocktail.ui.READ_ONLY);
+
+            // Set the field label
+            this.label.innerHTML = cocktail.ui.translations["cocktail.locales." + newValue.language];
+
+            // Create the new field control
+            this.makeControl();
+            ?>
+
+            <?on value:changed
+            let form = this.parentInstance && this.parentInstance.parentInstance;
+            if (form && form[FIELDS_READY]) {
+                this.modified = true;
+            }
+            ?>
+
+            <?class
+            acceptModifications() {
+                this.modified = false;
+            }
+
+            makeControl() {
+
+                // Remove the previous control
+                if (this.control) {
+                    cocktail.ui.removeLink(this, this.control, "value");
+                    this.control.parentNode.removeChild(this.control);
+                    this.control = null;
+                }
+
+                // Create the control once the field has been given a data binding
+                // and has been attached to a form
+                if (this.dataBinding && this.displayFactory) {
+                    let displayFactory = (
+                        this.dataBinding.member[cocktail.ui.editable] == cocktail.ui.READ_ONLY ?
+                        this.readOnlyDisplayFactory : this.displayFactory
+                    );
+                    this.control = displayFactory.requireDisplay(this.dataBinding);
+                    cocktail.ui.link(this, this.control, "value");
+                    this.controlContainer.appendChild(this.control);
+                    if (!this.formLabelDisposition) {
+                        this.formLabelDisposition = (
+                            this.control.formLabelDisposition
+                            || this.dataBinding.member[cocktail.ui.formLabelDisposition]
+                        );
+                    }
+                }
+            }
+            ?>
+
+            <label id="label">
+                <?on click
+                if (instance.control.formLabelClicked) {
+                    instance.control.formLabelClicked();
+                }
+                else {
+                    instance.control.focus();
+                }
+                ?>
+            </label>
+
+            <div id="controlContainer"/>
+
+        </div>
+
+    </div>
+
+    <div ui:component="Group">
+
+        <ui:property
+            name="groupId"
+            type="string"
+            reflected="true"
+            final="true"/>
+
+        <fieldset id="fieldset">
+            <legend id="heading"/>
+            <div id="fieldsContainer"/>
+            <div id="groupsContainer"/>
+        </fieldset>
+
+    </div>
+
+</form>
+

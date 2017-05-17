@@ -74,7 +74,7 @@ def either(sequence):
 
 def plural2(count, singular, plural):
 
-    if not isinstance(count, (int, float, Decimal)):
+    if not isinstance(count, (int, float, long, Decimal)):
         count = len(count)
 
     if count == 1:

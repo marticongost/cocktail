@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:requires component="cocktail.ui.datadisplay"/>
+    <ui:requires component="cocktail.ui.selectable"/>
+    <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
+
+    <?head
+    const SERIALIZED_VALUE = Symbol("cocktail.ui.SplitSelector.SERIALIZED_VALUE");
+    const ENTRY_MAP = Symbol.for("cocktail.ui.SplitSelector.ENTRY_MAP");
+    const SELECTING_ENTRY = Symbol("cocktail.ui.SplitSelector.SELECTING_ENTRY");
+    ?>
+
+    <?class
+    clearEntries() {
+        for (let panel of [this.selectedEntriesPanel, this.availableEntriesPanel]) {
+            panel[ENTRY_MAP].clear();
+            cocktail.ui.empty(panel.entryList);
+        }
+    }
+
+    createEntries() {
+        this.clearEntries();
+        let items = this.dataBinding && this.dataBinding.member && this.dataBinding.member.items;
+        if (items) {
+            let possibleValuesResolution = Promise.resolve(items.getPossibleValues());
+            possibleValuesResolution.then((values) => this.addEntries(values));
+        }
+    }
+
+    addEntries(values) {
+        for (let value of values) {
+            this.addEntry(value);
+        }
+    }
+
+    addEntry(value) {
+
+        let items = this.dataBinding.member.items;
+        let label = items.translateValue(value);
+        let serializedValue = items.serializeValue(value);
+        let selected = this[SERIALIZED_VALUE].has(serializedValue);
+
+        for (let panel of [this.selectedEntriesPanel, this.availableEntriesPanel]) {
+            let entry = this.constructor.Entry.create();
+            entry.entryValue = value;
+            entry[SERIALIZED_VALUE] = serializedValue;
+            entry.label.innerHTML = label;
+            if (selected) {
+                entry.setAttribute("chosen", "");
+            }
+            panel.entryList.appendChild(entry);
+            panel[ENTRY_MAP].set(serializedValue, entry);
+        }
+    }
+
+    isSelected(value) {
+        let items = this.dataBinding.member.items;
+        let serializedValue = items.serializeValue(value);
+        return this[SERIALIZED_VALUE].has(serializedValue);
+    }
+
+    setSelected(value, selected) {
+
+        let items = this.dataBinding.member.items;
+        let serializedValue = items.serializeValue(value);
+        let wasSelected = this[SERIALIZED_VALUE].has(serializedValue);
+
+        if (selected != wasSelected) {
+            for (let panel of [this.selectedEntriesPanel, this.availableEntriesPanel]) {
+                let entry = panel[ENTRY_MAP].get(serializedValue);
+                if (!entry) {
+                    throw new cls.InexistentEntryError(this, value);
+                }
+                if (selected) {
+                    entry.setAttribute("chosen", "");
+                }
+                else {
+                    entry.removeAttribute("chosen");
+                }
+                panel.setElementSelected(entry, false);
+            }
+
+            let newValue = [];
+            for (let entry of this.selectedEntriesPanel.entryList.children) {
+                if (entry.hasAttribute("chosen")) {
+                    newValue.push(entry.entryValue);
+                }
+            }
+            this[SELECTING_ENTRY] = true;
+            this.value = newValue;
+            this[SELECTING_ENTRY] = false;
+        }
+    }
+    ?>
+
+    <?tail
+    cls.InexistentEntryError = class InexistentEntryError {
+
+        constructor(selector, value) {
+            this.selector = selector;
+            this.value = value;
+        }
+
+        toString() {
+            return `Can't find an entry with value ${this.value} in ${this.selector}`;
+        }
+    }
+    ?>
+
+    <?on value:changed
+    if (this.dataBinding) {
+
+        if (newValue) {
+            this[SERIALIZED_VALUE] = new Set(
+                Array.from(newValue, (item) => this.dataBinding.member.items.serializeValue(item))
+            );
+        }
+        else {
+            this[SERIALIZED_VALUE] = null;
+        }
+
+        if (!this[SELECTING_ENTRY]) {
+            for (let panel of [this.selectedEntriesPanel, this.availableEntriesPanel]) {
+                for (let entry of panel.entryList.children) {
+                    if (this[SERIALIZED_VALUE].has(entry[SERIALIZED_VALUE])) {
+                        entry.setAttribute("chosen", "");
+                    }
+                    else {
+                        entry.removeAttribute("chosen");
+                    }
+                }
+            }
+        }
+    }
+    ?>
+
+    <?on dataBinding:changed
+    this.createEntries();
+    ?>
+
+    <div ui:component="Panel" selectionType="multiple" tabindex="0">
+
+        <ui:decoratedBy function="cocktail.ui.selectable"/>
+
+        <?head
+        const ENTRY_MAP = Symbol.for("cocktail.ui.SplitSelector.ENTRY_MAP");
+        ?>
+
+        <?class
+        get selectedValues() {
+            return Array.from(this.selectedElements, (element) => element.entryValue);
+        }
+
+        selectionActivated() {
+            this.actionList.invokeAction("transfer");
+        }
+
+        getEntry(locale) {
+            return this[ENTRY_MAP].get(locale);
+        }
+        ?>
+
+        <?js
+        this[ENTRY_MAP] = new Map();
+        ?>
+
+        <ui:cocktail.ui.ActionList id="actionList">
+            <?js
+            element.selectable = instance;
+            ?>
+        </ui:cocktail.ui.ActionList>
+
+        <ul id="entryList">
+            <?js
+            instance.selectionContainer = element;
+            ?>
+        </ul>
+
+    </div>
+
+    <li ui:component="Entry">
+        <div id="label"/>
+    </li>
+
+    <ui:Panel id="selectedEntriesPanel" selectableEntriesSelector="[chosen]">
+        <ui:with ui:element="heading">
+            <ui:translation/>
+        </ui:with>
+        <ui:with ui:element="actionList">
+            <?js
+            element.actions = [
+                new class DeselectAction extends cocktail.ui.Action {
+                    invoke(context) {
+                        for (let value of context.selection) {
+                            instance.setSelected(value, false);
+                        }
+                    }
+                    get min() {
+                        return 1;
+                    }
+                    translate() {
+                        return cocktail.ui.translations["cocktail.ui.SplitSelector.deselect"];
+                    }
+                    get iconURL() {
+                        return cocktail.normalizeResourceURI("cocktail.ui://images/remove.svg");
+                    }
+                }("transfer")
+            ];
+            ?>
+        </ui:with>
+    </ui:Panel>
+
+    <ui:Panel id="availableEntriesPanel" selectableEntriesSelector=":not([chosen])">
+        <ui:with ui:element="heading">
+            <ui:translation/>
+        </ui:with>
+        <ui:with ui:element="actionList">
+            <?js
+            element.actions = [
+                new class SelectAction extends cocktail.ui.Action {
+                    invoke(context) {
+                        for (let value of context.selection) {
+                            instance.setSelected(value, true);
+                        }
+                    }
+                    get min() {
+                        return 1;
+                    }
+                    translate() {
+                        return cocktail.ui.translations["cocktail.ui.SplitSelector.select"];
+                    }
+                    get iconURL() {
+                        return cocktail.normalizeResourceURI("cocktail.ui://images/add.svg");
+                    }
+                }("transfer")
+            ];
+            ?>
+        </ui:with>
+    </ui:Panel>
+
+</div>
+

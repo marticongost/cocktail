@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui"
+    dataState="pending"
+    columnsReady="false">
+
+    <ui:requires component="cocktail.ui.selectable"/>
+    <ui:requires component="cocktail.ui.datadisplay"/>
+    <ui:requires component="cocktail.ui.datasources"/>
+
+    <ui:decoratedBy function="cocktail.ui.selectable"/>
+    <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
+    <ui:decoratedBy function="cocktail.ui.dataSourceConsumer"/>
+
+    <ui:resource href="cocktail.ui://scripts/scrollwatcher.js"/>
+
+    <?tail
+    cls.delegatesFocus = true;
+    ?>
+
+    <?on dataBinding:changed
+    if (!this.visibleMembers) {
+        this.visibleMembers = new Set(
+            Array.from(newValue.member.members()).filter(
+                (member) => member[cocktail.ui.listedByDefault]
+            )
+        );
+    }
+    ?>
+
+    <ui:property
+        name="visibleLocales"
+        type="identifiers"
+        reflected="true"
+        default="[]">
+        <?on changed
+        if (this.dataBinding && this.dataSource) {
+            this.reset();
+        }
+        ?>
+    </ui:property>
+
+    <ui:property name="localesParameter" type="string" default="locales" reflected="true"/>
+
+    <ui:property
+        name="visibleMembers"
+        reflected="false">
+        <?on changed
+        if (this.dataBinding && this.dataSource) {
+            this.reset();
+        }
+        ?>
+    </ui:property>
+
+    <ui:property name="membersParameter" type="string" default="members" reflected="true"/>
+
+    <ui:property name="paging" type="string" reflected="true">
+        <?on changed
+        if (newValue == "infiniteScroll") {
+            this.scrollWatcher.target = this.body;
+        }
+
+        if (oldValue == "infiniteScroll") {
+            this.scrollWatcher.target = null;
+        }
+        ?>
+    </ui:property>
+
+    <ui:property name="resultCount" reflected="false"/>
+    <ui:property name="empty" type="boolean" default="true" reflected="true"/>
+    <ui:property name="page" type="number" default="0" reflected="true"/>
+    <ui:property name="pageSize" type="number" default="100" reflected="true"/>
+    <ui:property name="pageParameter" type="string" default="page" reflected="true"/>
+    <ui:property name="pageSizeParameter" type="string" default="page_size" reflected="true"/>
+
+    <ui:property name="searchValues" reflected="false">
+        <?on changed
+        this.reload();
+        ?>
+    </ui:property>
+
+    <ui:property name="searchSchema" reflected="false"/>
+
+    <?class
+    update() {
+        this.loadPage(this.page);
+    }
+
+    loadPage(page) {
+
+        let table = this;
+        let append = (this.paging == "infiniteScroll");
+
+        this.dataState = "loading";
+        this.createColumns();
+
+        return this.dataSource
+            .load(this.getDataSourceOptions(page))
+            .then(function (data) {
+                table.resultCount = data.count;
+                if (append) {
+                    table.addRows(data.records);
+                }
+                else {
+                    table.setRows(data.records);
+                }
+                table.dataState = "loaded";
+            })
+            .catch(function (error) {
+                table.dataState = "error";
+                table.errorMessage.innerText = error.toString();
+                cocktail.ui.trigger(table, "error", {error: error});
+            });
+    }
+
+    getDataSourceOptions(page) {
+
+        let options = {
+            parameters: {[this.pageParameter]: page}
+        }
+
+        if (this.pageSizeParameter) {
+            options.parameters[this.pageSizeParameter] = this.pageSize;
+        }
+
+        if (this.localesParameter) {
+            options.parameters[this.localesParameter] = Array(...this.visibleLocales);
+        }
+
+        if (this.membersParameter) {
+            options.parameters[this.membersParameter] = Array.from(this.visibleMembers, member => member.name);
+        }
+
+        if (this.searchSchema && this.searchValues) {
+            this.addSearchParameter(options);
+        }
+
+        return options;
+    }
+
+    addSearchParameter(options) {
+        for (let member of this.searchSchema.members()) {
+            let value = this.searchValues[member.name];
+            if (value !== null && value !== undefined && value !== "") {
+                this.addSearchCriteriaParameter(options, member, value);
+            }
+        }
+    }
+
+    addSearchCriteriaParameter(options, member, value) {
+        let paramName = this.getSearchCriteriaParameterName(member);
+        let paramValue = this.getSearchCriteriaParameterValue(member, value);
+        options.parameters[paramName] = paramValue;
+    }
+
+    getSearchCriteriaParameterName(member) {
+        return "search_" + member.name;
+    }
+
+    getSearchCriteriaParameterValue(member, value) {
+        return member.serializeValue(value);
+    }
+
+    loadNextPage() {
+        let nextPage = this.page + 1;
+        this.loadPage(nextPage).then(() => this.page = nextPage);
+    }
+
+    createColumns() {
+        if (this.columnsReady) {
+            return;
+        }
+        this.columnsReady = true;
+        for (let member of this.visibleMembers) {
+            let locales = member.translated ? this.visibleLocales: [null];
+            for (let language of locales) {
+                let heading = this.createHeading(member, language);
+                this.headingsRow.appendChild(heading);
+            }
+        }
+    }
+
+    createHeading(member, language = null) {
+        let heading = this.constructor.Heading.create();
+        heading.member = member;
+        heading.language = language;
+        heading.setAttribute("column", member.name);
+        heading.label.innerHTML = member.translate();
+        if (language) {
+            heading.languageLabel.innerHTML = cocktail.ui.translations["cocktail.locales." + language];
+        }
+        else {
+            heading.languageLabel.style.display = "none";
+        }
+        return heading;
+    }
+
+    setRows(records) {
+        this.clearRows();
+        this.addRows(records);
+    }
+
+    addRows(records) {
+
+        let row;
+
+        for (let record of records) {
+            row = this.createRow(record);
+            this.body.appendChild(row);
+        }
+
+        if (row) {
+            this.empty = false;
+        }
+
+        // Subtract the scrollbar width from the headings row
+        let table = this;
+        setTimeout(function () {
+            table.headingsRow.style.width = `calc(100% - ${table.body.offsetWidth - table.body.clientWidth}px)`;
+        }, 1);
+    }
+
+    reset() {
+        this.clear();
+        this.createColumns();
+        this.update();
+    }
+
+    clear() {
+        cocktail.ui.empty(this.headingsRow);
+        this.columnsReady = false;
+        this.clearRows();
+    }
+
+    clearRows() {
+        cocktail.ui.empty(this.body);
+        this.selectedElements = [];
+    }
+
+    reload() {
+        this.clearRows();
+        this.loadPage(0).then(() => this.page = 0);
+    }
+
+    createRow(record) {
+        let row = document.createElement("tr");
+        row.value = record;
+        for (let member of this.visibleMembers) {
+            let locales = member.translated ? this.visibleLocales : [null];
+            for (let language of locales) {
+                let cell = this.createCell(record, member, language);
+                row.appendChild(cell);
+            }
+        }
+        return row;
+    }
+
+    createCell(record, member, language) {
+
+        let cell = document.createElement("td");
+        cell.member = member;
+        cell.language = language;
+        cell.setAttribute("column", member.name);
+
+        // Render the value using a custom component, if available, or fall
+        // back to a string representation
+        let value = this.dataSource.getValue(record, member, language);
+        let display = cocktail.ui.displays.createDisplay(
+            new cocktail.ui.DataBinding(
+                record,
+                member,
+                language,
+                value
+            ),
+            {wrapRawValues: false}
+        );
+        if (display) {
+            cell.appendChild(display);
+        }
+        else {
+            cell.innerHTML = member.translateValue(value);
+        }
+        return cell;
+    }
+    ?>
+
+    <?js
+    let table = this;
+    this.scrollWatcher = new cocktail.ui.ScrollWatcher();
+    this.scrollWatcher.callback = function () {
+        table.loadNextPage();
+        this.reset();
+    }
+    ?>
+
+    <table id="table">
+
+        <thead id="head">
+            <tr id="headingsRow"/>
+        </thead>
+
+        <tbody id="body" tabindex="0"/>
+
+        <th ui:component="Heading">
+            <span id="label"/>
+            <span id="languageLabel"/>
+        </th>
+
+    </table>
+
+    <ui:cocktail.ui.LoadingSign id="loadingSign"/>
+
+    <div id="errorBox">
+        <ui:translation/>
+        <div id="errorMessage"/>
+    </div>
+
+    <?js
+    this.selectionContainer = this.body;
+    ?>
+
+</div>
+
