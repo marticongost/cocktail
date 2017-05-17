@@ -373,6 +373,42 @@
                 element = next.call(this, element);
             }
         }
+
+        selectFirst() {
+            let first = this.getFirstSelectableElement();
+            if (first) {
+                this.selectedElements = [first];
+                return true;
+            }
+            return false;
+        }
+
+        selectLast() {
+            let last = this.getLastSelectableElement();
+            if (last) {
+                this.selectedElements = [last];
+                return true;
+            }
+            return false;
+        }
+
+        selectNext() {
+            let next = this.getNextSelectableElement();
+            if (next) {
+                this.selectedElements = [next];
+                return true;
+            }
+            return false;
+        }
+
+        selectPrevious() {
+            let previous = this.getPreviousSelectableElement();
+            if (previous) {
+                this.selectedElements = [previous];
+                return true;
+            }
+            return false;
+        }
     }
 }
 
