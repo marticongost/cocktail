@@ -42,7 +42,7 @@ cocktail.ui.splash = function (splash, rootElement) {
         cls.fullName = parameters.fullName;
         cls.tag = parameters.fullName.replace(/\./g, "-").toLowerCase();
         cls.parentComponent = parameters.parentComponent;
-        cls.baseTag = parameters.baseTag;
+        cls.baseTag = parameters.baseTag || cls.baseTag;
         cls[OBSERVED_ATTRIBUTES] = [];
 
         cocktail.setVariable(parameters.fullName, cls);
