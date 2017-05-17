@@ -172,6 +172,14 @@ class ComponentLoader(object):
             else:
                 inheriting_component = True
                 base_name = local_name
+                if base_name[0].isupper():
+                    if self.component.parent:
+                        base_name = self.component.parent.full_name + "." + base_name
+                    else:
+                        self.trigger_parser_error(
+                            "Subcomponent reference not valid in this context"
+                        )
+
                 self.base_component = self.component.registry.get(
                     base_name,
                     referrer = self.component,
