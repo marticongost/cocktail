@@ -1,0 +1,36 @@
+
+#entries {
+    display: block;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+        flex-direction: row;
+        align-items: center;
+        padding: 0;
+        margin: 0;
+
+        :host([layout='vertical']) & {
+            display: flex;
+
+            & + li {
+                margin-top: 0.3em;
+            }
+        }
+
+        :host([layout='horizontal']) & {
+            display: inline-flex;
+
+            & + li {
+                margin-left: 0.8em;
+            }
+        }
+
+        input {
+            margin: 0;
+            margin-right: 0.3em;
+        }
+    }
+}
+

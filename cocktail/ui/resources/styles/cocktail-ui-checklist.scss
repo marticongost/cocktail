@@ -1,0 +1,26 @@
+
+@import "cocktail://styles/utils";
+
+#entries {
+    @include clear-list-styles;
+    font-size: inherit;
+
+    & > .Entry {
+        white-space: nowrap;
+        font-size: inherit;
+
+        & + .Entry {
+            margin-top: 0.5rem;
+        }
+
+        input {
+            margin: 0;
+            margin-right: 0.3rem;
+        }
+
+        .labelText {
+            font-size: inherit;
+        }
+    }
+}
+

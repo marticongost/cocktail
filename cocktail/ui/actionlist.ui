@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:requires component="cocktail.ui.actions"/>
+
+    <ui:property
+        name="actions"
+        reflected="false">
+        <?on changed
+        this[ACTION_MAP] = new Map();
+        for (let action of newValue) {
+            this[ACTION_MAP].set(action.id, action);
+        }
+        this.reset();
+        ?>
+    </ui:property>
+
+    <?head
+    const SELECTION_CHANGED_HANDLER = Symbol();
+    const ACTION_MAP = Symbol();
+    const ENTRY_MAP = Symbol();
+    ?>
+
+    <?tail
+    cls.ActionIdError = class ActionIdError {
+        super(actionList, actionId) {
+            this.actionList = actionList;
+            this.actionId = actionId;
+        }
+        toString() {
+            return `${this.actionList} doesn't contain an action with id ${this.actionId}`;
+        }
+    }
+
+    cls.ActionPositionError = class ActionPositionError {
+        super(actionList, position) {
+            this.actionList = actionList;
+            this.position = position;
+        }
+        toString() {
+            return `${this.position} is not a valid action position of ${this.actionList}`;
+        }
+    }
+    ?>
+
+    <ui:property
+        name="selectable"
+        reflected="false">
+        <?on changed
+        if (oldValue) {
+            oldValue.removeEventListener(this[SELECTION_CHANGED_HANDLER])
+        }
+        if (newValue) {
+            newValue.addEventListener("selectionChanged", this[SELECTION_CHANGED_HANDLER]);
+        }
+        this[SELECTION_CHANGED_HANDLER](null);
+        ?>
+    </ui:property>
+
+    <?class
+    getAction(id) {
+        return this[ACTION_MAP].get(id);
+    }
+
+    requireAction(id) {
+        let action = this[ACTION_MAP].get(id);
+        if (!action) {
+            throw new cls.ActionIdError(this, id);
+        }
+        return action;
+    }
+
+    getEntry(id) {
+        return this[ENTRY_MAP].get(id);
+    }
+
+    requireEntry(id) {
+        let entry = this[ENTRY_MAP].get(id);
+        if (!entry) {
+            throw new cls.ActionIdError(this, id);
+        }
+        return entry;
+    }
+
+    addAction(action, position = null) {
+        this[ACTION_MAP].set(action.id, action);
+        this.addEntry(action, position);
+    }
+
+    invokeAction(id) {
+        this.getAction(id).invoke(this.getActionContext());
+    }
+
+    getActionContext() {
+        let context = Object.assign({}, this.actionParameters);
+        let selectable = this.selectable;
+        context.selectable = selectable;
+        context.actionList = this;
+        context.selection = selectable ? selectable.selectedValues : context.selection || [];
+        return context;
+    }
+
+    reset() {
+        this.clear();
+        this.createEntries();
+    }
+
+    clear() {
+        this[ENTRY_MAP] = new Map();
+        cocktail.ui.empty(this.entryList);
+    }
+
+    createEntries() {
+        for (let action of this.actions) {
+            this.addEntry(action);
+        }
+        cocktail.ui.trigger(this, "entriesReady");
+    }
+
+    addEntry(action, position = null) {
+
+        let entry = this.createEntry(action);
+
+        if (position === null) {
+            this.entryList.appendChild(entry);
+        }
+        else if (typeof(position) == "string") {
+            let [relativePosition, actionId] = position.split(" ");
+            let referenceEntry = this.requireEntry(actionId);
+
+            if (relativePosition == "after") {
+                referenceEntry = referenceEntry.nextSibling;
+            }
+            else if (relativePosition != "before") {
+                throw new cls.ActionPositionError(this, position);
+            }
+
+            this.entryList.insertBefore(entry, referenceEntry);
+        }
+        else {
+            throw new cls.ActionPositionError(this, position);
+        }
+
+        this[ENTRY_MAP].set(action.id, entry);
+        return entry;
+    }
+
+    createEntry(action) {
+        let entry = this.constructor.Entry.create();
+        entry.action = action;
+        entry.state = action.getState(this.getActionContext());
+        return entry;
+    }
+
+    updateEntries() {
+        for (let entry of this.entryList.children) {
+            entry.state = entry.action.getState(this.getActionContext());
+        }
+    }
+    ?>
+
+    <?js
+    this.actionParameters = {};
+
+    this[SELECTION_CHANGED_HANDLER] = function (e) {
+        instance.updateEntries();
+    }
+    ?>
+
+    <ul id="entryList"/>
+
+    <li ui:component="Entry">
+
+        <ui:property
+            name="action"
+            reflected="false">
+            <?on changed
+            if (newValue) {
+                this.setAttribute("action", newValue.id);
+                cocktail.loadSVG(newValue.iconURL, this.icon);
+                let shortcut = newValue.shortcut;
+                let label = newValue.translate();
+                if (shortcut) {
+                    label = label.replace(new RegExp(shortcut, "i"), function (c) {
+                        return `<u>${c}</u>`;
+                    });
+                }
+                this.button.accessKey = shortcut;
+                this.label.innerHTML = label;
+            }
+            else {
+                this.removeAttribute("action");
+                cocktail.ui.empty(this.icon);
+                cocktail.ui.empty(this.label);
+            }
+            ?>
+        </ui:property>
+
+        <ui:property
+            name="state"
+            reflected="true">
+            <?on changed
+            if (oldValue == "disabled") {
+                this.button.disabled = false;
+            }
+            else if (newValue == "disabled") {
+                this.button.disabled = true;
+            }
+            ?>
+        </ui:property>
+
+        <button
+            id="button"
+            type="button">
+
+            <span id="icon"/>
+            <span id="label"/>
+
+            <?on click
+            instance.action.invoke(instance.parentInstance.getActionContext());
+            ?>
+
+        </button>
+
+    </li>
+
+</div>
+

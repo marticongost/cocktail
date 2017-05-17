@@ -1,0 +1,50 @@
+
+@import "cocktail.ui://styles/common";
+
+:host {
+    background-color: $panel-background-color;
+    background-image: linear-gradient(lighten($panel-background-color, 20), $panel-background-color);
+    color: $panel-action-color;
+    padding: 0.2rem 0.6rem;
+    border-left: 1px solid $panel-border-color;
+    border-top: 1px solid $panel-border-color;
+    border-right: 1px solid darken($panel-border-color, 15);
+    border-bottom: 1px solid darken($panel-border-color, 15);
+    border-radius: 0.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+:host(:hover) {
+    background-image: linear-gradient(lighten($panel-hover-color, 20), $panel-hover-color);
+    color: $panel-action-highlight-color;
+}
+
+:host(:focus) {
+    @include focus;
+}
+
+#icon {
+    margin-right: 0.5em;
+
+    &:empty {
+        display: none;
+    }
+
+    svg {
+        width: auto;
+        height: 1.5em;
+
+        * {
+           fill: $panel-action-color !important;
+
+           :host(:hover) & {
+               fill: $panel-action-highlight-color !important;
+           }
+        }
+    }
+}
+

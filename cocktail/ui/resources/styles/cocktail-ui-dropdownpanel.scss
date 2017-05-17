@@ -1,0 +1,103 @@
+
+@import "cocktail.ui://styles/common";
+
+$border-width: 1px;
+$border-color: #ddd;
+$border: $border-width solid $border-color;
+$vpadding: 0.3rem;
+$hpadding: 0.5rem;
+
+:host {
+    display: inline-block;
+    z-index: 2;
+}
+
+#button {
+    margin-left: -$hpadding;
+    padding: $vpadding $hpadding;
+    position: relative;
+    z-index: 2;
+    border: $border-width solid transparent;
+    background-color: transparent;
+    cursor: pointer;
+    font-size: 1em;
+
+    &:focus {
+        outline: none;
+    }
+
+    :host([expanded='true']) & {
+        border: $border;
+        border-bottom: $border-width solid white;
+        background-color: white;
+    }
+}
+
+#label {
+    font-size: 0.9em;
+
+    :host-context(.cocktail-ui-Toolbar) &,
+    :host-context(.cocktail-ui-ActionList) & {
+        color: $panel-action-color;
+    }
+}
+
+#arrow {
+    margin-left: 0.3rem;
+
+    svg {
+        width: 0.6rem;
+
+        * {
+            fill: #444;
+
+            :host-context(.cocktail-ui-Toolbar) &,
+            :host-context(.cocktail-ui-ActionList) & {
+                fill: $panel-action-color;
+            }
+        }
+    }
+}
+
+#panelWrapper {
+    margin-left: -$hpadding;
+    position: relative;
+    height: 0;
+
+    :host(:not([expanded='true'])) & {
+        display: none;
+    }
+}
+
+#panel {
+    position: absolute;
+    top: -$border-width;
+    z-index: 1;
+    border: $border;
+    background-color: white;
+    box-shadow: 5px 5px 15px rgba(0.4,0.4,0.4,0.1);
+
+    :host([panelAlignment='start']) & {
+        left: 0;
+    }
+
+    :host([panelAlignment='end']) & {
+        right: 0;
+    }
+}
+
+#panelContent {
+    max-height: 70vh;
+    overflow-y: auto;
+    padding: $vpadding $hpadding;
+}
+
+#footer {
+    padding: $hpadding;
+    border-top: 1px dotted $border-color;
+
+    :host(:not([footervisible='true'])) & {
+        display: none;
+    }
+}
+

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:requires component="cocktail.ui.datadisplay"/>
+    <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
+
+    <?class
+    clear() {
+        cocktail.ui.empty(this.list);
+    }
+
+    createEntries() {
+        if (this.dataBinding && this.value) {
+            for (let item of this.value) {
+                this.addEntry(item);
+            }
+        }
+    }
+
+    addEntry(item) {
+        let entry = this.createEntry(item);
+        this.list.appendChild(entry);
+        return entry;
+    }
+
+    createEntry(item) {
+        let entry = this.constructor.Entry.create();
+        entry.item = item;
+        entry.label.innerHTML = this.translateItem(item);
+        return entry;
+    }
+
+    translateItem(item) {
+        return this.dataBinding.member.items.translateValue(item);
+    }
+    ?>
+
+    <?on value:changed
+    this.createEntries();
+    ?>
+
+    <ul id="list">
+        <li ui:component="Entry">
+            <span id="label"/>
+        </li>
+    </ul>
+
+</div>
+

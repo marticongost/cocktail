@@ -1,12 +1,10 @@
 #-*- coding: utf-8 -*-
 u"""
 
-@author:		Martí Congost
-@contact:		marti.congost@whads.com
-@organization:	Whads/Accent SL
-@since:			February 2008
+.. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
 from contextlib import contextmanager
+from cocktail.stringutils import normalize_indentation
 
 
 class SourceCodeWriter(object):
@@ -23,9 +21,16 @@ class SourceCodeWriter(object):
             for content in self.__content
         )
 
-    def write(self, *line):
+    def write(self, *text):
         indent_str = self.indent_str * self.indentation
-        self.__content.append(indent_str + u"".join(line))
+        code = normalize_indentation(u"".join(text))
+        lines = code.split(self.line_separator)
+        for line in lines:
+            self.__content.append(indent_str + line)
+
+    def write_lines(self, *lines):
+        for line in lines:
+            self.write(line)
 
     def nest(self, indent = 0):
         child = self.__class__(self.indentation + indent)
@@ -42,14 +47,36 @@ class SourceCodeWriter(object):
         self.indentation -= 1
 
     @contextmanager
-    def indented_block(self):
+    def indented_block(self, opening = None, closure = None):
+        if opening:
+            self.write(opening)
         self.indentation += 1
         try:
-            yield None
+            yield self
         finally:
             self.indentation -= 1
+            if closure:
+                self.write(closure)
+
+    def braces(self, opening = None, closure = None):
+
+        if opening:
+            opening += " {"
+        else:
+            opening = "{"
+
+        if closure:
+            closure = "}" + closure
+        else:
+            closure = "}"
+
+        return self.indented_block(opening, closure)
 
     def linejump(self, lines = 1):
         for i in xrange(lines):
             self.write()
+
+    def __iadd__(self, content):
+        self.append(content)
+        return self
 

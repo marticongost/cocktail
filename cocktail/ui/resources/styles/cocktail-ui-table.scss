@@ -1,0 +1,130 @@
+
+@import "cocktail.ui://styles/common";
+
+:host {
+    display: flex;
+    flex-direction: column;
+}
+
+:host([empty='true']) {
+
+    #table {
+        display: none;
+    }
+}
+
+:host(:not([selectionType='none'])) {
+    user-select: none;
+
+    td {
+        cursor: default;
+    }
+}
+
+:host(:not([dataState='loading'])) {
+
+    #loadingSign {
+        display: none;
+    }
+}
+
+:host(:not([dataState='error'])) {
+
+    #errorBox {
+        display: none;
+    }
+}
+
+#loadingSign {
+    background-color: #ece6da;
+    padding: 0.4rem;
+    text-align: center;
+    color: #706347;
+}
+
+#table {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    border: 1px solid #ddd;
+}
+
+th {
+    color: #5a564e;
+    font-size: 14px;
+    padding-right: 10px;
+    text-align: left;
+    padding: 6px;
+    font-family: inherit;
+    font-size: inherit;
+}
+
+#head {
+    display: block;
+    flex: 0 0 auto;
+    background-image: linear-gradient(white, #eee);
+    border-bottom: 1px solid #ddd;
+}
+
+#headingsRow {
+    display: flex;
+
+    & > th {
+        display: block;
+        flex: 1;
+
+        & + th {
+            border-left: 1px solid #ddd;
+        }
+
+        .languageLabel {
+            margin-left: 0.4rem;
+            font-size: 0.8rem;
+            color: #777;
+            font-weight: normal;
+
+            &:before {
+                content: '(';
+            }
+
+            &:after {
+                content: ')';
+            }
+        }
+    }
+}
+
+#body {
+    display: block;
+    overflow: scroll;
+    overflow-x: hidden;
+    flex: 1 1 auto;
+
+    &:focus {
+        outline: none;
+    }
+
+    & > tr {
+        display: flex;
+
+        & > td {
+            display: block;
+            flex: 1;
+            padding: 6px;
+        }
+
+        &[selected] > td {
+            background: $selection-background;
+            color: $selection-foreground;
+        }
+
+        &:nth-child(odd) {
+            background-color: white;
+        }
+
+        &:nth-child(even) {
+            background-color: #f8f7f5;
+        }
+    }
+}
+
