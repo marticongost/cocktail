@@ -9,6 +9,7 @@ $heading-color: #8c7e68 !default;
 $panel-action-color: #625c47 !default;
 $panel-action-highlight-color: #372f13 !default;
 $panel-hover-color: #e8e4d7 !default;
+$panel-shadow: 5px 5px 15px rgba(0.4,0.4,0.4,0.1) !default;
 $focus-color: #a43b1e !default;
 
 @mixin focus {
