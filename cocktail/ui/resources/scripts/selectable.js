@@ -11,6 +11,8 @@
     const PREV_CLICK_ELEMENT = Symbol();
     const PREV_CLICK_TIME = Symbol();
     const CONTENT_ONLY = ":not(link):not(script)";
+    const SELECTION_CONTAINER = Symbol("cocktail.ui.Selectable.SELECTION_CONTAINER");
+    const OBSERVER = Symbol("cocktail.ui.Selectable.OBSERVER");
 
     cocktail.ui.selectable = (cls) => class Selectable extends cls {
 
@@ -223,6 +225,37 @@
                     });
                 }
             });
+        }
+
+        get selectionContainer() {
+            return this[SELECTION_CONTAINER];
+        }
+
+        set selectionContainer(value) {
+            if (this[OBSERVER]) {
+                this[OBSERVER].disconnect();
+                this[OBSERVER] = null;
+            }
+            this[SELECTION_CONTAINER] = value;
+            if (value) {
+                let observer = new MutationObserver((mutations) => {
+                    for (let mutation of mutations) {
+                        this.selectableElementsMutated(mutation);
+                    }
+                });
+                observer.observe(value, {childList: true});
+                this[OBSERVER] = observer;
+            }
+        }
+
+        selectableElementsMutated(mutation) {
+            if (mutation.removedNodes.length) {
+                let elements = new Set(mutation.removedNodes);
+                if (this.selectionCursor && elements.has(this.selectionCursor)) {
+                    this.selectionCursor = mutation.previousSibling;
+                }
+                this.setElementsSelected(elements, false);
+            }
         }
 
         selectionActivated() {
