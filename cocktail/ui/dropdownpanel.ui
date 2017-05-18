@@ -43,7 +43,7 @@
     ?>
 
     <?on keydown
-    if (e.which == 27) {
+    if (e.which == cocktail.ui.keys.ESC) {
         this.expanded = false;
     }
     ?>

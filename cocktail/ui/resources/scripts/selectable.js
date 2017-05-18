@@ -135,7 +135,7 @@
                 }
 
                 if (
-                    e.which == 13
+                    e.which == cocktail.ui.keys.ENTER
                     && this.activationType != "none"
                     && this.selectedElements.size
                 ) {
@@ -166,36 +166,36 @@
                 let target, direction;
 
                 // Home
-                if (e.which == 36 && !e.ctrlKey && !e.altKey) {
+                if (e.which == cocktail.ui.keys.HOME && !e.ctrlKey && !e.altKey) {
                     target = this.getFirstSelectableElement();
                     direction = (axis == "vertical" ? "up" : "left");
                 }
                 // End
-                else if (e.which == 35 && !e.ctrlKey && !e.altKey) {
+                else if (e.which == cocktail.ui.keys.END && !e.ctrlKey && !e.altKey) {
                     target = this.getLastSelectableElement();
                     direction = (axis == "vertical" ? "bottom" : "right");
                 }
                 else {
                     if (axis == "vertical") {
                         // Up
-                        if (e.which == 38) {
+                        if (e.which == cocktail.ui.keys.UP) {
                             target = this.getPreviousSelectableElement();
                             direction = "up";
                         }
                         // Down
-                        else if (e.which == 40) {
+                        else if (e.which == cocktail.ui.keys.DOWN) {
                             target = this.getNextSelectableElement();
                             direction = "bottom";
                         }
                     }
                     else if (axis == "horizontal") {
                         // Left
-                        if (e.which == 37) {
+                        if (e.which == cocktail.ui.keys.LEFT) {
                             target = this.getPreviousSelectableElement();
                             direction = "left";
                         }
                         // Right
-                        else if (e.which == 39) {
+                        else if (e.which == cocktail.ui.keys.RIGHT) {
                             target = this.getNextSelectableElement();
                             direction = "right";
                         }

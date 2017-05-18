@@ -700,5 +700,86 @@ cocktail.ui.splash = function (splash, rootElement) {
             element.removeAttribute(attribute);
         }
     }
+
+    cocktail.ui.keys = {
+        ENTER: 13,
+        ESC: 27,
+        BACKSPACE: 8,
+        DEL: 46,
+        INSERT: 45,
+        TAB: 9,
+        SHIFT: 16,
+        CTRL: 17,
+        CAPS_LOCK: 20,
+        NUM_LOCK: 144,
+        ALT: 18,
+        ALTGR: 225,
+        UP: 38,
+        DOWN: 40,
+        LEFT: 37,
+        RIGHT: 39,
+        HOME: 36,
+        END: 35,
+        NEXT_PAGE: 34,
+        PREV_PAGE: 33,
+        MENU: 93,
+        F1: 112,
+        F2: 113,
+        F3: 114,
+        F4: 115,
+        F5: 116,
+        F6: 117,
+        F7: 118,
+        F8: 119,
+        F9: 120,
+        F10: 121,
+        F11: 122,
+        F12: 123
+    }
+
+    cocktail.ui.arrowKeys = new Set([
+        cocktail.ui.keys.UP,
+        cocktail.ui.keys.DOWN,
+        cocktail.ui.keys.LEFT,
+        cocktail.ui.keys.RIGHT,
+    ]);
+
+    cocktail.ui.navigationKeys = new Set([
+        ...cocktail.ui.arrowKeys,
+        cocktail.ui.keys.HOME,
+        cocktail.ui.keys.END,
+        cocktail.ui.keys.NEXT_PAGE,
+        cocktail.ui.keys.PREV_PAGE
+    ]);
+
+    cocktail.ui.functionKeys = new Set([
+        cocktail.ui.keys.F1,
+        cocktail.ui.keys.F2,
+        cocktail.ui.keys.F3,
+        cocktail.ui.keys.F4,
+        cocktail.ui.keys.F5,
+        cocktail.ui.keys.F6,
+        cocktail.ui.keys.F7,
+        cocktail.ui.keys.F8,
+        cocktail.ui.keys.F9,
+        cocktail.ui.keys.F10,
+        cocktail.ui.keys.F11,
+        cocktail.ui.keys.F12
+    ]);
+
+    cocktail.ui.nonTextKeys = new Set([
+        cocktail.ui.keys.ESC,
+        cocktail.ui.keys.INSERT,
+        cocktail.ui.keys.TAB,
+        cocktail.ui.keys.SHIFT,
+        cocktail.ui.keys.CTRL,
+        cocktail.ui.keys.CAPS_LOCK,
+        cocktail.ui.keys.NUM_LOCK,
+        cocktail.ui.keys.ALT,
+        cocktail.ui.keys.ALTGR,
+        cocktail.ui.keys.MENU,
+        ...cocktail.ui.navigationKeys,
+        ...cocktail.ui.functionKeys
+    ]);
 }
 
