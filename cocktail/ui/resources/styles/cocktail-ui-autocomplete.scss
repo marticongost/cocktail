@@ -8,6 +8,10 @@
 
 #input {
     display: block;
+
+    :host([searchState='searching']) & {
+        background-color: #f5f5f5;
+    }
 }
 
 #panelWrapper {
