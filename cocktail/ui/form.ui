@@ -197,7 +197,7 @@
     this[GROUPS_MAP] = new Map();
     this.locales = cocktail.ui.locales;
     this.displayFactory = cocktail.ui.formControls;
-    this.readOnlyDisplayFactory = cocktail.ui.displays;
+    this.readOnlyDisplayFactory = cocktail.ui.readOnlyFormControls;
     ?>
 
     <?on dataBinding:changed
