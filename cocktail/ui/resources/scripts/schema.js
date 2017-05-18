@@ -8,17 +8,17 @@
 -----------------------------------------------------------------------------*/
 
 {
-    let pkg = cocktail.declare("cocktail.schema");
+    const pkg = cocktail.declare("cocktail.schema");
 
-    let OWNER = Symbol("cocktail.schema.OWNER");
-    let NAME = Symbol("cocktail.schema.NAME");
-    let MEMBERSHIP_TYPE = Symbol("cocktail.schema.MEMBERSHIP_TYPE");
-    let TRANSLATED = Symbol("cocktail.schema.TRANSLATED");
-    let MEMBER_MAP = Symbol("cocktail.schema.MEMBER_MAP");
-    let BASE = Symbol("cocktail.schema.BASE");
-    let TYPE = Symbol("cocktail.schema.TYPE");
-    let SOURCE_MEMBER = Symbol("cocktail.schema.SOURCE_MEMBER");
-    let ITEMS = Symbol("cocktail.schema.ITEMS");
+    const OWNER = Symbol("cocktail.schema.OWNER");
+    const NAME = Symbol("cocktail.schema.NAME");
+    const MEMBERSHIP_TYPE = Symbol("cocktail.schema.MEMBERSHIP_TYPE");
+    const TRANSLATED = Symbol("cocktail.schema.TRANSLATED");
+    const MEMBER_MAP = Symbol("cocktail.schema.MEMBER_MAP");
+    const BASE = Symbol("cocktail.schema.BASE");
+    const TYPE = Symbol("cocktail.schema.TYPE");
+    const SOURCE_MEMBER = Symbol("cocktail.schema.SOURCE_MEMBER");
+    const ITEMS = Symbol("cocktail.schema.ITEMS");
     const DATA_SOURCE = Symbol("cocktail.schema.DATA_SOURCE");
 
     pkg.MEMBERS = Symbol("cocktail.schema.MEMBERS");
