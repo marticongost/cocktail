@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui"
+    selectionType="single"
+    activationType="singleClick">
+
+    <ui:requires component="cocktail.ui.delay"/>
+    <ui:requires component="cocktail.ui.selectable"/>
+    <ui:requires component="cocktail.ui.datadisplay"/>
+
+    <ui:decoratedBy function="cocktail.ui.selectable"/>
+    <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
+
+    <?head
+    const UPDATE_SEARCH_TEXT = Symbol("cocktail.ui.Autocomplete.UPDATE_SEARCH_TEXT");
+    const UPDATING_SEARCH_TEXT = Symbol("cocktail.ui.Autocomplete.UPDATING_SEARCH_TEXT");
+    ?>
+
+    <?tail
+    cls.delegatesFocus = true;
+    ?>
+
+    <?class
+    selectionActivated() {
+        this.value = this.selectedElement.value;
+        this.panelVisible = false;
+    }
+
+    getDataSourceParameters(searchText) {
+        return {
+            parameters: {search_text: searchText},
+            locales: [cocktail.getLanguage()]
+        };
+    }
+
+    clearEntries() {
+        cocktail.ui.empty(this.entryList);
+    }
+
+    createEntries(values) {
+        for (let value of values) {
+            this.addEntry(value);
+        }
+    }
+
+    addEntry(value) {
+        let entry = this.createEntry(value);
+        this.entryList.appendChild(entry);
+        return entry;
+    }
+
+    createEntry(value) {
+        let entry = this.constructor.Entry.create();
+        entry.displayFactory = this.entriesDisplayFactory;
+        entry.dataBinding = {
+            member: this.dataBinding.member,
+            value: value
+        };
+        return entry;
+    }
+
+    [UPDATE_SEARCH_TEXT]() {
+        this[UPDATING_SEARCH_TEXT] = true;
+        let request = this.search(this.input.value);
+        this[UPDATING_SEARCH_TEXT] = false;
+        return request;
+    }
+
+    search(text) {
+
+        this.searchText = text;
+        this.searchState = text ? "searching" : "empty";
+        this.selectedElement = null;
+
+        let request = this.makeDataSourceRequest(text);
+        if (request) {
+            this.panelVisible = true;
+            request.then((data) => {
+                this.processDataSourceData(data);
+            });
+        }
+        else {
+            this.panelVisible = false;
+            request = Promise.resolve({});
+        }
+
+        return request;
+    }
+
+    makeDataSourceRequest(text) {
+        if (text) {
+            return this.dataSource.load(this.getDataSourceParameters(text));
+        }
+    }
+
+    processDataSourceData(data) {
+        this.results = data.records;
+        if (!this.selectedElement) {
+            this.selectFirst();
+        }
+    }
+    ?>
+
+    <ui:property
+        name="dataSource"
+        reflected="false"/>
+
+    <ui:property
+        name="searchText"
+        type="string"
+        reflected="false">
+        <?on changed
+        if (!this[UPDATING_SEARCH_TEXT]) {
+            this.input.value = newValue;
+        }
+        ?>
+    </ui:property>
+
+    <ui:property
+        name="results"
+        reflected="false">
+
+        <?on changed
+        this.clearEntries();
+        this.createEntries(newValue);
+        ?>
+
+    </ui:property>
+
+    <ui:property
+        name="panelVisible"
+        type="boolean"
+        reflected="true"
+        default="false"/>
+
+    <ui:property
+        name="searchState"
+        type="string"
+        reflected="true"
+        default="empty"/>
+
+    <?js
+    this.delay = new cocktail.ui.Delay(300, () => { this[UPDATE_SEARCH_TEXT](); });
+    this.entriesDisplayFactory = cocktail.ui.autocompleteDisplays;
+    ?>
+
+    <?on dataBinding:changed
+    if (newValue && !this.dataSource) {
+        this.dataSource = newValue.member.dataSource;
+    }
+    ?>
+
+    <?on value:changed
+    this.searchText = this.dataBinding.member.translateValue(newValue);
+    this.searchState = newValue ? "match" : "empty";
+    ?>
+
+    <input
+        id="input"
+        type="text">
+
+        <?on change instance[UPDATE_SEARCH_TEXT](); ?>
+
+        <?on keydown
+        if (e.which == cocktail.ui.keys.HOME || e.which == cocktail.ui.keys.END) {
+            e.stopPropagation();
+        }
+        else if (e.which == cocktail.ui.keys.ESC) {
+            instance.panelVisible = false;
+            return false;
+        }
+        else if (e.which == cocktail.ui.keys.DOWN) {
+            if (this.value && !instance.panelVisible) {
+                instance[UPDATE_SEARCH_TEXT]();
+                return false;
+            }
+        }
+        else if (!cocktail.ui.nonTextKeys.has(e.which) && e.which != cocktail.ui.keys.ENTER) {
+            instance.delay.begin();
+        }
+        ?>
+
+    </input>
+
+    <div id="panelWrapper">
+        <div id="panel">
+            <ul id="entryList"/>
+        </div>
+    </div>
+
+    <li ui:component="Entry">
+
+        <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
+
+        <?class
+        makeDisplay() {
+            if (this.entryDisplay) {
+                this.removeChild(this.entryDisplay);
+            }
+            this.entryDisplay = this.displayFactory.createDisplay(this.dataBinding, {wrapRawValues: false});
+            if (!this.entryDisplay) {
+                this.entryDisplay = document.createTextNode(
+                    this.dataBinding.member.translateValue(this.value)
+                );
+            }
+            this.appendChild(this.entryDisplay);
+        }
+        ?>
+
+        <?on value:changed
+        this.makeDisplay();
+        ?>
+
+    </li>
+
+    <?js
+    this.selectionContainer = this.entryList;
+    ?>
+
+</div>
+

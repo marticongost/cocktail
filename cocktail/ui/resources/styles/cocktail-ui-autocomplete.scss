@@ -1,0 +1,49 @@
+
+@import "cocktail://styles/utils";
+@import "cocktail.ui://styles/common";
+
+:host {
+    display: inline-block;
+}
+
+#input {
+    display: block;
+}
+
+#panelWrapper {
+    position: relative;
+    height: 0;
+    overflow: visible;
+}
+
+#panel {
+    position: absolute;
+    left: 0;
+    top: 0;
+    background-color: white;
+    border: 1px solid #ccc;
+    box-shadow: $panel-shadow;
+
+    :host(:not([panelVisible='true'])) & {
+        display: none;
+    }
+}
+
+#entryList {
+    @include clear-list-styles;
+    overflow: auto;
+    max-height: 30vh;
+
+    .Entry {
+        padding: 0.3em;
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+
+        &[selected] {
+            background: $selection-background;
+            color: $selection-foreground;
+        }
+    }
+}
+

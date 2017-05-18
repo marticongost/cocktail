@@ -263,6 +263,9 @@ cocktail.ui.formControls = new cocktail.ui.DisplayFactory("cocktail.ui.formContr
 // A display factory for read only form controls
 cocktail.ui.readOnlyFormControls = cocktail.ui.displays.extend("cocktail.ui.readOnlyFormControl");
 
+// A display factory for the entries of autocomplete forms
+cocktail.ui.autocompleteDisplays = cocktail.ui.displays.extend("cocktail.ui.autocompleteDisplay");
+
 // A symbol that allows members to specify their preferred disposition for their label
 // in a form
 cocktail.ui.formLabelDisposition = Symbol("cocktail.ui.formLabelDisposition");
