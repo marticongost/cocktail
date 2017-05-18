@@ -228,6 +228,17 @@
         selectionActivated() {
         }
 
+        get selectedElement() {
+            for (let element of this.selectedElements) {
+                return element;
+            }
+            return null;
+        }
+
+        set selectedElement(element) {
+            this.selectedElements = element ? [element] : [];
+        }
+
         get selectedValues() {
             return Array.from(this.selectedElements, (element) => element.value);
         }
