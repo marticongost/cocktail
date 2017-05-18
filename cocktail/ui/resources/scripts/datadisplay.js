@@ -158,8 +158,8 @@ cocktail.ui.InvalidDataBindingError = class InvalidDataBindingError {
             return this[PARENT];
         }
 
-        extend() {
-            let child = new this.constructor();
+        extend(symbolName) {
+            let child = new this.constructor(symbolName);
             child[PARENT] = this;
             return child;
         }
@@ -259,6 +259,9 @@ cocktail.schema.Member.prototype[cocktail.ui.display] =
 
 // A display factory for editable values
 cocktail.ui.formControls = new cocktail.ui.DisplayFactory("cocktail.ui.formControl");
+
+// A display factory for read only form controls
+cocktail.ui.readOnlyFormControls = cocktail.ui.displays.extend("cocktail.ui.readOnlyFormControl");
 
 // A symbol that allows members to specify their preferred disposition for their label
 // in a form
