@@ -14,15 +14,33 @@
     <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
 
     <?head
+    const ACTIVE_INSTANCE = Symbol("cocktail.ui.Autocomplete.ACTIVE_INSTANCE");
     const UPDATE_SEARCH_TEXT = Symbol("cocktail.ui.Autocomplete.UPDATE_SEARCH_TEXT");
     const UPDATING_SEARCH_TEXT = Symbol("cocktail.ui.Autocomplete.UPDATING_SEARCH_TEXT");
     ?>
 
     <?tail
     cls.delegatesFocus = true;
+
+    window.addEventListener("DOMContentLoaded", (e) => {
+        document.addEventListener("click", (e) => {
+            cls.foldActiveInstance();
+        });
+    });
     ?>
 
     <?class
+    static foldActiveInstance() {
+        if (cls[ACTIVE_INSTANCE]) {
+            cls[ACTIVE_INSTANCE].panelVisible = false;
+            cls[ACTIVE_INSTANCE] = null;
+        }
+    }
+
+    static get activeInstance() {
+        return cls[ACTIVE_INSTANCE];
+    }
+
     selectionActivated() {
         this.value = this.selectedElement.value;
         this.panelVisible = false;
@@ -70,15 +88,15 @@
 
     search(text) {
 
+        this.selectedElement = null;
         this.searchText = text;
         this.searchState = text ? "searching" : "empty";
-        this.selectedElement = null;
 
         let request = this.makeDataSourceRequest(text);
         if (request) {
-            this.panelVisible = true;
             request.then((data) => {
                 this.processDataSourceData(data);
+                this.panelVisible = true;
             });
         }
         else {
@@ -97,9 +115,7 @@
 
     processDataSourceData(data) {
         this.results = data.records;
-        if (!this.selectedElement) {
-            this.selectFirst();
-        }
+        this.selectFirst();
     }
     ?>
 
@@ -133,7 +149,21 @@
         name="panelVisible"
         type="boolean"
         reflected="true"
-        default="false"/>
+        default="false">
+
+        <?on changed
+        if (newValue) {
+            if (cls[ACTIVE_INSTANCE] !== this) {
+                cls.foldActiveInstance();
+            }
+            cls[ACTIVE_INSTANCE] = this;
+        }
+        else if (this.constructor[ACTIVE_INSTANCE] === this) {
+            cls[ACTIVE_INSTANCE] = null;
+        }
+        ?>
+
+    </ui:property>
 
     <ui:property
         name="searchState"
@@ -186,6 +216,9 @@
 
     <div id="panelWrapper">
         <div id="panel">
+            <?on click
+            e.stopPropagation();
+            ?>
             <ul id="entryList"/>
         </div>
     </div>
