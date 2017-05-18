@@ -19,6 +19,7 @@
     let TYPE = Symbol("cocktail.schema.TYPE");
     let SOURCE_MEMBER = Symbol("cocktail.schema.SOURCE_MEMBER");
     let ITEMS = Symbol("cocktail.schema.ITEMS");
+    const DATA_SOURCE = Symbol("cocktail.schema.DATA_SOURCE");
 
     pkg.MEMBERS = Symbol("cocktail.schema.MEMBERS");
     pkg.PARAMETERS = Symbol("cocktail.schema.PARAMETERS");
@@ -476,6 +477,14 @@
 
         set type(value) {
             this[TYPE] = value;
+        }
+
+        get dataSource() {
+            return this[DATA_SOURCE] || this.type && this.type.dataSource;
+        }
+
+        set dataSource(value) {
+            this[DATA_SOURCE] = value;
         }
 
         translateValue(value) {
