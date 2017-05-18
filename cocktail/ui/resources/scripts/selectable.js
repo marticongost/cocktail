@@ -385,37 +385,49 @@
             }
         }
 
-        selectFirst() {
+        selectFirst(scroll = true) {
             let first = this.getFirstSelectableElement();
             if (first) {
                 this.selectedElements = [first];
+                if (scroll) {
+                    first.scrollIntoViewIfNeeded(false);
+                }
                 return true;
             }
             return false;
         }
 
-        selectLast() {
+        selectLast(scroll = true) {
             let last = this.getLastSelectableElement();
             if (last) {
                 this.selectedElements = [last];
+                if (scroll) {
+                    last.scrollIntoViewIfNeeded(false);
+                }
                 return true;
             }
             return false;
         }
 
-        selectNext() {
+        selectNext(scroll = true) {
             let next = this.getNextSelectableElement();
             if (next) {
                 this.selectedElements = [next];
+                if (scroll) {
+                    next.scrollIntoViewIfNeeded(false);
+                }
                 return true;
             }
             return false;
         }
 
-        selectPrevious() {
+        selectPrevious(scroll = true) {
             let previous = this.getPreviousSelectableElement();
             if (previous) {
                 this.selectedElements = [previous];
+                if (scroll) {
+                    previous.scrollIntoViewIfNeeded(false);
+                }
                 return true;
             }
             return false;
