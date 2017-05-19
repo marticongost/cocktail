@@ -118,11 +118,24 @@ cocktail.ui.splash = function (splash, rootElement) {
                 linkedSheets = [cocktail.ui.globalStyleSheet, ...linkedSheets];
             }
 
-            for (let uri of linkedSheets) {
-                let link = document.createElement('link');
-                link.rel = 'stylesheet';
-                link.href = uri;
-                root.appendChild(link);
+            if (linkedSheets.length) {
+                this.style.visibility = "hidden";
+                let loadedSheets = 0;
+
+                let stylesheetLoaded = () => {
+                    loadedSheets++;
+                    if (loadedSheets == linkedSheets.length) {
+                        this.style.visibility = "";
+                    }
+                }
+
+                for (let uri of linkedSheets) {
+                    let link = document.createElement('link');
+                    link.rel = 'stylesheet';
+                    link.addEventListener("load", stylesheetLoaded);
+                    link.href = uri;
+                    root.appendChild(link);
+                }
             }
 
             // Embedded CSS
