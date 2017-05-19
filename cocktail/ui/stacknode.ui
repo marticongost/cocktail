@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <?head
+    const STACK_PARENT = Symbol.for("cocktail.ui.Stack.STACK_PARENT");
+    ?>
+
+    <ui:property
+        name="animationState"
+        type="string"
+        default="none"
+        reflected="true"/>
+
+    <ui:property
+        name="stackNodeVisibility"
+        type="string"
+        reflected="true">
+        <?on changed
+        if (newValue == "exposed") {
+            cocktail.ui.trigger(this, "nodeExposed");
+        }
+        else if (newValue == "covered") {
+            cocktail.ui.trigger(this, "nodeCovered");
+        }
+        ?>
+    </ui:property>
+
+    <?class
+    get stackParent() {
+        return this[STACK_PARENT];
+    }
+
+    get stackChild() {
+        return this.stackDescendants.firstChild;
+    }
+    ?>
+
+    <?on animationend
+    const state = this.animationState;
+    if (state == "opening" || state == "childClosing") {
+        this.stackNodeVisibility = "exposed";
+    }
+    else if (state == "closing" || state == "childOpening") {
+        this.stackNodeVisibility = "covered";
+    }
+
+    this.animationState = "none";
+    ?>
+
+    <div id="stackNodeContent">
+
+        <div id="header">
+            <div id="headingWrapper">
+                <div id="heading"/>
+            </div>
+            <div id="headerContent"/>
+        </div>
+
+        <div id="main"/>
+
+    </div>
+
+    <div id="stackDescendants"/>
+
+</div>
+

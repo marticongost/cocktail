@@ -1,16 +1,4 @@
 
-$fadeOpacity: 0.6;
-
-@keyframes slideContent {
-    from { padding-top: 100%; }
-    to { padding-top: 0%; }
-}
-
-@keyframes fade {
-    from { opacity: 1; }
-    to { opacity: $fadeOpacity; }
-}
-
 :host {
     display: flex;
     align-content: stretch;
@@ -27,65 +15,5 @@ $fadeOpacity: 0.6;
     display: flex;
     align-content: stretch;
     padding-bottom: 0;
-}
-
-.StackNode {
-    flex: 1 1 auto;
-    display: flex;
-    position: relative;
-
-    &[animationState='opening'] {
-        animation: 0.5s slideContent;
-    }
-
-    &[animationState='closing'] {
-        animation: 0.5s reverse slideContent;
-    }
-
-    &[animationState='childOpening'] {
-        & > .stackNodeContent {
-            animation: 0.5s fade;
-        }
-    }
-
-    &[animationState='childClosing'] {
-        & > .stackNodeContent {
-            animation: 0.5s reverse fade;
-        }
-    }
-
-    &[isTopNode='false'] {
-        background-color: white;
-        & > .stackNodeContent {
-            opacity: $fadeOpacity;
-        }
-    }
-
-    .stackNodeContent {
-        display: flex;
-        flex: 1 1 auto;
-        background-color: white;
-        padding: 1em;
-        border: 1px solid #ccc;
-        border-right: none;
-        box-shadow: 0 0 25px rgba(30,30,30,0.1);
-
-        & > * {
-            flex: 1 1 auto;
-        }
-    }
-
-    .stackDescendants {
-        left: 1em;
-        right: 0;
-        top: 4em;
-        bottom: 0;
-        position: absolute;
-        display: flex;
-
-        &:empty {
-            display: none;
-        }
-    }
 }
 

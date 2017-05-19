@@ -277,9 +277,9 @@ cocktail.navigation.StackNode = class StackNode extends cocktail.navigation.Node
         waitForAnimation.then(() => {
             stackNodes = Array.from(stack.iterStack());
             if (this.stackIndex >= stackNodes.length || stackNodes[this.stackIndex].url != url) {
-                let view = this.makeView();
-                let stackNode = stack.push(view);
+                let stackNode = this.createStackNode();
                 stackNode.url = url;
+                stack.push(stackNode);
             }
         });
     }
@@ -297,7 +297,7 @@ cocktail.navigation.StackNode = class StackNode extends cocktail.navigation.Node
         return cocktail.ui.root.stack;
     }
 
-    makeView() {
+    createStackNode() {
         throw `No view specified for ${this}`;
     }
 }

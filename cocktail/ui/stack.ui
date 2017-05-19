@@ -4,23 +4,21 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:ui="http://www.whads.com/ns/cocktail/ui">
 
+    <ui:requires component="cocktail.ui.StackNode"/>
+
     <?head
     const STACK_TOP = Symbol("cocktail.ui.Stack.STACK_TOP");
     const STACK_PARENT = Symbol.for("cocktail.ui.Stack.STACK_PARENT");
     ?>
 
     <?class
-    push(element) {
-
-        let stackNode = this.constructor.StackNode.create();
-        stackNode.stackNodeContent.appendChild(element);
+    push(stackNode) {
 
         let stackTop = this[STACK_TOP];
 
         if (stackTop) {
             stackTop.stackDescendants.appendChild(stackNode);
             stackNode[STACK_PARENT] = stackTop;
-            stackTop.isTopNode = false;
             stackTop.animationState = "childOpening";
         }
         else {
@@ -28,7 +26,6 @@
         }
 
         this[STACK_TOP] = stackNode;
-        stackNode.isTopNode = true;
         stackNode.animationState = "opening";
         cocktail.ui.trigger(this, "stackNodePushed", {stackNode});
         cocktail.ui.trigger(this, "stackChanged", {previousNode: stackTop, newNode: stackNode});
@@ -63,10 +60,6 @@
                 else {
                     this.stackContent.removeChild(stackNode);
                 }
-            }
-
-            if (stackParent) {
-                stackParent.isTopNode = true;
             }
 
             let triggerPoppedEvent = (node) => {
@@ -138,52 +131,6 @@
     ?>
 
     <div id="stackContent"/>
-
-    <div ui:component="StackNode">
-
-        <?head
-        const STACK_PARENT = Symbol.for("cocktail.ui.Stack.STACK_PARENT");
-        ?>
-
-        <ui:property
-            name="animationState"
-            type="string"
-            reflected="true"/>
-
-        <ui:property
-            name="isTopNode"
-            type="boolean"
-            reflected="true"/>
-
-        <?class
-        get stackParent() {
-            return this[STACK_PARENT];
-        }
-
-        get stackChild() {
-            return this.stackDescendants.firstChild;
-        }
-
-        get stackElement() {
-            return this.stackNodeContent.firstChild;
-        }
-        ?>
-
-        <?on animationend
-        const state = this.animationState;
-        if (state == "opening" || state == "childClosing") {
-            cocktail.ui.trigger(this.stackElement, "exposedInStack");
-        }
-        else if (state == "closing" || state == "childOpening") {
-            cocktail.ui.trigger(this.stackElement, "coveredInStack");
-        }
-
-        this.animationState = "none";
-        ?>
-
-        <div id="stackNodeContent"/>
-        <div id="stackDescendants"/>
-    </div>
 
 </div>
 

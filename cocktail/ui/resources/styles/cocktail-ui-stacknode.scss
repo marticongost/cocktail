@@ -1,0 +1,189 @@
+
+@import "cocktail.ui://styles/common";
+
+$animation-duration: 0.5s;
+$exposed-node-border-color: $strong-panel-border-color;
+$covered-node-border-color: #ddd;
+$covered-heading-scale: 0.8;
+$exposed-heading-color: #444;
+$covered-heading-color: #999;
+$exposed-panel-background-color: $panel-background-color;
+$covered-panel-background-color: white;
+$exposed-panel-border-color: $panel-border-color;
+$covered-panel-border-color: white;
+
+@keyframes doNothing {
+}
+
+@keyframes fadeNode {
+    from { border-color: $exposed-node-border-color; }
+    to { border-color: $covered-node-border-color; }
+}
+
+@keyframes slideContent {
+    from { padding-top: 100%; }
+    to { padding-top: 0%; }
+}
+
+@keyframes diminishHeading {
+    from {
+        transform: scale(1);
+        color: $exposed-heading-color;
+        left: 0;
+        top: 0;
+    }
+    to {
+        transform: scale($covered-heading-scale);
+        color: $covered-heading-color;
+    }
+}
+
+@keyframes fadePanel {
+    from {
+        border-color: $exposed-panel-border-color;
+        background-color: $exposed-panel-background-color;
+    }
+    to {
+        border-color: $covered-panel-border-color;
+        background-color: $covered-panel-background-color;
+    }
+}
+
+@keyframes fadeHeaderContent {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+:host {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    position: relative;
+}
+
+:host([animationState='opening']) {
+    animation: $animation-duration slideContent;
+}
+
+:host([animationState='closing']) {
+    animation: $animation-duration reverse slideContent;
+}
+
+:host([animationState='childOpening']) {
+    animation: $animation-duration fadeNode;
+
+    #header {
+        animation: $animation-duration fadePanel;
+    }
+
+    #headerContent {
+        animation: $animation-duration fadeHeaderContent;
+    }
+
+    #heading {
+        animation: $animation-duration diminishHeading;
+    }
+}
+
+:host([animationState='childClosing']) {
+    animation: $animation-duration reverse fadeNode;
+
+    #headerContent {
+        animation: $animation-duration reverse fadeHeaderContent;
+    }
+
+    #header {
+        animation: $animation-duration reverse fadePanel;
+    }
+}
+
+:host([animationState='childClosing']) {
+    #heading {
+        animation: $animation-duration reverse diminishHeading;
+    }
+}
+
+#stackNodeContent {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    background-color: white;
+    border: 1px solid $exposed-node-border-color;
+    border-right: none;
+    box-shadow: 0 0 25px rgba(30,30,30,0.1);
+    background-color: white;
+
+    :host([stackNodeVisibility='covered']) & {
+        pointer-events: none;
+        border: 1px solid $covered-node-border-color;
+    }
+}
+
+#header {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    background: $panel-background;
+    border-bottom: $panel-border;
+    padding-left: 1em;
+
+    :host([stackNodeVisibility='covered']) & {
+        border: none;
+        background: none;
+    }
+}
+
+#headingWrapper {
+    flex: 0 0 auto;
+    padding: 1em 0;
+    margin-right: 2em;
+}
+
+#heading {
+    font-size: 1.3em;
+    font-weight: bold;
+    color: $exposed-heading-color;
+    position: relative;
+    transform-origin: top left;
+
+    :host([stackNodeVisibility='covered']) & {
+        transform: scale($covered-heading-scale);
+        color: $covered-heading-color;
+    }
+}
+
+#headerContent {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+
+    :host([stackNodeVisibility='covered']:not([animationState='childClosing'])) & {
+        display: none;
+    }
+
+    .cocktail-ui-ActionList {
+        border: none;
+    }
+}
+
+#main {
+    flex: 1 1 auto;
+    padding: 1em;
+    overflow-y: auto;
+}
+
+#stackDescendants {
+    left: 1em;
+    right: 0;
+    top: 3em;
+    bottom: 0;
+    position: absolute;
+    display: flex;
+
+    &:empty {
+        display: none;
+    }
+}
+
