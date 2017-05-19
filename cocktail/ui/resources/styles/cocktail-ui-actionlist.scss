@@ -2,24 +2,30 @@
 @import "cocktail://styles/utils";
 @import "cocktail.ui://styles/common";
 
+:host {
+    background: $panel-background;
+    border: $panel-border;
+    display: flex;
+    align-content: stretch;
+}
+
+:host-context(.cocktail-ui-Toolbar) {
+    background: none;
+    border: none;
+}
+
+:host-context(.cocktail-ui-DropdownPanel) {
+    background: $panel-background;
+    border: $panel-border;
+}
+
 #entryList {
     list-style-type: none;
     padding: 0;
     margin: 0;
     display: flex;
+    flex: 1 1 auto;
     align-content: stretch;
-    background: $panel-background;
-    border: $panel-border;
-
-    :host-context(.cocktail-ui-Toolbar) & {
-        background: none;
-        border: none;
-    }
-
-    :host-context(.cocktail-ui-DropdownPanel) & {
-        background: $panel-background;
-        border: $panel-border;
-    }
 }
 
 .Entry {
@@ -27,7 +33,7 @@
     padding: 0;
     white-space: nowrap;
     display: flex;
-    align-items: stretch;
+    flex-direction: row;
 
     &[state='disabled'] {
         opacity: 0.3;
