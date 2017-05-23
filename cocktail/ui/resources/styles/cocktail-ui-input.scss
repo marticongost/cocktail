@@ -3,6 +3,10 @@
     display: inline-block;
 }
 
+input {
+    box-sizing: border-box;
+}
+
 input:not([type='checkbox']) {
     width: 100%;
 }
