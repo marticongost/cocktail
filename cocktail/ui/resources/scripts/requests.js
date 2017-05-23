@@ -9,61 +9,97 @@
 
 cocktail.ui.request = function (params) {
 
-    let xhr = new XMLHttpRequest();
+    return new Promise(function (resolve, reject) {
 
-    let promise = new Promise(function (resolve, reject) {
+        const promise = this;
 
-        xhr.onload = function () {
-            if (xhr.status >= 200 && xhr.status <= 299) {
-                resolve(xhr);
+        function makeRequest() {
+
+            const errorHandler = cocktail.ui.request.errorHandler;
+            const xhr = new XMLHttpRequest();
+            promise.xhr = xhr;
+            xhr.method = params.method || "GET";
+
+            xhr.url = params.url;
+            xhr.data = params.data;
+
+            let headers = params.headers || {};
+
+            if (typeof(xhr.data) == "object") {
+                xhr.data = JSON.stringify(xhr.data);
+                headers["Content-Type"] = "application/json";
             }
-            else {
-                reject(new cocktail.ui.RequestError(xhr));
+
+            if (params.parameters) {
+                let urlBuilder = URI(xhr.url);
+                for (let key in params.parameters) {
+                    urlBuilder.removeSearch(key);
+                    urlBuilder.addSearch(key, params.parameters[key]);
+                }
+                xhr.url = urlBuilder.toString();
             }
-        }
 
-        xhr.onerror = function () {
-            reject(xhr);
-        }
-
-        let url = params.url;
-
-        if (params.parameters) {
-            let urlBuilder = URI(url);
-            for (let key in params.parameters) {
-                urlBuilder.removeSearch(key);
-                urlBuilder.addSearch(key, params.parameters[key]);
+            xhr.retry = function () {
+                return makeRequest();
             }
-            url = urlBuilder.toString();
+
+            xhr.resolvePromise = function () {
+                resolve(this);
+            }
+
+            xhr.rejectPromise = function () {
+                reject(new cocktail.ui.RequestError(this));
+            }
+
+            xhr.onload = function () {
+                if (xhr.status >= 200 && xhr.status <= 299) {
+                    this.resolvePromise();
+                }
+                else {
+                    this.onerror();
+                }
+            }
+
+            xhr.onerror = function () {
+                if (!errorHandler || errorHandler(this) === false) {
+                    this.rejectPromise();
+                }
+            }
+
+            xhr.open(params.method || "GET", xhr.url);
+
+            for (let key in headers) {
+                xhr.setRequestHeader(key, headers[key]);
+            }
+
+            if (params.responseType) {
+                xhr.responseType = params.responseType;
+            }
+
+            if (cocktail.csrfprotection) {
+                cocktail.csrfprotection.setupRequest(xhr);
+            }
+
+            xhr.send(xhr.data);
+            return xhr;
         }
 
-        xhr.open(params.method || "GET", url);
-
-        let data = params.data;
-        let headers = params.headers || {};
-
-        if (typeof(data) == "object") {
-            data = JSON.stringify(data);
-            headers["Content-Type"] = "application/json";
-        }
-
-        for (let key in headers) {
-            xhr.setRequestHeader(key, headers[key]);
-        }
-
-        if (params.responseType) {
-            xhr.responseType = params.responseType;
-        }
-
-        if (cocktail.csrfprotection) {
-            cocktail.csrfprotection.setupRequest(xhr);
-        }
-
-        xhr.send(data);
+        makeRequest();
     });
+}
 
-    promise.xhr = xhr;
-    return promise;
+cocktail.ui.request.addErrorHandler = function (handler) {
+    const prevHandler = cocktail.ui.request.errorHandler;
+    if (prevHandler) {
+        cocktail.ui.request.errorHandler = (xhr) => {
+            if (errorHandler(xhr) === false) {
+                return prevHandler(xhr);
+            }
+        }
+    }
+    else {
+        cocktail.ui.request.errorHandler = handler;
+    }
 }
 
 cocktail.ui.RequestError = class RequestError {
