@@ -108,10 +108,18 @@ legend:not(:empty) + .fieldsContainer {
 
             .label {
                 display: table-cell;
+                padding-right: 1em;
             }
 
             .controlContainer {
                 display: table-cell;
+            }
+
+            & + .field {
+                .label,
+                .controlContainer {
+                    padding-top: 0.5em;
+                }
             }
         }
     }
