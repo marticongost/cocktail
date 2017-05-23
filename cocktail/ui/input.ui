@@ -2,7 +2,7 @@
 
 <div
     xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui" tabindex="0">
 
     <ui:requires component="cocktail.ui.datadisplay"/>
     <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
