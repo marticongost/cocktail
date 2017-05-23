@@ -12,8 +12,21 @@ $panel-action-highlight-color: #372f13 !default;
 $panel-hover-color: #e8e4d7 !default;
 $panel-shadow: 5px 5px 15px rgba(0.4,0.4,0.4,0.1) !default;
 $focus-color: #a43b1e !default;
+$error-border-color: #ecbaba !default;
+$error-border: 1px solid $error-border-color !default;
+$error-background-color: #fde4e4 !default;
+$error-background: $error-background-color !default;
+$error-color: #8e2b2b !default;
+$error-box-padding: 0.5em !default;
 
 @mixin focus {
     outline: 2px auto $focus-color;
+}
+
+@mixin error-box {
+    padding: $error-box-padding;
+    border: $error-border;
+    color: $error-color;
+    background-color: $error-background-color;
 }
 
