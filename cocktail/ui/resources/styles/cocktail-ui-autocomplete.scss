@@ -7,7 +7,7 @@
 }
 
 #input {
-    display: block;
+    width: 100%;
 
     :host([searchState='searching']) & {
         background-color: #f5f5f5;
