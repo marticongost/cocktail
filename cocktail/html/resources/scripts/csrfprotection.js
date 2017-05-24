@@ -16,14 +16,16 @@
         if (parts.length == 2) return parts.pop().split(";").shift();
     }
 
-    cocktail.csrfprotection.token = getCookie(cocktail.csrfprotection.cookieName);
+    cocktail.csrfprotection.getToken = function () {
+        return getCookie(cocktail.csrfprotection.cookieName);
+    }
 })();
 
 // Method to decorate XHR objects
 cocktail.csrfprotection.setupRequest = function (xhr) {
     xhr.setRequestHeader(
         cocktail.csrfprotection.header,
-        cocktail.csrfprotection.token
+        cocktail.csrfprotection.getToken()
     );
 }
 
@@ -48,7 +50,7 @@ cocktail.bind("form", function($form) {
                 var hidden = document.createElement("input");
                 hidden.type = "hidden";
                 hidden.name = cocktail.csrfprotection.field;
-                hidden.value = cocktail.csrfprotection.token;
+                hidden.value = cocktail.csrfprotection.getToken();
                 $form.append(hidden);
             }
         }
