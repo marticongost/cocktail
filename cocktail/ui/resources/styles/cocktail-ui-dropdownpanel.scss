@@ -4,8 +4,8 @@
 $border-width: 1px;
 $border-color: #ddd;
 $border: $border-width solid $border-color;
-$vpadding: 0.3rem;
-$hpadding: 0.5rem;
+$vpadding: 0.5em;
+$hpadding: 0.5em;
 
 :host {
     display: inline-block;
@@ -22,6 +22,7 @@ $hpadding: 0.5rem;
     background-color: transparent;
     cursor: pointer;
     font-size: 1em;
+    color: inherit;
 
     &:focus {
         outline: none;
@@ -36,11 +37,6 @@ $hpadding: 0.5rem;
 
 #label {
     font-size: 0.9em;
-
-    :host-context(.cocktail-ui-Toolbar) &,
-    :host-context(.cocktail-ui-ActionList) & {
-        color: $panel-action-color;
-    }
 }
 
 #arrow {
