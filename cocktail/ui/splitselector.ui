@@ -126,7 +126,7 @@
         if (!this[SELECTING_ENTRY]) {
             for (let panel of [this.selectedEntriesPanel, this.availableEntriesPanel]) {
                 for (let entry of panel.entryList.children) {
-                    if (this[SERIALIZED_VALUE].has(entry[SERIALIZED_VALUE])) {
+                    if (this[SERIALIZED_VALUE] && this[SERIALIZED_VALUE].has(entry[SERIALIZED_VALUE])) {
                         entry.setAttribute("chosen", "");
                     }
                     else {
