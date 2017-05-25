@@ -1,0 +1,13 @@
+
+[cocktail.ui.Lock]
+
+    [label]
+    ca: Processant...
+    es: Procesando...
+    en: Processing...
+
+    [closeButton]
+    ca: Tancar
+    es: Cerrar
+    en: Close
+
