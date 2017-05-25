@@ -7,13 +7,20 @@
 }
 
 .Panel {
+    display: flex;
+    flex-direction: column;
 
     & + .Panel {
         margin-left: 1em;
     }
 }
 
+.actionList {
+    flex: 0 0 auto;
+}
+
 .entryList {
+    flex: 1 1 auto;
     border: 1px solid #ccc;
     list-style-type: none;
     margin: 0;
