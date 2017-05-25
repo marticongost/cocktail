@@ -116,6 +116,10 @@
             return value;
         }
 
+        toJSONValue(value) {
+            return value;
+        }
+
         getPossibleValues(obj = null) {
             if (this.enumeration) {
                 return this.enumeration;
@@ -367,6 +371,16 @@
             }
             return object;
         }
+
+        toJSONValue(value, parameters = null) {
+            let record = {};
+            for (let member of this.members()) {
+                if (!parameters || !parameters.includeMember || parameters.includeMember(member)) {
+                    record[member.name] = member.toJSONValue(value[member.name]);
+                }
+            }
+            return record;
+        }
     }
 
     cocktail.schema.Schema.prototype.descriptiveMember = null;
@@ -513,6 +527,13 @@
             }
         }
 
+        toJSONValue(value) {
+            if (value && typeof(value) == "object") {
+                value = value[this.type.primaryMember.name];
+            }
+            return value;
+        }
+
         getPossibleValues(obj = null) {
             let values = super.getPossibleValues(obj);
             if (!values) {
@@ -574,6 +595,19 @@
             return this.joinValue(
                 Array.from(value, item => this.items.serializeValue(item))
             );
+        }
+
+        toJSONValue(value) {
+            if (value === undefined || value === null) {
+                return null;
+            }
+            let items = this.items;
+            if (items) {
+                return Array.from(value, (item) => items.toJSONValue(item));
+            }
+            else {
+                return Array.from(value);
+            }
         }
 
         splitValue(value) {
@@ -650,6 +684,10 @@
                 value = value.name;
             }
             return value;
+        }
+
+        toJSONValue(value) {
+            return this.serializeValue(value);
         }
 
         translateValue(value) {
