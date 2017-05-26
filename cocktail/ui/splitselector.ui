@@ -42,7 +42,7 @@
         let items = this.dataBinding.member.items;
         let label = items.translateValue(value);
         let serializedValue = items.serializeValue(value);
-        let selected = this[SERIALIZED_VALUE].has(serializedValue);
+        let selected = this[SERIALIZED_VALUE] && this[SERIALIZED_VALUE].has(serializedValue);
 
         for (let panel of [this.selectedEntriesPanel, this.availableEntriesPanel]) {
             let entry = this.constructor.Entry.create();
@@ -60,14 +60,14 @@
     isSelected(value) {
         let items = this.dataBinding.member.items;
         let serializedValue = items.serializeValue(value);
-        return this[SERIALIZED_VALUE].has(serializedValue);
+        return this[SERIALIZED_VALUE] && this[SERIALIZED_VALUE].has(serializedValue);
     }
 
     setSelected(value, selected) {
 
         let items = this.dataBinding.member.items;
         let serializedValue = items.serializeValue(value);
-        let wasSelected = this[SERIALIZED_VALUE].has(serializedValue);
+        let wasSelected = this[SERIALIZED_VALUE] && this[SERIALIZED_VALUE].has(serializedValue);
 
         if (selected != wasSelected) {
             for (let panel of [this.selectedEntriesPanel, this.availableEntriesPanel]) {
