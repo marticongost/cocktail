@@ -102,6 +102,12 @@
         };
     }
 
+    invalidation(change) {
+        if (change.type == "create") {
+            this.reload();
+        }
+    }
+
     update() {
         this.loadPage(this.page);
     }
@@ -323,6 +329,17 @@
                         value = value[cell.dataBinding.locale];
                     }
                     cell.value = value;
+                }
+            }
+        }
+
+        invalidation(change) {
+            if (change.id == this.getAttribute("value")) {
+                if (change.type == "modify") {
+                    this.value = change.newState;
+                }
+                else if (change.type == "delete") {
+                    this.parentNode.removeChild(this);
                 }
             }
         }

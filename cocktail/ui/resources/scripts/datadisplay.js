@@ -7,61 +7,145 @@
 @since:         March 2017
 -----------------------------------------------------------------------------*/
 
-cocktail.ui.dataDisplay = (cls) => class DataDisplay extends cls {
 
-    static get componentProperties() {
-        return {
-            dataBinding: {
+{
+    const DISPLAYS = Symbol("cocktail.ui.ObjectDisplay.DISPLAYS");
 
-                // Accept arbitrary objects.
-                // This allows to set the property using an object literal, instead of
-                // having to instantiate cocktail.ui.DataBinding explicitly.
-                normalization: function (value) {
-                    if (value && !(value instanceof cocktail.ui.DataBinding)) {
-                        value = new cocktail.ui.DataBinding(
-                            value.object,
-                            value.member,
-                            value.language,
-                            value.value
-                        );
-                    }
-                    return value;
-                },
-                changedCallback: function (oldValue, newValue) {
-                    if (newValue) {
+    let subscribe = (display, dataBinding) => {
+        if (display.parentNode && dataBinding) {
+            let model = dataBinding.member.relatedType;
+            if (model) {
+                model = model.originalMember;
+                let displays = model[DISPLAYS];
+                if (!displays) {
+                    displays = new Set();
+                    model[DISPLAYS] = displays;
+                }
+                displays.add(display);
+            }
+        }
+    }
 
-                        // Set the display's value when a new data context is assigned
-                        this.value = newValue.value;
+    let unsubscribe = (display, dataBinding) => {
+        if (dataBinding) {
+            let model = dataBinding.member.relatedType;
+            if (model) {
+                model = model.originalMember;
+                let displays = model[DISPLAYS];
+                if (displays) {
+                    displays.delete(display);
+                }
+            }
+        }
+    }
 
-                        // Reflect the context in the display's attributes
-                        if (newValue.member.name) {
-                            this.setAttribute("member", newValue.member.name);
+    cocktail.ui.objectCreated = function (model, record) {
+        triggerInvalidation({model, type: "create", record});
+    }
+
+    cocktail.ui.objectModified = function (model, oldState, newState) {
+        triggerInvalidation({
+            model,
+            type: "modify",
+            id: model.getId(oldState),
+            oldState,
+            newState
+        });
+    }
+
+    cocktail.ui.objectDeleted = function (model, id) {
+        triggerInvalidation({model, type: "delete", id});
+    }
+
+    let triggerInvalidation = (change) => {
+        let displays = change.model[DISPLAYS];
+        if (displays) {
+            for (let display of displays) {
+                display.invalidation(change);
+            }
+        }
+    }
+
+    cocktail.ui.dataDisplay = (cls) => class DataDisplay extends cls {
+
+        static get componentProperties() {
+            return {
+                dataBinding: {
+
+                    // Accept arbitrary objects.
+                    // This allows to set the property using an object literal, instead of
+                    // having to instantiate cocktail.ui.DataBinding explicitly.
+                    normalization: function (value) {
+                        if (value && !(value instanceof cocktail.ui.DataBinding)) {
+                            value = new cocktail.ui.DataBinding(
+                                value.object,
+                                value.member,
+                                value.language,
+                                value.value
+                            );
+                        }
+                        return value;
+                    },
+                    changedCallback: function (oldValue, newValue) {
+
+                        unsubscribe(this, oldValue);
+                        subscribe(this, newValue);
+
+                        if (newValue) {
+
+                            // Set the display's value when a new data context is assigned
+                            this.value = newValue.value;
+
+                            // Reflect the context in the display's attributes
+                            if (newValue.member.name) {
+                                this.setAttribute("member", newValue.member.name);
+                            }
+                            else {
+                                this.removeAttribute("member");
+                            }
+
+                            if (newValue.language) {
+                                this.setAttribute("language", newValue.language);
+                            }
+                            else {
+                                this.removeAttribute("language");
+                            }
                         }
                         else {
                             this.removeAttribute("member");
-                        }
-
-                        if (newValue.language) {
-                            this.setAttribute("language", newValue.language);
-                        }
-                        else {
                             this.removeAttribute("language");
                         }
                     }
-                    else {
-                        this.removeAttribute("member");
-                        this.removeAttribute("language");
-                    }
+                },
+                displayFactory: {},
+                value: {
+                    type: (obj) => obj.dataBinding && obj.dataBinding.member || cocktail.ui.Property.types.string,
+                    reflected: true
+                },
+                formLabelDisposition: {
+                    type: "string",
+                    reflected: true
                 }
-            },
-            displayFactory: {},
-            value: {
-                type: (obj) => obj.dataBinding && obj.dataBinding.member || cocktail.ui.Property.types.string,
-                reflected: true
-            },
-            formLabelDisposition: {
-                type: "string",
-                reflected: true
+            }
+        }
+
+        connectedCallback() {
+            super.connectedCallback();
+            subscribe(this, this.dataBinding);
+        }
+
+        disconnectedCallback() {
+            super.disconnectedCallback();
+            unsubscribe(this, this.dataBinding);
+        }
+
+        invalidation(change) {
+            if (
+                this.value
+                && change.type == "modify"
+                && this.getAttribute("value") === change.id
+            ) {
+                this.value = change.newState;
             }
         }
     }
@@ -256,6 +340,8 @@ cocktail.ui.DisplayRequiredError = class DisplayRequiredError {
 cocktail.ui.displays = new cocktail.ui.DisplayFactory("cocktail.ui.display");
 cocktail.schema.Member.prototype[cocktail.ui.display] =
     (dataBinding, parameters) => parameters.wrapRawValues ? cocktail.ui.Value : null;
+
+cocktail.schema.Reference.prototype[cocktail.ui.display] = () => cocktail.ui.Value;
 
 // A display factory for editable values
 cocktail.ui.formControls = new cocktail.ui.DisplayFactory("cocktail.ui.formControl");
