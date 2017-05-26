@@ -628,6 +628,14 @@
             }
             return defaultValue;
         }
+
+        get dataSource() {
+            return this[DATA_SOURCE] || this.items && this.items.dataSource;
+        }
+
+        set dataSource(value) {
+            this[DATA_SOURCE] = value;
+        }
     }
 
     cocktail.schema.Locale = class Locale extends cocktail.schema.String {
