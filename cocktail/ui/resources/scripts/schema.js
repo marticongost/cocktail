@@ -197,6 +197,7 @@
 
     cocktail.schema.Member.prototype.descriptive = false;
     cocktail.schema.Member.prototype.translated = false;
+    cocktail.schema.Member.prototype.defaultValue = null;
 
     cocktail.schema.Schema = class Schema extends cocktail.schema.Member {
 
@@ -636,14 +637,6 @@
             return value.join(" ");
         }
 
-        getDefaultValue(object = null, locale = null) {
-            let defaultValue = super.getDefaultValue(object, locale);
-            if (defaultValue === undefined) {
-                defaultValue = [];
-            }
-            return defaultValue;
-        }
-
         get dataSource() {
             return this[DATA_SOURCE] || this.items && this.items.dataSource;
         }
@@ -652,6 +645,8 @@
             this[DATA_SOURCE] = value;
         }
     }
+
+    cocktail.schema.Collection.prototype.defaultValue = () => [];
 
     cocktail.schema.Locale = class Locale extends cocktail.schema.String {
 
@@ -674,6 +669,8 @@
             }
         }
     }
+
+    cocktail.schema.String.prototype.defaultValue = "";
 
     cocktail.schema.MemberReference = class MemberReference extends cocktail.schema.Member {
 
