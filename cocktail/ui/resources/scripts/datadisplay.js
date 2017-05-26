@@ -43,11 +43,11 @@
         triggerInvalidation({model, type: "create", record});
     }
 
-    cocktail.ui.objectModified = function (model, oldState, newState) {
+    cocktail.ui.objectModified = function (model, id, oldState, newState) {
         triggerInvalidation({
             model,
             type: "modify",
-            id: model.getId(oldState),
+            id,
             oldState,
             newState
         });
