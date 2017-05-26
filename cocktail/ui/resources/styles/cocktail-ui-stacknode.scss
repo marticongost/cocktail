@@ -172,7 +172,11 @@ $covered-panel-border-color: white;
 #main {
     flex: 1 1 auto;
     padding: 1em;
-    overflow-y: auto;
+    overflow: hidden;
+
+    :host([animationState='none']) & {
+        overflow-y: auto;
+    }
 }
 
 #stackDescendants {
