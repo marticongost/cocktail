@@ -365,9 +365,21 @@
             <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
 
             <?on value:changed
+            cocktail.ui.empty(this);
+            this.display = null;
+
             // Render the value using a custom component, if available, or fall
             // back to a string representation
-            this.display = cocktail.ui.displays.createDisplay(this.dataBinding, {wrapRawValues: false});
+            this.display = cocktail.ui.displays.createDisplay(
+                this.dataBinding.child(
+                    this.dataBinding.object,
+                    this.dataBinding.member,
+                    this.dataBinding.locale,
+                    newValue
+                ),
+                {wrapRawValues: false}
+            );
+
             if (this.display) {
                 this.appendChild(this.display);
             }
