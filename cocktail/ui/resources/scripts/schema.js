@@ -500,6 +500,10 @@
             this[TYPE] = value;
         }
 
+        get relatedType() {
+            return this.type;
+        }
+
         get dataSource() {
             return this[DATA_SOURCE] || this.type && this.type.dataSource;
         }
@@ -558,6 +562,10 @@
     }
 
     cocktail.schema.Collection = class Collection extends cocktail.schema.Member {
+
+        get relatedType() {
+            return this.items && this.items.relatedType;
+        }
 
         get items() {
             return this[ITEMS];
