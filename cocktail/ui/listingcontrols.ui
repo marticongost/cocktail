@@ -12,7 +12,7 @@
         <?on changed
         let applyDataFromDisplay = () => {
             if (this.display.dataBinding) {
-                this.schema = this.display.dataBinding.member;
+                this.schema = this.display.model;
                 this.localesList.value = this.display.visibleLocales;
                 this.membersList.value = this.display.visibleMembers;
             }

@@ -22,11 +22,15 @@
 
     <?on dataBinding:changed
     if (!this.visibleMembers) {
+        let model = newValue.member.items.type;
         this.visibleMembers = new Set(
-            Array.from(newValue.member.members()).filter(
+            Array.from(model.members()).filter(
                 (member) => member[cocktail.ui.listedByDefault]
             )
         );
+    }
+    if (!this.value) {
+        this.value = newValue.member.dataSource;
     }
     ?>
 
@@ -36,7 +40,7 @@
         reflected="true"
         default="[]">
         <?on changed
-        if (this.dataBinding && this.dataSource) {
+        if (this.dataBinding && this.value) {
             this.reset();
         }
         ?>
@@ -48,7 +52,7 @@
         name="visibleMembers"
         reflected="false">
         <?on changed
-        if (this.dataBinding && this.dataSource) {
+        if (this.dataBinding && this.value) {
             this.reset();
         }
         ?>
@@ -84,6 +88,20 @@
     <ui:property name="searchSchema" reflected="false"/>
 
     <?class
+    get model() {
+        return this.dataBinding && this.dataBinding.member.items.type;
+    }
+
+    set model(value) {
+        this.dataBinding = {
+            member: new cocktail.schema.Collection({
+                items: new cocktail.schema.Reference({
+                    type: value
+                })
+            })
+        };
+    }
+
     update() {
         this.loadPage(this.page);
     }
@@ -96,7 +114,7 @@
         this.dataState = "loading";
         this.createColumns();
 
-        return this.dataSource
+        return this.value
             .load(this.getDataSourceOptions(page))
             .then(function (data) {
                 table.resultCount = data.count;
@@ -186,7 +204,7 @@
         let heading = this.constructor.Heading.create();
         heading.member = member;
         heading.language = language;
-        heading.setAttribute("column", member.name);
+        heading.setAttribute("member", member.name);
         heading.label.innerHTML = member.translate();
         if (language) {
             heading.languageLabel.innerHTML = cocktail.ui.translations["cocktail.locales." + language];
@@ -245,44 +263,11 @@
     }
 
     createRow(record) {
-        let row = document.createElement("tr");
-        row.value = record;
-        for (let member of this.visibleMembers) {
-            let locales = member.translated ? this.visibleLocales : [null];
-            for (let language of locales) {
-                let cell = this.createCell(record, member, language);
-                row.appendChild(cell);
-            }
-        }
+        let row = this.constructor.Row.create();
+        row.visibleMembers = this.visibleMembers;
+        row.visibleLocales = this.visibleLocales;
+        row.dataBinding = this.dataBinding.child(this.value, this.dataBinding.member.items, null, record);
         return row;
-    }
-
-    createCell(record, member, language) {
-
-        let cell = document.createElement("td");
-        cell.member = member;
-        cell.language = language;
-        cell.setAttribute("column", member.name);
-
-        // Render the value using a custom component, if available, or fall
-        // back to a string representation
-        let value = this.dataSource.getValue(record, member, language);
-        let display = cocktail.ui.displays.createDisplay(
-            new cocktail.ui.DataBinding(
-                record,
-                member,
-                language,
-                value
-            ),
-            {wrapRawValues: false}
-        );
-        if (display) {
-            cell.appendChild(display);
-        }
-        else {
-            cell.innerHTML = member.translateValue(value);
-        }
-        return cell;
     }
     ?>
 
@@ -303,12 +288,80 @@
 
         <tbody id="body" tabindex="0"/>
 
-        <th ui:component="Heading">
-            <span id="label"/>
-            <span id="languageLabel"/>
-        </th>
-
     </table>
+
+    <th ui:component="Heading">
+        <span id="label"/>
+        <span id="languageLabel"/>
+    </th>
+
+    <tr ui:component="Row">
+
+        <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
+
+        <?class
+        createCells() {
+            for (let member of this.visibleMembers) {
+                if (member.translated) {
+                    for (let locale of this.visibleLocales) {
+                        this.appendChild(this.createCell(member, locale));
+                    }
+                }
+                else {
+                    this.appendChild(this.createCell(member));
+                }
+            }
+        }
+
+        updateCells() {
+            // Update cell values
+            for (let cell of this.cells) {
+                if (cell.dataBinding) {
+                    let member = cell.dataBinding.member;
+                    let value = this.value[member.name];
+                    if (member.translated && cell.dataBinding.locale) {
+                        value = value[cell.dataBinding.locale];
+                    }
+                    cell.value = value;
+                }
+            }
+        }
+
+        createCell(member, language = null) {
+            let cell = this.constructor.Cell.create();
+            cell.dataBinding = this.dataBinding.child(this.value, member, language);
+            return cell;
+        }
+        ?>
+
+        <?on value:changed
+        if (!this.cells.length) {
+            this.createCells();
+        }
+        else {
+            this.updateCells();
+        }
+        ?>
+
+        <td ui:component="Cell">
+
+            <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
+
+            <?on value:changed
+            // Render the value using a custom component, if available, or fall
+            // back to a string representation
+            this.display = cocktail.ui.displays.createDisplay(this.dataBinding, {wrapRawValues: false});
+            if (this.display) {
+                this.appendChild(this.display);
+            }
+            else {
+                this.innerHTML = this.dataBinding.member.translateValue(newValue);
+            }
+            ?>
+
+        </td>
+
+    </tr>
 
     <ui:cocktail.ui.LoadingSign id="loadingSign"/>
 
