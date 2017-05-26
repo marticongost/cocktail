@@ -68,11 +68,11 @@ cocktail.ui.dataDisplay = (cls) => class DataDisplay extends cls {
 }
 
 {
-    const MEMBER = Symbol();
-    const OBJECT = Symbol();
-    const LANGUAGE = Symbol();
-    const PARENT = Symbol();
-    const VALUE = Symbol();
+    const MEMBER = Symbol("cocktail.ui.DataBinding.MEMBER");
+    const OBJECT = Symbol("cocktail.ui.DataBinding.OBJECT");
+    const LANGUAGE = Symbol("cocktail.ui.DataBinding.LANGUAGE");
+    const PARENT = Symbol("cocktail.ui.DataBinding.PARENT");
+    const VALUE = Symbol("cocktail.ui.DataBinding.VALUE");
 
     cocktail.ui.DataBinding = class DataBinding {
 
