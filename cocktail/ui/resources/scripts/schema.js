@@ -206,6 +206,13 @@
             return schema;
         }
 
+        getId(record) {
+            if (this.primaryMember && record) {
+                return record[this.primaryMember.name];
+            }
+            return undefined;
+        }
+
         initialize(parameters) {
             this[MEMBER_MAP] = new Map();
             super.initialize(parameters);
