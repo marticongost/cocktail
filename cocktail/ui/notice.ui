@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <?head
+    const INSTANCE = Symbol("cocktail.ui.Notice.INSTANCE");
+    ?>
+
+    <?tail
+    cls.InvalidDetailError = class InvalidDetailError {
+        constructor(value) {
+            this.value = value;
+        }
+        toString() {
+            return (
+                "Notice details must be specified using an HTML "
+              + "string, an Element object or an array of Element "
+              + `objects; got ${this.value} instead.`
+            );
+        }
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+        document.addEventListener("mousedown", () => cls.clear());
+    });
+    ?>
+
+    <?class
+    toggleExpanded() {
+        if (this.animationState == "collapsing") {
+            this.animationState = "expanding";
+        }
+        else if (this.animationState == "expanding") {
+            this.animationState = "collapsing";
+        }
+        else if (this.expanded) {
+            this.animationState = "collapsing";
+        }
+        else {
+            this.animationState = "expanding";
+        }
+    }
+    ?>
+
+    <ui:property
+        name="category"
+        type="string"
+        reflected="true"/>
+
+    <ui:property
+        name="summary"
+        type="string"
+        reflected="true">
+        <?on changed
+        this.summaryLabel.innerHTML = newValue;
+        ?>
+    </ui:property>
+
+    <ui:property
+        name="detail"
+        reflected="false">
+
+        <?on changed
+        cocktail.ui.empty(this.detailContainer);
+
+        if (newValue === null || newValue === undefined || newValue === "") {
+            this.hasDetail = false;
+        }
+        else {
+            if (typeof(newValue) == "string") {
+                this.detailContainer.innerHTML = newValue;
+            }
+            else if (newValue instanceof Array) {
+                for (let element of newValue) {
+                    this.detailContainer.appendChild(element);
+                }
+            }
+            else if (newValue instanceof Element) {
+                this.detailContainer.appendChild(newValue);
+            }
+            else {
+                throw new cls.InvalidDetailError(newValue);
+            }
+            this.hasDetail = true;
+        }
+        ?>
+
+    </ui:property>
+
+    <ui:property
+        name="hasDetail"
+        type="boolean"
+        reflected="true"
+        default="false"/>
+
+    <ui:property
+        name="expanded"
+        type="boolean"
+        reflected="true"
+        default="false"/>
+
+    <ui:property
+        name="animationState"
+        type="string"
+        reflected="true"/>
+
+    <?class
+    static get instance() {
+        return this[INSTANCE];
+    }
+
+    static show(parameters) {
+
+        let instance = this[INSTANCE];
+        if (!instance) {
+            instance = this.create();
+            this[INSTANCE] = instance;
+        }
+
+        instance.summary = parameters.summary;
+        instance.expanded = false;
+        instance.category = parameters.category;
+        instance.detail = parameters.detail;
+        instance.animationState = "appearing";
+
+        if (!instance.parentNode) {
+            document.body.appendChild(instance);
+        }
+
+        return instance;
+    }
+
+    static clear() {
+        let instance = this[INSTANCE];
+        if (instance) {
+            instance.animationState = "disappearing";
+        }
+    }
+    ?>
+
+    <?on mousedown
+    e.stopPropagation();
+    ?>
+
+    <?on animationend
+    if (this.animationState == "disappearing") {
+        cls[INSTANCE] = null;
+        this.parentNode.removeChild(this);
+    }
+    this.animationState = "none";
+    ?>
+
+    <div id="summaryContainer">
+
+        <button id="expandButton">
+            <?svg cocktail.ui://images/expander.svg ?>
+            <?on click
+            instance.toggleExpanded();
+            ?>
+        </button>
+
+        <div id="summaryLabel">
+            <?on click
+            instance.toggleExpanded();
+            ?>
+        </div>
+
+    </div>
+
+    <button id="closeButton">
+        <?svg cocktail.ui://images/close-notice.svg ?>
+        <?on click
+        cls.clear();
+        ?>
+    </button>
+
+    <div id="detailFrame">
+        <?on animationend
+        if (instance.animationState == "expanding") {
+            instance.expanded = true;
+        }
+        else if (instance.animationState == "collapsing") {
+            instance.expanded = false;
+        }
+        instance.animationState = "none";
+        ?>
+        <div id="detailContainer"/>
+    </div>
+
+</div>
+
