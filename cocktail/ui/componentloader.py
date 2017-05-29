@@ -16,7 +16,8 @@ from cocktail.html.resources import (
     Resource,
     StyleSheet,
     EmbeddedResources,
-    SASSCompilation
+    SASSCompilation,
+    resource_repositories
 )
 from cocktail.sourcecodewriter import SourceCodeWriter
 from .exceptions import ComponentFileError, ParseError
@@ -820,6 +821,30 @@ class ComponentLoader(object):
                 "styles.textContent = %s;" % (dumps(css),),
                 "cocktail.ui.getShadow(%s).appendChild(styles);"
                 % self.__stack.ref
+            )
+
+        # Inline SVG
+        elif target == "svg":
+
+            url = pi.text.strip()
+            path = resource_repositories.locate(url)
+
+            if not path:
+                self.trigger_parser_error("Can't locale SVG file %s" % url)
+
+            try:
+                with open(path) as svg_file:
+                    svg = svg_file.read()
+            except Exception, e:
+                self.trigger_parser_error(
+                    "Error opening SVG file %s: %s" % (url, e)
+                )
+
+            self.init_source.write(
+                "%s.appendChild("
+                "new DOMParser().parseFromString("
+                "%s, 'image/svg+xml').documentElement)"
+                % (self.__stack.ref, dumps(svg))
             )
 
     def insert_stylesheet(self, node, resource):

@@ -57,9 +57,7 @@
             <slot name="label"/>
         </span>
         <span id="arrow">
-            <?js
-            cocktail.loadSVG(cocktail.normalizeResourceURI("cocktail.ui://images/dropdown.svg"), element);
-            ?>
+            <?svg cocktail.ui://images/dropdown.svg ?>
         </span>
     </button>
 

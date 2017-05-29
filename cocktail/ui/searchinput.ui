@@ -6,9 +6,7 @@
     formLabelDisposition="hidden">
 
     <span id="icon">
-        <?js
-        cocktail.loadSVG("cocktail.ui://images/search.svg", element);
-        ?>
+        <?svg cocktail.ui://images/search.svg ?>
     </span>
 
     <ui:with ui:element="input" type="search">
