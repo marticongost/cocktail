@@ -5,9 +5,7 @@
     xmlns:ui="http://www.whads.com/ns/cocktail/ui">
 
     <div id="spinner">
-        <?js
-        cocktail.loadSVG("cocktail.ui://images/spinner.svg", element)
-        ?>
+        <?svg cocktail.ui://images/spinner.svg ?>
     </div>
 
     <div id="label">
