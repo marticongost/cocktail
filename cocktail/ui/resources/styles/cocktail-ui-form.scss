@@ -2,6 +2,7 @@
 @import "cocktail.ui://styles/common";
 
 $group-separation: 3em;
+$subgroup-separation: 1.5em;
 
 .field[readOnly='true'] .controlContainer {
     color: #444;
@@ -17,7 +18,7 @@ legend {
     padding: 0;
     margin: 0;
     font-weight: bold;
-    font-size: 1.1em;
+    font-size: 1.2em;
     color: $heading-color;
 
     &:empty {
@@ -29,7 +30,7 @@ legend {
     margin-top: $group-separation;
 }
 
-.Group + .Group {
+#groupsContainer > .Group + .Group {
     margin-top: $group-separation;
 }
 
@@ -46,10 +47,23 @@ legend {
     }
 }
 
-legend:not(:empty) + .fieldsContainer {
+#groupsContainer > .Group > fieldset > legend:not(:empty) + .fieldsContainer {
     border-top: 1px dotted lighten($heading-color, 30);
     margin-top: 0.5em;
     padding-top: 0.5em;
+}
+
+.Group .Group {
+    margin-top: $subgroup-separation;
+
+    legend {
+        font-size: 1.1em;
+        color: $subheading-color;
+    }
+
+    legend:not(:empty) + .fieldsContainer {
+        margin-top: 0.8em;
+    }
 }
 
 :host([formLayout='column']) {
