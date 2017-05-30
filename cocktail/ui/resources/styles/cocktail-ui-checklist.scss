@@ -1,6 +1,14 @@
 
 @import "cocktail://styles/utils";
 
+:host-context(.cocktail-ui-Form[formLayout='column']) {
+    margin-top: 0.7em;
+
+    .labelText {
+        font-size: 0.9em;
+    }
+}
+
 #entries {
     @include clear-list-styles;
     font-size: inherit;
@@ -12,15 +20,15 @@
         & + .Entry {
             margin-top: 0.5rem;
         }
-
-        input {
-            margin: 0;
-            margin-right: 0.3rem;
-        }
-
-        .labelText {
-            font-size: inherit;
-        }
     }
+}
+
+input {
+    margin: 0;
+    margin-right: 0.3rem;
+}
+
+.labelText {
+    font-size: inherit;
 }
 
