@@ -25,7 +25,7 @@ legend {
     }
 }
 
-.fieldsContainer:not(:empty) + .groupsContainer:not(:empty) {
+#fieldsContainer:not(:empty) + #groupsContainer:not(:empty) {
     margin-top: $group-separation;
 }
 
