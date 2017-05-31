@@ -75,6 +75,8 @@ cocktail.ui.splash = function (splash, mainComponent) {
         return cls;
     }
 
+    const WINDOW_LISTENERS = Symbol("cocktail.ui.ComponentBase.WINDOW_LISTENERS");
+
     let componentBase = (cls) => class ComponentBase extends cls {
 
         static get [IS_COMPONENT]() {
@@ -157,6 +159,7 @@ cocktail.ui.splash = function (splash, mainComponent) {
         }
 
         disconnectedCallback() {
+            this.clearWindowListeners();
         }
 
         attributeChangedCallback(attrName, oldValue, newValue) {
@@ -171,6 +174,30 @@ cocktail.ui.splash = function (splash, mainComponent) {
 
         get parentInstance() {
             return this.getRootNode().host;
+        }
+
+        addWindowListener(eventType, callback, context = null, options = null) {
+            if (!context) {
+                context = this;
+            }
+            let listener = (e) => { return callback.call(context, e); };
+            let windowListeners = this[WINDOW_LISTENERS];
+            if (!windowListeners) {
+                windowListeners = []
+                this[WINDOW_LISTENERS] = windowListeners;
+            }
+            window.addEventListener(eventType, listener, options);
+            windowListeners.push([eventType, listener]);
+        }
+
+        clearWindowListeners() {
+            let windowListeners = this[WINDOW_LISTENERS];
+            if (windowListeners) {
+                this[WINDOW_LISTENERS] = null;
+                for (let [eventType, listener] of windowListeners) {
+                    window.removeEventListener(eventType, listener);
+                }
+            }
         }
     }
 
