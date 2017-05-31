@@ -39,6 +39,10 @@
         opacity: 0.3;
     }
 
+    &[state='hidden'] {
+        display: none;
+    }
+
     button {
         border: none;
         background: none;
