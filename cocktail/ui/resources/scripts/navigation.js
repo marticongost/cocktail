@@ -327,9 +327,11 @@ cocktail.navigation.NavigationError = class NavigationError {
 
 {
     let processCurrentLocation = (e) => {
-        if (cocktail.navigation.tree) {
-            cocktail.navigation.process(location.href);
-        }
+        cocktail.ui.rootReady.then(() => {
+            if (cocktail.navigation.tree) {
+                cocktail.navigation.process(location.href);
+            }
+        });
     }
 
     window.addEventListener("DOMContentLoaded", processCurrentLocation);
