@@ -98,6 +98,10 @@
         });
     }
 
+    get fieldsReady() {
+        return this[FIELDS_READY];
+    }
+
     addField(member) {
         let field = this.createField(member);
         cocktail.ui.link(
