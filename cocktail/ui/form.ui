@@ -171,6 +171,7 @@
         field.labelDisposition = this.fieldsLabelDisposition;
         field.displayFactory = this.displayFactory;
         field.readOnlyDisplayFactory = this.readOnlyDisplayFactory;
+        field.inGroup = this.grouped && member[cocktail.ui.group];
         field.dataBinding = this.dataBinding.child(
             this.dataBinding.value,
             member
@@ -246,7 +247,7 @@
         this.readOnly = (newValue.member[cocktail.ui.editable] == cocktail.ui.READ_ONLY);
 
         // Set the field label
-        this.label.innerHTML = newValue.member.translate();
+        this.label.innerHTML = this.inGroup && newValue.member.translate(".inGroup") || newValue.member.translate();
 
         // Create the new field control
         this.makeControl();
@@ -338,7 +339,7 @@
         </ui:property>
 
         <?on dataBinding:changed
-        this.label.innerHTML = newValue.member.translate();
+        this.label.innerHTML = this.inGroup && newValue.member.translate(".inGroup") || newValue.member.translate();
         this.updateTranslations();
         ?>
 
