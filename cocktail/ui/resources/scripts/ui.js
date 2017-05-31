@@ -11,10 +11,9 @@ cocktail.declare("cocktail.ui");
 
 cocktail.ui.SPLASH_HIDE_DELAY = 500;
 
-cocktail.ui.splash = function (splash, rootElement) {
+cocktail.ui.splash = function (splash, mainComponent) {
 
-    splash.container.appendChild(rootElement);
-    cocktail.ui.root = rootElement;
+    mainComponent.main(splash.container);
     document.body.appendChild(splash);
 
     window.addEventListener("load", () => {
@@ -80,6 +79,12 @@ cocktail.ui.splash = function (splash, rootElement) {
 
         static get [IS_COMPONENT]() {
             return true;
+        }
+
+        static main(container) {
+            let instance = this.create();
+            cocktail.ui.root = instance;
+            container.appendChild(instance);
         }
 
         static create(properties = null) {

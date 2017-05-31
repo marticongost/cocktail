@@ -346,7 +346,7 @@ class UIScript(Script):
             type = "text/javascript",
             children =
                 (
-                    "cocktail.ui.splash(%s.create(), %s.create())"
+                    "cocktail.ui.splash(%s.create(), %s)"
                     % (
                         self.splash,
                         self.root_component.full_name
@@ -354,10 +354,7 @@ class UIScript(Script):
                 )
                 if self.splash else
                 (
-                    """
-                    cocktail.ui.root = %s.create();
-                    document.body.appendChild(cocktail.ui.root);
-                    """
+                    "%s.main(document.body);"
                     % self.root_component.full_name
                 )
         )
