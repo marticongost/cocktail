@@ -207,6 +207,17 @@
             return schema;
         }
 
+        get localName() {
+            let name = this.name;
+            if (name) {
+                let dot = name.lastIndexOf(".");
+                if (dot != -1) {
+                    name = name.substr(dot + 1);
+                }
+            }
+            return name;
+        }
+
         getId(record) {
             if (this.primaryMember && record) {
                 return record[this.primaryMember.name];
