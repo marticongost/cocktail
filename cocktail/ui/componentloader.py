@@ -801,6 +801,15 @@ class ComponentLoader(object):
 
                 b.write(listener)
 
+        # Window event listeners
+        elif target == "on-window":
+            event, listener = pi.text.strip().split(None, 1)
+            with self.init_source.indented_block(
+                "instance.addWindowListener(%s, (e) => {" % dumps(event),
+                "}, %s)" % self.__stack.ref
+            ) as block:
+                block.write(listener)
+
         # Inline SCSS
         elif target == "css":
             scss = normalize_indentation(pi.text.rstrip())
