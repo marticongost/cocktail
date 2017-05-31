@@ -29,6 +29,9 @@ cocktail.ui.splash = function (splash, mainComponent) {
 }
 
 {
+    let uiPrepared;
+    cocktail.ui.rootReady = new Promise((resolve, reject) => { uiPrepared = resolve; });
+
     const OBSERVED_ATTRIBUTES = Symbol("cocktail.ui.OBSERVED_ATTRIBUTES");
     const IS_COMPONENT = Symbol("cocktail.ui.IS_COMPONENT");
     const TYPES_SCOURED_FOR_PROPERTIES = new WeakSet();
@@ -87,6 +90,7 @@ cocktail.ui.splash = function (splash, mainComponent) {
             let instance = this.create();
             cocktail.ui.root = instance;
             container.appendChild(instance);
+            uiPrepared(instance);
         }
 
         static create(properties = null) {
