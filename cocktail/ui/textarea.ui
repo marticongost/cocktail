@@ -5,6 +5,7 @@
     xmlns:ui="http://www.whads.com/ns/cocktail/ui">
 
     <ui:requires component="cocktail.ui.datadisplay"/>
+    <ui:requires component="cocktail.ui.delay"/>
     <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
 
     <?tail
@@ -17,6 +18,10 @@
     }
     ?>
 
+    <?js
+    this.updateDelay = new cocktail.ui.Delay(300, () => this.updateValue());
+    ?>
+
     <?on value:changed
     if (this.dataBinding) {
         this.textArea.value = this.dataBinding.member.serializeValue(newValue);
@@ -24,6 +29,11 @@
     ?>
 
     <textarea id="textArea">
+        <?on keydown
+        if (!cocktail.ui.nonTextKeys.has(e.which)) {
+            instance.updateDelay.begin();
+        }
+        ?>
         <?on change
         instance.updateValue();
         ?>
