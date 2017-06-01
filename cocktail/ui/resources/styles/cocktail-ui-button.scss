@@ -28,7 +28,10 @@
 }
 
 #icon {
-    margin-right: 0.5em;
+
+    :host([labelHasContent]) & {
+        margin-right: 0.5em;
+    }
 
     &:empty {
         display: none;
