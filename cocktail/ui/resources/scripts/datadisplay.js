@@ -148,6 +148,27 @@
                 this.value = change.newState;
             }
         }
+
+        linkDisplay(linkedDisplay) {
+            this.addEventListener("dataBindingChanged", (e) => {
+                linkedDisplay.dataBinding = e.detail.newValue;
+            });
+            cocktail.ui.link(
+                this,
+                linkedDisplay,
+                "value",
+                (display, linkedDisplay) => {
+                    if (display.dataBinding === linkedDisplay.dataBinding) {
+                        linkedDisplay.value = display.value;
+                    }
+                },
+                (linkedDisplay, display) => {
+                    if (display.dataBinding === linkedDisplay.dataBinding) {
+                        display.value = linkedDisplay.value;
+                    }
+                }
+            );
+        }
     }
 }
 
