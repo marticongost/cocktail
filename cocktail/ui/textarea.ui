@@ -7,15 +7,25 @@
     <ui:requires component="cocktail.ui.datadisplay"/>
     <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
 
+    <?tail
+    cls.delegatesFocus = true;
+    ?>
+
+    <?class
+    updateValue() {
+        this.setAttribute("value", this.textArea.value);
+    }
+    ?>
+
     <?on value:changed
-    if (this.member) {
-        this.textArea.value = this.member.serializeValue(newValue);
+    if (this.dataBinding) {
+        this.textArea.value = this.dataBinding.member.serializeValue(newValue);
     }
     ?>
 
     <textarea id="textArea">
         <?on change
-        instance.setAttribute("value", this.value);
+        instance.updateValue();
         ?>
     </textarea>
 
