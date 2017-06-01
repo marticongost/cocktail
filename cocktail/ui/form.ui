@@ -195,6 +195,14 @@
             field.acceptModifications();
         }
     }
+
+    focusFirstControl() {
+        for (let field of this[FIELD_MAP].values()) {
+            if (field.focusControl()) {
+                return;
+            }
+        }
+    }
     ?>
 
     <?js
@@ -265,9 +273,11 @@
 
         <?class
         focusControl() {
-            if (this.control) {
+            if (!this.readOnly && this.control) {
                 this.control.focus();
+                return true;
             }
+            return false;
         }
 
         acceptModifications() {
@@ -336,9 +346,11 @@
         <?class
         focusControl() {
             for (let translation of this[TRANSLATIONS_MAP].values()) {
-                translation.focusControl();
-                break;
+                if (translation.focusControl()) {
+                    return true;
+                }
             }
+            return false;
         }
 
         acceptModifications() {
@@ -479,9 +491,11 @@
 
             <?class
             focusControl() {
-                if (this.control) {
+                if (!this.readOnly && this.control) {
                     this.control.focus();
+                    return true;
                 }
+                return false;
             }
 
             acceptModifications() {
