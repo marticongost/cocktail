@@ -8,6 +8,12 @@
     <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
 
     <ui:property
+        name="emptyLabel"
+        type="string"
+        reflected="true"
+        default="---"/>
+
+    <ui:property
         name="emptyOptionDisplayed"
         type="boolean"
         default="true"
@@ -92,7 +98,7 @@
     }
 
     getLabel(value) {
-        return this.dataBinding.member.translateValue(value);
+        return this.dataBinding.member.translateValue(value) || this.emptyLabel;
     }
     ?>
 
