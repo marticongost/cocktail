@@ -12,7 +12,7 @@
 
     cocktail.ui.Delay = class Delayable {
 
-        constructor(threshold, callback, cancelCallback) {
+        constructor(threshold, callback, cancelCallback = null) {
             this[TIMER] = null;
             this.threshold = threshold;
             this.callback = callback;
