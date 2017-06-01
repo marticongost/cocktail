@@ -248,6 +248,19 @@
     }
 }
 
+cocktail.navigation.StackTransparentNode = class StackTransparentNode extends cocktail.navigation.Node {
+
+    constructor(...args) {
+        super(...args);
+        let parentStackIndex = this.parent && this.parent.stackIndex;
+        this.stackIndex = parentStackIndex === undefined ? 0 : parentStackIndex + 1;
+    }
+
+    activate() {
+        cocktail.navigation.replace(this.parent);
+    }
+}
+
 cocktail.navigation.StackNode = class StackNode extends cocktail.navigation.Node {
 
     constructor(...args) {
