@@ -3,6 +3,10 @@
     display: inline-block;
 }
 
+:host(:focus) {
+    outline: none !important;
+}
+
 #input {
     margin: 0;
 }
