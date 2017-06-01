@@ -92,30 +92,31 @@
         this.searchText = text;
         this.searchState = text ? "searching" : "empty";
 
-        let request = this.makeDataSourceRequest(text);
-        if (request) {
+        if (text) {
+            let request = this.makeDataSourceRequest(text);
             request.then((data) => {
                 this.processDataSourceData(data);
                 this.panelVisible = true;
             });
+            return request;
         }
         else {
             this.panelVisible = false;
-            request = Promise.resolve({});
+            this.value = null;
+            return Promise.resolve({});
         }
-
-        return request;
     }
 
     makeDataSourceRequest(text) {
-        if (text) {
-            return this.dataSource.load(this.getDataSourceParameters(text));
-        }
+        return this.dataSource.load(this.getDataSourceParameters(text));
     }
 
     processDataSourceData(data) {
         this.results = data.records;
         this.selectFirst();
+        if (!this.results.length) {
+            this.value = null;
+        }
     }
     ?>
 
@@ -183,8 +184,10 @@
     ?>
 
     <?on value:changed
-    this.searchText = this.dataBinding.member.translateValue(newValue);
-    this.searchState = newValue ? "match" : "empty";
+    if (newValue) {
+        this.searchText = this.dataBinding.member.translateValue(newValue);
+    }
+    this.searchState = newValue ? "match" : (this.searchText ? "searching" : "empty");
     ?>
 
     <input
@@ -198,7 +201,13 @@
             e.stopPropagation();
         }
         else if (e.which == cocktail.ui.keys.ESC) {
-            instance.panelVisible = false;
+            if (instance.panelVisible) {
+                instance.panelVisible = false;
+            }
+            else {
+                instance.searchText = "";
+                instance.value = null;
+            }
             return false;
         }
         else if (e.which == cocktail.ui.keys.DOWN) {
