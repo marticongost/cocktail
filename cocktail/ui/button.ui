@@ -17,8 +17,15 @@
     <span id="icon"/>
 
     <span id="label">
+        <?js
+        let observer = new MutationObserver((mutations) => {
+            cocktail.ui.setFlag(instance, "labelHasContent", instance.label.childNodes.length > 1);
+        });
+        observer.observe(element, {childList: true});
+        ?>
         <slot/>
     </span>
+
 
 </button>
 
