@@ -91,8 +91,8 @@
     }
 
     clearStack() {
-        if (this[STACK_TOP]) {
-            this.pop(this[STACK_TOP]);
+        while (this[STACK_TOP]) {
+            this.pop();
         }
     }
 
