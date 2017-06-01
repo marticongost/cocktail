@@ -1,6 +1,8 @@
 
 @import "cocktail.ui://styles/common";
 
+$disabled-color: desaturate(lighten($panel-action-color, 25), 20);
+
 :host {
     background-color: $panel-background-color;
     background-image: linear-gradient(lighten($panel-background-color, 20), $panel-background-color);
@@ -12,15 +14,24 @@
     border-bottom: 1px solid darken($panel-border-color, 15);
     border-radius: 0.2rem;
     font-weight: bold;
-    cursor: pointer;
     display: flex;
     flex-direction: row;
     align-items: center;
 }
 
-:host(:hover) {
+:host(:not([disabled])) {
+    cursor: pointer;
+}
+
+:host(:not([disabled]):hover) {
     background-image: linear-gradient(lighten($panel-hover-color, 20), $panel-hover-color);
     color: $panel-action-highlight-color;
+}
+
+:host([disabled]) {
+    background-image: linear-gradient(lighten($panel-background-color, 10), $panel-background-color);
+    border: 1px solid $panel-border-color;
+    color: $disabled-color;
 }
 
 :host(:focus) {
@@ -44,7 +55,11 @@
         * {
            fill: $panel-action-color !important;
 
-           :host(:hover) & {
+           :host([disabled]) & {
+               fill: $disabled-color !important;
+            }
+
+           :host(:not([disabled]):hover) & {
                fill: $panel-action-highlight-color !important;
            }
         }
