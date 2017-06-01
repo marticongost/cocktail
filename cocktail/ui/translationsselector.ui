@@ -29,7 +29,7 @@
     get definedLocales() {
         let definedLocales = new Set();
         for (let [locale, localeState] of this[LOCALE_STATES]) {
-            if (localeState != "undefined") {
+            if (localeState != "undefined" && localeState != "deleted") {
                 definedLocales.add(locale);
             }
         }
@@ -38,6 +38,10 @@
 
     get undefinedLocales() {
         return new Set(this.localesInState("undefined"));
+    }
+
+    get deletedLocales() {
+        return new Set(this.localesInState("deleted"));
     }
 
     getLocaleState(locale) {
@@ -49,7 +53,7 @@
         if (previousState != newState) {
             this[LOCALE_STATES].set(locale, newState);
             this[CHANGING_LOCALE_STATE] = true;
-            this.splitSelector.setSelected(locale, newState != "undefined");
+            this.splitSelector.setSelected(locale, newState != "undefined" && newState != "deleted");
             this[CHANGING_LOCALE_STATE] = false;
             for (let panel of [this.splitSelector.selectedEntriesPanel, this.splitSelector.availableEntriesPanel]) {
                 panel.getEntry(locale).setAttribute("localeState", newState);
@@ -66,7 +70,7 @@
         for (let locale of newValue) {
             let state = this[LOCALE_STATES].get(locale) || "undefined";
             localeStates.set(locale, state);
-            if (state != "undefined") {
+            if (state != "undefined" && state != "deleted") {
                 definedLocales.push(locale);
             }
         }
@@ -94,7 +98,7 @@
             }
 
             for (let locale of removed) {
-                instance.setLocaleState(locale, "undefined");
+                instance.setLocaleState(locale, "deleted");
             }
         }
         ?>
