@@ -777,6 +777,36 @@
         }
     }
 
+    cocktail.schema.addLocale = function (object, schema, locale) {
+        for (let member of schema.members()) {
+            if (member.translated) {
+                let value = object[member.name];
+                if (value === undefined || value === null) {
+                    value = {};
+                }
+                if (typeof(value) == "object" && !(locale in value)) {
+                    value[locale] = member.getDefaultValue(object, locale);
+                }
+            }
+            else if (member instanceof cocktail.schema.Collection) {
+                if (member.items && member.items instanceof cocktail.schema.Reference && member.items.type) {
+                    let value = object[member.name];
+                    if (value) {
+                        for (let item of value) {
+                            cocktail.schema.addLocale(item, member.items.type, locale);
+                        }
+                    }
+                }
+            }
+            else if (member instanceof cocktail.schema.Reference && member.type) {
+                let value = object[member.name];
+                if (value && typeof(value) == "object") {
+                    cocktail.schema.addLocale(value, member.type, locale);
+                }
+            }
+        }
+    }
+
     cocktail.schema.Error = class Error {
     }
 
