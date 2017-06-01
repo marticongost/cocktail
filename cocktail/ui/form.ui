@@ -373,8 +373,13 @@
 
             let newLocales = new Set(this.locales);
             let [added, removed] = cocktail.sets.addedRemoved(this[TRANSLATIONS_MAP].keys(), newLocales);
+            let modified = (added.size || removed.size);
+            let value = modified ? cocktail.ui.copyValue(this.value) : this.value;
 
             for (let locale of added) {
+                if (!(locale in value)) {
+                    value[locale] = this.dataBinding.member.getDefaultValue(this.parentInstance.dataBinding.value, locale);
+                }
                 let translation = this.createTranslation(locale);
                 cocktail.ui.link(
                     this,
@@ -399,6 +404,10 @@
 
             for (let [locale, translation] of this[TRANSLATIONS_MAP]) {
                 translation.visible = newLocales.has(locale);
+            }
+
+            if (modified) {
+                this.value = value;
             }
         }
 
