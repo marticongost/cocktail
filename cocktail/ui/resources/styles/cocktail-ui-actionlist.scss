@@ -68,6 +68,18 @@
     &[state='emphasized'] {
         .label {
             font-weight: bold;
+            color: $focus-color;
+        }
+        .icon svg * {
+            fill: $focus-color !important;
+        }
+        button:hover {
+            .label {
+                color: darken($focus-color, 10);
+            }
+            .icon svg * {
+                fill: darken($focus-color, 10) !important;
+            }
         }
     }
 }
