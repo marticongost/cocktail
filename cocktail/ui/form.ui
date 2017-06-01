@@ -264,6 +264,12 @@
         ?>
 
         <?class
+        focusControl() {
+            if (this.control) {
+                this.control.focus();
+            }
+        }
+
         acceptModifications() {
             this.modified = false;
         }
@@ -328,6 +334,13 @@
         ?>
 
         <?class
+        focusControl() {
+            for (let translation of this[TRANSLATIONS_MAP].values()) {
+                translation.focusControl();
+                break;
+            }
+        }
+
         acceptModifications() {
             this.modified = false;
             for (let translation of this[TRANSLATIONS_MAP].values()) {
@@ -456,6 +469,12 @@
             ?>
 
             <?class
+            focusControl() {
+                if (this.control) {
+                    this.control.focus();
+                }
+            }
+
             acceptModifications() {
                 this.modified = false;
             }
