@@ -546,7 +546,7 @@
                     throw new cocktail.schema.SerializationError(this, value, `${this.type.name} has no primary member`);
                 }
 
-                return value[this.type.primaryMember.name];
+                return this.type.primaryMember.serializeValue(value[this.type.primaryMember.name]);
             }
         }
 
