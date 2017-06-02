@@ -43,11 +43,13 @@
     }
 
     createEntries() {
-        this.clearEntries();
         let items = this.dataBinding && this.dataBinding.member && this.dataBinding.member.items;
         if (items) {
             let possibleValuesResolution = Promise.resolve(items.getPossibleValues());
-            possibleValuesResolution.then((values) => this.addEntries(values));
+            possibleValuesResolution.then((values) => {
+                this.clearEntries();
+                this.addEntries(values)
+            });
         }
     }
 
