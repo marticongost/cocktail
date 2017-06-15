@@ -663,6 +663,43 @@
 
     cocktail.schema.Collection.prototype.defaultValue = () => [];
 
+    cocktail.schema.DateTime = class DateTime extends cocktail.schema.Member {
+
+        parseValue(value) {
+            return new Date(value);
+        }
+
+        serializeValue(value) {
+            if (!value) {
+                return "";
+            }
+            return value instanceof Date ? value.toISOString() : value;
+        }
+
+        translateValue(value) {
+            if (!value) {
+                return "";
+            }
+            if (!(value instanceof Date)) {
+                value = new Date(value);
+            }
+            if (isNaN(value)) {
+                return "";
+            }
+            return value.toLocaleDateString(
+                cocktail.getLanguage(),
+                {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit"
+                }
+            );
+        }
+    }
+
     cocktail.schema.Locale = class Locale extends cocktail.schema.String {
 
         constructor(parameters = null) {
