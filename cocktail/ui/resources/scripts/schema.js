@@ -151,6 +151,9 @@
             if (value === undefined || value === null || value === "") {
                 return this.translate(".none");
             }
+            else if (this.enumeration && this.translatableEnumeration) {
+                return this.translate(".values." + value);
+            }
             else {
                 return value;
             }
@@ -198,6 +201,7 @@
     cocktail.schema.Member.prototype.descriptive = false;
     cocktail.schema.Member.prototype.translated = false;
     cocktail.schema.Member.prototype.defaultValue = null;
+    cocktail.schema.Member.prototype.translatableEnumeration = true;
 
     cocktail.schema.Schema = class Schema extends cocktail.schema.Member {
 
