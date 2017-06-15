@@ -4,6 +4,7 @@ u"""
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
 from types import GeneratorType
+from functools import wraps
 import cherrypy
 from json import dumps
 from string import letters, digits
@@ -32,6 +33,14 @@ def set_csrf_protection(instance):
     """
     global _protection
     _protection = instance
+
+def no_csrf_token_injection(func):
+    """Exempt the active request from injecting the CSRF protection token."""
+    @wraps(func)
+    def impl(*args, **kwargs):
+        cherrypy.request.csrf_token_injection = False
+        return func(*args, **kwargs)
+    return impl
 
 # Prevent POST requests that don't include the correct token
 def _csrf_token_validation():
@@ -144,6 +153,9 @@ class CSRFProtection(object):
         :return: True if the scheme should be enabled, False otherwise.
         :rtype: True
         """
+        if not getattr(cherrypy.request, "csrf_token_injection", True):
+            return False
+
         try:
             self.deciding_injection()
         except CSRFProtectionExemption:
