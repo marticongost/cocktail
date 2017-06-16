@@ -86,14 +86,14 @@
         let entry = this.constructor.Entry.create();
         entry.entryValue = value;
         entry.input.value = serializedValue;
-        entry.input.checked = this[SERIALIZED_VALUE].has(serializedValue);
+        entry.selected = this[SERIALIZED_VALUE].has(serializedValue);
         entry.labelText.innerHTML = this.dataBinding.member.items.translateValue(value);
         return entry;
     }
 
     isSelected(value) {
         let entry = this.getEntry(value);
-        return entry ? entry.input.checked : null;
+        return entry ? entry.selected : null;
     }
 
     setSelected(value, selected) {
@@ -101,7 +101,7 @@
         let entry = this.getEntry(value);
 
         if (entry) {
-            entry.input.checked = selected;
+            entry.selected = selected;
             let selection = new Set(this.value || []);
 
             if (selected) {
@@ -139,7 +139,7 @@
 
         if (!this[SELECTING_ENTRY]) {
             for (let entry of this.entries.children) {
-                entry.input.checked = this[SERIALIZED_VALUE].has(entry.input.value);
+                entry.selected = this[SERIALIZED_VALUE].has(entry.input.value);
             }
         }
     }
@@ -157,9 +157,21 @@
 
     <li ui:component="Entry">
 
+        <ui:property
+            name="selected"
+            type="boolean"
+            reflected="true">
+            <?on changed
+            if (instance.parentInstance) {
+                instance.parentInstance.setSelected(instance.entryValue, newValue);
+            }
+            this.input.checked = newValue;
+            ?>
+        </ui:property>
+
         <input id="input" type="checkbox">
             <?on change
-            instance.parentInstance.setSelected(instance.entryValue, this.checked);
+            instance.selected = this.checked;
             ?>
         </input>
 
