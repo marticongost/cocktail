@@ -4,8 +4,15 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:ui="http://www.whads.com/ns/cocktail/ui">
 
+    <ui:requires component="cocktail.ui.sorting"/>
     <ui:requires component="cocktail.ui.datadisplay"/>
     <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
+
+    <ui:property
+        name="sorted"
+        type="boolean"
+        reflected="true"
+        default="false"/>
 
     <?head
     const ENTRY_MAP = Symbol("cocktail.ui.CheckList.ENTRY_MAP");
@@ -47,10 +54,17 @@
         if (items) {
             let possibleValuesResolution = Promise.resolve(items.getPossibleValues());
             possibleValuesResolution.then((values) => {
+                if (this.sorted) {
+                    values = this.sortValues(values);
+                }
                 this.clearEntries();
                 this.addEntries(values)
             });
         }
+    }
+
+    sortValues(values) {
+        return cocktail.ui.sorting.localeSort(values, this.dataBinding.member.items.translateValue);
     }
 
     addEntries(values) {
