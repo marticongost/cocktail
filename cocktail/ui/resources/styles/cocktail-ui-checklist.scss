@@ -1,11 +1,29 @@
 
 @import "cocktail://styles/utils";
+@import "cocktail.ui://styles/common";
 
 :host-context(.cocktail-ui-Form[formLayout='column']) {
     margin-top: 0.7em;
 
     .labelText {
         font-size: 0.9em;
+    }
+}
+
+#selectionControls {
+    margin-bottom: 0.8em;
+
+    :host(:not([selectionControlsVisible='true'])) & {
+        display: none;
+    }
+
+    button {
+        @include link;
+        font-size: 0.8em;
+
+        & + button {
+            margin-left: 0.5em;
+        }
     }
 }
 

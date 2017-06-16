@@ -14,10 +14,17 @@
         reflected="true"
         default="false"/>
 
+    <ui:property
+        name="selectionControlsVisible"
+        type="boolean"
+        reflected="true"
+        default="false"/>
+
     <?head
     const ENTRY_MAP = Symbol("cocktail.ui.CheckList.ENTRY_MAP");
     const SELECTING_ENTRY = Symbol("cocktail.ui.CheckList.SELECTING_ENTRY");
     const SERIALIZED_VALUE = Symbol("cocktail.ui.CheckList.SERIALIZED_VALUE");
+    const UPDATE_SELECTION_CONTROLS = Symbol("cocktail.ui.CheckList.UPDATE_SELECTION_CONTROLS");
     ?>
 
     <?tail
@@ -79,6 +86,7 @@
         let entry = this.createEntry(value);
         this[ENTRY_MAP].set(this.dataBinding.member.items.serializeValue(value), entry);
         this.entries.appendChild(entry);
+        this[UPDATE_SELECTION_CONTROLS]();
     }
 
     createEntry(value, prepend = false) {
@@ -123,6 +131,12 @@
             throw new cls.InexistentEntryError(this, value);
         }
     }
+
+    [UPDATE_SELECTION_CONTROLS]() {
+        let size = this[SERIALIZED_VALUE] && this[SERIALIZED_VALUE].size || 0;
+        cocktail.ui.setFlag(this.selectAllButton, "disabled", size == this.entries.children.length);
+        cocktail.ui.setFlag(this.selectNoneButton, "disabled", !size);
+    }
     ?>
 
     <?on value:changed
@@ -136,6 +150,8 @@
         else {
             this[SERIALIZED_VALUE] = null;
         }
+
+        this[UPDATE_SELECTION_CONTROLS]();
 
         if (!this[SELECTING_ENTRY]) {
             for (let entry of this.entries.children) {
@@ -152,6 +168,24 @@
     <?js
     this[ENTRY_MAP] = new Map();
     ?>
+
+    <div id="selectionControls">
+
+        <button id="selectAllButton">
+            <?on click
+            instance.value = Array.from(instance.entries.children, (entry) => entry.entryValue);
+            ?>
+            <ui:translation/>
+        </button>
+
+        <button id="selectNoneButton">
+            <?on click
+            instance.value = [];
+            ?>
+            <ui:translation/>
+        </button>
+
+    </div>
 
     <ul id="entries"/>
 
