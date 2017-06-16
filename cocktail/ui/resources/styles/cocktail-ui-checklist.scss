@@ -32,3 +32,9 @@ input {
     font-size: inherit;
 }
 
+.Entry[selected='false'] {
+    .labelText {
+        color: #666;
+    }
+}
+
