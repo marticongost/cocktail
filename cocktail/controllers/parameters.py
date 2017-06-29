@@ -906,11 +906,12 @@ class FormSchemaReader(object):
                             error.value,
                             error
                         )
-                        schema.set(
-                            error_target,
-                            error_member.name,
-                            fixed_value
-                        )
+                        if error_member.name:
+                            schema.set(
+                                error_target,
+                                error_member.name,
+                                fixed_value
+                            )
         finally:
             path.pop()
 
