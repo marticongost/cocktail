@@ -260,6 +260,7 @@
 
     clearRows() {
         cocktail.ui.empty(this.body);
+        this.empty = true;
         this.selectedElements = [];
     }
 
