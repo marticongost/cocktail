@@ -275,6 +275,16 @@
         row.dataBinding = this.dataBinding.child(this.value, this.dataBinding.member.items, null, record);
         return row;
     }
+
+    getRow(value) {
+        if (this.dataBinding && this.dataBinding.member.items && value !== null && value !== undefined) {
+            value = this.dataBinding.member.items.serializeValue(value);
+            if (value) {
+                return this.body.querySelector(`[value='${value}']`);
+            }
+        }
+        return null;
+    }
     ?>
 
     <?js
