@@ -359,6 +359,18 @@
             cell.dataBinding = this.dataBinding.child(this.value, member, language);
             return cell;
         }
+
+        getCell(member, language = null) {
+            if (typeof(member) != "string") {
+                member = member.name;
+            }
+            for (let cell of this.cells) {
+                if (cell.dataBinding && cell.dataBinding.member.name == member) {
+                    return cell;
+                }
+            }
+            return null;
+        }
         ?>
 
         <?on value:changed
