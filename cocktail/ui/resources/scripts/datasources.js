@@ -41,15 +41,56 @@ cocktail.ui.HTTPDataSource = class HTTPDataSource extends cocktail.ui.DataSource
         super(parameters);
         if (parameters) {
             this.url = parameters.url;
+            this.requiresPOST = parameters.requiresPOST || false;
         }
     }
 
     getRequestParameters(parameters = null) {
-        if (!parameters) {
-            parameters = {};
+
+        parameters = Object.assign(
+            {
+                url: this.url,
+                responseType: "json",
+                method: this.method
+            },
+            parameters || {}
+        );
+
+        // Convert query string parameters to form data / JSON values
+        // when using POST requests
+        if (this.requiresPOST) {
+
+            parameters.method = "POST";
+
+            if (!parameters.headers) {
+                parameters.headers = {};
+            }
+            parameters.headers["X-HTTP-Method-Override"] = "GET";
+
+            if (parameters.parameters) {
+                if (!parameters.data) {
+                    parameters.data = new FormData();
+                }
+                if (parameters.data instanceof FormData) {
+                    for (let k in parameters.parameters) {
+                        let v = parameters.parameters[k];
+                        if (v instanceof Array) {
+                            for (let item of v) {
+                                parameters.data.append(k, item);
+                            }
+                        }
+                        else {
+                            parameters.data.append(k, v);
+                        }
+                    }
+                }
+                else {
+                    Object.assign(parameters.data, params.parameters);
+                }
+                delete parameters.parameters;
+            }
         }
-        parameters.url = this.url;
-        parameters.responseType = "json";
+
         return parameters;
     }
 
