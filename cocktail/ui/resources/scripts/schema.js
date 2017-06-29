@@ -546,11 +546,16 @@
                     throw new cocktail.schema.SerializationError(this, value, "no type defined for this member");
                 }
 
-                if (!this.type.primaryMember) {
-                    throw new cocktail.schema.SerializationError(this, value, `${this.type.name} has no primary member`);
+                if (typeof(value) != "object") {
+                    return String(value);
                 }
 
-                return this.type.primaryMember.serializeValue(value[this.type.primaryMember.name]);
+                let id = this.type.getId(value);
+                if (!id) {
+                    throw new cocktail.schema.SerializationError(this, value, `${this.type.name} can't produce an ID for ${value}`);
+                }
+
+                return id;
             }
         }
 
