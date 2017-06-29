@@ -422,6 +422,10 @@
         <div id="errorMessage"/>
     </div>
 
+    <div id="emptyNotice">
+        <ui:translation/>
+    </div>
+
     <?js
     this.selectionContainer = this.body;
     ?>
