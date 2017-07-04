@@ -7,45 +7,40 @@
 @since:         March 2017
 -----------------------------------------------------------------------------*/
 
-
 {
-    const DISPLAYS = Symbol("cocktail.ui.ObjectDisplay.DISPLAYS");
+    const CHANGES = Symbol.for("cocktail.ui.dataDisplay.CHANGES");
 
-    let subscribe = (display, dataBinding) => {
-        if (display.parentNode && dataBinding) {
-            let model = dataBinding.member.relatedType;
-            if (model) {
-                model = model.originalMember;
-                let displays = model[DISPLAYS];
-                if (!displays) {
-                    displays = new Set();
-                    model[DISPLAYS] = displays;
-                }
-                displays.add(display);
-            }
+    let getModelChanges = function (model) {
+        return model[CHANGES] || (model[CHANGES] = new cocktail.ui.Observable());
+    }
+
+    let triggerInvalidation = function (model, change) {
+        change.model = model;
+        getModelChanges(model).trigger(change);
+    }
+
+    let subscribe = function (display, dataBinding) {
+        if (display.parentNode && dataBinding && dataBinding.member.relatedType) {
+            let model = dataBinding.member.relatedType.originalMember;
+            let changes = getModelChanges(model);
+            display.observe(changes);
         }
     }
 
     let unsubscribe = (display, dataBinding) => {
-        if (dataBinding) {
-            let model = dataBinding.member.relatedType;
-            if (model) {
-                model = model.originalMember;
-                let displays = model[DISPLAYS];
-                if (displays) {
-                    displays.delete(display);
-                }
-            }
+        if (dataBinding && dataBinding.member.relatedType) {
+            let model = dataBinding.member.relatedType.originalMember;
+            let changes = getModelChanges(model);
+            display.stopObserving(changes);
         }
     }
 
     cocktail.ui.objectCreated = function (model, record) {
-        triggerInvalidation({model, type: "create", record});
+        triggerInvalidation(model, {type: "create", record});
     }
 
     cocktail.ui.objectModified = function (model, id, oldState, newState) {
-        triggerInvalidation({
-            model,
+        triggerInvalidation(model, {
             type: "modify",
             id,
             oldState,
@@ -54,16 +49,7 @@
     }
 
     cocktail.ui.objectDeleted = function (model, id) {
-        triggerInvalidation({model, type: "delete", id});
-    }
-
-    let triggerInvalidation = (change) => {
-        let displays = change.model[DISPLAYS];
-        if (displays) {
-            for (let display of displays) {
-                display.invalidation(change);
-            }
-        }
+        triggerInvalidation(model, {type: "delete", id});
     }
 
     cocktail.ui.dataDisplay = (cls) => class DataDisplay extends cls {

@@ -78,9 +78,75 @@ cocktail.ui.splash = function (splash, mainComponent) {
         return cls;
     }
 
+    const OBSERVED_OBJECTS = Symbol("cocktail.ui.Observer.OBSERVED_OBJECTS");
+    const OBSERVERS = Symbol("cocktail.ui.Observable.OBSERVERS");
+
+    cocktail.ui.observer = (cls) => class Observer extends (cls) {
+
+        observe(observable) {
+
+            let observedObjects = this[OBSERVED_OBJECTS];
+            if (observedObjects === undefined) {
+                observedObjects = new Set();
+                this[OBSERVED_OBJECTS] = observedObjects;
+            }
+            observedObjects.add(observable);
+
+            let observers = observable[OBSERVERS]
+            if (observers === undefined) {
+                observers = new Set();
+                observable[OBSERVERS] = observers;
+            }
+            observers.add(this);
+        }
+
+        stopObserving(observable) {
+            let observedObjects = this[OBSERVED_OBJECTS];
+            if (observedObjects !== undefined) {
+                observedObjects.delete(observable);
+                observable[OBSERVERS].delete(this);
+            }
+        }
+
+        stopAllObservation() {
+            let observedObjects = this[OBSERVED_OBJECTS];
+            if (observedObjects) {
+                for (let observable of observedObjects) {
+                    observable[OBSERVERS].delete(this);
+                }
+                observedObjects.clear();
+            }
+        }
+
+        invalidation(change) {
+        }
+    }
+
+    cocktail.ui.Observable = class Observable {
+
+        *iterObservers() {
+            let observers = this[OBSERVERS];
+            if (observers) {
+                for (let observer of observers) {
+                    yield observer;
+                }
+            }
+        }
+
+        trigger(change) {
+            change.source = this;
+            let observers = this[OBSERVERS];
+            if (observers) {
+                for (let observer of this[OBSERVERS]) {
+                    observer.invalidation(change);
+                }
+            }
+        }
+    }
+
     const WINDOW_LISTENERS = Symbol("cocktail.ui.ComponentBase.WINDOW_LISTENERS");
 
-    let componentBase = (cls) => class ComponentBase extends cls {
+    let componentBase = (cls) => class ComponentBase extends cocktail.ui.observer(cls) {
 
         static get [IS_COMPONENT]() {
             return true;
@@ -163,6 +229,7 @@ cocktail.ui.splash = function (splash, mainComponent) {
         }
 
         disconnectedCallback() {
+            this.stopAllObservation();
             this.clearWindowListeners();
         }
 
