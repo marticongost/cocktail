@@ -149,10 +149,14 @@
     }
 
     createEntry(action) {
-        let entry = this.constructor.Entry.create();
+        let entry = this.getEntryType(action).create();
         entry.action = action;
         entry.state = action.getState(this.getActionContext());
         return entry;
+    }
+
+    getEntryType(action) {
+        return this.constructor.Entry;
     }
 
     updateEntries() {
