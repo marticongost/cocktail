@@ -29,14 +29,20 @@
     ?>
 
     <input id="input">
+
         <?on keydown
-        if (!cocktail.ui.nonTextKeys.has(e.which)) {
+        if (e.which == cocktail.ui.keys.ENTER) {
+            instance.updateValue();
+        }
+        else if (!cocktail.ui.nonTextKeys.has(e.which)) {
             instance.updateDelay.begin();
         }
         ?>
+
         <?on change
         instance.updateValue();
         ?>
+
     </input>
 
 </div>
