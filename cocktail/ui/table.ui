@@ -85,7 +85,13 @@
         ?>
     </ui:property>
 
-    <ui:property name="searchSchema" reflected="false"/>
+    <ui:property name="searchSchema" reflected="false">
+        <?on changed
+        if (newValue) {
+            this.searchValues = newValue.defaults();
+        }
+        ?>
+    </ui:property>
 
     <?class
     get model() {
