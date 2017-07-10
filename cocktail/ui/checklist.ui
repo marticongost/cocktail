@@ -110,17 +110,26 @@
 
         if (entry) {
             entry.selected = selected;
-            let selection = new Set(this.value || []);
-
-            if (selected) {
-                selection.add(value);
-            }
-            else {
-                selection.delete(value);
-            }
 
             this[SELECTING_ENTRY] = true;
             try {
+                let serializedSelection = this[SERIALIZED_VALUE] || new Set();
+                let serializedValue = this.dataBinding.member.items.serializeValue(value);
+
+                if (selected) {
+                    serializedSelection.add(serializedValue);
+                }
+                else {
+                    serializedSelection.delete(serializedValue);
+                }
+
+                let selection = new Set();
+                let entryMap = this[ENTRY_MAP];
+                for (serializedValue of serializedSelection) {
+                    let entry = entryMap.get(serializedValue);
+                    selection.add(entry.entryValue);
+                }
+
                 this.value = selection;
             }
             finally {
