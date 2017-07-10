@@ -265,8 +265,10 @@
     }
 
     reload() {
-        this.clearRows();
-        this.loadPage(0).then(() => this.page = 0);
+        if (this.dataBinding && this.value) {
+            this.clearRows();
+            this.loadPage(0).then(() => this.page = 0);
+        }
     }
 
     createRow(record) {
