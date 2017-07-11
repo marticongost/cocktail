@@ -35,12 +35,18 @@
     ?>
 
     <ui:property
+        name="autoload"
+        type="boolean"
+        reflected="true"
+        default="false"/>
+
+    <ui:property
         name="visibleLocales"
         type="identifiers"
         reflected="true"
         default="[]">
         <?on changed
-        if (this.dataBinding && this.value) {
+        if (this.autoload && this.dataBinding && this.value) {
             this.reset();
         }
         ?>
@@ -52,7 +58,7 @@
         name="visibleMembers"
         reflected="false">
         <?on changed
-        if (this.dataBinding && this.value) {
+        if (this.autoload && this.dataBinding && this.value) {
             this.reset();
         }
         ?>
@@ -81,7 +87,9 @@
 
     <ui:property name="searchValues" reflected="false">
         <?on changed
-        this.reload();
+        if (this.autoload) {
+            this.reload();
+        }
         ?>
     </ui:property>
 
@@ -109,7 +117,7 @@
     }
 
     invalidation(change) {
-        if (change.type == "create") {
+        if (this.autoload && change.type == "create") {
             this.reload();
         }
     }
