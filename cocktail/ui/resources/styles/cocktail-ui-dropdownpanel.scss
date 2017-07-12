@@ -33,26 +33,47 @@ $hpadding: 0.5em;
         border-bottom: $border-width solid white;
         background-color: white;
     }
+
+    svg {
+        fill: #444;
+
+        :host-context(.cocktail-ui-Toolbar) &,
+        :host-context(.cocktail-ui-ActionList) & {
+            fill: $panel-action-color;
+        }
+    }
 }
 
 #label {
     font-size: 0.9em;
+
+    :host([dropdownType='menu']) & {
+        display: none;
+    }
 }
 
 #arrow {
     margin-left: 0.3rem;
 
+    :host(:not([dropdownType='arrow'])) & {
+        display: none;
+    }
+
     svg {
         width: 0.6rem;
+    }
+}
 
-        * {
-            fill: #444;
+#menuIcon {
+    padding: 0 0.3rem;
 
-            :host-context(.cocktail-ui-Toolbar) &,
-            :host-context(.cocktail-ui-ActionList) & {
-                fill: $panel-action-color;
-            }
-        }
+    :host(:not([dropdownType='menu'])) & {
+        display: none;
+    }
+
+    svg {
+        height: 0.8rem;
+        width: auto;
     }
 }
 
@@ -86,7 +107,10 @@ $hpadding: 0.5em;
 #panelContent {
     max-height: 70vh;
     overflow-y: auto;
-    padding: $vpadding $hpadding;
+
+    :host(:not([dropdownType='menu'])) & {
+        padding: $vpadding $hpadding;
+    }
 }
 
 #footer {
