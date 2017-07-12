@@ -24,8 +24,19 @@
     padding: 0;
     margin: 0;
     display: flex;
-    flex: 1 1 auto;
     align-content: stretch;
+}
+
+#extraDropdown {
+    :host([hasExtraActions='false']) & {
+        display: none;
+    }
+}
+
+#extraEntryList {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
 }
 
 .Entry {
@@ -49,6 +60,13 @@
         padding: 0.7em 1.3em;
         cursor: pointer;
         font-size: 0.9em;
+
+        #extraEntryList & {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 0.7em 0.7em;
+        }
     }
 
     &:not([state='disabled']) {
