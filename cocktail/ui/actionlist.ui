@@ -120,9 +120,13 @@
         cocktail.ui.trigger(this, "entriesReady");
     }
 
-    addEntry(action, position = null) {
+    addEntry(action, position = undefined) {
 
         let entry = this.createEntry(action);
+
+        if (position === undefined) {
+            position = action.position;
+        }
 
         if (position === null) {
             this.entryList.appendChild(entry);

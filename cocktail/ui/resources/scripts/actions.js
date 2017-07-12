@@ -9,11 +9,13 @@
 
 {
     const ID = Symbol("cocktail.ui.Action.ID");
+    const POSITION = Symbol("cocktail.ui.Action.POSITION");
 
     cocktail.ui.Action = class Action {
 
-        constructor(id) {
+        constructor(id, position = null) {
             this[ID] = id;
+            this[POSITION] = position;
         }
 
         get id() {
@@ -30,6 +32,14 @@
 
         get max() {
             return null;
+        }
+
+        get position() {
+            return this[POSITION];
+        }
+
+        set position(value) {
+            this[POSITION] = value;
         }
 
         get translationPrefix() {
