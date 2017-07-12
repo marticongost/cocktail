@@ -21,6 +21,12 @@
     </ui:property>
 
     <ui:property
+        name="dropdownType"
+        type="string"
+        reflected="true"
+        default="arrow"/>
+
+    <ui:property
         name="footerVisible"
         type="boolean"
         default="false"
@@ -58,6 +64,9 @@
         </span>
         <span id="arrow">
             <?svg cocktail.ui://images/dropdown.svg ?>
+        </span>
+        <span id="menuIcon">
+            <?svg cocktail.ui://images/menu.svg ?>
         </span>
     </button>
 
