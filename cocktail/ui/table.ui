@@ -285,6 +285,34 @@
         }
     }
 
+    addRow(record, position = null) {
+
+        let row = this.createRow(record);
+
+        if (position) {
+            let anchor = (position.before || position.after);
+
+            if (typeof(anchor) == "string") {
+                anchor = this.getRow(anchor);
+            }
+
+            if (!anchor) {
+                throw `Invalid row position: ${position}`;
+            }
+
+            if (position.after) {
+                anchor = anchor.nextSibling;
+            }
+
+            this.body.insertBefore(row, anchor);
+        }
+        else {
+            this.body.appendChild(row);
+        }
+
+        return row;
+    }
+
     createRow(record) {
         let row = this.constructor.Row.create();
         row.visibleMembers = this.visibleMembers;
