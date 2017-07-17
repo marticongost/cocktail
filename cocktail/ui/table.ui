@@ -245,12 +245,7 @@
         let row;
 
         for (let record of records) {
-            row = this.createRow(record);
-            this.body.appendChild(row);
-        }
-
-        if (row) {
-            this.empty = false;
+            row = this.addRow(record);
         }
 
         // Subtract the scrollbar width from the headings row
@@ -274,7 +269,6 @@
 
     clearRows() {
         cocktail.ui.empty(this.body);
-        this.empty = true;
         this.selectedElements = [];
     }
 
@@ -347,7 +341,14 @@
             <tr id="headingsRow"/>
         </thead>
 
-        <tbody id="body" tabindex="0"/>
+        <tbody id="body" tabindex="0">
+            <?js
+            let observer = new MutationObserver((mutations) => {
+                instance.empty = !element.rows.length;
+            });
+            observer.observe(element, {childList: true});
+            ?>
+        </tbody>
 
     </table>
 
