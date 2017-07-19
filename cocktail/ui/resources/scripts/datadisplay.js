@@ -356,6 +356,9 @@ cocktail.ui.formControls = new cocktail.ui.DisplayFactory("cocktail.ui.formContr
 // A display factory for read only form controls
 cocktail.ui.readOnlyFormControls = cocktail.ui.displays.extend("cocktail.ui.readOnlyFormControl");
 
+// A display factory for the entries of collection editors
+cocktail.ui.collectionEditorControls = cocktail.ui.formControls.extend("cocktail.ui.collectionEditorControl");
+
 // A display factory for the entries of autocomplete forms
 cocktail.ui.autocompleteDisplays = cocktail.ui.displays.extend("cocktail.ui.autocompleteDisplay");
 

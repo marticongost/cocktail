@@ -1,0 +1,25 @@
+
+.label {
+    font-size: 0.8em;
+}
+
+:host([formLayout='horizontalTable']) {
+
+    .label {
+        display: inline-block;
+        padding-bottom: 0.4em;
+    }
+
+    .field + .field {
+        margin-left: 1.5em;
+    }
+}
+
+:host-context(.Entry:not(:first-child)):host([formLayout='horizontalTable']) {
+    margin-top: 0.5em;
+
+    .label {
+        display: none;
+    }
+}
+
