@@ -71,7 +71,7 @@
     }
 
     sortValues(values) {
-        return cocktail.ui.sorting.localeSort(values, this.dataBinding.member.items.translateValue);
+        return cocktail.ui.sorting.localeSort(values, (value) => this.dataBinding.member.items.translateValue(value));
     }
 
     addEntries(values) {
