@@ -117,6 +117,7 @@ class ComponentLoader(object):
         self.properties = OrderedDict()
         self.source = SourceCodeWriter()
         self.head_source = None
+        self.symbols_source = None
         self.init_source = None
         self.init_tail_source = None
         self.body_source = None
@@ -148,6 +149,7 @@ class ComponentLoader(object):
         self.properties = None
         self.source = None
         self.head_source = None
+        self.symbols_source = None
         self.init_source = None
         self.init_tail_source = None
         self.body_source = None
@@ -194,6 +196,7 @@ class ComponentLoader(object):
             self.source.write("{")
             self.source.indent()
 
+        self.symbols_source = self.source.nest()
         self.head_source = self.source.nest()
 
         if not self.is_module:
@@ -350,6 +353,8 @@ class ComponentLoader(object):
                 node.is_content = True
             elif local_name == "property":
                 node.is_property = True
+            elif local_name == "symbol":
+                node.is_symbol = True
             elif local_name == "translation":
                 node.is_translation = True
             elif local_name == "requires-translation":
@@ -366,6 +371,7 @@ class ComponentLoader(object):
         node.is_element = (
             not node.is_content
             and not node.is_property
+            and not node.is_symbol
             and not node.is_resource
             and not node.is_decorator
             and not node.is_translation
@@ -499,6 +505,34 @@ class ComponentLoader(object):
                 )
 
             self.properties[node.prop_name] = prop_options
+
+        # Symbols
+        elif node.is_symbol:
+            symbol_name = attributes.pop("name", None)
+            if not symbol_name:
+                self.trigger_parser_error("symbol without a 'name' attribute")
+
+            symbol_component = None
+            while symbol_name and symbol_name[0] == ".":
+                symbol_name = symbol_name[1:]
+                if symbol_component is None:
+                    symbol_component = self.component
+                else:
+                    symbol_component = symbol_component.parent
+
+            if symbol_component is None:
+                symbol_component = self.component
+
+            node.symbol_name = symbol_name
+            node.symbol_full_name = symbol_component.full_name + "." + symbol_name
+
+            self.symbols_source.write(
+                "const %s = Symbol.for('%s');"
+                % (
+                    node.symbol_name,
+                    node.symbol_full_name
+                )
+            )
 
         # Translation bundles
         elif node.is_translation_bundle_requirement:
@@ -686,7 +720,7 @@ class ComponentLoader(object):
             attrib_name = attrib_qname.localname
             attrib_ns = qname.namespace
 
-            if node.is_property:
+            if node.is_property or node.is_symbol:
                 self.trigger_parser_error(
                     "Invalid attribute '%s' on a 'property' clause"
                     % attrib_name
@@ -932,6 +966,9 @@ class StackNode(object):
 
     # Wether the node is a property declaration
     is_property = False
+
+    # Wether the node is a symbol declaration
+    is_symbol = False
 
     # Wether the node is a translation insertion point
     is_translation = False
