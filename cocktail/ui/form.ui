@@ -56,9 +56,12 @@
     const GROUPS_MAP = Symbol("cocktail.ui.Form.GROUPS_MAP");
     const FIELD_MAP = Symbol("cocktail.ui.Form.FIELD_MAP");
     const FIELDS_READY = Symbol.for("cocktail.ui.Form.FIELDS_READY");
+    ?>
 
+    <?tail
     {
         const formControl = cocktail.ui.formControl;
+        cocktail.schema.Schema[formControl] = cocktail.ui.Form;
         cocktail.schema.String[formControl] = cocktail.ui.TextInput;
         cocktail.schema.Number[formControl] = cocktail.ui.NumberInput;
         cocktail.schema.Boolean[formControl] = cocktail.ui.CheckBox;
