@@ -36,6 +36,12 @@
 
     </ui:property>
 
+    <ui:property
+        name="sorted"
+        type="boolean"
+        default="true"
+        reflected="true"/>
+
     <?head
     const SERIALIZED_VALUE = Symbol("cocktail.ui.DropdownSelector.SERIALIZED_VALUE");
     const OPTION_MAP = Symbol("cocktail.ui.DropdownSelector.OPTION_MAP");
@@ -59,8 +65,17 @@
                 this.emptyOption = this.addOption(null);
             }
             let possibleValuesResolution = Promise.resolve(this.dataBinding.member.getPossibleValues());
-            possibleValuesResolution.then((values) => this.addOptions(values));
+            possibleValuesResolution.then((values) => {
+                if (this.sorted) {
+                    values = this.sortValues(values);
+                }
+                this.addOptions(values);
+            });
         }
+    }
+
+    sortValues(values) {
+        return cocktail.ui.sorting.localeSort(values, (value) => this.dataBinding.member.translateValue(value));
     }
 
     addOptions(values) {
