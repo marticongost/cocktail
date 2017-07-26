@@ -21,12 +21,6 @@
 
     <?tail
     cls.delegatesFocus = true;
-
-    window.addEventListener("DOMContentLoaded", (e) => {
-        document.addEventListener("click", (e) => {
-            cls.foldActiveInstance();
-        });
-    });
     ?>
 
     <?class
@@ -118,6 +112,10 @@
             this.value = null;
         }
     }
+    ?>
+
+    <?on-window click
+    cls.foldActiveInstance();
     ?>
 
     <ui:property
