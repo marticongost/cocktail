@@ -38,11 +38,11 @@ $disabled-color: desaturate(lighten($panel-action-color, 25), 20);
     @include focus;
 }
 
-#icon {
+#icon:not(:empty) + #label:not(:empty) {
+    margin-left: 0.5em;
+}
 
-    :host([labelHasContent]) & {
-        margin-right: 0.5em;
-    }
+#icon {
 
     &:empty {
         display: none;

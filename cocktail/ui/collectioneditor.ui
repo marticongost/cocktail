@@ -108,7 +108,7 @@
     <div id="entries"/>
 
     <ui:cocktail.ui.Button id="addButton">
-        <ui:translation/>
+        <ui:translation attribute="text"/>
         <?on click
         instance.addEntry();
         ?>
@@ -162,7 +162,7 @@
         <div id="controlContainer"/>
 
         <ui:cocktail.ui.Button id="removeButton">
-            <ui:translation/>
+            <ui:translation attribute="text"/>
             <?on click
             instance.parentInstance.removeEntry(instance);
             ?>
