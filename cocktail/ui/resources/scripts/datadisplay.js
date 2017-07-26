@@ -155,6 +155,13 @@
                 }
             );
         }
+
+        getJSONValue() {
+            if (!this.dataBinding) {
+                return {};
+            }
+            return this.dataBinding.member.toJSONValue(this.value);
+        }
     }
 }
 
