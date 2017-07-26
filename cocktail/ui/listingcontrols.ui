@@ -106,7 +106,7 @@
         </ui:cocktail.ui.CheckList>
 
         <ui:cocktail.ui.Button id="applyLocalesButton" slot="footer">
-            <ui:translation/>
+            <ui:translation attribute="text"/>
             <?on click
             instance.display.visibleLocales = instance.localesList.value;
             instance.localesPanel.expanded = false;
@@ -124,7 +124,7 @@
         <ui:cocktail.ui.CheckList id="membersList"/>
 
         <ui:cocktail.ui.Button id="applyMembersButton" slot="footer">
-            <ui:translation/>
+            <ui:translation attribute="text"/>
             <?on click
             instance.display.visibleMembers = instance.membersList.value;
             instance.membersPanel.expanded = false;
