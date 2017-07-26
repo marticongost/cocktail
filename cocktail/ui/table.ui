@@ -362,6 +362,10 @@
         <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
 
         <?class
+        get table() {
+            return this.parentInstance;
+        }
+
         createCells() {
             for (let member of this.visibleMembers) {
                 if (member.translated) {
@@ -431,6 +435,16 @@
         <td ui:component="Cell">
 
             <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
+
+            <?class
+            get row() {
+                return this.parentNode;
+            }
+
+            get table() {
+                return this.parentInstance;
+            }
+            ?>
 
             <?on value:changed
             cocktail.ui.empty(this);
