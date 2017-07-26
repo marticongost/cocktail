@@ -194,6 +194,10 @@
 
         <?on change instance[UPDATE_SEARCH_TEXT](); ?>
 
+        <?on focus
+        this.select();
+        ?>
+
         <?on keydown
         if (e.which == cocktail.ui.keys.HOME || e.which == cocktail.ui.keys.END) {
             e.stopPropagation();
