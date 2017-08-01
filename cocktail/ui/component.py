@@ -86,11 +86,17 @@ class Component(object):
         return self.__state and self.__state.timestamp
 
     def needs_update(self):
+
         timestamp = self.timestamp
-        return (
-            not timestamp
-            or os.stat(self.__source_file).st_mtime > timestamp
-        )
+        if not timestamp:
+            return True
+
+        try:
+            source_timestamp = os.stat(self.__source_file).st_mtime
+        except OSError:
+            return True
+
+        return source_timestamp > timestamp
 
     @property
     def source_file(self):
