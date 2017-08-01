@@ -385,8 +385,8 @@
                 if (cell.dataBinding) {
                     let member = cell.dataBinding.member;
                     let value = this.value[member.name];
-                    if (member.translated && cell.dataBinding.locale) {
-                        value = value[cell.dataBinding.locale];
+                    if (member.translated && cell.dataBinding.language) {
+                        value = value[cell.dataBinding.language];
                     }
                     cell.value = value;
                 }
@@ -456,7 +456,7 @@
                 this.dataBinding.child(
                     this.dataBinding.object,
                     this.dataBinding.member,
-                    this.dataBinding.locale,
+                    this.dataBinding.language,
                     newValue
                 ),
                 {wrapRawValues: false}
