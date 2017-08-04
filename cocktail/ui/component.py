@@ -6,7 +6,12 @@ u"""
 import os
 from json import dumps
 from cocktail.modeling import OrderedSet
-from cocktail.translations import translations, get_language, translate_locale
+from cocktail.translations import (
+    translations,
+    get_language,
+    translate_locale,
+    directionality
+)
 from cocktail.html import (
     HTMLDocument,
     DocumentMetadata,
@@ -324,6 +329,15 @@ class UIScript(Script):
             )
         declarations_script.append(
             "cocktail.ui.locales = %s;" % dumps(locales)
+        )
+        declarations_script.append(
+            "cocktail.ui.directionality = %s;"
+            % dumps(
+                dict(
+                    (locale, directionality.get(locale))
+                    for locale in locales
+                )
+            )
         )
         document.scripts_container.append(declarations_script)
 
