@@ -92,9 +92,11 @@
 
                             if (newValue.language) {
                                 this.setAttribute("language", newValue.language);
+                                this.setAttribute("dir", cocktail.ui.directionality[newValue.language]);
                             }
                             else {
                                 this.removeAttribute("language");
+                                this.removeAttribute("dir");
                             }
                         }
                         else {
