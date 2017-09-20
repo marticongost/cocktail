@@ -206,7 +206,7 @@
     cocktail.schema.Schema = class Schema extends cocktail.schema.Member {
 
         static declare(parameters) {
-            let schema = new cocktail.schema.Schema(parameters);
+            let schema = new this(parameters);
             cocktail.setVariable(schema.name, schema);
             return schema;
         }
