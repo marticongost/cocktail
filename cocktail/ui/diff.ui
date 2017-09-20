@@ -6,10 +6,10 @@
 
     <ui:requires component="cocktail.ui.datadisplay"/>
     <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
-    <ui:resource href="cocktail.ui://scripts/jsdiff.js"/>
+    <ui:resource href="cocktail.ui://scripts/difflib.js"/>
 
     <?on value:changed
-    this.label.innerHTML = newValue ? cocktail.ui.diffString(newValue[0] || "", newValue[1] || "") : "";
+    this.label.innerHTML = newValue ? difflib.getDiffString(newValue[0] || "", newValue[1] || "") : "";
     ?>
 
     <div id="label"/>
