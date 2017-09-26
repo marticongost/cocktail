@@ -168,7 +168,10 @@
         }
 
         if (this.membersParameter) {
-            options.parameters[this.membersParameter] = Array.from(this.visibleMembers, member => member.name);
+            options.parameters[this.membersParameter] = Array.from(
+                this.visibleMembers,
+                member => member[cocktail.ui.dataSourceField]
+            ).filter(Boolean);
         }
 
         if (this.searchSchema && this.searchValues) {
