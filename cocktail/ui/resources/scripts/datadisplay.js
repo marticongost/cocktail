@@ -187,7 +187,7 @@
             this[OBJECT] = object;
             this[MEMBER] = member;
             this[LANGUAGE] = language;
-            this[VALUE] = (value === undefined) ? this.getValue() : value;
+            this[VALUE] = (value === undefined) ? this.getValue(language) : value;
         }
 
         get object() {
@@ -215,14 +215,7 @@
             if (object === undefined) {
                 return undefined;
             }
-            let value = object[this[MEMBER].name];
-            if (this[MEMBER].translated) {
-                language = language || this[LANGUAGE];
-                if (language) {
-                    value = value[language];
-                }
-            }
-            return value;
+            return this[MEMBER].getObjectValue(object, language);
         }
 
         child(object, member, language = null, value = undefined) {
