@@ -174,6 +174,14 @@ cocktail.ui.splash = function (splash, mainComponent) {
             return instance;
         }
 
+        static *iterComponentInheritance() {
+            let proto = Object.getPrototypeOf(this);
+            while (proto !== ComponentBase) {
+                yield proto;
+                proto = Object.getPrototypeOf(proto);
+            }
+        }
+
         initialize() {
 
             let root;
