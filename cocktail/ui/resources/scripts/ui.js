@@ -152,6 +152,10 @@ cocktail.ui.splash = function (splash, mainComponent) {
             return true;
         }
 
+        static get requiresShadowDOM() {
+            return false;
+        }
+
         static main(container) {
             let instance = this.create();
             cocktail.ui.root = instance;
@@ -186,14 +190,16 @@ cocktail.ui.splash = function (splash, mainComponent) {
 
             let root;
 
-            if (this.constructor.parentComponent) {
-                root = this;
-            }
-            else {
+            // Subcomponents don't get their own, unless they are based on a custom
+            // component
+            if (this.constructor.requiresShadowDOM) {
                 root = this.attachShadow({
                     mode: "open",
                     delegatesFocus: this.constructor.delegatesFocus
                 });
+            }
+            else {
+                root = this;
             }
 
             // Linked CSS

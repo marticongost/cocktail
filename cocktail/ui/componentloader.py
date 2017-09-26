@@ -211,6 +211,11 @@ class ComponentLoader(object):
                     "return cocktail.ui._getObservedAttributes(this); }"
                 )
 
+                if not self.component.parent:
+                    self.body_source.write(
+                        "static get requiresShadowDOM() { return true; }"
+                    )
+
                 # Component initializer
                 self.body_source.write("initialize() {")
                 self.init_source = self.body_source.nest(1)
