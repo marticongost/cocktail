@@ -116,6 +116,14 @@
             return value;
         }
 
+        getObjectValue(object, language = null) {
+            let value = object[this.name];
+            if (language && this.translated) {
+                value = value[language];
+            }
+            return value;
+        }
+
         toJSONValue(value) {
             return value;
         }
