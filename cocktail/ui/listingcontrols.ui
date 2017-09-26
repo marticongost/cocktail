@@ -15,6 +15,7 @@
                 this.schema = this.display.model;
                 this.localesList.value = this.display.visibleLocales;
                 this.membersList.value = this.display.visibleMembers;
+                this.translatedModel = this.schema.translated;
             }
         }
 
@@ -49,6 +50,11 @@
         ?>
 
     </ui:property>
+
+    <ui:property
+        name="translatedModel"
+        type="boolean"
+        reflected="true"/>
 
     <ui:property
         name="resultCount"
