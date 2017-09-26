@@ -22,3 +22,9 @@
     font-size: 0.9em;
 }
 
+:host([translatedModel='false']) {
+    #localesPanel {
+        display: none;
+    }
+}
+
