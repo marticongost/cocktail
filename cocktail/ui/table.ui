@@ -160,18 +160,15 @@
         }
 
         if (this.pageSizeParameter) {
-            options.parameters[this.pageSizeParameter] = this.pageSize;
+            this.addPageSizeParameter(options);
         }
 
         if (this.localesParameter) {
-            options.parameters[this.localesParameter] = Array(...this.visibleLocales);
+            this.addLocalesParameter(options);
         }
 
         if (this.membersParameter) {
-            options.parameters[this.membersParameter] = Array.from(
-                this.visibleMembers,
-                member => member[cocktail.ui.dataSourceField]
-            ).filter(Boolean);
+            this.addMembersParameter(options);
         }
 
         if (this.searchSchema && this.searchValues) {
@@ -179,6 +176,21 @@
         }
 
         return options;
+    }
+
+    addPageSizeParameter(options) {
+        options.parameters[this.pageSizeParameter] = this.pageSize;
+    }
+
+    addLocalesParameter(options) {
+        options.parameters[this.localesParameter] = Array(...this.visibleLocales);
+    }
+
+    addMembersParameter(options) {
+        options.parameters[this.membersParameter] = Array.from(
+            this.visibleMembers,
+            member => member[cocktail.ui.dataSourceField]
+        ).filter(Boolean);
     }
 
     addSearchParameter(options) {
