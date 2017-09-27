@@ -999,6 +999,14 @@ class SchemaObject(object):
 
         return decorator
 
+    def get_translated_value(self, member, language = None, **kwargs):
+
+        if isinstance(member, basestring):
+            member = self.__class__.get_member(member)
+
+        value = self.get(member, language)
+        return member.translate_value(value, **kwargs)
+
 
 SchemaObject._translation_schema_metaclass = SchemaClass
 SchemaObject._translation_schema_base = SchemaObject

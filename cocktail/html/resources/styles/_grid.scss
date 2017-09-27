@@ -116,6 +116,32 @@ $grid-margin: 50px;
 
     $grid-sizes: map-keys($grid-definition);
     $pos1: index($grid-sizes, $size);
+
+    @if $operator == "in" or $operator == "not-in" {
+        $lower-size: null;
+        $upper-size: null;
+
+        @if type-of($operand) == "string" {
+            $index: str-index($operand, "-");
+            $lower-size: str-slice($operand, 1, $index - 1);
+            $upper-size: str-slice($operand, $index + 1);
+        }
+        @else {
+            $lower-size: nth($operand, 1);
+            $upper-size: nth($operand, 2);
+        }
+
+        $lower-pos: index($grid-sizes, $lower-size);
+        $upper-pos: index($grid-sizes, $upper-size);
+
+        @if $operator == "in" {
+            @return $pos1 <= $lower-pos and $pos1 >= $upper-pos;
+        }
+        @else {
+            @return $pos1 > $lower-pos or $pos1 < $upper-pos;
+        }
+    }
+
     $pos2: index($grid-sizes, $operand);
 
     @if $operator == 'eq' {
