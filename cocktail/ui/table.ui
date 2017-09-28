@@ -187,10 +187,13 @@
     }
 
     addMembersParameter(options) {
-        options.parameters[this.membersParameter] = Array.from(
-            this.visibleMembers,
-            member => member[cocktail.ui.dataSourceField]
-        ).filter(Boolean);
+        let fields = new Set();
+        for (let member of this.visibleMembers) {
+            for (let field of member[cocktail.ui.dataSourceFields]) {
+                fields.add(field);
+            }
+        }
+        options.parameters[this.membersParameter] = Array.from(fields);
     }
 
     addSearchParameter(options) {
