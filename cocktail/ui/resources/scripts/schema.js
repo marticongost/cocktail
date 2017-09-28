@@ -155,7 +155,7 @@
             return "";
         }
 
-        translateValue(value) {
+        translateValue(value, params = null) {
             if (value === undefined || value === null || value === "") {
                 return this.translate(".none");
             }
@@ -319,16 +319,16 @@
             return member;
         }
 
-        translateValue(value) {
+        translateValue(value, params = null) {
             if (value && this.descriptiveMember) {
                 let descriptiveValue = value[this.descriptiveMember.name];
                 if (descriptiveValue && this.descriptiveMember.translated) {
                     descriptiveValue = descriptiveValue[cocktail.getLanguage()];
                 }
-                return this.descriptiveMember.translateValue(descriptiveValue);
+                return this.descriptiveMember.translateValue(descriptiveValue, params);
             }
             else {
-                return super.translateValue(value);
+                return super.translateValue(value, params);
             }
         }
 
@@ -450,14 +450,14 @@
             }
         }
 
-        translateValue(value) {
+        translateValue(value, params = null) {
             if (value !== null && value !== undefined) {
                 return cocktail.ui.translations[
                     "cocktail.schema.Boolean.instance." + (value ? "true" : "false")
                 ];
             }
             else {
-                return super.translateValue(value);
+                return super.translateValue(value, params);
             }
         }
     }
@@ -536,13 +536,13 @@
             this[DATA_SOURCE] = value;
         }
 
-        translateValue(value) {
+        translateValue(value, params = null) {
 
             if (value && this.type) {
-                return this.type.translateValue(value);
+                return this.type.translateValue(value, params);
             }
 
-            return super.translateValue(value);
+            return super.translateValue(value, params);
         }
 
         serializeValue(value) {
@@ -607,16 +607,16 @@
             this[ITEMS] = value;
         }
 
-        translateValue(value) {
+        translateValue(value, params = null) {
             if (this.items && value) {
                 let items = [];
                 for (let item of value) {
-                    items.push(this.items.translateValue(item));
+                    items.push(this.items.translateValue(item, params));
                 }
                 return items.join(", ");
             }
             else {
-                return super.translateValue(value);
+                return super.translateValue(value, params);
             }
         }
 
@@ -689,7 +689,7 @@
             return value instanceof Date ? value.toISOString() : value;
         }
 
-        translateValue(value) {
+        translateValue(value, params = null) {
             if (!value) {
                 return "";
             }
@@ -725,12 +725,12 @@
             super(parameters);
         }
 
-        translateValue(value) {
+        translateValue(value, params = null) {
             if (value) {
                 return cocktail.ui.translations["cocktail.locales." + value];
             }
             else {
-                return super.translateValue(value);
+                return super.translateValue(value, params);
             }
         }
     }
@@ -775,11 +775,11 @@
             return this.serializeValue(value);
         }
 
-        translateValue(value) {
+        translateValue(value, params = null) {
             if (value) {
                 return value.translate();
             }
-            return super.translateValue(value);
+            return super.translateValue(value, params);
         }
     }
 
