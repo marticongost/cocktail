@@ -386,17 +386,24 @@ cocktail.schema.Member.prototype[cocktail.ui.editable] = cocktail.ui.EDITABLE;
 // (f. eg. form fieldsets)
 cocktail.ui.group = Symbol("cocktail.ui.group");
 
-// A symbol indicating the name of a member when requesting data from a data source.
-// Defaults to the member's name. Set to null to exclude the member from data source requests.
-cocktail.ui.dataSourceField = Symbol("cocktail.ui.dataSourceField");
+// A symbol indicating the set of fields that should be included in data source requests
+// to display a member. Defaults to a single field, with the member's name. Set to null
+// to exclude the member from data source requests.
+cocktail.ui.dataSourceFields = Symbol("cocktail.ui.dataSourceFields");
 
-Object.defineProperty(
-    cocktail.schema.Member.prototype,
-    cocktail.ui.dataSourceField,
-    {
-        get() {
-            return this.name;
+{
+    const VALUE = Symbol();
+    Object.defineProperty(
+        cocktail.schema.Member.prototype,
+        cocktail.ui.dataSourceFields,
+        {
+            get() {
+                let fields = this[VALUE];
+                return (fields === undefined) ? [this.name] : fields;
+            },
+            set (value) {
+                this[VALUE] = value;
+            }
         }
-    }
-);
-
+    );
+}
