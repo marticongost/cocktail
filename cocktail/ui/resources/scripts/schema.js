@@ -563,7 +563,7 @@
                     throw new cocktail.schema.SerializationError(this, value, `${this.type.name} can't produce an ID for ${value}`);
                 }
 
-                return id;
+                return String(id);
             }
         }
 
