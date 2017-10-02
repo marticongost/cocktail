@@ -20,12 +20,10 @@
         reflected="true"
         default="false"/>
 
-    <?head
-    const ENTRY_MAP = Symbol("cocktail.ui.CheckList.ENTRY_MAP");
-    const SELECTING_ENTRY = Symbol("cocktail.ui.CheckList.SELECTING_ENTRY");
-    const SERIALIZED_VALUE = Symbol("cocktail.ui.CheckList.SERIALIZED_VALUE");
-    const UPDATE_SELECTION_CONTROLS = Symbol("cocktail.ui.CheckList.UPDATE_SELECTION_CONTROLS");
-    ?>
+    <ui:symbol name="ENTRY_MAP"/>
+    <ui:symbol name="SELECTING_ENTRY"/>
+    <ui:symbol name="SERIALIZED_VALUE"/>
+    <ui:symbol name="UPDATE_SELECTION_CONTROLS"/>
 
     <?tail
     cls.InexistentEntryError = class InexistentEntryError {
