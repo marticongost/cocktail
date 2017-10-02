@@ -163,9 +163,11 @@
         this[UPDATE_SELECTION_CONTROLS]();
 
         if (!this[SELECTING_ENTRY]) {
+            this[SELECTING_ENTRY] = true;
             for (let entry of this.entries.children) {
                 entry.selected = this[SERIALIZED_VALUE].has(entry.input.value);
             }
+            this[SELECTING_ENTRY] = false;
         }
     }
     ?>
@@ -200,12 +202,14 @@
 
     <li ui:component="Entry">
 
+        <ui:symbol name="..SELECTING_ENTRY"/>
+
         <ui:property
             name="selected"
             type="boolean"
             reflected="true">
             <?on changed
-            if (instance.parentInstance) {
+            if (instance.parentInstance && !instance.parentInstance[SELECTING_ENTRY]) {
                 instance.parentInstance.setSelected(instance.entryValue, newValue);
             }
             this.input.checked = newValue;
