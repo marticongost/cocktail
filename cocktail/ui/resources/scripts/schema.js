@@ -655,14 +655,14 @@
         }
 
         splitValue(value) {
-            return value.split(/\s+/);
+            return value.split(this.stringSeparator);
         }
 
         joinValue(value) {
             if (!(value instanceof Array)) {
                 value = Array.from(value);
             }
-            return value.join(" ");
+            return value.join(this.stringGlue);
         }
 
         get dataSource() {
@@ -675,6 +675,8 @@
     }
 
     cocktail.schema.Collection.prototype.defaultValue = () => [];
+    cocktail.schema.Collection.prototype.stringSeparator = /\s+/;
+    cocktail.schema.Collection.prototype.stringGlue = " ";
 
     cocktail.schema.DateTime = class DateTime extends cocktail.schema.Member {
 
