@@ -358,6 +358,10 @@
             return null;
         }
 
+        elementIsSelected(element) {
+            return this.selectedElements.has(element);
+        }
+
         setElementSelected(element, selected) {
             this.setElementsSelected([element], selected);
         }
