@@ -6,6 +6,10 @@ $subgroup-separation: 1.5em;
 
 .field[readOnly='true'] .controlContainer {
     color: #444;
+
+    :host-context([selected]) & {
+        color: darken($selection-foreground, 10);
+    }
 }
 
 fieldset {
