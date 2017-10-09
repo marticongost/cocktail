@@ -52,6 +52,10 @@
         triggerInvalidation(model, {type: "delete", id});
     }
 
+    cocktail.ui.modelInstancesDeleted = function (model) {
+        triggerInvalidation(model, {type: "delete"});
+    }
+
     cocktail.ui.dataDisplay = (cls) => class DataDisplay extends cls {
 
         static get componentProperties() {
