@@ -117,7 +117,7 @@
     }
 
     invalidation(change) {
-        if (this.autoload && change.type == "create") {
+        if (this.autoload && (change.type == "create" || (change.type == "delete" && !change.id))) {
             this.reload();
         }
     }
