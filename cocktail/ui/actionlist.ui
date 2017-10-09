@@ -182,6 +182,11 @@
             entry.state = entry.action.getState(context);
         }
     }
+
+    invalidation(change) {
+        super.invalidation(change);
+        this.updateEntries();
+    }
     ?>
 
     <?js
