@@ -101,7 +101,7 @@
             <ui:translation key=".localesPanel"/>
         </span>
 
-        <ui:cocktail.ui.CheckList id="localesList">
+        <ui:cocktail.ui.CheckList id="localesList" sorted="true">
             <?js
             element.dataBinding = {
                 member: new cocktail.schema.Collection({
