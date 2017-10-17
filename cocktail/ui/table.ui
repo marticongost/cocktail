@@ -268,9 +268,17 @@
 
         // Subtract the scrollbar width from the headings row
         let table = this;
-        setTimeout(function () {
-            table.headingsRow.style.width = `calc(100% - ${table.body.offsetWidth - table.body.clientWidth}px)`;
-        }, 1);
+        function fixScrollWidth() {
+            let outerWidth = table.body.offsetWidth;
+            if (outerWidth) {
+                let innerWidth = table.body.clientWidth;
+                table.headingsRow.style.width = `calc(100% - ${outerWidth - innerWidth}px)`;
+            }
+            else {
+                setTimeout(fixScrollWidth, 25);
+            }
+        }
+        fixScrollWidth();
     }
 
     reset() {
