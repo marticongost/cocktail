@@ -4,7 +4,6 @@ u"""
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
 from contextlib import contextmanager
-from cocktail.stringutils import normalize_indentation
 
 
 class SourceCodeWriter(object):
@@ -23,7 +22,7 @@ class SourceCodeWriter(object):
 
     def write(self, *text):
         indent_str = self.indent_str * self.indentation
-        code = normalize_indentation(u"".join(text))
+        code = u"".join(text)
         lines = code.split(self.line_separator)
         for line in lines:
             self.__content.append(indent_str + line)
