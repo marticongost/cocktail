@@ -27,6 +27,17 @@ class SourceCodeWriter(object):
         for line in lines:
             self.__content.append(indent_str + line)
 
+    def replace_line(self, pattern, index = -1):
+
+        line = self.__content[index]
+
+        if callable(pattern):
+            line = pattern(line)
+        else:
+            line = pattern % line
+
+        self.__content[index] = line
+
     def write_lines(self, *lines):
         for line in lines:
             self.write(line)
