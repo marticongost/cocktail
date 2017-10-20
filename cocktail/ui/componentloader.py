@@ -603,7 +603,8 @@ class ComponentLoader(object):
                 self.trigger_parser_error(
                     "'resource' clause without an 'href' attribute"
                 )
-            resource = Resource.from_uri(uri)
+            type = attributes.pop("type", None)
+            resource = Resource.from_uri(uri, mime_type = type)
             if node.parent.is_root or not isinstance(resource, StyleSheet):
                 self.resources.append(resource)
             else:
