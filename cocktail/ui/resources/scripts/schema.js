@@ -247,10 +247,17 @@
                 this[BASE] = value;
             }
             else if (key == "members") {
-                for (let name in value) {
-                    let member = value[name];
-                    member[NAME] = name;
-                    this.addMember(member);
+                if (value instanceof Array) {
+                    for (let member of value) {
+                        this.addMember(member);
+                    }
+                }
+                else {
+                    for (let name in value) {
+                        let member = value[name];
+                        member[NAME] = name;
+                        this.addMember(member);
+                    }
                 }
             }
             else {
