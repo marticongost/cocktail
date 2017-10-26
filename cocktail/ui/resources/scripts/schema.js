@@ -692,6 +692,17 @@
     cocktail.schema.Collection.prototype.stringSeparator = /\s+/;
     cocktail.schema.Collection.prototype.stringGlue = " ";
 
+    cocktail.schema.Mapping = class Mapping extends cocktail.schema.Member {
+    }
+
+    cocktail.schema.Mapping.prototype.keys = null;
+    cocktail.schema.Mapping.prototype.values = null;
+
+    cocktail.schema.Tuple = class Tuple extends cocktail.schema.Member {
+    }
+
+    cocktail.schema.Tuple.prototype.items = [];
+
     cocktail.schema.DateTime = class DateTime extends cocktail.schema.Member {
 
         parseValue(value) {
@@ -727,6 +738,9 @@
                 }
             );
         }
+    }
+
+    cocktail.schema.HTML = class HTML extends cocktail.schema.String {
     }
 
     cocktail.schema.Locale = class Locale extends cocktail.schema.String {
@@ -845,6 +859,9 @@
                 }
             }
         }
+    }
+
+    cocktail.schema.CodeBlock = class CodeBlock extends cocktail.schema.String {
     }
 
     cocktail.schema.addLocale = function (object, schema, locale) {
