@@ -219,12 +219,14 @@ class Component(object):
         self,
         title = "",
         locales = None,
+        variables = None,
         splash = "cocktail.ui.Splash",
         global_style_sheet = DEFAULT_GLOBAL_STYLE_SHEET
     ):
         document = self.create_html_document(
             title = title,
             locales = locales,
+            variables = variables,
             splash = splash,
             global_style_sheet = global_style_sheet
         )
@@ -234,6 +236,7 @@ class Component(object):
         self,
         title = "",
         locales = None,
+        variables = None,
         splash = "cocktail.ui.Splash",
         global_style_sheet = DEFAULT_GLOBAL_STYLE_SHEET
     ):
@@ -245,6 +248,7 @@ class Component(object):
             UIScript(
                 self,
                 locales = locales,
+                variables = variables,
                 splash = splash,
                 global_style_sheet = global_style_sheet
             )
@@ -258,6 +262,7 @@ class UIScript(Script):
         self,
         root_component,
         locales = None,
+        variables = None,
         splash = "cocktail.ui.Splash",
         global_style_sheet = DEFAULT_GLOBAL_STYLE_SHEET
     ):
@@ -268,6 +273,7 @@ class UIScript(Script):
         )
         self.root_component = root_component
         self.locales = locales
+        self.variables = variables or {}
         self.splash = splash
         self.global_style_sheet = global_style_sheet
 
@@ -339,6 +345,12 @@ class UIScript(Script):
                 )
             )
         )
+
+        for key, value in self.variables.iteritems():
+            declarations_script.append(
+                "cocktail.setVariable(%s, %s);" % (dumps(key), dumps(value))
+            )
+
         document.scripts_container.append(declarations_script)
 
         # Export translation keys
