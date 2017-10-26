@@ -220,6 +220,7 @@ class Component(object):
         title = "",
         locales = None,
         variables = None,
+        extra_dependencies = None,
         splash = "cocktail.ui.Splash",
         global_style_sheet = DEFAULT_GLOBAL_STYLE_SHEET
     ):
@@ -227,6 +228,7 @@ class Component(object):
             title = title,
             locales = locales,
             variables = variables,
+            extra_dependencies = extra_dependencies,
             splash = splash,
             global_style_sheet = global_style_sheet
         )
@@ -237,6 +239,7 @@ class Component(object):
         title = "",
         locales = None,
         variables = None,
+        extra_dependencies = None,
         splash = "cocktail.ui.Splash",
         global_style_sheet = DEFAULT_GLOBAL_STYLE_SHEET
     ):
@@ -249,6 +252,7 @@ class Component(object):
                 self,
                 locales = locales,
                 variables = variables,
+                extra_dependencies = extra_dependencies,
                 splash = splash,
                 global_style_sheet = global_style_sheet
             )
@@ -263,6 +267,7 @@ class UIScript(Script):
         root_component,
         locales = None,
         variables = None,
+        extra_dependencies = None,
         splash = "cocktail.ui.Splash",
         global_style_sheet = DEFAULT_GLOBAL_STYLE_SHEET
     ):
@@ -274,6 +279,7 @@ class UIScript(Script):
         self.root_component = root_component
         self.locales = locales
         self.variables = variables or {}
+        self.extra_dependencies = extra_dependencies
         self.splash = splash
         self.global_style_sheet = global_style_sheet
 
@@ -295,6 +301,12 @@ class UIScript(Script):
         dependencies = self.root_component.dependencies(
             include_self = True
         )
+
+        if self.extra_dependencies is not None:
+            for component in self.extra_dependencies:
+                dependencies.extend(
+                    component.dependencies(include_self = True)
+                )
 
         if self.splash:
             dependencies.extend(
