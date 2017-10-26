@@ -65,6 +65,7 @@ from cocktail.schema.iban import IBAN
 from cocktail.schema.swiftbic import SWIFTBIC
 from cocktail.schema.codeblock import CodeBlock
 from cocktail.schema.html import HTML
+from cocktail.schema.jsonmember import JSON
 from cocktail.schema.regularexpression import RegularExpression
 from cocktail.schema.errorlist import ErrorList
 from cocktail.schema.accessors import (

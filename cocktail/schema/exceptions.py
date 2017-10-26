@@ -279,6 +279,12 @@ class FormatError(ValidationError):
             % (ValidationError.__str__(self), self.format)
 
 
+class InvalidJSONError(ValidationError):
+    """A validation error produced when a value assigned to a JSON field
+    can't be parsed as a JSON string.
+    """
+
+
 class MinValueError(ValidationError):
     """A validation error produced when a value assigned to a scalar field
     (numbers, dates, etc) falls below a expected threshold.
