@@ -29,6 +29,12 @@
         member: Symbol("cocktail.schema.membershipTypes.member")
     }
 
+    const schemasByName = {};
+
+    pkg.getSchemaByName = function getSchemaByName(name) {
+        return schemasByName[name];
+    }
+
     cocktail.schema.Member = class Member {
 
         constructor(parameters = null) {
@@ -216,6 +222,7 @@
         static declare(parameters) {
             let schema = new this(parameters);
             cocktail.setVariable(schema.name, schema);
+            schemasByName[schema.name] = schema;
             return schema;
         }
 
