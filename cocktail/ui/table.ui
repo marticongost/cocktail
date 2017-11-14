@@ -230,7 +230,7 @@
         }
         this.columnsReady = true;
         for (let member of this.visibleMembers) {
-            let locales = member.translated ? this.visibleLocales: [null];
+            let locales = member.translated ? this.visibleLocales : [null];
             for (let language of locales) {
                 let heading = this.createHeading(member, language);
                 this.headingsRow.appendChild(heading);
