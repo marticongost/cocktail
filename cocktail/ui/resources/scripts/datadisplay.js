@@ -255,8 +255,8 @@ cocktail.ui.InvalidDataBindingError = class InvalidDataBindingError {
             return this[PARENT];
         }
 
-        extend(symbolName) {
-            let child = new this.constructor(symbolName);
+        extend(symbolName, cls = null) {
+            let child = new (cls || this.constructor)(symbolName);
             child[PARENT] = this;
             return child;
         }
