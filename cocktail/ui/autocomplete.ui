@@ -13,6 +13,12 @@
     <ui:decoratedBy function="cocktail.ui.selectable"/>
     <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
 
+    <ui:property
+        name="searchParameter"
+        type="string"
+        reflected="true"
+        default="search_text"/>
+
     <?head
     const ACTIVE_INSTANCE = Symbol("cocktail.ui.Autocomplete.ACTIVE_INSTANCE");
     const UPDATE_SEARCH_TEXT = Symbol("cocktail.ui.Autocomplete.UPDATE_SEARCH_TEXT");
@@ -42,7 +48,7 @@
 
     getDataSourceParameters(searchText) {
         return {
-            parameters: {search_text: searchText},
+            parameters: {[this.searchParameter]: searchText},
             locales: [cocktail.getLanguage()]
         };
     }
