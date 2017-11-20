@@ -365,19 +365,16 @@
                     }
 
                     let targetMember;
+                    let copyParams = {};
 
                     if (sourceMember.schema === this) {
-                        let params = Object.assign(
-                            {},
+                        Object.assign(
+                            copyParams,
                             generalParameters,
                             memberParameters && memberParameters[sourceMember.name]
                         );
-                        targetMember = sourceMember.copy(params);
                     }
-                    else {
-                        targetMember = sourceMember;
-                    }
-
+                    targetMember = sourceMember.copy(copyParams);
                     copy.addMember(targetMember);
                 }
             }
