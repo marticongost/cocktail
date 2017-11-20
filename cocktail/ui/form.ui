@@ -60,6 +60,7 @@
 
     <?tail
     {
+        cocktail.ui.formControls.enumerationControl = cocktail.ui.DropdownSelector;
         const formControl = cocktail.ui.formControl;
         cocktail.schema.Schema[formControl] = cocktail.ui.Form;
         cocktail.schema.String[formControl] = cocktail.ui.TextInput;
