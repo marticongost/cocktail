@@ -893,3 +893,13 @@ cocktail.loadSVG = function (url, container) {
         });
 }
 
+cocktail.isEmptyValue = function (value) {
+    return (
+        value === null
+        || value === undefined
+        || value === ""
+        || (value instanceof Array && !value.length)
+        || (value instanceof Set && !value.size)
+    );
+}
+
