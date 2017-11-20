@@ -338,6 +338,14 @@
             return member;
         }
 
+        translate(suffix = "") {
+            return (
+                super.translate(suffix)
+                || (this[BASE] && this[BASE].translate(suffix))
+                || ""
+            );
+        }
+
         translateValue(value, params = null) {
             if (value && this.descriptiveMember) {
                 let descriptiveValue = value[this.descriptiveMember.name];
