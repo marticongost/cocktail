@@ -828,6 +828,28 @@ cocktail.ui.splash = function (splash, mainComponent) {
         return false;
     }
 
+    const FOCUS_CHECK_DELAY = 200;
+    let focusCheck;
+
+    cocktail.ui.focus = function (element) {
+
+        if (focusCheck) {
+            clearTimeout(focusCheck);
+        }
+
+        function tryToFocus() {
+            element.focus();
+            if (!cocktail.ui.isFocused(element)) {
+                focusCheck = setTimeout(tryToFocus, FOCUS_CHECK_DELAY);
+            }
+            else {
+                focusCheck = null;
+            }
+        }
+
+        tryToFocus();
+    }
+
     cocktail.ui.setFlag = function (element, attribute, value) {
         if (value) {
             element.setAttribute(attribute, "");

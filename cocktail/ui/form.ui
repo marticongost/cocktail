@@ -277,7 +277,7 @@
         <?class
         focusControl() {
             if (!this.readOnly && this.control) {
-                this.control.focus();
+                cocktail.ui.focus(this.control);
                 return true;
             }
             return false;
