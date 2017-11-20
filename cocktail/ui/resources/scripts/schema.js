@@ -20,6 +20,7 @@
     const SOURCE_MEMBER = Symbol("cocktail.schema.SOURCE_MEMBER");
     const ITEMS = Symbol("cocktail.schema.ITEMS");
     const DATA_SOURCE = Symbol("cocktail.schema.DATA_SOURCE");
+    const PRIMARY_MEMBER = Symbol("cocktail.schema.PRIMARY_MEMBER");
 
     pkg.MEMBERS = Symbol("cocktail.schema.MEMBERS");
     pkg.PARAMETERS = Symbol("cocktail.schema.PARAMETERS");
@@ -294,6 +295,10 @@
             return member;
         }
 
+        get primaryMember() {
+            return this[PRIMARY_MEMBER] || (this[BASE] && this[BASE].primaryMember);
+        }
+
         requireMember(name) {
             let member = this.getMember(name);
             if (!member) {
@@ -323,7 +328,7 @@
             this[MEMBER_MAP].set(name, member);
 
             if (member.primary) {
-                this.primaryMember = member;
+                this[PRIMARY_MEMBER] = member;
             }
 
             if (member.descriptive) {
