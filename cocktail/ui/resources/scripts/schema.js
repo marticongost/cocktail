@@ -245,6 +245,11 @@
             return undefined;
         }
 
+        getInstance(id) {
+            let dataSource = this.dataSource;
+            return dataSource ? dataSource.loadObject(id) : undefined;
+        }
+
         initialize(parameters) {
             this[MEMBER_MAP] = new Map();
             super.initialize(parameters);
