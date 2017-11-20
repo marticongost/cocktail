@@ -336,6 +336,22 @@ cocktail.ui.InvalidDataBindingError = class InvalidDataBindingError {
     }
 }
 
+cocktail.ui.FormControlsDisplayFactory = class FormControlsDisplayFactory extends cocktail.ui.DisplayFactory {
+
+    getDefaultComponent(dataBinding, parameters = null) {
+        let control;
+        if (dataBinding.member.enumeration) {
+            control = this.getEnumerationControl(dataBinding, parameters);
+        }
+        return control || super.getDefaultComponent(dataBinding, parameters);
+    }
+
+    getEnumerationControl(dataBinding, parameters = null) {
+        return this.enumerationControl
+            && this.resolveComponent(this.enumerationControl, dataBinding, parameters);
+    }
+}
+
 cocktail.ui.DisplayRequiredError = class DisplayRequiredError {
 
     constructor(displayFactory, dataBinding, parameters) {
@@ -357,7 +373,7 @@ cocktail.schema.Member.prototype[cocktail.ui.display] =
 cocktail.schema.Reference.prototype[cocktail.ui.display] = () => cocktail.ui.Value;
 
 // A display factory for editable values
-cocktail.ui.formControls = new cocktail.ui.DisplayFactory("cocktail.ui.formControl");
+cocktail.ui.formControls = new cocktail.ui.FormControlsDisplayFactory("cocktail.ui.formControl");
 
 // A display factory for read only form controls
 cocktail.ui.readOnlyFormControls = cocktail.ui.displays.extend("cocktail.ui.readOnlyFormControl");
