@@ -221,6 +221,7 @@ class Component(object):
         locales = None,
         variables = None,
         extra_dependencies = None,
+        extra_translations = None,
         splash = "cocktail.ui.Splash",
         global_style_sheet = DEFAULT_GLOBAL_STYLE_SHEET
     ):
@@ -229,6 +230,7 @@ class Component(object):
             locales = locales,
             variables = variables,
             extra_dependencies = extra_dependencies,
+            extra_translations = extra_translations,
             splash = splash,
             global_style_sheet = global_style_sheet
         )
@@ -240,6 +242,7 @@ class Component(object):
         locales = None,
         variables = None,
         extra_dependencies = None,
+        extra_translations = None,
         splash = "cocktail.ui.Splash",
         global_style_sheet = DEFAULT_GLOBAL_STYLE_SHEET
     ):
@@ -253,6 +256,7 @@ class Component(object):
                 locales = locales,
                 variables = variables,
                 extra_dependencies = extra_dependencies,
+                extra_translations = extra_translations,
                 splash = splash,
                 global_style_sheet = global_style_sheet
             )
@@ -268,6 +272,7 @@ class UIScript(Script):
         locales = None,
         variables = None,
         extra_dependencies = None,
+        extra_translations = None,
         splash = "cocktail.ui.Splash",
         global_style_sheet = DEFAULT_GLOBAL_STYLE_SHEET
     ):
@@ -280,6 +285,8 @@ class UIScript(Script):
         self.locales = locales
         self.variables = variables or {}
         self.extra_dependencies = extra_dependencies
+        self.extra_translations = extra_translations
+        self.extra_translations = extra_translations
         self.splash = splash
         self.global_style_sheet = global_style_sheet
 
@@ -315,6 +322,12 @@ class UIScript(Script):
                     .dependencies(include_self = True)
             )
 
+        def _add_translation_keys(trans_key):
+            if trans_key.endswith(".*"):
+                translation_prefixes.add(trans_key[:-1])
+            else:
+                translation_keys.add(trans_key)
+
         for component in dependencies:
             components_script.append("\n")
             components_script.append(component.get_source())
@@ -325,10 +338,11 @@ class UIScript(Script):
             )
 
             for trans_key in component.translation_keys:
-                if trans_key.endswith(".*"):
-                    translation_prefixes.add(trans_key[:-1])
-                else:
-                    translation_keys.add(trans_key)
+                _add_translation_keys(trans_key)
+
+        if self.extra_translations:
+            for trans_key in self.extra_translations:
+                _add_translation_keys(trans_key)
 
         if translation_prefixes:
             for trans_key in translations.definitions:
