@@ -15,6 +15,12 @@
         reflected="true"/>
 
     <ui:property
+        name="animationType"
+        type="string"
+        default="slide"
+        reflected="true"/>
+
+    <ui:property
         name="stackNodeVisibility"
         type="string"
         reflected="true">
@@ -27,6 +33,11 @@
         }
         ?>
     </ui:property>
+
+    <ui:property
+        name="isStackRoot"
+        type="boolean"
+        reflected="true"/>
 
     <?class
     get stackParent() {
@@ -47,7 +58,7 @@
         this.stackNodeVisibility = "covered";
     }
 
-    this.animationState = "none";
+    this.animationState = state == "closing" ? "closed" : "none";
     ?>
 
     <div id="stackNodeContent">
