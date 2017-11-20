@@ -438,7 +438,22 @@
         }
     }
 
-    cocktail.schema.Schema.prototype.descriptiveMember = null;
+    {
+        const DESCRIPTIVE_MEMBER = Symbol.for("cocktail.schema.Schema.DESCRIPTIVE_MEMBER");
+
+        Object.defineProperty(
+            cocktail.schema.Schema.prototype,
+            "descriptiveMember",
+            {
+                get() {
+                    return this[DESCRIPTIVE_MEMBER] || (this[BASE] && this[BASE].descriptiveMember);
+                },
+                set(value) {
+                    this[DESCRIPTIVE_MEMBER] = value;
+                }
+            }
+        );
+    }
 
     cocktail.schema.Boolean = class Boolean extends cocktail.schema.Member {
 
