@@ -293,6 +293,13 @@ class Member(Variable):
         """
         member_copy = self.__deepcopy__({})
 
+        # Set 'primary' before any other property, to avoid constraint
+        # violations (f. eg. setting required = False, primary = False would
+        # fail if the 'required' property was set first)
+        primary = kwargs.pop("primary", None)
+        if primary is not None:
+            member_copy.primary = primary
+
         for key, value in kwargs.iteritems():
             obj = member_copy
 
