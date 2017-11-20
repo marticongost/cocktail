@@ -384,9 +384,13 @@ class UIScript(Script):
 
             trans_map = {}
             for trans_key in translation_keys:
-                trans_value = translations(trans_key)
-                if trans_value:
-                    trans_map[trans_key] = trans_value
+                try:
+                    trans_value = translations(trans_key)
+                except Exception:
+                    pass
+                else:
+                    if trans_value:
+                        trans_map[trans_key] = trans_value
 
             for locale in locales:
                 trans_map["cocktail.locales." + locale] = \
