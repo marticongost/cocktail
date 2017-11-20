@@ -1,0 +1,7 @@
+
+@import "cocktail.ui://styles/common";
+
+*:focus {
+    @include focus;
+}
+
