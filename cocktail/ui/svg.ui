@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<span
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:property
+        name="href"
+        type="string"
+        reflected="true">
+        <?on changed
+        cocktail.ui.empty(this.svgContainer);
+        if (newValue) {
+            cocktail.loadSVG(newValue, this.svgContainer);
+        }
+        ?>
+    </ui:property>
+
+    <div id="svgContainer"/>
+
+</span>
+
