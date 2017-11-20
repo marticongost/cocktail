@@ -21,7 +21,7 @@
     ?>
 
     <?on dataBinding:changed
-    if (!this.visibleMembers) {
+    if (cocktail.isEmptyValue(this.visibleMembers)) {
         let model = newValue.member.items.type;
         this.visibleMembers = new Set(
             Array.from(model.members()).filter(
