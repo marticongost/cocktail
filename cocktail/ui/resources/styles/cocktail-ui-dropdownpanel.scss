@@ -9,8 +9,11 @@ $hpadding: 0.5em;
 
 :host {
     display: inline-block;
-    z-index: 2;
     align-self: center;
+}
+
+:host([expanded='true']) {
+    z-index: 2;
 }
 
 #button {
@@ -94,6 +97,8 @@ $hpadding: 0.5em;
     border: $border;
     background-color: white;
     box-shadow: $panel-shadow;
+    min-width: 100%;
+    box-sizing: border-box;
 
     :host([panelAlignment='start']) & {
         left: 0;
