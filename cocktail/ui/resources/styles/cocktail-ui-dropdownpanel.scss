@@ -17,7 +17,6 @@ $hpadding: 0.5em;
     margin-left: -$hpadding;
     padding: $vpadding $hpadding;
     position: relative;
-    z-index: 2;
     border: $border-width solid transparent;
     background-color: transparent;
     cursor: pointer;
@@ -29,6 +28,7 @@ $hpadding: 0.5em;
     }
 
     :host([expanded='true']) & {
+        z-index: 2;
         border: $border;
         border-bottom: $border-width solid white;
         background-color: white;
