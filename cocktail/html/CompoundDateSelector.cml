@@ -54,7 +54,7 @@ from datetime import date
         <select py:id="year_selector">
             <option/>
             <py:ready>
-                <option py:for="i in self.get_year_range()">${i}</option>
+                <option py:for="i in self.get_year_range()" value="${str(i)}">${i}</option>
             </py:ready>
         </select>
     </div>
