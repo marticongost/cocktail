@@ -6,6 +6,7 @@
 
     <ui:requires component="cocktail.ui.schema"/>
     <ui:requires component="cocktail.ui.Value"/>
+    <ui:requires component="cocktail.ui.List"/>
 
     <ui:resource href="cocktail.ui://scripts/copy.js"/>
     <ui:resource href="cocktail.ui://scripts/datadisplay.js"/>
