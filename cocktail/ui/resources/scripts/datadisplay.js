@@ -385,13 +385,14 @@ cocktail.ui.InvalidDataBindingError = class InvalidDataBindingError {
         }
 
         resolveComponent(component, dataBinding, parameters) {
-            if (component && !cocktail.ui.isComponent(component)) {
-                if (!parameters) {
-                    parameters = {};
-                }
-                if (parameters.wrapRawValues === undefined) {
-                    parameters.wrapRawValues = true;
-                }
+            if (!parameters) {
+                parameters = {};
+            }
+            parameters.displayFactory = this;
+            if (parameters.wrapRawValues === undefined) {
+                parameters.wrapRawValues = true;
+            }
+            while (component && !cocktail.ui.isComponent(component)) {
                 component = component(dataBinding, parameters);
             }
             return component;
