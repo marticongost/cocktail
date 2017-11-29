@@ -184,7 +184,11 @@
             }
         }
 
-        linkDisplay(linkedDisplay) {
+        translateValue(params = null) {
+            return this.dataBinding.member.translateValue(this.value, params);
+        }
+
+        linkDisplay(linkedDisplay, initialize = true) {
             this.addEventListener("dataBindingChanged", (e) => {
                 linkedDisplay.dataBinding = e.detail.newValue;
             });
