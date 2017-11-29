@@ -4,8 +4,12 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:ui="http://www.whads.com/ns/cocktail/ui">
 
-    <ui:requires component="cocktail.ui.datadisplay"/>
     <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
+
+    <?tail
+    cls.prototype.itemsDisplayFactory = cocktail.ui.displays;
+    cls.prototype.itemsDisplayParameters = {};
+    ?>
 
     <?class
     clear() {
@@ -14,27 +18,26 @@
 
     createEntries() {
         if (this.dataBinding && this.value) {
+            let index = 0;
             for (let item of this.value) {
-                this.addEntry(item);
+                this.addEntry(index, item);
+                index++;
             }
         }
     }
 
-    addEntry(item) {
-        let entry = this.createEntry(item);
+    addEntry(index, item) {
+        let entry = this.createEntry(index, item);
         this.list.appendChild(entry);
         return entry;
     }
 
-    createEntry(item) {
+    createEntry(index, item) {
         let entry = this.constructor.Entry.create();
-        entry.item = item;
-        entry.label.innerHTML = this.translateItem(item);
+        entry.displayFactory = this.itemsDisplayFactory;
+        entry.displayParameters = this.itemsDisplayParameters;
+        entry.dataBinding = this.dataBinding.itemBinding(index, item);
         return entry;
-    }
-
-    translateItem(item) {
-        return this.dataBinding.member.items.translateValue(item);
     }
     ?>
 
@@ -42,11 +45,37 @@
     this.createEntries();
     ?>
 
-    <ul id="list">
-        <li ui:component="Entry">
-            <span id="label"/>
-        </li>
-    </ul>
+    <ul id="list"/>
+
+    <li ui:component="Entry">
+
+        <ui:symbol name="RAW"/>
+
+        <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
+
+        <?on dataBinding:changed
+        if (this.display) {
+            this.removeChild(this.display);
+        }
+        this.display = this.displayFactory.createDisplay(newValue, this.displayParameters);
+        if (this.display) {
+            this[RAW] = false;
+            this.appendChild(this.display);
+            this.linkDisplay(this.display, false);
+        }
+        else {
+            this[RAW] = true;
+            this.innerHTML = this.dataBinding.translateValue();
+        }
+        ?>
+
+        <?on value:changed
+        if (this[RAW]) {
+            this.innerHTML = this.dataBinding.translateValue();
+        }
+        ?>
+
+    </li>
 
 </div>
 
