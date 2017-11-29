@@ -5,6 +5,7 @@
     xmlns:ui="http://www.whads.com/ns/cocktail/ui">
 
     <ui:requires component="cocktail.ui.actions"/>
+    <ui:requires component="cocktail.ui.ActionListButton"/>
 
     <ui:property
         name="actions"
@@ -23,6 +24,12 @@
         type="boolean"
         reflected="true"
         default="false"/>
+
+    <ui:property
+        name="buttonStyle"
+        type="string"
+        reflected="true"
+        default="iconBesideText"/>
 
     <?head
     const SELECTION_CHANGED_HANDLER = Symbol();
@@ -134,6 +141,9 @@
             position = action.position;
         }
 
+        entry.extra = (position === "extra");
+        entry.buttonStyle = entry.extra ? "iconBesideText" : this.buttonStyle;
+
         if (position === null) {
             this.entryList.appendChild(entry);
         }
@@ -158,19 +168,15 @@
         }
 
         this[ENTRY_MAP].set(action.id, entry);
-        this.hasExtraActions = this.hasExtraActions || entry.parentNode === this.extraEntryList;
+        this.hasExtraActions = this.hasExtraActions || entry.extra;
         return entry;
     }
 
     createEntry(action) {
-        let entry = this.getEntryType(action).create();
+        let entry = action.createEntry();
         entry.action = action;
         entry.state = action.getState(this.getActionContext());
         return entry;
-    }
-
-    getEntryType(action) {
-        return this.constructor.Entry;
     }
 
     updateEntries() {
@@ -204,62 +210,6 @@
         dropdownType="menu">
         <ul id="extraEntryList"/>
     </ui:cocktail.ui.DropdownPanel>
-
-    <li ui:component="Entry">
-
-        <ui:property
-            name="action"
-            reflected="false">
-            <?on changed
-            if (newValue) {
-                this.setAttribute("action", newValue.id);
-                cocktail.loadSVG(newValue.iconURL, this.icon);
-                let shortcut = newValue.shortcut;
-                let label = newValue.translate();
-                if (shortcut) {
-                    label = label.replace(new RegExp(shortcut, "i"), function (c) {
-                        return `<u>${c}</u>`;
-                    });
-                }
-                this.button.accessKey = shortcut;
-                this.label.innerHTML = label;
-            }
-            else {
-                this.removeAttribute("action");
-                cocktail.ui.empty(this.icon);
-                cocktail.ui.empty(this.label);
-            }
-            ?>
-        </ui:property>
-
-        <ui:property
-            name="state"
-            reflected="true">
-            <?on changed
-            if (oldValue == "disabled") {
-                this.button.disabled = false;
-            }
-            else if (newValue == "disabled") {
-                this.button.disabled = true;
-            }
-            ?>
-        </ui:property>
-
-        <button
-            id="button"
-            type="button">
-
-            <span id="icon"/>
-            <span id="label"/>
-
-            <?on click
-            instance.action.invoke(instance.parentInstance.getActionContext());
-            instance.parentInstance.extraDropdown.expanded = false;
-            ?>
-
-        </button>
-
-    </li>
 
 </div>
 

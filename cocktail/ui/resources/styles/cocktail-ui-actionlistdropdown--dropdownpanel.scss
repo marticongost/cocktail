@@ -1,0 +1,35 @@
+
+@import "cocktail.ui://styles/common";
+
+#button {
+    flex: 1 1 auto;
+    padding: 0.7em 1.3em;
+    font-size: 1em;
+    margin: 0;
+
+    :host([expanded='true']) & {
+        background-color: rgba(white, 0.7);
+        border-bottom: 1px solid rgba($panel-border-color, 0.7);
+    }
+}
+
+#label {
+    font-size: 1em;
+}
+
+#arrow svg * {
+    fill: $panel-action-color !important;
+}
+
+#panelWrapper {
+    margin-left: 0;
+}
+
+:host(:not([dropdownType='menu'])) #panelContent {
+    padding: 1em 1.3em;
+}
+
+#footer {
+    padding: 0.5em 1.3em;
+}
+

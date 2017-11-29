@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ui:cocktail.ui.ActionListEntry
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <?on action:changed
+    cocktail.loadSVG(newValue.iconURL, this.icon);
+    this.dropdownPanel.button.accessKey = this.action.shortcut || "";
+    this.label.innerHTML = this.underlinedLabel;
+    ?>
+
+    <ui:cocktail.ui.DropdownPanel id="dropdownPanel">
+        <span id="icon" slot="label"/>
+        <span id="label" slot="label"/>
+    </ui:cocktail.ui.DropdownPanel>
+
+</ui:cocktail.ui.ActionListEntry>
+

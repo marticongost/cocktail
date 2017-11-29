@@ -1,5 +1,4 @@
 
-@import "cocktail://styles/utils";
 @import "cocktail.ui://styles/common";
 
 :host {
@@ -37,90 +36,5 @@
     list-style-type: none;
     padding: 0;
     margin: 0;
-}
-
-.Entry {
-    margin: 0;
-    padding: 0;
-    white-space: nowrap;
-    display: flex;
-    flex-direction: row;
-
-    &[state='disabled'] {
-        opacity: 0.3;
-    }
-
-    &[state='hidden'] {
-        display: none;
-    }
-
-    button {
-        border: none;
-        background: none;
-        padding: 0.7em 1.3em;
-        cursor: pointer;
-        font-size: 0.9em;
-
-        #extraEntryList & {
-            display: block;
-            width: 100%;
-            text-align: left;
-            padding: 0.7em 0.7em;
-        }
-    }
-
-    &:not([state='disabled']) {
-        button:hover {
-            background-color: $panel-hover-color;
-
-            .label {
-                color: $panel-action-highlight-color;
-            }
-
-            .icon svg * {
-                fill: $panel-action-highlight-color !important;
-            }
-        }
-    }
-
-    &[state='emphasized'] {
-        .label {
-            font-weight: bold;
-            color: $focus-color;
-        }
-        .icon svg * {
-            fill: $focus-color !important;
-        }
-        button:hover {
-            .label {
-                color: darken($focus-color, 10);
-            }
-            .icon svg * {
-                fill: darken($focus-color, 10) !important;
-            }
-        }
-    }
-}
-
-
-.icon {
-    display: inline-block;
-    vertical-align: middle;
-    margin-right: 0.5em;
-
-    svg {
-        width: 1.5em;
-        height: auto;
-
-        * {
-            fill: $panel-action-color !important;
-        }
-    }
-}
-
-.label {
-    font-size: 1em;
-    vertical-align: middle;
-    color: $panel-action-color;
 }
 
