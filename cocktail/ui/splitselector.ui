@@ -8,6 +8,8 @@
     <ui:requires component="cocktail.ui.selectable"/>
     <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
 
+    <ui:symbol name="ENTRIES_READY"/>
+
     <?head
     const SERIALIZED_VALUE = Symbol("cocktail.ui.SplitSelector.SERIALIZED_VALUE");
     const ENTRY_MAP = Symbol.for("cocktail.ui.SplitSelector.ENTRY_MAP");
@@ -29,6 +31,23 @@
             let possibleValuesResolution = Promise.resolve(items.getPossibleValues());
             possibleValuesResolution.then((values) => this.addEntries(values));
         }
+        this[ENTRIES_READY] = true;
+        cocktail.ui.trigger(this, "entriesReady");
+    }
+
+    get entriesReady() {
+        return this[ENTRIES_READY] || false;
+    }
+
+    awaitEntries() {
+        return new Promise((resolve, reject) => {
+            if (this[ENTRIES_READY]) {
+                resolve();
+            }
+            else {
+                this.addEventListener("entriesReady", resolve, {once: true});
+            }
+        });
     }
 
     addEntries(values) {
