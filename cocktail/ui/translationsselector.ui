@@ -10,6 +10,14 @@
     ?>
 
     <?class
+    get entriesReady() {
+        return this.splitSelector.entriesReady;
+    }
+
+    awaitEntries() {
+        return this.splitSelector.awaitEntries();
+    }
+
     *localesInState(searchedState) {
         for (let [locale, localeState] of this[LOCALE_STATES]) {
             if (localeState == searchedState) {
