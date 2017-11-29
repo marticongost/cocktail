@@ -8,62 +8,141 @@
 -----------------------------------------------------------------------------*/
 
 {
-    const TREE = Symbol("cocktail.navigation.Navigation.TREE");
+    const PREFIX = Symbol("cocktail.navigation.PREFIX");
+    const PREFIX_COMPONENTS = Symbol("cocktail.navigation.PREFIX_COMPONENTS");
 
     cocktail.navigation = {
 
         tree: null,
+        node: null,
+
+        get prefix() {
+            return this[PREFIX];
+        },
+
+        set prefix(value) {
+            let components = value.replace(/(^\/|\/$)/g, "").split("/");
+            this[PREFIX] = "/" + components.join("/") + (components.length ? "/" : "");
+            this[PREFIX_COMPONENTS] = components;
+        },
+
+        get prefixComponents() {
+            return this[PREFIX_COMPONENTS];
+        },
 
         process(state) {
-            this.node = this.resolve(state);
-            for (let node of this.node.fromRoot()) {
-                node.traverse();
-            }
-            this.node.activate();
+            return this.resolve(state).then((node) => {
+                if (node) {
+                    this.node = node;
+                    for (let pathNode of node.fromRoot()) {
+                        pathNode.traverse();
+                    }
+                    node.activate();
+                    cocktail.ui.trigger(window, "navigationNodeChanged");
+                }
+            });
         },
 
         resolve(state) {
-            if (typeof(state) == "string") {
-                let path = URI(state).segment();
-                if (path.length == 1 && !path[0]) {
-                    path = [];
-                }
-                state = this.tree.resolve(path);
-                if (!state) {
-                    this.handleError(new cocktail.navigation.PathResolutionError(this.tree, path));
+
+            if (state instanceof cocktail.navigation.Node) {
+                return Promise.resolve(state);
+            }
+
+            let uri = URI(state);
+            let pathName = uri.pathname();
+            let path;
+
+            if (!pathName.length) {
+                path = [];
+            }
+            else if (pathName.charAt(0) == "/") {
+                path = uri.segment();
+            }
+            else {
+                path = uri.absoluteTo(location.href).segment();
+            }
+
+            if (path.length == 1 && !path[0]) {
+                path = [];
+            }
+
+            for (let i = 0; i < this[PREFIX_COMPONENTS].length; i++) {
+                if (i >= path.length || path[i] != this[PREFIX_COMPONENTS][i]) {
+                    throw new cocktail.navigation.NavigationError(`${state} doesn't match the application's URL prefix ${this[PREFIX]}`);
                 }
             }
-            return state;
+
+            path = path.slice(this[PREFIX_COMPONENTS].length);
+
+            return this.tree.resolve(path)
+                .then((node) => {
+                    if (!node) {
+                        throw new cocktail.navigation.NavigationError(`Can't resolve ${path}`);
+                    }
+                    return node.resolveQueryParameters(uri.search()).then(() => node);
+                })
+                .catch((error) => this.handleError(error));
         },
 
         handleError(error) {
+            console.log(error);
             throw error;
         },
 
         push(state) {
-            state = this.resolve(state);
-            history.pushState({}, "", state.url);
-            this.process(state);
+            return this.resolve(state).then((node) => {
+                history.pushState({}, "", node.url);
+                this.process(node);
+            });
         },
 
         replace(state) {
-            state = this.resolve(state);
-            history.replaceState({}, "", state.url);
-            this.process(state);
+            return this.resolve(state).then((node) => {
+                history.replaceState({}, "", node.url);
+                this.process(node);
+            });
         },
 
         up() {
             if (!this.node || !this.node.parent) {
                 throw new cocktail.navigation.NavigationError("There is no parent state to go back to");
             }
-
-            this.push(this.node.parent);
+            return this.push(this.node.parent);
         },
 
         extendPath(...segments) {
-            this.push(location.href + "/" + segments.join("/"));
+            let uri = URI(location.href).query("");
+            uri = uri.segment([...uri.segment(), ...Array.from(segments, (segment) => segment.toString())]);
+            return this.push(uri.toString());
+        },
+
+        changeQuery(newValues) {
+            let changed = false;
+            let uri = URI(location.href).query((currentQuery) => {
+                let parameters = cocktail.navigation.node.queryParameters;
+                for (let key in newValues) {
+                    let currentValue = currentQuery[key];
+                    let newValue = newValues[key];
+                    let parameter = parameters[key];
+                    if (newValue === undefined) {
+                        delete currentQuery[key];
+                    }
+                    else {
+                        if (parameter) {
+                            newValue = parameter.serializeValue(newValue);
+                        }
+                        currentQuery[key] = newValue;
+                    }
+                    changed = changed || (newValue != currentValue);
+                }
+                return currentQuery;
+            });
+            return changed ? this.push(uri.toString()) : Promise.resolve(cocktail.navigation.node);
         }
     }
+
+    cocktail.navigation.prefix = "/";
 }
 
 {
@@ -72,6 +151,8 @@
     const CHILDREN = Symbol("cocktail.navigation.Node.CHILDREN");
     const WILDCARDS = Symbol("cocktail.navigation.Node.WILDCARDS");
     const PARAMETERS = Symbol("cocktail.navigation.Node.PARAMETERS");
+    const QUERY_STRING = Symbol("cocktail.navigation.Node.QUERY_STRING");
+    const QUERY_PARAMETERS = Symbol("cocktail.navigation.Node.QUERY_PARAMETERS");
 
     cocktail.navigation.Node = class Node {
 
@@ -96,8 +177,16 @@
             return path;
         }
 
+        get pathString() {
+            return cocktail.navigation.prefix + this.path.join("/");
+        }
+
         get consumedPath() {
             return this[PATH];
+        }
+
+        get queryString() {
+            return this[QUERY_STRING];
         }
 
         *towardsRoot() {
@@ -119,7 +208,11 @@
         }
 
         get url() {
-            return "/" + this.path.join("/");
+            let url = cocktail.navigation.prefix + this.path.join("/");
+            if (this[QUERY_STRING]) {
+                url += this[QUERY_STRING];
+            }
+            return url;
         }
 
         static get parameters() {
@@ -131,6 +224,21 @@
                 this[PARAMETERS] = this.constructor.parameters;
             }
             return this[PARAMETERS];
+        }
+
+        static get queryParameters() {
+            return [];
+        }
+
+        get queryParameters() {
+            if (!this[QUERY_PARAMETERS]) {
+                let parameters = {};
+                for (let parameter of this.constructor.queryParameters) {
+                    parameters[parameter.name] = parameter;
+                }
+                this[QUERY_PARAMETERS] = parameters;
+            }
+            return this[QUERY_PARAMETERS];
         }
 
         static get children() {
@@ -155,36 +263,42 @@
             return this[WILDCARDS];
         }
 
-        static requireResolution(path) {
-            let node = this.resolve(path);
-            if (!node) {
-                throw new cocktail.navigation.PathResolutionError(this, path);
-            }
-            return node;
-        }
-
         static resolve(path, parentNode, segment = null) {
 
             let remainingPath = Array.from(path);
-            let node = new this(parentNode);
+            let node = parentNode ? parentNode.createChild(this) : new this();
 
             if (segment) {
                 node[PATH].push(segment);
             }
 
-            if (!node.resolveParameters(remainingPath)) {
-                return null;
-            }
+            return node.resolvePath(remainingPath);
+        }
 
-            let descendant = node.resolveChild(remainingPath);
-            if (descendant) {
-                return descendant;
-            }
+        createChild(nodeClass) {
+            return new nodeClass(this);
+        }
 
-            return remainingPath.length ? null : node;
+        resolvePath(path) {
+            return this.resolveParameters(path)
+                .then((valid) => {
+                    if (!valid) {
+                        return null;
+                    }
+                    return this.resolveChild(path)
+                        .then((child) => {
+                            if (child) {
+                                return child;
+                            }
+                            return path.length ? null : this;
+                        });
+                });
         }
 
         resolveParameters(path) {
+
+            let parameterOrder = [];
+            let parameterValues = [];
 
             for (let i = 0; i < this.parameters.length; i++) {
                 let parameter = this.parameters[i];
@@ -192,51 +306,128 @@
                 // Undefined parameters
                 if (i >= path.length) {
                     if (parameter.required) {
-                        return false;
+                        reject(parameter);
+                        break;
                     }
                     else {
-                        this.applyParameter(parameter, parameter.getDefault(this));
+                        parameterOrder.push(parameter);
+                        parameterValues.push(parameter.getDefault(this));
                     }
                 }
                 else {
                     // Parse and collect provided parameters
-                    let value = parameter.parseValue(path[i]);
-                    if (value === undefined) {
-                        return false;
-                    }
-                    // TODO: parameter validation rules
-                    this.applyParameter(parameter, value);
+                    parameterOrder.push(parameter);
+                    parameterValues.push(parameter.parseValue(path[i]));
                     this.consumePathSegment(path);
                 }
             }
 
-            return true;
+            return Promise.all(parameterValues)
+                .then((values) => {
+                    for (var i = 0; i < values.length; i++) {
+                        let parameter = parameterOrder[i];
+                        let value = values[i];
+                        if (value === undefined) {
+                            return false;
+                        }
+                        this.applyParameter(parameter, parameter.getDefault(this));
+                    }
+
+                    // Apply defaults for query string parameters for non terminal nodes
+                    if (path.length) {
+                        return this.resolveQueryParameters().then(() => true);
+                    }
+
+                    return true;
+                });
+        }
+
+        resolveQueryParameters(queryString = null) {
+
+            if (queryString == "" || queryString == "?") {
+                queryString = null;
+            }
+
+            this[QUERY_STRING] = queryString;
+
+            let queryParameters = this.queryParameters;
+            let queryValues = queryString ? URI(queryString).query(true) : {};
+            let parameterOrder = [];
+            let parameterValues = [];
+
+            // Supplied values
+            // Important: supplied values are applied in the same order they
+            // appear in the query string. This behavior can be important on
+            // some scenarios, such as preserving arbitrary order when building
+            // a list of elements using several different parameters (example:
+            // woost.admin.ui.FiltersBar)
+            for (let key in queryValues) {
+                let value = queryValues[key];
+                let parameter = queryParameters[key];
+                if (parameter && value !== undefined) {
+                    value = parameter.parseValue(value);
+                    parameterOrder.push(parameter);
+                    parameterValues.push(value);
+                }
+            }
+
+            // Default values
+            for (let key in queryParameters) {
+                let parameter = queryParameters[key];
+                if (queryValues[key] === undefined) {
+                    let value = parameter.getDefaultValue(this);
+                    parameterOrder.push(parameter);
+                    parameterValues.push(value);
+                }
+            }
+
+            return Promise.all(parameterValues)
+                .then((values) => {
+                    for (var i = 0; i < values.length; i++) {
+                        let parameter = parameterOrder[i];
+                        let value = values[i];
+                        this.applyQueryParameter(parameter, value);
+                    }
+                });
         }
 
         resolveChild(path) {
+
+            let childResolution;
 
             if (path.length) {
                 let segment = path[0];
                 let childClass = this.children[segment];
                 if (childClass) {
-                    let descendant = childClass.resolve(path.slice(1), this, segment);
-                    if (descendant) {
-                        return descendant;
+                    childResolution = childClass.resolve(path.slice(1), this, segment);
+                }
+            }
+
+            return (childResolution || Promise.resolve(null)).then((child) => {
+
+                if (child) {
+                    return child;
+                }
+
+                let findFirstMatchingWildcard = (i) => {
+                    if (i == this.wildcards.length) {
+                        return null;
                     }
-                }
-            }
+                    return this.wildcards[i].resolve(path, this)
+                        .then((child) => {
+                            return child || findFirstMatchingWildcard(i + 1);
+                        });
+                };
 
-            for (let wildcardClass of this.wildcards) {
-                let descendant = wildcardClass.resolve(path, this);
-                if (descendant) {
-                    return descendant;
-                }
-            }
-
-            return null;
+                return findFirstMatchingWildcard(0);
+            });
         }
 
         applyParameter(parameter, value) {
+            this[parameter.name] = value;
+        }
+
+        applyQueryParameter(parameter, value) {
             this[parameter.name] = value;
         }
 
@@ -272,29 +463,36 @@ cocktail.navigation.StackNode = class StackNode extends cocktail.navigation.Node
     traverse() {
         let stack = this.stack;
         let stackNodes = Array.from(stack.iterStack());
-        let url = this.url;
         let waitForAnimation;
 
         // Remove nodes from the stack
         if (this.stackIndex < stackNodes.length) {
-            if (stackNodes[this.stackIndex].url != url) {
-                waitForAnimation = stack.popAndWait(stackNodes[this.stackIndex]);
+            if (!this.matchesStackNode(stackNodes[this.stackIndex].navigationNode)) {
+                stack.pop(stackNodes[this.stackIndex]);
             }
         }
 
-        if (!waitForAnimation) {
-            waitForAnimation = Promise.resolve(null);
-        }
+        stackNodes = Array.from(stack.iterStack());
 
         // Add a new node to the stack
-        waitForAnimation.then(() => {
-            stackNodes = Array.from(stack.iterStack());
-            if (this.stackIndex >= stackNodes.length || stackNodes[this.stackIndex].url != url) {
-                let stackNode = this.createStackNode();
-                stackNode.url = url;
-                stack.push(stackNode);
-            }
-        });
+        if (
+            this.stackIndex >= stackNodes.length
+            || !this.matchesStackNode(stackNodes[this.stackIndex].navigationNode)
+        ) {
+            let stackNode = this.createStackNode();
+            this.stackNode = stackNode;
+            stackNode.navigationNode = this;
+            stack.push(stackNode);
+        }
+        // Update the existing one; only if its the active node
+        // (this allows parent nodes to preserve their query string parameters)
+        else if (this === cocktail.navigation.node) {
+            stack.stackTop.navigationNode = this;
+        }
+    }
+
+    matchesStackNode(node) {
+        return this.pathString == node.pathString;
     }
 
     activate() {
