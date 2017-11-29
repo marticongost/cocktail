@@ -292,6 +292,24 @@
             yield* this[MEMBER_MAP].values();
         }
 
+        *orderedMembers(recursive = true) {
+            if (!this.membersOrder) {
+                yield* this.members(recursive);
+            }
+            else {
+                let memberMap = {};
+                for (let member of this.members(recursive)) {
+                    memberMap[member.name] = member;
+                }
+                for (let key of this.membersOrder) {
+                    let member = memberMap[key];
+                    if (member) {
+                        yield member;
+                    }
+                }
+            }
+        }
+
         getMember(name) {
             let member = null;
             for (let schema = this; !member && schema; schema = schema[BASE]) {
