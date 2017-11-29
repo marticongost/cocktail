@@ -8,6 +8,7 @@
 
     <?head
     const STACK_TOP = Symbol("cocktail.ui.Stack.STACK_TOP");
+    const STACK_ROOT = Symbol("cocktail.ui.Stack.STACK_ROOT");
     const STACK_PARENT = Symbol.for("cocktail.ui.Stack.STACK_PARENT");
     ?>
 
@@ -25,6 +26,7 @@
         }
         else {
             this.stackContent.appendChild(stackNode);
+            this[STACK_ROOT] = stackNode;
         }
 
         this[STACK_TOP] = stackNode;
@@ -47,6 +49,10 @@
 
         let stackParent = stackNode[STACK_PARENT];
         this[STACK_TOP] = stackParent;
+
+        if (stackNode === this[STACK_ROOT]) {
+            this[STACK_ROOT] = null;
+        }
 
         cocktail.ui.trigger(this, "stackChanged", {
             previousNode: previousStackTop,
@@ -106,7 +112,7 @@
     }
 
     get stackRoot() {
-        return this.stackContent.firstChild;
+        return this[STACK_ROOT];
     }
 
     get stackTop() {
