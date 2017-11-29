@@ -621,6 +621,30 @@
             return super.translateValue(value, params);
         }
 
+        parseValue(value) {
+            let type = this.type;
+            if (type) {
+                let primaryMember = type.primaryMember;
+                if (primaryMember) {
+                    return new Promise((resolve, reject) => {
+                        Promise.resolve(primaryMember.parseValue(value))
+                            .then((id) => {
+                                if (id === undefined) {
+                                    resolve(undefined);
+                                }
+                                else {
+                                    type.getInstance(id)
+                                        .then(resolve)
+                                        .catch(reject);
+                                }
+                            })
+                            .catch(reject)
+                    });
+                }
+            }
+            return undefined;
+        }
+
         serializeValue(value) {
             if (!value) {
                 return "";
@@ -697,15 +721,14 @@
         }
 
         parseValue(value) {
-            if (value) {
-                return Array.from(
-                    this.splitValue(value),
-                    item => this.items.parseValue(item)
-                );
+            let values = [];
+            let promised = false;
+            for (let item of this.splitValue(value)) {
+                let parsedItem = this.items.parseValue(item);
+                values.push(parsedItem);
+                promised = promised || parsedItem instanceof Promise;
             }
-            else {
-                return [];
-            }
+            return promised ? Promise.all(values) : values;
         }
 
         serializeValue(value) {
