@@ -82,6 +82,11 @@ $covered-panel-border-color: white;
 
 :host([animationState='closing'][animationType='fade']) {
     animation: $animation-duration fadeNode;
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
 }
 
 :host([animationState='childOpening'][animationType='fade']) {
