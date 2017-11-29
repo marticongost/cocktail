@@ -5,6 +5,7 @@
     xmlns:ui="http://www.whads.com/ns/cocktail/ui">
 
     <ui:requires component="cocktail.ui.datadisplay"/>
+    <ui:requires component="cocktail.ui.Tab"/>
     <ui:requires component="cocktail.ui.CheckBox"/>
     <ui:requires component="cocktail.ui.CheckList"/>
     <ui:requires component="cocktail.ui.DropdownSelector"/>
@@ -42,6 +43,12 @@
         reflected="true"
         default="true"/>
 
+    <ui:property
+        name="tabbed"
+        type="boolean"
+        reflected="true"
+        default="false"/>
+
     <ui:property name="locales">
         <?on changed
         for (let field of this[FIELD_MAP].values()) {
@@ -54,6 +61,7 @@
 
     <?head
     const GROUPS_MAP = Symbol("cocktail.ui.Form.GROUPS_MAP");
+    const TABS_MAP = Symbol("cocktail.ui.Form.TABS_MAP");
     const FIELD_MAP = Symbol("cocktail.ui.Form.FIELD_MAP");
     const FIELDS_READY = Symbol.for("cocktail.ui.Form.FIELDS_READY");
     ?>
@@ -153,7 +161,26 @@
             let pos = groupId.lastIndexOf(".");
             let parentGroupId = (pos == -1) ? null : groupId.substr(0, pos);
             let parent = parentGroupId ? this.requireGroup(parentGroupId) : this;
-            parent.groupsContainer.appendChild(group);
+
+            let level = -1;
+            if (parentGroupId) {
+                for (let index = 0; index != -1; level++, index = parentGroupId.indexOf(".", index + 1));
+            }
+            else {
+                level = 0;
+            }
+            group.level = this.tabbed ? level - 1 : level;
+
+            // If the form uses tabs, create the tab for the group
+            if (this.tabbed && !parentGroupId) {
+                let tab = this.createTab(groupId);
+                tab.appendChild(group);
+                this[TABS_MAP].set(groupId, tab)
+                this.tabs.appendChild(tab);
+            }
+            else {
+                parent.groupsContainer.appendChild(group);
+            }
         }
 
         return group;
@@ -164,6 +191,16 @@
         group.groupId = groupId;
         group.heading.innerHTML = this.dataBinding.member.translate(".groups." + groupId);
         return group;
+    }
+
+    getTab(groupId) {
+        return this[TABS_MAP].get(groupId);
+    }
+
+    createTab(groupId) {
+        let tab = cocktail.ui.Tab.create();
+        tab.button.innerHTML = this.dataBinding.member.translate(".groups." + groupId);
+        return tab;
     }
 
     createField(member) {
@@ -212,6 +249,7 @@
     <?js
     this[FIELD_MAP] = new Map();
     this[GROUPS_MAP] = new Map();
+    this[TABS_MAP] = new Map();
     this.locales = cocktail.ui.locales;
     this.displayFactory = cocktail.ui.formControls;
     this.readOnlyDisplayFactory = cocktail.ui.readOnlyFormControls;
@@ -228,6 +266,7 @@
     }
     ?>
 
+    <ui:cocktail.ui.Tabs id="tabs"/>
     <div id="fieldsContainer"/>
     <div id="groupsContainer"/>
 
@@ -559,6 +598,11 @@
             type="string"
             reflected="true"
             final="true"/>
+
+        <ui:property
+            name="level"
+            type="integer"
+            reflected="true"/>
 
         <fieldset id="fieldset">
             <legend id="heading"/>

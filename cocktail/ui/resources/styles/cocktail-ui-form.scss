@@ -4,6 +4,18 @@
 $group-separation: 3em;
 $subgroup-separation: 1.5em;
 
+:host([tabbed='true']) {
+    display: flex;
+}
+
+#tabs {
+    flex: 1 1 auto;
+
+    :host([tabbed='false']) & {
+        display: none;
+    }
+}
+
 .field[readOnly='true'] .controlContainer {
     color: #444;
 
@@ -28,13 +40,18 @@ legend {
     &:empty {
         display: none;
     }
+
+    // Hide the legend if the group is a tab
+    .Group[level='-1'] > fieldset > & {
+        display: none;
+    }
 }
 
 #fieldsContainer:not(:empty) + #groupsContainer:not(:empty) {
     margin-top: $group-separation;
 }
 
-#groupsContainer > .Group + .Group {
+.Group[level='0'] + .Group {
     margin-top: $group-separation;
 }
 
@@ -44,20 +61,20 @@ legend {
         display: flex;
         flex-direction: row;
 
-        & > .Group + .Group {
+        .Group[level='0'] + .Group {
             margin-top: 0;
             margin-left: 5em;
         }
     }
 }
 
-#groupsContainer > .Group > fieldset > legend:not(:empty) + .fieldsContainer {
+.Group[level='0'] > fieldset > legend:not(:empty) + .fieldsContainer {
     border-top: 1px dotted lighten($heading-color, 30);
     margin-top: 0.5em;
     padding-top: 0.5em;
 }
 
-.Group .Group {
+.Group[level='0'] .Group {
     margin-top: $subgroup-separation;
 
     legend {
@@ -127,6 +144,7 @@ legend {
             .label {
                 display: table-cell;
                 padding-right: 1em;
+                white-space: nowrap;
             }
 
             .controlContainer {
@@ -144,6 +162,7 @@ legend {
 }
 
 :host([formLayout='horizontalTable']) {
+
     #fieldsContainer {
         display: flex;
         flex-direction: row;
