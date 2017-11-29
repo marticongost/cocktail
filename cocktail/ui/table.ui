@@ -339,7 +339,7 @@
         let row = this.constructor.Row.create();
         row.visibleMembers = this.visibleMembers;
         row.visibleLocales = this.visibleLocales;
-        row.dataBinding = this.dataBinding.child(this.value, this.dataBinding.member.items, null, record);
+        row.dataBinding = this.dataBinding.itemBinding(null, record);
         return row;
     }
 
@@ -434,7 +434,7 @@
 
         createCell(member, language = null) {
             let cell = this.constructor.Cell.create();
-            cell.dataBinding = this.dataBinding.child(this.value, member, language);
+            cell.dataBinding = this.dataBinding.memberBinding(member, language);
             return cell;
         }
 
@@ -481,10 +481,11 @@
             // Render the value using a custom component, if available, or fall
             // back to a string representation
             this.display = cocktail.ui.displays.createDisplay(
-                this.dataBinding.child(
+                this.dataBinding.childBinding(
                     this.dataBinding.object,
                     this.dataBinding.member,
                     this.dataBinding.language,
+                    null,
                     newValue
                 ),
                 {wrapRawValues: false}

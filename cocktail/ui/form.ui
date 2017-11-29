@@ -217,10 +217,7 @@
         field.displayFactory = this.displayFactory;
         field.readOnlyDisplayFactory = this.readOnlyDisplayFactory;
         field.inGroup = this.grouped && member[cocktail.ui.group];
-        field.dataBinding = this.dataBinding.child(
-            this.dataBinding.value,
-            member
-        );
+        field.dataBinding = this.dataBinding.memberBinding(member);
         return field;
     }
 
@@ -470,8 +467,7 @@
             let translation = cls.Translation.create();
             translation.displayFactory = this.displayFactory;
             translation.readOnlyDisplayFactory = this.readOnlyDisplayFactory;
-            translation.dataBinding = this.dataBinding.child(
-                this.dataBinding.object,
+            translation.dataBinding = this.dataBinding.memberBinding(
                 this.dataBinding.member,
                 locale,
                 this.dataBinding.value[locale]
