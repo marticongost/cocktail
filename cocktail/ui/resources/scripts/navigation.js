@@ -11,6 +11,30 @@
     const PREFIX = Symbol("cocktail.navigation.PREFIX");
     const PREFIX_COMPONENTS = Symbol("cocktail.navigation.PREFIX_COMPONENTS");
 
+    const getURIForQuery = (newValues) => {
+        let changed = false;
+        let uri = URI(location.href).query((currentQuery) => {
+            let parameters = cocktail.navigation.node.queryParameters;
+            for (let key in newValues) {
+                let currentValue = currentQuery[key];
+                let newValue = newValues[key];
+                let parameter = parameters[key];
+                if (newValue === undefined) {
+                    delete currentQuery[key];
+                }
+                else {
+                    if (parameter) {
+                        newValue = parameter.serializeValue(newValue);
+                    }
+                    currentQuery[key] = newValue;
+                }
+                changed = changed || (newValue != currentValue);
+            }
+            return currentQuery;
+        });
+        return [uri, changed];
+    }
+
     cocktail.navigation = {
 
         tree: null,
@@ -118,27 +142,13 @@
         },
 
         changeQuery(newValues) {
-            let changed = false;
-            let uri = URI(location.href).query((currentQuery) => {
-                let parameters = cocktail.navigation.node.queryParameters;
-                for (let key in newValues) {
-                    let currentValue = currentQuery[key];
-                    let newValue = newValues[key];
-                    let parameter = parameters[key];
-                    if (newValue === undefined) {
-                        delete currentQuery[key];
-                    }
-                    else {
-                        if (parameter) {
-                            newValue = parameter.serializeValue(newValue);
-                        }
-                        currentQuery[key] = newValue;
-                    }
-                    changed = changed || (newValue != currentValue);
-                }
-                return currentQuery;
-            });
+            let [uri, changed] = getURIForQuery(newValues);
             return changed ? this.push(uri.toString()) : Promise.resolve(cocktail.navigation.node);
+        },
+
+        replaceQuery(newValues) {
+            let [uri, changed] = getURIForQuery(newValues);
+            return changed ? this.replace(uri.toString()) : Promise.resolve(cocktail.navigation.node);
         }
     }
 
