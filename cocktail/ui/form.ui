@@ -78,7 +78,7 @@
     }
 
     createFields() {
-        for (let member of this.dataBinding.member.members()) {
+        for (let member of this.dataBinding.member.orderedMembers()) {
             if (member[cocktail.ui.editable] != cocktail.ui.NOT_EDITABLE) {
                 this.addField(member);
             }
