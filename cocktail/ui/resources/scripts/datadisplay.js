@@ -433,6 +433,7 @@ cocktail.ui.DisplayRequiredError = class DisplayRequiredError {
 cocktail.ui.displays = new cocktail.ui.DisplayFactory("cocktail.ui.display");
 cocktail.schema.Member.prototype[cocktail.ui.display] =
     (dataBinding, parameters) => parameters.wrapRawValues ? cocktail.ui.Value : null;
+cocktail.schema.Collection.prototype[cocktail.ui.display] = () => cocktail.ui.List;
 
 cocktail.schema.Reference.prototype[cocktail.ui.display] = () => cocktail.ui.Value;
 
