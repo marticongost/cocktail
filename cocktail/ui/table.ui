@@ -242,7 +242,7 @@
         let heading = this.constructor.Heading.create();
         heading.member = member;
         heading.language = language;
-        heading.setAttribute("member", member.name);
+        member[cocktail.ui.addAnnotations](heading);
         heading.label.innerHTML = member.translate();
         if (language) {
             heading.languageLabel.innerHTML = cocktail.ui.translations["cocktail.locales." + language];

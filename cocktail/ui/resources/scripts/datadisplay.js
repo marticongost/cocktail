@@ -56,6 +56,49 @@
         triggerInvalidation(model, {type: "delete"});
     }
 
+    cocktail.ui.addAnnotations = Symbol.for("cocktail.ui.addAnnotations");
+    cocktail.ui.removeAnnotations = Symbol.for("cocktail.ui.removeAnnotations");
+
+    {
+        const CACHE = new WeakMap();
+
+        cocktail.ui.getMemberTypes = function (memberType) {
+            let memberTypeStr = CACHE.get(memberType);
+            if (!memberTypeStr) {
+                let memberTypeList = [];
+                while (memberType !== cocktail.schema.Member) {
+                    memberTypeList.push(memberType.name);
+                    memberType = Object.getPrototypeOf(memberType);
+                }
+                memberTypeStr = memberTypeList.join(" ");
+                CACHE.set(memberType, memberTypeStr);
+            }
+            return memberTypeStr;
+        }
+    }
+
+    cocktail.schema.Member.prototype[cocktail.ui.addAnnotations] = function (element) {
+        element.setAttribute("member", this.name);
+        element.setAttribute("memberType", cocktail.ui.getMemberTypes(this.constructor));
+    }
+
+    cocktail.schema.Member.prototype[cocktail.ui.removeAnnotations] = function (element) {
+        element.removeAttribute("member");
+        element.removeAttribute("memberType");
+    }
+
+    cocktail.schema.Collection.prototype[cocktail.ui.addAnnotations] = function (element) {
+        cocktail.schema.Member.prototype[cocktail.ui.addAnnotations].call(this, element);
+        if (this.items) {
+            element.setAttribute("itemsType", cocktail.ui.getMemberTypes(this.items.constructor));
+        }
+    }
+
+    cocktail.schema.Collection.prototype[cocktail.ui.removeAnnotations] = function (element) {
+        cocktail.schema.Member.prototype[cocktail.ui.removeAnnotations].call(this, element);
+        element.removeAttribute("itemsType");
+    }
+
     cocktail.ui.dataDisplay = (cls) => class DataDisplay extends cls {
 
         static get componentProperties() {
@@ -88,10 +131,10 @@
 
                             // Reflect the context in the display's attributes
                             if (newValue.member.name) {
-                                this.setAttribute("member", newValue.member.name);
+                                newValue.member[cocktail.ui.addAnnotations](this);
                             }
                             else {
-                                this.removeAttribute("member");
+                                newValue.member[cocktail.ui.removeAnnotations](this);
                             }
 
                             if (newValue.language) {
