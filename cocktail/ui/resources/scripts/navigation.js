@@ -444,11 +444,7 @@ cocktail.navigation.StackTransparentNode = class StackTransparentNode extends co
     constructor(...args) {
         super(...args);
         let parentStackIndex = this.parent && this.parent.stackIndex;
-        this.stackIndex = parentStackIndex === undefined ? 0 : parentStackIndex + 1;
-    }
-
-    activate() {
-        cocktail.navigation.replace(this.parent);
+        this.stackIndex = parentStackIndex === undefined ? -1 : parentStackIndex;
     }
 }
 
