@@ -59,6 +59,8 @@
     border: 1px solid #ddd;
 }
 
+@include table-column-size("[memberType='DateTime']", 10em);
+
 th {
     color: #5a564e;
     font-size: 14px;
