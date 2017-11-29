@@ -467,9 +467,11 @@
             let translation = cls.Translation.create();
             translation.displayFactory = this.displayFactory;
             translation.readOnlyDisplayFactory = this.readOnlyDisplayFactory;
-            translation.dataBinding = this.dataBinding.memberBinding(
+            translation.dataBinding = this.dataBinding.childBinding(
+                this.dataBinding.object,
                 this.dataBinding.member,
                 locale,
+                null,
                 this.dataBinding.value[locale]
             );
             return translation;
