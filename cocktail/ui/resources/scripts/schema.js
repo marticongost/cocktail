@@ -282,6 +282,17 @@
             return this[BASE];
         }
 
+        isSchema(schema) {
+            let ancestor = this;
+            while (ancestor) {
+                if (ancestor === schema) {
+                    return true;
+                }
+                ancestor = ancestor[BASE];
+            }
+            return false;
+        }
+
         *members(recursive = true) {
             if (recursive) {
                 let base = this[BASE];
