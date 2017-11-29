@@ -123,8 +123,11 @@
             return value;
         }
 
-        getObjectValue(object, language = null) {
+        getObjectValue(object, language = null, index = null) {
             let value = object[this.name];
+            if (index !== null && index !== undefined) {
+                value = value[index];
+            }
             if (language && this.translated) {
                 value = value[language];
             }
