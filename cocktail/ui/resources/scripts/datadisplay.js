@@ -114,6 +114,7 @@
                                 value.object,
                                 value.member,
                                 value.language,
+                                value.index,
                                 value.value
                             );
                         }
@@ -205,7 +206,8 @@
                     if (display.dataBinding === linkedDisplay.dataBinding) {
                         display.value = linkedDisplay.value;
                     }
-                }
+                },
+                initialize
             );
         }
 
@@ -222,12 +224,13 @@
     const MEMBER = Symbol("cocktail.ui.DataBinding.MEMBER");
     const OBJECT = Symbol("cocktail.ui.DataBinding.OBJECT");
     const LANGUAGE = Symbol("cocktail.ui.DataBinding.LANGUAGE");
+    const INDEX = Symbol("cocktail.ui.DataBinding.INDEX");
     const PARENT = Symbol("cocktail.ui.DataBinding.PARENT");
     const VALUE = Symbol("cocktail.ui.DataBinding.VALUE");
 
     cocktail.ui.DataBinding = class DataBinding {
 
-        constructor(object, member, language = null, value = undefined) {
+        constructor(object, member, language = null, index = null, value = undefined) {
 
             if (!member) {
                 throw new cocktail.ui.InvalidDataBindingError(
@@ -238,7 +241,8 @@
             this[OBJECT] = object;
             this[MEMBER] = member;
             this[LANGUAGE] = language;
-            this[VALUE] = (value === undefined) ? this.getValue(language) : value;
+            this[INDEX] = index;
+            this[VALUE] = (value === undefined) ? this.getValue(language, index) : value;
         }
 
         get object() {
@@ -253,6 +257,10 @@
             return this[LANGUAGE];
         }
 
+        get index() {
+            return this[INDEX];
+        }
+
         get parent() {
             return this[PARENT];
         }
@@ -261,18 +269,26 @@
             return this[VALUE];
         }
 
-        getValue(language = null) {
+        getValue(language = null, index = null) {
             let object = this[OBJECT];
             if (object === undefined) {
                 return undefined;
             }
-            return this[MEMBER].getObjectValue(object, language);
+            return this[MEMBER].getObjectValue(object, language, index);
         }
 
-        child(object, member, language = null, value = undefined) {
-            let child = new this.constructor(object, member, language, value);
+        childBinding(object, member, language = null, index = null, value = undefined) {
+            let child = new this.constructor(object, member, language, index, value);
             child[PARENT] = this;
             return child;
+        }
+
+        memberBinding(member, language = null, value = undefined) {
+            return this.childBinding(this[VALUE], member, language, null, value);
+        }
+
+        itemBinding(index, item = undefined) {
+            return this.childBinding(this[VALUE], this[MEMBER].items, null, index, item);
         }
     }
 }
