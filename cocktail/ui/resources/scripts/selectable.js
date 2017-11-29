@@ -27,9 +27,11 @@
                             let item;
                             for (item of removed) {
                                 item.removeAttribute("selected");
+                                item.classList.remove("cocktail-ui-selected");
                             }
                             for (item of added) {
                                 item.setAttribute("selected", "");
+                                item.classList.add("cocktail-ui-selected");
                             }
                             if (added.size) {
                                 this.selectionCursor = item;
@@ -377,11 +379,13 @@
                 if (selected != wasSelected) {
                     if (selected) {
                         element.setAttribute("selected", "");
+                        element.classList.add("cocktail-ui-selected");
                         selectedElements.add(element);
                         added.add(element);
                     }
                     else {
                         element.removeAttribute("selected");
+                        element.classList.remove("cocktail-ui-selected");
                         selectedElements.delete(element);
                         removed.add(element);
                     }
