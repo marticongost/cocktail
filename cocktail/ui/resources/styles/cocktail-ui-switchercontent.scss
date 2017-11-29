@@ -15,7 +15,7 @@
 }
 
 :host([selected='false']) {
-    display: none;
+    display: none !important;
 }
 
 :host-context([selectingInitialContent='false']):host([selected='true']) {
