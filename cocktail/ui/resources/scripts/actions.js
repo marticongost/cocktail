@@ -79,6 +79,14 @@
             return "visible";
         }
 
+        createEntry() {
+            return this.entryClass.create();
+        }
+
+        get entryClass() {
+            return cocktail.ui.ActionListButton;
+        }
+
         invoke(context) {
         }
     }

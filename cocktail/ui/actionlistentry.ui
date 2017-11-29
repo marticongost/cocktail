@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<li
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:property
+        name="action"
+        reflected="false"
+        final="true">
+        <?on changed
+        if (newValue) {
+            this.setAttribute("action", newValue.id);
+        }
+        ?>
+    </ui:property>
+
+    <ui:property
+        name="state"
+        type="string"
+        reflected="true"/>
+
+    <ui:property
+        name="extra"
+        type="boolean"
+        reflected="true"/>
+
+    <ui:property
+        name="buttonStyle"
+        type="string"
+        reflected="true"/>
+
+    <?class
+    invoke() {
+        this.action.invoke(this.actionList.getActionContext());
+    }
+
+    get actionList() {
+        return this.parentInstance;
+    }
+
+    get underlinedLabel() {
+        let shortcut = this.action.shortcut;
+        let label = this.action.translate();
+        if (shortcut) {
+            label = label.replace(new RegExp(shortcut, "i"), function (c) {
+                return `<u>${c}</u>`;
+            });
+        }
+        return label;
+    }
+    ?>
+
+</li>
+

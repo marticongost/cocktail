@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ui:cocktail.ui.ActionListEntry
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <?on action:changed
+    cocktail.loadSVG(newValue.iconURL, this.icon);
+    this.button.accessKey = this.action.shortcut || "";
+    this.label.innerHTML = this.underlinedLabel;
+    ?>
+
+    <?on state:changed
+    if (oldValue == "disabled") {
+        this.button.disabled = false;
+    }
+    else if (newValue == "disabled") {
+        this.button.disabled = true;
+    }
+    ?>
+
+    <button id="button" type="button">
+        <span id="icon"/>
+        <span id="label"/>
+        <?on click
+        instance.invoke();
+        ?>
+    </button>
+
+</ui:cocktail.ui.ActionListEntry>
+
