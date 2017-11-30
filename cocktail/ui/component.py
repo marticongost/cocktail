@@ -147,7 +147,18 @@ class Component(object):
         if include_self:
             yield self
 
-    def dependencies(self, recursive = True, include_self = False):
+    def dependencies(
+        self,
+        recursive = True,
+        include_self = False,
+        _visited = None
+    ):
+        if _visited is None:
+            _visited = {self}
+        elif self in _visited:
+            return ()
+        else:
+            _visited.add(self)
 
         dependencies = OrderedSet()
 
@@ -156,7 +167,8 @@ class Component(object):
                 if recursive:
                     dependencies.extend(
                         self.__state.base_component.dependencies(
-                            include_self = True
+                            include_self = True,
+                            _visited = _visited
                         )
                     )
                 else:
@@ -164,7 +176,12 @@ class Component(object):
 
             if recursive:
                 for dep in self.__state.dependencies:
-                    dependencies.extend(dep.dependencies(include_self = True))
+                    dependencies.extend(
+                        dep.dependencies(
+                            include_self = True,
+                            _visited = _visited
+                        )
+                    )
             else:
                 dependencies.extend(self.__state.dependencies)
 
@@ -177,7 +194,10 @@ class Component(object):
                 if recursive:
                     for subcomponent in subcomponents:
                         dependencies.extend(
-                            subcomponent.dependencies(include_self = True)
+                            subcomponent.dependencies(
+                                include_self = True,
+                                _visited = _visited
+                            )
                         )
                 else:
                     dependencies.extend(subcomponents)
