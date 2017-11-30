@@ -215,6 +215,10 @@ class Component(object):
         if prev_state:
             prev_state.dispose()
 
+    @property
+    def loaded(self):
+        return self.__state is not None
+
     def render_page(
         self,
         title = "",
