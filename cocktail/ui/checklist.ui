@@ -5,8 +5,7 @@
     xmlns:ui="http://www.whads.com/ns/cocktail/ui">
 
     <ui:requires component="cocktail.ui.sorting"/>
-    <ui:requires component="cocktail.ui.datadisplay"/>
-    <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
+    <ui:using mixin="cocktail.ui.DataDisplay"/>
 
     <ui:property
         name="sorted"

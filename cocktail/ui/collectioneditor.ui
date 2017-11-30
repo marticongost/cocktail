@@ -4,9 +4,8 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:ui="http://www.whads.com/ns/cocktail/ui">
 
-    <ui:requires component="cocktail.ui.datadisplay"/>
+    <ui:using mixin="cocktail.ui.DataDisplay"/>
     <ui:requires component="cocktail.ui.CollectionEditorForm"/>
-    <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
     <ui:symbol name="CHANGING"/>
 
     <ui:property
@@ -116,7 +115,7 @@
 
     <div ui:component="Entry">
 
-        <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
+        <ui:using mixin="cocktail.ui.DataDisplay"/>
         <ui:symbol name="..CHANGING"/>
 
         <?class

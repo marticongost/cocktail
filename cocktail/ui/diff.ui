@@ -4,8 +4,7 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:ui="http://www.whads.com/ns/cocktail/ui">
 
-    <ui:requires component="cocktail.ui.datadisplay"/>
-    <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
+    <ui:using mixin="cocktail.ui.DataDisplay"/>
     <ui:resource href="cocktail.ui://scripts/difflib.js"/>
 
     <?on value:changed

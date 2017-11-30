@@ -4,9 +4,8 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:ui="http://www.whads.com/ns/cocktail/ui" tabindex="0">
 
-    <ui:requires component="cocktail.ui.datadisplay"/>
     <ui:requires component="cocktail.ui.delay"/>
-    <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
+    <ui:using mixin="cocktail.ui.DataDisplay"/>
 
     <?tail
     cls.delegatesFocus = true;

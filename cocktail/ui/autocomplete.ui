@@ -7,11 +7,10 @@
     activationType="singleClick">
 
     <ui:requires component="cocktail.ui.delay"/>
-    <ui:requires component="cocktail.ui.selectable"/>
-    <ui:requires component="cocktail.ui.datadisplay"/>
+    <ui:requires component="cocktail.ui.displayfactories"/>
 
-    <ui:decoratedBy function="cocktail.ui.selectable"/>
-    <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
+    <ui:using mixin="cocktail.ui.Selectable"/>
+    <ui:using mixin="cocktail.ui.DataDisplay"/>
 
     <ui:property
         name="searchParameter"
@@ -239,7 +238,7 @@
 
     <li ui:component="Entry">
 
-        <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
+        <ui:using mixin="cocktail.ui.DataDisplay"/>
 
         <?class
         makeDisplay() {
