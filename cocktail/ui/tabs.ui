@@ -6,7 +6,68 @@
 
     <ui:property
         name="selectedTab"
-        reflected="false"/>
+        reflected="false">
+        <?on changed
+        this[SYNCHRONIZE_URI](() => {
+            let param = this.queryParameter;
+            if (param) {
+                cocktail.navigation.replaceQuery({[param]: newValue ? newValue.tabId : undefined});
+            }
+        });
+        ?>
+    </ui:property>
+
+    <ui:property
+        name="queryParameter"
+        type="string"
+        reflected="true"
+        final="true"/>
+
+    <ui:symbol name="SYNCHRONIZE_URI"/>
+    <ui:symbol name="SYNCHRONIZING_URI"/>
+
+    <?class
+    getTab(tabId) {
+        for (let tab of this.tabs) {
+            if (tab.tabId == tabId) {
+                return tab;
+            }
+        }
+        return null;
+    }
+
+    get tabs() {
+        return this.childNodes;
+    }
+
+    [SYNCHRONIZE_URI](syncAction) {
+        if (!this[SYNCHRONIZING_URI]) {
+            this[SYNCHRONIZING_URI] = true;
+            try {
+                return syncAction();
+            }
+            finally {
+                this[SYNCHRONIZING_URI] = false;
+            }
+        }
+    }
+    ?>
+
+    <?on-window popstate
+    this[SYNCHRONIZE_URI](() => {
+        let param = this.queryParameter;
+        if (param) {
+            let queryValues = URI(location.href).query(true);
+            let tabId = queryValues[param];
+            if (tabId) {
+                let tab = this.getTab(tabId);
+                if (tab) {
+                    this.selectedTab = tab;
+                }
+            }
+        }
+    });
+    ?>
 
     <div id="strip"/>
 

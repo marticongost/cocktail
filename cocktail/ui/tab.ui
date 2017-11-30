@@ -5,6 +5,12 @@
     xmlns:ui="http://www.whads.com/ns/cocktail/ui">
 
     <ui:property
+        name="tabId"
+        type="string"
+        reflected="true"
+        final="true"/>
+
+    <ui:property
         name="selected"
         type="boolean"
         reflected="true"
@@ -40,7 +46,19 @@
             },
             false
         );
-        if (!this.tabs.selectedTab) {
+
+        let param = this.tabs.queryParameter;
+        let tabId = null;
+
+        if (param) {
+            let queryValues = URI(location.href).query(true);
+            tabId = queryValues[param];
+            if (tabId && tabId == this.tabId) {
+                this.selected = true;
+            }
+        }
+
+        if ((!param || !tabId) && !this.tabs.selectedTab) {
             this.selected = true;
         }
     }
