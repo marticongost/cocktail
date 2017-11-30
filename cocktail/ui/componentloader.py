@@ -6,9 +6,9 @@ u"""
 import os
 import re
 from time import time
-from json import dumps
 from collections import OrderedDict
 from lxml.etree import parse, QName, ProcessingInstruction
+from cocktail.javascriptserializer import dumps, JS
 from cocktail.stringutils import normalize_indentation
 from cocktail.modeling import OrderedSet
 from cocktail.translations import translations
@@ -23,6 +23,7 @@ from cocktail.sourcecodewriter import SourceCodeWriter
 from .exceptions import ComponentFileError, ParseError
 
 js_number_expr = re.compile(r"^[-+]?(\d+(\.\d*)?|(\d*\.)?\d+)$")
+js_identifier_expr = re.compile(r"[a-z][a-z0-9_]*")
 
 
 class ComponentLoader(object):
@@ -464,6 +465,8 @@ class ComponentLoader(object):
 
             prop_type = attributes.pop("type", None)
             if prop_type:
+                if not js_identifier_expr.match(prop_type):
+                    prop_type = JS(prop_type)
                 prop_options["type"] = prop_type
 
             default = attributes.pop("default", None)
