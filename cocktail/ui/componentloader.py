@@ -488,6 +488,10 @@ class ComponentLoader(object):
                     % final
                 )
 
+            normalization = attributes.pop("normalization", None)
+            if normalization:
+                prop_options["normalization"] = JS(normalization)
+
             event_is_composed = attributes.pop("eventIsComposed", "false")
             if event_is_composed == "true":
                 prop_options["eventIsComposed"] = True
