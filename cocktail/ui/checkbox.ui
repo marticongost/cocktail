@@ -6,8 +6,7 @@
     formLabelDisposition="afterControl"
     tabindex="0">
 
-    <ui:requires component="cocktail.ui.datadisplay"/>
-    <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
+    <ui:using mixin="cocktail.ui.DataDisplay"/>
 
     <?tail
     cls.delegatesFocus = true;

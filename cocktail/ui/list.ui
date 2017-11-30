@@ -4,7 +4,8 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:ui="http://www.whads.com/ns/cocktail/ui">
 
-    <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
+    <ui:using mixin="cocktail.ui.DataDisplay"/>
+    <ui:requires component="cocktail.ui.displayfactories"/>
 
     <?tail
     cls.prototype.itemsDisplayFactory = cocktail.ui.displays;
@@ -50,8 +51,7 @@
     <li ui:component="Entry">
 
         <ui:symbol name="RAW"/>
-
-        <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
+        <ui:using mixin="cocktail.ui.DataDisplay"/>
 
         <?on dataBinding:changed
         if (this.display) {

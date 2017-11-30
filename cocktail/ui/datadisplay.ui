@@ -1,15 +1,185 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<ui:module
+<ui:mixin
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:ui="http://www.whads.com/ns/cocktail/ui">
 
     <ui:requires component="cocktail.ui.schema"/>
-    <ui:requires component="cocktail.ui.Value"/>
-    <ui:requires component="cocktail.ui.List"/>
-
     <ui:resource href="cocktail.ui://scripts/copy.js"/>
-    <ui:resource href="cocktail.ui://scripts/datadisplay.js"/>
+    <ui:resource href="cocktail.ui://scripts/databinding.js"/>
 
-</ui:module>
+    <ui:symbol name="CHANGES"/>
+
+    <?head
+    const normalizeDataBinding = (value) => {
+        // Accept arbitrary objects.
+        // This allows to set the property using an object literal, instead of
+        // having to instantiate cocktail.ui.DataBinding explicitly.
+        if (value && !(value instanceof cocktail.ui.DataBinding)) {
+            value = new cocktail.ui.DataBinding(
+                value.object,
+                value.member,
+                value.language,
+                value.index,
+                value.value
+            );
+        }
+        return value;
+    }
+
+    // Data invalidation
+    const getModelChanges = function (model) {
+        return model[CHANGES] || (model[CHANGES] = new cocktail.ui.Observable());
+    }
+
+    const triggerInvalidation = function (model, change) {
+        change.model = model;
+        getModelChanges(model).trigger(change);
+    }
+
+    const subscribe = function (display, dataBinding) {
+        if (display.parentNode && dataBinding && dataBinding.member.relatedType) {
+            let model = dataBinding.member.relatedType.originalMember;
+            let changes = getModelChanges(model);
+            display.observe(changes);
+        }
+    }
+
+    const unsubscribe = (display, dataBinding) => {
+        if (dataBinding && dataBinding.member.relatedType) {
+            let model = dataBinding.member.relatedType.originalMember;
+            let changes = getModelChanges(model);
+            display.stopObserving(changes);
+        }
+    }
+
+    cocktail.ui.objectCreated = function (model, record) {
+        triggerInvalidation(model, {type: "create", record});
+    }
+
+    cocktail.ui.objectModified = function (model, id, oldState, newState) {
+        triggerInvalidation(model, {
+            type: "modify",
+            id,
+            oldState,
+            newState
+        });
+    }
+
+    cocktail.ui.objectDeleted = function (model, id) {
+        triggerInvalidation(model, {type: "delete", id});
+    }
+
+    cocktail.ui.modelInstancesDeleted = function (model) {
+        triggerInvalidation(model, {type: "delete"});
+    }
+    ?>
+
+    <ui:property
+        name="dataBinding"
+        reflected="false"
+        normalization="normalizeDataBinding">
+        <?on changed
+        unsubscribe(this, oldValue);
+        subscribe(this, newValue);
+
+        if (newValue) {
+
+            // Set the display's value when a new data context is assigned
+            this.value = newValue.value;
+
+            // Reflect the context in the display's attributes
+            if (newValue.member.name) {
+                newValue.member[cocktail.ui.addAnnotations](this);
+            }
+            else {
+                newValue.member[cocktail.ui.removeAnnotations](this);
+            }
+
+            if (newValue.language) {
+                this.setAttribute("language", newValue.language);
+                this.setAttribute("dir", cocktail.ui.directionality[newValue.language]);
+            }
+            else {
+                this.removeAttribute("language");
+                this.removeAttribute("dir");
+            }
+        }
+        else {
+            this.removeAttribute("member");
+            this.removeAttribute("language");
+        }
+        ?>
+    </ui:property>
+
+    <ui:property
+        name="displayFactory"
+        reflected="false"/>
+
+    <ui:property
+        name="value"
+        type="(obj) => obj.dataBinding &amp;&amp; obj.dataBinding.member || cocktail.ui.Property.types.string"
+        reflected="true"/>
+
+    <ui:property
+        name="formLabelDisposition"
+        type="string"
+        reflected="true"/>
+
+    <?class
+    connectedCallback() {
+        super.connectedCallback();
+        subscribe(this, this.dataBinding);
+    }
+
+    disconnectedCallback() {
+        super.disconnectedCallback();
+        unsubscribe(this, this.dataBinding);
+    }
+
+    invalidation(change) {
+        if (
+            this.value
+            && change.type == "modify"
+            && this.getAttribute("value") === change.id
+        ) {
+            this.value = change.newState;
+        }
+    }
+
+    translateValue(params = null) {
+        return this.dataBinding.member.translateValue(this.value, params);
+    }
+
+    linkDisplay(linkedDisplay, initialize = true) {
+        this.addEventListener("dataBindingChanged", (e) => {
+            linkedDisplay.dataBinding = e.detail.newValue;
+        });
+        cocktail.ui.link(
+            this,
+            linkedDisplay,
+            "value",
+            (display, linkedDisplay) => {
+                if (display.dataBinding === linkedDisplay.dataBinding) {
+                    linkedDisplay.value = display.value;
+                }
+            },
+            (linkedDisplay, display) => {
+                if (display.dataBinding === linkedDisplay.dataBinding) {
+                    display.value = linkedDisplay.value;
+                }
+            },
+            initialize
+        );
+    }
+
+    getJSONValue() {
+        if (!this.dataBinding) {
+            return {};
+        }
+        return this.dataBinding.member.toJSONValue(this.value);
+    }
+    ?>
+
+</ui:mixin>
 

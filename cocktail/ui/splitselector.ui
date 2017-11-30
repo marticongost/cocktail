@@ -4,9 +4,7 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:ui="http://www.whads.com/ns/cocktail/ui">
 
-    <ui:requires component="cocktail.ui.datadisplay"/>
-    <ui:requires component="cocktail.ui.selectable"/>
-    <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
+    <ui:using mixin="cocktail.ui.DataDisplay"/>
 
     <ui:symbol name="ENTRIES_READY"/>
 
@@ -163,7 +161,7 @@
 
     <div ui:component="Panel" selectionType="multiple" tabindex="0">
 
-        <ui:decoratedBy function="cocktail.ui.selectable"/>
+        <ui:using mixin="cocktail.ui.Selectable"/>
 
         <?head
         const ENTRY_MAP = Symbol.for("cocktail.ui.SplitSelector.ENTRY_MAP");

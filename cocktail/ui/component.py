@@ -121,6 +121,13 @@ class Component(object):
             return False
 
     @property
+    def is_mixin(self):
+        if self.__state:
+            return self.__state.is_mixin
+        else:
+            return False
+
+    @property
     def base_component(self):
         if self.__state:
             return self.__state.base_component

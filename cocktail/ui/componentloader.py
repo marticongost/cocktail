@@ -112,6 +112,7 @@ class ComponentLoader(object):
         self.dependencies = OrderedSet()
         self.subcomponents = {}
         self.is_module = False
+        self.is_mixin = False
         self.resources = OrderedSet()
         self.translation_keys = set()
         self.decorators = []
@@ -123,6 +124,7 @@ class ComponentLoader(object):
         self.init_tail_source = None
         self.body_source = None
         self.declaration_source = None
+        self.component_parameters_source = None
         self.tail_source = None
         self.__stack = None
         self.__context_change_stack = []
@@ -154,7 +156,8 @@ class ComponentLoader(object):
         self.init_source = None
         self.init_tail_source = None
         self.body_source = None
-        self.declaration_source = None
+        self.declaration_source
+        self.component_parameters_source = None
         self.tail_source = None
         self.__stack = None
         self.__context_change_stack = None
@@ -173,6 +176,8 @@ class ComponentLoader(object):
         if is_ui_node:
             if local_name == "module":
                 self.is_module = True
+            elif local_name == "mixin":
+                self.is_mixin = True
             else:
                 inheriting_component = True
                 base_name = local_name
@@ -189,6 +194,15 @@ class ComponentLoader(object):
                     referrer = self.component,
                     reference_type = "base"
                 )
+
+                if self.base_component.is_mixin:
+                    self.trigger_parser_error(
+                        "Can't inherit a mixin component"
+                    )
+                elif self.base_component.is_module:
+                    self.trigger_parser_error(
+                        "Can't inherit a module"
+                    )
         else:
             base_name = self.tag_interfaces.get(local_name, "HTMLElement")
             base_name = "cocktail.ui.base.%s" % base_name
@@ -203,10 +217,12 @@ class ComponentLoader(object):
         if not self.is_module:
 
             # Component class declaration
-            with self.source.braces("let cls = cocktail.ui.component(", ");"):
-                self.declaration_source = self.source.nest()
+            self.declaration_source = self.source.nest()
+            self.source.indent()
+            self.component_parameters_source = self.source.nest()
+            self.body_source = self.source.nest(0 if self.is_mixin else 1)
 
-                self.body_source = self.source.nest(1)
+            if not self.is_mixin:
                 self.body_source.write(
                     "static get observedAttributes() { "
                     "return cocktail.ui._getObservedAttributes(this); }"
@@ -217,54 +233,73 @@ class ComponentLoader(object):
                         "static get requiresShadowDOM() { return true; }"
                     )
 
-                # Component initializer
-                self.body_source.write("initialize() {")
-                self.init_source = self.body_source.nest(1)
-                self.init_source.write("super.initialize();")
-                self.init_source.write("let instance = this;")
+            # Component initializer
+            self.body_source.write("initialize() {")
+            self.init_source = self.body_source.nest(1)
+            self.init_source.write("super.initialize();")
+            self.init_source.write("let instance = this;")
+            self.init_source.write(
+                "this.classList.add('%s');"
+                % self.component.css_class
+            )
+            if self.component.parent:
                 self.init_source.write(
-                    "this.classList.add('%s');"
-                    % self.component.css_class
+                    "this.classList.add('%s');" % self.component.name
                 )
-                if self.component.parent:
-                    self.init_source.write(
-                        "this.classList.add('%s');" % self.component.name
-                    )
-                self.init_tail_source = self.body_source.nest(1)
-                self.body_source.write("}")
+            self.init_tail_source = self.body_source.nest(1)
+            self.body_source.write("}")
 
+            if not self.is_mixin:
                 self.source.write("}")
+
+            self.source.unindent()
+
+            if self.is_mixin:
+                self.source.write("}")
+            else:
+                self.source.write("});")
 
         self.tail_source = self.source.nest()
         self.parse_element(node)
 
         if not self.is_module:
-
-            self.declaration_source.write(
-                "fullName: %s," % dumps(self.component.full_name)
-            )
-
-            if self.component.parent:
-                self.declaration_source.write(
-                    "parentComponent: %s," % self.component.parent.full_name
-                )
-
-            if not is_ui_node:
-                self.declaration_source.write(
-                    "baseTag: %s," % dumps(local_name)
-                )
-
-            base_expr = base_name
-
+            base_expr = "cls" if self.is_mixin else base_name
             for decorator in self.decorators:
                 base_expr = "%s(%s)" % (decorator, base_expr)
 
-            self.declaration_source.write(
-                "cls: class %s extends %s {" % (
-                    self.component.name,
-                    base_expr
+            if self.is_mixin:
+                self.declaration_source.write(
+                    "%s = (cls) => class %s extends %s {" % (
+                        self.component.full_name,
+                        self.component.name,
+                        base_expr
+                    )
                 )
-            )
+            else:
+                self.declaration_source.write(
+                    "let cls = cocktail.ui.component({"
+                )
+
+                self.component_parameters_source.write(
+                    "fullName: %s," % dumps(self.component.full_name)
+                )
+
+                if self.component.parent:
+                    self.component_parameters_source.write(
+                        "parentComponent: %s," % self.component.parent.full_name
+                    )
+
+                if not is_ui_node:
+                    self.component_parameters_source.write(
+                        "baseTag: %s," % dumps(local_name)
+                    )
+
+                self.component_parameters_source.write(
+                    "cls: class %s extends %s {" % (
+                        self.component.name,
+                        base_expr
+                    )
+                )
 
             with self.body_source.braces(
                 "static get componentProperties()"
@@ -283,8 +318,7 @@ class ComponentLoader(object):
                 else:
                     b.write("return {};")
 
-        # Embed styles
-        if not self.is_module:
+            # Embed styles
             if self.style_inclusion == "embed":
                 embedder = EmbeddedResources()
                 css = []
@@ -314,7 +348,6 @@ class ComponentLoader(object):
                             % dumps(uris)
                         )
 
-        if not self.is_module:
             self.source.unindent()
             self.source.write("}")
 
@@ -373,6 +406,8 @@ class ComponentLoader(object):
                 node.is_decorator = True
             elif local_name == "requires":
                 node.is_requirement = True
+            elif local_name == "using":
+                node.is_mixin_requirement = True
 
         node.is_element = (
             not node.is_content
@@ -384,6 +419,7 @@ class ComponentLoader(object):
             and not node.is_translation_requirement
             and not node.is_translation_bundle_requirement
             and not node.is_requirement
+            and not node.is_mixin_requirement
             and not self.is_module
         )
         node.is_new = (
@@ -634,12 +670,12 @@ class ComponentLoader(object):
 
             self.decorators.append(function)
 
-        # Requirement
+        # Requires component
         elif node.is_requirement:
             dep_name = attributes.pop("component", None)
             if not dep_name:
                 self.trigger_parser_error(
-                    "'requirement' clause without a 'component' attribute"
+                    "'requires' clause without a 'component' attribute"
                 )
             dependency = self.component.registry.get(
                 dep_name,
@@ -647,6 +683,26 @@ class ComponentLoader(object):
                 reference_type = "dependency"
             )
             self.dependencies.append(dependency)
+
+        # Using mixin
+        elif node.is_mixin_requirement:
+            mixin_name = attributes.pop("mixin", None)
+            if not mixin_name:
+                self.trigger_parser_error(
+                    "'using' clause without a 'mixin' attribute"
+                )
+            mixin = self.component.registry.get(
+                mixin_name,
+                referrer = self.component,
+                reference_type = "mixin"
+            )
+            if not mixin.is_mixin:
+                self.trigger_parser_error(
+                    "Trying to use non-mixin component %s as a mixin"
+                    % mixin_name
+                )
+            self.dependencies.append(mixin)
+            self.decorators.append(mixin_name)
 
         # Element ID
         else:
@@ -994,6 +1050,9 @@ class StackNode(object):
 
     # Wether the node is a requirement declaration
     is_requirement = False
+
+    # Wether the node is a mixin requirement declaration
+    is_mixin_requirement = False
 
     # If the node represents a property, this attribute will contain its name
     # (otherwise it will be None)

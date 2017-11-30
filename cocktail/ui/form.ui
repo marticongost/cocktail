@@ -4,15 +4,15 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:ui="http://www.whads.com/ns/cocktail/ui">
 
-    <ui:requires component="cocktail.ui.datadisplay"/>
+    <ui:using mixin="cocktail.ui.DataDisplay"/>
+
+    <ui:requires component="cocktail.ui.displayfactories"/>
     <ui:requires component="cocktail.ui.Tab"/>
     <ui:requires component="cocktail.ui.CheckBox"/>
     <ui:requires component="cocktail.ui.CheckList"/>
     <ui:requires component="cocktail.ui.DropdownSelector"/>
     <ui:requires component="cocktail.ui.NumberInput"/>
     <ui:requires component="cocktail.ui.TextInput"/>
-
-    <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
 
     <ui:property
         name="formLayout"
@@ -270,7 +270,7 @@
 
     <div ui:component="Field">
 
-        <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
+        <ui:using mixin="cocktail.ui.DataDisplay"/>
 
         <ui:property
             name="modified"
@@ -372,7 +372,7 @@
 
     <div ui:component="FieldTranslations">
 
-        <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
+        <ui:using mixin="cocktail.ui.DataDisplay"/>
 
         <ui:property
             name="modified"
@@ -488,7 +488,7 @@
 
         <div ui:component="Translation">
 
-            <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
+            <ui:using mixin="cocktail.ui.DataDisplay"/>
 
             <ui:property
                 name="modified"

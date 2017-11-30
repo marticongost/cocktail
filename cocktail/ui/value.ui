@@ -4,7 +4,7 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:ui="http://www.whads.com/ns/cocktail/ui">
 
-    <ui:decoratedBy function="cocktail.ui.dataDisplay"/>
+    <ui:using mixin="cocktail.ui.DataDisplay"/>
 
     <?on value:changed
     this.label.innerHTML = this.dataBinding.member.translateValue(newValue);
