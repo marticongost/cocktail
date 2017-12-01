@@ -19,6 +19,8 @@ $error-background-color: #feeeee !default;
 $error-background: $error-background-color !default;
 $error-color: #8e2b2b !default;
 $error-box-padding: 0.5em !default;
+$odd-row-color: white !default;
+$even-row-color: #f8f7f5 !default;
 
 @mixin focus {
     outline: 2px auto $focus-color;
@@ -54,6 +56,15 @@ $error-box-padding: 0.5em !default;
     #headingsRow > th#{$selector},
     #body td#{$selector} {
         flex: 0 0 $size;
+    }
+}
+
+@mixin alternate-background-color($odd-color: $odd-row-color, $even-color: $even-row-color) {
+    &:nth-child(odd) {
+        background-color: $odd-color;
+    }
+    &:nth-child(even) {
+        background-color: $even-color;
     }
 }
 
