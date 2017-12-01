@@ -164,7 +164,7 @@
 
             let level = -1;
             if (parentGroupId) {
-                for (let index = 0; index != -1; level++, index = parentGroupId.indexOf(".", index + 1));
+                for (let index = 0; index != -1; level++, index = groupId.indexOf(".", index + 1));
             }
             else {
                 level = 0;
