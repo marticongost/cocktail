@@ -130,13 +130,7 @@ th {
             color: $selection-foreground;
         }
 
-        &:nth-child(odd) {
-            background-color: white;
-        }
-
-        &:nth-child(even) {
-            background-color: #f8f7f5;
-        }
+        @include alternate-background-color;
     }
 }
 
