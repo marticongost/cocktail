@@ -455,13 +455,27 @@ class ComponentLoader(object):
                 return
 
         # Placement
-        node.placement = attributes.pop("{%s}placement" % self.ui_ns, "append")
+        placement_str = attributes.pop("{%s}placement" % self.ui_ns, "append")
+        placement_parts = placement_str.split(" ", 2)
+        node.placement_method = placement_parts[0]
+        if len(placement_parts) == 2:
+            node.placement_anchor = node.parent.ref + "." + placement_parts[1]
+        else:
+            node.placement_anchor = None
 
-        if node.placement not in ("append", "none"):
+        if node.placement_method not in ("append", "none", "before", "after"):
             self.trigger_parser_error(
-                "'placement' should be one of 'append' or 'none', "
-                "got '%s' instead"
+                "'placement' should be one of 'append', 'none', 'before' or "
+                "'after', got '%s' instead"
                 % node.placement
+            )
+
+        if node.placement_anchor and node.placement_method not in (
+            "before", "after"
+        ):
+            self.trigger_parser_error(
+                "Placement anchors are only valid for the 'after' or 'before' "
+                "placement methods"
             )
 
         # With
@@ -826,10 +840,27 @@ class ComponentLoader(object):
             child_name = self.parse_node(child)
 
         # Append child elements to their parents
-        if node.is_new and node.container and node.placement == "append":
-            self.init_source.write(
-                "%s.appendChild(%s);" % (node.container, node.ref)
-            )
+        if node.is_new and node.container:
+            if node.placement_method == "append":
+                self.init_source.write(
+                    "%s.appendChild(%s);" % (node.container, node.ref)
+                )
+            elif node.placement_method == "before":
+                self.init_source.write(
+                    "%s.insertBefore(%s, %s);" % (
+                        node.container,
+                        node.ref,
+                        node.placement_anchor
+                    )
+                )
+            elif node.placement_method == "after":
+                self.init_source.write(
+                    "%s.insertBefore(%s, %s.nextSibling);" % (
+                        node.container,
+                        node.ref,
+                        node.placement_anchor
+                    )
+                )
 
         self.__stack = self.__stack.parent
 
@@ -1079,9 +1110,13 @@ class StackNode(object):
     # Wether the node represents a component's root element
     is_root = False
 
-    # The insertion point / method for the element. One of "append" (default)
-    # or "none". Set with the ui:placement attribute.
-    placement = None
+    # The insertion method for the element. One of "append" (default),
+    # "before", "after" or "none". Set with the ui:placement attribute.
+    placement_method = None
+
+    # A reference to an element, for insertion methods that require a
+    # relative position ("after" and "before").
+    placement_anchor = None
 
     # A SourceCodeWriter that allows inserting code right after the element is
     # declared (required to register event listeners before property
