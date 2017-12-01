@@ -7,6 +7,12 @@
     <ui:using mixin="cocktail.ui.DataDisplay"/>
     <ui:requires component="cocktail.ui.displayfactories"/>
 
+    <ui:property
+        name="empty"
+        type="boolean"
+        reflected="true"
+        default="true"/>
+
     <?tail
     cls.prototype.itemsDisplayFactory = cocktail.ui.displays;
     cls.prototype.itemsDisplayParameters = {};
@@ -15,12 +21,14 @@
     <?class
     clear() {
         cocktail.ui.empty(this.list);
+        this.empty = true;
     }
 
     createEntries() {
         if (this.dataBinding && this.value) {
             let index = 0;
             for (let item of this.value) {
+                this.empty = false;
                 this.addEntry(index, item);
                 index++;
             }
