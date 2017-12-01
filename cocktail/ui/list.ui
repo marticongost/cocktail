@@ -43,6 +43,7 @@
     ?>
 
     <?on value:changed
+    this.clear();
     this.createEntries();
     ?>
 
