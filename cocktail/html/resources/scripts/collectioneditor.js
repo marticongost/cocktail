@@ -13,24 +13,26 @@ cocktail.bind(".CollectionEditor", function ($collectionEditor) {
         $collectionEditor.get(0).appendEntry();
     });
 
-    this.appendEntry = function () {
+    this.appendEntry = function (focus /* optional */) {
         var $entry = jQuery(cocktail.instantiate("cocktail.html.CollectionEditor.new_entry-" + this.id));
         $collectionEditor.children(".entries").append($entry);
         $entry.children(".remove_button").click(removeEntry);
         cocktail.init();
-        $entry.find(":input").first().focus();
+        if (focus || focus === undefined) {
+            $entry.find(":input").first().focus();
+        }
     }
 
     this.getNumberOfEntries = function () {
         return $collectionEditor.children(".entries").children().length;
     }
 
-    this.setNumberOfEntries = function (requestedNumber) {
+    this.setNumberOfEntries = function (requestedNumber, focus /* optional */) {
         var $entries = $collectionEditor.children(".entries").children();
         var diff = requestedNumber - $entries.length;
         if (diff > 0) {
             do {
-                this.appendEntry();
+                this.appendEntry(focus);
             }
             while (--diff);
         }
