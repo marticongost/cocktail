@@ -202,7 +202,10 @@ class Member(Variable):
             if owner is None:
                 if include_ns:
                     namespace = getattr(member, "__module__", None)
-                    if namespace:
+                    if (
+                        namespace
+                        and not namespace.startswith("cocktail.schema.")
+                    ):
                         names.append(namespace)
                 break
             else:
