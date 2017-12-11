@@ -10,6 +10,8 @@ from urlparse import urlparse
 from frozendict import frozendict
 
 ENCODING = "utf-8"
+RESERVED_CHARACTERS = ";/?:@&=+$,"
+UNRESERVED_CHARACTERS = "-_.!~*'()"
 
 def _decode(string):
     try:
@@ -22,6 +24,14 @@ def _decode(string):
 
 
 class URL(unicode):
+
+    hierarchical_schemes = ("http", "https", "ftp")
+
+    path_safe_characters = {
+        "http": "/",
+        "https": "/",
+        "ftp": "/"
+    }
 
     def __new__(cls, url = None, **values):
 
@@ -86,7 +96,12 @@ class URL(unicode):
         fragment = values.get("fragment") or u""
 
         if scheme:
-            url_string = scheme + u"://"
+            url_string = scheme
+
+            if scheme in cls.hierarchical_schemes:
+                url_string += "://"
+            else:
+                url_string += ":"
 
             if username or password:
                 if username:
@@ -132,7 +147,12 @@ class URL(unicode):
     def __str__(self):
 
         if self.__scheme:
-            url_string = str(self.__scheme) + "://"
+            url_string = str(self.__scheme)
+
+            if self.__scheme in self.hierarchical_schemes:
+                url_string += "://"
+            else:
+                url_string += ":"
 
             if self.__username or self.__password:
                 if self.__username:
@@ -153,7 +173,11 @@ class URL(unicode):
             url_string = ""
 
         if self.__path:
-            url_string += str(self.__path)
+            safe = self.path_safe_characters.get(
+                self.__scheme,
+                RESERVED_CHARACTERS + UNRESERVED_CHARACTERS
+            )
+            url_string += quote(self.__path, safe).encode("utf-8")
 
         if self.__query:
             url_string += "?" + str(self.__query)
