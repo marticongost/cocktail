@@ -49,6 +49,22 @@ def require_language(language = None):
 
     return language
 
+def get_root_language(language = None):
+    language = require_language(language)
+    fallback_map = getattr(_thread_data, "fallback", None)
+    if fallback_map:
+        while True:
+            base_languages = fallback_map.get(language)
+            if base_languages is None:
+                break
+            language = base_languages[0]
+    return language
+
+def language_has_fallback(language = None):
+    language = require_language(language)
+    fallback_map = getattr(_thread_data, "fallback", None)
+    return fallback_map is not None and bool(fallback_map.get(language))
+
 def iter_language_chain(language = None, include_self = True):
     language = require_language(language)
     if include_self:
