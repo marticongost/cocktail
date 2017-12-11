@@ -13,6 +13,8 @@ from .translation import (
     get_language,
     set_language,
     require_language,
+    get_root_language,
+    language_has_fallback,
     iter_language_chain,
     iter_derived_languages,
     descend_language_tree,
