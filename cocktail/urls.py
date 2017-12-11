@@ -13,16 +13,16 @@ ENCODING = "utf-8"
 RESERVED_CHARACTERS = ";/?:@&=+$,"
 UNRESERVED_CHARACTERS = "-_.!~*'()"
 
+_hierarchical_schemes = {"http", "https", "ftp"}
+
+_path_safe_characters = {
+    "http": "/",
+    "https": "/",
+    "ftp": "/"
+}
+
 
 class URL(unicode):
-
-    hierarchical_schemes = ("http", "https", "ftp")
-
-    path_safe_characters = {
-        "http": "/",
-        "https": "/",
-        "ftp": "/"
-    }
 
     def __new__(cls, url = None, **values):
 
@@ -89,7 +89,7 @@ class URL(unicode):
         if scheme:
             url_string = scheme
 
-            if scheme in cls.hierarchical_schemes:
+            if scheme in _hierarchical_schemes:
                 url_string += "://"
             else:
                 url_string += ":"
@@ -140,7 +140,7 @@ class URL(unicode):
         if self.__scheme:
             url_string = str(self.__scheme)
 
-            if self.__scheme in self.hierarchical_schemes:
+            if self.hierarchical:
                 url_string += "://"
             else:
                 url_string += ":"
@@ -164,7 +164,7 @@ class URL(unicode):
             url_string = ""
 
         if self.__path:
-            safe = self.path_safe_characters.get(
+            safe = _path_safe_characters.get(
                 self.__scheme,
                 RESERVED_CHARACTERS + UNRESERVED_CHARACTERS
             )
@@ -181,6 +181,10 @@ class URL(unicode):
     @property
     def scheme(self):
         return self.__scheme
+
+    @property
+    def hierarchical(self):
+        return self.__scheme in _hierarchical_schemes
 
     @property
     def username(self):
