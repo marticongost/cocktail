@@ -7,6 +7,7 @@ u"""
 @since:			November 2008
 """
 import sys
+from collections import Counter
 from cocktail.modeling import refine, OrderedSet, InstrumentedDict, DictWrapper
 from cocktail.events import Event, EventHub
 from cocktail.pkgutils import get_full_name
@@ -16,6 +17,7 @@ from cocktail.translations import (
     iter_language_chain,
     descend_language_tree,
     translate_locale,
+    get_root_language,
     NoActiveLanguageError
 )
 from cocktail.schema.schema import Schema
@@ -814,6 +816,75 @@ class SchemaObject(object):
                 ):
                     if derived_language not in self.translations:
                         yield derived_language
+
+    def consolidate_translations(self, root_language = None, members = None):
+
+        redundant_languages = []
+
+        # If no language is given, apply the process to all the root languages
+        # defined by the translated object
+        if root_language is None:
+            processed_root_languages = set()
+            for language in list(self.translations):
+                root_language = get_root_language(language)
+                if root_language not in processed_root_languages:
+                    processed_root_languages.add(root_language)
+                    redundant_languages += \
+                        self.consolidate_translations(root_language)
+            return redundant_languages
+
+        # Find all present translations for languages derived from the given
+        # root language
+        affected_langs = [
+            language
+            for language in descend_language_tree(
+                root_language,
+                include_self = False
+            )
+            if language in self.translations
+        ]
+
+        if not affected_langs:
+            return redundant_languages
+
+        # Find translatable members
+        if members is None:
+            members = [
+                member
+                for member in self.__class__.iter_members()
+                if member.translated
+            ]
+
+        def get_translated_values(language):
+            values = []
+            for member in members:
+                if member.translated:
+                    value = self.get(member, language)
+                    values.append((member, value))
+            return tuple(values)
+
+        # Translation for the root language present; use it
+        if root_language in self.translations:
+            common_values = get_translated_values(root_language)
+
+        # Otherwise, find the most common translation and use it as the root
+        # translation
+        else:
+            count = Counter(
+                get_translated_values(language)
+                for language in affected_langs
+            )
+            common_values = count.most_common()[0][0]
+            for member, value in common_values:
+                self.set(member, value, root_language)
+
+        # Delete redundant translations
+        for language in affected_langs:
+            if get_translated_values(language) == common_values:
+                del self.translations[language]
+                redundant_languages.append(language)
+
+        return redundant_languages
 
     def get_source_locale(self, locale):
         translations = self.translations
