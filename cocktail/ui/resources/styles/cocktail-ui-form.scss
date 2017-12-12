@@ -55,6 +55,14 @@ legend {
     margin-top: $group-separation;
 }
 
+:host([tabbed='true']) .Group[level='0']:first-child {
+    margin-top: $subgroup-separation;
+}
+
+.fields_container:not(:empty) + .groups_container:not(:empty) {
+    margin-top: $group-separation;
+}
+
 :host([groupsLayout='row']) {
 
     #groupsContainer {
