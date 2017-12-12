@@ -1,0 +1,22 @@
+
+:host {
+    border: 1px solid #ddd;
+    display: flex;
+    width: 30em;
+    height: 20em;
+}
+
+#contentArea {
+    flex: 1;
+    padding: 0.5em;
+    overflow-y: auto;
+
+    & > *:first-child {
+        margin-top: 0;
+    }
+
+    & > *:last-child {
+        margin-bottom: 0;
+    }
+}
+
