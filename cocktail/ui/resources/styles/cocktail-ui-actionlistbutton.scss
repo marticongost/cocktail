@@ -23,6 +23,10 @@
     cursor: pointer;
     font-size: 1em;
 
+    :host-context(.cocktail-ui-ActionList.compact) & {
+        padding: 0.3em 0.7em;
+    }
+
     :host([extra='true']) & {
         display: block;
         width: 100%;
@@ -36,6 +40,10 @@
             background-color: $panel-hover-color;
         }
 
+        :host-context(.cocktail-ui-ActionList.secondary):host(:not([state='disabled'])) & {
+            background-color: $secondary-panel-hover-color;
+        }
+
         :host([state='visible']) & {
 
             #label {
@@ -44,6 +52,17 @@
 
             #icon svg * {
                 fill: $panel-action-highlight-color !important;
+            }
+        }
+
+        :host-context(.cocktail-ui-ActionList.secondary):host([state='visible']) & {
+
+            #label {
+                color: $secondary-panel-action-highlight-color;
+            }
+
+            #icon svg * {
+                fill: $secondary-panel-action-highlight-color !important;
             }
         }
 
@@ -78,6 +97,10 @@
 
         * {
             fill: $panel-action-color !important;
+
+            :host-context(.cocktail-ui-ActionList.secondary) & {
+                fill: $secondary-panel-action-color !important;
+            }
         }
 
         :host([buttonStyle='iconBesideText']) & {
