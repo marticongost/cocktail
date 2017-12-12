@@ -8,6 +8,11 @@
     align-content: stretch;
 }
 
+:host(.secondary) {
+    background: $secondary-panel-background;
+    border: $secondary-panel-border;
+}
+
 :host-context(.cocktail-ui-Toolbar) {
     background: none;
     border: none;
