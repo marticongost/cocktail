@@ -13,6 +13,7 @@
     <ui:requires component="cocktail.ui.DropdownSelector"/>
     <ui:requires component="cocktail.ui.NumberInput"/>
     <ui:requires component="cocktail.ui.TextInput"/>
+    <ui:requires component="cocktail.ui.HTMLEditor"/>
 
     <ui:property
         name="formLayout"
@@ -77,6 +78,7 @@
         cocktail.schema.Reference[formControl] = cocktail.ui.DropdownSelector;
         cocktail.schema.Collection[formControl] = cocktail.ui.CheckList;
         cocktail.schema.Locale[formControl] = cocktail.ui.DropdownSelector;
+        cocktail.schema.HTML[formControl] = cocktail.ui.HTMLEditor;
     }
     ?>
 
