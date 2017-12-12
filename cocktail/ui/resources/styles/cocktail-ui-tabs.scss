@@ -1,6 +1,16 @@
 
-$active-border-color: #c8c8c8;
-$inactive-border-color: #d5d5d5;
+@import "cocktail.ui://styles/common";
+
+$tab-strip-background-color: #eae6de;
+$tab-strip-border-color: #e1dbd2;
+$tab-active-background-color: #5d5445 !default;
+$tab-active-border-color: #736548 !default;
+$tab-active-color: white !default;
+$tab-inactive-background-color: #e5e0d6 !default;
+$tab-inactive-border-color: #dcd2c1 !default;
+$tab-inactive-color: $panel-action-color !default;
+$tab-hover-background-color: darken($tab-inactive-background-color, 5) !default;
+$tab-hover-color: darken($tab-inactive-color, 10) !default;
 
 :host {
     box-sizing: border-box;
@@ -10,46 +20,57 @@ $inactive-border-color: #d5d5d5;
 }
 
 #strip {
-    border-bottom: 1px solid $active-border-color;
-    padding: 4px;
+    border-top: 1px solid $tab-strip-border-color;
+    border-bottom: 1px solid $tab-strip-border-color;
+    background-color: $tab-strip-background-color;
     padding-bottom: 0;
     flex: 0 0 auto;
 
     button {
         font-size: inherit;
         color: #666;
-        margin-bottom: -1px;
         padding: 6px 12px;
-        border-top-left-radius: 4px;
-        border-top-right-radius: 4px;
+        border: 1px solid $tab-strip-border-color;
+        border-right: none;
+        border-left: 1px solid;
+        margin-top: -1px;
+        margin-bottom: -1px;
+
+        &:first-child {
+            border-left: none;
+        }
+
+        &:last-child {
+            border-right: 1px solid;
+        }
 
         &:focus {
             outline: none;
         }
 
         &[selected='true'] {
-            background-color: white;
-            border: 1px solid $active-border-color;
-            border-bottom-color: white;
-            color: #333;
-        }
+            background-color: $tab-active-background-color;
+            border-color: $tab-active-border-color;
+            color: $tab-active-color;
+            font-weight: bold;
 
-        &[selected='false'] {
-            background-color: #eaeaea;
-            background-image: linear-gradient(#efefef, #e5e5e5);
-            border: 1px solid $inactive-border-color;
-            border-bottom-color: $active-border-color;
-            cursor: pointer;
-
-            &:hover {
-                color: #333;
-                background-image: linear-gradient(#f5f5f5, #eaeaea);
-                background-color: #f5f5f5;
+            & + button {
+                border-left-color: $tab-active-border-color;
             }
         }
 
-        & + button {
-            margin-left: 4px;
+        &[selected='false'] {
+            background-color: $tab-inactive-background-color;
+            background-image: linear-gradient(lighten($tab-inactive-background-color, 5), $tab-inactive-background-color);
+            border-color: $tab-inactive-border-color;
+            color: $tab-inactive-color;
+            cursor: pointer;
+
+            &:hover {
+                color: $tab-hover-color;
+                background-color: $tab-hover-background-color;
+                background-image: linear-gradient(lighten($tab-hover-background-color, 5), $tab-hover-background-color);
+            }
         }
     }
 }
