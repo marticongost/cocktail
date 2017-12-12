@@ -96,7 +96,7 @@
             if (parameters.wrapRawValues === undefined) {
                 parameters.wrapRawValues = true;
             }
-            while (component && !cocktail.ui.isComponent(component)) {
+            while (component && !component.create) {
                 component = component(dataBinding, parameters);
             }
             return component;
