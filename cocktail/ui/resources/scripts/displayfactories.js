@@ -21,6 +21,18 @@
         return this.constructor[factory.symbol];
     }
 
+    cocktail.schema.Reference.prototype[cocktail.ui.chooseDefaultDisplay] = function (factory, dataBinding, parameters = null) {
+        let type = this.type;
+        while (type) {
+            let component = type[factory.symbol];
+            if (component) {
+                return component;
+            }
+            type = type.base;
+        }
+        return cocktail.schema.Member.prototype[cocktail.ui.chooseDefaultDisplay].call(this, factory, dataBinding, parameters);
+    }
+
     cocktail.ui.DisplayFactory = class DisplayFactory {
 
         constructor(symbolName) {
@@ -155,8 +167,6 @@ cocktail.ui.displays = new cocktail.ui.DisplayFactory("cocktail.ui.display");
 cocktail.schema.Member[cocktail.ui.display] =
     (dataBinding, parameters) => parameters.wrapRawValues ? cocktail.ui.Value : null;
 cocktail.schema.Collection.prototype[cocktail.ui.display] = () => cocktail.ui.List;
-
-cocktail.schema.Reference.prototype[cocktail.ui.display] = () => cocktail.ui.Value;
 
 // A display factory for editable values
 cocktail.ui.formControls = new cocktail.ui.FormControlsDisplayFactory("cocktail.ui.formControl");
