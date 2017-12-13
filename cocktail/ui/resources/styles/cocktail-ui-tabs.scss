@@ -3,8 +3,8 @@
 
 $tab-strip-background-color: #eae6de;
 $tab-strip-border-color: #e1dbd2;
-$tab-active-background-color: #5d5445 !default;
-$tab-active-border-color: #736548 !default;
+$tab-active-background-color: #9a8c76 !default;
+$tab-active-border-color: lighten($tab-active-background-color, 5) !default;
 $tab-active-color: white !default;
 $tab-inactive-background-color: #e5e0d6 !default;
 $tab-inactive-border-color: #dcd2c1 !default;
@@ -53,6 +53,7 @@ $tab-hover-color: darken($tab-inactive-color, 10) !default;
             border-color: $tab-active-border-color;
             color: $tab-active-color;
             font-weight: bold;
+            text-shadow: 0 0 5px rgba(black, 0.3);
 
             & + button {
                 border-left-color: $tab-active-border-color;
