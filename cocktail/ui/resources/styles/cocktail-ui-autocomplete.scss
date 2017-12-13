@@ -33,6 +33,7 @@
     background-color: white;
     border: 1px solid #ccc;
     box-shadow: $panel-shadow;
+    z-index: 1;
 
     :host(:not([panelVisible='true'])) & {
         display: none;
