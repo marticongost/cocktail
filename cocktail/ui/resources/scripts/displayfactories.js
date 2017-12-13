@@ -10,6 +10,16 @@
 // Display factories
 {
     const PARENT = Symbol();
+    cocktail.ui.chooseDisplay = Symbol.for("cocktail.ui.chooseDisplay");
+    cocktail.ui.chooseDefaultDisplay = Symbol.for("cocktail.ui.chooseDefaultDisplay");
+
+    cocktail.schema.Member.prototype[cocktail.ui.chooseDisplay] = function (factory, dataBinding, parameters = null) {
+        return this[factory.symbol];
+    }
+
+    cocktail.schema.Member.prototype[cocktail.ui.chooseDefaultDisplay] = function (factory, dataBinding, parameters = null) {
+        return this.constructor[factory.symbol];
+    }
 
     cocktail.ui.DisplayFactory = class DisplayFactory {
 
@@ -57,7 +67,11 @@
         getCustomComponent(dataBinding, parameters = null) {
 
             let member = dataBinding.member;
-            let component = this.resolveComponent(member[this.symbol], dataBinding, parameters);
+            let component = this.resolveComponent(
+                dataBinding.member[cocktail.ui.chooseDisplay](this, dataBinding, parameters),
+                dataBinding,
+                parameters
+            );
 
             if (!component) {
                 if (this[PARENT]) {
@@ -73,8 +87,11 @@
 
         getDefaultComponent(dataBinding, parameters = null) {
 
-            let memberType = dataBinding.member.constructor;
-            let component = this.resolveComponent(memberType[this.symbol], dataBinding, parameters);
+            let component = this.resolveComponent(
+                dataBinding.member[cocktail.ui.chooseDefaultDisplay](this, dataBinding, parameters),
+                dataBinding,
+                parameters
+            );
 
             if (!component) {
                 if (this[PARENT]) {
@@ -135,7 +152,7 @@ cocktail.ui.DisplayRequiredError = class DisplayRequiredError {
 
 // A display factory for read only values
 cocktail.ui.displays = new cocktail.ui.DisplayFactory("cocktail.ui.display");
-cocktail.schema.Member.prototype[cocktail.ui.display] =
+cocktail.schema.Member[cocktail.ui.display] =
     (dataBinding, parameters) => parameters.wrapRawValues ? cocktail.ui.Value : null;
 cocktail.schema.Collection.prototype[cocktail.ui.display] = () => cocktail.ui.List;
 
