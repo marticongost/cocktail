@@ -3,13 +3,24 @@
     border: 1px solid #ddd;
     display: flex;
     width: 30em;
+}
+
+:host([multiline='true']) {
     height: 20em;
+}
+
+:host([multiline='false']) {
+    height: 2.2em;
 }
 
 #contentArea {
     flex: 1;
     padding: 0.5em;
     overflow-y: auto;
+
+    :host([multiline='false']) & {
+        white-space: nowrap;
+    }
 
     & > *:first-child {
         margin-top: 0;
