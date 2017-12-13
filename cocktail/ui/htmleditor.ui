@@ -9,6 +9,12 @@
     <ui:symbol name="PROCESSING_INPUT"/>
     <ui:symbol name="CONTENT_AREA_INITIALIZED"/>
 
+    <ui:property
+        name="multiline"
+        type="boolean"
+        reflected="true"
+        default="true"/>
+
     <?on value:changed
     if (!this[PROCESSING_INPUT]) {
         this.contentArea.innerHTML = newValue;
