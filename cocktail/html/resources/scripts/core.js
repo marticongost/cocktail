@@ -903,3 +903,68 @@ cocktail.isEmptyValue = function (value) {
     );
 }
 
+cocktail.setShortcutIcon = function (href, type) {
+
+    href = cocktail.normalizeResourceURI(href);
+    var link = document.querySelector("link[rel='shortcut icon']");
+    var imageResolution;
+
+    // Some browsers don't support SVG shortcut icons; rasterize SVG files using a
+    // canvas element and set the shortcut icon using a data: URL.
+    if (type == "image/svg+xml") {
+        imageResolution = new Promise(function (resolve, reject) {
+            var img = document.createElement("img");
+            img.addEventListener("load", function () {
+
+                // Resize to fit a 48 x 48 square
+                var iconSize = 48;
+                var w = img.width;
+                var h = img.height;
+
+                if (w > h) {
+                    h = Math.floor(h * iconSize / w);
+                    w = iconSize;
+                }
+                else {
+                    w = Math.floor(w * iconSize / h);
+                    h = iconSize;
+                }
+
+                // Render, centered in the square
+                var canvas = document.createElement("canvas");
+                canvas.width = iconSize;
+                canvas.height = iconSize;
+                var ctx = canvas.getContext("2d");
+                ctx.drawImage(
+                    img,
+                    iconSize / 2 - w / 2,
+                    iconSize / 2 - h / 2,
+                    w,
+                    h
+                );
+
+                resolve(canvas.toDataURL());
+            });
+            img.addEventListener("error", function () { reject(); });
+            img.src = href;
+        });
+    }
+    else {
+        imageResolution = Promise.resolve(href);
+    }
+
+    imageResolution.then(function (href) {
+        if (link) {
+            link.type = type;
+            link.href = href;
+        }
+        else {
+            link = document.createElement("link");
+            link.rel = "shortcut icon";
+            link.type = type;
+            link.href = href;
+            document.head.appendChild(link);
+        }
+    });
+}
+
