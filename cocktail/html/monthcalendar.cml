@@ -15,6 +15,7 @@ from cocktail.translations import weekday_name, weekday_abbr
     year = None
     month = None
     abbreviated_headers = True
+    min_rows = None
 
     def _get_calendar_page(self):
         return self.__calendar_page
@@ -64,6 +65,15 @@ from cocktail.translations import weekday_name, weekday_abbr
             else:
                 current_date = current_date + one_day
             last_week.append(current_date)
+
+        # Pad the end with rows reaching up to min_rows
+        if self.min_rows:
+            while len(weeks) < self.min_rows:
+                extra_week = []
+                weeks.append(extra_week)
+                for i in range(7):
+                    current_date = current_date + one_day
+                    extra_week.append(current_date)
 
         return weeks
 
@@ -119,6 +129,8 @@ from cocktail.translations import weekday_name, weekday_abbr
     <tr py:def="week_row" py:args="index, days">
         <?py
         element.add_class("week%d" % index)
+        if (days[0].year, days[0].month) > (self.year, self.month):
+            element.add_class("padding_row")
         ?>
         <py:new
             py:element="self.create_day_cell(day)"
