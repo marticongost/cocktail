@@ -177,7 +177,7 @@ class URL(unicode):
                 self.__scheme,
                 RESERVED_CHARACTERS + UNRESERVED_CHARACTERS
             )
-            url_string += quote(self.__path, safe).encode("utf-8")
+            url_string += quote(self.__path.encode(ENCODING), safe)
 
         if self.__query:
             url_string += "?" + str(self.__query)
