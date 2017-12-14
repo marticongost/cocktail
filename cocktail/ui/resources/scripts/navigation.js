@@ -229,9 +229,13 @@
             return [];
         }
 
+        defineParameters() {
+            return this.constructor.parameters;
+        }
+
         get parameters() {
             if (!this[PARAMETERS]) {
-                this[PARAMETERS] = this.constructor.parameters;
+                this[PARAMETERS] = this.defineParameters();
             }
             return this[PARAMETERS];
         }
@@ -240,10 +244,14 @@
             return [];
         }
 
+        defineQueryParameters() {
+            return this.constructor.queryParameters;
+        }
+
         get queryParameters() {
             if (!this[QUERY_PARAMETERS]) {
                 let parameters = {};
-                for (let parameter of this.constructor.queryParameters) {
+                for (let parameter of this.defineQueryParameters()) {
                     parameters[parameter.name] = parameter;
                 }
                 this[QUERY_PARAMETERS] = parameters;
