@@ -168,6 +168,9 @@ cocktail.schema.Member[cocktail.ui.display] =
     (dataBinding, parameters) => parameters.wrapRawValues ? cocktail.ui.Value : null;
 cocktail.schema.Collection.prototype[cocktail.ui.display] = () => cocktail.ui.List;
 
+// A display factory for read only values, without interaction (ie. to include on Selectable lists)
+cocktail.ui.inertDisplays = cocktail.ui.displays.extend("cocktail.ui.inertDisplay");
+
 // A display factory for editable values
 cocktail.ui.formControls = new cocktail.ui.FormControlsDisplayFactory("cocktail.ui.formControl");
 
@@ -178,7 +181,7 @@ cocktail.ui.readOnlyFormControls = cocktail.ui.displays.extend("cocktail.ui.read
 cocktail.ui.collectionEditorControls = cocktail.ui.formControls.extend("cocktail.ui.collectionEditorControl");
 
 // A display factory for the entries of autocomplete forms
-cocktail.ui.autocompleteDisplays = cocktail.ui.displays.extend("cocktail.ui.autocompleteDisplay");
+cocktail.ui.autocompleteDisplays = cocktail.ui.inertDisplays.extend("cocktail.ui.autocompleteDisplay");
 
 // A symbol that allows members to specify their preferred disposition for their label
 // in a form
