@@ -340,7 +340,7 @@
                         if (value === undefined) {
                             return false;
                         }
-                        this.applyParameter(parameter, parameter.getDefault(this));
+                        this.applyParameter(parameter, value);
                     }
 
                     // Apply defaults for query string parameters for non terminal nodes
