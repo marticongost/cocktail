@@ -209,6 +209,10 @@ def parse_date(self, reader, value):
     return value
 
 def serialize_date(self, value):
+
+    if not value:
+        return ""
+
     format = self.request_date_format or translations("cocktail.date_format")
     return value.strftime(format)
 
@@ -235,6 +239,10 @@ def parse_datetime(self, reader, value):
     return value
 
 def serialize_datetime(self, value):
+
+    if not value:
+        return ""
+
     format = (self.request_date_format or translations("cocktail.date_format"))
     format += " %H:%M:%S"
     return value.strftime(format)
