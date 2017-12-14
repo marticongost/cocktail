@@ -72,6 +72,10 @@
         margin-bottom: 0.1em;
     }
 
+    :host([buttonStyle='textOnly']) & {
+        display: none;
+    }
+
     svg {
         height: auto;
 
@@ -104,6 +108,10 @@
 
     :host([buttonStyle='iconAboveText']) & {
         font-size: 0.8em;
+    }
+
+    :host([buttonStyle='textOnly']) & {
+        font-size: 0.9em;
     }
 
     :host([state='emphasized']) & {
