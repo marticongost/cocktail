@@ -6,6 +6,7 @@ u"""
 @organization:	Whads/Accent SL
 @since:			October 2008
 """
+from itertools import izip_longest
 import decimal
 import time
 import datetime
@@ -435,7 +436,7 @@ def parse_tuple(self, reader, value):
         chunks = value.split(separator)
         value = tuple(
             reader.process_value(member, chunk)
-            for chunk, member in zip(chunks, self.items)
+            for chunk, member in izip_longest(chunks, self.items)
         )
 
     return value
@@ -449,7 +450,7 @@ def serialize_tuple(self, value):
         return glue.join(
             member.serialize_request_value(item)
             for member, item in zip(self.items, value)
-        )
+        ).rstrip(glue)
 
 schema.Tuple.parse_request_value = parse_tuple
 schema.Tuple.serialize_request_value = serialize_tuple
