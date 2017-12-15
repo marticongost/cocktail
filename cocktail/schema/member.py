@@ -707,7 +707,7 @@ def translate_member(
 
     if include_type_default:
         for member_type in member.__class__.__mro__:
-            if issubclass(member_type, Member) and member_type is not Member:
+            if issubclass(member_type, Member):
                 translation = translations(
                     get_full_name(member_type)
                         + ".default_member_translation"
