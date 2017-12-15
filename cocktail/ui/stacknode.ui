@@ -64,17 +64,40 @@
     <div id="stackNodeContent">
 
         <div id="header">
+            <?js
+            // Add a class to simplify styling using host-context()
+            element.classList.add("cocktail-ui-StackNode-header");
+            ?>
             <div id="headingWrapper">
                 <div id="heading"/>
             </div>
             <div id="headerContent"/>
         </div>
 
-        <div id="main"/>
+        <div id="main">
+            <?js
+            // Add a class to simplify styling using host-context()
+            element.classList.add("cocktail-ui-StackNode-main");
+            ?>
+        </div>
 
     </div>
 
     <div id="stackDescendants"/>
+
+
+    <?js
+    // Reflect properties on the header/main elements, to simplify styling / animation
+    for (let prop of ["animationState", "animationType", "stackNodeVisibility", "isStackRoot"]) {
+        const attr = prop.toLowerCase();
+        const sync = () => {
+            this.header.setAttribute(attr, this.getAttribute(attr));
+            this.main.setAttribute(attr, this.getAttribute(attr));
+        };
+        this.addEventListener(prop + "Changed", sync);
+        sync();
+    }
+    ?>
 
 </div>
 
