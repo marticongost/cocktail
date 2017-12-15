@@ -1,17 +1,6 @@
 
 @import "cocktail.ui://styles/common";
 
-$animation-duration: 0.5s;
-$exposed-node-border-color: $strong-panel-border-color;
-$covered-node-border-color: #ddd;
-$covered-heading-scale: 0.8;
-$exposed-heading-color: #444;
-$covered-heading-color: #999;
-$exposed-panel-background-color: $panel-background-color;
-$covered-panel-background-color: white;
-$exposed-panel-border-color: $panel-border-color;
-$covered-panel-border-color: white;
-
 @keyframes doNothing {
 }
 
@@ -26,8 +15,8 @@ $covered-panel-border-color: white;
 }
 
 @keyframes fadeFrame {
-    from { border-color: $exposed-node-border-color; }
-    to { border-color: $covered-node-border-color; }
+    from { border-color: $stacknode-exposed-border-color; }
+    to { border-color: $stacknode-covered-border-color; }
 }
 
 @keyframes slideContent {
@@ -43,24 +32,24 @@ $covered-panel-border-color: white;
 @keyframes diminishHeading {
     from {
         transform: scale(1);
-        color: $exposed-heading-color;
+        color: $stacknode-exposed-heading-color;
         left: 0;
         top: 0;
     }
     to {
-        transform: scale($covered-heading-scale);
-        color: $covered-heading-color;
+        transform: scale($stacknode-covered-heading-scale);
+        color: $stacknode-covered-heading-color;
     }
 }
 
 @keyframes fadePanel {
     from {
-        border-color: $exposed-panel-border-color;
-        background-color: $exposed-panel-background-color;
+        border-color: $stacknode-exposed-panel-border-color;
+        background-color: $stacknode-exposed-panel-background-color;
     }
     to {
-        border-color: $covered-panel-border-color;
-        background-color: $covered-panel-background-color;
+        border-color: $stacknode-covered-panel-border-color;
+        background-color: $stacknode-covered-panel-background-color;
     }
 }
 
@@ -82,11 +71,11 @@ $covered-panel-border-color: white;
 }
 
 :host([animationState='opening'][animationType='fade']) {
-    animation: $animation-duration reverse fadeNode;
+    animation: $stacknode-animation-duration reverse fadeNode;
 }
 
 :host([animationState='closing'][animationType='fade']) {
-    animation: $animation-duration fadeNode;
+    animation: $stacknode-animation-duration fadeNode;
     position: absolute;
     left: 0;
     top: 0;
@@ -95,59 +84,59 @@ $covered-panel-border-color: white;
 }
 
 :host([animationState='childOpening'][animationType='fade']) {
-    animation: $animation-duration dimNode;
+    animation: $stacknode-animation-duration dimNode;
 }
 
 :host([animationState='childClosing'][animationType='fade']) {
-    animation: $animation-duration reverse dimNode;
+    animation: $stacknode-animation-duration reverse dimNode;
 }
 
 // Slide
 :host([animationState='opening'][animationType='slide']) {
-    animation: $animation-duration slideContent;
+    animation: $stacknode-animation-duration slideContent;
 }
 
 :host([animationState='closing'][animationType='slide']) {
-    animation: $animation-duration reverse slideContent;
+    animation: $stacknode-animation-duration reverse slideContent;
 }
 
 :host([animationState='childOpening'][animationType='slide']) {
-    animation: $animation-duration fadeFrame;
+    animation: $stacknode-animation-duration fadeFrame;
 
     #header {
-        animation: $animation-duration fadePanel;
+        animation: $stacknode-animation-duration fadePanel;
     }
 
     #headerContent {
-        animation: $animation-duration fadeHeaderContent;
+        animation: $stacknode-animation-duration fadeHeaderContent;
     }
 
     #heading {
-        animation: $animation-duration diminishHeading;
+        animation: $stacknode-animation-duration diminishHeading;
     }
 
     #main {
-        animation: $animation-duration fadeMain;
+        animation: $stacknode-animation-duration fadeMain;
     }
 }
 
 :host([animationState='childClosing'][animationType='slide']) {
-    animation: $animation-duration reverse fadeFrame;
+    animation: $stacknode-animation-duration reverse fadeFrame;
 
     #header {
-        animation: $animation-duration reverse fadePanel;
+        animation: $stacknode-animation-duration reverse fadePanel;
     }
 
     #headerContent {
-        animation: $animation-duration reverse fadeHeaderContent;
+        animation: $stacknode-animation-duration reverse fadeHeaderContent;
     }
 
     #heading {
-        animation: $animation-duration reverse diminishHeading;
+        animation: $stacknode-animation-duration reverse diminishHeading;
     }
 
     #main {
-        animation: $animation-duration reverse fadeMain;
+        animation: $stacknode-animation-duration reverse fadeMain;
     }
 }
 
@@ -155,7 +144,7 @@ $covered-panel-border-color: white;
     display: flex;
     flex-direction: column;
     flex: 1 1 auto;
-    border: 1px solid $exposed-node-border-color;
+    border: 1px solid $stacknode-exposed-border-color;
     border-right: none !important;
     border-bottom: none !important;
     box-shadow: 0 0 25px rgba(30,30,30,0.1);
@@ -163,7 +152,7 @@ $covered-panel-border-color: white;
 
     :host([stackNodeVisibility='covered']) & {
         pointer-events: none;
-        border: 1px solid $covered-node-border-color;
+        border: 1px solid $stacknode-covered-border-color;
     }
 }
 
@@ -191,13 +180,13 @@ $covered-panel-border-color: white;
 #heading {
     font-size: 1.3em;
     font-weight: bold;
-    color: $exposed-heading-color;
+    color: $stacknode-exposed-heading-color;
     position: relative;
     transform-origin: top left;
 
     :host([stackNodeVisibility='covered'][animationType='slide']) & {
-        transform: scale($covered-heading-scale);
-        color: $covered-heading-color;
+        transform: scale($stacknode-covered-heading-scale);
+        color: $stacknode-covered-heading-color;
     }
 }
 
