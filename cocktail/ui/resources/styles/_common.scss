@@ -28,6 +28,16 @@ $error-color: #8e2b2b !default;
 $error-box-padding: 0.5em !default;
 $odd-row-color: white !default;
 $even-row-color: #f8f7f5 !default;
+$stacknode-animation-duration: 0.6s !default;
+$stacknode-exposed-border-color: $strong-panel-border-color !default;
+$stacknode-covered-border-color: #ddd !default;
+$stacknode-covered-heading-scale: 0.8 !default;
+$stacknode-exposed-heading-color: #444 !default;
+$stacknode-covered-heading-color: #999 !default;
+$stacknode-exposed-panel-background-color: $panel-background-color !default;
+$stacknode-covered-panel-background-color: white !default;
+$stacknode-exposed-panel-border-color: $panel-border-color !default;
+$stacknode-covered-panel-border-color: white !default;
 
 @mixin focus {
     outline: 2px auto $focus-color;
