@@ -35,6 +35,11 @@ $covered-panel-border-color: white;
     to { padding-top: 0%; }
 }
 
+@keyframes fadeMain {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
 @keyframes diminishHeading {
     from {
         transform: scale(1);
@@ -120,6 +125,10 @@ $covered-panel-border-color: white;
     #heading {
         animation: $animation-duration diminishHeading;
     }
+
+    #main {
+        animation: $animation-duration fadeMain;
+    }
 }
 
 :host([animationState='childClosing'][animationType='slide']) {
@@ -135,6 +144,10 @@ $covered-panel-border-color: white;
 
     #heading {
         animation: $animation-duration reverse diminishHeading;
+    }
+
+    #main {
+        animation: $animation-duration reverse fadeMain;
     }
 }
 
@@ -210,6 +223,10 @@ $covered-panel-border-color: white;
 
     :host([animationState='none']) & {
         overflow-y: auto;
+    }
+
+    :host([stackNodeVisibility='covered'][animationState='none']) & {
+        opacity: 0;
     }
 }
 
