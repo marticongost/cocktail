@@ -500,7 +500,7 @@ cocktail.navigation.StackNode = class StackNode extends cocktail.navigation.Node
         // Update the existing one; only if its the active node
         // (this allows parent nodes to preserve their query string parameters)
         else if (this === cocktail.navigation.node) {
-            stack.stackTop.navigationNode = this;
+            stackNodes[this.stackIndex].navigationNode = this;
         }
     }
 
