@@ -195,7 +195,11 @@
         id="input"
         type="text">
 
-        <?on change instance[UPDATE_SEARCH_TEXT](); ?>
+        <?on change
+        if (cocktail.ui.isFocused(this)) {
+            instance[UPDATE_SEARCH_TEXT]();
+        }
+        ?>
 
         <?on focus
         this.select();
