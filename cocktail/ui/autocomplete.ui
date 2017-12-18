@@ -27,6 +27,11 @@
     ?>
 
     <?class
+    clearValue() {
+        this.searchText = "";
+        super.clearValue();
+    }
+
     static foldActiveInstance() {
         if (cls[ACTIVE_INSTANCE]) {
             cls[ACTIVE_INSTANCE].panelVisible = false;
