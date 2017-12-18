@@ -12,17 +12,15 @@
     <ui:using mixin="cocktail.ui.Selectable"/>
     <ui:using mixin="cocktail.ui.DataDisplay"/>
 
+    <ui:symbol name="ACTIVE_INSTANCE"/>
+    <ui:symbol name="UPDATE_SEARCH_TEXT"/>
+    <ui:symbol name="UPDATING_SEARCH_TEXT"/>
+
     <ui:property
         name="searchParameter"
         type="string"
         reflected="true"
         default="search_text"/>
-
-    <?head
-    const ACTIVE_INSTANCE = Symbol("cocktail.ui.Autocomplete.ACTIVE_INSTANCE");
-    const UPDATE_SEARCH_TEXT = Symbol("cocktail.ui.Autocomplete.UPDATE_SEARCH_TEXT");
-    const UPDATING_SEARCH_TEXT = Symbol("cocktail.ui.Autocomplete.UPDATING_SEARCH_TEXT");
-    ?>
 
     <?tail
     cls.delegatesFocus = true;
