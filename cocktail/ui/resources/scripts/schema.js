@@ -727,6 +727,13 @@
             this[ITEMS] = value;
         }
 
+        copyAttribute(copy, key, value, parameters) {
+            if (key == ITEMS && value) {
+                value = value.copy(parameters);
+            }
+            super.copyAttribute(copy, key, value, parameters);
+        }
+
         translateValue(value, params = null) {
             if (this.items && value) {
                 let items = [];
