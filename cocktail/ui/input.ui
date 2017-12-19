@@ -7,6 +7,9 @@
     <ui:requires component="cocktail.ui.delay"/>
     <ui:using mixin="cocktail.ui.DataDisplay"/>
 
+    <ui:symbol name="SYNCHRONIZING"/>
+    <ui:symbol name="SYNCHRONIZE"/>
+
     <?tail
     cls.delegatesFocus = true;
     ?>
@@ -15,23 +18,33 @@
     updateValue() {
         this.setAttribute("value", this.input.value);
     }
+
+    [SYNCHRONIZE]() {
+        this[SYNCHRONIZING] = true;
+        try {
+            this.updateValue();
+        }
+        finally {
+            this[SYNCHRONIZING] = false;
+        }
+    }
     ?>
 
     <?on value:changed
-    if (this.dataBinding) {
+    if (this.dataBinding && !this[SYNCHRONIZING]) {
         this.input.value = this.dataBinding.member.serializeValue(newValue);
     }
     ?>
 
     <?js
-    this.updateDelay = new cocktail.ui.Delay(300, () => this.updateValue());
+    this.updateDelay = new cocktail.ui.Delay(300, () => this[SYNCHRONIZE]());
     ?>
 
     <input id="input">
 
         <?on keydown
         if (e.which == cocktail.ui.keys.ENTER) {
-            instance.updateValue();
+            instance[SYNCHRONIZE]();
         }
         else if (!cocktail.ui.nonTextKeys.has(e.which)) {
             instance.updateDelay.begin();
@@ -39,7 +52,7 @@
         ?>
 
         <?on change
-        instance.updateValue();
+        instance[SYNCHRONIZE]();
         ?>
 
     </input>
