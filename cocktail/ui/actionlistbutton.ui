@@ -24,6 +24,7 @@
         <span id="label"/>
         <?on click
         instance.invoke();
+        cocktail.ui.DropdownPanel.closeExpandedPanel();
         ?>
     </button>
 
