@@ -40,12 +40,18 @@
 
     <?tail
     window.addEventListener("click", function () {
-        if (cls.current) {
-            cls.current.expanded = false;
-        }
+        cls.closeExpandedPanel();
     });
 
     cls.delegatesFocus = true;
+    ?>
+
+    <?class
+    static closeExpandedPanel() {
+        if (this.current) {
+            this.current.expanded = false;
+        }
+    }
     ?>
 
     <?on keydown
