@@ -27,7 +27,17 @@
     pkg.MEMBER_PARAMETERS = Symbol("cocktail.schema.MEMBER_PARAMETERS");
 
     pkg.membershipTypes = {
-        member: Symbol("cocktail.schema.membershipTypes.member")
+        member: Symbol("cocktail.schema.membershipTypes.member"),
+        collectionItems: Symbol("cocktail.schema.membershipTypes.collectionItems")
+    }
+
+    const claimMember = (owner, member, membershipType) => {
+        const currentOwner = member[OWNER];
+        if (currentOwner) {
+            throw new pkg.MemberRelocationError(member, currentOwner, owner);
+        }
+        member[OWNER] = owner;
+        member[MEMBERSHIP_TYPE] = membershipType;
     }
 
     const schemasByName = {};
@@ -346,10 +356,7 @@
 
         addMember(member) {
 
-            let currentOwner = member[OWNER];
-            if (currentOwner) {
-                throw new pkg.MemberRelocationError(member, currentOwner, this);
-            }
+            claimMember(this, member, pkg.membershipTypes.member);
 
             let name = member[NAME];
             if (!name) {
@@ -704,6 +711,7 @@
             if (typeof(value) == "string") {
                 value = new cocktail.schema.Reference({type: value});
             }
+            claimMember(this, value, pkg.membershipTypes.collectionItems);
             this[ITEMS] = value;
         }
 
