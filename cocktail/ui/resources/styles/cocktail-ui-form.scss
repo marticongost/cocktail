@@ -196,6 +196,13 @@ legend {
     display: none !important;
 }
 
+.field[required='true'][controlAllowsEmptyInput='true'] > .label:after {
+    content: '*';
+    font-weight: bold;
+    color: #444;
+    margin-left: 0.4em;
+}
+
 .FieldTranslations {
 
     & > .label {
