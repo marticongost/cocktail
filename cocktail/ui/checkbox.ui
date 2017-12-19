@@ -20,6 +20,10 @@
     formLabelClicked() {
         this.value = !this.value;
     }
+
+    get allowsEmptyInput() {
+        return false;
+    }
     ?>
 
     <input id="input" type="checkbox">

@@ -222,6 +222,7 @@
         field.displayFactory = this.displayFactory;
         field.readOnlyDisplayFactory = this.readOnlyDisplayFactory;
         field.inGroup = this.grouped && member[cocktail.ui.group];
+        field.required = member.required;
         field.dataBinding = this.dataBinding.memberBinding(member);
         return field;
     }
@@ -292,6 +293,17 @@
             type="string"
             reflected="true"/>
 
+        <ui:property
+            name="required"
+            type="boolean"
+            reflected="true"/>
+
+        <ui:property
+            name="controlAllowsEmptyInput"
+            type="boolean"
+            reflected="true"
+            default="true"/>
+
         <?head
         const FIELDS_READY = Symbol.for("cocktail.ui.Form.FIELDS_READY");
         ?>
@@ -355,6 +367,7 @@
                         || "normal"
                     );
                 }
+                this.controlAllowsEmptyInput = this.control.allowsEmptyInput;
             }
         }
         ?>
@@ -383,6 +396,17 @@
             type="boolean"
             reflected="true"
             default="false"/>
+
+        <ui:property
+            name="required"
+            type="boolean"
+            reflected="true"/>
+
+        <ui:property
+            name="controlAllowsEmptyInput"
+            type="boolean"
+            reflected="true"
+            default="true"/>
 
         <?head
         const TRANSLATIONS_MAP = Symbol("cocktail.ui.Form.FieldTranslations.TRANSLATIONS_MAP");
@@ -432,6 +456,7 @@
             let [added, removed] = cocktail.sets.addedRemoved(this[TRANSLATIONS_MAP].keys(), newLocales);
             let modified = (added.size || removed.size);
             let value = modified ? cocktail.ui.copyValue(this.value) : this.value;
+            let allowsEmptyInput = false;
 
             for (let locale of added) {
                 if (!(locale in value)) {
@@ -457,7 +482,10 @@
                 );
                 this[TRANSLATIONS_MAP].set(locale, translation);
                 this.translations.appendChild(translation);
+                allowsEmptyInput = allowsEmptyInput || this.controlAllowsEmptyInput;
             }
+
+            this.controlAllowsEmptyInput = allowsEmptyInput;
 
             for (let [locale, translation] of this[TRANSLATIONS_MAP]) {
                 translation.visible = newLocales.has(locale);

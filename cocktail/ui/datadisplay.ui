@@ -183,6 +183,10 @@
     clearValue() {
         this.value = null;
     }
+
+    get allowsEmptyInput() {
+        return true;
+    }
     ?>
 
 </ui:mixin>
