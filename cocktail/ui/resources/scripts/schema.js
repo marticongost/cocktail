@@ -815,13 +815,36 @@
 
     cocktail.schema.Tuple.prototype.items = [];
 
+    const JSDate = Date;
+
+    cocktail.schema.Date = class Date extends cocktail.schema.Member {
+
+        translateValue(value, params = null) {
+            if (!value) {
+                return "";
+            }
+            value = new JSDate(value);
+            if (isNaN(value)) {
+                return "";
+            }
+            return value.toLocaleDateString(
+                cocktail.getLanguage(),
+                {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit"
+                }
+            );
+        }
+    }
+
     cocktail.schema.DateTime = class DateTime extends cocktail.schema.Member {
 
         translateValue(value, params = null) {
             if (!value) {
                 return "";
             }
-            value = new Date(value);
+            value = new JSDate(value);
             if (isNaN(value)) {
                 return "";
             }

@@ -12,6 +12,7 @@
     <ui:requires component="cocktail.ui.CheckList"/>
     <ui:requires component="cocktail.ui.DropdownSelector"/>
     <ui:requires component="cocktail.ui.NumberInput"/>
+    <ui:requires component="cocktail.ui.DateInput"/>
     <ui:requires component="cocktail.ui.DateTimeInput"/>
     <ui:requires component="cocktail.ui.TextInput"/>
     <ui:requires component="cocktail.ui.HTMLEditor"/>
@@ -78,6 +79,7 @@
         cocktail.schema.Boolean[formControl] = cocktail.ui.CheckBox;
         cocktail.schema.Reference[formControl] = cocktail.ui.DropdownSelector;
         cocktail.schema.Collection[formControl] = cocktail.ui.CheckList;
+        cocktail.schema.Date[formControl] = cocktail.ui.DateInput;
         cocktail.schema.DateTime[formControl] = cocktail.ui.DateTimeInput;
         cocktail.schema.Locale[formControl] = cocktail.ui.DropdownSelector;
         cocktail.schema.HTML[formControl] = cocktail.ui.HTMLEditor;
