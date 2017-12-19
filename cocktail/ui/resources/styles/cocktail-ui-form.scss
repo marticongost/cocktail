@@ -79,7 +79,7 @@ legend {
 .Group[level='0'] > fieldset > legend:not(:empty) + .fieldsContainer {
     border-top: 1px dotted lighten($heading-color, 30);
     margin-top: 0.5em;
-    padding-top: 0.5em;
+    padding-top: 1.5em;
 }
 
 .Group[level='0'] .Group {
