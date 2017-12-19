@@ -817,24 +817,11 @@
 
     cocktail.schema.DateTime = class DateTime extends cocktail.schema.Member {
 
-        parseValue(value) {
-            return new Date(value);
-        }
-
-        serializeValue(value) {
-            if (!value) {
-                return "";
-            }
-            return value instanceof Date ? value.toISOString() : value;
-        }
-
         translateValue(value, params = null) {
             if (!value) {
                 return "";
             }
-            if (!(value instanceof Date)) {
-                value = new Date(value);
-            }
+            value = new Date(value);
             if (isNaN(value)) {
                 return "";
             }
