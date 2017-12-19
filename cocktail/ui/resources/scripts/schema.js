@@ -76,6 +76,18 @@
             return this[NAME];
         }
 
+        get fullName() {
+            if (this[OWNER]) {
+                if (this[MEMBERSHIP_TYPE] == pkg.membershipTypes.member) {
+                    return `${this[OWNER].fullName}.${this[NAME]}`;
+                }
+                else if (this[MEMBERSHIP_TYPE] == pkg.membershipTypes.collectionItems) {
+                    return `${this[OWNER].fullName}.items`;
+                }
+            }
+            return this[NAME];
+        }
+
         get membershipType() {
             return this[MEMBERSHIP_TYPE];
         }
