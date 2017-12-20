@@ -104,9 +104,13 @@ legend {
         }
 
         &[labelDisposition='normal'] {
-            .label + .controlContainer {
+            .labelContainer + .controlContainer {
                 margin-top: 0.3em;
             }
+        }
+
+        .explanation {
+            margin-bottom: 0.8em;
         }
     }
 }
@@ -133,7 +137,7 @@ legend {
             }
 
             &[labelDisposition='normal'] {
-                .label + .controlContainer {
+                .labelContainer + .controlContainer {
                     margin-left: 1em;
                 }
             }
@@ -149,7 +153,7 @@ legend {
         .field {
             display: table-row;
 
-            .label {
+            .labelContainer {
                 display: table-cell;
                 padding-right: 1em;
                 white-space: nowrap;
@@ -160,7 +164,7 @@ legend {
             }
 
             & + .field {
-                .label,
+                .labelContainer,
                 .controlContainer {
                     padding-top: 0.5em;
                 }
@@ -187,25 +191,40 @@ legend {
         margin-right: 0.3em;
     }
 
-    .label {
+    .labelContainer {
         order: 2;
     }
 }
 
-.field[labelDisposition='hidden'] .label {
+.field[labelDisposition='hidden'] .labelContainer {
     display: none !important;
 }
 
-.field[required='true'][controlAllowsEmptyInput='true'] > .label:after {
+.field[required='true'][controlAllowsEmptyInput='true'] > .labelContainer > .label:after {
     content: '*';
     font-weight: bold;
     color: #444;
     margin-left: 0.4em;
 }
 
+.explanation {
+    margin-top: 0.4em;
+    color: #666;
+    font-style: italic;
+    font-size: 0.8em;
+
+    &:empty {
+        display: none;
+    }
+
+    :host([fieldsExplanationDisposition='hidden']) & {
+        display: none;
+    }
+}
+
 .FieldTranslations {
 
-    & > .label {
+    & > .labelContainer {
         margin-bottom: 0.5em;
     }
 

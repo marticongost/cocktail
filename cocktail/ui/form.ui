@@ -35,6 +35,12 @@
         reflected="true"/>
 
     <ui:property
+        name="fieldsExplanationDisposition"
+        type="string"
+        reflected="true"
+        default="belowLabel"/>
+
+    <ui:property
         name="modified"
         type="boolean"
         reflected="true"
@@ -325,6 +331,9 @@
         // Set the field label
         this.label.innerHTML = this.inGroup && newValue.member.translate(".inGroup") || newValue.member.translate();
 
+        // Set the field explanatory text
+        this.explanation.innerHTML = newValue.member.translate(".explanation");
+
         // Create the new field control
         this.makeControl();
         ?>
@@ -379,19 +388,21 @@
         }
         ?>
 
-        <label id="label">
-            <?on click
-            if (instance.control.formLabelClicked) {
-                instance.control.formLabelClicked();
-            }
-            else {
-                instance.control.focus();
-            }
-            ?>
-        </label>
+        <div id="labelContainer">
+            <label id="label">
+                <?on click
+                if (instance.control.formLabelClicked) {
+                    instance.control.formLabelClicked();
+                }
+                else {
+                    instance.control.focus();
+                }
+                ?>
+            </label>
+            <div id="explanation"/>
+        </div>
 
         <div id="controlContainer"/>
-
     </div>
 
     <div ui:component="FieldTranslations">
@@ -445,6 +456,7 @@
 
         <?on dataBinding:changed
         this.label.innerHTML = this.inGroup && newValue.member.translate(".inGroup") || newValue.member.translate();
+        this.explanation.innerHTML = newValue.member.translate(".explanation");
         this.updateTranslations();
         ?>
 
@@ -522,7 +534,11 @@
         this[TRANSLATIONS_MAP] = new Map();
         ?>
 
-        <div id="label"/>
+        <div id="labelContainer">
+            <div id="label"/>
+            <div id="explanation"/>
+        </div>
+
         <div id="translations"/>
 
         <div ui:component="Translation">
