@@ -7,6 +7,10 @@
     <ui:using mixin="cocktail.ui.DataDisplay"/>
     <ui:requires component="cocktail.ui.displayfactories"/>
 
+    <ui:symbol name="ENTRIES_MAP"/>
+    <ui:symbol name="SYNCHRONIZE"/>
+    <ui:symbol name="SYNCHRONIZING"/>
+
     <ui:property
         name="empty"
         type="boolean"
@@ -19,6 +23,18 @@
     ?>
 
     <?class
+    [SYNCHRONIZE](callback) {
+        if (!this[SYNCHRONIZING]) {
+            this[SYNCHRONIZING] = true;
+            try {
+                callback();
+            }
+            finally {
+                this[SYNCHRONIZING] = false;
+            }
+        }
+    }
+
     clear() {
         cocktail.ui.empty(this.list);
         this.empty = true;
@@ -26,33 +42,89 @@
 
     createEntries() {
         if (this.dataBinding && this.value) {
-            let index = 0;
             for (let item of this.value) {
                 this.empty = false;
-                this.addEntry(index, item);
-                index++;
+                this.addEntry(item);
             }
         }
     }
 
-    addEntry(index, item) {
-        let entry = this.createEntry(index, item);
+    addEntry(item) {
+        if (!this.dataBinding) {
+            throw `${this} defines no data binding`;
+        }
+        let entry = this.createEntry(item);
         this.list.appendChild(entry);
+        this[ENTRIES_MAP][this.dataBinding.member.items.serializeValue(item)] = entry;
+        this[SYNCHRONIZE](() => {
+            let value = Array.from(this.value);
+            value.push(item);
+            this.value = item;
+        });
         return entry;
     }
 
-    createEntry(index, item) {
+    createEntry(item) {
+        if (!this.dataBinding) {
+            throw `${this} defines no data binding`;
+        }
         let entry = this.constructor.Entry.create();
         entry.displayFactory = this.itemsDisplayFactory;
         entry.displayParameters = this.itemsDisplayParameters;
-        entry.dataBinding = this.dataBinding.itemBinding(index, item);
+        entry.dataBinding = this.dataBinding.itemBinding(this.list.childNodes.length, item);
         return entry;
+    }
+
+    getEntry(item) {
+        if (!this.dataBinding) {
+            throw `${this} defines no data binding`;
+        }
+        return this[ENTRIES_MAP][this.dataBinding.member.items.serializeValue(item)];
+    }
+
+    removeEntry(item) {
+
+        // Find the entry to remove
+        if (!this.dataBinding) {
+            throw `${this} defines no data binding`;
+        }
+
+        const serializedValue = this.dataBinding.member.items.serializeValue(item);
+        const removedEntry = this[ENTRIES_MAP][serializedValue];
+        if (!removedEntry) {
+            throw `Can't find an entry for value ${item} in ${this}`;
+        }
+
+        // Compact .dataBinding.index
+        let index = removedEntry.dataBinding.index;
+        let nextEntry = removedEntry;
+        while (nextEntry = nextEntry.nextSibling) {
+            nextEntry.dataBinding.index = index;
+            index++;
+        }
+
+        // Remove the entry from the DOM and from the entry map
+        this.list.removeChild(removedEntry);
+        delete this[ENTRIES_MAP][serializedValue];
+
+        // Update .value
+        this[SYNCHRONIZE](() => {
+            const value = Array.from(this.value);
+            value.splice(removedEntry.dataBinding.index, 1);
+            this.value = value;
+        });
     }
     ?>
 
+    <?js
+    this[ENTRIES_MAP] = {};
+    ?>
+
     <?on value:changed
-    this.clear();
-    this.createEntries();
+    this[SYNCHRONIZE](() => {
+        this.clear();
+        this.createEntries();
+    });
     ?>
 
     <ul id="list"/>
