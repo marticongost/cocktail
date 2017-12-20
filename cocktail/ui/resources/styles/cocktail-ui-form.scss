@@ -222,6 +222,10 @@ legend {
                 font-size: 0.8em;
             }
 
+            .controlContainer {
+                margin-top: 0.4em;
+            }
+
             &:not([visible='true']) {
                 display: none;
             }
