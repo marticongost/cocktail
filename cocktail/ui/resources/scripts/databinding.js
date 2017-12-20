@@ -56,7 +56,6 @@ cocktail.schema.Collection.prototype[cocktail.ui.removeAnnotations] = function (
     const MEMBER = Symbol("cocktail.ui.DataBinding.MEMBER");
     const OBJECT = Symbol("cocktail.ui.DataBinding.OBJECT");
     const LANGUAGE = Symbol("cocktail.ui.DataBinding.LANGUAGE");
-    const INDEX = Symbol("cocktail.ui.DataBinding.INDEX");
     const PARENT = Symbol("cocktail.ui.DataBinding.PARENT");
     const VALUE = Symbol("cocktail.ui.DataBinding.VALUE");
 
@@ -73,7 +72,7 @@ cocktail.schema.Collection.prototype[cocktail.ui.removeAnnotations] = function (
             this[OBJECT] = object;
             this[MEMBER] = member;
             this[LANGUAGE] = language;
-            this[INDEX] = index;
+            this.index = index;
             this[VALUE] = (value === undefined) ? this.getValue(language, index) : value;
         }
 
@@ -87,10 +86,6 @@ cocktail.schema.Collection.prototype[cocktail.ui.removeAnnotations] = function (
 
         get language() {
             return this[LANGUAGE];
-        }
-
-        get index() {
-            return this[INDEX];
         }
 
         get parent() {
