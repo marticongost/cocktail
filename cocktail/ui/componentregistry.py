@@ -44,8 +44,10 @@ class ComponentRegistry(object):
                             e.reference_type = reference_type
                         raise e
 
-        if self.auto_reload and component.loaded:
-            for dep in component.dependencies(include_self = already_existed):
+        if not referrer and self.auto_reload and component.loaded:
+            for dep in list(
+                component.dependencies(include_self = already_existed)
+            ):
                 if dep.loaded and dep.needs_update():
                     dep.load()
 
