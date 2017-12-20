@@ -59,7 +59,7 @@
         this[SYNCHRONIZE](() => {
             let value = Array.from(this.value);
             value.push(item);
-            this.value = item;
+            this.value = value;
         });
         return entry;
     }
