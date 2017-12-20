@@ -284,7 +284,7 @@ class ComponentLoader(object):
 
             if self.is_mixin:
                 self.declaration_source.write(
-                    "%s = (cls) => class %s extends %s {" % (
+                    "const mixin = %s = (cls) => class %s extends %s {" % (
                         self.component.full_name,
                         self.component.name,
                         base_expr
