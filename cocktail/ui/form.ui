@@ -47,6 +47,11 @@
         default="true"/>
 
     <ui:property
+        name="defaultGroup"
+        type="string"
+        reflected="true"/>
+
+    <ui:property
         name="tabbed"
         type="boolean"
         reflected="true"
@@ -143,7 +148,7 @@
 
         let parent = this;
         if (this.grouped) {
-            let groupId = member[cocktail.ui.group];
+            let groupId = member[cocktail.ui.group] || this.defaultGroup;
             if (groupId) {
                 parent = this.requireGroup(groupId);
             }
