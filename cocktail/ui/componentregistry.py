@@ -5,6 +5,7 @@ u"""
 """
 from pkg_resources import resource_filename
 from threading import RLock
+from collections import defaultdict
 from .component import Component
 from .theme import default_theme
 from .exceptions import ComponentFileError
@@ -18,6 +19,7 @@ class ComponentRegistry(object):
 
     def __init__(self):
         self.__components = {}
+        self.__overlays = defaultdict(list)
         self.__lock = RLock()
 
     def get(self, full_name, referrer = None, reference_type = None):
@@ -61,4 +63,14 @@ class ComponentRegistry(object):
         subcomponent = Component(self, full_name, parent)
         self.__components[full_name] = subcomponent
         return subcomponent
+
+    def get_overlays(self, component_name):
+        return self.__overlays.get(component_name) or []
+
+    def add_overlay(self, component_name, overlay_name):
+        with self.__lock:
+            self.__overlays[component_name].append(overlay_name)
+            component = self.__components.get(component_name)
+            if component:
+                component.load()
 

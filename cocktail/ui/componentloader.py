@@ -129,6 +129,21 @@ class ComponentLoader(object):
         self.__stack = None
         self.__context_change_stack = []
 
+        # Apply overlays
+        for mixin_name in component.registry.get_overlays(component.full_name):
+            mixin = self.component.registry.get(
+                mixin_name,
+                referrer = self.component,
+                reference_type = "overlay"
+            )
+            if not mixin.is_mixin:
+                self.trigger_parser_error(
+                    "Trying to use non-mixin component %s as an overlay"
+                    % mixin_name
+                )
+            self.dependencies.append(mixin)
+            self.decorators.append(mixin_name)
+
         if node is None:
             try:
                 document = parse(component.source_file)
@@ -408,6 +423,8 @@ class ComponentLoader(object):
                 node.is_requirement = True
             elif local_name == "using":
                 node.is_mixin_requirement = True
+            elif local_name == "overlay":
+                node.is_overlay_requirement = True
 
         node.is_element = (
             not node.is_content
@@ -420,6 +437,7 @@ class ComponentLoader(object):
             and not node.is_translation_bundle_requirement
             and not node.is_requirement
             and not node.is_mixin_requirement
+            and not node.is_overlay_requirement
             and not self.is_module
         )
         node.is_new = (
@@ -717,6 +735,23 @@ class ComponentLoader(object):
                 )
             self.dependencies.append(mixin)
             self.decorators.append(mixin_name)
+
+        # Overlay mixin on
+        elif node.is_overlay_requirement:
+
+            mixin_name = attributes.pop("mixin", None)
+            if not mixin_name:
+                self.trigger_parser_error(
+                    "'overlay' clause without a 'mixin' attribute"
+                )
+
+            target_name = attributes.pop("on", None)
+            if not target_name:
+                self.trigger_parser_error(
+                    "'overlay' clause without an 'on' attribute"
+                )
+
+            self.component.registry.add_overlay(target_name, mixin_name)
 
         # Element ID
         else:
@@ -1084,6 +1119,9 @@ class StackNode(object):
 
     # Wether the node is a mixin requirement declaration
     is_mixin_requirement = False
+
+    # Wether the node is an overlay declaration
+    is_overlay_requirement = False
 
     # If the node represents a property, this attribute will contain its name
     # (otherwise it will be None)
