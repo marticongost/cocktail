@@ -34,6 +34,10 @@
     margin: 0;
     display: flex;
     align-content: stretch;
+
+    :host(.vertical) & {
+        flex-direction: column;
+    }
 }
 
 #extraDropdown {
