@@ -1,6 +1,8 @@
 
+@import "cocktail.ui://styles/common";
+
 :host {
-    border: 1px solid #ddd;
+    border: $input-border;
     display: flex;
     width: 30em;
 }
@@ -10,12 +12,12 @@
 }
 
 :host([multiline='false']) {
-    height: 2.2em;
+    height: 1.9em;
 }
 
 #contentArea {
     flex: 1;
-    padding: 0.5em;
+    padding: $input-padding;
     overflow-y: auto;
 
     :host([multiline='false']) & {

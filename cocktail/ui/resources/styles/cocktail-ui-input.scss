@@ -1,4 +1,6 @@
 
+@import "cocktail.ui://styles/common";
+
 :host {
     display: inline-block;
 }
@@ -8,7 +10,8 @@ input {
 }
 
 input:not([type='checkbox']) {
+    border: 1px solid $input-border-color;
+    padding: $input-padding;
     width: 100%;
-    padding: 0 0.1em;
 }
 

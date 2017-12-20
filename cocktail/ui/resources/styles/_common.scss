@@ -38,6 +38,9 @@ $stacknode-exposed-panel-background-color: $panel-background-color !default;
 $stacknode-covered-panel-background-color: white !default;
 $stacknode-exposed-panel-border-color: $panel-border-color !default;
 $stacknode-covered-panel-border-color: white !default;
+$input-border-color: #ddd !default;
+$input-border: 1px solid $input-border-color !default;
+$input-padding: 0.3em !default;
 
 @mixin focus {
     outline: 2px auto $focus-color;
