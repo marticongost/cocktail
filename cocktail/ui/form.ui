@@ -356,6 +356,10 @@
 
         focusControl() {
             if (!this.readOnly && this.control) {
+                let tab = this.tab;
+                if (tab) {
+                    tab.selected = true;
+                }
                 cocktail.ui.focus(this.control);
                 return true;
             }
@@ -620,7 +624,11 @@
 
             focusControl() {
                 if (!this.readOnly && this.control) {
-                    this.control.focus();
+                    let tab = this.tab;
+                    if (tab) {
+                        tab.selected = true;
+                    }
+                    cocktail.ui.focus(this.control);
                     return true;
                 }
                 return false;
