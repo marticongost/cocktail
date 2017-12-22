@@ -345,6 +345,15 @@
         ?>
 
         <?class
+        get form() {
+            return cocktail.ui.closestInstance(this, cocktail.ui.Form);
+        }
+
+        get tab() {
+            let form = this.form;
+            return form && form.tabbed && cocktail.ui.closestInstance(this, cocktail.ui.Tab) || null;
+        }
+
         focusControl() {
             if (!this.readOnly && this.control) {
                 cocktail.ui.focus(this.control);
@@ -461,6 +470,15 @@
         ?>
 
         <?class
+        get form() {
+            return cocktail.ui.closestInstance(this, cocktail.ui.Form);
+        }
+
+        get tab() {
+            let form = this.form;
+            return form && form.tabbed && cocktail.ui.closestInstance(this, cocktail.ui.Tab) || null;
+        }
+
         getTranslation(locale) {
             return this[TRANSLATIONS_MAP].get(locale);
         }
@@ -587,6 +605,19 @@
             ?>
 
             <?class
+            get form() {
+                return cocktail.ui.closestInstance(this, cocktail.ui.Form);
+            }
+
+            get tab() {
+                let form = this.form;
+                return form && form.tabbed && cocktail.ui.closestInstance(this, cocktail.ui.Tab) || null;
+            }
+
+            get field() {
+                return cocktail.ui.closestInstance(this, cocktail.ui.Form.FieldTranslations);
+            }
+
             focusControl() {
                 if (!this.readOnly && this.control) {
                     this.control.focus();
