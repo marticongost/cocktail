@@ -163,7 +163,7 @@
     align-items: stretch;
     background: $panel-background;
     border-bottom: $panel-border;
-    padding-left: 1em;
+    padding-left: 1.3rem;
 
     :host([stackNodeVisibility='covered'][animationType='slide']) & {
         border: none;
