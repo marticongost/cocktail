@@ -1,16 +1,15 @@
 
 @import "cocktail.ui://styles/common";
 
-$tab-strip-background-color: #eae6de !default;
-$tab-strip-border-color: #e1dbd2 !default;
-$tab-active-background-color: #c3b091 !default;
-$tab-active-border-color: darken($tab-active-background-color, 5) !default;
-$tab-active-color: white !default;
-$tab-inactive-background-color: #e5e0d6 !default;
-$tab-inactive-border-color: #dcd2c1 !default;
-$tab-inactive-color: $panel-action-color !default;
-$tab-hover-background-color: darken($tab-inactive-background-color, 5) !default;
-$tab-hover-color: darken($tab-inactive-color, 10) !default;
+$tab-strip-border-thickness: 1px !default;
+$tab-button-vertical-offset: -1px !default;
+$tab-underline-thickness: 3px !default;
+$tab-active-color: $focus-color !default;
+$tab-inactive-color: #777 !default;
+$tab-hover-color: desaturate(lighten($tab-active-color, 5), 20) !default;
+$tab-active-underline-color: $focus-color !default;
+$tab-inactive-underline-color: #eee !default;
+$tab-hover-underline-color: lighten($tab-active-underline-color, 25) !default;
 
 :host {
     box-sizing: border-box;
@@ -20,57 +19,42 @@ $tab-hover-color: darken($tab-inactive-color, 10) !default;
 }
 
 #strip {
-    border-top: 1px solid $tab-strip-border-color;
-    border-bottom: 1px solid $tab-strip-border-color;
-    background-color: $tab-strip-background-color;
+    z-index: 2;
     padding-bottom: 0;
     flex: 0 0 auto;
+    border-bottom: $tab-strip-border-thickness solid $tab-inactive-underline-color;
+    box-shadow: 0 0.2em 1.2em rgba(black, 0.1);
 
     button {
         font-size: inherit;
-        color: #666;
-        padding: 6px 12px;
-        border: 1px solid $tab-strip-border-color;
-        border-right: none;
-        border-left: 1px solid;
-        margin-top: -1px;
-        margin-bottom: -1px;
-
-        &:first-child {
-            border-left: none;
-        }
-
-        &:last-child {
-            border-right: 1px solid;
-        }
+        color: $tab-inactive-color;
+        background: none;
+        padding-top: 1em;
+        padding-bottom: 0.8em;
+        padding-right: 1.2em;
+        padding-left: 1.2em;
+        border: none;
+        border-bottom: $tab-underline-thickness solid;
+        margin-bottom: $tab-button-vertical-offset;
 
         &:focus {
             outline: none;
         }
 
         &[selected='true'] {
-            background-color: $tab-active-background-color;
-            border-color: $tab-active-border-color;
+            border-bottom-color: $tab-active-underline-color;
             color: $tab-active-color;
             font-weight: bold;
-            text-shadow: 0 0 5px rgba(black, 0.5);
-
-            & + button {
-                border-left-color: $tab-active-border-color;
-            }
         }
 
         &[selected='false'] {
-            background-color: $tab-inactive-background-color;
-            background-image: linear-gradient(lighten($tab-inactive-background-color, 5), $tab-inactive-background-color);
-            border-color: $tab-inactive-border-color;
+            border-bottom-color: transparent;
             color: $tab-inactive-color;
             cursor: pointer;
 
             &:hover {
+                border-bottom-color: $tab-hover-underline-color;
                 color: $tab-hover-color;
-                background-color: $tab-hover-background-color;
-                background-image: linear-gradient(lighten($tab-hover-background-color, 5), $tab-hover-background-color);
             }
         }
     }
