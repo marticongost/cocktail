@@ -36,5 +36,9 @@
             text-align: center;
         }
     }
+
+    :host([error]) & {
+        @include input-with-error;
+    }
 }
 

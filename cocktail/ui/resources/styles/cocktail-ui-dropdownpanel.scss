@@ -13,7 +13,7 @@ $hpadding: 0.5em;
 }
 
 :host([expanded='true']) {
-    z-index: 2;
+    z-index: 3;
 }
 
 #button {
@@ -31,7 +31,7 @@ $hpadding: 0.5em;
     }
 
     :host([expanded='true']) & {
-        z-index: 2;
+        z-index: 3;
         border: $border;
         border-bottom: $border-width solid white;
         background-color: white;
@@ -93,7 +93,7 @@ $hpadding: 0.5em;
 #panel {
     position: absolute;
     top: -$border-width;
-    z-index: 1;
+    z-index: 2;
     border: $border;
     background-color: white;
     box-shadow: $panel-shadow;

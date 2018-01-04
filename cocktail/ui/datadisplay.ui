@@ -126,6 +126,19 @@
         type="string"
         reflected="true"/>
 
+    <ui:property
+        name="errors"
+        reflected="false">
+        <?on changed
+        if (cocktail.isEmptyValue(newValue)) {
+            this.removeAttribute("error");
+        }
+        else {
+            this.setAttribute("error", "");
+        }
+        ?>
+    </ui:property>
+
     <?class
     connectedCallback() {
         super.connectedCallback();
@@ -167,6 +180,22 @@
             (linkedDisplay, display) => {
                 if (display.dataBinding === linkedDisplay.dataBinding) {
                     display.value = linkedDisplay.value;
+                }
+            },
+            initialize
+        );
+        cocktail.ui.link(
+            this,
+            linkedDisplay,
+            "errors",
+            (display, linkedDisplay) => {
+                if (display.dataBinding === linkedDisplay.dataBinding) {
+                    linkedDisplay.errors = display.errors;
+                }
+            },
+            (linkedDisplay, display) => {
+                if (display.dataBinding === linkedDisplay.dataBinding) {
+                    display.errors = linkedDisplay.errors;
                 }
             },
             initialize

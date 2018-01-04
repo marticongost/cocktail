@@ -4,10 +4,15 @@
 
 :host {
     display: inline-block;
+    border: $input-border;
 }
 
 :host(:focus) {
     outline: none !important;
+}
+
+:host([error]) {
+    @include input-with-error;
 }
 
 #input {
