@@ -80,37 +80,39 @@
     }
 
     addEntry(value) {
-        let entry = this.createEntry(value);
+        const entry = this.createEntry(value);
         this[ENTRY_MAP].set(this.dataBinding.member.items.serializeValue(value), entry);
         this.entries.appendChild(entry);
         this[UPDATE_SELECTION_CONTROLS]();
     }
 
     createEntry(value, prepend = false) {
-        let serializedValue = this.dataBinding.member.items.serializeValue(value);
-        let entry = this.constructor.Entry.create();
+
+        const serializedValue = this.dataBinding.member.items.serializeValue(value);
+
+        const entry = this.constructor.Entry.create();
         entry.entryValue = value;
-        entry.input.value = serializedValue;
+        entry.checkBox.input.value = serializedValue;
         entry.selected = this[SERIALIZED_VALUE].has(serializedValue);
         entry.labelText.innerHTML = this.dataBinding.member.items.translateValue(value);
         return entry;
     }
 
     isSelected(value) {
-        let entry = this.getEntry(value);
+        const entry = this.getEntry(value);
         return entry ? entry.selected : null;
     }
 
     setSelected(value, selected) {
 
-        let entry = this.getEntry(value);
+        const entry = this.getEntry(value);
 
         if (entry) {
             entry.selected = selected;
 
             this[SELECTING_ENTRY] = true;
             try {
-                let serializedSelection = this[SERIALIZED_VALUE] || new Set();
+                const serializedSelection = this[SERIALIZED_VALUE] || new Set();
                 let serializedValue = this.dataBinding.member.items.serializeValue(value);
 
                 if (selected) {
@@ -120,10 +122,10 @@
                     serializedSelection.delete(serializedValue);
                 }
 
-                let selection = new Set();
-                let entryMap = this[ENTRY_MAP];
+                const selection = new Set();
+                const entryMap = this[ENTRY_MAP];
                 for (serializedValue of serializedSelection) {
-                    let entry = entryMap.get(serializedValue);
+                    const entry = entryMap.get(serializedValue);
                     selection.add(entry.entryValue);
                 }
 
@@ -139,7 +141,7 @@
     }
 
     [UPDATE_SELECTION_CONTROLS]() {
-        let size = this[SERIALIZED_VALUE] && this[SERIALIZED_VALUE].size || 0;
+        const size = this[SERIALIZED_VALUE] && this[SERIALIZED_VALUE].size || 0;
         cocktail.ui.setFlag(this.selectAllButton, "disabled", size == this.entries.children.length);
         cocktail.ui.setFlag(this.selectNoneButton, "disabled", !size);
     }
@@ -162,7 +164,7 @@
         if (!this[SELECTING_ENTRY]) {
             this[SELECTING_ENTRY] = true;
             for (let entry of this.entries.children) {
-                entry.selected = this[SERIALIZED_VALUE].has(entry.input.value);
+                entry.selected = this[SERIALIZED_VALUE].has(entry.checkBox.input.value);
             }
             this[SELECTING_ENTRY] = false;
         }
@@ -209,22 +211,33 @@
             if (instance.parentInstance && !instance.parentInstance[SELECTING_ENTRY]) {
                 instance.parentInstance.setSelected(instance.entryValue, newValue);
             }
-            this.input.checked = newValue;
+            this.checkBox.checked = newValue;
             ?>
         </ui:property>
 
-        <input id="input" type="checkbox">
-            <?on change
-            instance.selected = this.checked;
-            ?>
-        </input>
+        <ui:CheckBox id="checkBox"/>
+
+        <?js
+        cocktail.ui.link(this, this.checkBox, ["selected", "value"],
+            (entry, checkBox) => {
+                checkBox.value = entry.selected;
+            },
+            (checkBox, entry) => {
+                if (!instance.parentInstance || !instance.parentInstance[SELECTING_ENTRY]) {
+                    entry.selected = checkBox.value;
+                }
+            }
+        );
+        ?>
 
         <label id="label">
-            <?js
-            element.setAttribute("for", cocktail.requireId(this.input));
+            <?on click
+            instance.checkBox.formLabelClicked();
             ?>
             <span id="labelText"/>
         </label>
+
+        <ui:cocktail.ui.CheckBox ui:component="CheckBox"/>
     </li>
 
 </div>
