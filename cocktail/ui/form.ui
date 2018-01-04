@@ -444,9 +444,19 @@
         ?>
 
         <?class
-        focusControl() {
-            for (let translation of this[TRANSLATIONS_MAP].values()) {
-                if (translation.focusControl()) {
+        focusControl(language = null) {
+            // Focus the control for the first available translation
+            if (!language) {
+                for (let translation of this[TRANSLATIONS_MAP].values()) {
+                    if (translation.focusControl()) {
+                        return true;
+                    }
+                }
+            }
+            // Focus the control for a specific translation
+            else {
+                const translation = this[TRANSLATIONS_MAP].get(language);
+                if (translation && translation.focusControl()) {
                     return true;
                 }
             }
