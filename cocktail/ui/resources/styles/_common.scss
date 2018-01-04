@@ -20,7 +20,7 @@ $secondary-panel-hover-color: #f5f2e7 !default;
 $secondary-panel-action-color: #908b79 !default;
 $secondary-panel-action-highlight-color: #7f7658 !default;
 $focus-color: #c88352 !default;
-$error-border-color: #ecbaba !default;
+$error-border-color: #e4c5c5 !default;
 $error-border: 1px solid $error-border-color !default;
 $error-background-color: #feeeee !default;
 $error-background: $error-background-color !default;
@@ -41,6 +41,10 @@ $stacknode-covered-panel-border-color: white !default;
 $input-border-color: #ddd !default;
 $input-border: 1px solid $input-border-color !default;
 $input-padding: 0.3em !default;
+$form-errors-background-color: #946666 !default;
+$input-error-border-color: #e0a4a4 !default;
+$input-error-background-color: #fdf4f4 !default;
+$input-error-color: #8a1717 !default;
 
 @mixin focus {
     outline: 2px auto $focus-color;
@@ -86,5 +90,11 @@ $input-padding: 0.3em !default;
     &:nth-child(even) {
         background-color: $even-color;
     }
+}
+
+@mixin input-with-error {
+    border: 1px solid $input-error-border-color;
+    background-color: $input-error-background-color;
+    color: $input-error-color;
 }
 

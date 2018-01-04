@@ -282,9 +282,79 @@
     }
     ?>
 
+    <?on errors:changed
+    cocktail.ui.empty(this.errorList);
+    if (newValue) {
+        const errorsByMember = {};
+        for (let error of newValue) {
+            const message = this.constructor.ErrorMessage.create();
+            message.error = error;
+            this.errorList.appendChild(message);
+            if (error.members) {
+                for (let memberName of error.members) {
+                    let memberErrors = errorsByMember[memberName];
+                    if (!memberErrors) {
+                        errorsByMember[memberName] = memberErrors = [];
+                    }
+                    memberErrors.push(error);
+                }
+            }
+        }
+        this.awaitFields().then((fields) => {
+            for (let memberName in errorsByMember) {
+                let field = fields.get(memberName);
+                if (field) {
+                    field.errors = errorsByMember[memberName];
+                }
+            }
+        });
+    }
+    ?>
+
+    <ul id="errorList"/>
     <ui:cocktail.ui.Tabs id="tabs"/>
     <div id="fieldsContainer"/>
     <div id="groupsContainer"/>
+
+    <li ui:component="ErrorMessage">
+
+        <ui:property
+            name="error"
+            reflected="false"
+            final="true">
+            <?on changed
+            this.label.innerHTML = this.translateError(newValue);
+            this.causedByMember = newValue.members && newValue.members.length;
+            ?>
+        </ui:property>
+
+        <ui:property
+            name="causedByMember"
+            type="boolean"
+            reflected="true"/>
+
+        <?class
+        translateError(error) {
+            return error.label;
+        }
+        ?>
+
+        <?on click
+        // Focus fields when one of their errors is clicked
+        if (this.error && this.error.members) {
+            this.parentInstance.awaitFields().then((fields) => {
+                for (let memberName of this.error.members) {
+                    const field = fields.get(memberName);
+                    if (field) {
+                        field.focusControl(this.error.language);
+                    }
+                }
+            });
+        }
+        ?>
+
+        <span id="label"/>
+    </li>
 
     <div ui:component="Field">
 
@@ -375,6 +445,7 @@
             // Remove the previous control
             if (this.control) {
                 cocktail.ui.removeLink(this, this.control, "value");
+                cocktail.ui.removeLink(this, this.control, "errors");
                 this.control.parentNode.removeChild(this.control);
                 this.control = null;
             }
@@ -388,6 +459,7 @@
                 );
                 this.control = displayFactory.requireDisplay(this.dataBinding);
                 cocktail.ui.link(this, this.control, "value");
+                cocktail.ui.link(this, this.control, "errors");
                 this.controlContainer.appendChild(this.control);
                 if (!this.labelDisposition) {
                     this.labelDisposition = (
@@ -531,6 +603,17 @@
                         }
                     }
                 );
+                cocktail.ui.link(
+                    this,
+                    translation,
+                    "errors",
+                    (fieldTranslations, translation) => {
+                        if (fieldTranslations.dataBinding && translation.dataBinding && fieldTranslations.errors) {
+                            translation.errors = fieldTranslations.errors.filter((error) => error.language == translation.dataBinding.language);
+                        }
+                    },
+                    (translation, fieldTranslations) => {}
+                );
                 this[TRANSLATIONS_MAP].set(locale, translation);
                 this.translations.appendChild(translation);
                 allowsEmptyInput = allowsEmptyInput || this.controlAllowsEmptyInput;
@@ -666,6 +749,7 @@
                     );
                     this.control = displayFactory.requireDisplay(this.dataBinding);
                     cocktail.ui.link(this, this.control, "value");
+                    cocktail.ui.link(this, this.control, "errors");
                     this.controlContainer.appendChild(this.control);
                     if (!this.formLabelDisposition) {
                         this.formLabelDisposition = (

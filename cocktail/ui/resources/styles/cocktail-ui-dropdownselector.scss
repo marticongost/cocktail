@@ -1,5 +1,11 @@
 
+@import "cocktail.ui://styles/common";
+
 :host {
     display: inline-block;
+}
+
+:host([error]) #select {
+    @include input-with-error;
 }
 

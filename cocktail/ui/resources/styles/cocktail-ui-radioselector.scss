@@ -50,6 +50,14 @@
                 height: 0.5em;
                 border-radius: 0.5em;
                 background-color: #777;
+
+                :host([error]) & {
+                    background-color: $error-border-color;
+                }
+            }
+
+            :host([error]) & {
+                @include input-with-error;
             }
         }
     }

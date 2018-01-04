@@ -95,6 +95,11 @@
         entry.checkBox.input.value = serializedValue;
         entry.selected = this[SERIALIZED_VALUE].has(serializedValue);
         entry.labelText.innerHTML = this.dataBinding.member.items.translateValue(value);
+
+        if (this.errors && this.errors.length) {
+            entry.checkBox.setAttribute("error", "");
+        }
+
         return entry;
     }
 
@@ -175,6 +180,19 @@
     this.createEntries();
     ?>
 
+    <?on errors:changed
+    if (newValue.length) {
+        for (let entry of this.entries.children) {
+            entry.checkBox.setAttribute("error", "");
+        }
+    }
+    else {
+        for (let entry of this.entries.children) {
+            entry.checkBox.removeAttribute("error");
+        }
+    }
+    ?>
+
     <?js
     this[ENTRY_MAP] = new Map();
     ?>
@@ -228,6 +246,7 @@
                 }
             }
         );
+        cocktail.ui.link(this, this.checkBox, "errors");
         ?>
 
         <label id="label">

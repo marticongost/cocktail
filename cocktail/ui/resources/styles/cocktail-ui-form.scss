@@ -6,6 +6,39 @@ $subgroup-separation: 1.5em;
 
 :host([tabbed='true']) {
     display: flex;
+    flex-direction: column;
+}
+
+#errorList {
+    background-color: $form-errors-background-color;
+    padding: 1rem 1.3rem;
+    margin: 0;
+    list-style-type: none;
+    color: white;
+
+    &:empty {
+        display: none;
+    }
+
+    .ErrorMessage {
+
+        em {
+            font-style: normal;
+            font-weight: bold;
+        }
+
+        & + .ErrorMessage {
+            margin-top: 0.5em;
+        }
+
+        &[causedByMember='true'] {
+            cursor: pointer;
+
+            &:hover em {
+                text-decoration: underline;
+            }
+        }
+    }
 }
 
 #tabs {
@@ -184,11 +217,15 @@ legend {
 .field[labelDisposition='afterControl'] {
     display: flex;
     flex-direction: row;
-    align-items: baseline;
+    align-items: center;
 
     .controlContainer {
         order: 1;
-        margin-right: 0.3em;
+        margin-right: 0.5em;
+
+        .control {
+            display: block;
+        }
     }
 
     .labelContainer {

@@ -7,6 +7,10 @@
     width: 30em;
 }
 
+:host([error]) {
+    @include input-with-error;
+}
+
 :host([multiline='true']) {
     height: 20em;
 }
