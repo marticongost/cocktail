@@ -27,9 +27,18 @@
     ?>
 
     <input id="input" type="checkbox">
+
+        <?on keydown
+        if (e.which == cocktail.ui.keys.ENTER) {
+            instance.value = !instance.value;
+            e.preventDefault();
+        }
+        ?>
+
         <?on change
         instance.value = this.checked;
         ?>
+
     </input>
 
 </div>
