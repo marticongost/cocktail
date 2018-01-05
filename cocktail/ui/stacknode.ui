@@ -51,14 +51,14 @@
 
     <?on animationend
     const state = this.animationState;
+    this.animationState = state == "closing" ? "closed" : "none";
+
     if (state == "opening" || state == "childClosing") {
         this.stackNodeVisibility = "exposed";
     }
     else if (state == "closing" || state == "childOpening") {
         this.stackNodeVisibility = "covered";
     }
-
-    this.animationState = state == "closing" ? "closed" : "none";
     ?>
 
     <div id="stackNodeContent">
