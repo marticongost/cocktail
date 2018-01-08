@@ -946,7 +946,7 @@ cocktail.setShortcutIcon = function (href, type) {
                 resolve(canvas.toDataURL());
             });
             img.addEventListener("error", function () { reject(); });
-            img.src = href;
+            img.src = cocktail.normalizeResourceURI(href);
         });
     }
     else {
