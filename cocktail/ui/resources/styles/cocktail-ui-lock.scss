@@ -54,7 +54,7 @@
 #icon {
     margin-right: 0.8em;
     transform-origin: center;
-    width: 1.8em;
+    width: 1.8rem;
 
     :host([iconAnimation='spin']) & {
         animation: spin 1.5s infinite;
@@ -72,5 +72,6 @@
 #label {
     max-width: 40vw;
     color: #444;
+    font-size: 1rem;
 }
 
