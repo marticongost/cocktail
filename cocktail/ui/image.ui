@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<img
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:using mixin="cocktail.ui.DataDisplay"/>
+
+    <ui:property
+        name="empty"
+        type="boolean"
+        reflected="true"
+        default="true"/>
+
+    <?on value:changed
+    if (newValue) {
+        this.src = newValue;
+        this.empty = false;
+    }
+    else {
+        this.src = "";
+        this.empty = true;
+    }
+    ?>
+
+</img>
+
