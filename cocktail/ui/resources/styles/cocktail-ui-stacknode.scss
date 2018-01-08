@@ -75,7 +75,7 @@
 }
 
 :host([animationState='closing'][animationType='fade']) {
-    animation: $stacknode-animation-duration fadeNode;
+    animation: $stacknode-animation-duration * 1.5 fadeNode;
     position: absolute;
     left: 0;
     top: 0;
