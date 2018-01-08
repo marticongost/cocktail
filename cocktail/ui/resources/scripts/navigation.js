@@ -138,7 +138,7 @@
         extendPath(...segments) {
             let uri = URI(location.href).query("");
             uri = uri.segment([...uri.segment(), ...Array.from(segments, (segment) => segment.toString())]);
-            return this.push(uri.toString());
+            return this.push(uri.normalizePath().toString());
         },
 
         changeQuery(newValues) {
