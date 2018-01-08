@@ -476,7 +476,8 @@ cocktail.navigation.StackNode = class StackNode extends cocktail.navigation.Node
 
     traverse() {
         let stack = this.stack;
-        let stackNodes = Array.from(stack.iterStack());
+        const getNodes = () => Array.from(stack.iterStack()).filter((node) => node.animationState != "closing");
+        let stackNodes = getNodes();
 
         // Remove nodes from the stack
         if (this.stackIndex < stackNodes.length) {
@@ -485,7 +486,7 @@ cocktail.navigation.StackNode = class StackNode extends cocktail.navigation.Node
             }
         }
 
-        stackNodes = Array.from(stack.iterStack());
+        stackNodes = getNodes();
 
         // Add a new node to the stack
         if (
