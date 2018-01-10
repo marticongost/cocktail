@@ -249,6 +249,7 @@
         else {
             heading.languageLabel.style.display = "none";
         }
+        cocktail.ui.Table.setCellWidth(heading, member);
         return heading;
     }
 
@@ -350,6 +351,18 @@
             }
         }
         return null;
+    }
+
+    static setCellWidth(cell, member) {
+        const width = member[cocktail.ui.columnWidth];
+        if (width !== undefined) {
+            if (typeof(width) == "number") {
+                cell.style.flex = `0 0 ${width}em`;
+            }
+            else {
+                cell.style.flex = width;
+            }
+        }
     }
     ?>
 
@@ -496,6 +509,8 @@
             else {
                 this.innerHTML = this.dataBinding.member.translateValue(newValue);
             }
+
+            cocktail.ui.Table.setCellWidth(this, this.dataBinding.member);
             ?>
 
         </td>

@@ -227,3 +227,7 @@ cocktail.ui.group = Symbol("cocktail.ui.group");
     );
 }
 
+// A symbol that allows members to set the width for their column on Table
+// instances
+cocktail.ui.columnWidth = Symbol.for("cocktail.ui.columnWidth");
+
