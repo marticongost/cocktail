@@ -633,8 +633,10 @@
 
         translateValue(value, params = null) {
 
-            if (value && this.type) {
-                return this.type.translateValue(value, params);
+            const type = params && params.type || this.type;
+
+            if (value && type) {
+                return type.translateValue(value, params);
             }
 
             return super.translateValue(value, params);
