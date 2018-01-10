@@ -72,6 +72,43 @@
         return entry;
     }
 
+    insertEntry(item, index) {
+
+        if (!this.dataBinding) {
+            throw `${this} defines no data binding`;
+        }
+
+        const id = this.dataBinding.member.items.serializeValue(item);
+        let entry = this[ENTRIES_MAP][id];
+        let reindexPosition;
+
+        if (entry) {
+            // Same position as before; do nothing
+            if (entry.dataBinding.index == index) {
+                return entry;
+            }
+            reindexPosition = Math.min(index, entry.dataBinding.index);
+        }
+        else {
+            reindexPosition = index;
+            entry = this.createEntry(item);
+            this[ENTRIES_MAP][id] = entry;
+        }
+
+        this.list.insertBefore(entry, this.entries[index]);
+
+        while (reindexPosition < this.entries.length) {
+            this.entries[reindexPosition].dataBinding.index = reindexPosition;
+            reindexPosition++;
+        }
+
+        this[SYNCHRONIZE](() => {
+            this.value = Array.from(this.entries, (entry) => entry.value);
+        });
+
+        return entry;
+    }
+
     createEntry(item) {
         if (!this.dataBinding) {
             throw `${this} defines no data binding`;
