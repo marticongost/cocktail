@@ -57,14 +57,18 @@
         if (!this.dataBinding) {
             throw `${this} defines no data binding`;
         }
-        let entry = this.createEntry(item);
-        this.list.appendChild(entry);
-        this[ENTRIES_MAP][this.dataBinding.member.items.serializeValue(item)] = entry;
-        this[SYNCHRONIZE](() => {
-            let value = Array.from(this.value);
-            value.push(item);
-            this.value = value;
-        });
+        const id = this.dataBinding.member.items.serializeValue(item);
+        let entry = this[ENTRIES_MAP][id];
+        if (!entry) {
+            entry = this.createEntry(item);
+            this.list.appendChild(entry);
+            this[ENTRIES_MAP][id] = entry;
+            this[SYNCHRONIZE](() => {
+                let value = Array.from(this.value);
+                value.push(item);
+                this.value = value;
+            });
+        }
         return entry;
     }
 
