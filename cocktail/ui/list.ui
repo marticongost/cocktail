@@ -40,6 +40,10 @@
         this.empty = true;
     }
 
+    get entries() {
+        return this.list.childNodes;
+    }
+
     createEntries() {
         if (this.dataBinding && this.value) {
             for (let item of this.value) {
