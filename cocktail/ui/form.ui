@@ -253,8 +253,11 @@
         }
     }
 
-    focusFirstControl() {
+    focusFirstControl(groupId = null) {
         for (let field of this[FIELD_MAP].values()) {
+            if (groupId && field.dataBinding.member[cocktail.ui.group] != groupId) {
+                continue;
+            }
             if (field.focusControl()) {
                 return;
             }
