@@ -4,7 +4,8 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:ui="http://www.whads.com/ns/cocktail/ui"
     dataState="pending"
-    columnsReady="false">
+    columnsReady="false"
+    selectableEntriesSelector=".cocktail-ui-Table-Row">
 
     <ui:using mixin="cocktail.ui.Selectable"/>
     <ui:using mixin="cocktail.ui.DataSourceConsumer"/>
@@ -364,6 +365,10 @@
             }
         }
     }
+
+    get selectionContainer() {
+        return this.body;
+    }
     ?>
 
     <?js
@@ -527,10 +532,6 @@
     <div id="emptyNotice">
         <ui:translation/>
     </div>
-
-    <?js
-    this.selectionContainer = this.body;
-    ?>
 
 </div>
 

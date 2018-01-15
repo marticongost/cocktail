@@ -90,6 +90,8 @@
             for (let panel of [this.selectedEntriesPanel, this.availableEntriesPanel]) {
                 let entry = panel[ENTRY_MAP].get(serializedValue);
                 if (!entry) {
+                    console.log(serializedValue);
+                    console.log(panel[ENTRY_MAP]);
                     throw new cls.InexistentEntryError(this, value);
                 }
                 if (selected) {
@@ -159,7 +161,9 @@
     this.createEntries();
     ?>
 
-    <div ui:component="Panel" selectionType="multiple" tabindex="0">
+    <div ui:component="Panel"
+        selectionType="multiple"
+        tabindex="0">
 
         <ui:using mixin="cocktail.ui.Selectable"/>
 
@@ -179,6 +183,10 @@
         getEntry(locale) {
             return this[ENTRY_MAP].get(locale);
         }
+
+        get selectionContainer() {
+            return this.entryList;
+        }
         ?>
 
         <?js
@@ -191,11 +199,7 @@
             ?>
         </ui:cocktail.ui.ActionList>
 
-        <ul id="entryList">
-            <?js
-            instance.selectionContainer = element;
-            ?>
-        </ul>
+        <ul id="entryList"/>
 
     </div>
 
@@ -203,7 +207,7 @@
         <div id="label"/>
     </li>
 
-    <ui:Panel id="selectedEntriesPanel" selectableEntriesSelector="[chosen]">
+    <ui:Panel id="selectedEntriesPanel" selectableEntriesSelector=".Entry[chosen]">
         <ui:with ui:element="heading">
             <ui:translation/>
         </ui:with>
@@ -231,7 +235,7 @@
         </ui:with>
     </ui:Panel>
 
-    <ui:Panel id="availableEntriesPanel" selectableEntriesSelector=":not([chosen])">
+    <ui:Panel id="availableEntriesPanel" selectableEntriesSelector=".Entry:not([chosen])">
         <ui:with ui:element="heading">
             <ui:translation/>
         </ui:with>
