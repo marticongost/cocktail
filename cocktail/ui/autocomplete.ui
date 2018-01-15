@@ -120,6 +120,10 @@
             this.value = null;
         }
     }
+
+    get selectionContainer() {
+        return this.entryList;
+    }
     ?>
 
     <?on-window click
@@ -267,10 +271,6 @@
         ?>
 
     </li>
-
-    <?js
-    this.selectionContainer = this.entryList;
-    ?>
 
 </div>
 

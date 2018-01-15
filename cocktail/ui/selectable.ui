@@ -5,15 +5,17 @@
     xmlns:ui="http://www.whads.com/ns/cocktail/ui">
 
     <ui:requires component="cocktail.ui.collections"/>
+    <ui:requires component="cocktail.ui.iteration"/>
+    <ui:requires component="cocktail.ui.dom"/>
 
     <ui:symbol name="PREV_CLICK_ELEMENT"/>
     <ui:symbol name="PREV_CLICK_TIME"/>
-    <ui:symbol name="SELECTION_CONTAINER"/>
-    <ui:symbol name="OBSERVER"/>
-
-    <?head
-    const CONTENT_ONLY = ":not(link):not(script)";
-    ?>
+    <ui:symbol name="FIRST_SELECTABLE_ELEMENT"/>
+    <ui:symbol name="LAST_SELECTABLE_ELEMENT"/>
+    <ui:symbol name="NEXT_SELECTABLE_ELEMENT"/>
+    <ui:symbol name="PREV_SELECTABLE_ELEMENT"/>
+    <ui:symbol name="ADD_SELECTABLE_ELEMENT"/>
+    <ui:symbol name="REMOVE_SELECTABLE_ELEMENT"/>
 
     <ui:property
         name="selectedElements"
@@ -62,8 +64,7 @@
         name="selectableEntriesSelector"
         type="string"
         reflected="true"
-        default=""
-        normalization="(value) => value ? value + CONTENT_ONLY : CONTENT_ONLY"/>
+        final="true"/>
 
     <ui:property
         name="activationType"
@@ -78,7 +79,6 @@
         default="300"/>
 
     <?js
-    this.selectionContainer = this;
     this[this.constructor.selectedElements.VALUE] = new Set();
     ?>
 
@@ -87,7 +87,7 @@
         return;
     }
 
-    let target = this.getSelectableElementInPath(e.path);
+    const target = this.getSelectableElementInPath(e.path);
 
     if (target) {
 
@@ -156,7 +156,7 @@
             this.selectionCursor = null;
         }
         else if (multiple) {
-            let elements = this.getSelectableElements();
+            let elements = new Set(this.iterSelectableElements());
             this.selectedElements = elements;
             this.selectionCursor = elements[elements.length - 1];
         }
@@ -164,7 +164,7 @@
         e.stopPropagation();
     }
 
-    let axis = this.selectionAxis;
+    const axis = this.selectionAxis;
     let target, direction;
 
     // Home
@@ -227,37 +227,6 @@
     ?>
 
     <?class
-    get selectionContainer() {
-        return this[SELECTION_CONTAINER];
-    }
-
-    set selectionContainer(value) {
-        if (this[OBSERVER]) {
-            this[OBSERVER].disconnect();
-            this[OBSERVER] = null;
-        }
-        this[SELECTION_CONTAINER] = value;
-        if (value) {
-            let observer = new MutationObserver((mutations) => {
-                for (let mutation of mutations) {
-                    this.selectableElementsMutated(mutation);
-                }
-            });
-            observer.observe(value, {childList: true});
-            this[OBSERVER] = observer;
-        }
-    }
-
-    selectableElementsMutated(mutation) {
-        if (mutation.removedNodes.length) {
-            let elements = new Set(mutation.removedNodes);
-            if (this.selectionCursor && elements.has(this.selectionCursor)) {
-                this.selectionCursor = mutation.previousSibling;
-            }
-            this.setElementsSelected(elements, false);
-        }
-    }
-
     selectionActivated() {
     }
 
@@ -276,26 +245,24 @@
         return Array.from(this.selectedElements, (element) => element.value);
     }
 
+    *iterSelectableElements() {
+        let element = this[FIRST_SELECTABLE_ELEMENT];
+        while (element) {
+            yield element;
+            element = element[NEXT_SELECTABLE_ELEMENT];
+        }
+    }
+
     getSelectableElements() {
-        let selector = this.selectableEntriesSelector;
-        if (selector) {
-            return Array.from(this.selectionContainer.children).filter(
-                (child) => child.matches(selector)
-            );
-        }
-        else {
-            return this.selectionContainer.children;
-        }
+        return Array.from(this.iterSelectableElements());
     }
 
     getFirstSelectableElement() {
-        let elements = this.getSelectableElements();
-        return elements.length ? elements[0] : null;
+        return this[FIRST_SELECTABLE_ELEMENT] || null;
     }
 
     getLastSelectableElement() {
-        let elements = this.getSelectableElements();
-        return elements.length ? elements[elements.length - 1] : null;
+        return this[LAST_SELECTABLE_ELEMENT] || null;
     }
 
     getNextSelectableElement(element = null) {
@@ -305,23 +272,11 @@
         }
 
         if (element) {
-            let selector = this.selectableEntriesSelector;
-            let next = element.nextSibling;
-            while (next) {
-                if (
-                    next.nodeType == 1
-                    && (!selector || next.matches(selector))
-                ) {
-                    return next;
-                }
-                next = next.nextSibling;
-            }
+            return element[NEXT_SELECTABLE_ELEMENT];
         }
         else {
             return this.getFirstSelectableElement();
         }
-
-        return null;
     }
 
     getPreviousSelectableElement(element = null) {
@@ -330,28 +285,12 @@
             element = this.selectionCursor;
         }
 
-        if (element) {
-            let selector = this.selectableEntriesSelector;
-            let previous = element.previousSibling;
-            while (previous) {
-                if (
-                    previous.nodeType == 1
-                    && (!selector || previous.matches(selector))
-                ) {
-                    return previous;
-                }
-                previous = previous.previousSibling;
-            }
-        }
-
-        return null;
+        return element && element[PREV_SELECTABLE_ELEMENT] || null;
     }
 
     getSelectableElementInPath(path) {
-        for (var i = 0; i < path.length - 2; i++) {
-            let element = path[i];
-            let container = path[i + 1];
-            if (container == this.selectionContainer) {
+        for (let element of path) {
+            if (element.matches && element.matches(this.selectableEntriesSelector)) {
                 return element;
             }
         }
@@ -425,7 +364,7 @@
     }
 
     selectFirst(scroll = true) {
-        let first = this.getFirstSelectableElement();
+        const first = this.getFirstSelectableElement();
         if (first) {
             this.selectedElements = [first];
             if (scroll) {
@@ -437,7 +376,7 @@
     }
 
     selectLast(scroll = true) {
-        let last = this.getLastSelectableElement();
+        const last = this.getLastSelectableElement();
         if (last) {
             this.selectedElements = [last];
             if (scroll) {
@@ -470,6 +409,127 @@
             return true;
         }
         return false;
+    }
+
+    get selectionContainer() {
+        return this.shadowRoot || this;
+    }
+
+    [ADD_SELECTABLE_ELEMENT](node) {
+        if (node.matches(this.selectableEntriesSelector)) {
+            const prev = cocktail.iteration.first(
+                cocktail.dom.iterElementsBackwards(node, this.selectionContainer),
+                (item) => item === this[LAST_SELECTABLE_ELEMENT] || item[NEXT_SELECTABLE_ELEMENT]
+            );
+            const next = cocktail.iteration.first(
+                cocktail.dom.iterElementsForward(node, this.selectionContainer),
+                (item) => item === this[FIRST_SELECTABLE_ELEMENT] || item[PREV_SELECTABLE_ELEMENT]
+            );
+
+            if (prev) {
+                prev[NEXT_SELECTABLE_ELEMENT] = node;
+                node[PREV_SELECTABLE_ELEMENT] = prev;
+            }
+            else {
+                this[FIRST_SELECTABLE_ELEMENT] = node;
+            }
+
+            if (next) {
+                next[PREV_SELECTABLE_ELEMENT] = node;
+                node[NEXT_SELECTABLE_ELEMENT] = next;
+            }
+            else {
+                this[LAST_SELECTABLE_ELEMENT] = node;
+            }
+        }
+    }
+
+    [REMOVE_SELECTABLE_ELEMENT](node, unselected) {
+        const prev = node[PREV_SELECTABLE_ELEMENT];
+        const next = node[NEXT_SELECTABLE_ELEMENT];
+        delete node[PREV_SELECTABLE_ELEMENT];
+        delete node[NEXT_SELECTABLE_ELEMENT];
+
+        if (prev) {
+            prev[NEXT_SELECTABLE_ELEMENT] = next;
+        }
+
+        if (next) {
+            next[PREV_SELECTABLE_ELEMENT] = prev;
+        }
+
+        if (node === this[FIRST_SELECTABLE_ELEMENT]) {
+            this[FIRST_SELECTABLE_ELEMENT] = next;
+        }
+
+        if (node === this[LAST_SELECTABLE_ELEMENT]) {
+            this[LAST_SELECTABLE_ELEMENT] = prev;
+        }
+
+        if (node === this.selectionCursor) {
+            this.selectionCursor = prev;
+        }
+
+        if (node.classList.contains("cocktail-ui-selected")) {
+            unselected.add(node);
+        }
+    }
+    ?>
+
+    <?js
+    // Maintain a linked list of selectable elements, to relocate the selection cursor when its referred element is removed
+    const observeSelectableElements = () => {
+        new MutationObserver((mutations) => {
+
+            const unselected = new Set();
+
+            for (let mutation of mutations) {
+
+                if (mutation.type == "attributes") {
+                    const wasSelectable = PREV_SELECTABLE_ELEMENT in mutation.target;
+                    const isSelectable = mutation.target.matches(this.selectableEntriesSelector);
+                    if (wasSelectable != isSelectable) {
+                        if (isSelectable) {
+                            this[ADD_SELECTABLE_ELEMENT](mutation.target);
+                        }
+                        else {
+                            this[REMOVE_SELECTABLE_ELEMENT](mutation.target, unselected);
+                        }
+                    }
+                }
+                else {
+                    // Add selectable nodes
+                    for (let node of mutation.addedNodes) {
+                        this[ADD_SELECTABLE_ELEMENT](node);
+                    }
+
+                    // Remove selectable nodes
+                    for (let node of mutation.removedNodes) {
+                        this[REMOVE_SELECTABLE_ELEMENT](node, unselected);
+                    }
+                }
+            }
+
+            if (unselected.size) {
+                this.setElementsSelected(unselected, false);
+            }
+        }).observe(this.selectionContainer, {
+            childList: true,
+            subtree: true,
+            attributes: true
+        });
+    }
+
+    // Wait until the root element for selectable elements is available
+    if (this.selectionContainer) {
+        observeSelectableElements();
+    }
+    else {
+        new MutationObserver((mutations) => {
+            if (this.selectionContainer) {
+                observeSelectableElements();
+            }
+        }).observe(this.shadowRoot || this, {childList: true, subtree: true});
     }
     ?>
 
