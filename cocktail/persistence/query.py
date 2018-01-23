@@ -522,20 +522,23 @@ class Query(object):
         """Create an optimized execution plan for the given set of filters."""
 
         plan = []
-        And = expressions.AndExpression
+
+        def _descend_expressions(expr):
+            for child_expr in expr.iter_filter_expressions(self):
+                if child_expr is expr:
+                    yield expr
+                else:
+                    for descendant_expr in _descend_expressions(child_expr):
+                        yield descendant_expr
 
         for filter in filters:
-            # Flatten regular AND expressions
-            if isinstance(filter, And):
-                for operand in filter.operands:
-                    plan.append((operand.resolve_filter(self), operand))
-            else:
-                plan.append((filter.resolve_filter(self), filter))
+            for expr in _descend_expressions(filter):
+                plan.append((expr.resolve_filter(self), expr))
 
         plan.sort()
 
-        for resolution, filter in plan:
-            yield (filter, resolution[1])
+        for resolution, expr in plan:
+            yield (expr, resolution[1])
 
     def _get_expression_index(self, expr, member = None):
 
@@ -885,6 +888,16 @@ def _get_index_value(member, value, language = None):
     if member.translated:
         value = (require_language(language), value)
     return value
+
+def _iter_filter_expressions(self, query):
+    yield self
+
+expressions.Expression.iter_filter_expressions = _iter_filter_expressions
+
+def _iter_and_filter_expressions(self, query):
+    return filter.operands
+
+expressions.AndExpression.iter_filter_expressions = _iter_and_filter_expressions
 
 def _expression_resolution(self, query):
     return ((0, 0), None)
