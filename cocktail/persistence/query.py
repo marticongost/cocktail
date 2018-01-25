@@ -895,7 +895,7 @@ def _iter_filter_expressions(self, query):
 expressions.Expression.iter_filter_expressions = _iter_filter_expressions
 
 def _iter_and_filter_expressions(self, query):
-    return filter.operands
+    return self.operands
 
 expressions.AndExpression.iter_filter_expressions = _iter_and_filter_expressions
 
