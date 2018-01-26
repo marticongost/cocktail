@@ -107,6 +107,7 @@ class Member(Variable):
     translated = False
     translation = None
     translation_source = None
+    translatable_values = False
     translatable_enumeration = False
     custom_translation_key = None
 
@@ -522,8 +523,10 @@ class Member(Variable):
             )
         elif (
             (value or value == 0)
-            and self.translatable_enumeration
-            and self.enumeration
+            and self.translatable_values or (
+                self.translatable_enumeration
+                and self.enumeration
+            )
         ):
             return translations(
                 self,
