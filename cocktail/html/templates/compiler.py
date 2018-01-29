@@ -90,6 +90,13 @@ class TemplateCompiler(object):
         self._pop()
         self.__parser = None
 
+    def __repr__(self):
+        return "%s <%s.%s>" % (
+            self.__class__.__name__,
+            self.pkg_name,
+            self.class_name
+        )
+
     def compile(self, xml):
         try:
             self.__parser.Parse(xml, True)
