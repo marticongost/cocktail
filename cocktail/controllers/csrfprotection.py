@@ -68,10 +68,15 @@ def _csrf_token_injection():
         code = (
             ni("""
             <script type="text/javascript">
-            cocktail.declare("cocktail.csrfprotection");
-            cocktail.setVariable("cocktail.csrfprotection.cookieName", %s);
-            cocktail.setVariable("cocktail.csrfprotection.field", %s);
-            cocktail.setVariable("cocktail.csrfprotection.header", %s);
+                if (!window.cocktail) {
+                    var cocktail = {};
+                }
+                if (!cocktail.csrfprotection) {
+                    cocktail.csrfprotection = {};
+                }
+                cocktail.csrfprotection.cookieName = %s;
+                cocktail.csrfprotection.field = %s;
+                cocktail.csrfprotection.header = %s;
             </script>
             <script type="text/javascript" src="%s"></script>
             """)
@@ -154,7 +159,7 @@ class CSRFProtection(object):
     def should_require_token(self):
         """Specifies wether the current request should be protected.
 
-        By default, all POST requests are protected.
+        By default, all POST, PUT and DELETE requests are protected.
 
         :return: True if the request should be protected, False otherwise.
         :rtype: True
@@ -164,7 +169,7 @@ class CSRFProtection(object):
         except CSRFProtectionExemption:
             return False
         else:
-            return cherrypy.request.method == "POST"
+            return cherrypy.request.method in ("POST", "PUT", "DELETE")
 
     def generate_token(self):
         """Generate a Synchronizer Token.
