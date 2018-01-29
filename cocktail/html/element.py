@@ -274,6 +274,16 @@ class Element(object):
             (", class=" + repr(class_name)) if class_name else ""
         )
 
+    # Disposal
+    #------------------------------------------------------------------------------
+    def dispose(self):
+
+        if self.__children is not None:
+            for child in self.__children:
+                child.dispose()
+
+        self.__dict__.clear()
+
     # Rendering
     #--------------------------------------------------------------------------
 
