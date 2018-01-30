@@ -91,44 +91,31 @@
 }
 
 #icon {
+    --color: $panel-action-color;
+
+    :host-context(.cocktail-ui-ActionList.secondary) & {
+        --color: $secondary-panel-action-color;
+    }
 
     :host([buttonStyle='iconBesideText']) & {
         display: inline-block;
         vertical-align: middle;
         margin-right: 0.5em;
+        --width: 1.5em;
     }
 
     :host([buttonStyle='iconAboveText']) & {
         display: block;
         margin-bottom: 0.1em;
+        --width: 1.8em;
     }
 
     :host([buttonStyle='textOnly']) & {
         display: none;
     }
 
-    svg {
-        height: auto;
-
-        * {
-            fill: $panel-action-color !important;
-
-            :host-context(.cocktail-ui-ActionList.secondary) & {
-                fill: $secondary-panel-action-color !important;
-            }
-        }
-
-        :host([buttonStyle='iconBesideText']) & {
-            width: 1.5em;
-        }
-
-        :host([buttonStyle='iconAboveText']) & {
-            width: 1.8em;
-        }
-
-        :host([state='emphasized']) & * {
-            fill: $focus-color !important;
-        }
+    :host([state='emphasized']) & {
+        --color: $focus-color;
     }
 }
 
