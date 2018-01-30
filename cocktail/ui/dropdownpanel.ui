@@ -63,7 +63,7 @@
     <button id="button">
         <?on click
         instance.expanded = !instance.expanded;
-        event.stopPropagation();
+        e.stopPropagation();
         ?>
         <span id="label">
             <slot name="label"/>
@@ -79,7 +79,7 @@
     <div id="panelWrapper">
         <div id="panel">
             <?on click
-            event.stopPropagation();
+            e.stopPropagation();
             ?>
             <div id="panelContent">
                 <slot/>
