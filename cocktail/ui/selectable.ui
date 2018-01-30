@@ -16,6 +16,8 @@
     <ui:symbol name="PREV_SELECTABLE_ELEMENT"/>
     <ui:symbol name="ADD_SELECTABLE_ELEMENT"/>
     <ui:symbol name="REMOVE_SELECTABLE_ELEMENT"/>
+    <ui:symbol name="ALTERNATE_CSS_CLASSES"/>
+    <ui:symbol name="ALTERNATING_CSS_CLASSES"/>
 
     <ui:property
         name="selectedElements"
@@ -78,6 +80,12 @@
         reflected="true"
         default="300"/>
 
+    <ui:property
+        name="appliesAlternateCSSClasses"
+        type="boolean"
+        reflected="true"
+        default="false"/>
+
     <?js
     this[this.constructor.selectedElements.VALUE] = new Set();
     ?>
@@ -136,21 +144,22 @@
         return;
     }
 
+    const multiple = (this.selectionType == "multiple");
+
+    // Enter activates the current selection
     if (
         e.which == cocktail.ui.keys.ENTER
         && this.activationType != "none"
         && this.selectedElements.size
     ) {
-
-        this.selectionActivated();
         e.preventDefault();
         e.stopPropagation();
+        this.selectionActivated();
     }
-
-    let multiple = (this.selectionType == "multiple");
-
     // Select all (ctrl + a), empty selection (ctrl + shift + a)
-    if (e.which == 65 && e.ctrlKey) {
+    else if (e.which == 65 && e.ctrlKey) {
+        e.preventDefault();
+        e.stopPropagation();
         if (e.shiftKey) {
             this.selectedElements = [];
             this.selectionCursor = null;
@@ -160,69 +169,32 @@
             this.selectedElements = elements;
             this.selectionCursor = elements[elements.length - 1];
         }
-        e.preventDefault();
-        e.stopPropagation();
-    }
-
-    const axis = this.selectionAxis;
-    let target, direction;
-
-    // Home
-    if (e.which == cocktail.ui.keys.HOME && !e.ctrlKey && !e.altKey) {
-        target = this.getFirstSelectableElement();
-        direction = (axis == "vertical" ? "up" : "left");
-    }
-    // End
-    else if (e.which == cocktail.ui.keys.END && !e.ctrlKey && !e.altKey) {
-        target = this.getLastSelectableElement();
-        direction = (axis == "vertical" ? "bottom" : "right");
     }
     else {
-        if (axis == "vertical") {
-            // Up
-            if (e.which == cocktail.ui.keys.UP) {
-                target = this.getPreviousSelectableElement();
-                direction = "up";
-            }
-            // Down
-            else if (e.which == cocktail.ui.keys.DOWN) {
-                target = this.getNextSelectableElement();
-                direction = "bottom";
-            }
-        }
-        else if (axis == "horizontal") {
-            // Left
-            if (e.which == cocktail.ui.keys.LEFT) {
-                target = this.getPreviousSelectableElement();
-                direction = "left";
-            }
-            // Right
-            else if (e.which == cocktail.ui.keys.RIGHT) {
-                target = this.getNextSelectableElement();
-                direction = "right";
-            }
-        }
-    }
+        const motion = this.getSelectionMotionForKeyboardEvent(e);
 
-    if (target) {
-        if (multiple && e.ctrlKey) {
-            this.setElementSelected(target, true);
+        if (motion) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (motion.target) {
+                if (multiple && e.ctrlKey) {
+                    this.setElementSelected(motion.target, true);
+                }
+                else if (multiple && e.shiftKey) {
+                    this.setRangeSelected(this.selectionCursor, motion.target, true);
+                }
+                else {
+                    this.selectedElements = [motion.target];
+                }
+                this.selectionCursor = motion.target;
+                motion.target.scrollIntoViewIfNeeded(false);
+            }
+            else if (motion.direction) {
+                cocktail.ui.trigger(this, "keyboardSelectionOverflow", {
+                    direction: motion.direction
+                });
+            }
         }
-        else if (multiple && e.shiftKey) {
-            this.setRangeSelected(this.selectionCursor, target, true);
-        }
-        else {
-            this.selectedElements = [target];
-        }
-        this.selectionCursor = target;
-        target.scrollIntoViewIfNeeded(false);
-        e.preventDefault();
-        e.stopPropagation();
-    }
-    else if (direction) {
-        cocktail.ui.trigger(this, "keyboardSelectionOverflow", {
-            direction: direction
-        });
     }
     ?>
 
@@ -441,10 +413,16 @@
             else {
                 this[LAST_SELECTABLE_ELEMENT] = node;
             }
+
+            return true;
         }
+
+        return false;
     }
 
     [REMOVE_SELECTABLE_ELEMENT](node, unselected) {
+
+        let altered = false;
         const prev = node[PREV_SELECTABLE_ELEMENT];
         const next = node[NEXT_SELECTABLE_ELEMENT];
         delete node[PREV_SELECTABLE_ELEMENT];
@@ -452,27 +430,103 @@
 
         if (prev) {
             prev[NEXT_SELECTABLE_ELEMENT] = next;
+            altered = true;
         }
 
         if (next) {
             next[PREV_SELECTABLE_ELEMENT] = prev;
+            altered = true;
         }
 
         if (node === this[FIRST_SELECTABLE_ELEMENT]) {
             this[FIRST_SELECTABLE_ELEMENT] = next;
+            altered = true;
         }
 
         if (node === this[LAST_SELECTABLE_ELEMENT]) {
             this[LAST_SELECTABLE_ELEMENT] = prev;
+            altered = true;
         }
 
         if (node === this.selectionCursor) {
             this.selectionCursor = prev;
+            altered = true;
         }
 
         if (node.classList.contains("cocktail-ui-selected")) {
             unselected.add(node);
+            altered = true;
         }
+
+        return altered;
+    }
+
+    [ALTERNATE_CSS_CLASSES]() {
+        if (this[ALTERNATING_CSS_CLASSES]) {
+            return;
+        }
+        this[ALTERNATING_CSS_CLASSES] = true;
+        try {
+            let odd = true;
+            for (let element of this.iterSelectableElements()) {
+                if (odd) {
+                    element.classList.remove("cocktail-ui-even");
+                    element.classList.add("cocktail-ui-odd");
+                }
+                else {
+                    element.classList.remove("cocktail-ui-odd");
+                    element.classList.add("cocktail-ui-even");
+                }
+                odd = !odd;
+            }
+        }
+        finally {
+            window.setTimeout(() => this[ALTERNATING_CSS_CLASSES] = false, 1);
+        }
+    }
+
+    getSelectionMotionForKeyboardEvent(e) {
+
+        const axis = this.selectionAxis;
+
+        // Home
+        if (e.which == cocktail.ui.keys.HOME && !e.ctrlKey && !e.altKey) {
+            return {
+                direction: (axis == "vertical" ? "up" : "left"),
+                target: this.getFirstSelectableElement()
+            };
+        }
+        // End
+        else if (e.which == cocktail.ui.keys.END && !e.ctrlKey && !e.altKey) {
+            return {
+                direction: (axis == "vertical" ? "bottom" : "right"),
+                target: this.getLastSelectableElement()
+            };
+        }
+        else {
+            if (axis == "vertical") {
+                // Up
+                if (e.which == cocktail.ui.keys.UP) {
+                    return {direction: "up", target: this.getPreviousSelectableElement()};
+                }
+                // Down
+                else if (e.which == cocktail.ui.keys.DOWN) {
+                    return {direction: "bottom", target: this.getNextSelectableElement()};
+                }
+            }
+            else if (axis == "horizontal") {
+                // Left
+                if (e.which == cocktail.ui.keys.LEFT) {
+                    return {direction: "left", target: this.getPreviousSelectableElement()};
+                }
+                // Right
+                else if (e.which == cocktail.ui.keys.RIGHT) {
+                    return {direction: "right", target: this.getNextSelectableElement()};
+                }
+            }
+        }
+
+        return null;
     }
     ?>
 
@@ -481,7 +535,12 @@
     const observeSelectableElements = () => {
         new MutationObserver((mutations) => {
 
+            if (this[ALTERNATING_CSS_CLASSES]) {
+                return;
+            }
+
             const unselected = new Set();
+            let altered = false;
 
             for (let mutation of mutations) {
 
@@ -490,28 +549,32 @@
                     const isSelectable = mutation.target.matches(this.selectableEntriesSelector);
                     if (wasSelectable != isSelectable) {
                         if (isSelectable) {
-                            this[ADD_SELECTABLE_ELEMENT](mutation.target);
+                            altered = this[ADD_SELECTABLE_ELEMENT](mutation.target) || altered;
                         }
                         else {
-                            this[REMOVE_SELECTABLE_ELEMENT](mutation.target, unselected);
+                            altered = this[REMOVE_SELECTABLE_ELEMENT](mutation.target, unselected) || altered;
                         }
                     }
                 }
                 else {
                     // Add selectable nodes
                     for (let node of mutation.addedNodes) {
-                        this[ADD_SELECTABLE_ELEMENT](node);
+                        altered = this[ADD_SELECTABLE_ELEMENT](node) || altered;
                     }
 
                     // Remove selectable nodes
                     for (let node of mutation.removedNodes) {
-                        this[REMOVE_SELECTABLE_ELEMENT](node, unselected);
+                        altered = this[REMOVE_SELECTABLE_ELEMENT](node, unselected) || altered;
                     }
                 }
             }
 
             if (unselected.size) {
                 this.setElementsSelected(unselected, false);
+            }
+
+            if (altered && this.appliesAlternateCSSClasses) {
+                window.setTimeout(() => this[ALTERNATE_CSS_CLASSES](), 1);
             }
         }).observe(this.selectionContainer, {
             childList: true,
