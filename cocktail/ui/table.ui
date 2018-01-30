@@ -34,6 +34,22 @@
     }
     ?>
 
+    <?on keydown
+    // The RIGHT and LEFT key expand / collapse tree rows
+    if (this.selectionCursor && this.selectionCursor instanceof cls.TreeRow) {
+        if (e.which == cocktail.ui.keys.RIGHT) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.selectionCursor.expanded = true;
+        }
+        else if (e.which == cocktail.ui.keys.LEFT) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.selectionCursor.expanded = false;
+        }
+    }
+    ?>
+
     <ui:property
         name="autoload"
         type="boolean"
@@ -98,6 +114,14 @@
         if (newValue) {
             this.searchValues = newValue.defaults();
         }
+        ?>
+    </ui:property>
+
+    <ui:property
+        name="treeChildrenCollection"
+        reflected="true">
+        <?on changed
+        this.appliesAlternateCSSClasses = Boolean(newValue);
         ?>
     </ui:property>
 
@@ -225,15 +249,23 @@
     }
 
     createColumns() {
+
         if (this.columnsReady) {
             return;
         }
         this.columnsReady = true;
+
+        if (this.treeChildrenCollection) {
+            const heading = document.createElement("div");
+            heading.id = "expanderHeading";
+            this.headers.append(heading);
+        }
+
         for (let member of this.visibleMembers) {
             let locales = member.translated ? this.visibleLocales : [null];
             for (let language of locales) {
-                let heading = this.createHeading(member, language);
-                this.headingsRow.appendChild(heading);
+                const heading = this.createHeading(member, language);
+                this.headers.appendChild(heading);
             }
         }
     }
@@ -274,7 +306,7 @@
             if (outerWidth) {
                 let innerWidth = table.body.clientWidth;
                 if (innerWidth != outerWidth) {
-                    table.headingsRow.style.width = `calc(100% - ${outerWidth - innerWidth}px)`;
+                    table.headers.style.paddingRight = `${outerWidth - innerWidth}px`;
                     return;
                 }
             }
@@ -291,14 +323,13 @@
     }
 
     clear() {
-        cocktail.ui.empty(this.headingsRow);
+        cocktail.ui.empty(this.headers);
         this.columnsReady = false;
         this.clearRows();
     }
 
     clearRows() {
         cocktail.ui.empty(this.body);
-        this.selectedElements = [];
     }
 
     reload() {
@@ -308,12 +339,16 @@
         }
     }
 
+    get rows() {
+        return this.body.childNodes;
+    }
+
     addRow(record, position = null) {
 
         let row = this.createRow(record);
 
         if (position) {
-            let anchor = (position.before || position.after);
+            let anchor = (position.before || position.after || position.inside);
 
             if (typeof(anchor) == "string") {
                 anchor = this.getRow(anchor);
@@ -323,11 +358,16 @@
                 throw `Invalid row position: ${position}`;
             }
 
-            if (position.after) {
-                anchor = anchor.nextSibling;
+            if (position.inside) {
+                row.depth = position.inside.depth + 1;
+                anchor.nestedRowsContainer.appendChild(row);
             }
-
-            this.body.insertBefore(row, anchor);
+            else {
+                if (position.after) {
+                    anchor = anchor.nextSibling;
+                }
+                this.body.insertBefore(row, anchor);
+            }
         }
         else {
             this.body.appendChild(row);
@@ -337,7 +377,9 @@
     }
 
     createRow(record) {
-        let row = this.constructor.Row.create();
+        const rowComponent = this.treeChildrenCollection ? this.constructor.TreeRow : this.constructor.Row;
+        const row = rowComponent.create();
+        row.treeChildrenCollection = this.treeChildrenCollection;
         row.visibleMembers = this.visibleMembers;
         row.visibleLocales = this.visibleLocales;
         row.dataBinding = this.dataBinding.itemBinding(null, record);
@@ -369,6 +411,32 @@
     get selectionContainer() {
         return this.body;
     }
+
+    getSelectionMotionForKeyboardEvent(e) {
+
+        if (this.selectionCursor && this.selectionCursor instanceof cls.TreeRow) {
+
+            // Alt + UP and Alt + DOWN jump over branches
+            if (e.altKey) {
+                if (e.which == cocktail.ui.keys.UP) {
+                    if (this.selectionCursor.previousElementSibling) {
+                        return {direction: "up", target: this.selectionCursor.previousElementSibling};
+                    }
+                }
+                else if (e.which == cocktail.ui.keys.DOWN) {
+                    if (this.selectionCursor.nextElementSibling) {
+                        return {direction: "up", target: this.selectionCursor.nextElementSibling};
+                    }
+                }
+            }
+            // PREV PAGE goes back to the parent
+            else if (e.which == cocktail.ui.keys.PREV_PAGE) {
+                return {direction: "up", target: this.selectionCursor.parentRow};
+            }
+        }
+
+        return super.getSelectionMotionForKeyboardEvent(e);
+    }
     ?>
 
     <?js
@@ -380,29 +448,27 @@
     }
     ?>
 
-    <table id="table">
+    <div id="table">
 
-        <thead id="head">
-            <tr id="headingsRow"/>
-        </thead>
+        <div id="headers"/>
 
-        <tbody id="body" tabindex="0">
+        <div id="body" tabindex="0">
             <?js
             let observer = new MutationObserver((mutations) => {
-                instance.empty = !element.rows.length;
+                instance.empty = !element.childNodes.length;
             });
             observer.observe(element, {childList: true});
             ?>
-        </tbody>
+        </div>
 
-    </table>
+    </div>
 
-    <th ui:component="Heading">
+    <div ui:component="Heading">
         <span id="label"/>
         <span id="languageLabel"/>
-    </th>
+    </div>
 
-    <tr ui:component="Row">
+    <div ui:component="Row">
 
         <ui:using mixin="cocktail.ui.DataDisplay"/>
 
@@ -411,15 +477,20 @@
             return this.parentInstance;
         }
 
+        get cells() {
+            return this.childNodes;
+        }
+
         createCells() {
+
             for (let member of this.visibleMembers) {
                 if (member.translated) {
                     for (let locale of this.visibleLocales) {
-                        this.appendChild(this.createCell(member, locale));
+                        this.rowContent.appendChild(this.createCell(member, locale));
                     }
                 }
                 else {
-                    this.appendChild(this.createCell(member));
+                    this.rowContent.appendChild(this.createCell(member));
                 }
             }
         }
@@ -477,7 +548,11 @@
         }
         ?>
 
-        <td ui:component="Cell">
+        <?js
+        this.rowContent = this;
+        ?>
+
+        <div ui:component="Cell">
 
             <ui:using mixin="cocktail.ui.DataDisplay"/>
 
@@ -518,9 +593,105 @@
             cocktail.ui.Table.setCellWidth(this, this.dataBinding.member);
             ?>
 
-        </td>
+        </div>
 
-    </tr>
+    </div>
+
+    <ui:Row ui:component="TreeRow">
+
+        <ui:property
+            name="expanded"
+            type="boolean"
+            reflected="true"
+            default="false">
+            <?on changed
+            if (newValue) {
+                this.loadNestedRows();
+            }
+            else {
+                this.clearNestedRows();
+            }
+            ?>
+        </ui:property>
+
+        <ui:property
+            name="depth"
+            type="number"
+            reflected="true"
+            default="0">
+            <?on changed
+            this.style.setProperty("--depth", newValue);
+
+            for (let nestedRow of this.nestedRows) {
+                nestedRow = newValue + 1;
+            }
+            ?>
+        </ui:property>
+
+        <ui:property
+            name="hasNestedRows"
+            type="boolean"
+            reflected="true"
+            default="false"/>
+
+        <?class
+        get cells() {
+            const nodes = Array.from(this.rowContent.childNodes);
+            nodes.shift();
+            return nodes;
+        }
+
+        get parentRow() {
+            return this.parentNode ? this.parentNode.parentNode : null;
+        }
+
+        getRowLabel() {
+            return this.translateValue();
+        }
+
+        get nestedRows() {
+            return this.nestedRowsContainer.childNodes;
+        }
+
+        loadNestedRows() {
+            this.clearNestedRows();
+            const children = this.value[this.treeChildrenCollection];
+            const table = this.table;
+            for (let child of children) {
+                table.addRow(child, {inside: this});
+            }
+        }
+
+        clearNestedRows() {
+            cocktail.ui.empty(this.nestedRowsContainer);
+        }
+        ?>
+
+        <?on value:changed
+        instance.rowLabel.innerHTML = instance.getRowLabel();
+        instance.hasNestedRows = Boolean(newValue[this.treeChildrenCollection].length);
+        ?>
+
+        <div id="rowContent">
+            <div id="rowExpander">
+                <button id="rowExpanderIcon">
+                    <?svg cocktail.ui://images/row-expander.svg ?>
+                    <?on click
+                    instance.expanded = !instance.expanded;
+                    e.stopPropagation();
+                    e.preventDefault();
+                    ?>
+                </button>
+                <span id="emptyRowIcon">
+                    <?svg cocktail.ui://images/empty-row.svg ?>
+                </span>
+                <span id="rowLabel"/>
+            </div>
+        </div>
+
+        <div id="nestedRowsContainer"/>
+
+    </ui:Row>
 
     <ui:cocktail.ui.LoadingSign id="loadingSign"/>
 
