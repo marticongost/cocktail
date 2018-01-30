@@ -57,6 +57,19 @@ class RequestProperty(object):
     def __repr__(self):
         return "RequestProperty(%s)" % self.__call__
 
+    def get_current_value(self, instance, default = None):
+
+        try:
+            properties = cherrypy.request._cocktail_request_properties
+        except AttributeError:
+            return default
+
+        key = (self, instance)
+        try:
+            return properties[key]
+        except KeyError:
+            return default
+
     def clear(self, instance):
         properties = cherrypy.request._cocktail_request_properties
         properties.pop((self, instance), None)
