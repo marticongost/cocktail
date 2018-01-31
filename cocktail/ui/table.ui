@@ -119,7 +119,9 @@
 
     <ui:property
         name="treeChildrenCollection"
-        reflected="true">
+        type="string"
+        reflected="true"
+        default="">
         <?on changed
         this.appliesAlternateCSSClasses = Boolean(newValue);
         ?>
