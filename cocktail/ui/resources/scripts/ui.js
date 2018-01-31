@@ -744,7 +744,7 @@ cocktail.ui.splash = function (splash, mainComponent) {
     cocktail.ui.Property.types = {
         string: {
             serializeValue(value) {
-                return String(value);
+                return value === null || value === undefined ? "" : String(value);
             },
             parseValue(value) {
                 return value;
