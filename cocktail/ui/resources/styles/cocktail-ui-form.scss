@@ -144,6 +144,7 @@ legend {
 
         .explanation {
             margin-bottom: 0.8em;
+            width: 35em;
         }
     }
 }
@@ -247,8 +248,7 @@ legend {
 .explanation {
     margin-top: 0.4em;
     color: #666;
-    font-style: italic;
-    font-size: 0.8em;
+    font-size: 0.85em;
 
     &:empty {
         display: none;
