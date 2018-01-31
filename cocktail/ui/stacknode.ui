@@ -12,12 +12,34 @@
         name="animationState"
         type="string"
         default="none"
+        reflected="true">
+        <?on changed
+        if (this[STACK_PARENT]) {
+            this[STACK_PARENT].childAnimationState = newValue;
+        }
+        ?>
+    </ui:property>
+
+    <ui:property
+        name="childAnimationState"
+        type="string"
         reflected="true"/>
 
     <ui:property
         name="animationType"
         type="string"
         default="slide"
+        reflected="true">
+        <?on changed
+        if (this[STACK_PARENT]) {
+            this[STACK_PARENT].childAnimationType = newValue;
+        }
+        ?>
+    </ui:property>
+
+    <ui:property
+        name="childAnimationType"
+        type="string"
         reflected="true"/>
 
     <ui:property
@@ -88,7 +110,7 @@
 
     <?js
     // Reflect properties on the header/main elements, to simplify styling / animation
-    for (let prop of ["animationState", "animationType", "stackNodeVisibility", "isStackRoot"]) {
+    for (let prop of ["animationState", "childAnimationState", "animationType", "childAnimationType", "stackNodeVisibility", "isStackRoot"]) {
         const attr = prop.toLowerCase();
         const sync = () => {
             this.header.setAttribute(attr, this.getAttribute(attr));

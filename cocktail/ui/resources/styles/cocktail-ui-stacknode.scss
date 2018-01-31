@@ -1,6 +1,29 @@
 
 @import "cocktail.ui://styles/common";
 
+@mixin covered-node {
+    border-color: $stacknode-covered-border-color;
+}
+
+@mixin covered-heading {
+    transform: scale($stacknode-covered-heading-scale);
+    color: $stacknode-covered-heading-color;
+}
+
+@mixin covered-header {
+    border-color: $stacknode-covered-panel-border-color;
+    background-color: $stacknode-covered-panel-background-color;
+    padding-left: 1em;
+}
+
+@mixin covered-main {
+    opacity: 0.3;
+}
+
+@mixin covered-header-content {
+    opacity: 0;
+}
+
 @keyframes doNothing {
 }
 
@@ -9,14 +32,14 @@
     to { opacity: 0; }
 }
 
-@keyframes dimNode {
-    from { opacity: 1; }
-    to { opacity: 0.6; }
-}
-
-@keyframes fadeFrame {
-    from { border-color: $stacknode-exposed-border-color; }
-    to { border-color: $stacknode-covered-border-color; }
+@keyframes coverNode {
+    from {
+        opacity: 1;
+        border-color: $stacknode-exposed-border-color;
+    }
+    to {
+        @include covered-node;
+    }
 }
 
 @keyframes slideContent {
@@ -24,12 +47,16 @@
     to { padding-top: 0%; }
 }
 
-@keyframes fadeMain {
-    from { opacity: 1; }
-    to { opacity: 0; }
+@keyframes coverMain {
+    from {
+        opacity: 1;
+    }
+    to {
+        @include covered-main;
+    }
 }
 
-@keyframes diminishHeading {
+@keyframes coverHeading {
     from {
         transform: scale(1);
         color: $stacknode-exposed-heading-color;
@@ -37,25 +64,26 @@
         top: 0;
     }
     to {
-        transform: scale($stacknode-covered-heading-scale);
-        color: $stacknode-covered-heading-color;
+        @include covered-heading;
     }
 }
 
-@keyframes fadePanel {
+@keyframes coverHeader {
     from {
         border-color: $stacknode-exposed-panel-border-color;
         background-color: $stacknode-exposed-panel-background-color;
+        padding-left: 1.3em;
     }
     to {
-        border-color: $stacknode-covered-panel-border-color;
-        background-color: $stacknode-covered-panel-background-color;
+        @include covered-header;
     }
 }
 
-@keyframes fadeHeaderContent {
+@keyframes coverHeaderContent {
     from { opacity: 1; }
-    to { opacity: 0; }
+    to {
+        @include covered-header-content;
+    }
 }
 
 :host {
@@ -63,81 +91,6 @@
     flex: 1 1 auto;
     flex-direction: column;
     position: relative;
-}
-
-// Fade
-:host([animationState='closed'][animationType='fade']) {
-    opacity: 0;
-}
-
-:host([animationState='opening'][animationType='fade']) {
-    animation: $stacknode-animation-duration reverse fadeNode;
-}
-
-:host([animationState='closing'][animationType='fade']) {
-    animation: $stacknode-animation-duration * 1.5 fadeNode;
-    position: absolute;
-    left: 0;
-    top: 0;
-    right: 0;
-    bottom: 0;
-}
-
-:host([animationState='childOpening'][animationType='fade']) {
-    animation: $stacknode-animation-duration dimNode;
-}
-
-:host([animationState='childClosing'][animationType='fade']) {
-    animation: $stacknode-animation-duration reverse dimNode;
-}
-
-// Slide
-:host([animationState='opening'][animationType='slide']) {
-    animation: $stacknode-animation-duration slideContent;
-}
-
-:host([animationState='closing'][animationType='slide']) {
-    animation: $stacknode-animation-duration reverse slideContent;
-}
-
-:host([animationState='childOpening'][animationType='slide']) {
-    animation: $stacknode-animation-duration fadeFrame;
-
-    #header {
-        animation: $stacknode-animation-duration fadePanel;
-    }
-
-    #headerContent {
-        animation: $stacknode-animation-duration fadeHeaderContent;
-    }
-
-    #heading {
-        animation: $stacknode-animation-duration diminishHeading;
-    }
-
-    #main {
-        animation: $stacknode-animation-duration fadeMain;
-    }
-}
-
-:host([animationState='childClosing'][animationType='slide']) {
-    animation: $stacknode-animation-duration reverse fadeFrame;
-
-    #header {
-        animation: $stacknode-animation-duration reverse fadePanel;
-    }
-
-    #headerContent {
-        animation: $stacknode-animation-duration reverse fadeHeaderContent;
-    }
-
-    #heading {
-        animation: $stacknode-animation-duration reverse diminishHeading;
-    }
-
-    #main {
-        animation: $stacknode-animation-duration reverse fadeMain;
-    }
 }
 
 #stackNodeContent {
@@ -150,7 +103,7 @@
     box-shadow: 0 0 25px rgba(30,30,30,0.1);
     background-color: white;
 
-    :host([stackNodeVisibility='covered']) & {
+    :host([stackNodeVisibility='covered'][animationStye='none']) & {
         pointer-events: none;
         border: 1px solid $stacknode-covered-border-color;
     }
@@ -165,9 +118,8 @@
     border-bottom: $panel-border;
     padding-left: 1.3rem;
 
-    :host([stackNodeVisibility='covered'][animationType='slide']) & {
-        border: none;
-        background: none;
+    :host([isStackRoot='false'][stackNodeVisibility='covered'][animationState='none']) & {
+        @include covered-header;
     }
 }
 
@@ -184,9 +136,8 @@
     position: relative;
     transform-origin: top left;
 
-    :host([stackNodeVisibility='covered'][animationType='slide']) & {
-        transform: scale($stacknode-covered-heading-scale);
-        color: $stacknode-covered-heading-color;
+    :host([stackNodeVisibility='covered'][animationState='none']) & {
+        @include covered-heading;
     }
 }
 
@@ -215,7 +166,7 @@
     }
 
     :host([stackNodeVisibility='covered'][animationState='none']) & {
-        opacity: 0;
+        @include covered-main;
     }
 }
 
@@ -229,6 +180,80 @@
 
     &:empty {
         display: none;
+    }
+}
+
+// Fade
+:host([animationType='fade'][animationState='closed']) {
+    opacity: 0;
+}
+
+:host([animationType='fade'][animationState='opening']) {
+    animation: $stacknode-animation-duration reverse fadeNode;
+}
+
+:host([animationType='fade'][animationState='closing']) {
+    animation: $stacknode-animation-duration * 1.5 fadeNode;
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+// Slide
+:host([animationType='slide'][animationState='opening']) {
+    animation: $stacknode-animation-duration slideContent;
+}
+
+:host([animationType='slide'][animationState='closing']) {
+    animation: $stacknode-animation-duration reverse slideContent;
+}
+
+// Child animation
+:host([animationState='childOpening']) {
+    animation: $stacknode-animation-duration coverNode;
+}
+
+:host([animationState='childOpening'][isStackRoot='false']) {
+
+    #header {
+        animation: $stacknode-animation-duration coverHeader;
+    }
+
+    #headerContent {
+        animation: $stacknode-animation-duration coverHeaderContent;
+    }
+
+    #heading {
+        animation: $stacknode-animation-duration coverHeading;
+    }
+
+    #main {
+        animation: $stacknode-animation-duration coverMain;
+    }
+}
+
+:host([animationState='childClosing']) {
+    animation: $stacknode-animation-duration reverse coverNode;
+}
+
+:host([animationState='childClosing'][isStackRoot='false']) {
+
+    #header {
+        animation: $stacknode-animation-duration reverse coverHeader;
+    }
+
+    #headerContent {
+        animation: $stacknode-animation-duration reverse coverHeaderContent;
+    }
+
+    #heading {
+        animation: $stacknode-animation-duration reverse coverHeading;
+    }
+
+    #main {
+        animation: $stacknode-animation-duration reverse coverMain;
     }
 }
 

@@ -17,11 +17,11 @@
 
         let stackTop = this[STACK_TOP];
         stackNode.isStackRoot = !stackTop;
-        stackNode.animationState = "opening";
 
         if (stackTop) {
             stackTop.stackDescendants.appendChild(stackNode);
             stackNode[STACK_PARENT] = stackTop;
+            stackTop.childAnimationType = stackNode.animationType;
             stackTop.animationState = "childOpening";
         }
         else {
@@ -30,6 +30,7 @@
         }
 
         this[STACK_TOP] = stackNode;
+        stackNode.animationState = "opening";
         cocktail.ui.trigger(this, "stackNodePushed", {stackNode});
         cocktail.ui.trigger(this, "stackChanged", {previousNode: stackTop, newNode: stackNode});
         return stackNode;
