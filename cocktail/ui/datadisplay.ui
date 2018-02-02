@@ -154,7 +154,7 @@
         if (
             this.value
             && change.type == "modify"
-            && this.getAttribute("value") === change.id
+            && this.getAttribute("value") == change.id
         ) {
             this.value = change.newState;
         }
