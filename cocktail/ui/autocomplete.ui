@@ -195,7 +195,7 @@
 
     <?on value:changed
     if (newValue) {
-        this.searchText = this.dataBinding.member.translateValue(newValue);
+        this.searchText = this.translateValue();
     }
     this.searchState = newValue ? "match" : (this.searchText ? "searching" : "empty");
     ?>
