@@ -36,6 +36,7 @@
     }
 
     clear() {
+        this[ENTRIES_MAP] = {};
         cocktail.ui.empty(this.list);
         this[SYNCHRONIZE](() => {
             this.value = [];
