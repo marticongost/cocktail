@@ -893,10 +893,6 @@
 
     cocktail.schema.MemberReference = class MemberReference extends cocktail.schema.Member {
 
-        constructor(parameters = null) {
-            super(parameters);
-        }
-
         getPossibleValues(obj = null) {
             let values = super.getPossibleValues(obj);
             if (!values && this.sourceSchema) {
