@@ -23,7 +23,7 @@ class MemberReference(Member):
         if value:
             return translations(value, language = language, **kwargs)
         else:
-            return Member.translate_value(value, language = language, **kwargs)
+            return Member.translate_value(self, value, language = language, **kwargs)
 
     def get_possible_values(self, context = None):
 
