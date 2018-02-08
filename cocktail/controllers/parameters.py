@@ -342,7 +342,10 @@ def parse_member_reference(self, reader, value):
     return value
 
 def serialize_member_reference(self, value):
-    return value and value.full_name or ""
+    if value:
+        return value.get_qualified_name(include_ns = True)
+    else:
+        return ""
 
 schema.MemberReference.parse_request_value = parse_member_reference
 schema.MemberReference.serialize_request_value = serialize_member_reference
