@@ -3,6 +3,7 @@ u"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
+from cocktail.translations import translations
 from cocktail.schema.member import Member
 
 
@@ -17,6 +18,12 @@ class MemberReference(Member):
     SCHEMAS = 2
 
     kind = MEMBERS | SCHEMAS
+
+    def translate_value(self, value, language = None, **kwargs):
+        if value:
+            return translations(value, language = language, **kwargs)
+        else:
+            return Member.translate_value(value, language = language, **kwargs)
 
     def get_possible_values(self, context = None):
 
