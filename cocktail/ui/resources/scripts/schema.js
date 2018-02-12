@@ -747,6 +747,7 @@
         copyAttribute(copy, key, value, parameters) {
             if (key == ITEMS && value) {
                 value = value.copy(parameters);
+                claimMember(copy, value, pkg.membershipTypes.collectionItems);
             }
             super.copyAttribute(copy, key, value, parameters);
         }
