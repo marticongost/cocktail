@@ -695,6 +695,10 @@
             return value;
         }
 
+        getTypeOfValue(value) {
+            return this.relatedType;
+        }
+
         getPossibleValues(obj = null) {
             let values = super.getPossibleValues(obj);
             if (!values) {
