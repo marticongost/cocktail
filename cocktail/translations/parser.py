@@ -457,7 +457,7 @@ class TranslationsFileNode(object):
 
     @property
     def func_name(self):
-        return self.path.replace(".", "__")
+        return self.path.replace(".", "__").replace("-", "_")
 
     def iter_definitions(self):
 
