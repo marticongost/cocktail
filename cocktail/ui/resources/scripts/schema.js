@@ -689,8 +689,19 @@
         }
 
         toJSONValue(value) {
-            if (value && typeof(value) == "object") {
-                value = value[this.type.primaryMember.name];
+            if (value) {
+                if (typeof(value) == "object") {
+                    if (
+                        this.integral
+                        || (this.membershipType == pkg.membershipTypes.collectionItems && this.owner && this.owner.integral)
+                    ) {
+                        const type = this.getTypeOfValue(value);
+                        value = type.toJSONValue(value);
+                    }
+                    else {
+                        value = value[this.type.primaryMember.name];
+                    }
+                }
             }
             return value;
         }
