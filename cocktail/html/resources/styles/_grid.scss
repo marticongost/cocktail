@@ -164,6 +164,21 @@ $grid-margin: 50px;
     }
 }
 
+@function grid-select-value($size-map, $size: null) {
+    @if not $size {
+        $size: $current-grid-size;
+    }
+    @if not $size {
+        @error "No grid size selected";
+    }
+    @each $expr, $value in $size-map {
+        @if grid-size-matches($size, $expr) {
+            @return $value;
+        }
+    }
+    @return null;
+}
+
 @mixin grid($expr: "any-size") {
     @each $size, $size-properties in $grid-definition {
         @if grid-size-matches($size, $expr) {
@@ -287,6 +302,12 @@ $grid-margin: 50px;
     }
     @if not $size {
         @error "No grid size selected";
+    }
+    @if type-of($n) == map {
+        $n: grid-select-value($n, $size);
+        @if $n == null {
+            @error "No matching grid size expression in the provided map";
+        }
     }
     $size-properties: map-get($grid-definition, $size);
     $col-width: map-get($size-properties, col-width);
