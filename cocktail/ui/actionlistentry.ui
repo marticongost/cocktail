@@ -28,6 +28,7 @@
     <ui:property
         name="buttonStyle"
         type="string"
+        default="auto"
         reflected="true"/>
 
     <?class
