@@ -4,7 +4,8 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:ui="http://www.whads.com/ns/cocktail/ui"
     selectionType="single"
-    activationType="singleClick">
+    activationType="singleClick"
+    selectableEntriesSelector=".Entry">
 
     <ui:requires component="cocktail.ui.delay"/>
     <ui:requires component="cocktail.ui.displayfactories"/>
