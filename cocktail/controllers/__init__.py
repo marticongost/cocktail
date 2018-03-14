@@ -28,6 +28,7 @@ from cocktail.controllers.static import (
     serve_file
 )
 from cocktail.controllers.controller import Controller
+from cocktail.controllers.httpmethodcontroller import HTTPMethodController
 from cocktail.controllers.formprocessor import FormProcessor, Form
 from cocktail.controllers.formcontrollermixin import FormControllerMixin
 from cocktail.controllers.dispatcher import (

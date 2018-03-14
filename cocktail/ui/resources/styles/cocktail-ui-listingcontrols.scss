@@ -1,0 +1,30 @@
+
+:host {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.cocktail-ui-DropdownPanel {
+    flex: 0 0 auto;
+    margin-right: 1rem;
+}
+
+#searchForm {
+    flex: 1 1 auto;
+
+    :host(:not([searchEnabled='true'])) & {
+        display: none;
+    }
+}
+
+#resultCountLabel {
+    font-size: 0.9em;
+}
+
+:host([translatedModel='false']) {
+    #localesPanel {
+        display: none;
+    }
+}
+

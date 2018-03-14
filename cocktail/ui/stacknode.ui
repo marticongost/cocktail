@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <?head
+    const STACK_PARENT = Symbol.for("cocktail.ui.Stack.STACK_PARENT");
+    ?>
+
+    <ui:property
+        name="animationState"
+        type="string"
+        default="none"
+        reflected="true">
+        <?on changed
+        if (this[STACK_PARENT]) {
+            this[STACK_PARENT].childAnimationState = newValue;
+        }
+        ?>
+    </ui:property>
+
+    <ui:property
+        name="childAnimationState"
+        type="string"
+        reflected="true"/>
+
+    <ui:property
+        name="animationType"
+        type="string"
+        default="slide"
+        reflected="true">
+        <?on changed
+        if (this[STACK_PARENT]) {
+            this[STACK_PARENT].childAnimationType = newValue;
+        }
+        ?>
+    </ui:property>
+
+    <ui:property
+        name="childAnimationType"
+        type="string"
+        reflected="true"/>
+
+    <ui:property
+        name="stackNodeVisibility"
+        type="string"
+        reflected="true">
+        <?on changed
+        if (newValue == "exposed") {
+            cocktail.ui.trigger(this, "nodeExposed");
+        }
+        else if (newValue == "covered") {
+            cocktail.ui.trigger(this, "nodeCovered");
+        }
+        ?>
+    </ui:property>
+
+    <ui:property
+        name="isStackRoot"
+        type="boolean"
+        reflected="true"/>
+
+    <?class
+    get stackParent() {
+        return this[STACK_PARENT];
+    }
+
+    get stackChild() {
+        return this.stackDescendants.firstChild;
+    }
+    ?>
+
+    <?on animationend
+    const state = this.animationState;
+    this.animationState = state == "closing" ? "closed" : "none";
+
+    if (state == "opening" || state == "childClosing") {
+        this.stackNodeVisibility = "exposed";
+    }
+    else if (state == "closing" || state == "childOpening") {
+        this.stackNodeVisibility = "covered";
+    }
+    ?>
+
+    <div id="stackNodeContent">
+
+        <div id="header">
+            <?js
+            // Add a class to simplify styling using host-context()
+            element.classList.add("cocktail-ui-StackNode-header");
+            ?>
+            <div id="headingWrapper">
+                <div id="heading"/>
+            </div>
+            <div id="headerContent"/>
+        </div>
+
+        <div id="main">
+            <?js
+            // Add a class to simplify styling using host-context()
+            element.classList.add("cocktail-ui-StackNode-main");
+            ?>
+        </div>
+
+    </div>
+
+    <div id="stackDescendants"/>
+
+
+    <?js
+    // Reflect properties on the header/main elements, to simplify styling / animation
+    for (let prop of ["animationState", "childAnimationState", "animationType", "childAnimationType", "stackNodeVisibility", "isStackRoot"]) {
+        const attr = prop.toLowerCase();
+        const sync = () => {
+            this.header.setAttribute(attr, this.getAttribute(attr));
+            this.main.setAttribute(attr, this.getAttribute(attr));
+        };
+        this.addEventListener(prop + "Changed", sync);
+        sync();
+    }
+    ?>
+
+</div>
+

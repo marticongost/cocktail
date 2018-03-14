@@ -1,0 +1,123 @@
+
+@import "cocktail.ui://styles/common";
+
+:host {
+    display: flex;
+}
+
+:host([buttonStyle='iconBesideText']) {
+    white-space: nowrap;
+    flex-direction: row;
+}
+
+:host([buttonStyle='iconAboveText']) {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+#dropdownPanel {
+    display: flex;
+    align-items: stretch;
+    flex: 1 1 auto;
+    flex-direction: column;
+    padding: 0;
+
+    :host([extra='true']) & {
+        display: block;
+        width: 100%;
+        text-align: left;
+        padding: 0.7em 0.7em;
+    }
+
+    &[expanded='false']:hover {
+
+        :host(:not([state='disabled'])) & {
+            background-color: $panel-hover-color;
+        }
+
+        :host([state='visible']) & {
+
+            #label {
+                color: $panel-action-highlight-color;
+            }
+
+            #icon svg * {
+                fill: $panel-action-highlight-color !important;
+            }
+        }
+
+        :host([state='emphasized']) & {
+
+            #label {
+                color: darken($focus-color, 10);
+            }
+
+            #icon svg * {
+                fill: darken($focus-color, 10) !important;
+            }
+        }
+    }
+}
+
+#icon {
+
+    :host([buttonStyle='iconBesideText']) & {
+        display: inline-block;
+        vertical-align: middle;
+        margin-right: 0.5em;
+    }
+
+    :host([buttonStyle='iconAboveText']) & {
+        display: block;
+        margin-bottom: 0.1em;
+    }
+
+    :host([buttonStyle='textOnly']) & {
+        display: none;
+    }
+
+    svg {
+        height: auto;
+
+        * {
+            fill: $panel-action-color !important;
+        }
+
+        :host([buttonStyle='iconBesideText']) & {
+            width: 1.5em;
+        }
+
+        :host([buttonStyle='iconAboveText']) & {
+            width: 1.8em;
+        }
+
+        :host([state='emphasized']) & * {
+            fill: $focus-color !important;
+        }
+    }
+}
+
+#label {
+    font-size: 1em;
+    color: $panel-action-color;
+
+    :host([buttonStyle='iconBesideText']) & {
+        vertical-align: middle;
+        font-size: 0.9em;
+    }
+
+    :host([buttonStyle='iconAboveText']) & {
+        font-size: 0.8em;
+    }
+
+    :host([buttonStyle='textOnly']) & {
+        font-size: 0.9em;
+    }
+
+    :host([state='emphasized']) & {
+        font-weight: bold;
+        color: $focus-color;
+    }
+}
+
+

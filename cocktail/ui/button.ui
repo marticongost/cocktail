@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<button
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui"
+    type="button">
+
+    <ui:property
+        name="iconURL"
+        type="string"
+        reflected="true">
+        <?on changed
+        cocktail.loadSVG(newValue, this.icon);
+        ?>
+    </ui:property>
+
+    <ui:property
+        name="text"
+        type="string"
+        reflected="true">
+        <?on changed
+        updateText(instance);
+        ?>
+    </ui:property>
+
+    <ui:property
+        name="textVisible"
+        type="boolean"
+        reflected="true"
+        default="true">
+        <?on changed
+        updateText(instance);
+        ?>
+    </ui:property>
+
+    <?head
+    let updateText = function (instance) {
+        if (instance.textVisible) {
+            instance.label.innerHTML = instance.text || "";
+            instance.title = "";
+        }
+        else {
+            instance.label.innerHTML = "";
+            instance.title = instance.text || "";
+        }
+    }
+    ?>
+
+    <span id="icon"/>
+    <span id="label"/>
+
+</button>
+

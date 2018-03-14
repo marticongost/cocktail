@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:property
+        name="tabId"
+        type="string"
+        reflected="true"
+        final="true"/>
+
+    <ui:property
+        name="selected"
+        type="boolean"
+        reflected="true"
+        default="false">
+
+        <?on changed
+        this.button.selected = newValue;
+        if (newValue && !this.revealed) {
+            this.revealed = true;
+            cocktail.ui.trigger(this, "tabRevealed");
+        }
+        ?>
+    </ui:property>
+
+    <?class
+    connectedCallback() {
+        this.tabs = this.parentNode;
+        this.tabs.strip.appendChild(this.button);
+        cocktail.ui.link(
+            this.tabs,
+            this,
+            ["selectedTab", "selected"],
+            (tabs, tab) => {
+                tab.selected = (tabs.selectedTab === tab);
+            },
+            (tab, tabs) => {
+                if (tab.selected) {
+                    tabs.selectedTab = tab;
+                }
+                else if (tabs.selectedTab === tab) {
+                    tabs.selectedTab = null;
+                }
+            },
+            false
+        );
+
+        let param = this.tabs.queryParameter;
+        let tabId = null;
+
+        if (param) {
+            let queryValues = URI(location.href).query(true);
+            tabId = queryValues[param];
+            if (tabId && tabId == this.tabId) {
+                this.selected = true;
+            }
+        }
+
+        if ((!param || !tabId) && !this.tabs.selectedTab) {
+            this.selected = true;
+        }
+    }
+
+    disconnectedCallback() {
+        if (this.tabs) {
+            this.selected = false;
+            this.tabs.strip.removeChild(this.button);
+            this.tabs = null;
+        }
+    }
+    ?>
+
+    <ui:Button id="button" ui:placement="none">
+        <?js
+        element.tab = instance;
+        ?>
+    </ui:Button>
+
+    <button
+        ui:component="Button"
+        type="button">
+
+        <ui:property
+            name="selected"
+            type="boolean"
+            reflected="true"
+            default="false"/>
+
+        <?on click
+        this.tab.selected = true;
+        ?>
+    </button>
+
+    <slot id="content"/>
+
+</div>
+

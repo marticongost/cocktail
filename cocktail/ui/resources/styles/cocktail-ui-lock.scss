@@ -1,0 +1,77 @@
+
+@import "cocktail.ui://styles/common";
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+@keyframes spin {
+    from { transform: rotate(0); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes pulsate {
+    0% { transform: scale(1.0); }
+    50% { transform: scale(0.8); }
+    100% { transform: scale(1.0); }
+}
+
+:host {
+    z-index: 2;
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255,255,255,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Arial, sans serif;
+    animation: fadeIn 0.3s;
+}
+
+:host([lockState='closing']) {
+    animation: fadeOut 0.3s;
+}
+
+#panel {
+    background: $panel-background;
+    border: 1px solid $strong-panel-border-color;
+    box-shadow: $panel-shadow;
+    padding: 1em;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+#icon {
+    margin-right: 0.8em;
+    transform-origin: center;
+    width: 1.8rem;
+
+    :host([iconAnimation='spin']) & {
+        animation: spin 1.5s infinite;
+    }
+
+    :host([iconAnimation='pulsate']) & {
+        animation: pulsate 2s infinite;
+    }
+
+    svg {
+        fill: #666 !important;
+    }
+}
+
+#label {
+    max-width: 40vw;
+    color: #444;
+    font-size: 1rem;
+}
+

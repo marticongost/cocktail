@@ -297,6 +297,13 @@ class Member(Variable):
         """
         member_copy = self.__deepcopy__({})
 
+        # Set 'primary' before any other property, to avoid constraint
+        # violations (f. eg. setting required = False, primary = False would
+        # fail if the 'required' property was set first)
+        primary = kwargs.pop("primary", None)
+        if primary is not None:
+            member_copy.primary = primary
+
         for key, value in kwargs.iteritems():
             obj = member_copy
 
@@ -704,7 +711,7 @@ def translate_member(
 
     if include_type_default:
         for member_type in member.__class__.__mro__:
-            if issubclass(member_type, Member) and member_type is not Member:
+            if issubclass(member_type, Member):
                 translation = translations(
                     get_full_name(member_type)
                         + ".default_member_translation"

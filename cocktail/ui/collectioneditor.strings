@@ -1,0 +1,15 @@
+
+[cocktail.ui.CollectionEditor]
+
+    [addButton]
+    ca: Afegir
+    es: Añadir
+    en: add
+
+    [Entry]
+
+        [removeButton]
+        ca: Eliminar
+        es: Eliminar
+        en: Delete
+
