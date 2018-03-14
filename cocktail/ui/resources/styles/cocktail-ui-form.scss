@@ -1,0 +1,292 @@
+
+@import "cocktail.ui://styles/common";
+
+$group-separation: 3em;
+$subgroup-separation: 1.5em;
+
+:host([tabbed='true']) {
+    display: flex;
+    flex-direction: column;
+}
+
+#errorList {
+    background-color: $form-errors-background-color;
+    padding: 1rem 1.3rem;
+    margin: 0;
+    list-style-type: none;
+    color: white;
+
+    &:empty {
+        display: none;
+    }
+
+    .ErrorMessage {
+
+        em {
+            font-style: normal;
+            font-weight: bold;
+        }
+
+        & + .ErrorMessage {
+            margin-top: 0.5em;
+        }
+
+        &[causedByMember='true'] {
+            cursor: pointer;
+
+            &:hover em {
+                text-decoration: underline;
+            }
+        }
+    }
+}
+
+#tabs {
+    flex: 1 1 auto;
+
+    :host([tabbed='false']) & {
+        display: none;
+    }
+}
+
+.field[readOnly='true'] .controlContainer {
+    color: #444;
+
+    :host-context([selected]) & {
+        color: darken($selection-foreground, 10);
+    }
+}
+
+fieldset {
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+legend {
+    padding: 0;
+    margin: 0;
+    font-weight: bold;
+    font-size: 1.2em;
+    color: $heading-color;
+
+    &:empty {
+        display: none;
+    }
+
+    // Hide the legend if the group is a tab
+    .Group[level='-1'] > fieldset > & {
+        display: none;
+    }
+}
+
+#fieldsContainer:not(:empty) + #groupsContainer:not(:empty) {
+    margin-top: $group-separation;
+}
+
+.Group[level='0'] + .Group {
+    margin-top: $group-separation;
+}
+
+:host([tabbed='true']) .Group[level='0']:first-child {
+    margin-top: $subgroup-separation;
+}
+
+.fields_container:not(:empty) + .groups_container:not(:empty) {
+    margin-top: $group-separation;
+}
+
+:host([groupsLayout='row']) {
+
+    #groupsContainer {
+        display: flex;
+        flex-direction: row;
+
+        .Group[level='0'] + .Group {
+            margin-top: 0;
+            margin-left: 5em;
+        }
+    }
+}
+
+.Group[level='0'] > fieldset > legend:not(:empty) + .fieldsContainer {
+    border-top: 1px dotted lighten($heading-color, 30);
+    margin-top: 0.5em;
+    padding-top: 1.5em;
+}
+
+.Group[level='0'] .Group {
+    margin-top: $subgroup-separation;
+
+    legend {
+        font-size: 1.1em;
+        color: $subheading-color;
+    }
+
+    legend:not(:empty) + .fieldsContainer {
+        margin-top: 0.8em;
+    }
+}
+
+:host([formLayout='column']) {
+
+    .field {
+
+        & + .field {
+            margin-top: 1.5em;
+        }
+
+        &[labelDisposition='normal'] {
+            .labelContainer + .controlContainer {
+                margin-top: 0.3em;
+            }
+        }
+
+        .explanation {
+            margin-bottom: 0.8em;
+            width: 35em;
+        }
+    }
+}
+
+:host([formLayout='row']) {
+
+    #fieldsContainer {
+        display: flex;
+        flex-direction: row;
+
+        .field {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+
+            & + .field {
+                &[labelDisposition='hidden'] {
+                    margin-left: 1em;
+                }
+
+                &[labelDisposition='normal'] {
+                    margin-left: 2em;
+                }
+            }
+
+            &[labelDisposition='normal'] {
+                .labelContainer + .controlContainer {
+                    margin-left: 1em;
+                }
+            }
+        }
+    }
+}
+
+:host([formLayout='verticalTable']) {
+
+    #fieldsContainer {
+        display: table;
+
+        .field {
+            display: table-row;
+
+            .labelContainer {
+                display: table-cell;
+                padding-right: 1em;
+                white-space: nowrap;
+            }
+
+            .controlContainer {
+                display: table-cell;
+            }
+
+            & + .field {
+                .labelContainer,
+                .controlContainer {
+                    padding-top: 0.5em;
+                }
+            }
+        }
+    }
+}
+
+:host([formLayout='horizontalTable']) {
+
+    #fieldsContainer {
+        display: flex;
+        flex-direction: row;
+    }
+}
+
+.field[labelDisposition='afterControl'] {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    .controlContainer {
+        order: 1;
+        margin-right: 0.5em;
+
+        .control {
+            display: block;
+        }
+    }
+
+    .labelContainer {
+        order: 2;
+    }
+}
+
+.field[labelDisposition='hidden'] .labelContainer {
+    display: none !important;
+}
+
+.field[required='true'][controlAllowsEmptyInput='true'] > .labelContainer > .label:after {
+    content: '*';
+    font-weight: bold;
+    color: #444;
+    margin-left: 0.4em;
+}
+
+.explanation {
+    margin-top: 0.4em;
+    color: #666;
+    font-size: 0.85em;
+
+    &:empty {
+        display: none;
+    }
+
+    :host([fieldsExplanationDisposition='hidden']) & {
+        display: none;
+    }
+}
+
+.FieldTranslations {
+
+    & > .labelContainer {
+        margin-bottom: 0.5em;
+    }
+
+    .translations {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        margin: -0.5em -1em;
+
+        .Translation {
+            margin: 0.5em 1em;
+
+            .label {
+                font-size: 0.8em;
+                color: #444;
+            }
+
+            .controlContainer {
+                margin-top: 0.4em;
+            }
+
+            &:not([visible='true']) {
+                display: none;
+            }
+        }
+    }
+}
+

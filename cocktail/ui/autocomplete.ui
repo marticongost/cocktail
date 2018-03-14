@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui"
+    selectionType="single"
+    activationType="singleClick"
+    selectableEntriesSelector=".Entry">
+
+    <ui:requires component="cocktail.ui.delay"/>
+    <ui:requires component="cocktail.ui.displayfactories"/>
+
+    <ui:using mixin="cocktail.ui.Selectable"/>
+    <ui:using mixin="cocktail.ui.DataDisplay"/>
+
+    <ui:symbol name="ACTIVE_INSTANCE"/>
+    <ui:symbol name="UPDATE_SEARCH_TEXT"/>
+    <ui:symbol name="UPDATING_SEARCH_TEXT"/>
+
+    <ui:property
+        name="searchParameter"
+        type="string"
+        reflected="true"
+        default="search_text"/>
+
+    <?tail
+    cls.delegatesFocus = true;
+    ?>
+
+    <?class
+    clearValue() {
+        this.searchText = "";
+        super.clearValue();
+    }
+
+    static foldActiveInstance() {
+        if (cls[ACTIVE_INSTANCE]) {
+            cls[ACTIVE_INSTANCE].panelVisible = false;
+            cls[ACTIVE_INSTANCE] = null;
+        }
+    }
+
+    static get activeInstance() {
+        return cls[ACTIVE_INSTANCE];
+    }
+
+    selectionActivated() {
+        this.value = this.selectedElement.value;
+        this.panelVisible = false;
+    }
+
+    getDataSourceParameters(searchText) {
+        return {
+            parameters: {[this.searchParameter]: searchText},
+            locales: [cocktail.getLanguage()]
+        };
+    }
+
+    clearEntries() {
+        cocktail.ui.empty(this.entryList);
+    }
+
+    createEntries(values) {
+        for (let value of values) {
+            this.addEntry(value);
+        }
+    }
+
+    addEntry(value) {
+        let entry = this.createEntry(value);
+        this.entryList.appendChild(entry);
+        return entry;
+    }
+
+    createEntry(value) {
+        let entry = this.constructor.Entry.create();
+        entry.displayFactory = this.entriesDisplayFactory;
+        entry.dataBinding = {
+            member: this.dataBinding.member,
+            value: value
+        };
+        return entry;
+    }
+
+    [UPDATE_SEARCH_TEXT]() {
+        this[UPDATING_SEARCH_TEXT] = true;
+        let request = this.search(this.input.value);
+        this[UPDATING_SEARCH_TEXT] = false;
+        return request;
+    }
+
+    search(text) {
+
+        this.selectedElement = null;
+        this.searchText = text;
+        this.searchState = text ? "searching" : "empty";
+
+        if (text) {
+            let request = this.makeDataSourceRequest(text);
+            request.then((data) => {
+                this.processDataSourceData(data);
+                this.panelVisible = true;
+            });
+            return request;
+        }
+        else {
+            this.panelVisible = false;
+            this.value = null;
+            return Promise.resolve({});
+        }
+    }
+
+    makeDataSourceRequest(text) {
+        return this.dataSource.load(this.getDataSourceParameters(text));
+    }
+
+    processDataSourceData(data) {
+        this.results = data.records;
+        this.selectFirst();
+        if (!this.results.length) {
+            this.value = null;
+        }
+    }
+
+    get selectionContainer() {
+        return this.entryList;
+    }
+    ?>
+
+    <?on-window click
+    cls.foldActiveInstance();
+    ?>
+
+    <ui:property
+        name="dataSource"
+        reflected="false"/>
+
+    <ui:property
+        name="searchText"
+        type="string"
+        reflected="false">
+        <?on changed
+        if (!this[UPDATING_SEARCH_TEXT]) {
+            this.input.value = newValue;
+        }
+        ?>
+    </ui:property>
+
+    <ui:property
+        name="results"
+        reflected="false">
+
+        <?on changed
+        this.clearEntries();
+        this.createEntries(newValue);
+        ?>
+
+    </ui:property>
+
+    <ui:property
+        name="panelVisible"
+        type="boolean"
+        reflected="true"
+        default="false">
+
+        <?on changed
+        if (newValue) {
+            if (cls[ACTIVE_INSTANCE] !== this) {
+                cls.foldActiveInstance();
+            }
+            cls[ACTIVE_INSTANCE] = this;
+        }
+        else if (this.constructor[ACTIVE_INSTANCE] === this) {
+            cls[ACTIVE_INSTANCE] = null;
+        }
+        ?>
+
+    </ui:property>
+
+    <ui:property
+        name="searchState"
+        type="string"
+        reflected="true"
+        default="empty"/>
+
+    <?js
+    this.delay = new cocktail.ui.Delay(300, () => { this[UPDATE_SEARCH_TEXT](); });
+    this.entriesDisplayFactory = cocktail.ui.autocompleteDisplays;
+    ?>
+
+    <?on dataBinding:changed
+    if (newValue && !this.dataSource) {
+        this.dataSource = newValue.member.dataSource;
+    }
+    ?>
+
+    <?on value:changed
+    if (newValue) {
+        this.searchText = this.translateValue();
+    }
+    this.searchState = newValue ? "match" : (this.searchText ? "searching" : "empty");
+    ?>
+
+    <input
+        id="input"
+        type="text">
+
+        <?on change
+        if (cocktail.ui.isFocused(this)) {
+            instance[UPDATE_SEARCH_TEXT]();
+        }
+        ?>
+
+        <?on focus
+        this.select();
+        ?>
+
+        <?on keydown
+        if (e.which == cocktail.ui.keys.HOME || e.which == cocktail.ui.keys.END) {
+            e.stopPropagation();
+        }
+        else if (e.which == cocktail.ui.keys.ESC) {
+            if (instance.panelVisible) {
+                instance.panelVisible = false;
+            }
+            else {
+                instance.searchText = "";
+                instance.value = null;
+            }
+            return false;
+        }
+        else if (e.which == cocktail.ui.keys.DOWN) {
+            if (this.value && !instance.panelVisible) {
+                instance[UPDATE_SEARCH_TEXT]();
+                return false;
+            }
+        }
+        else if (!cocktail.ui.nonTextKeys.has(e.which) && e.which != cocktail.ui.keys.ENTER) {
+            instance.delay.begin();
+        }
+        ?>
+
+    </input>
+
+    <div id="panelWrapper">
+        <div id="panel">
+            <ul id="entryList"/>
+        </div>
+    </div>
+
+    <li ui:component="Entry">
+
+        <ui:using mixin="cocktail.ui.DataDisplay"/>
+
+        <?class
+        makeDisplay() {
+            if (this.entryDisplay) {
+                this.removeChild(this.entryDisplay);
+            }
+            this.entryDisplay = this.displayFactory.createDisplay(this.dataBinding, {wrapRawValues: false});
+            if (!this.entryDisplay) {
+                this.entryDisplay = document.createTextNode(
+                    this.dataBinding.member.translateValue(this.value)
+                );
+            }
+            this.appendChild(this.entryDisplay);
+        }
+        ?>
+
+        <?on value:changed
+        this.makeDisplay();
+        ?>
+
+    </li>
+
+</div>
+

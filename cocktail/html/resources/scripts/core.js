@@ -857,3 +857,114 @@ cocktail.normalizeResourceURI = function (uri) {
     return uri;
 }
 
+cocktail.getScrollbarWidth = function () {
+
+    if (!cocktail._scrollbarWidth) {
+
+        var outer = document.createElement("div");
+        outer.style.visibility = "hidden";
+        outer.style.width = "100px";
+        document.body.appendChild(outer);
+
+        var widthWithoutScroll = outer.offsetWidth;
+        outer.style.overflow = "scroll";
+
+        var inner = document.createElement("div");
+        inner.style.width = "100%";
+        outer.appendChild(inner);
+
+        var widthWithScroll = inner.offsetWidth;
+        outer.parentNode.removeChild(outer);
+
+        cocktail._scrollbarWidth = widthWithoutScroll - widthWithScroll;
+    }
+
+    return cocktail._scrollbarWidth;
+}
+
+cocktail.loadSVG = function (url, container) {
+    var child;
+    while (child = container.lastChild) {
+        container.removeChild(child);
+    }
+    return jQuery.ajax({url: cocktail.normalizeResourceURI(url)})
+        .done(function (xml) {
+            container.appendChild(xml.documentElement);
+        });
+}
+
+cocktail.isEmptyValue = function (value) {
+    return (
+        value === null
+        || value === undefined
+        || value === ""
+        || (value instanceof Array && !value.length)
+        || (value instanceof Set && !value.size)
+    );
+}
+
+cocktail.setShortcutIcon = function (href, type) {
+
+    href = cocktail.normalizeResourceURI(href);
+    var link = document.querySelector("link[rel='shortcut icon']");
+    var imageResolution;
+
+    // Some browsers don't support SVG shortcut icons; rasterize SVG files using a
+    // canvas element and set the shortcut icon using a data: URL.
+    if (type == "image/svg+xml") {
+        imageResolution = new Promise(function (resolve, reject) {
+            var img = document.createElement("img");
+            img.addEventListener("load", function () {
+
+                // Resize to fit a 48 x 48 square
+                var iconSize = 48;
+                var w = img.width;
+                var h = img.height;
+
+                if (w > h) {
+                    h = Math.floor(h * iconSize / w);
+                    w = iconSize;
+                }
+                else {
+                    w = Math.floor(w * iconSize / h);
+                    h = iconSize;
+                }
+
+                // Render, centered in the square
+                var canvas = document.createElement("canvas");
+                canvas.width = iconSize;
+                canvas.height = iconSize;
+                var ctx = canvas.getContext("2d");
+                ctx.drawImage(
+                    img,
+                    iconSize / 2 - w / 2,
+                    iconSize / 2 - h / 2,
+                    w,
+                    h
+                );
+
+                resolve(canvas.toDataURL());
+            });
+            img.addEventListener("error", function () { reject(); });
+            img.src = cocktail.normalizeResourceURI(href);
+        });
+    }
+    else {
+        imageResolution = Promise.resolve(href);
+    }
+
+    imageResolution.then(function (href) {
+        if (link) {
+            link.type = type;
+            link.href = href;
+        }
+        else {
+            link = document.createElement("link");
+            link.rel = "shortcut icon";
+            link.type = type;
+            link.href = href;
+            document.head.appendChild(link);
+        }
+    });
+}
+

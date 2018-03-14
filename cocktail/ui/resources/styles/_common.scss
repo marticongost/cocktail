@@ -1,0 +1,102 @@
+
+$selection-background: #666 !default;
+$selection-foreground: white !default;
+$panel-background-color: #faf9f5 !default;
+$panel-background: $panel-background-color !default;
+$panel-border-color: #e6e5df !default;
+$strong-panel-border-color: #d4d2c7 !default;
+$panel-border: 1px solid $panel-border-color !default;
+$heading-color: #8c7e68 !default;
+$subheading-color: #908c84 !default;
+$panel-action-color: #625c47 !default;
+$panel-action-highlight-color: #372f13 !default;
+$panel-hover-color: #eeebe3 !default;
+$panel-shadow: 5px 5px 15px rgba(0.4,0.4,0.4,0.1) !default;
+$secondary-panel-background-color: #fdfcf8 !default;
+$secondary-panel-background: $secondary-panel-background-color !default;
+$secondary-panel-border-color: #e8e6dd !default;
+$secondary-panel-border: 1px solid $secondary-panel-border-color !default;
+$secondary-panel-hover-color: #f5f2e7 !default;
+$secondary-panel-action-color: #908b79 !default;
+$secondary-panel-action-highlight-color: #7f7658 !default;
+$focus-color: #c88352 !default;
+$error-border-color: #e4c5c5 !default;
+$error-border: 1px solid $error-border-color !default;
+$error-background-color: #feeeee !default;
+$error-background: $error-background-color !default;
+$error-color: #8e2b2b !default;
+$error-box-padding: 0.5em !default;
+$odd-row-color: white !default;
+$even-row-color: #f8f7f5 !default;
+$stacknode-animation-duration: 0.6s !default;
+$stacknode-exposed-border-color: $strong-panel-border-color !default;
+$stacknode-covered-border-color: #ddd !default;
+$stacknode-covered-heading-scale: 0.8 !default;
+$stacknode-exposed-heading-color: #444 !default;
+$stacknode-covered-heading-color: #999 !default;
+$stacknode-covered-heading-left-offset: -0.8rem !default;
+$stacknode-covered-heading-top-offset: -0.8rem !default;
+$stacknode-exposed-panel-background-color: $panel-background-color !default;
+$stacknode-covered-panel-background-color: white !default;
+$stacknode-exposed-panel-border-color: $panel-border-color !default;
+$stacknode-covered-panel-border-color: white !default;
+$input-border-color: #ddd !default;
+$input-border: 1px solid $input-border-color !default;
+$input-padding: 0.3em !default;
+$form-errors-background-color: #946666 !default;
+$input-error-border-color: #e0a4a4 !default;
+$input-error-background-color: #fdf4f4 !default;
+$input-error-color: #8a1717 !default;
+
+@mixin focus {
+    outline: 2px auto $focus-color;
+}
+
+@mixin error-box {
+    padding: $error-box-padding;
+    border: $error-border;
+    color: $error-color;
+    background-color: $error-background-color;
+}
+
+@mixin link {
+    display: inline-block;
+    color: $focus-color;
+    background-color: transparent;
+    background-image: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+
+    &:hover {
+        text-decoration: underline;
+        color: darken($focus-color, 10);
+    }
+
+    &[disabled] {
+        opacity: 0.5;
+    }
+}
+
+@mixin table-column-size($selector, $size) {
+    .Heading#{$selector},
+    .Cell#{$selector} {
+        flex: 0 0 $size;
+    }
+}
+
+@mixin alternate-background-color($odd-color: $odd-row-color, $even-color: $even-row-color) {
+    &:nth-child(odd) {
+        background-color: $odd-color;
+    }
+    &:nth-child(even) {
+        background-color: $even-color;
+    }
+}
+
+@mixin input-with-error {
+    border: 1px solid $input-error-border-color;
+    background-color: $input-error-background-color;
+    color: $input-error-color;
+}
+

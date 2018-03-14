@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:using mixin="cocktail.ui.DataDisplay"/>
+
+    <?on value:changed
+    this.label.innerHTML = this.dataBinding.member.translateValue(newValue);
+    ?>
+
+    <div id="label"/>
+
+</div>
+

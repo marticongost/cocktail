@@ -1,0 +1,11 @@
+
+@import "cocktail.ui://styles/common";
+
+:host {
+    background: $panel-background;
+    border: $panel-border;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+

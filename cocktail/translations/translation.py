@@ -189,9 +189,9 @@ class Translations(object):
 
         return decorator
 
-    def load_bundle(self, bundle_path, callback = None, **kwargs):
+    def load_bundle(self, bundle_path, callback = None, reload = False, **kwargs):
 
-        if bundle_path not in self.__loaded_bundles:
+        if reload or bundle_path not in self.__loaded_bundles:
             self.__loaded_bundles.add(bundle_path)
 
             pkg_name, file_name = bundle_path.rsplit(".", 1)

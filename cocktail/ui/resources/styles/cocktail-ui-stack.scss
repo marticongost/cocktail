@@ -1,0 +1,20 @@
+
+:host {
+    display: flex;
+    align-content: stretch;
+    position: absolute;
+    left: 1em;
+    top: 1em;
+    right: 0;
+    bottom: 0;
+    z-index: 3;
+}
+
+#stackContent {
+    flex: 1 1 auto;
+    display: flex;
+    align-content: stretch;
+    padding-bottom: 0;
+    position: relative;
+}
+

@@ -1,0 +1,144 @@
+
+@import "cocktail.ui://styles/common";
+
+:host {
+    display: flex;
+}
+
+:host-context(.cocktail-ui-ActionList.vertical) {
+    display: block;
+}
+
+:host([buttonStyle='iconBesideText']) {
+    white-space: nowrap;
+    flex-direction: row;
+}
+
+:host([buttonStyle='iconAboveText']) {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+#button {
+    flex: 1 1 auto;
+    border: none;
+    background: none;
+    padding: 0.7em 1.3em;
+    cursor: pointer;
+    font-size: 1em;
+
+    :host-context(.cocktail-ui-ActionList.vertical) & {
+        display: block;
+        width: 100%;
+        text-align: left;
+        padding: 0.4em 0.6em;
+    }
+
+    :host-context(.cocktail-ui-ActionList.compact) & {
+        padding: 0.3em 0.7em;
+    }
+
+    :host([extra='true']) & {
+        display: block;
+        width: 100%;
+        text-align: left;
+        padding: 0.7em 0.7em;
+    }
+
+    &:hover {
+
+        :host(:not([state='disabled'])) & {
+            background-color: $panel-hover-color;
+        }
+
+        :host-context(.cocktail-ui-ActionList.secondary):host(:not([state='disabled'])) & {
+            background-color: $secondary-panel-hover-color;
+        }
+
+        :host([state='visible']) & {
+
+            #label {
+                color: $panel-action-highlight-color;
+            }
+
+            #icon svg * {
+                fill: $panel-action-highlight-color !important;
+            }
+        }
+
+        :host-context(.cocktail-ui-ActionList.secondary):host([state='visible']) & {
+
+            #label {
+                color: $secondary-panel-action-highlight-color;
+            }
+
+            #icon svg * {
+                fill: $secondary-panel-action-highlight-color !important;
+            }
+        }
+
+        :host([state='emphasized']) & {
+
+            #label {
+                color: darken($focus-color, 10);
+            }
+
+            #icon svg * {
+                fill: darken($focus-color, 10) !important;
+            }
+        }
+    }
+}
+
+#icon {
+    --color: $panel-action-color;
+
+    :host-context(.cocktail-ui-ActionList.secondary) & {
+        --color: $secondary-panel-action-color;
+    }
+
+    :host([buttonStyle='iconBesideText']) & {
+        display: inline-block;
+        vertical-align: middle;
+        margin-right: 0.5em;
+        --width: 1.5em;
+    }
+
+    :host([buttonStyle='iconAboveText']) & {
+        display: block;
+        margin-bottom: 0.1em;
+        --width: 1.8em;
+    }
+
+    :host([buttonStyle='textOnly']) & {
+        display: none;
+    }
+
+    :host([state='emphasized']) & {
+        --color: $focus-color;
+    }
+}
+
+#label {
+    font-size: 1em;
+    color: $panel-action-color;
+
+    :host([buttonStyle='iconBesideText']) & {
+        vertical-align: middle;
+        font-size: 0.9em;
+    }
+
+    :host([buttonStyle='iconAboveText']) & {
+        font-size: 0.8em;
+    }
+
+    :host([buttonStyle='textOnly']) & {
+        font-size: 0.9em;
+    }
+
+    :host([state='emphasized']) & {
+        font-weight: bold;
+        color: $focus-color;
+    }
+}
+

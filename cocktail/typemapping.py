@@ -58,3 +58,52 @@ class TypeMapping(dict):
             if value is not _undefined:
                 yield (cls, value)
 
+
+class ChainTypeMapping(TypeMapping):
+
+    __parent = None
+
+    @property
+    def parent(self):
+        return self.__parent
+
+    def new_child(self, *args, **kwargs):
+        child = self.__class__(*args, **kwargs)
+        child.__parent = self
+        return child
+
+    def get(self, cls, default = None, recursive = True):
+
+        if recursive:
+            for cls in getmro(cls):
+                mapping = self
+                while mapping is not None:
+                    value = dict.get(mapping, cls, _undefined)
+                    if value is not _undefined:
+                        return value
+                    mapping = mapping.__parent
+        else:
+            mapping = self
+            while mapping is not None:
+                value = dict.get(mapping, cls, _undefined)
+                if value is not _undefined:
+                    return value
+                mapping = mapping.__parent
+
+        return default
+
+    def iter_by_type(self, cls, recursive = True):
+        if recursive:
+            for cls in getmro(cls):
+                mapping = self
+                while mapping is not None:
+                    value = dict.get(mapping, cls, _undefined)
+                    if value is _undefined:
+                        mapping = mapping.__parent
+                    else:
+                        yield (cls, value)
+                        break
+        else:
+            for entry in TypeMapping.iter_by_type(self, cls):
+                yield entry
+

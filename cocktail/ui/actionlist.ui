@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:requires component="cocktail.ui.actions"/>
+    <ui:requires component="cocktail.ui.ActionListButton"/>
+
+    <ui:property
+        name="actions"
+        reflected="false">
+        <?on changed
+        this[ACTION_MAP] = new Map();
+        for (let action of newValue) {
+            this[ACTION_MAP].set(action.id, action);
+        }
+        this.reset();
+        ?>
+    </ui:property>
+
+    <ui:property
+        name="hasExtraActions"
+        type="boolean"
+        reflected="true"
+        default="false"/>
+
+    <ui:property
+        name="buttonStyle"
+        type="string"
+        reflected="true"
+        default="iconBesideText"/>
+
+    <?head
+    const SELECTION_CHANGED_HANDLER = Symbol();
+    const ACTION_MAP = Symbol();
+    const ENTRY_MAP = Symbol();
+    ?>
+
+    <?tail
+    cls.ActionIdError = class ActionIdError {
+        super(actionList, actionId) {
+            this.actionList = actionList;
+            this.actionId = actionId;
+        }
+        toString() {
+            return `${this.actionList} doesn't contain an action with id ${this.actionId}`;
+        }
+    }
+
+    cls.ActionPositionError = class ActionPositionError {
+        super(actionList, position) {
+            this.actionList = actionList;
+            this.position = position;
+        }
+        toString() {
+            return `${this.position} is not a valid action position of ${this.actionList}`;
+        }
+    }
+    ?>
+
+    <ui:property
+        name="selectable"
+        reflected="false">
+        <?on changed
+        if (oldValue) {
+            oldValue.removeEventListener(this[SELECTION_CHANGED_HANDLER])
+        }
+        if (newValue) {
+            newValue.addEventListener("selectionChanged", this[SELECTION_CHANGED_HANDLER]);
+        }
+        this[SELECTION_CHANGED_HANDLER](null);
+        ?>
+    </ui:property>
+
+    <?class
+    getAction(id) {
+        return this[ACTION_MAP].get(id);
+    }
+
+    requireAction(id) {
+        let action = this[ACTION_MAP].get(id);
+        if (!action) {
+            throw new cls.ActionIdError(this, id);
+        }
+        return action;
+    }
+
+    getEntry(id) {
+        return this[ENTRY_MAP].get(id);
+    }
+
+    requireEntry(id) {
+        let entry = this[ENTRY_MAP].get(id);
+        if (!entry) {
+            throw new cls.ActionIdError(this, id);
+        }
+        return entry;
+    }
+
+    addAction(action, position = null) {
+        this[ACTION_MAP].set(action.id, action);
+        this.addEntry(action, position);
+    }
+
+    invokeAction(id) {
+        this.getAction(id).invoke(this.getActionContext());
+    }
+
+    getActionContext() {
+        let context = Object.assign({}, this.actionParameters);
+        let selectable = this.selectable;
+        context.selectable = selectable;
+        context.actionList = this;
+        context.selection = selectable ? selectable.selectedValues : context.selection || [];
+        return context;
+    }
+
+    reset() {
+        this.clear();
+        this.createEntries();
+    }
+
+    clear() {
+        this[ENTRY_MAP] = new Map();
+        cocktail.ui.empty(this.entryList);
+    }
+
+    createEntries() {
+        for (let action of this.actions) {
+            this.addEntry(action);
+        }
+        cocktail.ui.trigger(this, "entriesReady");
+    }
+
+    addEntry(action, position = undefined) {
+
+        let entry = this.createEntry(action);
+
+        if (position === undefined) {
+            position = action.position;
+        }
+
+        entry.extra = (position === "extra");
+        if (entry.buttonStyle == "auto") {
+            entry.buttonStyle = entry.extra ? "iconBesideText" : this.buttonStyle;
+        }
+
+        if (position === null) {
+            this.entryList.appendChild(entry);
+        }
+        else if (position === "extra") {
+            this.extraEntryList.appendChild(entry);
+        }
+        else if (typeof(position) == "string") {
+            let [relativePosition, actionId] = position.split(" ");
+            let referenceEntry = this.requireEntry(actionId);
+
+            if (relativePosition == "after") {
+                referenceEntry = referenceEntry.nextSibling;
+            }
+            else if (relativePosition != "before") {
+                throw new cls.ActionPositionError(this, position);
+            }
+
+            referenceEntry.parentNode.insertBefore(entry, referenceEntry);
+        }
+        else {
+            throw new cls.ActionPositionError(this, position);
+        }
+
+        this[ENTRY_MAP].set(action.id, entry);
+        this.hasExtraActions = this.hasExtraActions || entry.extra;
+        return entry;
+    }
+
+    createEntry(action) {
+        let entry = action.createEntry();
+        entry.action = action;
+        entry.state = action.getState(this.getActionContext());
+        return entry;
+    }
+
+    updateEntries() {
+        let context = this.getActionContext();
+        for (let entry of this.entryList.children) {
+            entry.state = entry.action.getState(context);
+        }
+        for (let entry of this.extraEntryList.children) {
+            entry.state = entry.action.getState(context);
+        }
+    }
+
+    invalidation(change) {
+        super.invalidation(change);
+        this.updateEntries();
+    }
+    ?>
+
+    <?js
+    this.actionParameters = {};
+
+    this[SELECTION_CHANGED_HANDLER] = function (e) {
+        instance.updateEntries();
+    }
+    ?>
+
+    <ul id="entryList"/>
+
+    <ui:cocktail.ui.DropdownPanel
+        id="extraDropdown"
+        dropdownType="menu">
+        <ul id="extraEntryList"/>
+    </ui:cocktail.ui.DropdownPanel>
+
+</div>
+
