@@ -171,6 +171,10 @@
             this[PATH] = [];
         }
 
+        toString() {
+            return `${this.constructor.name}("${this.pathString}")`;
+        }
+
         get parent() {
             return this[PARENT];
         }
