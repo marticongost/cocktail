@@ -142,7 +142,9 @@
         }
 
         entry.extra = (position === "extra");
-        entry.buttonStyle = entry.extra ? "iconBesideText" : this.buttonStyle;
+        if (entry.buttonStyle == "auto") {
+            entry.buttonStyle = entry.extra ? "iconBesideText" : this.buttonStyle;
+        }
 
         if (position === null) {
             this.entryList.appendChild(entry);
