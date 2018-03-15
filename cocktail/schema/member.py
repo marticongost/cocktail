@@ -354,6 +354,10 @@ class Member(Variable):
 
         return copy
 
+    def detach_from_source_member(self):
+        self.source_member = None
+        self.original_member = self
+
     def add_validation(self, validation):
         """Adds a validation function to the member.
 
