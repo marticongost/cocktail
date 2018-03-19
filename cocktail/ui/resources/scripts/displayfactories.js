@@ -205,6 +205,10 @@ cocktail.schema.Member.prototype[cocktail.ui.editable] = cocktail.ui.EDITABLE;
 // (f. eg. form fieldsets)
 cocktail.ui.group = Symbol("cocktail.ui.group");
 
+// A symbol that makes it possible to specify the component used by the different groups
+// of a schema
+cocktail.ui.formGroupComponents = Symbol("cocktail.ui.formGroupComponents");
+
 // A symbol indicating the set of fields that should be included in data source requests
 // to display a member. Defaults to a single field, with the member's name. Set to null
 // to exclude the member from data source requests.
