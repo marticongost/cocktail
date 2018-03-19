@@ -159,7 +159,15 @@
                 parent = this.requireGroup(groupId);
             }
         }
-        parent.fieldsContainer.appendChild(field);
+        parent.appendField(field);
+    }
+
+    appendField(field) {
+        this.fieldsContainer.appendChild(field);
+    }
+
+    appendGroup(group) {
+        this.groupsContainer.appendChild(group);
     }
 
     getGroup(groupId) {
@@ -197,17 +205,35 @@
                 this.tabs.appendChild(tab);
             }
             else {
-                parent.groupsContainer.appendChild(group);
+                parent.appendGroup(group);
             }
         }
 
         return group;
     }
 
+    getGroupComponent(groupId) {
+        const groupComponents = this.dataBinding.member[cocktail.ui.formGroupComponents];
+        if (groupComponents) {
+            let component = groupComponents[groupId];
+            if (component) {
+                if (typeof component == "string") {
+                    component = cocktail.getVariable(cls);
+                }
+                if (!component.create) {
+                    component = component(this, groupId);
+                }
+                return component;
+            }
+        }
+        return cls.Group;
+    }
+
     createGroup(groupId) {
-        let group = cls.Group.create();
+        const groupClass = this.getGroupComponent(groupId);
+        const group = groupClass.create();
         group.groupId = groupId;
-        group.heading.innerHTML = this.dataBinding.member.translate(".groups." + groupId);
+        group.setGroupTitle(this.dataBinding.member.translate(".groups." + groupId));
         return group;
     }
 
@@ -793,6 +819,20 @@
             name="level"
             type="integer"
             reflected="true"/>
+
+        <?class
+        setGroupTitle(title) {
+            this.heading.innerHTML = title;
+        }
+
+        appendField(field) {
+            this.fieldsContainer.appendChild(field);
+        }
+
+        appendGroup(group) {
+            this.groupsContainer.appendChild(group);
+        }
+        ?>
 
         <fieldset id="fieldset">
             <legend id="heading"/>
