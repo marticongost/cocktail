@@ -74,10 +74,10 @@ cocktail.bind("form", function () {
             if (method == "POST" || method == "PUT" || method == "DELETE") {
                 if (!this.querySelector("[name='" + cocktail.csrfprotection.field + "']")) {
                     var hidden = document.createElement("input");
-                    hidden.type = "hidden";
-                    hidden.name = cocktail.csrfprotection.field;
-                    hidden.value = cocktail.csrfprotection.token;
-                    this.append(hidden);
+                    hidden.setAttribute("type", "hidden");
+                    hidden.setAttribute("name", cocktail.csrfprotection.field);
+                    hidden.setAttribute("value", cocktail.csrfprotection.token);
+                    this.appendChild(hidden);
                 }
             }
         }
