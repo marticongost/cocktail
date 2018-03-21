@@ -351,11 +351,9 @@ class Member(Variable):
         """Adds a validation function to the member.
 
         :param validation: A callable that will be added as a validation rule
-            for the member. Takes two positional parameters (a reference to the
-            member itself, and the value assigned to the member), plus any
-            additional number of keyword arguments used to refine validation
-            options and context. The callable should produce a sequence of
-            `exceptions.ValidationError` instances.
+            for the member. Takes a single positional parameter (a reference to
+            a `ValidationContext` object). The callable should produce a sequence
+            of `exceptions.ValidationError` instances.
         :type validation: callable
 
         :return: The validation rule, as provided.
