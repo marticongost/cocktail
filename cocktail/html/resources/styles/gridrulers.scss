@@ -13,6 +13,7 @@ $cocktail-gridrulers-color: #9248a6;
     top: 0;
     bottom: 0;
     z-index: 100000;
+    pointer-events: none;
 
     &:target {
         display: block;
