@@ -468,7 +468,6 @@ cocktail.navigation.StackNode = class StackNode extends cocktail.navigation.Node
         let parentStackIndex = this.parent && this.parent.stackIndex;
         const offset = this.createsStackUI ? 0 : -1;
         this.stackIndex = parentStackIndex === undefined ? offset : parentStackIndex + offset + 1;
-        console.log(this, this.stackIndex);
     }
 
     get createsStackUI() {
