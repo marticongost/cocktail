@@ -461,24 +461,26 @@
     }
 }
 
-cocktail.navigation.StackTransparentNode = class StackTransparentNode extends cocktail.navigation.Node {
-
-    constructor(...args) {
-        super(...args);
-        let parentStackIndex = this.parent && this.parent.stackIndex;
-        this.stackIndex = parentStackIndex === undefined ? -1 : parentStackIndex;
-    }
-}
-
 cocktail.navigation.StackNode = class StackNode extends cocktail.navigation.Node {
 
     constructor(...args) {
         super(...args);
         let parentStackIndex = this.parent && this.parent.stackIndex;
-        this.stackIndex = parentStackIndex === undefined ? 0 : parentStackIndex + 1;
+        const offset = this.createsStackUI ? 0 : -1;
+        this.stackIndex = parentStackIndex === undefined ? offset : parentStackIndex + offset + 1;
+        console.log(this, this.stackIndex);
+    }
+
+    get createsStackUI() {
+        return true;
     }
 
     traverse() {
+
+        if (!this.createsStackUI) {
+            return;
+        }
+
         let stack = this.stack;
         const getNodes = () => Array.from(stack.iterStack()).filter((node) => node.animationState != "closing");
         let stackNodes = getNodes();
@@ -514,11 +516,13 @@ cocktail.navigation.StackNode = class StackNode extends cocktail.navigation.Node
     }
 
     activate() {
-        // Pop any extra nodes
-        let stack = this.stack;
-        let stackNodes = Array.from(stack.iterStack());
-        if (stackNodes.length > this.stackIndex + 1) {
-            stack.pop(stackNodes[this.stackIndex + 1]);
+        if (this.createsStackUI) {
+            // Pop any extra nodes
+            let stack = this.stack;
+            let stackNodes = Array.from(stack.iterStack());
+            if (stackNodes.length > this.stackIndex + 1) {
+                stack.pop(stackNodes[this.stackIndex + 1]);
+            }
         }
     }
 
