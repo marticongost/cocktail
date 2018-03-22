@@ -240,7 +240,6 @@ class HTMLDocument(Element):
 
     def _add_client_variables(self):
 
-
         self._add_core_scripts()
         self.client_setup_container.append(
             "\t\tcocktail.resourceRepositories = %s;\n" % dumps(
