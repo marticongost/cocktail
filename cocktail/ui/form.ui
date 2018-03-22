@@ -832,6 +832,10 @@
         appendGroup(group) {
             this.groupsContainer.appendChild(group);
         }
+
+        get form() {
+            return cocktail.ui.closestInstance(this, cocktail.ui.Form);
+        }
         ?>
 
         <fieldset id="fieldset">
