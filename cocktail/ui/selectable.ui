@@ -91,115 +91,140 @@
     ?>
 
     <?on click
-    if (this.selectionType == "none") {
-        return;
-    }
-
-    const target = this.getSelectableElementInPath(e.path);
-
-    if (target) {
-
-        let multiple = (this.selectionType == "multiple");
-
-        // Ctrl + click: toggle selection
-        if (multiple && e.ctrlKey) {
-            this.setElementSelected(target, !this.selectedElements.has(target));
-        }
-        // Shift + click: range selection
-        else if (multiple && e.shiftKey) {
-            this.setRangeSelected(
-                this.selectionCursor || this.getFirstSelectableElement(),
-                target,
-                true
-            );
-        }
-        // Regular click: replace selection
-        else {
-            this.selectedElements = [target];
-        }
-
-        // Double click activation
-        let now = new Date();
-        if (
-            this.activationType == "singleClick"
-            || (
-                this.activationType == "doubleClick"
-                && target == this[PREV_CLICK_ELEMENT]
-                && now - this[PREV_CLICK_TIME] <= this.activationDoubleClickDelay
-            )
-        ) {
-            this.selectionActivated();
-        }
-        this[PREV_CLICK_ELEMENT] = target;
-        this[PREV_CLICK_TIME] = now;
-
-        this.selectionCursor = target;
-        e.preventDefault();
-        e.stopPropagation();
-    }
+    this.clickSelection(e);
     ?>
 
     <?on keydown
-    if (this.selectionType == "none") {
-        return;
-    }
-
-    const multiple = (this.selectionType == "multiple");
-
-    // Enter activates the current selection
-    if (
-        e.which == cocktail.ui.keys.ENTER
-        && this.activationType != "none"
-        && this.selectedElements.size
-    ) {
-        e.preventDefault();
-        e.stopPropagation();
-        this.selectionActivated();
-    }
-    // Select all (ctrl + a), empty selection (ctrl + shift + a)
-    else if (e.which == 65 && e.ctrlKey) {
-        e.preventDefault();
-        e.stopPropagation();
-        if (e.shiftKey) {
-            this.selectedElements = [];
-            this.selectionCursor = null;
-        }
-        else if (multiple) {
-            let elements = new Set(this.iterSelectableElements());
-            this.selectedElements = elements;
-            this.selectionCursor = elements[elements.length - 1];
-        }
-    }
-    else {
-        const motion = this.getSelectionMotionForKeyboardEvent(e);
-
-        if (motion) {
-            e.preventDefault();
-            e.stopPropagation();
-            if (motion.target) {
-                if (multiple && e.ctrlKey) {
-                    this.setElementSelected(motion.target, true);
-                }
-                else if (multiple && e.shiftKey) {
-                    this.setRangeSelected(this.selectionCursor, motion.target, true);
-                }
-                else {
-                    this.selectedElements = [motion.target];
-                }
-                this.selectionCursor = motion.target;
-                motion.target.scrollIntoViewIfNeeded(false);
-            }
-            else if (motion.direction) {
-                cocktail.ui.trigger(this, "keyboardSelectionOverflow", {
-                    direction: motion.direction
-                });
-            }
-        }
-    }
+    this.keyboardSelection(e);
     ?>
 
     <?class
     selectionActivated() {
+    }
+
+    clickSelection(e, target = null) {
+
+        if (this.selectionType == "none") {
+            return;
+        }
+
+        target = target || this.getSelectableElementInPath(e.path);
+
+        if (target) {
+
+            let multiple = (this.selectionType == "multiple");
+
+            // Ctrl + click: toggle selection
+            if (multiple && e.ctrlKey) {
+                this.setElementSelected(target, !this.selectedElements.has(target));
+            }
+            // Shift + click: range selection
+            else if (multiple && e.shiftKey) {
+                this.setRangeSelected(
+                    this.selectionCursor || this.getFirstSelectableElement(),
+                    target,
+                    true
+                );
+            }
+            // Regular click: replace selection
+            else {
+                this.selectedElements = [target];
+            }
+
+            // Double click activation
+            let now = new Date();
+            if (
+                this.activationType == "singleClick"
+                || (
+                    this.activationType == "doubleClick"
+                    && target == this[PREV_CLICK_ELEMENT]
+                    && now - this[PREV_CLICK_TIME] <= this.activationDoubleClickDelay
+                )
+            ) {
+                this.selectionActivated();
+            }
+            this[PREV_CLICK_ELEMENT] = target;
+            this[PREV_CLICK_TIME] = now;
+
+            this.selectionCursor = target;
+            if (e.preventDefault) {
+                e.preventDefault();
+            }
+            if (e.stopPropagation) {
+                e.stopPropagation();
+            }
+        }
+    }
+
+    keyboardSelection(e) {
+        if (this.selectionType == "none") {
+            return;
+        }
+
+        const multiple = (this.selectionType == "multiple");
+
+        // Enter activates the current selection
+        if (
+            e.which == cocktail.ui.keys.ENTER
+            && this.activationType != "none"
+            && this.selectedElements.size
+        ) {
+            if (e.preventDefault) {
+                e.preventDefault();
+            }
+            if (e.stopPropagation) {
+                e.stopPropagation();
+            }
+            this.selectionActivated();
+        }
+        // Select all (ctrl + a), empty selection (ctrl + shift + a)
+        else if (e.which == 65 && e.ctrlKey) {
+            if (e.preventDefault) {
+                e.preventDefault();
+            }
+            if (e.stopPropagation) {
+                e.stopPropagation();
+            }
+            if (e.shiftKey) {
+                this.selectedElements = [];
+                this.selectionCursor = null;
+            }
+            else if (multiple) {
+                let elements = new Set(this.iterSelectableElements());
+                this.selectedElements = elements;
+                this.selectionCursor = elements[elements.length - 1];
+            }
+        }
+        else {
+            const motion = this.getSelectionMotionForKeyboardEvent(e);
+
+            if (motion) {
+                if (e.preventDefault) {
+                    e.preventDefault();
+                }
+                if (e.stopPropagation) {
+                    e.stopPropagation();
+                }
+                if (motion.target) {
+                    if (multiple && e.ctrlKey) {
+                        this.setElementSelected(motion.target, true);
+                    }
+                    else if (multiple && e.shiftKey) {
+                        this.setRangeSelected(this.selectionCursor, motion.target, true);
+                    }
+                    else {
+                        this.selectedElements = [motion.target];
+                    }
+                    this.selectionCursor = motion.target;
+                    motion.target.scrollIntoViewIfNeeded(false);
+                }
+                else if (motion.direction) {
+                    cocktail.ui.trigger(this, "keyboardSelectionOverflow", {
+                        direction: motion.direction
+                    });
+                }
+            }
+        }
     }
 
     get selectedElement() {
@@ -533,6 +558,26 @@
     <?js
     // Maintain a linked list of selectable elements, to relocate the selection cursor when its referred element is removed
     const observeSelectableElements = () => {
+
+        // Initial sequence
+        let previous = null;
+        for (let node of this.selectionContainer.querySelectorAll(this.selectableEntriesSelector)) {
+            if (previous) {
+                previous[NEXT_SELECTABLE_ELEMENT] = node;
+                node[PREV_SELECTABLE_ELEMENT] = previous;
+            }
+            else {
+                this[FIRST_SELECTABLE_ELEMENT] = node;
+            }
+            previous = node;
+        }
+        this[LAST_SELECTABLE_ELEMENT] = previous;
+
+        if (this.appliesAlternateCSSClasses) {
+            this[ALTERNATE_CSS_CLASSES]();
+        }
+
+        // Track changes to the sequence
         new MutationObserver((mutations) => {
 
             if (this[ALTERNATING_CSS_CLASSES]) {
@@ -588,11 +633,13 @@
         observeSelectableElements();
     }
     else {
-        new MutationObserver((mutations) => {
+        const observer = new MutationObserver((mutations) => {
             if (this.selectionContainer) {
+                observer.disconnect();
                 observeSelectableElements();
             }
-        }).observe(this.shadowRoot || this, {childList: true, subtree: true});
+        });
+        observer.observe(this.shadowRoot || this, {childList: true, subtree: true});
     }
     ?>
 
