@@ -4,10 +4,26 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:ui="http://www.whads.com/ns/cocktail/ui">
 
+    <ui:symbol name="UPDATE_TITLE"/>
+
+    <?class
+    [UPDATE_TITLE]() {
+        if (this.action) {
+            if (this.buttonStyle == "iconOnly") {
+                this.title = this.action.translate();
+            }
+            else {
+                this.label.innerHTML = this.underlinedLabel;
+                this.title = "";
+            }
+        }
+    }
+    ?>
+
     <?on action:changed
     this.icon.src = newValue.iconURL;
     this.button.accessKey = this.action.shortcut || "";
-    this.label.innerHTML = this.underlinedLabel;
+    this[UPDATE_TITLE]();
     ?>
 
     <?on state:changed
@@ -17,6 +33,10 @@
     else if (newValue == "disabled") {
         this.button.disabled = true;
     }
+    ?>
+
+    <?on buttonStyle:changed
+    this[UPDATE_TITLE]();
     ?>
 
     <button id="button" type="button">
