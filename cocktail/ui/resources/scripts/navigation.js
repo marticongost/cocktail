@@ -503,10 +503,16 @@ cocktail.navigation.StackNode = class StackNode extends cocktail.navigation.Node
             stackNode.navigationNode = this;
             stack.push(stackNode);
         }
-        // Update the existing one; only if it's the active node
-        // (this allows parent nodes to preserve their query string parameters)
-        else if (this === cocktail.navigation.node) {
-            stackNodes[this.stackIndex].navigationNode = this;
+        // Update the existing one
+        else {
+            const stackNode = stackNodes[this.stackIndex];
+            this.stackNode = stackNode;
+
+            // Update the navigationNode property of the UI, only for the stack's top node
+            // (this allows parent nodes to preserve their query string parameters)
+            if (this === cocktail.navigation.node) {
+                stackNode.navigationNode = this;
+            }
         }
     }
 
