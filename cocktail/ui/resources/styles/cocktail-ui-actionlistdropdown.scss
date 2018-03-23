@@ -5,6 +5,7 @@
     display: flex;
 }
 
+:host([buttonStyle='iconOnly']),
 :host([buttonStyle='iconBesideText']) {
     white-space: nowrap;
     flex-direction: row;
@@ -76,6 +77,11 @@
         display: none;
     }
 
+    :host([buttonStyle='iconOnly']) & {
+        display: inline-block;
+        vertical-align: middle;
+    }
+
     svg {
         height: auto;
 
@@ -87,7 +93,8 @@
             width: 1.5em;
         }
 
-        :host([buttonStyle='iconAboveText']) & {
+        :host([buttonStyle='iconAboveText']) &,
+        :host([buttonStyle='iconOnly']) & {
             width: 1.8em;
         }
 
@@ -112,6 +119,10 @@
 
     :host([buttonStyle='textOnly']) & {
         font-size: 0.9em;
+    }
+
+    :host([buttonStyle='iconOnly']) & {
+        display: none;
     }
 
     :host([state='emphasized']) & {
