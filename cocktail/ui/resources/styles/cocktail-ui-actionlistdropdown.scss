@@ -36,6 +36,10 @@
             background-color: $panel-hover-color;
         }
 
+        :host(:not([state='disabled'])):host-context(.cocktail-ui-ActionList.secondary) & {
+            background-color: $secondary-panel-hover-color;
+        }
+
         :host([state='visible']) & {
 
             #label {
