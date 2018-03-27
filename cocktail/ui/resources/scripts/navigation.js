@@ -39,6 +39,27 @@
 
         tree: null,
         node: null,
+        debug: true,
+
+        get debug() {
+            return localStorage.getItem("cocktail.navigation.debug") == "true";
+        },
+
+        set debug(value) {
+            localStorage.setItem("cocktail.navigation.debug", value ? "true" : "false");
+        },
+
+        log(...args) {
+            if (this.debug) {
+                console.log("cocktail.navigation", ...args);
+            }
+        },
+
+        logError(...args) {
+            if (this.debug) {
+                console.error("cocktail.navigation", ...args);
+            }
+        },
 
         get prefix() {
             return this[PREFIX];
@@ -110,18 +131,21 @@
         },
 
         handleError(error) {
-            console.log(error);
+            this.logError(error);
             throw error;
         },
 
         push(state) {
+            this.log("pushing state", state);
             return this.resolve(state).then((node) => {
                 history.pushState({}, "", node.url);
+                this.log(`processing URL ${node.url}`);
                 this.process(node);
             });
         },
 
         replace(state) {
+            this.log("replacing state", state);
             return this.resolve(state).then((node) => {
                 history.replaceState({}, "", node.url);
                 this.process(node);
@@ -179,7 +203,11 @@
             return this[PARENT];
         }
 
-        consumePathSegment(path) {
+        consumePathSegment(path, reason = null) {
+            if (!path.length) {
+                throw "Can't consume a segment from an empty path";
+            }
+            cocktail.navigation.log(`${this.constructor.name} consumed segment "${path[0]}" (${reason || "custom resolution"})`);
             this[PATH].push(path.shift());
         }
 
@@ -291,6 +319,7 @@
             let node = parentNode ? parentNode.createChild(this) : new this();
 
             if (segment) {
+                cocktail.navigation.log(`${this.name} consumed segment "${segment}" (regular child)`);
                 node[PATH].push(segment);
             }
 
@@ -305,12 +334,16 @@
             return this.resolveParameters(path)
                 .then((valid) => {
                     if (!valid) {
+                        cocktail.navigation.logError("Invalid parameters");
                         return null;
                     }
                     return this.resolveChild(path)
                         .then((child) => {
                             if (child) {
                                 return child;
+                            }
+                            if (path.length) {
+                                cocktail.navigation.logError("Unprocessed path segments remaining", path);
                             }
                             return path.length ? null : this;
                         });
@@ -340,7 +373,7 @@
                     // Parse and collect provided parameters
                     parameterOrder.push(parameter);
                     parameterValues.push(parameter.parseValue(path[i]));
-                    this.consumePathSegment(path);
+                    this.consumePathSegment(path, "parameter " + parameter.name);
                 }
             }
 
