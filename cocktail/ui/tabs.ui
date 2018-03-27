@@ -5,19 +5,23 @@
     xmlns:ui="http://www.whads.com/ns/cocktail/ui">
 
     <ui:symbol name="CONNECTED"/>
+    <ui:symbol name="UPDATE_QUERY"/>
 
     <ui:property
         name="selectedTab"
         reflected="false">
         <?on changed
-        this[SYNCHRONIZE_URI](() => {
-            if (this[CONNECTED]) {
-                let param = this.queryParameter;
-                if (param) {
-                    cocktail.navigation.replaceQuery({[param]: newValue ? newValue.tabId : undefined});
-                }
-            }
-        });
+        this[UPDATE_QUERY]();
+        ?>
+    </ui:property>
+
+    <ui:property
+        name="updatesQuery"
+        type="boolean"
+        reflected="true"
+        default="true">
+        <?on changed
+        this[UPDATE_QUERY]();
         ?>
     </ui:property>
 
@@ -39,6 +43,20 @@
     disconnectedCallback() {
         super.disconnectedCallback();
         this[CONNECTED] = false;
+    }
+
+    [UPDATE_QUERY]() {
+        if (this.updatesQuery) {
+            this[SYNCHRONIZE_URI](() => {
+                if (this[CONNECTED]) {
+                    const param = this.queryParameter;
+                    const tab = this.selectedTab;
+                    if (param) {
+                        cocktail.navigation.replaceQuery({[param]: tab ? tab.tabId : undefined});
+                    }
+                }
+            });
+        }
     }
 
     getTab(tabId) {
