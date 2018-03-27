@@ -16,6 +16,7 @@
     <ui:requires component="cocktail.ui.DateTimeInput"/>
     <ui:requires component="cocktail.ui.TextInput"/>
     <ui:requires component="cocktail.ui.HTMLEditor"/>
+    <ui:requires component="cocktail.ui.CodeEditor"/>
 
     <ui:property
         name="formLayout"
@@ -94,6 +95,7 @@
         cocktail.schema.DateTime[formControl] = cocktail.ui.DateTimeInput;
         cocktail.schema.Locale[formControl] = cocktail.ui.DropdownSelector;
         cocktail.schema.HTML[formControl] = cocktail.ui.HTMLEditor;
+        cocktail.schema.CodeBlock[formControl] = cocktail.ui.CodeEditor;
     }
     ?>
 
