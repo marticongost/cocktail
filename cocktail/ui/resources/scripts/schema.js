@@ -236,6 +236,10 @@
             }
             return value;
         }
+
+        sameValue(value1, value2) {
+            return value1 == value2;
+        }
     }
 
     cocktail.schema.Member.prototype.descriptive = false;
@@ -492,6 +496,41 @@
             }
             return record;
         }
+
+        *diff(obj1, obj2) {
+
+            for (let member of this.members()) {
+                const value1 = obj1[member.name];
+                const value2 = obj2[member.name];
+
+                if (member.translated) {
+                    const languages = new Set();
+
+                    if (value1) {
+                        for (let lang in value1) {
+                            languages.add(lang);
+                        }
+                    }
+
+                    if (value2) {
+                        for (let lang in value2) {
+                            languages.add(lang);
+                        }
+                    }
+
+                    for (let lang of languages) {
+                        const translation1 = value1[lang];
+                        const translation2 = value2[lang];
+                        if (!member.sameValue(translation1, translation2)) {
+                            yield {member, language: lang, value1: translation1, value2: translation2};
+                        }
+                    }
+                }
+                else if (!member.sameValue(value1, value2)) {
+                    yield {member, language: null, value1, value2};
+                }
+            }
+        }
     }
 
     {
@@ -724,6 +763,10 @@
             }
             return values;
         }
+
+        sameValue(value1, value2) {
+            return this.type.getId(value1) == this.type.getId(value2);
+        }
     }
 
     cocktail.schema.Collection = class Collection extends cocktail.schema.Member {
@@ -816,6 +859,29 @@
         set dataSource(value) {
             this[DATA_SOURCE] = value;
         }
+
+        sameValue(value1, value2) {
+
+            if (!(value1 instanceof Array)) {
+                value1 = Array.from(value1);
+            }
+
+            if (!(value2 instanceof Array)) {
+                value2 = Array.from(value2);
+            }
+
+            if (value1.length != value2.length) {
+                return false;
+            }
+
+            for (let i = 0; i < value1.length; i++) {
+                if (!this.items.sameValue(value1[i], value2[i])) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
     }
 
     cocktail.schema.Collection.prototype.defaultValue = () => [];
@@ -829,6 +895,29 @@
     cocktail.schema.Mapping.prototype.values = null;
 
     cocktail.schema.Tuple = class Tuple extends cocktail.schema.Member {
+
+        sameValue(value1, value2) {
+
+            if (!(value1 instanceof Array)) {
+                value1 = Array.from(value1);
+            }
+
+            if (!(value2 instanceof Array)) {
+                value2 = Array.from(value2);
+            }
+
+            if (value1.length != value2.length) {
+                return false;
+            }
+
+            for (let i = 0; i < value1.length; i++) {
+                if (!this.items.sameValue(value1[i], value2[i])) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
     }
 
     cocktail.schema.Tuple.prototype.items = [];
