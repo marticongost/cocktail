@@ -435,13 +435,11 @@
                     let targetMember;
                     let copyParams = {};
 
-                    if (sourceMember.schema === this) {
-                        Object.assign(
-                            copyParams,
-                            generalParameters,
-                            memberParameters && memberParameters[sourceMember.name]
-                        );
-                    }
+                    Object.assign(
+                        copyParams,
+                        generalParameters,
+                        memberParameters && memberParameters[sourceMember.name]
+                    );
                     targetMember = sourceMember.copy(copyParams);
                     copy.addMember(targetMember);
                 }
