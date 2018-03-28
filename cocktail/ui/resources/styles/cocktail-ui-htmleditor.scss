@@ -11,7 +11,7 @@
     @include input-with-error;
 }
 
-:host([multiline='true']) {
+:host([multiline='true'][autoHeight='false']) {
     height: 20em;
 }
 
@@ -22,7 +22,10 @@
 #contentArea {
     flex: 1;
     padding: $input-padding;
-    overflow-y: auto;
+
+    :host([autoHeight='false']) & {
+        overflow-y: auto;
+    }
 
     :host([multiline='false']) & {
         white-space: nowrap;

@@ -15,6 +15,12 @@
         reflected="true"
         default="true"/>
 
+    <ui:property
+        name="autoHeight"
+        type="boolean"
+        reflected="true"
+        default="true"/>
+
     <?on value:changed
     if (!this[PROCESSING_INPUT]) {
         this.contentArea.innerHTML = newValue;
