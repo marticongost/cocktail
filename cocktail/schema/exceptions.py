@@ -405,12 +405,6 @@ class CreditCardChecksumError(ValidationError):
     """
 
 
-class IntegralPartRelocationError(Exception):
-    """An exception raised when trying to remove an integral part of a compound
-    element to attach it to another container.
-    """
-
-
 class BankAccountChecksumError(ValidationError):
     """A validation error produced for bank account numbers that have an
     invalid format.
