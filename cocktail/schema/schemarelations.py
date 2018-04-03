@@ -12,9 +12,7 @@ from cocktail.events import Event, event_handler
 from cocktail.schema.accessors import get
 from cocktail.schema.member import Member
 from cocktail.schema.expressions import Expression
-from cocktail.schema.exceptions import (
-    SchemaIntegrityError, IntegralPartRelocationError
-)
+from cocktail.schema.exceptions import SchemaIntegrityError
 
 _thread_data = local()
 
@@ -27,12 +25,6 @@ def _update_relation(action, obj, related_obj, member, relocation = False):
         method = member.related_end.add_relation
     elif action == "unrelate":
         method = member.related_end.remove_relation
-
-        # Don't allow items bound to an integral relation to be relocated to a
-        # new container
-        if relocation and member.bidirectional and member.related_end.integral:
-            if get(obj, member) is not None:
-                raise IntegralPartRelocationError()
     else:
         raise ValueError("Unknown relation action: %s" % action)
 
