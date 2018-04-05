@@ -26,6 +26,10 @@ $hpadding: 0.5em;
     font-size: 1em;
     color: inherit;
 
+    :host([panelPosition="above"]) & {
+        order: 2;
+    }
+
     &:focus {
         outline: none;
     }
@@ -56,10 +60,15 @@ $hpadding: 0.5em;
 }
 
 #arrow {
+    display: inline-block;
     margin-left: 0.3rem;
 
     :host(:not([dropdownType='arrow'])) & {
         display: none;
+    }
+
+    :host([panelPosition="above"]) & {
+        transform: rotate(180deg);
     }
 
     svg {
@@ -85,6 +94,10 @@ $hpadding: 0.5em;
     position: relative;
     height: 0;
 
+    :host([panelPosition="above"]) & {
+        order: 1;
+    }
+
     :host(:not([expanded='true'])) & {
         display: none;
     }
@@ -92,13 +105,20 @@ $hpadding: 0.5em;
 
 #panel {
     position: absolute;
-    top: -$border-width;
     z-index: 2;
     border: $border;
     background-color: white;
     box-shadow: $panel-shadow;
     min-width: 100%;
     box-sizing: border-box;
+
+    :host([panelPosition="below"]) & {
+        top: -$border-width;
+    }
+
+    :host([panelPosition="above"]) & {
+        bottom: -$border-width;
+    }
 
     :host([panelAlignment='start']) & {
         left: 0;

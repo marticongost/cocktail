@@ -38,6 +38,12 @@
         reflected="true"
         default="start"/>
 
+    <ui:property
+        name="panelPosition"
+        type="string"
+        reflected="true"
+        default="below"/>
+
     <?tail
     window.addEventListener("click", function () {
         cls.closeExpandedPanel();
