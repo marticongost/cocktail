@@ -494,20 +494,26 @@
         try {
             let odd = true;
             for (let element of this.iterSelectableElements()) {
-                if (odd) {
-                    element.classList.remove("cocktail-ui-even");
-                    element.classList.add("cocktail-ui-odd");
+                if (this.includeInEvenOddSequence(element)) {
+                    if (odd) {
+                        element.classList.remove("cocktail-ui-even");
+                        element.classList.add("cocktail-ui-odd");
+                    }
+                    else {
+                        element.classList.remove("cocktail-ui-odd");
+                        element.classList.add("cocktail-ui-even");
+                    }
+                    odd = !odd;
                 }
-                else {
-                    element.classList.remove("cocktail-ui-odd");
-                    element.classList.add("cocktail-ui-even");
-                }
-                odd = !odd;
             }
         }
         finally {
             window.setTimeout(() => this[ALTERNATING_CSS_CLASSES] = false, 1);
         }
+    }
+
+    includeInEvenOddSequence(element) {
+        return true;
     }
 
     getSelectionMotionForKeyboardEvent(e) {
