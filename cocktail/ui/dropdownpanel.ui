@@ -61,8 +61,10 @@
     ?>
 
     <?on keydown
-    if (e.which == cocktail.ui.keys.ESC) {
+    if (e.which == cocktail.ui.keys.ESC && this.expanded) {
         this.expanded = false;
+        e.preventDefault();
+        e.stopPropagation();
     }
     ?>
 
