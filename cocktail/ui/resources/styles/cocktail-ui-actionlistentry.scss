@@ -6,6 +6,7 @@
 
 :host([state='disabled']) {
     opacity: 0.3;
+    pointer-events: none;
 }
 
 :host([state='hidden']) {
