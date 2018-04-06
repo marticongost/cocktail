@@ -16,6 +16,7 @@
     const TRANSLATED = Symbol("cocktail.schema.TRANSLATED");
     const MEMBER_MAP = Symbol("cocktail.schema.MEMBER_MAP");
     const BASE = Symbol("cocktail.schema.BASE");
+    const DERIVED_SCHEMAS = Symbol("cocktail.schema.DERIVED_SCHEMAS");
     const TYPE = Symbol("cocktail.schema.TYPE");
     const SOURCE_MEMBER = Symbol("cocktail.schema.SOURCE_MEMBER");
     const ITEMS = Symbol("cocktail.schema.ITEMS");
@@ -249,10 +250,18 @@
 
     cocktail.schema.Schema = class Schema extends cocktail.schema.Member {
 
+        constructor(parameters = null) {
+            super(parameters);
+            this[DERIVED_SCHEMAS] = [];
+        }
+
         static declare(parameters) {
             let schema = new this(parameters);
             cocktail.setVariable(schema.name, schema);
             schemasByName[schema.name] = schema;
+            if (schema.base) {
+                schema.base[DERIVED_SCHEMAS].push(schema);
+            }
             return schema;
         }
 
@@ -309,6 +318,17 @@
 
         get base() {
             return this[BASE];
+        }
+
+        get derivedSchemas() {
+            return this[DERIVED_SCHEMAS];
+        }
+
+        *schemaTree() {
+            yield this;
+            for (let child of this[DERIVED_SCHEMAS]) {
+                yield* child.schemaTree();
+            }
         }
 
         isSchema(schema) {
