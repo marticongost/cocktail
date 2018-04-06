@@ -1283,7 +1283,9 @@ def translate_schema_object(obj, **kwargs):
         desc = translations(obj.__class__, **kwargs)
 
         if obj.__class__.primary_member:
-            desc += " #" + str(getattr(obj, obj.__class__.primary_member.name))
+            id = getattr(obj, obj.__class__.primary_member.name)
+            if id is not None:
+                desc += " #" + str(id)
 
     return desc
 
