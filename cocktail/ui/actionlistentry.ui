@@ -32,6 +32,10 @@
         reflected="true"/>
 
     <?class
+    update(context) {
+        this.state = this.action.getState(context);
+    }
+
     invoke() {
         this.action.invoke(this.actionList.getActionContext());
     }

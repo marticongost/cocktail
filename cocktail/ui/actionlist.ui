@@ -184,10 +184,10 @@
     updateEntries() {
         let context = this.getActionContext();
         for (let entry of this.entryList.children) {
-            entry.state = entry.action.getState(context);
+            entry.update(context);
         }
         for (let entry of this.extraEntryList.children) {
-            entry.state = entry.action.getState(context);
+            entry.update(context);
         }
     }
 
