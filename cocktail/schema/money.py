@@ -11,7 +11,13 @@ class Money(Decimal):
 
     currency = u"EUR"
 
-    def translate_value(self, value, language = None, format = "sign", **kwargs):
+    def translate_value(
+        self,
+        value,
+        language = None,
+        format = "sign",
+        decimals = "auto",
+        **kwargs):
 
         if value is None:
             return Decimal.translate_value(self, None, language = language, **kwargs)
@@ -20,6 +26,7 @@ class Money(Decimal):
             value,
             self.currency,
             format = format,
+            decimals = decimals,
             language = language
         )
 
