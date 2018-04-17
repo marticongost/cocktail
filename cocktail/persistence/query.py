@@ -1039,7 +1039,7 @@ def _lower_resolution(self, query):
 expressions.LowerExpression.resolve_filter = _lower_resolution
 expressions.LowerEqualExpression.resolve_filter = _lower_resolution
 
-def ids_from_subset(subset, is_id_collection = False):
+def ids_from_subset(subset, is_id_collection = False, query = None):
 
     from cocktail.persistence import PersistentObject
 
@@ -1054,7 +1054,9 @@ def ids_from_subset(subset, is_id_collection = False):
             "Matching a subset with a collection of PersistentObject "
             "instances is discouraged, as the full state for those objects "
             "will have to be fetched, just to obtain their IDs. If possible, "
-            "try to use ID collections or subqueries instead."
+            "try to use ID collections or subqueries instead.\n"
+            "Offending query: %s" % ("?" if query is None else repr(query)),
+            stacklevel = 2
         )
         return (item.id for item in subset)
 
@@ -1062,7 +1064,7 @@ def _inclusion_resolution(self, query):
 
     subject = self.operands[0]
     subset = self.operands[1].eval()
-    ids = ids_from_subset(subset, self.by_key)
+    ids = ids_from_subset(subset, self.by_key, query = query)
 
     if subject is expressions.Self:
 
@@ -1095,7 +1097,7 @@ def _exclusion_resolution(self, query):
 
     subject = self.operands[0]
     subset = self.operands[1].eval()
-    ids = ids_from_subset(subset, self.by_key)
+    ids = ids_from_subset(subset, self.by_key, query = query)
 
     if subject is expressions.Self:
 
@@ -1410,7 +1412,10 @@ def _descends_from_resolution(self, query):
             if index is not None:
                 def impl(dataset):
                     descendants = set()
-                    root_ids = ids_from_subset(self.operands[1].eval(None))
+                    root_ids = ids_from_subset(
+                        self.operands[1].eval(None),
+                        query = query
+                    )
 
                     if self.include_self:
                         descendants.update(root_ids)
