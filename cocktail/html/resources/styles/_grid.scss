@@ -3,9 +3,9 @@
 
 $grid-definition: ();
 $current-grid-size: null;
-$grid-margin: 50px;
+$grid-margin: null;
 
-@mixin define-grid($definition, $col-count: 12) {
+@mixin define-grid($definition, $col-count: 12, $margin: 50px) {
 
     $max-width: null;
 
@@ -52,6 +52,7 @@ $grid-margin: 50px;
         }
     }
 
+    $grid-margin: $margin !global;
     $grid-definition: $definition !global;
 }
 
