@@ -226,6 +226,13 @@ class URL(unicode):
     def copy(self, **values):
         return self.__class__(self, **values)
 
+    def local(self):
+        return self.__class__(
+            path = self.__path,
+            query = self.__query,
+            fragment = self.__fragment
+        )
+
     def merge(self, other):
         other = URL(other)
         return self.__class__(
