@@ -913,6 +913,29 @@ def _constant_resolution(self, query):
 
 expressions.Constant.resolve_filter = _constant_resolution
 
+def _or_resolution(self, query):
+
+    def impl(dataset):
+        union = None
+
+        for operand in self.operands:
+            subquery = query.type.select(operand)
+            subquery.verbose = query.verbose
+            subquery.nesting = query.nesting + 1
+            subquery.cached = False
+            operand_results = subquery.execute()
+            if union is None:
+                union = operand_results
+            else:
+                union.update(operand_results)
+
+        dataset.intersection_update(union)
+        return dataset
+
+    return ((0, 0), impl)
+
+expressions.OrExpression.resolve_filter = _or_resolution
+
 def _equal_resolution(self, query):
 
     member, index, language = _get_filter_info(self)
