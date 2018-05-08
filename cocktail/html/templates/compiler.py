@@ -16,6 +16,7 @@ from cocktail.html.element import default, PlaceHolder
 from cocktail.html.overlay import register_overlay
 from cocktail.html.resources import resource_repositories
 from cocktail.html.templates.sourcecodewriter import SourceCodeWriter
+from cocktail.html.inlinesvg import get_uri_svg
 
 WHITESPACE_EXPR = re.compile(r"\s*")
 
@@ -159,7 +160,8 @@ class TemplateCompiler(object):
             "extend": extend,
             "call_base": call_base,
             "register_overlay": register_overlay,
-            "weakref": weakref
+            "weakref": weakref,
+            "get_uri_svg": get_uri_svg
         }
 
     def add_class_reference(self, reference):
@@ -590,7 +592,7 @@ class TemplateCompiler(object):
 
     def DefaultHandler(self, data):
 
-        for pi in ("<?py", "<?py-class", "<?py-init", "<?resource"):
+        for pi in ("<?py", "<?py-class", "<?py-init", "<?resource", "<?inline-svg"):
             if data.startswith(pi) and data[len(pi)] in (" \n\r\t"):
                 break
         else:
@@ -601,6 +603,11 @@ class TemplateCompiler(object):
         if pi == "<?resource":
             source = self.__stack[-1].source_block
             source.write("element.add_resource(%r)" % data.strip())
+            return
+
+        if pi == "<?inline-svg":
+            source = self.__stack[-1].source_block
+            source.write("element.append(get_uri_svg(%r))" % data.strip())
             return
 
         lines = data.split("\n")
