@@ -20,12 +20,14 @@ class ResourceLoader(DictWrapper):
     resources = None
     enabled = True
     updatable = True
+    __lock = None
     verbose = False
 
-    def __init__(self, load = None):
+    def __init__(self, load = None, lock = None):
         resources = {}
         DictWrapper.__init__(self, resources)
         self.__resources = resources
+        self.__lock = lock
 
         if load is not None:
             self.load = load
@@ -44,13 +46,27 @@ class ResourceLoader(DictWrapper):
         try:
             return self.get_value(key, invalidation = invalidation)
         except KeyError:
-            if self.verbose:
-                print styled("ResourceLoader: Generating", "white", "red", "bold"),
-                print key
-            value = self.load(key)
-            if self.enabled:
-                self.set_value(key, value, expiration)
-            return value
+            if self.__lock and self.enabled:
+                with self.__lock:
+                    try:
+                        return self.get_value(key, invalidation = invalidation)
+                    except KeyError:
+                        return self._miss(key, expiration)
+            else:
+                return self._miss(key, expiration)
+
+    def _miss(self, key, expiration):
+
+        if self.verbose:
+            print styled("ResourceLoader: Generating", "white", "red", "bold"),
+            print key
+
+        value = self.load(key)
+
+        if self.enabled:
+            self.set_value(key, value, expiration)
+
+        return value
 
     def get_value(self, key, default = missing, invalidation = None):
         if self.enabled:
