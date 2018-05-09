@@ -4,6 +4,7 @@
 $grid-definition: ();
 $current-grid-size: null;
 $grid-margin: null;
+$grid-column-count: null;
 
 @mixin define-grid($definition, $col-count: 12, $margin: 50px) {
 
@@ -54,6 +55,7 @@ $grid-margin: null;
 
     $grid-margin: $margin !global;
     $grid-definition: $definition !global;
+    $grid-column-count: $col-count !global;
 }
 
 @mixin show-grid() {
@@ -336,5 +338,9 @@ $grid-margin: null;
     }
     $size-properties: map-get($grid-definition, $size);
     @return map-get($size-properties, min-width);
+}
+
+@function grid-column-count() {
+    @return $grid-column-count;
 }
 
