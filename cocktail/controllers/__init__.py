@@ -69,6 +69,7 @@ from cocktail.controllers.sessions import session
 import cocktail.controllers.grouping
 import cocktail.controllers.erroremail
 import cocktail.controllers.handlerprofiler
+from cocktail.controllers.cached import Cached
 from .csrfprotection import (
     CSRFProtection,
     CSRFTokenError,
