@@ -665,24 +665,24 @@ class Schema(Member):
 
         return groups
 
-    def translate_group(self, group):
+    def translate_group(self, group, suffix = None):
 
         if group:
-            suffix = ".groups." + group
+            suffix_str = ".groups." + group + (suffix or "")
         else:
-            suffix = ".generic_group"
+            suffix_str = ".generic_group" + (suffix or "")
 
         def get_label(schema):
 
             if schema.name:
                 label = translations(
-                    getattr(schema, "full_name", schema.name) + suffix
+                    getattr(schema, "full_name", schema.name) + suffix_str
                 )
                 if label:
                     return label
 
                 for alias in schema.schema_aliases:
-                    label = translations(alias + suffix)
+                    label = translations(alias + suffix_str)
                     if label:
                         return label
 
@@ -698,7 +698,7 @@ class Schema(Member):
 
         source_schema = self.source_member
         if source_schema and hasattr(source_schema, "translate_group"):
-            return source_schema.translate_group(group)
+            return source_schema.translate_group(group, suffix = suffix)
 
         return None
 
