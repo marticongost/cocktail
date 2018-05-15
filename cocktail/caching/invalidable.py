@@ -3,20 +3,16 @@ u"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
-from collections import Sequence
 from cocktail.modeling import GenericMethod, ListWrapper
 from .utils import nearest_expiration
 
 @GenericMethod
 def get_cache_dependencies(obj, cache_part = None):
-    if obj is not None:
+    if isinstance(obj, (list, tuple, set, ListWrapper)):
+        for item in obj:
+            yield item
+    elif obj is not None:
         yield obj
-
-@get_cache_dependencies.implementation_for(Sequence)
-@get_cache_dependencies.implementation_for(ListWrapper)
-def get_cache_dependencies_for_sequence(obj, cache_part = None):
-    for item in obj:
-        yield item
 
 @GenericMethod
 def get_cache_tags(obj, cache_part = None):
