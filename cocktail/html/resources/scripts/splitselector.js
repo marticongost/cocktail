@@ -90,7 +90,7 @@ cocktail.bind(".SplitSelector.search_enabled", function ($control) {
         }
     }
 
-    var $splitPanels = jQuery(cocktail.instantiate("cocktail.html.SplitSelector.splitPanels"))
+    var $splitPanels = jQuery(cocktail.instantiate("cocktail.html.SplitSelector.splitPanels-" + this.id))
         .prependTo($control);
 
     var $selectedItemsPanel = $splitPanels.find(".selected_items_panel");
