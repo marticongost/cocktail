@@ -10,7 +10,8 @@ _thread_data = local()
 defaults = {
     "*": "ltr",
     "ar": "rtl",
-    "he": "rtl"
+    "he": "rtl",
+    "fa": "rtl"
 }
 
 def get(locale):
