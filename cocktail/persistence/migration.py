@@ -13,7 +13,7 @@ from cocktail.modeling import (
 )
 from cocktail.events import EventHub, Event, when
 from cocktail.typemapping import TypeMapping
-from cocktail.pkgutils import resolve, import_object
+from cocktail.pkgutils import resolve, import_object, get_full_name
 from cocktail.styled import styled
 from cocktail.persistence import PersistentSet, datastore
 from cocktail.persistence.utils import is_broken
@@ -35,6 +35,12 @@ def mark_all_migrations_as_executed():
     """Flags all migration steps as already executed."""
     for step in migration_steps.itervalues():
         step.mark_as_executed()
+
+def migration_step(func):
+    """A decorator to quickly define function based migrations."""
+    step = MigrationStep(get_full_name(func))
+    step.executing.append(func)
+    return step
 
 
 class MigrationStep(object):
