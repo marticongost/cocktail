@@ -35,7 +35,8 @@ from cocktail.persistence.transactional import (
 from cocktail.persistence.migration import (
     migrate,
     mark_all_migrations_as_executed,
-    MigrationStep
+    MigrationStep,
+    migration_step
 )
 from cocktail.persistence.incremental_id import (
     incremental_id,
