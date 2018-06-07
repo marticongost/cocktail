@@ -952,7 +952,7 @@ class InstrumentedOrderedSet(ListWrapper, InstrumentedCollection):
         if item not in self._items:
             prev_item = self._items[index]
             added = [item]
-            prev_item = [prev_item]
+            removed = [prev_item]
             context = {}
             self.changing(added, removed, context)
             self._items[index] = item
