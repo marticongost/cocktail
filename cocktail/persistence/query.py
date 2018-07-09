@@ -1087,9 +1087,10 @@ def _inclusion_resolution(self, query):
 
     subject = self.operands[0]
     subset = self.operands[1].eval()
-    ids = ids_from_subset(subset, self.by_key, query = query)
 
     if subject is expressions.Self:
+
+        ids = ids_from_subset(subset, self.by_key, query = query)
 
         def impl(dataset):
             dataset.intersection_update(ids)
@@ -1099,6 +1100,7 @@ def _inclusion_resolution(self, query):
 
     elif isinstance(subject, RelationMember) and subject.schema is query.type:
 
+        ids = ids_from_subset(subset, self.by_key, query = query)
         index, index_kw = query._get_expression_index(self, subject)
 
         if index is not None:
