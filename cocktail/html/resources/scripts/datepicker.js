@@ -19,6 +19,14 @@ cocktail.bind(".DatePicker", function ($datePicker) {
             $.datepicker.regional[cocktail.getLanguage()],
             this.datePickerParams
         );
+
+        var prevOnSelect = params.onSelect;
+        params.onSelect = function () {
+            if (prevOnSelect) {
+                prevOnSelect.apply(this, arguments);
+            }
+            jQuery(this).change();
+        }
         $datePicker.datepicker(params);
 
         // Create the time portion of date time controls
