@@ -203,6 +203,7 @@ class Form(object):
             name = self.get_schema_name(),
             schema_aliases = self.get_schema_aliases()
         )
+        adapted_schema.is_form = True
         return self.adapter.export_schema(self.model, adapted_schema)
 
     def get_schema_name(self):

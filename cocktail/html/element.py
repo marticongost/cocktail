@@ -14,7 +14,7 @@ from cocktail.iteration import first
 from cocktail.pkgutils import get_full_name
 from cocktail.events import EventHub, Event, when
 from cocktail.translations import translations, directionality
-from cocktail.caching.utils import nearest_expiration
+from cocktail.caching import Invalidable
 from cocktail.html.viewnames import get_view_full_name, split_view_name
 from cocktail.html import renderers
 from cocktail.html.rendering import (
@@ -30,7 +30,7 @@ from .utils import serialize_value
 default = object()
 
 
-class Element(object):
+class Element(Invalidable):
     """Base class for all presentation components.
 
     An element provides an abstraction over a piece of HTML content. It can be
@@ -188,6 +188,9 @@ class Element(object):
         children = None,
         **attributes):
 
+        Invalidable.__init__(self)
+        self.cache_tags.update(self._class_cache_tags)
+
         self.__parent = None
         self.__children = None
 
@@ -241,14 +244,20 @@ class Element(object):
             if "styled_class" not in members:
                 cls.styled_class = True
 
-            if "class_provides_cache_tag" not in members:
-                cls.class_provides_cache_tag = True
-
             for c in cls._classes:
                 if getattr(c, "styled_class", False):
                     css_classes.append(c.__name__)
 
             cls.class_css = css_classes and " ".join(css_classes) or None
+
+            # Aggregate cache_tags
+            if "class_provides_cache_tag" not in members:
+                cls.class_provides_cache_tag = True
+
+            cls._class_cache_tags = set()
+            for c in cls.__mro__:
+                if getattr(c, "class_provides_cache_tag", False):
+                    cls._class_cache_tags.add(c.view_name)
 
             # Load translation bundles
             translations.request_bundle(cls.view_name.lower())
@@ -599,8 +608,6 @@ class Element(object):
     cached = False
     __cache_key = None
     __cache_key_qualifiers = None
-    __cache_tags = None
-    cache_expiration = None
     class_provides_cache_tag = False
 
     def _get_cache_key(self):
@@ -624,32 +631,6 @@ class Element(object):
             self.__cache_key_qualifiers = args
         else:
             self.__cache_key_qualifiers += args
-
-    def _get_cache_tags(self):
-        if self.__cache_tags is None:
-            self.__cache_tags = set()
-
-            for cls in self.__class__.__mro__:
-                if cls is Element:
-                    break
-                if getattr(cls, "class_provides_cache_tag", False):
-                    self.__cache_tags.add(cls.view_name)
-
-        return self.__cache_tags
-
-    def _set_cache_tags(self, tags):
-        if tags is not None:
-            tags = set(tags)
-            tags.add(self.view_name)
-        self.__cache_tags = tags
-
-    cache_tags = property(_get_cache_tags, _set_cache_tags)
-
-    def update_cache_expiration(self, expiration):
-        self.cache_expiration = nearest_expiration(
-            self.cache_expiration,
-            expiration
-        )
 
     # Attributes
     #--------------------------------------------------------------------------

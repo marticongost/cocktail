@@ -129,34 +129,35 @@ cocktail.trackRevealedElements = function (options) {
         }
 
         this.triggerRevealEvents = function () {
-
             var elements = this.getRevealedElements();
-            elements.each(function () {
-                revealedElements[this.id] = true;
-            });
-
-            var delay = options.batchDelay;
-            if (delay) {
-                batchElements.push.apply(batchElements, elements);
-                if (batchTimer) {
-                    clearTimeout(batchTimer);
-                }
-                setTimeout(
-                    function () {
-                        $element.trigger({
-                            type: "elementsRevealed",
-                            elements: batchElements
-                        });
-                        batchElements = [];
-                    },
-                    delay
-                );
-            }
-            else {
-                $element.trigger({
-                    type: "elementsRevealed",
-                    elements: elements
+            if (elements.length) {
+                elements.each(function () {
+                    revealedElements[this.id] = true;
                 });
+
+                var delay = options.batchDelay;
+                if (delay) {
+                    batchElements.push.apply(batchElements, elements);
+                    if (batchTimer) {
+                        clearTimeout(batchTimer);
+                    }
+                    setTimeout(
+                        function () {
+                            $element.trigger({
+                                type: "elementsRevealed",
+                                elements: batchElements
+                            });
+                            batchElements = [];
+                        },
+                        delay
+                    );
+                }
+                else {
+                    $element.trigger({
+                        type: "elementsRevealed",
+                        elements: elements
+                    });
+                }
             }
         }
 
