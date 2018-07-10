@@ -49,6 +49,7 @@ from cocktail.html.selectable import selectable, MULTIPLE_SELECTION
     <py:ready>
         <?py
         if self.should_enable_search:
+            self.require_id()
             self.add_class("search_enabled")
         ?>
     </py:ready>
@@ -68,7 +69,7 @@ from cocktail.html.selectable import selectable, MULTIPLE_SELECTION
     self.data_binding_delegate = self.check_list
     ?>
 
-    <div py:id="split_panels" py:client_model="cocktail.html.SplitSelector.splitPanels">
+    <div py:id="split_panels" py:client_model="cocktail.html.SplitSelector.splitPanels-@{self['id']}">
         <py:new
             py:id="selected_items_panel"
             py:element="self.create_split_panel()">

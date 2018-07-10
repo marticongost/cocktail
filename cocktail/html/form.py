@@ -237,6 +237,15 @@ class Form(Element, DataDisplay):
         fieldset.fields.add_class("fieldset_fields")
         fieldset.append(fieldset.fields)
 
+        explanation = self.schema.translate_group(
+            group_id,
+            suffix = ".explanation"
+        )
+        if explanation:
+            fieldset.explanation = \
+                self.create_fieldset_explanation(explanation)
+            fieldset.fields.append(fieldset.explanation)
+
         return fieldset
 
     def create_fieldset_legend(self, group_id):
@@ -306,6 +315,12 @@ class Form(Element, DataDisplay):
                 entry.append(entry.explanation)
 
     def create_member_explanation(self, member, explanation):
+        label = Element()
+        label.add_class("explanation")
+        label.append(explanation)
+        return label
+
+    def create_fieldset_explanation(self, explanation):
         label = Element()
         label.add_class("explanation")
         label.append(explanation)

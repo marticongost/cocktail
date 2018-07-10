@@ -99,6 +99,12 @@ from cocktail.translations import weekday_name, weekday_abbr
         ?>
     </py:binding>
 
+    <py:ready>
+        <?py
+        element["data-calendar-page"] = "%d-%d" % (self.year, self.month)
+        ?>
+    </py:ready>
+
     <table py:id="calendar_grid">
         <thead py:local_id="thead">
             <tr>

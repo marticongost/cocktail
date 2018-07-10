@@ -103,6 +103,14 @@ class CalendarPage(tuple):
     def time_range(self):
         return (self.start_time(), (self + 1).start_time())
 
+    def iter_towards(self, target_page):
+        page = self
+        while True:
+            yield page
+            if page == target_page:
+                break
+            page += 1
+
 
 @translations.instances_of(CalendarPage)
 def _translate_calendar_page(page, abbreviated = False):

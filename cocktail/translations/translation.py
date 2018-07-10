@@ -11,6 +11,7 @@ from threading import local
 from contextlib import contextmanager
 from collections import Mapping, defaultdict
 from pkg_resources import resource_filename
+from cocktail.styled import styled
 from cocktail.events import Event
 from cocktail.modeling import (
     getter,
@@ -154,11 +155,19 @@ def clear_fallback_languages():
 class Translations(object):
 
     bundle_loaded = Event()
+    verbose = False
 
     def __init__(self, *args, **kwargs):
         self.definitions = {}
         self.__loaded_bundles = set()
         self.__bundle_overrides = defaultdict(list)
+
+    def _get_key(self, key, verbose):
+
+        if verbose:
+            print (verbose - 1) * 2 * " " + styled("Key", "slate_blue"), key
+
+        return self.definitions.get(key)
 
     def define(self, key, value = None, **per_language_values):
 
@@ -259,15 +268,29 @@ class Translations(object):
     ):
         translation = None
 
+        verbose = kwargs.get("verbose", None)
+        if verbose is None:
+            if callable(self.verbose):
+                verbose = self.verbose(obj, **kwargs)
+            else:
+                verbose = self.verbose
+
+            verbose = 1 if verbose else 0
+
+        if verbose == 1:
+            print styled("TRANSLATION", "white", "blue"),
+            print styled(obj, style = "bold")
+
+        if verbose:
+            kwargs["verbose"] = verbose + 1
+
         # Look for a explicit definition for the given value
         if isinstance(obj, basestring):
-            translation = self.definitions.get(obj, None)
+            translation = self._get_key(obj, verbose)
         else:
             # Translation of class instances
             for class_name in self.__iter_class_names(obj.__class__):
-                translation = self.definitions.get(
-                    class_name + ".instance"
-                )
+                translation = self._get_key(class_name + ".instance", verbose)
                 if translation:
                     break
 
@@ -286,10 +309,16 @@ class Translations(object):
         if translation:
             if callable(translation):
                 with language_context(language):
+
+                    if verbose:
+                        print styled("Function", "slate_blue"),
+                        print translation
+
                     if isinstance(obj, basestring):
                         translation = translation(**kwargs)
                     else:
                         translation = translation(obj, **kwargs)
+
             elif isinstance(translation, Mapping):
                 definitions = translation
                 translation = None
