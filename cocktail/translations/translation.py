@@ -250,7 +250,7 @@ class Translations(object):
             (overrides_bundle_path, kwargs)
         )
         if original_bundle_path in self.__loaded_bundles:
-            self.load_bundle(overrides_bundle_path)
+            self.request_bundle(overrides_bundle_path)
 
     def __iter_class_names(self, cls):
 
