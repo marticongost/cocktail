@@ -3,6 +3,7 @@ u"""
 
 .. moduleauthor:: Jordi Fernández <jordi.fernandez@whads.com>
 """
+from cocktail.translations import month_name
 from cocktail.translations import translations
 from cocktail.schema.schemanumbers import Integer
 
@@ -14,7 +15,11 @@ class Month(Integer):
 
     def translate_value(self, value, language = None, **kwargs):
         if not value:
-            return ""
+            return Integer.translate_value(
+                self,
+                value,
+                language = language,
+                **kwargs
+            )
         else:
-            return translations("month %d" % (value,))
-
+            return month_name(value)
