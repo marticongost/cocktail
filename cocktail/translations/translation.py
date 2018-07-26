@@ -206,26 +206,33 @@ class Translations(object):
             pkg_name, file_name = bundle_path.rsplit(".", 1)
             file_path = resource_filename(pkg_name, file_name + ".strings")
 
-            with open(file_path, "r") as bundle_file:
-                parser = TranslationsFileParser(
-                    bundle_file,
-                    file_path = file_path,
-                    **kwargs
-                )
-                for key, language, value in parser:
-                    if callback:
-                        callback(key, language, value)
-                    if language is None:
-                        self.definitions[key] = value
-                    else:
-                        self.set(key, language, value)
+            file_error = None
 
-            self.bundle_loaded(file_path = file_path)
+            try:
+                with open(file_path, "r") as bundle_file:
+                    parser = TranslationsFileParser(
+                        bundle_file,
+                        file_path = file_path,
+                        **kwargs
+                    )
+                    for key, language, value in parser:
+                        if callback:
+                            callback(key, language, value)
+                        if language is None:
+                            self.definitions[key] = value
+                        else:
+                            self.set(key, language, value)
+            except IOError, e:
+                file_error = e
+            else:
+                self.bundle_loaded(file_path = file_path)
 
             overrides = self.__bundle_overrides.get(bundle_path)
             if overrides:
                 for overrides_path, overrides_kwargs in overrides:
                     self.load_bundle(overrides_path, **kwargs)
+            elif file_error:
+                raise file_error
 
     def request_bundle(self, bundle_path, **kwargs):
         try:
@@ -242,6 +249,8 @@ class Translations(object):
         self.__bundle_overrides[original_bundle_path].append(
             (overrides_bundle_path, kwargs)
         )
+        if original_bundle_path in self.__loaded_bundles:
+            self.request_bundle(overrides_bundle_path)
 
     def __iter_class_names(self, cls):
 

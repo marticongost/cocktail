@@ -27,6 +27,24 @@ cocktail.csrfprotection.setupRequest = function (xhr) {
     );
 }
 
+// Method to inject the token into forms
+cocktail.csrfprotection.setupForm = function (form) {
+    var method = form._cocktailFormMethod || form.method;
+    if (method) {
+        method = method.toUpperCase();
+        if (method == "POST" || method == "PUT" || method == "DELETE") {
+            if (!form.querySelector("[name='" + cocktail.csrfprotection.field + "']")) {
+                var hidden = document.createElement("input");
+                hidden.setAttribute("type", "hidden");
+                hidden.setAttribute("name", cocktail.csrfprotection.field);
+                hidden.setAttribute("value", cocktail.csrfprotection.token);
+                form.appendChild(hidden);
+            }
+        }
+    }
+    form._cocktailFormMethod = null;
+}
+
 // Inject a header with the token into all Ajax requests
 // (only works on requests made through the jQuery API)
 if (window.jQuery) {
@@ -68,20 +86,19 @@ cocktail.bind("[formmethod]", function () {
 
 cocktail.bind("form", function () {
     this.addEventListener("submit", function (e) {
-        var method = this._cocktailFormMethod || this.method;
-        if (method) {
-            method = method.toUpperCase();
-            if (method == "POST" || method == "PUT" || method == "DELETE") {
-                if (!this.querySelector("[name='" + cocktail.csrfprotection.field + "']")) {
-                    var hidden = document.createElement("input");
-                    hidden.setAttribute("type", "hidden");
-                    hidden.setAttribute("name", cocktail.csrfprotection.field);
-                    hidden.setAttribute("value", cocktail.csrfprotection.token);
-                    this.appendChild(hidden);
-                }
-            }
-        }
-        this._cocktailFormMethod = null;
+        cocktail.csrfprotection.setupForm(this);
     });
 });
+
+if (window.jQuery) {
+    var baseSubmit = jQuery.fn.submit;
+    jQuery.fn.submit = function (handler) {
+        if (!handler) {
+            this.each(function () {
+                cocktail.csrfprotection.setupForm(this);
+            });
+        }
+        return baseSubmit.apply(this, arguments);
+    }
+}
 

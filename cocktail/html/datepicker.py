@@ -16,6 +16,7 @@ class DatePicker(TextBox):
 
     def __init__(self, *args, **kwargs):
         TextBox.__init__(self, *args, **kwargs)
+        self["autocomplete"] = "off"
         self.add_resource("cocktail://scripts/jquery-ui.js")
         self.add_resource("cocktail://scripts/ui.datepicker-lang.js")
         self.add_resource("cocktail://scripts/jquery.maskedinput.js")
