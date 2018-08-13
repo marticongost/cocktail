@@ -91,7 +91,14 @@ cocktail.ui.HTTPDataSource = class HTTPDataSource extends cocktail.ui.DataSource
         return new Promise(function (resolve, reject) {
             cocktail.ui.request(parameters)
                 .then(function (request) {
-                    resolve(request.response);
+                    let data = request.response;
+                    if (data.records) {
+                        data.records = data.records.map(cocktail.schema.objectFromJSONValue);
+                    }
+                    else {
+                        data = cocktail.schema.objectFromJSONValue(data);
+                    }
+                    resolve(data);
                 })
                 .catch(function (e) {
                     reject(e);

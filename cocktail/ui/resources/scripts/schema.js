@@ -48,6 +48,16 @@
         return schemasByName[name];
     }
 
+    pkg.objectFromJSONValue = function (value, defaultType = null) {
+        if (value) {
+            const schema = value._class ? pkg.getSchemaByName(value._class) : defaultType;
+            if (schema) {
+                return schema.fromJSONValue(value);
+            }
+        }
+        return value;
+    }
+
     cocktail.schema.Member = class Member {
 
         constructor(parameters = null) {
@@ -200,6 +210,10 @@
             if (language && this.translated) {
                 value = value[language];
             }
+            return value;
+        }
+
+        fromJSONValue(value) {
             return value;
         }
 
@@ -575,11 +589,45 @@
             return object;
         }
 
+        fromJSONValue(value) {
+
+            const record = {};
+
+            for (let propName of Reflect.ownKeys(value)) {
+                let member = this.getMember(propName);
+                let propValue = value[propName];
+                if (member) {
+                    if (member.translated) {
+                        let propProcValue = {};
+                        for (let language in propValue) {
+                            propProcValue[language] = member.fromJSONValue(propValue[language]);
+                        }
+                        propValue = propProcValue;
+                    }
+                    else {
+                        propValue = member.fromJSONValue(propValue);
+                    }
+                }
+                record[propName] = propValue;
+            }
+
+            record._class = this;
+            return record;
+        }
+
         toJSONValue(value, parameters = null) {
             let record = {};
             for (let member of this.members()) {
                 if (!parameters || !parameters.includeMember || parameters.includeMember(member)) {
-                    record[member.name] = member.toJSONValue(value[member.name]);
+                    let memberValue = value[member.name];
+                    if (member.translated) {
+                        let exportedValue = {};
+                        for (let language in memberValue) {
+                            exportedValue[language] = member.toJSONValue(memberValue[language]);
+                        }
+                        memberValue = exportedValue;
+                    }
+                    record[member.name] = memberValue;
                 }
             }
             return record;
@@ -825,6 +873,10 @@
             }
         }
 
+        fromJSONValue(value) {
+            return pkg.objectFromJSONValue(value, this.relatedType);
+        }
+
         toJSONValue(value) {
             if (value) {
                 if (typeof(value) == "object") {
@@ -832,7 +884,7 @@
                         this.integral
                         || (this.membershipType == pkg.membershipTypes.collectionItems && this.owner && this.owner.integral)
                     ) {
-                        const type = this.getTypeOfValue(value);
+                        const type = value._class;
                         value = type.toJSONValue(value);
                     }
                     else {
@@ -841,10 +893,6 @@
                 }
             }
             return value;
-        }
-
-        getTypeOfValue(value) {
-            return this.relatedType;
         }
 
         getPossibleValues(obj = null) {
@@ -938,6 +986,13 @@
             );
         }
 
+        fromJSONValue(value) {
+            if (value && this[ITEMS]) {
+                return value.map((item) => this[ITEMS].fromJSONValue(item));
+            }
+            return value;
+        }
+
         toJSONValue(value) {
             if (value === undefined || value === null) {
                 return null;
@@ -999,6 +1054,31 @@
     cocktail.schema.Collection.prototype.stringGlue = " ";
 
     cocktail.schema.Mapping = class Mapping extends cocktail.schema.Member {
+
+        fromJSONValue(value) {
+            if (value && this.keys && this.values) {
+                var items = new Map();
+                for (let key of value) {
+                    items.set(
+                        this.keys.fromJSONValue(key),
+                        this.values.fromJSONValue(value[key])
+                    );
+                }
+                return items;
+            }
+            return value;
+        }
+
+        toJSONValue(value) {
+            if (value && this.keys && this.values) {
+                var obj = {};
+                for (let [k, v] of value) {
+                    obj[this.keys.toJSONValue(k)] = this.values.toJSONValue(v);
+                }
+                return obj;
+            }
+            return value;
+        }
     }
 
     cocktail.schema.Mapping.prototype.keys = null;
@@ -1013,6 +1093,28 @@
                     ["items", this.items]
                 ]
             ];
+        }
+
+        fromJSONValue(value) {
+            if (value && this.items) {
+                const tuple = [];
+                for (var i = 0; i < value.length && i < this.items.length; i++) {
+                    tuple.push(this.items[i].fromJSONValue(value[i]));
+                }
+                return tuple;
+            }
+            return value;
+        }
+
+        toJSONValue(value) {
+            if (value) {
+                const tuple = [];
+                for (var i = 0; i < value.length && i < this.items.length; i++) {
+                    tuple.push(this.items[i].toJSONValue(value[i]));
+                }
+                return tuple;
+            }
+            return value;
         }
 
         sameValue(value1, value2) {
@@ -1055,12 +1157,22 @@
             ];
         }
 
+        fromJSONValue(value) {
+            if (value) {
+                const date = new JSDate(value);
+                if (!isNaN(date)) {
+                    return date;
+                }
+            }
+            return value;
+        }
+
+        toJSONValue(value) {
+            return value ? value.toISOString() : value;
+        }
+
         translateValue(value, params = null) {
             if (!value) {
-                return "";
-            }
-            value = new JSDate(value);
-            if (isNaN(value)) {
                 return "";
             }
             return value.toLocaleDateString(
@@ -1086,12 +1198,22 @@
             ];
         }
 
+        fromJSONValue(value) {
+            if (value) {
+                const date = new JSDate(value);
+                if (!isNaN(date)) {
+                    return date;
+                }
+            }
+            return value;
+        }
+
+        toJSONValue(value) {
+            return value ? value.toISOString() : value;
+        }
+
         translateValue(value, params = null) {
             if (!value) {
-                return "";
-            }
-            value = new JSDate(value);
-            if (isNaN(value)) {
                 return "";
             }
             return value.toLocaleDateString(
@@ -1167,6 +1289,17 @@
             return this.sourceSchema.getMember(value);
         }
 
+        fromJSONValue(value) {
+            return this.parseValue(value);
+        }
+
+        toJSONValue(value) {
+            if (value) {
+                return value.fullName;
+            }
+            return value;
+        }
+
         serializeValue(value) {
             if (value) {
                 value = value.name;
@@ -1232,6 +1365,10 @@
                 value = value.fullName;
             }
             return value;
+        }
+
+        fromJSONValue(value) {
+            return this.parseValue(value);
         }
 
         toJSONValue(value) {
