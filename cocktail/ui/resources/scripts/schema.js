@@ -324,8 +324,10 @@
             return this[DERIVED_SCHEMAS];
         }
 
-        *schemaTree() {
-            yield this;
+        *schemaTree(includeSelf = true) {
+            if (includeSelf) {
+                yield this;
+            }
             for (let child of this[DERIVED_SCHEMAS]) {
                 yield* child.schemaTree();
             }
