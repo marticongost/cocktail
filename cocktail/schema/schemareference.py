@@ -29,6 +29,7 @@ class Reference(RelationMember):
 
     cycles_allowed = True
     default_order = "__auto__"
+    include_root_schema = True
 
     def translate_value(self, value, language = None, **kwargs):
         if value is None:
@@ -142,7 +143,11 @@ class Reference(RelationMember):
         if values is None:
             if self.class_family:
                 if isinstance(self.class_family, Schema):
-                    values = list(self.class_family.schema_tree())
+                    values = list(
+                        self.class_family.schema_tree()
+                        if self.include_root_schema
+                        else self.class_family.derived_schemas()
+                    )
 
         if values is None or self.default_order:
             if self.type is not None:
