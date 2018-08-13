@@ -9,6 +9,101 @@
 
 cocktail.declare("cocktail.ui");
 
+// Custom formatters for the Chrome console
+cocktail.ui.CONSOLE_HEADER = Symbol("cocktail.ui.CONSOLE_HEADER");
+cocktail.ui.CONSOLE_CHILDREN = Symbol("cocktail.ui.CONSOLE_CHILDREN");
+
+if (!window.devtoolsFormatters) {
+    window.devtoolsFormatters = [];
+}
+
+devtoolsFormatters.push({
+    header: function (obj) {
+        var formatter = obj[cocktail.ui.CONSOLE_HEADER];
+        if (formatter) {
+            return formatter.call(obj);
+        }
+        return null;
+    },
+    hasBody: function () {
+        return true;
+    },
+    body: function (obj, config) {
+
+        let children;
+
+        if (obj[cocktail.ui.CONSOLE_CHILDREN]) {
+            children = obj[cocktail.ui.CONSOLE_CHILDREN](config);
+        }
+        else {
+            children = [];
+            for (let key in obj) {
+                children.push([key, obj[key]]);
+            }
+        }
+
+        const elements = [];
+
+        for (let [key, value] of children) {
+
+            let child;
+            const type = typeof(value);
+
+            if (value === undefined) {
+                continue;
+            }
+
+            if (type == "object") {
+                if (value instanceof cocktail.ui.ConsoleMarkup) {
+                    child = value.markup;
+                }
+                else {
+                    child = [
+                        "object", {
+                            object: value,
+                            config: {
+                                key: key,
+                                cocktailKeyFormatter: true
+                            }
+                        }
+                    ];
+                }
+            }
+            else if (type == "number" || type == "boolean") {
+                child = ["span", {style: "color: #4730b5"}, value.toString()];
+            }
+            else if (type == "string") {
+                child = [
+                    "span",
+                    '"',
+                    ["span", {style: "color: #c0272c"}, value.toString()],
+                    '"'
+                ];
+            }
+            else {
+                child = String(value);
+            }
+
+            elements.push([
+                "div", {},
+                ["span", {style: "color: #8b0b93"}, key],
+                ": ",
+                child
+            ]);
+        }
+
+        return ["div", {}].concat(elements);
+    }
+});
+
+cocktail.ui.ConsoleMarkup = class ConsoleMarkup {
+
+    constructor(...markup) {
+        this.markup = markup;
+    }
+}
+
+// Splash screen
 cocktail.ui.SPLASH_HIDE_DELAY = 500;
 
 cocktail.ui.splash = function (splash, mainComponent) {
@@ -28,6 +123,7 @@ cocktail.ui.splash = function (splash, mainComponent) {
     });
 }
 
+// Component declaration
 {
     let uiPrepared;
     cocktail.ui.rootReady = new Promise((resolve, reject) => { uiPrepared = resolve; });
@@ -147,6 +243,19 @@ cocktail.ui.splash = function (splash, mainComponent) {
     const WINDOW_LISTENERS = Symbol("cocktail.ui.ComponentBase.WINDOW_LISTENERS");
 
     let componentBase = (cls) => class ComponentBase extends cocktail.ui.observer(cls) {
+
+        static [cocktail.ui.CONSOLE_HEADER]() {
+
+            const pos = this.fullName.lastIndexOf(".");
+            const ns = this.fullName.substr(0, pos + 1);
+            const name = this.fullName.substr(pos + 1);
+
+            return [
+                "div", {style: "color: #842597"},
+                ns,
+                ["span", {style: "font-weight: bold"}, name]
+            ];
+        }
 
         static get [IS_COMPONENT]() {
             return true;

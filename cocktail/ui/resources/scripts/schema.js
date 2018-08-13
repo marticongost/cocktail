@@ -66,6 +66,51 @@
             }
         }
 
+        [cocktail.ui.CONSOLE_HEADER]() {
+
+            const items = [];
+            const fullName = this.fullName;
+            const pos = fullName.lastIndexOf(".");
+            let name;
+
+            if (pos != -1) {
+                items.push(fullName.substr(0, pos + 1));
+                name = fullName.substr(pos + 1);
+            }
+            else {
+                name = fullName;
+            }
+
+            items.push(["span", {style: "font-weight: bold"}, name]);
+
+            return [
+                "div",
+                [
+                    "span",
+                    {style: "color: #604b33; font-weight: bold"},
+                    this.constructor.name
+                ],
+                " ",
+                [
+                    "span",
+                    {style: "color: #c77400"},
+                    ...items
+                ]
+            ];
+        }
+
+        [cocktail.ui.CONSOLE_CHILDREN](config) {
+            return [
+                ["owner", this[OWNER]],
+                ["name", this[NAME]],
+                ["membershipType", this[MEMBERSHIP_TYPE]],
+                ["translated", this[TRANSLATED]],
+                ["type", this[TYPE]],
+                ["sourceMember", this[SOURCE_MEMBER]],
+                ["required", this.required]
+            ];
+        }
+
         toString() {
             return `${this.constructor.name}(${this.name})`;
         }
@@ -254,6 +299,28 @@
         constructor(parameters = null) {
             super(parameters);
             this[DERIVED_SCHEMAS] = [];
+        }
+
+        [cocktail.ui.CONSOLE_CHILDREN](config) {
+
+            const membersDict = {};
+            const ownMembersDict = {};
+
+            for (let member of this.members()) {
+                membersDict[member.name] = member;
+                if (member.owner === this) {
+                    ownMembersDict[member.name] = member;
+                }
+            }
+
+            return [
+                ...super[cocktail.ui.CONSOLE_CHILDREN](config),
+                ...[
+                    ["base", this[BASE]],
+                    ["members", membersDict],
+                    ["ownMembers", ownMembersDict]
+                ]
+            ];
         }
 
         static declare(parameters) {
@@ -633,6 +700,16 @@
                 this.max = null;
             }
         }
+
+        [cocktail.ui.CONSOLE_CHILDREN](config) {
+            return [
+                ...super[cocktail.ui.CONSOLE_CHILDREN](config),
+                ...[
+                    ["min", this.min],
+                    ["max", this.max]
+                ]
+            ];
+        }
     }
 
     cocktail.schema.Integer = class Integer extends cocktail.schema.Number {
@@ -792,6 +869,18 @@
 
     cocktail.schema.Collection = class Collection extends cocktail.schema.Member {
 
+        [cocktail.ui.CONSOLE_CHILDREN](config) {
+            return [
+                ...super[cocktail.ui.CONSOLE_CHILDREN](config),
+                ...[
+                    ["items", this[ITEMS]],
+                    ["relatedType", this.relatedType],
+                    ["min", this.min],
+                    ["max", this.max]
+                ]
+            ];
+        }
+
         get relatedType() {
             return this.items && this.items.relatedType;
         }
@@ -917,6 +1006,15 @@
 
     cocktail.schema.Tuple = class Tuple extends cocktail.schema.Member {
 
+        [cocktail.ui.CONSOLE_CHILDREN](config) {
+            return [
+                ...super[cocktail.ui.CONSOLE_CHILDREN](config),
+                ...[
+                    ["items", this.items]
+                ]
+            ];
+        }
+
         sameValue(value1, value2) {
 
             if (!(value1 instanceof Array)) {
@@ -947,6 +1045,16 @@
 
     cocktail.schema.Date = class Date extends cocktail.schema.Member {
 
+        [cocktail.ui.CONSOLE_CHILDREN](config) {
+            return [
+                ...super[cocktail.ui.CONSOLE_CHILDREN](config),
+                ...[
+                    ["min", this.min],
+                    ["max", this.max]
+                ]
+            ];
+        }
+
         translateValue(value, params = null) {
             if (!value) {
                 return "";
@@ -967,6 +1075,16 @@
     }
 
     cocktail.schema.DateTime = class DateTime extends cocktail.schema.Member {
+
+        [cocktail.ui.CONSOLE_CHILDREN](config) {
+            return [
+                ...super[cocktail.ui.CONSOLE_CHILDREN](config),
+                ...[
+                    ["min", this.min],
+                    ["max", this.max]
+                ]
+            ];
+        }
 
         translateValue(value, params = null) {
             if (!value) {
@@ -1019,6 +1137,15 @@
 
     cocktail.schema.MemberReference = class MemberReference extends cocktail.schema.Member {
 
+        [cocktail.ui.CONSOLE_CHILDREN](config) {
+            return [
+                ...super[cocktail.ui.CONSOLE_CHILDREN](config),
+                ...[
+                    ["sourceSchema", this.sourceSchema]
+                ]
+            ];
+        }
+
         getPossibleValues(obj = null) {
             let values = super.getPossibleValues(obj);
             if (!values && this.sourceSchema) {
@@ -1060,6 +1187,16 @@
     }
 
     cocktail.schema.SchemaReference = class SchemaReference extends cocktail.schema.Member {
+
+        [cocktail.ui.CONSOLE_CHILDREN](config) {
+            return [
+                ...super[cocktail.ui.CONSOLE_CHILDREN](config),
+                ...[
+                    ["classFamily", this.classFamily],
+                    ["includeRootSchema", this.includeRootSchema]
+                ]
+            ];
+        }
 
         getPossibleValues(obj = null) {
             let values = super.getPossibleValues(obj);
