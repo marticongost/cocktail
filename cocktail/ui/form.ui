@@ -97,6 +97,7 @@
         cocktail.schema.Locale[formControl] = cocktail.ui.DropdownSelector;
         cocktail.schema.HTML[formControl] = cocktail.ui.HTMLEditor;
         cocktail.schema.CodeBlock[formControl] = cocktail.ui.CodeEditor;
+        cocktail.schema.SchemaReference[formControl] = cocktail.ui.DropdownSelector;
     }
     ?>
 

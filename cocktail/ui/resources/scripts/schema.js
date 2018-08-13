@@ -22,6 +22,7 @@
     const ITEMS = Symbol("cocktail.schema.ITEMS");
     const DATA_SOURCE = Symbol("cocktail.schema.DATA_SOURCE");
     const PRIMARY_MEMBER = Symbol("cocktail.schema.PRIMARY_MEMBER");
+    const CLASS_FAMILY = Symbol("cocktail.schema.CLASS_FAMILY");
 
     pkg.MEMBERS = Symbol("cocktail.schema.MEMBERS");
     pkg.PARAMETERS = Symbol("cocktail.schema.PARAMETERS");
@@ -1042,6 +1043,56 @@
         serializeValue(value) {
             if (value) {
                 value = value.name;
+            }
+            return value;
+        }
+
+        toJSONValue(value) {
+            return this.serializeValue(value);
+        }
+
+        translateValue(value, params = null) {
+            if (value) {
+                return value.translate();
+            }
+            return super.translateValue(value, params);
+        }
+    }
+
+    cocktail.schema.SchemaReference = class SchemaReference extends cocktail.schema.Member {
+
+        getPossibleValues(obj = null) {
+            let values = super.getPossibleValues(obj);
+            if (!values && this.classFamily) {
+                values = new Set(this.classFamily.schemaTree(this.includeRootSchema));
+            }
+            return values;
+        }
+
+        get classFamily() {
+            let classFamily = this[CLASS_FAMILY];
+            if (typeof(classFamily) == "string") {
+                classFamily = (this[CLASS_FAMILY] = pkg.getSchemaByName(classFamily));
+            }
+            return classFamily;
+        }
+
+        set classFamily(value) {
+            this[CLASS_FAMILY] = value;
+        }
+
+        parseValue(value) {
+
+            if (!value) {
+                return null;
+            }
+
+            return pkg.getSchemaByName(value);
+        }
+
+        serializeValue(value) {
+            if (value) {
+                value = value.fullName;
             }
             return value;
         }
