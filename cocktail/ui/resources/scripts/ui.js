@@ -199,10 +199,15 @@ cocktail.ui.splash = function (splash, mainComponent) {
             // Subcomponents don't get their own, unless they are based on a custom
             // component
             if (this.constructor.requiresShadowDOM) {
-                root = this.attachShadow({
-                    mode: "open",
-                    delegatesFocus: this.constructor.delegatesFocus
-                });
+                try {
+                    root = this.attachShadow({
+                        mode: "open",
+                        delegatesFocus: this.constructor.delegatesFocus
+                    });
+                }
+                catch (e) {
+                    throw `Error creating the shadow DOM root on a <${this.tagName}> element for the ${this.constructor.fullName} component`;
+                }
             }
             else {
                 root = this;
