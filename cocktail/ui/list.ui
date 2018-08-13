@@ -194,13 +194,13 @@
         }
         else {
             this[RAW] = true;
-            this.innerHTML = this.dataBinding.translateValue();
+            this.innerHTML = this.translateValue();
         }
         ?>
 
         <?on value:changed
         if (this[RAW]) {
-            this.innerHTML = this.dataBinding.translateValue();
+            this.innerHTML = this.translateValue();
         }
         ?>
 
