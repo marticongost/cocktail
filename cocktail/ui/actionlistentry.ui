@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<li
+<div
     xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui"
+    role="listitem">
 
     <ui:property
         name="action"
@@ -56,5 +57,5 @@
     }
     ?>
 
-</li>
+</div>
 

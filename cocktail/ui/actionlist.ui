@@ -205,7 +205,7 @@
     }
     ?>
 
-    <ul id="entryList"/>
+    <div id="entryList" role="list"/>
 
     <ui:cocktail.ui.DropdownPanel
         id="extraDropdown"
