@@ -9,6 +9,12 @@
 
     <ui:using mixin="cocktail.ui.DataDisplay"/>
 
+    <ui:property
+        name="selectionDisplayed"
+        type="boolean"
+        reflected="true"
+        default="true"/>
+
     <?class
     get entriesReady() {
         return this[ENTRIES_READY];
@@ -54,7 +60,9 @@
     ?>
 
     <?on value:changed
-    this.label.innerHTML = this.translateValue();
+    if (this.selectionDisplayed) {
+        this.label.innerHTML = this.translateValue();
+    }
     this.entries.selectedElement = newValue ? this.getEntry(newValue) : null;
     ?>
 
