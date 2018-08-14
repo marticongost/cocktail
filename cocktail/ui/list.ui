@@ -4,12 +4,19 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:ui="http://www.whads.com/ns/cocktail/ui">
 
+    <ui:requires component="cocktail.ui.sorting"/>
     <ui:using mixin="cocktail.ui.DataDisplay"/>
     <ui:requires component="cocktail.ui.displayfactories"/>
 
     <ui:symbol name="ENTRIES_MAP"/>
     <ui:symbol name="SYNCHRONIZE"/>
     <ui:symbol name="SYNCHRONIZING"/>
+
+    <ui:property
+        name="sorted"
+        type="boolean"
+        reflected="true"
+        default="false"/>
 
     <ui:property
         name="empty"
@@ -47,9 +54,17 @@
         return this.list.childNodes;
     }
 
+    sortValues(values) {
+        return cocktail.ui.sorting.localeSort(values, (value) => this.dataBinding.member.items.translateValue(value));
+    }
+
     createEntries() {
         if (this.dataBinding && this.value) {
-            for (let item of this.value) {
+            let values = this.value;
+            if (this.sorted) {
+                values = this.sortValues(values);
+            }
+            for (let item of values) {
                 this.addEntry(item);
             }
         }
