@@ -524,7 +524,10 @@
         }
 
         copyAttribute(copy, key, value, parameters) {
-            if (key == MEMBER_MAP) {
+            if (key == "membersOrder") {
+                copy.membersOrder = value ? Array.from(value) : value;
+            }
+            else if (key == MEMBER_MAP) {
 
                 let members = parameters && parameters[pkg.MEMBERS] || this.members();
                 let generalParameters = parameters ? parameters[pkg.PARAMETERS] : null;
