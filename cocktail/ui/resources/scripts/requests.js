@@ -25,7 +25,11 @@ cocktail.ui.request = function (params) {
 
             let headers = params.headers || {};
 
-            if (typeof(xhr.data) == "object" && !(xhr.data instanceof FormData)) {
+            if (
+                typeof(xhr.data) == "object"
+                && !(xhr.data instanceof FormData)
+                && !(xhr.data instanceof File)
+            ) {
                 xhr.data = JSON.stringify(xhr.data);
                 headers["Content-Type"] = "application/json";
             }
