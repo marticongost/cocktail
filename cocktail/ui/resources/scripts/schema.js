@@ -619,7 +619,8 @@
         }
 
         toJSONValue(value, parameters = null) {
-            let record = {};
+            let record = Object.assign({}, value);
+            record._class = this.fullName;
             for (let member of this.members()) {
                 if (!parameters || !parameters.includeMember || parameters.includeMember(member)) {
                     let memberValue = value[member.name];
@@ -629,6 +630,9 @@
                             exportedValue[language] = member.toJSONValue(memberValue[language]);
                         }
                         memberValue = exportedValue;
+                    }
+                    else {
+                        memberValue = member.toJSONValue(memberValue);
                     }
                     record[member.name] = memberValue;
                 }
