@@ -80,6 +80,13 @@ cocktail.ui.request = function (params) {
                 xhr.responseType = params.responseType;
             }
 
+            if (params.progressBar) {
+                xhr.addEventListener("progress", (e) => {
+                    const percent = Math.min(100, e.loaded / e.total * 100);
+                    params.progressBar.value = percent;
+                });
+            }
+
             if (cocktail.csrfprotection) {
                 cocktail.csrfprotection.setupRequest(xhr);
             }
