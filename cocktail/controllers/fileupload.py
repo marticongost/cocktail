@@ -164,7 +164,8 @@ class FileUpload(schema.Schema):
 
         # Read a first chunk of the uploaded file
         if async_upload:
-            file = open(self.async_uploader.get_temp_path(async_upload), "rb")
+            temp_path = self.async_uploader.get_temp_path(async_upload.id)
+            file = open(temp_path, "rb")
         else:
             file = value.file
 
