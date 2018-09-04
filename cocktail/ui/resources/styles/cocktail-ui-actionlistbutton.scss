@@ -91,10 +91,10 @@
 }
 
 #icon {
-    --color: $panel-action-color;
+    --color: #{$panel-action-color};
 
     :host-context(.cocktail-ui-ActionList.secondary) & {
-        --color: $secondary-panel-action-color;
+        --color: #{$secondary-panel-action-color};
     }
 
     :host([buttonStyle='iconBesideText']) & {
@@ -120,7 +120,7 @@
     }
 
     :host([state='emphasized']) & {
-        --color: $focus-color;
+        --color: #{$focus-color};
     }
 }
 
