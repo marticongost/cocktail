@@ -1,0 +1,42 @@
+
+@import "cocktail.ui://styles/common";
+
+:host {
+    border: $input-border;
+    display: flex;
+    width: 30em;
+}
+
+:host([error]) {
+    @include input-with-error;
+}
+
+:host([multiline='true'][autoHeight='false']) {
+    height: 20em;
+}
+
+:host([multiline='false']) {
+    height: 1.9em;
+}
+
+#contentArea {
+    flex: 1;
+    padding: $input-padding;
+
+    :host([autoHeight='false']) & {
+        overflow-y: auto;
+    }
+
+    :host([multiline='false']) & {
+        white-space: nowrap;
+    }
+
+    & > *:first-child {
+        margin-top: 0;
+    }
+
+    & > *:last-child {
+        margin-bottom: 0;
+    }
+}
+

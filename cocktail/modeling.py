@@ -178,12 +178,27 @@ def extend(element):
 
 class GenericMethod(object):
 
-    def __init__(self, default):
+    def __init__(self, default = None, name = None):
         self.default = default
+        self.name = name
         self.implementations = TypeMapping()
+
+    def __repr__(self):
+        if self.name:
+            return "%s <%s>" % (
+                self.__class__.__name__,
+                self.name
+            )
+        else:
+            return self.__class__.__name__
 
     def __call__(self, instance, *args, **kwargs):
         impl = self.implementations.get(instance.__class__, self.default)
+        if impl is None:
+            raise TypeError(
+                "Can't find an implementation of %s for %s"
+                % (self, instance.__class__.__name__)
+            )
         return impl(instance, *args, **kwargs)
 
     def implementation_for(self, cls):

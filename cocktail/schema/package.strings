@@ -1,4 +1,11 @@
 
+@init
+from cocktail.stringutils import decapitalize
+
+def desc_member(member):
+    return decapitalize(translations(member))
+@end
+
 [cocktail.schema]
 
     [qualified_member(member)]
@@ -10,4 +17,16 @@
     ca: Traduccions
     es: Traducciones
     en: Translations
+
+    [member.Member.default_member_translation]
+
+        [add(member)]
+        ca: Afegir ${desc_member(member)}
+        es: Añadir ${desc_member(member)}
+        en: Add ${desc_member(member)}
+
+        [select(member)]
+        ca: Seleccionar ${desc_member(member)}
+        es: Seleccionar ${desc_member(member)}
+        en: Select ${desc_member(member)}
 

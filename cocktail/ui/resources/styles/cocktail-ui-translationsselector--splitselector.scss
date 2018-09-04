@@ -1,0 +1,11 @@
+
+.Panel + .Panel {
+    margin-left: 0.5em;
+}
+
+.Entry {
+    &[localeState='visible'] {
+        font-weight: bold;
+    }
+}
+

@@ -1,11 +1,11 @@
 
-$cocktail-gridrulers-color: #9248a6;
+$cocktail-gridrulers-color: #7e44cc;
 
 @import "theme://";
 @import "cocktail://styles/grid";
 
 .GridRulers {
-    $ruler-border: 1px solid $cocktail-gridrulers-color;
+    $ruler-border: 1px solid rgba($cocktail-gridrulers-color, 0.5);
     display: none;
     position: fixed;
     left: 0;
@@ -26,7 +26,7 @@ $cocktail-gridrulers-color: #9248a6;
         bottom: 0;
         right: 0;
         padding: 10px;
-        background-color: $cocktail-gridrulers-color;
+        background-color: desaturate(lighten($cocktail-gridrulers-color, 15), 15);
         color: white;
         font-weight: bold;
         font-family: sans-serif;
@@ -58,7 +58,7 @@ $cocktail-gridrulers-color: #9248a6;
                 vertical-align: top;
                 height: 100%;
                 border-left: $ruler-border;
-                background-color: rgba(lighten($cocktail-gridrulers-color, 20), 0.3);
+                background-color: rgba(lighten($cocktail-gridrulers-color, 20), 0.2);
             }
 
             .column_spacing {

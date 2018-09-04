@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ui:cocktail.ui.ActionListDropdown
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:symbol name="ENTRY_MAP"/>
+    <ui:symbol name="ENTRIES_READY"/>
+
+    <ui:using mixin="cocktail.ui.DataDisplay"/>
+
+    <ui:property
+        name="selectionDisplayed"
+        type="boolean"
+        reflected="true"
+        default="true"/>
+
+    <?class
+    get entriesReady() {
+        return this[ENTRIES_READY];
+    }
+
+    getEntry(value) {
+        const serializedValue = this.dataBinding.member.serializeValue(value);
+        return this[ENTRY_MAP][serializedValue];
+    }
+
+    clearEntries() {
+        cocktail.ui.empty(this.entries);
+        this[ENTRIES_READY] = false;
+        this[ENTRY_MAP] = {};
+    }
+
+    addEntries(values) {
+        if (values) {
+            for (let value of values) {
+                this.addEntry(value);
+            }
+        }
+    }
+
+    addEntry(value) {
+        const entry = this.createEntry(value);
+        this[ENTRY_MAP][this.dataBinding.member.serializeValue(value)] = entry;
+        this.entries.appendChild(entry);
+    }
+
+    createEntry(value, prepend = false) {
+        const serializedValue = this.dataBinding.member.serializeValue(value);
+        const entry = this.constructor.Entry.create();
+        entry.member = this.dataBinding.member;
+        entry.value = value;
+        return entry;
+    }
+    ?>
+
+    <?js
+    this[ENTRY_MAP] = {};
+    this[ENTRIES_READY] = false;
+    ?>
+
+    <?on value:changed
+    if (this.selectionDisplayed) {
+        this.label.innerHTML = this.translateValue();
+    }
+    this.entries.selectedElement = newValue ? this.getEntry(newValue) : null;
+    ?>
+
+    <?on dataBinding:changed
+    const possibleValuesResolution = Promise.resolve(this.dataBinding.member.getPossibleValues());
+    possibleValuesResolution.then((values) => {
+        this.addEntries(values);
+        this[ENTRIES_READY] = true;
+        cocktail.ui.trigger(this, "entriesReady");
+    });
+    ?>
+
+    <ui:with ui:element="dropdownPanel">
+        <?on expanded:changed
+        instance.entries.focus();
+        ?>
+        <ui:EntryList id="entries"/>
+    </ui:with>
+
+    <div
+        ui:component="EntryList"
+        selectionType="single"
+        activationType="singleClick"
+        selectableEntriesSelector=".Entry"
+        tabindex="0">
+
+        <ui:using mixin="cocktail.ui.Selectable"/>
+
+        <?class
+        selectionActivated() {
+            this.parentInstance.value = this.selectedElement.value;
+            this.parentInstance.dropdownPanel.expanded = false;
+            this.parentInstance.dropdownPanel.button.focus();
+        }
+        ?>
+    </div>
+
+    <div ui:component="Entry">
+
+        <ui:property
+            name="value"
+            reflected="false">
+            <?on changed
+            this.label.innerHTML = this.member.translateValue(newValue);
+            ?>
+        </ui:property>
+
+        <div id="label"/>
+    </div>
+
+</ui:cocktail.ui.ActionListDropdown>
+

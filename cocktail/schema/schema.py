@@ -8,6 +8,7 @@ Provides a member that handles compound values.
 @since:			March 2008
 """
 from copy import deepcopy
+from cocktail.pkgutils import get_full_name
 from cocktail.modeling import (
     empty_dict,
     empty_list,
@@ -745,16 +746,69 @@ class Schema(Member):
 
 
 @translations.instances_of(Schema)
-def translate_schema(schema, suffix = None, **kwargs):
+def translate_schema(
+    schema,
+    suffix = None,
+    include_type_default = True,
+    **kwargs
+):
+    if suffix is None:
+        suffix = ""
 
-    translation = None
-
-    schema_name = getattr(schema, "full_name", schema.name)
+    schema_name = getattr(
+        schema,
+        "full_name",
+        schema.name
+    )
     if schema_name:
-        key = schema_name + (suffix or "")
-        translation = translations(key, **kwargs)
+        translation = translations(
+            schema_name + suffix,
+            member = schema,
+            **kwargs
+        )
+        if translation:
+            return translation
 
-    if not translation and schema.source_member:
-        translation = translations(schema.source_member, suffix = suffix, **kwargs)
+    for schema_alias in schema.schema_aliases:
+        translation = translations(
+            schema_alias + suffix,
+            member = schema,
+            **kwargs
+        )
+        if translation:
+            return translation
 
-    return translation
+    if schema.source_member:
+        translation = translations(
+            schema.source_member,
+            suffix = suffix,
+            include_type_default = False,
+            **kwargs
+        )
+        if translation:
+            return translation
+
+    if schema.custom_translation_key:
+        translation = translations(
+            schema.custom_translation_key + suffix,
+            member = schema,
+            **kwargs
+        )
+        if translation:
+            return translation
+
+    if include_type_default:
+        for member_type in schema.__class__.__mro__:
+            if issubclass(member_type, Member):
+                translation = translations(
+                    get_full_name(member_type)
+                        + ".default_member_translation"
+                        + suffix,
+                    member = schema,
+                    **kwargs
+                )
+                if translation:
+                    return translation
+
+    return None
+

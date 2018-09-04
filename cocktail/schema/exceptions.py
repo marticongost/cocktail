@@ -279,6 +279,12 @@ class FormatError(ValidationError):
             % (ValidationError.__str__(self), self.format)
 
 
+class InvalidJSONError(ValidationError):
+    """A validation error produced when a value assigned to a JSON field
+    can't be parsed as a JSON string.
+    """
+
+
 class MinValueError(ValidationError):
     """A validation error produced when a value assigned to a scalar field
     (numbers, dates, etc) falls below a expected threshold.
@@ -396,12 +402,6 @@ class RelationConstraintError(ValidationError):
 class CreditCardChecksumError(ValidationError):
     """A validation error produced for credit card numbers that have an
     invalid control digit.
-    """
-
-
-class IntegralPartRelocationError(Exception):
-    """An exception raised when trying to remove an integral part of a compound
-    element to attach it to another container.
     """
 
 
