@@ -12,10 +12,10 @@ from xml.parsers import expat
 from cocktail.events import when
 from cocktail.modeling import refine, extend, call_base, getter, DictWrapper
 from cocktail.translations import translations, get_language
+from cocktail.sourcecodewriter import SourceCodeWriter
 from cocktail.html.element import default, PlaceHolder
 from cocktail.html.overlay import register_overlay
 from cocktail.html.resources import resource_repositories
-from cocktail.html.templates.sourcecodewriter import SourceCodeWriter
 from cocktail.html.inlinesvg import get_uri_svg
 
 WHITESPACE_EXPR = re.compile(r"\s*")

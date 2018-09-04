@@ -1,0 +1,15 @@
+
+:host {
+    margin: 0;
+    padding: 0;
+}
+
+:host([state='disabled']) {
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+:host([state='hidden']) {
+    display: none;
+}
+

@@ -1,0 +1,173 @@
+
+@import "cocktail://styles/utils";
+@import "cocktail.ui://styles/common";
+
+$content-max-height: 50vh;
+$expand-duration: 0.5s;
+
+@keyframes slideIn {
+    from { transform: translateX(-50%) translateY(100%); }
+    to { transform: translateX(-50%) translateY(0); }
+}
+
+@keyframes expand {
+    from { max-height: 0; }
+    to { max-height: $content-max-height; }
+}
+
+@keyframes rotateExpander {
+    from { transform: rotate(0); }
+    to { transform: rotate(90deg); }
+}
+
+:host {
+    display: inline-block;
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 1px solid $strong-panel-border-color;
+    border-bottom: none;
+    background-color: white;
+    padding: 0.7em;
+    box-shadow: $panel-shadow;
+    bottom: 0;
+    font-family: Arial, sans-serif;
+    max-width: 50vw;
+    border-top-left-radius: 0.3em;
+    border-top-right-radius: 0.3em;
+}
+
+:host([animationState='appearing']) {
+    animation: slideIn 0.5s;
+}
+
+:host([animationState='disappearing']) {
+    animation: reverse slideIn 0.5s;
+}
+
+:host([category='success']) {
+    border-color: #a4b9a3;
+    background-color: #d5e3d5;
+
+    #closeButton {
+
+        svg {
+            fill: #6b926a !important;
+        }
+
+        &:hover svg {
+            fill: #4e754d !important;
+        }
+    }
+}
+
+:host([category='error']) {
+    border-color: $error-border-color;
+    background-color: $error-background-color;
+
+    #closeButton {
+
+        svg {
+            fill: desaturate(lighten($error-color, 15), 15) !important;
+        }
+
+        &:hover svg {
+            fill: $error-color !important;
+        }
+    }
+}
+
+#summaryContainer {
+    display: flex;
+    flex-direction: row;
+    margin-right: 2.5em;
+}
+
+#summaryLabel {
+    cursor: pointer;
+}
+
+#expandButton {
+    @include transparent-button;
+    flex: 0 0 auto;
+    cursor: pointer;
+
+    :host([hasDetail='false']) & {
+        display: none;
+    }
+
+    :host([animationState='expanding']) & {
+        animation: rotateExpander $expand-duration;
+    }
+
+    :host([expanded='true']) & {
+        transform: rotate(90deg);
+    }
+
+    :host([animationState='collapsing']) & {
+        animation: reverse rotateExpander $expand-duration;
+    }
+
+    svg {
+        width: 1.2em;
+        height: auto;
+        fill: black !important;
+    }
+}
+
+#summary {
+    flex: 1 1 auto;
+}
+
+#closeButton {
+    @include transparent-button;
+    position: absolute;
+    right: 0.5em;
+    top: 0.6em;
+    cursor: pointer;
+
+    svg {
+        width: 1.8em;
+        height: auto;
+        fill: #666 !important;
+    }
+}
+
+#detailFrame {
+    background-color: rgba(255,255,255,0.5);
+    $border: 1px solid rgba(100,100,100,0.2);
+    $margin-top: 0.5em;
+    max-height: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+
+    :host([hasDetail='false']) & {
+        display: none;
+    }
+
+    :host([expanded='true']) & {
+        overflow-y: auto;
+        max-height: $content-max-height;
+        border: $border;
+        margin-top: $margin-top;
+    }
+
+    :host([animationState='expanding']) & {
+        animation: expand $expand-duration;
+        border: $border;
+        margin-top: $margin-top;
+    }
+
+    :host([animationState='collapsing']) & {
+        animation: reverse expand $expand-duration;
+        border: $border;
+        margin-top: $margin-top;
+    }
+}
+
+#detailContainer {
+    padding: 0.5em 1em;
+    font-size: 0.9em;
+    color: #444;
+}
+

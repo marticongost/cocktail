@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:requires component="cocktail.ui.delay"/>
+    <ui:using mixin="cocktail.ui.DataDisplay"/>
+    <ui:symbol name="PROCESSING_INPUT"/>
+    <ui:symbol name="CONTENT_AREA_INITIALIZED"/>
+
+    <ui:property
+        name="multiline"
+        type="boolean"
+        reflected="true"
+        default="true"/>
+
+    <ui:property
+        name="autoHeight"
+        type="boolean"
+        reflected="true"
+        default="true"/>
+
+    <?on value:changed
+    if (!this[PROCESSING_INPUT]) {
+        this.contentArea.innerHTML = newValue;
+    }
+    ?>
+
+    <?js
+    this.updateDelay = new cocktail.ui.Delay(500, () => {
+        if (!instance[PROCESSING_INPUT]) {
+            instance[PROCESSING_INPUT] = true;
+            try {
+                instance.value = this.contentArea.innerHTML;
+            }
+            finally {
+                instance[PROCESSING_INPUT] = false;
+            }
+        }
+    });
+    ?>
+
+    <div id="contentArea" contenteditable="true">
+
+        <?on input
+        instance.updateDelay.begin();
+        ?>
+
+        <?on focus
+        if (!instance[CONTENT_AREA_INITIALIZED]) {
+            instance[CONTENT_AREA_INITIALIZED] = true;
+            document.execCommand("DefaultParagraphSeparator", false, "p");
+        }
+        ?>
+    </div>
+
+</div>
+

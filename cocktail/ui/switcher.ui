@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:property name="selectedContent">
+        <?on changed
+        if (oldValue) {
+            if (!cocktail.ui.SwitcherContent.selected.isChanging(oldValue)) {
+                oldValue.selected = false;
+            }
+        }
+        if (newValue) {
+            if (!cocktail.ui.SwitcherContent.selected.isChanging(newValue)) {
+                newValue.selected = true;
+            }
+            newValue.selectingInitialContent = !oldValue;
+        }
+        ?>
+    </ui:property>
+
+    <?class
+    connectedCallback() {
+        if (!this.selectedContent && this.firstChild) {
+            this.firstChild.selected = true;
+        }
+    }
+    ?>
+
+    <div id="contentWrapper">
+        <slot id="content"/>
+    </div>
+
+</div>
+

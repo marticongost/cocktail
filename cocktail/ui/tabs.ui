@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:symbol name="CONNECTED"/>
+    <ui:symbol name="UPDATE_QUERY"/>
+
+    <ui:property
+        name="selectedTab"
+        reflected="false">
+        <?on changed
+        this[UPDATE_QUERY]();
+        ?>
+    </ui:property>
+
+    <ui:property
+        name="updatesQuery"
+        type="boolean"
+        reflected="true"
+        default="true">
+        <?on changed
+        this[UPDATE_QUERY]();
+        ?>
+    </ui:property>
+
+    <ui:property
+        name="queryParameter"
+        type="string"
+        reflected="true"
+        final="true"/>
+
+    <ui:symbol name="SYNCHRONIZE_URI"/>
+    <ui:symbol name="SYNCHRONIZING_URI"/>
+
+    <?class
+    connectedCallback() {
+        super.connectedCallback();
+        this[CONNECTED] = true;
+    }
+
+    disconnectedCallback() {
+        super.disconnectedCallback();
+        this[CONNECTED] = false;
+    }
+
+    [UPDATE_QUERY]() {
+        if (this.updatesQuery) {
+            this[SYNCHRONIZE_URI](() => {
+                if (this[CONNECTED]) {
+                    const param = this.queryParameter;
+                    const tab = this.selectedTab;
+                    if (param) {
+                        cocktail.navigation.replaceQuery({[param]: tab ? tab.tabId : undefined});
+                    }
+                }
+            });
+        }
+    }
+
+    getTab(tabId) {
+        for (let tab of this.tabs) {
+            if (tab.tabId == tabId) {
+                return tab;
+            }
+        }
+        return null;
+    }
+
+    get tabs() {
+        return this.childNodes;
+    }
+
+    [SYNCHRONIZE_URI](syncAction) {
+        if (!this[SYNCHRONIZING_URI]) {
+            this[SYNCHRONIZING_URI] = true;
+            try {
+                return syncAction();
+            }
+            finally {
+                this[SYNCHRONIZING_URI] = false;
+            }
+        }
+    }
+    ?>
+
+    <?on-window popstate
+    this[SYNCHRONIZE_URI](() => {
+        let param = this.queryParameter;
+        if (param) {
+            let queryValues = URI(location.href).query(true);
+            let tabId = queryValues[param];
+            if (tabId) {
+                let tab = this.getTab(tabId);
+                if (tab) {
+                    this.selectedTab = tab;
+                }
+            }
+        }
+    });
+    ?>
+
+    <div id="strip"/>
+
+    <div id="content">
+        <slot id="contentSlot"/>
+    </div>
+
+</div>
+

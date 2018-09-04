@@ -10,7 +10,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = "cocktail",
-    version = "1.12b1",
+    version = "1.13b1",
     author = "Whads/Accent SL",
     author_email = "tech@whads.com",
     description = """A tasty mix of python web development utilities.""",
@@ -51,7 +51,7 @@ setup(
         "rfc6266"
     ],
     extras_require = {
-        "sass": ["libsass"]
+        "sass": ["libsass==0.12.3"]
     },
     packages = find_packages(),
     include_package_data = True,

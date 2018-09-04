@@ -1,0 +1,8 @@
+
+[cocktail.ui.Table]
+
+    [emptyNotice]
+    ca: No s'ha trobat cap resultat
+    es: No se ha encontrado ningún resultado
+    en: No matching rows found
+
