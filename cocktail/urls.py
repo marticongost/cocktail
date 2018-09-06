@@ -246,6 +246,18 @@ class URL(unicode):
             fragment = other.__fragment or self.__fragment
         )
 
+    def merge_query(self, *args, **kwargs):
+
+        url = self
+
+        for arg in args:
+            url = url.copy(query = url.query.merge(arg))
+
+        if kwargs:
+            url = url.copy(query = url.query.merge(kwargs))
+
+        return url
+
 
 class URLBuilder(object):
 
