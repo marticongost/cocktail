@@ -285,8 +285,11 @@
 
     focusFirstControl(groupId = null) {
         for (let field of this[FIELD_MAP].values()) {
-            if (groupId && field.dataBinding.member[cocktail.ui.group] != groupId) {
-                continue;
+            if (groupId) {
+                const fieldGroupId = field.dataBinding.member[cocktail.ui.group] || this.defaultGroup;
+                if (groupId != fieldGroupId) {
+                    continue;
+                }
             }
             if (field.focusControl()) {
                 return;
@@ -550,6 +553,7 @@
 
         <?class
         focusControl(language = null) {
+
             // Focus the control for the first available translation
             if (!language) {
                 for (let translation of this[TRANSLATIONS_MAP].values()) {
