@@ -66,7 +66,7 @@ class URL(unicode):
 
             # Decode byte strings
             elif isinstance(url, str):
-                return cls.__new__(cls, _decode(unquote(url)))
+                return cls.__new__(cls, _decode(unquote(url)), **values)
 
             else:
                 raise ValueError(
