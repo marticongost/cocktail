@@ -1078,6 +1078,12 @@ class SchemaObject(object):
         value = self.get(member, language)
         return member.translate_value(value, **kwargs)
 
+    def get_translated_values(self, member, languages = None):
+        return TranslatedValues(
+            (language, self.get(member, language))
+            for language in (languages or self.translations)
+        )
+
 
 SchemaObject._translation_schema_metaclass = SchemaClass
 SchemaObject._translation_schema_base = SchemaObject
