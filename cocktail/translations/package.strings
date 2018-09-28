@@ -103,6 +103,7 @@ en: Unexpected error (${error.__class__.__name__}: ${error})
         de: Abschicken
         pl: Zatwierdź
         nl: Bevestig
+        fr: Envoyer
 
         [accept]
         ca: Acceptar
