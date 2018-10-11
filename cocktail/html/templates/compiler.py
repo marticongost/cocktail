@@ -280,16 +280,10 @@ class TemplateCompiler(object):
             elif tag in ("ready", "binding"):
                 is_content = False
                 is_new = False
-                source.write("_self_ref = weakref.ref(self)")
-                source.write("@when(%s.%s_stage)" % (parent_id, tag))
-                source.write("def _handler(e):")
-                source.indent()
-                source.write("self = _self_ref()")
-                source.write("element = e.source")
+                self._wait_for_stage(source, frame, parent_id, tag)
                 parent_id = self._get_parent_id()
                 if parent_id:
                     source.write(parent_id + " = element")
-                frame.close_actions.append(source.unindent)
 
             elif tag == "with":
                 with_element = attributes.pop(
@@ -398,14 +392,26 @@ class TemplateCompiler(object):
         # Content
         elif is_content:
 
+            # Methods
+            def_identifier = \
+                attributes.pop(self.TEMPLATE_NS + ">def", None)
+
+            args = attributes.pop(self.TEMPLATE_NS + ">args", None)
+
             # Iteration
             iter_expr = attributes.pop(self.TEMPLATE_NS + ">for", None)
 
             if iter_expr is not None:
+
+                # def + for: wait for the ready stage
+                if def_identifier:
+                    self._wait_for_stage(source, frame, parent_id, "ready")
+
                 source.write("for " + iter_expr + ":")
                 source.indent()
                 frame.close_actions.append(source.unindent)
 
+            # for + where
             where_expr = attributes.pop(self.TEMPLATE_NS + ">where", None)
 
             if where_expr is not None:
@@ -413,11 +419,20 @@ class TemplateCompiler(object):
                 source.indent()
                 frame.close_actions.append(source.unindent)
 
+            # for + def: set py:args automatically and invoke an element
+            # factory
+            if iter_expr and def_identifier:
+                if not args:
+                    args = iter_expr[:iter_expr.find(" in")]
+
+                source.write(
+                    "element.append(self.create_%s(%s))"
+                    % (def_identifier, args)
+                )
+
             # User defined names
             identifier = attributes.pop(self.TEMPLATE_NS + ">id", None)
             local_identifier = attributes.pop(self.TEMPLATE_NS + ">local_id", None)
-            def_identifier = \
-                attributes.pop(self.TEMPLATE_NS + ">def", None)
 
             if def_identifier:
                 is_new = False
@@ -489,12 +504,14 @@ class TemplateCompiler(object):
                 frame.element = id = factory_id
 
                 # Declaration
-                args = attributes.pop(self.TEMPLATE_NS + ">args", None)
-
                 if not args:
                     args = "*args, **kwargs"
 
-                inline = ((with_def or def_identifier) and parent_id != "self")
+                inline = (
+                    (with_def or def_identifier)
+                    and parent_id != "self"
+                    and not (def_identifier and iter_expr)
+                )
 
                 if inline:
                     self_var = parent_id
@@ -557,6 +574,15 @@ class TemplateCompiler(object):
                 source.write("%s.add_class(%s)"
                     % (id, repr(factory_id or local_identifier))
                 )
+
+    def _wait_for_stage(self, source, frame, element_id, stage):
+        source.write("_self_ref = weakref.ref(self)")
+        source.write("@when(%s.%s_stage)" % (element_id, stage))
+        source.write("def _handler(e):")
+        source.indent()
+        source.write("self = _self_ref()")
+        source.write("element = e.source")
+        frame.close_actions.append(source.unindent)
 
     def EndElementHandler(self, name):
         self._pop()
