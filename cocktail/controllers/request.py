@@ -51,8 +51,9 @@ def get_request_root_url_builder():
     return url_builder
 
 def get_request_url_builder():
+    req = cherrypy.request
     url_builder = get_request_root_url_builder()
-    url_builder.path = cherrypy.request.path_info
-    url_builder.query = cherrypy.request.query_string
+    url_builder.path = req.script_name + req.path_info
+    url_builder.query = req.query_string
     return url_builder
 
