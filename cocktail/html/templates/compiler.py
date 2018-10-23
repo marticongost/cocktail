@@ -688,6 +688,19 @@ class TemplateCompiler(object):
             is_placeholder = False
             chunks = []
 
+            # Automatically prepend the fully qualified name of the template
+            # to py:client_model attributes starting with a dot
+            if (
+                is_template_attrib
+                and name == "client_model"
+                and value.startswith(".")
+            ):
+                value = "%s.%s%s" % (
+                    self.pkg_name,
+                    self.class_name,
+                    value
+                )
+
             for chunk, expr_type in self._parse_data(value):
                 if expr_type == LITERAL:
                     chunks.append(repr(chunk))
