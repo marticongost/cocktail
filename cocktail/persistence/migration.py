@@ -18,6 +18,8 @@ from cocktail.styled import styled
 from cocktail.persistence import PersistentSet, datastore
 from cocktail.persistence.utils import is_broken
 
+DATASTORE_KEY = "cocktail.persistence.migration_steps"
+
 migration_steps = DictWrapper(OrderedDict())
 
 def migrate(verbose = False, commit = False):
@@ -121,17 +123,36 @@ class MigrationStep(object):
             otherwise.
         :rtype: bool
         """
-        key = "cocktail.persistence.migration_steps"
-        applied_steps = datastore.root.get(key)
+        applied_steps = datastore.root.get(DATASTORE_KEY)
 
         if applied_steps is None:
             applied_steps = PersistentSet()
-            datastore.root[key] = applied_steps
+            datastore.root[DATASTORE_KEY] = applied_steps
         elif self.__id in applied_steps:
             return False
 
         applied_steps.add(self.__id)
         return True
+
+    def mark_as_pending(self):
+        """Flags the step as not executed.
+
+        This is mostly useful during the implementation of a migration step; if
+        the step is executed and committed, but later on it is found to have a
+        flaw or bug, this allows to indicate that the step should be run on the
+        next migration execution.
+
+        :return: True if the step had been executed and has had its state
+            reset to pending; False otherwise.
+        :rtype: bool
+        """
+        applied_steps = datastore.root.get(DATASTORE_KEY)
+
+        if applied_steps and self.__id in applied_steps:
+            applied_steps.remove(self.__id)
+            return True
+
+        return False
 
     def dependencies(self, recursive = False):
         """Iterates over the dependencies of the migration step.
