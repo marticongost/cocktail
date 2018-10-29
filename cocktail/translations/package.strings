@@ -79,12 +79,14 @@ translations.define("decimal.Decimal.instance",
     ca: Sí
     es: Sí
     en: Yes
+    pt: Sí
 
     [false]
     @case False
     ca: No
     es: No
     en: No
+    pt: No
 
 [Exception.instance(error)]
 ca: Error inesperat (${error.__class__.__name__}: ${error})
