@@ -16,6 +16,7 @@
     <ui:requires component="cocktail.ui.DateInput"/>
     <ui:requires component="cocktail.ui.DateTimeInput"/>
     <ui:requires component="cocktail.ui.TextInput"/>
+    <ui:requires component="cocktail.ui.PasswordInput"/>
     <ui:requires component="cocktail.ui.TextArea"/>
     <ui:requires component="cocktail.ui.HTMLEditor"/>
     <ui:requires component="cocktail.ui.CodeEditor"/>
