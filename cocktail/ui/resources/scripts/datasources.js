@@ -46,15 +46,16 @@ cocktail.ui.HTTPDataSource = class HTTPDataSource extends cocktail.ui.DataSource
             parameters || {}
         );
 
+        if (!parameters.headers) {
+            parameters.headers = {};
+        }
+        parameters.headers["Accept"] = "application/json";
+
         // Convert query string parameters to form data / JSON values
         // when using POST requests
         if (this.requiresPOST) {
 
             parameters.method = "POST";
-
-            if (!parameters.headers) {
-                parameters.headers = {};
-            }
             parameters.headers["X-HTTP-Method-Override"] = "GET";
 
             if (parameters.parameters) {
