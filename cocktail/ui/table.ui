@@ -171,6 +171,7 @@
                     table.setRows(data.records);
                 }
                 table.dataState = "loaded";
+                return data;
             })
             .catch(function (error) {
                 table.dataState = "error";
@@ -247,7 +248,10 @@
 
     loadNextPage() {
         let nextPage = this.page + 1;
-        this.loadPage(nextPage).then(() => this.page = nextPage);
+        return this.loadPage(nextPage).then((data) => {
+            this.page = nextPage;
+            return data;
+        });
     }
 
     createColumns() {
@@ -332,6 +336,7 @@
 
     clearRows() {
         cocktail.ui.empty(this.body);
+        this.scrollWatcher.reset();
     }
 
     reload() {
@@ -445,8 +450,12 @@
     let table = this;
     this.scrollWatcher = new cocktail.ui.ScrollWatcher();
     this.scrollWatcher.callback = function () {
-        table.loadNextPage();
-        this.reset();
+        table.loadNextPage()
+            .then((data) => {
+                if (data.records.length) {
+                    this.reset();
+                }
+            });
     }
     ?>
 
