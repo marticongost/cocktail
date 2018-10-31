@@ -335,6 +335,7 @@
     }
 
     clearRows() {
+        this.page = 0;
         cocktail.ui.empty(this.body);
         this.scrollWatcher.reset();
     }
