@@ -41,7 +41,6 @@ setup(
         "cherrypy==3.1.2",
         "buffet>=1.0",
         "nose",
-        "selenium",
         "pyExcelerator",
         "Beaker",
         "BeautifulSoup4",
