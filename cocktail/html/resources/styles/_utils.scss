@@ -237,3 +237,23 @@
     }
 }
 
+@mixin flex-grid($cols, $spacing: 0) {
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+
+    & > * {
+        flex: 0 0 auto;
+        width: calc((100% - #{($cols - 1) * $spacing}) / #{$cols});
+        margin-left: $spacing;
+
+        &:nth-child(#{$cols}n + 1) {
+            margin-left: 0;
+        }
+
+        &:nth-child(#{$cols}) ~ * {
+            margin-top: $spacing;
+        }
+    }
+}
+
