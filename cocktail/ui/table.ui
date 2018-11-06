@@ -341,7 +341,8 @@
     }
 
     reload() {
-        if (this.dataBinding && this.value) {
+        if (this.dataBinding && this.value && this.dataState != "loading") {
+            this.dataState = "loading";
             this.clearRows();
             this.loadPage(0).then(() => this.page = 0);
         }
