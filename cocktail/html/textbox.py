@@ -32,6 +32,13 @@ class TextBox(Element):
             except:
                 pass
 
+            if self.member.required == True:
+                self["required"] = True
+
+            format = getattr(self.member, "format", None)
+            if format:
+                self["pattern"] = format.pattern
+
             # Limit the length of the control
             if isinstance(self.member, String) \
             and self.member.max is not None:
