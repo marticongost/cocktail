@@ -32,6 +32,13 @@ class TextArea(Element):
             except:
                 pass
 
+            if self.member.required == True:
+                self["required"] = True
+
+            format = getattr(self.member, "format", None)
+            if format:
+                self["pattern"] = format.pattern
+
             if spellcheck is None:
                 spellcheck = self.member.spellcheck
 
