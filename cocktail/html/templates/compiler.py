@@ -398,6 +398,11 @@ class TemplateCompiler(object):
 
             args = attributes.pop(self.TEMPLATE_NS + ">args", None)
 
+            # py:when
+            stage = attributes.pop(self.TEMPLATE_NS + ">when", None)
+            if stage:
+                self._wait_for_stage(source, frame, parent_id, stage)
+
             # Iteration
             iter_expr = attributes.pop(self.TEMPLATE_NS + ">for", None)
 
