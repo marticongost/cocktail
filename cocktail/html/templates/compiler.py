@@ -407,11 +407,6 @@ class TemplateCompiler(object):
             iter_expr = attributes.pop(self.TEMPLATE_NS + ">for", None)
 
             if iter_expr is not None:
-
-                # def + for: wait for the ready stage
-                if def_identifier:
-                    self._wait_for_stage(source, frame, parent_id, "ready")
-
                 source.write("for " + iter_expr + ":")
                 source.indent()
                 frame.close_actions.append(source.unindent)
