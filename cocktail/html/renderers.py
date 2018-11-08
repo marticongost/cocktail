@@ -35,6 +35,7 @@ class Renderer(object):
     flag_attributes = set([
         "selected",
         "checked",
+        "required",
         "autofocus",
         "allowfullscreen",
         "async",
