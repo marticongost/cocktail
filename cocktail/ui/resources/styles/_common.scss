@@ -19,6 +19,8 @@ $secondary-panel-border: 1px solid $secondary-panel-border-color !default;
 $secondary-panel-hover-color: #e7dfc9 !default;
 $secondary-panel-action-color: #716649 !default;
 $secondary-panel-action-highlight-color: #372f13 !default;
+$hover-background-color: darken($panel-background-color, 10) !default;
+$selected-hover-background-color: desaturate(darken($hover-background-color, 35), 25) !default;
 $focus-color: #c88352 !default;
 $error-border-color: #e4c5c5 !default;
 $error-border: 1px solid $error-border-color !default;
