@@ -34,8 +34,19 @@
 
     <?class
     static requireMode(name) {
+
         let promise = modePromises[name];
+
         if (!promise) {
+
+            // Load dependencies
+            let requiredModes = this.requiredModes[name];
+            let promises = null;
+            if (requiredModes) {
+                promises = requiredModes.map((depName) => this.requireMode(depName));
+            }
+
+            // Load the mode itself
             modePromises[name] = promise = new Promise((resolve, reject) => {
                 const script = document.createElement("script");
                 script.type = "text/javascript";
@@ -44,7 +55,14 @@
                 script.onerror = (e) => reject(null);
                 document.head.appendChild(script);
             });
+
+            // Resolve when the mode and its dependencies have been loaded
+            if (promises) {
+                promises.push(promise);
+                promise = Promise.all(promises);
+            }
         }
+
         return promise;
     }
 
@@ -101,8 +119,13 @@
 
     <?tail
     cls.languageModes = {
-        "scss": ["css", "text/x-scss"]
+        "scss": ["css", "text/x-scss"],
+        "html": ["htmlmixed", "text/html"]
     };
+
+    cls.requiredModes = {
+        "htmlmixed": ["xml", "javascript", "css"]
+    }
     ?>
 
     <?on dataBinding:changed
