@@ -90,8 +90,6 @@
             for (let panel of [this.selectedEntriesPanel, this.availableEntriesPanel]) {
                 let entry = panel[ENTRY_MAP].get(serializedValue);
                 if (!entry) {
-                    console.log(serializedValue);
-                    console.log(panel[ENTRY_MAP]);
                     throw new cls.InexistentEntryError(this, value);
                 }
                 if (selected) {
