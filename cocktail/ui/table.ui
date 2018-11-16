@@ -410,6 +410,7 @@
         if (width !== undefined) {
             if (typeof(width) == "number") {
                 cell.style.flex = `0 0 ${width}em`;
+                cell.style.maxWidth = `${width}em`;
             }
             else {
                 cell.style.flex = width;
