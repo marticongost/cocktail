@@ -92,18 +92,24 @@ cocktail.searchable = function (searchable, params /* = null */) {
 
     var prevQuery = null;
 
-    searchable.applySearch = function (query) {
+    searchable.applySearch = function (query, userInitiated /* = false */) {
 
         if (prevQuery !== null && query == prevQuery) {
             return;
         }
+
+        if (userInitiated === undefined) {
+            userInitiated = false;
+        }
+
         var refiningPreviousQuery = query && prevQuery && query.indexOf(prevQuery) == 0;
         prevQuery = query;
 
         $searchable.attr("data-cocktail-searchable-status", "searching");
 
         $searchable.trigger("searching", {
-            query: query
+            query: query,
+            userInitiated: userInitiated
         });
 
         // Pause before executing the search, to give the browser a chance to
@@ -168,14 +174,16 @@ cocktail.searchable = function (searchable, params /* = null */) {
 
             $searchable.trigger("searched", {
                 query: query,
-                matches: $matches
+                matches: $matches,
+                userInitiated: userInitiated
             });
 
             $searchable.attr("data-cocktail-searchable-status", "idle");
 
             $searchable.trigger("searchComplete", {
                 query: query,
-                matches: $matches
+                matches: $matches,
+                userInitiated: userInitiated
             });
         }, 0);
     }
@@ -282,7 +290,7 @@ cocktail.searchable = function (searchable, params /* = null */) {
     var searchDelay = params && params.searchDelay;
     var searchTimeout = null;
 
-    function searchBoxEventHandler() {
+    function searchBoxEventHandler(e) {
         if (searchDelay) {
             if (searchTimeout) {
                 clearTimeout(searchTimeout);
@@ -296,7 +304,7 @@ cocktail.searchable = function (searchable, params /* = null */) {
 
     function executeSearch() {
         searchTimeout = null;
-        searchable.applySearch($searchBox.val());
+        searchable.applySearch($searchBox.val(), true);
     }
 
     var $searchBox = $searchable.find(params && params.searchBoxSelector || "input[type=search]")

@@ -66,7 +66,7 @@ class URL(unicode):
 
             # Decode byte strings
             elif isinstance(url, str):
-                return cls.__new__(cls, _decode(unquote(url)))
+                return cls.__new__(cls, _decode(unquote(url)), **values)
 
             else:
                 raise ValueError(
@@ -245,6 +245,18 @@ class URL(unicode):
             query = self.__query.merge(other.__query),
             fragment = other.__fragment or self.__fragment
         )
+
+    def merge_query(self, *args, **kwargs):
+
+        url = self
+
+        for arg in args:
+            url = url.copy(query = url.query.merge(arg))
+
+        if kwargs:
+            url = url.copy(query = url.query.merge(kwargs))
+
+        return url
 
 
 class URLBuilder(object):

@@ -147,7 +147,12 @@ class TreeView(Element):
         children = self.get_expanded_children(item)
 
         if self.create_empty_containers or children:
-            entry.add_class("branch")
+
+            for child in children:
+                if self._is_accessible(child) != NOT_ACCESSIBLE:
+                    entry.add_class("branch")
+                    break
+
             entry.container = self.create_children_container(item, children)
             entry.append(entry.container)
         else:

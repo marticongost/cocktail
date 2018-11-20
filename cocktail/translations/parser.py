@@ -64,6 +64,7 @@ class TranslationsFileParser(object):
             either,
             plural2,
             ca_apostrophe,
+            ca_apostrophe_choose,
             ca_possessive,
             ca_possessive_with_article
         )
@@ -76,6 +77,7 @@ class TranslationsFileParser(object):
             "plural2": plural2,
             "ca_apostrophe": ca_apostrophe,
             "ca_possessive": ca_possessive,
+            "ca_apostrophe_choose": ca_apostrophe_choose,
             "ca_possessive_with_article": ca_possessive_with_article,
             "arguments": arguments,
             "_expr_value": _expr_value

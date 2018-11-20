@@ -4,6 +4,7 @@
     ca: El camp ${error.member_desc()} no és vàlid
     es: El campo ${error.member_desc()} no es válido
     en: The ${error.member_desc()} field is not valid
+    fr: Le champ ${error.member_desc()} n'est pas valide
 
     [ValueRequiredError.instance(error)]
     ca: El camp ${error.member_desc()} no pot estar buit
@@ -11,33 +12,39 @@
     en: The ${error.member_desc()} field can't be empty
     pt: O campo ${error.member_desc()} tem que ser preenchido
     de: Das Feld ${error.member_desc()} muss ausgefüllt werden
+    fr: Le champ ${error.member_desc()} ne peut pas être vide
 
     [NoneRequiredError.instance(error)]
     ca: El camp ${error.member_desc()} ha d'estar buit
     es: El campo ${error.member_desc()} debe estar vacío
     en: The ${error.member_desc()} field must be empty
+    fr: Le champ ${error.member_desc()} doit être vide
 
     [TypeCheckError.instance(error)]
     ca: El camp ${error.member_desc()} té un tipus incorrecte
     es: El campo ${error.member_desc()} tiene un tipo incorrecto
     en: The ${error.member_desc()} field is of the wrong type
+    fr: Le champ ${error.member_desc()} a un type incorrect
 
     [EnumerationError.instance(error)]
     ca: El valor del camp ${error.member_desc()} no és un dels permesos
     es: El valor del campo ${error.member_desc()} no es uno de los permitidos
     en: Wrong choice on field ${error.member_desc()}
+    fr: La valeur du champ ${error.member_desc()} n'est pas l'un de ceux autorisés
 
     [MinLengthError.instance(error)]
     ca: El camp ${error.member_desc()} ha de tenir un mínim de ${error.min} caràcters
     es: El campo ${error.member_desc()} debe tener un mínimo de ${error.min} caracteres
     en: The ${error.member_desc()} field must be at least ${error.min} characters long
     pt: O campo ${error.member_desc()} deve ter pelo menos ${error.min} caracteres
+    fr: Le champ ${error.member_desc()} doit comporter au minimum ${error.min} caractères
 
     [MaxLengthError.instance(error)]
     ca: El camp ${error.member_desc()} ha de tenir un màxim de ${error.max} caràcters
     es: El campo ${error.member_desc()} debe tener un máximo de ${error.max} caracteres
     en: The ${error.member_desc()} field can't be more than ${error.max} characters long
     pt: O campo ${error.member_desc()} deve ter um máximo de ${error.max} caracteres
+    fr: Le champ ${error.member_desc()} doit comporter au maximum ${error.min} caractères
 
     [FormatError.instance(error)]
     ca: El format del camp ${error.member_desc()} és incorrecte
@@ -45,6 +52,7 @@
     en: The ${error.member_desc()} field has a wrong format
     de: Das Feld ${error.member_desc()} hat ein falsches Format
     pt: O formato do campo ${error.member_desc()} é incorreto
+    fr: Le format du champ ${error.member_desc()} est incorrect
 
     [PhoneFormatError.instance(error)]
     ca: El valor indicat pel camp ${error.member_desc()} no és un número de telèfon vàlid
