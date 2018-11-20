@@ -6,6 +6,7 @@ u"""Provides the `FormProcessor` and `Form` classes.
 import cherrypy
 from cocktail.modeling import getter, cached_getter, camel_to_underscore
 from cocktail.pkgutils import get_full_name
+from cocktail.events import Event, EventHub
 from cocktail import schema
 from cocktail.persistence import PersistentClass, transactional
 from cocktail.controllers.parameters import get_parameter
@@ -31,6 +32,7 @@ class FormProcessor(object):
             if isinstance(member, type) and issubclass(member, Form):
                 form = member(self)
                 forms[form.form_id] = form
+                form.declared()
 
         return forms
 
@@ -123,9 +125,14 @@ class FormProcessor(object):
 
 class Form(object):
     """A description of a form based on a schema."""
+
+    __metaclass__ = EventHub
+
     controller = None
     actions = (None,)
     process_after = ()
+
+    declared = Event()
 
     def __init__(self, controller):
         self.controller = controller
