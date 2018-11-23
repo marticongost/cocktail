@@ -142,6 +142,7 @@
                 )
             ) {
                 this.selectionActivated();
+                cocktail.ui.trigger(this, "selectionActivated");
             }
             this[PREV_CLICK_ELEMENT] = target;
             this[PREV_CLICK_TIME] = now;
@@ -176,6 +177,7 @@
                 e.stopPropagation();
             }
             this.selectionActivated();
+            cocktail.ui.trigger(this, "selectionActivated");
         }
         // Select all (ctrl + a), empty selection (ctrl + shift + a)
         else if (e.which == 65 && e.ctrlKey) {
