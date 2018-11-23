@@ -500,6 +500,30 @@ cocktail.ui.splash = function (splash, mainComponent) {
         return element;
     }
 
+    cocktail.ui.SYNCHRONIZING = Symbol("cocktail.ui.SYNCHRONIZING");
+
+    cocktail.ui.sync = function () {
+        const synchronizable = (action) => {
+
+            if (synchronizable[cocktail.ui.SYNCHRONIZING]) {
+                return cocktail.ui.SYNCHRONIZING;
+            }
+
+            synchronizable[cocktail.ui.SYNCHRONIZING] = true;
+            let rvalue;
+
+            try {
+                rvalue = action();
+            }
+            finally {
+                delete synchronizable[cocktail.ui.SYNCHRONIZING];
+            }
+
+            return rvalue;
+        };
+        return synchronizable;
+    }
+
     const LINKS = Symbol("cocktail.ui.LINKS");
 
     let setLink = function (source, target, property, synchronization) {
