@@ -350,54 +350,39 @@
                 });
         }
 
-        resolveParameters(path) {
-
-            let parameterOrder = [];
-            let parameterValues = [];
+        async resolveParameters(path) {
 
             for (let i = 0; i < this.parameters.length; i++) {
-                let parameter = this.parameters[i];
+                const parameter = this.parameters[i];
 
-                // Undefined parameters
-                if (i >= path.length) {
+                // Defined parameters
+                if (i < path.length) {
+                    const value = await parameter.parseValue(path[i]);
+                    this.applyParameter(parameter, value);
+                    this.consumePathSegment(path, "parameter " + parameter.name);
+                }
+                // Undefined parameters (segments missing)
+                else {
                     if (parameter.required) {
                         reject(parameter);
                         break;
                     }
                     else {
-                        parameterOrder.push(parameter);
-                        parameterValues.push(parameter.getDefault(this));
+                        const value = await parameter.getDefaultValue(this);
+                        this.applyParameter(parameter, value);
                     }
-                }
-                else {
-                    // Parse and collect provided parameters
-                    parameterOrder.push(parameter);
-                    parameterValues.push(parameter.parseValue(path[i]));
-                    this.consumePathSegment(path, "parameter " + parameter.name);
                 }
             }
 
-            return Promise.all(parameterValues)
-                .then((values) => {
-                    for (var i = 0; i < values.length; i++) {
-                        let parameter = parameterOrder[i];
-                        let value = values[i];
-                        if (value === undefined) {
-                            return false;
-                        }
-                        this.applyParameter(parameter, value);
-                    }
+            // Apply defaults for query string parameters for non terminal nodes
+            if (path.length) {
+                return this.resolveQueryParameters().then(() => true);
+            }
 
-                    // Apply defaults for query string parameters for non terminal nodes
-                    if (path.length) {
-                        return this.resolveQueryParameters().then(() => true);
-                    }
-
-                    return true;
-                });
+            return true;
         }
 
-        resolveQueryParameters(queryString = null) {
+        async resolveQueryParameters(queryString = null) {
 
             if (queryString == "" || queryString == "?") {
                 queryString = null;
@@ -407,8 +392,6 @@
 
             let queryParameters = this.queryParameters;
             let queryValues = queryString ? URI(queryString).query(true) : {};
-            let parameterOrder = [];
-            let parameterValues = [];
 
             // Supplied values
             // Important: supplied values are applied in the same order they
@@ -420,9 +403,8 @@
                 let value = queryValues[key];
                 let parameter = queryParameters[key];
                 if (parameter && value !== undefined) {
-                    value = parameter.parseValue(value);
-                    parameterOrder.push(parameter);
-                    parameterValues.push(value);
+                    value = await parameter.parseValue(value);
+                    this.applyQueryParameter(parameter, value);
                 }
             }
 
@@ -430,20 +412,10 @@
             for (let key in queryParameters) {
                 let parameter = queryParameters[key];
                 if (queryValues[key] === undefined) {
-                    let value = parameter.getDefaultValue(this);
-                    parameterOrder.push(parameter);
-                    parameterValues.push(value);
+                    const value = await parameter.getDefaultValue(this);
+                    this.applyQueryParameter(parameter, value);
                 }
             }
-
-            return Promise.all(parameterValues)
-                .then((values) => {
-                    for (var i = 0; i < values.length; i++) {
-                        let parameter = parameterOrder[i];
-                        let value = values[i];
-                        this.applyQueryParameter(parameter, value);
-                    }
-                });
         }
 
         resolveChild(path) {
