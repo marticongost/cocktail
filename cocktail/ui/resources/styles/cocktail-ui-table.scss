@@ -174,12 +174,12 @@ $cell-padding: 0.6em;
         display: flex;
         flex-direction: row;
         align-items: center;
-        padding-left: calc(#{$cell-padding} + var(--depth) * 2em);
     }
 
     .rowExpanderIcon,
     .emptyRowIcon {
         margin-right: 0.5em;
+        margin-left: calc(#{$cell-padding} + var(--depth) * 2em);
 
         svg {
             width: auto;
