@@ -22,6 +22,12 @@ class ComponentRegistry(object):
         self.__overlays = defaultdict(list)
         self.__lock = RLock()
 
+    def resolve(self, component):
+        if isinstance(component, basestring):
+            return self.get(component)
+        else:
+            return component
+
     def get(self, full_name, referrer = None, reference_type = None):
 
         already_existed = True
