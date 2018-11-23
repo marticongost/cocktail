@@ -222,14 +222,14 @@ class ComponentLoader(object):
             base_name = self.tag_interfaces.get(local_name, "HTMLElement")
             base_name = "cocktail.ui.base.%s" % base_name
 
-        if not self.is_module:
-            self.source.write("{")
-            self.source.indent()
-
+        self.source.write("{")
+        self.source.indent()
         self.symbols_source = self.source.nest()
-        self.head_source = self.source.nest()
 
-        if not self.is_module:
+        if self.is_module:
+            self.init_source = self.source.nest()
+        else:
+            self.head_source = self.source.nest()
 
             # Component class declaration
             self.declaration_source = self.source.nest()
@@ -274,7 +274,8 @@ class ComponentLoader(object):
             else:
                 self.source.write("});")
 
-        self.tail_source = self.source.nest()
+            self.tail_source = self.source.nest()
+
         self.parse_element(node)
 
         if not self.is_module:
@@ -363,8 +364,8 @@ class ComponentLoader(object):
                             % dumps(uris)
                         )
 
-            self.source.unindent()
-            self.source.write("}")
+        self.source.unindent()
+        self.source.write("}")
 
     def parse_node(self, node):
         if node.tag is ProcessingInstruction:
@@ -904,15 +905,24 @@ class ComponentLoader(object):
 
     def parse_processing_instruction(self, pi):
 
+        if self.is_module and pi.target != "js":
+            self.trigger_parser_error(
+                "Can't have a '%s' processing instruction on a module"
+                % pi.target
+            )
+
         target = pi.target
 
         # Inlined javascript blocks
         if target == "js":
             value = normalize_indentation(pi.text.rstrip())
-            with self.init_source.braces():
-                if self.__stack:
-                    self.init_source.write("let element = %s;" % self.__stack.ref)
+            if self.is_module:
                 self.init_source.write(value)
+            else:
+                with self.init_source.braces():
+                    if self.__stack:
+                        self.init_source.write("let element = %s;" % self.__stack.ref)
+                    self.init_source.write(value)
 
         # Javascript blocks for the module head
         elif target == "head":
