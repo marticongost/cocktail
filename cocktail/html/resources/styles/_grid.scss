@@ -204,6 +204,13 @@ $grid-column-count: null;
     }
 }
 
+@mixin grid-padded {
+    @include grid(gt grid-min-size()) {
+        padding-left: calc(50% - #{grid-width() / 2});
+        padding-right: calc(50% - #{grid-width() / 2});
+    }
+}
+
 @mixin grid-row($expr: null, $compact: false) {
 
     @if $expr == null {
