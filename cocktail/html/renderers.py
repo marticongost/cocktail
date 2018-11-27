@@ -146,7 +146,7 @@ html5_renderer = HTML5Renderer()
 xhtml_renderer = XHTMLRenderer()
 xhtml5_renderer = XHTML5Renderer()
 
-default_renderer = html4_renderer
+default_renderer = html5_renderer
 
 class RenderingError(Exception):
     """An error raised when trying to render an incorrect element."""
