@@ -339,11 +339,8 @@
             }
         }
         this.awaitFields().then((fields) => {
-            for (let memberName in errorsByMember) {
-                let field = fields.get(memberName);
-                if (field) {
-                    field.errors = errorsByMember[memberName];
-                }
+            for (let [key, field] of fields) {
+                field.errors = errorsByMember[key] || [];
             }
         });
     }
