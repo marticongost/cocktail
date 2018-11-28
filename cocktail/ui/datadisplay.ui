@@ -203,11 +203,11 @@
         );
     }
 
-    getJSONValue() {
+    getJSONValue(parameters = null) {
         if (!this.dataBinding) {
             return {};
         }
-        return this.dataBinding.member.toJSONValue(this.value);
+        return this.dataBinding.member.toJSONValue(this.value, parameters);
     }
 
     clearValue() {
