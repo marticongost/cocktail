@@ -624,15 +624,16 @@
             for (let member of this.members()) {
                 if (!parameters || !parameters.includeMember || parameters.includeMember(member)) {
                     let memberValue = value[member.name];
+                    const memberParameters = parameters && parameters.getMemberParameters ? parameters.getMemberParameters(member) : null;
                     if (member.translated) {
                         let exportedValue = {};
                         for (let language in memberValue) {
-                            exportedValue[language] = member.toJSONValue(memberValue[language]);
+                            exportedValue[language] = member.toJSONValue(memberValue[language], memberParameters);
                         }
                         memberValue = exportedValue;
                     }
                     else {
-                        memberValue = member.toJSONValue(memberValue);
+                        memberValue = member.toJSONValue(memberValue, memberParameters);
                     }
                     record[member.name] = memberValue;
                 }
@@ -884,7 +885,7 @@
             return pkg.objectFromJSONValue(value, this.relatedType);
         }
 
-        toJSONValue(value) {
+        toJSONValue(value, parameters = null) {
             if (value) {
                 if (typeof(value) == "object") {
                     if (
@@ -892,7 +893,7 @@
                         || (this.membershipType == pkg.membershipTypes.collectionItems && this.owner && this.owner.integral)
                     ) {
                         const type = value._class;
-                        value = type.toJSONValue(value);
+                        value = type.toJSONValue(value, parameters);
                     }
                     else {
                         value = value[this.type.primaryMember.name];
@@ -1000,13 +1001,13 @@
             return value;
         }
 
-        toJSONValue(value) {
+        toJSONValue(value, parameters = null) {
             if (value === undefined || value === null) {
                 return null;
             }
             let items = this.items;
             if (items) {
-                return Array.from(value, (item) => items.toJSONValue(item));
+                return Array.from(value, (item) => items.toJSONValue(item, parameters));
             }
             else {
                 return Array.from(value);
