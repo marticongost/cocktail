@@ -393,28 +393,16 @@
             let queryParameters = this.queryParameters;
             let queryValues = queryString ? URI(queryString).query(true) : {};
 
-            // Supplied values
-            // Important: supplied values are applied in the same order they
-            // appear in the query string. This behavior can be important on
-            // some scenarios, such as preserving arbitrary order when building
-            // a list of elements using several different parameters (example:
-            // woost.admin.ui.FiltersBar)
-            for (let key in queryValues) {
-                let value = queryValues[key];
-                let parameter = queryParameters[key];
-                if (parameter && value !== undefined) {
+            for (let key in this.queryParameters) {
+                const parameter = this.queryParameters[key];
+                let value = queryValues[parameter.name];
+                if (value === undefined) {
+                    value = await parameter.getDefaultValue();
+                }
+                else {
                     value = await parameter.parseValue(value);
-                    this.applyQueryParameter(parameter, value);
                 }
-            }
-
-            // Default values
-            for (let key in queryParameters) {
-                let parameter = queryParameters[key];
-                if (queryValues[key] === undefined) {
-                    const value = await parameter.getDefaultValue(this);
-                    this.applyQueryParameter(parameter, value);
-                }
+                this.applyQueryParameter(parameter, value);
             }
         }
 
