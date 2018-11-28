@@ -37,6 +37,10 @@ def get_cache_expiration(obj, cache_part = None):
         % obj
     )
 
+@get_cache_expiration.implementation_for(basestring)
+def get_cache_expiration_for_string(obj, cache_part = None):
+    return None
+
 
 class Invalidable(object):
 
