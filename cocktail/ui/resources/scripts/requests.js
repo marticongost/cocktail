@@ -78,6 +78,9 @@ cocktail.ui.request = function (params) {
 
             if (params.responseType) {
                 xhr.responseType = params.responseType;
+                if (params.responseType == "json") {
+                    xhr.setRequestHeader("Accept", "application/json");
+                }
             }
 
             if (params.progressBar) {
