@@ -656,6 +656,15 @@ def translate_member(
     if suffix is None:
         suffix = ""
 
+    if member.custom_translation_key:
+        translation = translations(
+            member.custom_translation_key + suffix,
+            member = member,
+            **kwargs
+        )
+        if translation:
+            return translation
+
     if member.schema:
 
         if member.name:
@@ -699,15 +708,6 @@ def translate_member(
             member.source_member,
             suffix = suffix,
             include_type_default = False,
-            **kwargs
-        )
-        if translation:
-            return translation
-
-    if member.custom_translation_key:
-        translation = translations(
-            member.custom_translation_key + suffix,
-            member = member,
             **kwargs
         )
         if translation:
