@@ -257,3 +257,17 @@
     }
 }
 
+@mixin flex-columns($cols, $spacing: 0) {
+    display: flex;
+    align-content: flex-start;
+
+    & > * {
+        flex: 0 0 auto;
+        width: calc((100% - #{($cols - 1) * $spacing}) / #{$cols});
+
+        & + * {
+            margin-left: $spacing;
+        }
+    }
+}
+
