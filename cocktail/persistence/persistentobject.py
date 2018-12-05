@@ -20,7 +20,11 @@ from cocktail.schema import (
     String,
     Reference,
     Collection,
-    TranslationMapping
+    TranslationMapping,
+    RelationList,
+    RelationSet,
+    RelationOrderedSet,
+    RelationMapping
 )
 from cocktail.schema.exceptions import ValidationError
 from cocktail.schema.expressions import (
@@ -115,20 +119,21 @@ class PersistentClass(SchemaClass):
 
         def get_instrumented_collection_type(self, collection):
 
-            # Lists
-            if isinstance(collection, (list, PersistentList)):
-                return PersistentRelationList
-            # Sets
-            elif isinstance(collection, (set, PersistentSet)):
-                return PersistentRelationSet
-            # Ordered sets
-            elif isinstance(collection, (OrderedSet, PersistentOrderedSet)):
-                return PersistentRelationOrderedSet
-            # Mappings
-            elif isinstance(collection, (dict, PersistentMapping)):
-                return PersistentRelationMapping
+            collection_type = (
+                SchemaClass.MemberDescriptor
+                .get_instrumented_collection_type(self, collection)
+            )
 
-            return collection
+            if issubclass(collection_type, RelationOrderedSet):
+                return PersistentRelationOrderedSet
+            elif issubclass(collection_type, RelationSet):
+                return PersistentRelationSet
+            elif issubclass(collection_type, RelationList):
+                return PersistentRelationList
+            elif issubclass(collection_type, RelationMapping):
+                return PersistentRelationMapping
+            else:
+                return collection_type
 
     def _create_translations_member(cls):
         translations_member = SchemaClass._create_translations_member(cls)
