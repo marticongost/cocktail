@@ -7,8 +7,15 @@ u"""
 @since:			November 2008
 """
 import sys
-from collections import Counter
-from cocktail.modeling import refine, OrderedSet, InstrumentedDict, DictWrapper
+from collections import Counter, Mapping as MappingType
+from cocktail.modeling import (
+    OrderedSet,
+    InstrumentedDict,
+    InstrumentedOrderedSet,
+    ListWrapper,
+    SetWrapper,
+    DictWrapper
+)
 from cocktail.events import Event, EventHub
 from cocktail.pkgutils import get_full_name
 from cocktail.translations import (
@@ -479,23 +486,32 @@ class SchemaClass(EventHub, Schema):
 
         def get_instrumented_collection_type(self, collection):
 
+            collection_type = (
+                self.member.type
+                or self.member.default_type
+                or type(collection)
+            )
+
+            # Ordered sets
+            if issubclass(
+                collection_type,
+                (OrderedSet, InstrumentedOrderedSet)
+            ):
+                return RelationOrderedSet
+
             # Lists
-            if isinstance(collection, list):
+            elif issubclass(collection_type, (list, ListWrapper)):
                 return RelationList
 
             # Sets
-            elif isinstance(collection, set):
+            elif issubclass(collection_type, (set, SetWrapper)):
                 return RelationSet
 
-            # Ordered sets
-            elif isinstance(collection, OrderedSet):
-                return RelationOrderedSet
-
             # Mappings
-            elif isinstance(collection, dict):
+            elif issubclass(collection_type, (MappingType, DictWrapper)):
                 return RelationMapping
 
-            return collection.__class__
+            return collection_type
 
 
 class TranslationsMember(Mapping):
