@@ -29,10 +29,12 @@
             let item;
             for (item of removed) {
                 item.removeAttribute("selected");
+                item.setAttribute("aria-selected", "false");
                 item.classList.remove("cocktail-ui-selected");
             }
             for (item of added) {
                 item.setAttribute("selected", "");
+                item.setAttribute("aria-selected", "true");
                 item.classList.add("cocktail-ui-selected");
             }
             if (added.size) {
@@ -316,12 +318,14 @@
                 if (selected) {
                     element.setAttribute("selected", "");
                     element.classList.add("cocktail-ui-selected");
+                    element.setAttribute("aria-selected", "true");
                     selectedElements.add(element);
                     added.add(element);
                 }
                 else {
                     element.removeAttribute("selected");
                     element.classList.remove("cocktail-ui-selected");
+                    element.setAttribute("aria-selected", "false");
                     selectedElements.delete(element);
                     removed.add(element);
                 }
@@ -415,7 +419,7 @@
     }
 
     [ADD_SELECTABLE_ELEMENT](node) {
-        if (node.matches(this.selectableEntriesSelector)) {
+        if (node.matches && node.matches(this.selectableEntriesSelector)) {
             const prev = cocktail.iteration.first(
                 cocktail.dom.iterElementsBackwards(node, this.selectionContainer),
                 (item) => item === this[LAST_SELECTABLE_ELEMENT] || item[NEXT_SELECTABLE_ELEMENT]
@@ -480,7 +484,7 @@
             altered = true;
         }
 
-        if (node.classList.contains("cocktail-ui-selected")) {
+        if (node.getAttribute("aria-selected", "true")) {
             unselected.add(node);
             altered = true;
         }
