@@ -20,7 +20,9 @@
     ?>
 
     <?on action:changed
-    cocktail.loadSVG(newValue.iconURL, this.icon);
+    if (this.buttonStyle != "textOnly") {
+        cocktail.loadSVG(newValue.iconURL, this.icon);
+    }
     this.dropdownPanel.button.accessKey = this.action.shortcut || "";
     this[UPDATE_TITLE]();
     ?>
