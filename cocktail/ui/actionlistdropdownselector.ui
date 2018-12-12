@@ -26,6 +26,19 @@
         return this[ENTRIES_READY];
     }
 
+    entriesAvailable() {
+        if (this[ENTRIES_READY]) {
+            return Promise.resolve(true);
+        }
+        else {
+            return new Promise((accept, reject) => {
+                this.addEventListener("entriesReady", () => {
+                    accept(true);
+                });
+            });
+        }
+    }
+
     getEntry(value) {
         const serializedValue = this.dataBinding.member.serializeValue(value);
         return this[ENTRY_MAP][serializedValue];
@@ -72,7 +85,10 @@
     if (this.selectionDisplayed) {
         this.label.innerHTML = this.translateValue();
     }
-    this.entries.selectedElement = newValue ? this.getEntry(newValue) : null;
+    this.entriesAvailable().then(() => {
+        const entry = this.getEntry(newValue);
+        this.entries.selectedElement = entry;
+    });
     ?>
 
     <?on dataBinding:changed
