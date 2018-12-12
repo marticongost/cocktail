@@ -15,6 +15,12 @@
         reflected="true"
         default="true"/>
 
+    <ui:property
+        name="includeEmptyOption"
+        type="boolean"
+        reflected="true"
+        final="true"/>
+
     <?class
     get entriesReady() {
         return this[ENTRIES_READY];
@@ -33,6 +39,9 @@
 
     addEntries(values) {
         if (values) {
+            if (this.includeEmptyOption) {
+                this.addEntry(null);
+            }
             for (let value of values) {
                 this.addEntry(value);
             }
