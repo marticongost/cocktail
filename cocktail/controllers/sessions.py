@@ -14,7 +14,8 @@ class Session(DictWrapper):
     config = {
         'session.type': 'memory',
         'session.cookie_expires': True,
-        'session.timeout': 3600
+        'session.timeout': 3600,
+        "session.samesite": None
     }
 
     def __init__(self):
