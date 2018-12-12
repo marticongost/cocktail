@@ -16,7 +16,7 @@
 
     <?class
     updateValue() {
-        this.setAttribute("value", this.input.value);
+        this.value = this.input.value;
     }
 
     [SYNCHRONIZE]() {

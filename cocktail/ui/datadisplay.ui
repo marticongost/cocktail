@@ -119,7 +119,7 @@
     <ui:property
         name="value"
         type="(obj) => obj.dataBinding &amp;&amp; obj.dataBinding.member || cocktail.ui.Property.types.string"
-        reflected="true"/>
+        reflected="false"/>
 
     <ui:property
         name="formLabelDisposition"
