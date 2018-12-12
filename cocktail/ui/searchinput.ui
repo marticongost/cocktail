@@ -11,7 +11,7 @@
 
     <ui:with ui:element="input" type="search">
         <?on search
-        instance.setAttribute("value", this.value);
+        instance.value = this.value;
         ?>
     </ui:with>
 
