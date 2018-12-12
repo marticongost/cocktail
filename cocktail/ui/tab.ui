@@ -18,6 +18,7 @@
 
         <?on changed
         this.button.selected = newValue;
+        this.button.setAttribute("aria-selected", newValue ? "true" : "false");
         if (newValue && !this.revealed) {
             this.revealed = true;
             cocktail.ui.trigger(this, "tabRevealed");
