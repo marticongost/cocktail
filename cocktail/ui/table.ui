@@ -554,6 +554,13 @@
         ?>
 
         <?on value:changed
+        this.setAttribute(
+            "value",
+            this.dataBinding ?
+                this.dataBinding.member.serializeValue(newValue)
+                : ""
+        );
+
         if (!this.cells.length) {
             this.createCells();
         }
