@@ -5,7 +5,8 @@ An event mechanism for python.
 from types import MethodType
 from weakref import ref, WeakKeyDictionary
 from cocktail.modeling import SynchronizedList
-from threading import Lock
+from threading import Lock, current_thread
+from contextlib import contextmanager
 
 
 def when(event):
@@ -246,4 +247,34 @@ class EventInfo(object):
     @property
     def event(self):
         return self.slot.event
+
+@contextmanager
+def monitor_thread_events(*monitoring):
+
+    handlers = []
+
+    for slot, callback in monitoring:
+        handler = _PerThreadHandler(callback)
+        handlers.append((slot, handler))
+        slot.append(handler)
+
+    try:
+        yield None
+    finally:
+        for slot, handler in handlers:
+            try:
+                slot.remove(handler)
+            except ValueError:
+                pass
+
+
+class _PerThreadHandler(object):
+
+    def __init__(self, callback):
+        self.owner_thread_id = current_thread().ident
+        self.callback = callback
+
+    def __call__(self, e):
+        if current_thread().ident == self.owner_thread_id:
+            return self.callback(e)
 
