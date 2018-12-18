@@ -57,6 +57,8 @@ HEADER_TEMPLATE = PARAM_TEMPLATE = u"""
 def error_email(
     smtp_host = "localhost",
     smtp_port = smtplib.SMTP_PORT,
+    smtp_user = None,
+    smtp_pass = None,
     mime_type = "html",
     subject = None,
     sender = None,
@@ -65,7 +67,7 @@ def error_email(
     header_template = HEADER_TEMPLATE,
     param_template = PARAM_TEMPLATE,
     encoding = "utf-8"):
-    
+
     def _serialize_value(value):
         if isinstance(value, FieldStorage):
             return "FieldStorage"
@@ -123,6 +125,10 @@ def error_email(
     message["Date"] = formatdate()
 
     smtp = smtplib.SMTP(smtp_host, smtp_port)
+
+    if smtp_user and smtp_pass:
+        smtp.login(smtp_user, smtp_pass)
+
     smtp.sendmail(sender, list(receivers), message.as_string())
     smtp.quit()
 
@@ -131,4 +137,3 @@ cherrypy.tools.error_email = cherrypy.Tool(
     'before_error_response',
     error_email
 )
-
