@@ -405,6 +405,16 @@
         return null;
     }
 
+    getRowById(id) {
+        if (this.dataBinding && this.dataBinding.member.items) {
+            if (typeof(id) != "string") {
+                id = this.dataBinding.member.items.relatedType.primaryMember.serializeValue(id);
+            }
+            return this.body.querySelector(`[value='${id}']`);
+        }
+        return null;
+    }
+
     static setCellWidth(cell, member) {
         const width = member[cocktail.ui.columnWidth];
         if (width !== undefined) {
