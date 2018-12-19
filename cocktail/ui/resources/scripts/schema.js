@@ -402,6 +402,14 @@
             return this[BASE];
         }
 
+        *ascendInheritance(includeSelf = true) {
+            let schema = includeSelf ? this : this[BASE];
+            while (schema) {
+                yield schema;
+                schema = schema[BASE];
+            }
+        }
+
         get derivedSchemas() {
             return this[DERIVED_SCHEMAS];
         }
