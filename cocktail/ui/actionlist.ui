@@ -190,11 +190,6 @@
             entry.update(context);
         }
     }
-
-    invalidation(change) {
-        super.invalidation(change);
-        this.updateEntries();
-    }
     ?>
 
     <?js
