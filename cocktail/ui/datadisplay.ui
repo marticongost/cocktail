@@ -32,46 +32,51 @@
         return model[CHANGES] || (model[CHANGES] = new cocktail.ui.Observable());
     }
 
-    const triggerInvalidation = function (model, change) {
-        change.model = model;
-        getModelChanges(model).trigger(change);
-    }
-
     const subscribe = function (display, dataBinding) {
         if (display.parentNode && dataBinding && dataBinding.member.relatedType) {
             let model = dataBinding.member.relatedType.originalMember;
-            let changes = getModelChanges(model);
-            display.observe(changes);
+            let changesToModel = getModelChanges(model);
+            display.observe(changesToModel);
         }
     }
 
     const unsubscribe = (display, dataBinding) => {
         if (dataBinding && dataBinding.member.relatedType) {
             let model = dataBinding.member.relatedType.originalMember;
-            let changes = getModelChanges(model);
-            display.stopObserving(changes);
+            let changesToModel = getModelChanges(model);
+            display.stopObserving(changesToModel);
         }
     }
 
-    cocktail.ui.objectCreated = function (model, record) {
-        triggerInvalidation(model, {type: "create", record});
-    }
+    cocktail.ui.invalidation = function (changes) {
 
-    cocktail.ui.objectModified = function (model, id, oldState, newState) {
-        triggerInvalidation(model, {
-            type: "modify",
-            id,
-            oldState,
-            newState
-        });
-    }
+        const perModelChanges = new Map();
 
-    cocktail.ui.objectDeleted = function (model, id) {
-        triggerInvalidation(model, {type: "delete", id});
-    }
+        for (let changeType of ["created", "modified", "deleted"]) {
+            const objectMap = changes[changeType];
 
-    cocktail.ui.modelInstancesDeleted = function (model) {
-        triggerInvalidation(model, {type: "delete"});
+            for (let id in objectMap) {
+                const object = objectMap[id];
+                for (let model of object._class.ascendInheritance()) {
+                    let modelChanges = perModelChanges.get(model);
+                    if (!modelChanges) {
+                        modelChanges = {
+                            created: new Map(),
+                            modified: new Map(),
+                            deleted: new Map()
+                        };
+                        perModelChanges.set(model, modelChanges);
+                    }
+                    modelChanges[changeType].set(id, object);
+                }
+            }
+        }
+
+        for (let [model, modelChanges] of perModelChanges) {
+            getModelChanges(model).trigger(modelChanges);
+        }
+
+        return perModelChanges;
     }
     ?>
 
@@ -80,8 +85,10 @@
         reflected="false"
         normalization="normalizeDataBinding">
         <?on changed
-        unsubscribe(this, oldValue);
-        subscribe(this, newValue);
+        if (this.invalidable) {
+            unsubscribe(this, oldValue);
+            subscribe(this, newValue);
+        }
 
         if (newValue) {
 
@@ -142,22 +149,47 @@
     <?class
     connectedCallback() {
         super.connectedCallback();
-        subscribe(this, this.dataBinding);
+        if (this.invalidable) {
+            subscribe(this, this.dataBinding);
+        }
     }
 
     disconnectedCallback() {
         super.disconnectedCallback();
-        unsubscribe(this, this.dataBinding);
+        if (this.invalidable) {
+            unsubscribe(this, this.dataBinding);
+        }
     }
 
-    invalidation(change) {
+    get invalidable() {
+        return true;
+    }
+
+    invalidation(changes) {
+        // Default invalidation procedure for Reference based displays;
+        // displays based on Collection members or with more sophisticated
+        // invalidation logic should override this method.
         if (
             this.value
-            && change.type == "modify"
+            && this.dataBinding
+            && this.dataBinding.member instanceof cocktail.schema.Reference
             && this.dataBinding.member.relatedType
-            && this.dataBinding.member.relatedType.getId(this.value) == change.id
         ) {
-            this.value = change.newState;
+            const valueId = this.dataBinding.member.relatedType.getId(this.value);
+
+            // The object that was being displayed has been deleted;
+            // clear the display
+            if (changes.deleted.has(valueId)) {
+                this.value = null;
+            }
+            // The object that was being displayed has been modified;
+            // show the new value
+            else {
+                const newState = changes.modified.get(valueId);
+                if (newState) {
+                    this.value = newState;
+                }
+            }
         }
     }
 
