@@ -142,9 +142,27 @@
         };
     }
 
-    invalidation(change) {
-        if (this.autoload && (change.type == "create" || (change.type == "delete" && !change.id))) {
+    invalidation(changes) {
+
+        if (this.autoload && changes.created.size) {
             this.reload();
+        }
+        else {
+            // Remove the rows representing deleted objects
+            for (let [id, object] of changes.deleted) {
+                const row = this.getRowById(id);
+                if (row) {
+                    row.parentNode.removeChild(row);
+                }
+            }
+
+            // Update the rows representing modified objects
+            for (let [id, object] of changes.modified) {
+                const row = this.getRowById(id);
+                if (row) {
+                    row.value = object;
+                }
+            }
         }
     }
 
@@ -505,6 +523,11 @@
             return this.childNodes;
         }
 
+        get invalidable() {
+            // Leave the invalidation logic to the parent Table
+            return false;
+        }
+
         createCells() {
 
             for (let member of this.visibleMembers) {
@@ -529,17 +552,6 @@
                         value = value[cell.dataBinding.language];
                     }
                     cell.value = value;
-                }
-            }
-        }
-
-        invalidation(change) {
-            if (change.id == this.getAttribute("value")) {
-                if (change.type == "modify") {
-                    this.value = change.newState;
-                }
-                else if (change.type == "delete") {
-                    this.parentNode.removeChild(this);
                 }
             }
         }
