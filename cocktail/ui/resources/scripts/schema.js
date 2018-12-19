@@ -620,7 +620,7 @@
 
         toJSONValue(value, parameters = null) {
             let record = {};
-            record._class = this.fullName;
+            record._class = this.originalMember.fullName;
             for (let member of this.members()) {
                 if (!parameters || !parameters.includeMember || parameters.includeMember(member)) {
                     let memberValue = value[member.name];
