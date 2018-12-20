@@ -616,12 +616,16 @@
                 else {
                     // Add selectable nodes
                     for (let node of mutation.addedNodes) {
-                        altered = this[ADD_SELECTABLE_ELEMENT](node) || altered;
+                        if (node.nodeType == Document.ELEMENT_NODE) {
+                            altered = this[ADD_SELECTABLE_ELEMENT](node) || altered;
+                        }
                     }
 
                     // Remove selectable nodes
                     for (let node of mutation.removedNodes) {
-                        altered = this[REMOVE_SELECTABLE_ELEMENT](node, unselected) || altered;
+                        if (node.nodeType == Document.ELEMENT_NODE) {
+                            altered = this[REMOVE_SELECTABLE_ELEMENT](node, unselected) || altered;
+                        }
                     }
                 }
             }
