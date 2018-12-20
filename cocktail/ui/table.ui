@@ -15,6 +15,7 @@
     <ui:requires component="cocktail.ui.displayfactories"/>
 
     <ui:resource href="cocktail.ui://scripts/scrollwatcher.js"/>
+    <ui:symbol name="CONTENT_XHR_REQUEST"/>
 
     <?tail
     cls.delegatesFocus = true;
@@ -170,32 +171,47 @@
         this.loadPage(this.page);
     }
 
-    loadPage(page) {
+    async loadPage(page) {
 
-        let table = this;
-        let append = (this.paging == "infiniteScroll");
+        // Abort any previously running request
+        const currentRequest = this[CONTENT_XHR_REQUEST];
+        if (currentRequest) {
+            currentRequest.abort();
+        }
 
         this.dataState = "loading";
         this.createColumns();
 
-        return this.value
-            .load(this.getDataSourceOptions(page))
-            .then(function (data) {
-                table.resultCount = data.count;
-                if (append) {
-                    table.addRows(data.records);
-                }
-                else {
-                    table.setRows(data.records);
-                }
-                table.dataState = "loaded";
-                return data;
-            })
-            .catch(function (error) {
-                table.dataState = "error";
-                table.errorMessage.innerText = error.toString();
-                cocktail.ui.trigger(table, "error", {error: error});
-            });
+        const options = this.getDataSourceOptions(page);
+        const request = this.value.load(options);
+        this[CONTENT_XHR_REQUEST] = request.xhr;
+
+        let data;
+
+        try {
+            data = await request;
+            if (this[CONTENT_XHR_REQUEST] !== request.xhr) {
+                return null;
+            }
+            this.resultCount = data.count;
+            if (this.paging == "infiniteScroll") {
+                this.addRows(data.records);
+            }
+            else {
+                this.setRows(data.records);
+            }
+            this.dataState = "loaded";
+        }
+        catch (error) {
+            this.dataState = "error";
+            this.errorMessage.innerText = error.toString();
+            cocktail.ui.trigger(this, "error", {error: error});
+        }
+        finally {
+            this[CONTENT_XHR_REQUEST] = null;
+        }
+
+        return data;
     }
 
     getDataSourceOptions(page) {
