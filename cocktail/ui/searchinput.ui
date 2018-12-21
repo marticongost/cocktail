@@ -15,5 +15,13 @@
         ?>
     </ui:with>
 
+    <?on keydown
+    if (e.which == cocktail.ui.keys.ESC && this.input.value.length) {
+        this.value = "";
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    ?>
+
 </ui:cocktail.ui.Input>
 
