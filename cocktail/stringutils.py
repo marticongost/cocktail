@@ -34,7 +34,7 @@ def create_normalization_map(normalization = None, preserved_chars = None):
             u"i": u"íìïî",
             u"o": u"óòöô",
             u"u": u"úùüû",
-            u" ": u"'\"\t\n\r(),.:;+-*/\\¡!¿?&|=[]{}~#¬<>"
+            u" ": u"'\"\u2019\t\n\r(),.:;+-*/\\¡!¿?&|=[]{}~#¬<>"
         }
 
     if preserved_chars:
