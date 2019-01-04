@@ -33,7 +33,8 @@ from cocktail.translations import month_name
     </py:ready>
 
     <py:cocktail.html.TextBox
-        py:id="text_box"/>
+        py:id="text_box"
+        py:client_side_validation="${False}"/>
 
     <?py
     self.data_binding_delegate = self.text_box
