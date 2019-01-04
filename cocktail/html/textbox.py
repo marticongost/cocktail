@@ -16,6 +16,7 @@ class TextBox(Element):
     tag = "input"
     is_form_control = True
     spellcheck = None
+    client_side_validation = True
 
     def __init__(self, *args, **kwargs):
         Element.__init__(self, *args, **kwargs)
@@ -32,17 +33,18 @@ class TextBox(Element):
             except:
                 pass
 
-            if self.member.required == True:
-                self["required"] = True
+            if self.client_side_validation:
 
-            format = getattr(self.member, "format", None)
-            if format:
-                self["pattern"] = format.pattern
+                if self.member.required == True:
+                    self["required"] = True
 
-            # Limit the length of the control
-            if isinstance(self.member, String) \
-            and self.member.max is not None:
-                self["maxlength"] = str(self.member.max)
+                format = getattr(self.member, "format", None)
+                if format:
+                    self["pattern"] = format.pattern
+
+                if isinstance(self.member, String) \
+                and self.member.max is not None:
+                    self["maxlength"] = str(self.member.max)
 
             if spellcheck is None:
                 spellcheck = self.member.spellcheck
