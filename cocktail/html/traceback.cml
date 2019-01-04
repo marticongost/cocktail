@@ -54,7 +54,7 @@ from traceback import extract_tb
         <py:ready>
             <py:new
                 py:element="self.create_traceback_entry(file, num, func, caller)"
-                py:for="file, num, func, caller in extract_tb(self.traceback)"/>
+                py:for="file, num, func, caller in reversed(extract_tb(self.traceback))"/>
         </py:ready>
     </ul>
 
