@@ -13,6 +13,7 @@ from ZODB import DB
 import transaction
 from cocktail.modeling import getter
 from cocktail.events import Event
+from cocktail.pkgutils import get_full_name
 
 
 class DataStore(object):
@@ -209,6 +210,25 @@ class DataStore(object):
         transaction = self.connection.transaction_manager.get()
         transaction.addAfterCommitHook(callback_wrapper, args, kwargs)
         return True
+
+    def process_items_after_commit(
+        self,
+        callback,
+        item,
+        item_data = None,
+        mapping_type = dict
+    ):
+        id = get_full_name(callback)
+        items_key = id + ".items"
+        items = self.get_transaction_value(items_key)
+
+        if items is None:
+            items = mapping_type()
+            self.set_transaction_value(items_key, items)
+
+        items[item] = item_data
+        self.unique_after_commit_hook(id, callback, items)
+
 
 datastore = DataStore()
 
