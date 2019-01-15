@@ -16,7 +16,12 @@
 
     <?class
     updateValue() {
-        this.value = this.input.value;
+        if (this.dataBinding) {
+            this.value = this.dataBinding.member.parseValue(this.input.value)
+        }
+        else {
+            this.value = this.input.value;
+        }
     }
 
     [SYNCHRONIZE]() {
