@@ -22,6 +22,7 @@
     const ITEMS = Symbol("cocktail.schema.ITEMS");
     const DATA_SOURCE = Symbol("cocktail.schema.DATA_SOURCE");
     const PRIMARY_MEMBER = Symbol("cocktail.schema.PRIMARY_MEMBER");
+    const RELATED_END = Symbol("cocktail.schema.RELATED_END");
     const CLASS_FAMILY = Symbol("cocktail.schema.CLASS_FAMILY");
 
     pkg.MEMBERS = Symbol("cocktail.schema.MEMBERS");
@@ -824,6 +825,13 @@
             return this.type;
         }
 
+        get relatedEnd() {
+            if (this.relatedKey && this.relatedType) {
+                return this.relatedType.getMember(this.relatedKey);
+            }
+            return null;
+        }
+
         get dataSource() {
             return this[DATA_SOURCE] || this.type && this.type.dataSource;
         }
@@ -947,6 +955,13 @@
 
         get relatedType() {
             return this.items && this.items.relatedType;
+        }
+
+        get relatedEnd() {
+            if (this.relatedKey && this.relatedType) {
+                return this.relatedType.getMember(this.relatedKey);
+            }
+            return null;
         }
 
         get items() {
