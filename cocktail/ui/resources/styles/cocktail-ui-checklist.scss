@@ -12,6 +12,7 @@
 
 #selectionControls {
     margin-bottom: 0.8em;
+    white-space: nowrap;
 
     :host(:not([selectionControlsVisible='true'])) & {
         display: none;
