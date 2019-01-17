@@ -8,7 +8,7 @@ from cocktail.schema import Reference, RelationMember
 from cocktail.persistence.persistentobject import PersistentClass
 
 def delete_dry_run(item, visited = None):
-    """Determines what would happend if the object was deleted: which
+    """Determines what would happen if the object was deleted: which
     objects would be cascade deleted, or which other objects would block
     the whole delete operation.
     """
