@@ -227,12 +227,46 @@ def _date_instance_pt(instance, style = DATE_STYLE_NUMBERS, relative = False):
             desc += u" %d" % instance.year
         return desc
 
+def _date_instance_de(instance, style = DATE_STYLE_NUMBERS, relative = False):
+
+    if relative:
+        today = date.today()
+        date_value = (
+            instance.date() if isinstance(instance, datetime) else instance
+        )
+        day_diff = (date_value - today).days
+
+        if day_diff == 0:
+            return translations("cocktail.today")
+        elif day_diff == -1:
+            return translations("cocktail.yesterday")
+        elif day_diff == 1:
+            return translations("cocktail.tomorrow")
+        elif 1 < day_diff <= 7:
+            return u"Nächsten " + weekday_name(instance)
+        elif -7 <= day_diff < 0:
+            return u"Letzten " + weekday_name(instance)
+
+    if style == DATE_STYLE_NUMBERS:
+        return instance.strftime(translations("cocktail.date_format"))
+    elif style == DATE_STYLE_ABBR:
+        desc = u"%d.%s" % (instance.day, month_abbr(instance.month))
+        if not relative or today.year != instance.year:
+            desc += u" %d" % instance.year
+        return desc
+    elif style in (DATE_STYLE_TEXT, DATE_STYLE_COMPACT_TEXT):
+        desc = u"%d.%s" % (instance.day, month_name(instance))
+        if not relative or today.year != instance.year:
+            desc += u" %d" % instance.year
+        return desc
+
 translations.define("datetime.date.instance",
     ca = _date_instance_ca,
     es = _date_instance_es,
     en = _date_instance_en,
     fr = _date_instance_fr,
-    pt = _date_instance_pt
+    pt = _date_instance_pt,
+    de = _date_instance_de
 )
 
 def _translate_time(value, include_seconds = True):
@@ -269,19 +303,19 @@ translations.define("datetime.datetime.instance",
             + _translate_time(instance, include_seconds),
     pt = lambda instance, style = DATE_STYLE_NUMBERS, include_seconds = True:
         _date_instance_pt(instance, style)
-        + u" " + _translate_time(instance, include_seconds)
+        + u" " + _translate_time(instance, include_seconds),
+    de = lambda instance,
+        style = DATE_STYLE_NUMBERS,
+        include_seconds = True,
+        relative = False:
+            _date_instance_de(instance, style, relative)
+            + (u" um " if style == DATE_STYLE_TEXT else u" ")
+            + _translate_time(instance, include_seconds)
+            + (u" Uhr" if style == DATE_STYLE_TEXT else "")
 )
 
 translations.define("datetime.time.instance",
-    ca = lambda instance, include_seconds = True:
-         _translate_time(instance, include_seconds),
-    es = lambda instance, include_seconds = True:
-         _translate_time(instance, include_seconds),
-    en = lambda instance, include_seconds = True:
-         _translate_time(instance, include_seconds),
-    fr = lambda instance, include_seconds = True:
-         _translate_time(instance, include_seconds),
-    pt = lambda instance, include_seconds = True:
+    lambda instance, include_seconds = True:
          _translate_time(instance, include_seconds)
 )
 

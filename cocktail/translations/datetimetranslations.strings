@@ -5,7 +5,7 @@
     ca: %d/%m/%Y
     es: %d/%m/%Y
     en: %m/%d/%Y
-    de: %d/%m/%Y
+    de: %d.%m.%Y
     fr: %d/%m/%Y
     pt: %d/%m/%Y
 
@@ -14,6 +14,7 @@
     es: dd/mm/yy
     en: mm/dd/yy
     fr: dd/mm/yy
+    de: dd.mm.yy
 
     [months]
 
@@ -34,6 +35,7 @@
             en: Jan
             fr: Jan
             pt: Jan
+            de: Jan
 
         [2]
             [name]
@@ -52,6 +54,7 @@
             en: Feb
             fr: Fév
             pt: Fev
+            de: Feb
 
         [3]
             [name]
@@ -70,6 +73,7 @@
             en: Mar
             fr: Mar
             pt: Mar
+            de: März
 
         [4]
             [name]
@@ -88,6 +92,7 @@
             en: Apr
             fr: Avr
             pt: Abr
+            de: Apr
 
         [5]
             [name]
@@ -106,6 +111,7 @@
             en: May
             fr: Mai
             pt: Mai
+            de: Mai
 
         [6]
             [name]
@@ -124,6 +130,7 @@
             en: Jun
             fr: Jun
             pt: Jun
+            de: Juni
 
         [7]
             [name]
@@ -142,6 +149,7 @@
             en: Jul
             fr: Jul
             pt: Jul
+            de: Juli
 
         [8]
             [name]
@@ -160,6 +168,7 @@
             en: Aug
             fr: Aoû
             pt: Ago
+            de: Aug
 
         [9]
             [name]
@@ -178,6 +187,7 @@
             en: Sep
             fr: Sep
             pt: Set
+            de: Sept
 
         [10]
             [name]
@@ -196,6 +206,7 @@
             en: Oct
             fr: Oct
             pt: Out
+            de: Okt
 
         [11]
             [name]
@@ -214,6 +225,7 @@
             en: Nov
             fr: Nov
             pt: Nov
+            de: Nov
 
         [12]
             [name]
@@ -232,6 +244,7 @@
             en: Dec
             fr: Déc
             pt: Dez
+            de: Dez
 
     [weekdays]
 
@@ -241,12 +254,14 @@
             es: Lunes
             en: Monday
             fr: Lundi
+            de: Montag
 
             [abbr]
             ca: Dl
             es: Lun
             en: Mon
             fr: Lun
+            de: Mo
 
         [1]
             [name]
@@ -254,12 +269,14 @@
             es: Martes
             en: Tuesday
             fr: Mardi
+            de: Dienstag
 
             [abbr]
             ca: Dt
             es: Mar
             en: Tue
             fr: Mar
+            de: Di
 
         [2]
             [name]
@@ -267,12 +284,14 @@
             es: Miércoles
             en: Wednesday
             fr: Mercredi
+            de: Mittwoch
 
             [abbr]
             ca: Dc
             es: Mié
             en: Wed
             fr: Mer
+            de: Mi
 
         [3]
             [name]
@@ -280,12 +299,14 @@
             es: Jueves
             en: Thursday
             fr: Jeudi
+            de: Donnerstag
 
             [abbr]
             ca: Dj
             es: Jue
             en: Thu
             fr: Jeu
+            de: Do
 
         [4]
             [name]
@@ -293,12 +314,14 @@
             es: Viernes
             en: Friday
             fr: Vendredi
+            de: Freitag
 
             [abbr]
             ca: Dv
             es: Vie
             en: Fri
             fr: Ven
+            de: Fr
 
         [5]
             [name]
@@ -306,12 +329,14 @@
             es: Sábado
             en: Saturday
             fr: Samedi
+            de: Samstag
 
             [abbr]
             ca: Ds
             es: Sáb
             en: Sat
             fr: Sam
+            de: Sa
 
         [6]
             [name]
@@ -319,28 +344,33 @@
             es: Domingo
             en: Sunday
             fr: Dimanche
+            de: Sonntag
 
             [abbr]
             ca: Dg
             es: Dom
             en: Sun
             fr: Dim
+            de: So
 
     [today]
     ca: Avui
     es: Hoy
     en: Today
     fr: Aujourd'hui
+    de: Heute
 
     [yesterday]
     ca: Ahir
     es: Ayer
     en: Yesterday
     fr: Hier
+    de: Gestern
 
     [tomorrow]
     ca: Demà
     es: Mañana
     en: Tomorrow
     fr: Demain
+    de: Morgen
 
