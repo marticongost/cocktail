@@ -49,6 +49,25 @@
         return schemasByName[name];
     }
 
+    pkg.getMemberByName = function getMemberByName(name) {
+        const pos = name.lastIndexOf(".");
+        if (pos != -1) {
+            const schema = this.getSchemaByName(name.substr(0, pos));
+            if (schema) {
+                return schema.getMember(name.substr(pos + 1));
+            }
+        }
+        return null;
+    }
+
+    pkg.resolveSchema = function (model) {
+        return typeof(model) == "string" ? this.getSchemaByName(model) : model;
+    }
+
+    pkg.resolveMember = function (member) {
+        return typeof(member) == "string" ? this.getMemberByName(member) : member;
+    }
+
     pkg.objectFromJSONValue = function (value, defaultType = null) {
         if (value) {
             const schema = value._class ? pkg.getSchemaByName(value._class) : defaultType;
