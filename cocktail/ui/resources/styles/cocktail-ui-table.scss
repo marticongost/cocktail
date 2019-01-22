@@ -119,8 +119,7 @@ $cell-padding: 0.6em;
 .Row {
     display: flex;
 
-    :host([treeChildrenCollection='']) &,
-    :host(:not([treeChildrenCollection])) & {
+    :host([hierarchical='false']){
         @include alternate-background-color;
     }
 }
