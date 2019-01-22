@@ -119,11 +119,15 @@
     </ui:property>
 
     <ui:property
-        name="treeChildrenCollection"
-        type="string"
-        reflected="true"
-        default="">
+        name="hierarchical"
+        type="boolean"
+        reflected="true"/>
+
+    <ui:property
+        name="treeRelations"
+        reflected="false">
         <?on changed
+        this.hierarchical = Boolean(newValue);
         this.appliesAlternateCSSClasses = Boolean(newValue);
         ?>
     </ui:property>
@@ -295,7 +299,7 @@
         }
         this.columnsReady = true;
 
-        if (this.treeChildrenCollection) {
+        if (this.treeRelations) {
             const heading = document.createElement("div");
             heading.id = "expanderHeading";
             this.headers.append(heading);
@@ -420,9 +424,9 @@
     }
 
     createRow(record) {
-        const rowComponent = this.treeChildrenCollection ? this.constructor.TreeRow : this.constructor.Row;
+        const rowComponent = this.treeRelations ? this.constructor.TreeRow : this.constructor.Row;
         const row = rowComponent.create();
-        row.treeChildrenCollection = this.treeChildrenCollection;
+        row.treeRelations = this.treeRelations;
         row.visibleMembers = this.visibleMembers;
         row.visibleLocales = this.visibleLocales;
         row.dataBinding = this.dataBinding.itemBinding(null, record);
@@ -714,10 +718,30 @@
 
         loadNestedRows() {
             this.clearNestedRows();
-            const children = this.value[this.treeChildrenCollection];
             const table = this.table;
-            for (let child of children) {
+            for (let child of this.iterObjectChildren(this.value)) {
                 table.addRow(child, {inside: this});
+            }
+        }
+
+        objectHasChildren(obj) {
+            for (let child of this.iterObjectChildren(obj)) {
+                return true;
+            }
+            return false;
+        }
+
+        *iterObjectChildren(obj) {
+            const model = obj._class;
+            if (model) {
+                for (let member of this.treeRelations) {
+                    if (model.isSchema(member.owner)) {
+                        const children = obj[member.name];
+                        if (children) {
+                            yield *children;
+                        }
+                    }
+                }
             }
         }
 
@@ -728,7 +752,7 @@
 
         <?on value:changed
         instance.rowLabel.innerHTML = instance.getRowLabel();
-        instance.hasNestedRows = Boolean(newValue[this.treeChildrenCollection].length);
+        instance.hasNestedRows = this.objectHasChildren(this.value);
         ?>
 
         <div id="rowContent">
