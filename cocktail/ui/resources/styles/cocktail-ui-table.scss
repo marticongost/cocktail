@@ -119,7 +119,7 @@ $cell-padding: 0.6em;
 .Row {
     display: flex;
 
-    :host([hierarchical='false']){
+    :host([hierarchical='false']) & {
         @include alternate-background-color;
     }
 }

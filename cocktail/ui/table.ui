@@ -121,7 +121,8 @@
     <ui:property
         name="hierarchical"
         type="boolean"
-        reflected="true"/>
+        reflected="true"
+        default="false"/>
 
     <ui:property
         name="treeRelations"
