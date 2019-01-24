@@ -102,6 +102,12 @@
     <ui:property name="pageParameter" type="string" default="page" reflected="true"/>
     <ui:property name="pageSizeParameter" type="string" default="page_size" reflected="true"/>
 
+    <ui:property
+        name="autoExpand"
+        type="boolean"
+        default="false"
+        reflected="true"/>
+
     <ui:property name="searchValues" reflected="false">
         <?on changed
         if (this.autoload) {
@@ -421,6 +427,7 @@
             this.body.appendChild(row);
         }
 
+        row.expanded = this.autoExpand;
         return row;
     }
 
