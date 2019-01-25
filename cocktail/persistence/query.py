@@ -35,14 +35,6 @@ from cocktail.schema.expressions import TranslationExpression
 
 inherit = object()
 
-ordered_collection_types = (list, tuple, ListWrapper)
-
-fast_membership_test_sequence_types = (
-    set,
-    IOTreeSet, IOSet,
-    OOTreeSet, OOSet
-)
-
 class Query(object):
     """A query over a set of persistent objects."""
 
@@ -1609,5 +1601,14 @@ translations.define(
     en = _query_translation_factory(
         "%(subject)s filtered by: %(filters)s"
     )
+)
+
+ordered_collection_types = (list, tuple, ListWrapper, Query)
+
+fast_membership_test_sequence_types = (
+    set,
+    IOTreeSet, IOSet,
+    OOTreeSet, OOSet,
+    Query
 )
 
