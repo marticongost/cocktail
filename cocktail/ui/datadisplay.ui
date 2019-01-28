@@ -126,7 +126,17 @@
     <ui:property
         name="value"
         type="(obj) => obj.dataBinding &amp;&amp; obj.dataBinding.member || cocktail.ui.Property.types.string"
-        reflected="false"/>
+        reflected="false">
+        <?set
+        if (this.dataBinding === undefined) {
+            const defaultBinding = this.createDefaultDataBinding();
+            if (defaultBinding) {
+                this.dataBinding = defaultBinding;
+            }
+        }
+        this[property.VALUE] = value;
+        ?>
+    </ui:property>
 
     <ui:property
         name="formLabelDisposition"
@@ -159,6 +169,10 @@
         if (this.invalidable) {
             unsubscribe(this, this.dataBinding);
         }
+    }
+
+    createDefaultDataBinding() {
+        return null;
     }
 
     get invalidable() {
