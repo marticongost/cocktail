@@ -94,7 +94,7 @@ cocktail.ui.HTTPDataSource = class HTTPDataSource extends cocktail.ui.DataSource
                 .then(function (request) {
                     let data = request.response;
                     if (data.records) {
-                        data.records = data.records.map(cocktail.schema.objectFromJSONValue);
+                        data.records = cocktail.schema.objectsFromJSONValue(data.records);
                     }
                     else {
                         data = cocktail.schema.objectFromJSONValue(data);
