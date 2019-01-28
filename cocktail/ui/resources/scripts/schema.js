@@ -78,6 +78,10 @@
         return value;
     }
 
+    pkg.objectsFromJSONValue = function (value) {
+        return value.map(this.objectFromJSONValue);
+    }
+
     cocktail.schema.Member = class Member {
 
         constructor(parameters = null) {
