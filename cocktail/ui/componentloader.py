@@ -997,6 +997,26 @@ class ComponentLoader(object):
             ) as block:
                 block.write(listener)
 
+        # Property getters / setters
+        elif target in ("get", "set"):
+            if not self.__stack.is_property:
+                self.trigger_parser_error(
+                    "<?%s processing instructions can only appear within a "
+                    "property declaration" % target
+                )
+
+            impl = "const property = this.constructor.%s; %s" % (
+                self.__stack.prop_name,
+                pi.text.strip()
+            )
+            if target == "get":
+                accessor = "function () { %s }" % impl
+            elif target == "set":
+                accessor = "function (value) { %s }" % impl
+
+            prop = self.properties[self.__stack.prop_name]
+            prop[target] = JS(accessor)
+
         # Inline SCSS
         elif target == "css":
             scss = normalize_indentation(pi.text.rstrip())
