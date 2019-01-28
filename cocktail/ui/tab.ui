@@ -28,6 +28,7 @@
 
     <?class
     connectedCallback() {
+        super.connectedCallback();
         this.tabs = this.parentNode;
         this.tabs.strip.appendChild(this.button);
         cocktail.ui.link(

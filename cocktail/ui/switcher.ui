@@ -22,6 +22,7 @@
 
     <?class
     connectedCallback() {
+        super.connectedCallback();
         if (!this.selectedContent && this.firstChild) {
             this.firstChild.selected = true;
         }
