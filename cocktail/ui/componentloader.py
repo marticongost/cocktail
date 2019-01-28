@@ -104,6 +104,8 @@ class ComponentLoader(object):
         "video": "HTMLVideoElement"
     }
 
+    requires_shadow_dom = True
+
     def __init__(self, component, node = None):
 
         self.timestamp = time()
@@ -236,6 +238,11 @@ class ComponentLoader(object):
             self.source.indent()
             self.component_parameters_source = self.source.nest()
             self.body_source = self.source.nest(0 if self.is_mixin else 1)
+            self.requires_shadow_dom = (
+                not self.component.parent
+                and node.attrib.get("{%s}requires_shadow_dom" % self.ui_ns)
+                    != "false"
+            )
 
             if not self.is_mixin:
                 self.body_source.write(
@@ -243,7 +250,7 @@ class ComponentLoader(object):
                     "return cocktail.ui._getObservedAttributes(this); }"
                 )
 
-                if not self.component.parent:
+                if self.requires_shadow_dom:
                     self.body_source.write(
                         "static get requiresShadowDOM() { return true; }"
                     )
@@ -387,10 +394,10 @@ class ComponentLoader(object):
                 node.container = "this"
             elif node.parent.parent:
                 node.container = node.parent.ref
-            elif self.component.parent:
-                node.container = "this"
-            else:
+            elif self.requires_shadow_dom:
                 node.container = "this.shadowRoot"
+            else:
+                node.container = "this"
         else:
             node.is_root = True
 
@@ -454,6 +461,7 @@ class ComponentLoader(object):
 
         # Collect attributes
         attributes = dict(element.attrib)
+        attributes.pop("{%s}requires_shadow_dom" % self.ui_ns, None)
 
         # Subcomponents
         subcomponent_name = attributes.pop("{%s}component" % self.ui_ns, None)
