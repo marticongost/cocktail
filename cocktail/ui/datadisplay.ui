@@ -8,7 +8,7 @@
     <ui:resource href="cocktail.ui://scripts/copy.js"/>
     <ui:resource href="cocktail.ui://scripts/databinding.js"/>
 
-    <ui:symbol name="CHANGES"/>
+    <ui:symbol name="INVALIDATION"/>
 
     <?head
     const normalizeDataBinding = (value) => {
@@ -28,23 +28,27 @@
     }
 
     // Data invalidation
-    const getModelChanges = function (model) {
-        return model[CHANGES] || (model[CHANGES] = new cocktail.ui.Observable());
-    }
+    Object.defineProperty(
+        cocktail.schema.Schema.prototype,
+        "invalidation", {
+            get: function () {
+                return this[INVALIDATION] || (this[INVALIDATION] = new cocktail.ui.Observable());
+            },
+            enumerable: true
+        }
+    );
 
     const subscribe = function (display, dataBinding) {
         if (display.parentNode && dataBinding && dataBinding.member.relatedType) {
             let model = dataBinding.member.relatedType.originalMember;
-            let changesToModel = getModelChanges(model);
-            display.observe(changesToModel);
+            display.observe(model.invalidation);
         }
     }
 
     const unsubscribe = (display, dataBinding) => {
         if (dataBinding && dataBinding.member.relatedType) {
             let model = dataBinding.member.relatedType.originalMember;
-            let changesToModel = getModelChanges(model);
-            display.stopObserving(changesToModel);
+            display.stopObserving(model.invalidation);
         }
     }
 
@@ -73,7 +77,7 @@
         }
 
         for (let [model, modelChanges] of perModelChanges) {
-            getModelChanges(model).trigger(modelChanges);
+            model.invalidation.trigger(modelChanges);
         }
 
         return perModelChanges;
