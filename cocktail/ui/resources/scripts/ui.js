@@ -214,7 +214,7 @@ cocktail.ui.splash = function (splash, mainComponent) {
             }
         }
 
-        invalidation(change) {
+        invalidation(changes) {
         }
     }
 
