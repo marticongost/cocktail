@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -9,23 +9,23 @@ u"""
 from cocktail.caching.utils import nearest_expiration
 from cocktail.html.utils import escape_attrib, serialize_value
 
-XHTML1_STRICT = u"""<!DOCTYPE html
+XHTML1_STRICT = """<!DOCTYPE html
 PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">"""
 
-XHTML1_TRANSITIONAL = u"""<!DOCTYPE html
+XHTML1_TRANSITIONAL = """<!DOCTYPE html
 PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">"""
 
-HTML4_STRICT = u"""<!DOCTYPE html
+HTML4_STRICT = """<!DOCTYPE html
 PUBLIC "-//W3C//DTD HTML 4.01//EN"
 "http://www.w3.org/TR/html4/strict.dtd">"""
 
-HTML4_TRANSITIONAL = u"""<!DOCTYPE html
+HTML4_TRANSITIONAL = """<!DOCTYPE html
 PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">"""
 
-HTML5 = u"""<!DOCTYPE HTML>"""
+HTML5 = """<!DOCTYPE HTML>"""
 
 
 class Renderer(object):
@@ -56,21 +56,21 @@ class Renderer(object):
 
         if tag:
             # Tag opening
-            out(u"<" + tag)
+            out("<" + tag)
 
             # Attributes
-            for key, value in element.attributes.iteritems():
+            for key, value in element.attributes.items():
                 if value is not None \
                 and not (isinstance(value, bool) and not value):
 
-                    out(u" ")
+                    out(" ")
 
                     if key in self.flag_attributes:
                         if value:
                             self._write_flag(key, out)
                     else:
                         value = escape_attrib(serialize_value(value))
-                        out(key + u'="' + value + u'"')
+                        out(key + '="' + value + '"')
 
             # Single tag closure
             if tag in self.single_tags:
@@ -84,7 +84,7 @@ class Renderer(object):
 
             # Beginning of tag content
             else:
-                out(u">")
+                out(">")
 
         return True
 
@@ -103,12 +103,12 @@ class Renderer(object):
     def write_element_closure(self, element, rendering):
         tag = element.tag
         if tag:
-            rendering.write(u"</" + tag + u">")
+            rendering.write("</" + tag + ">")
 
 
 class HTMLRenderer(Renderer):
 
-    single_tag_closure = u">"
+    single_tag_closure = ">"
     html_version = None
 
     def _write_flag(self, key, out):
@@ -128,12 +128,12 @@ class HTML5Renderer(HTMLRenderer):
 class XHTMLRenderer(Renderer):
 
     doctype = XHTML1_STRICT
-    single_tag_closure = u"/>"
+    single_tag_closure = "/>"
     html_version = 4
     outputs_xml = True
 
     def _write_flag(self, key, out):
-        out(key + u'="' + key + u'"')
+        out(key + '="' + key + '"')
 
 
 class XHTML5Renderer(XHTMLRenderer):

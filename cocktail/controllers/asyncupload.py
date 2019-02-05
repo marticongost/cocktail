@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -8,7 +8,7 @@ from time import time
 from threading import Lock
 from shutil import copyfileobj
 from mimetypes import guess_type
-from urllib import unquote
+from urllib.parse import unquote
 import cherrypy
 from json import dumps
 from cocktail.memoryutils import format_bytes

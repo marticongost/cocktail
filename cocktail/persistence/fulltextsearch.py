@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -161,7 +161,7 @@ def _persistent_class_index_text(self, obj, language = None):
                 for language in descend_language_tree(language):
                     text_by_language[language] = ""
 
-    for language, text in text_by_language.iteritems():
+    for language, text in text_by_language.items():
         index = self.get_full_text_index(language)
         index.unindex_doc(obj.id)
         if text:
@@ -218,7 +218,7 @@ def _cascade_index(obj, language, visited):
 
     # Reindex related objects which include portions of the modified object in
     # their searchable text
-    for member in obj.__class__.members().itervalues():
+    for member in obj.__class__.members().values():
         related_end = getattr(member, "related_end", None)
 
         if related_end is not None and related_end.text_search:
@@ -307,7 +307,7 @@ def _handle_deleting(event):
         if isinstance(member, (schema.String, PersistentClass)):
             indexes = member._get_full_text_indexes()
             if indexes is not None:
-                for index in indexes.itervalues():
+                for index in indexes.values():
                     index.unindex_doc(id)
 
 def _rebuild_full_text_index(self):
@@ -332,13 +332,13 @@ def _rebuild_full_text_indexes(cls, recursive = False, verbose = True):
         for base in cls.bases
     ):
         if verbose:
-            print "Rebuilding full text index for %s" % cls
+            print("Rebuilding full text index for %s" % cls)
         cls.rebuild_full_text_index()
 
     for member in cls.iter_members(recursive = False):
         if member.full_text_indexed:
             if verbose:
-                print "Rebuilding full text index for %s" % member
+                print("Rebuilding full text index for %s" % member)
             member.rebuild_full_text_index()
 
     if recursive:

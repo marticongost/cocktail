@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""Defines the `HTMLDocument` class.
+"""Defines the `HTMLDocument` class.
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -135,7 +135,7 @@ class HTMLDocument(Element):
             self.meta_container.append(base)
 
         # Other meta tags
-        for key, value in self.metadata.meta.iteritems():
+        for key, value in self.metadata.meta.items():
             meta = Element("meta")
 
             if key.lower() in HTTP_EQUIV_KEYS:
@@ -246,13 +246,13 @@ class HTMLDocument(Element):
                 dict(
                     (repo_name, repo_data[0] + "/")
                     for repo_name, repo_data
-                    in resource_repositories.iteritems()
+                    in resource_repositories.items()
                 )
             )
         )
 
         if self.metadata.client_variables:
-            for key, value in self.metadata.client_variables.iteritems():
+            for key, value in self.metadata.client_variables.items():
                 self.client_setup_container.append(
                     "\t\tcocktail.setVariable(%s, %s);\n" % (
                         dumps(key), dumps(value)
@@ -283,7 +283,7 @@ class HTMLDocument(Element):
             all_client_models = {}
 
             while self.metadata.client_models:
-                client_models = self.metadata.client_models.items()
+                client_models = list(self.metadata.client_models.items())
                 self.metadata.client_models = {}
 
                 for model_id, model_data in client_models:

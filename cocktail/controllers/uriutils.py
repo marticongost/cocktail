@@ -1,12 +1,12 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Jordi Fernández <jordi.fernandez@whads.com>
 """
 from warnings import warn
 from decimal import Decimal
 from fractions import Fraction
-from urllib import quote
+from urllib.parse import quote
 
 
 def make_uri(*args, **kwargs):
@@ -18,16 +18,16 @@ def make_uri(*args, **kwargs):
         stacklevel = 2
     )
 
-    uri = u"/".join(unicode(arg).strip(u"/") for arg in args)
+    uri = "/".join(str(arg).strip("/") for arg in args)
 
     if kwargs:
         params = []
 
-        for pair in kwargs.iteritems():
+        for pair in kwargs.items():
             if pair[1] is None:
                 continue
             elif isinstance(pair[1], (
-                basestring,
+                str,
                 int,
                 float,
                 Decimal,
@@ -38,12 +38,12 @@ def make_uri(*args, **kwargs):
                 for item in pair[1]:
                     params.append((pair[0], item))
 
-        uri += u"?" + u"&".join(
+        uri += "?" + "&".join(
             ("%s=%s" % (
                 name,
                 quote(
                     value.encode("utf-8")
-                    if isinstance(value, unicode)
+                    if isinstance(value, str)
                     else str(value)
                 )
             )).decode("utf-8")
@@ -55,8 +55,8 @@ def make_uri(*args, **kwargs):
 def try_decode(text, encodings = ("utf8", "iso-8859-15")):
     for encoding in encodings:
         try:
-            return unicode(text, encoding)
-        except UnicodeDecodeError, e:
+            return str(text, encoding)
+        except UnicodeDecodeError as e:
             pass
 
     raise e

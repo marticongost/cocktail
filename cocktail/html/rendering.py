@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""Defines the `DocumentMetadata` class.
+"""Defines the `DocumentMetadata` class.
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -225,7 +225,7 @@ class Rendering(object):
     def markup(self):
         """Returns the accumulated markup text from write operations."""
         try:
-            return u"".join(self.__content)
+            return "".join(self.__content)
         except TypeError:
             for i, chunk in enumerate(self.__content):
                 if chunk is None:

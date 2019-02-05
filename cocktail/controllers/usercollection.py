@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -235,7 +235,7 @@ class UserCollection(object):
             # selectively isn't supported, it's all or nothing)
             if replacing_existing_filters:
                 cookie_prefix = filter_source.get_cookie_name("filter_")
-                for key in cherrypy.request.cookie.keys():
+                for key in list(cherrypy.request.cookie.keys()):
                     if key.startswith(cookie_prefix):
                         del cherrypy.request.cookie[key]
                         cherrypy.response.cookie[key] = ""
@@ -464,7 +464,7 @@ class UserCollection(object):
             subset.add_order(criteria)
 
         if self.__tabs:
-            for tab in self.__tabs.itervalues():
+            for tab in self.__tabs.values():
                 if tab.filter is None:
                     tab.results = subset
                 elif isinstance(tab.filter, Expression):
@@ -528,6 +528,6 @@ class CollectionViewTab(object):
         self.filter = filter
         self.results = None
         self.selected = False
-        for key, value in kwargs.iteritems():
+        for key, value in kwargs.items():
             setattr(self, key, value)
 

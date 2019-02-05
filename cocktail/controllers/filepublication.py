@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -25,7 +25,7 @@ class FilePublication(object):
         content_type = None,
         processing_options = None
     ):
-        if isinstance(file, basestring):
+        if isinstance(file, str):
             path = file
             try:
                 file = open(path, "rb")
@@ -82,7 +82,7 @@ class FilePublication(object):
         response = cherrypy.response
         st = None
 
-        if isinstance(file, basestring):
+        if isinstance(file, str):
 
             path = file
 
@@ -188,7 +188,7 @@ class FilePublication(object):
                     boundary = mimetools.choose_boundary()
                     ct = "multipart/byteranges; boundary=%s" % boundary
                     response.headers['Content-Type'] = ct
-                    if response.headers.has_key("Content-Length"):
+                    if "Content-Length" in response.headers:
                         # Delete Content-Length header so finalize() recalcs it.
                         del response.headers["Content-Length"]
 
@@ -318,10 +318,10 @@ class SASSPreprocessor(object):
                     **self.get_sass_compiler_options()
                 )
 
-                if isinstance(css, unicode):
+                if isinstance(css, str):
                     css = css.encode("utf-8")
 
-                if isinstance(source_map, unicode):
+                if isinstance(source_map, str):
                     source_map = source_map.encode("utf-8")
 
                 open(css_path, "w").write(css)

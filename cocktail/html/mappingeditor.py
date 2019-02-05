@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -33,7 +33,7 @@ class MappingEditor(Element):
                 self.append(self.new_entry)
 
             if self.value is not None:
-                for key, value in self.value.iteritems():
+                for key, value in self.value.items():
                     self.entries.append(self.create_entry(key, value))
 
             if not self.fixed_entries:
@@ -87,14 +87,14 @@ class MappingEditor(Element):
         button = Element("button")
         button.add_class("remove_button")
         button["type"] = "button"
-        button.append(u"✖")
+        button.append("✖")
         return button
 
     def create_add_button(self):
         button = Element("button")
         button.add_class("add_button")
         button["type"] = "button"
-        button.append(u"✚")
+        button.append("✚")
         return button
 
     def create_new_entry(self):

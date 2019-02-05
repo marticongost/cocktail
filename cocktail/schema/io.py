@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 Provides a method to export collections to different mime_types.
 
 @author:		Jordi Fernández
@@ -87,7 +87,7 @@ def export_file(collection, dest, export_schema,
     @type languages: collection: iterable
     """
     exporter = None
-    dest_is_string = isinstance(dest, basestring)
+    dest_is_string = isinstance(dest, str)
 
     if not mime_type and dest_is_string:
         title, ext = os.path.splitext(dest)
@@ -156,35 +156,35 @@ class MSExcelExporter(object):
             return (
                 lambda value:
                     glue.join(
-                        unicode(self.export_value(item))
+                        str(self.export_value(item))
                         for item in value
                     )
             )
 
-        multiline = joiner(u"\n")
+        multiline = joiner("\n")
 
         def multiline_mapping(value):
-            return u"\n".join(
-                u"%s: %s" % (k, v)
-                for k, v in value.iteritems()
+            return "\n".join(
+                "%s: %s" % (k, v)
+                for k, v in value.items()
             )
 
         def multiline_count(value):
-            return u"\n".join(
-                u"%s: %s" % (k, v)
+            return "\n".join(
+                "%s: %s" % (k, v)
                 for k, v in value.most_common()
             )
 
         self.type_exporters = TypeMapping((
-            (object, lambda value: unicode(value)),
+            (object, lambda value: str(value)),
             (str, lambda value: value.encode("utf-8")),
-            (unicode, None),
+            (str, None),
             (type(None), lambda value: ""),
             (bool, None),
             (int, None),
             (float, None),
             (Decimal, None),
-            (tuple, joiner(u", ")),
+            (tuple, joiner(", ")),
             (list, multiline),
             (set, multiline),
             (ListWrapper, multiline),
@@ -225,7 +225,7 @@ class MSExcelExporter(object):
 
     def get_member_heading(self, member, language):
         if language:
-            return u"%s (%s)" % (
+            return "%s (%s)" % (
                 translations(member),
                 translate_locale(language)
             )

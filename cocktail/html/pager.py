@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -26,10 +26,10 @@ class Pager(Element):
 
     button_style = "characters"
     button_characters = {
-        "first": u"«",
-        "last": u"»",
-        "previous": u"&lt;",
-        "next": u"&gt;"
+        "first": "«",
+        "last": "»",
+        "previous": "&lt;",
+        "next": "&gt;"
     }
 
     pagination = None
@@ -172,7 +172,7 @@ class Pager(Element):
         return view_state(
             **dict(
                 (self._get_qualified_name(param), value)
-                for param, value in params.iteritems()
+                for param, value in params.items()
             )
         )
 

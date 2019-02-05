@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -450,7 +450,7 @@ class UserFiltersRegistry(object):
         filter.content_type = content_type
         params = self.get_filter_parameters(content_type, filter.__class__)
         if params:
-            for key, value in params.iteritems():
+            for key, value in params.items():
                 setattr(filter, key, value)
 
     def get_new_filter_view_state(self, content_type, filters, new_filter):

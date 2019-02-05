@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -22,7 +22,7 @@ def get_cache_tags(obj, cache_part = None):
         % obj
     )
 
-@get_cache_tags.implementation_for(basestring)
+@get_cache_tags.implementation_for(str)
 def get_cache_tags_for_string(obj, cache_part = None):
     tag = obj
     if cache_part:
@@ -37,7 +37,7 @@ def get_cache_expiration(obj, cache_part = None):
         % obj
     )
 
-@get_cache_expiration.implementation_for(basestring)
+@get_cache_expiration.implementation_for(str)
 def get_cache_expiration_for_string(obj, cache_part = None):
     return None
 

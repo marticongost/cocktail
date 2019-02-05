@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 Provides importing and naming services for packages, modules and their exported
 objects.
 """
@@ -27,7 +27,7 @@ def resolve(reference):
     :raise: Raises `AttributeError` if the indicated module or package doesn't
         contain the requested object.
     """
-    if isinstance(reference, basestring):
+    if isinstance(reference, str):
         return import_object(reference)
     else:
         return reference
@@ -124,7 +124,7 @@ def get_full_name(obj):
 
                     if im_func and im_class:
                         name = "%s%s.%s" \
-                            % (prefix, im_class.__name__, im_func.func_name)
+                            % (prefix, im_class.__name__, im_func.__name__)
                     else:
                         # Functions
                         func_name = getattr(obj, "func_name", None)

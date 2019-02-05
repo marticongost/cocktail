@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -135,11 +135,11 @@ class Cached(object):
         if isinstance(content, GeneratorType):
             content_bytes = "".join(
                 chunk.encode("utf-8")
-                    if isinstance(chunk, unicode)
+                    if isinstance(chunk, str)
                     else chunk
                 for chunk in content
             )
-        elif isinstance(content, unicode):
+        elif isinstance(content, str):
             content_bytes = content.encode("utf-8")
         else:
             content_bytes = content

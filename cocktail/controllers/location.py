@@ -1,16 +1,16 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
 @organization:	Whads/Accent SL
 @since:			October 2008
 """
-from __future__ import with_statement
+
 from warnings import warn
 from cgi import parse_qs
-from urllib import urlencode
-from urlparse import urlparse
+from urllib.parse import urlencode
+from urllib.parse import urlparse
 import cherrypy
 from cocktail.modeling import getter
 from cocktail.translations import translations, get_language, language_context
@@ -23,7 +23,7 @@ translations.load_bundle("cocktail.controllers.location")
 
 class URLEmptyHash(object):
 
-    def __nonzero__(self):
+    def __bool__(self):
         return False
 
 
@@ -104,7 +104,7 @@ class Location(object):
         location.query_string.update(query_string)
         location.form_data.update(
             (key, value)
-            for key, value in request.params.iteritems()
+            for key, value in request.params.items()
             if key not in query_string
         )
 
@@ -148,7 +148,7 @@ class Location(object):
         parts.extend(args)
 
         self.path_info = "/" + "/".join(
-            unicode(part).strip("/")
+            str(part).strip("/")
             for part in parts
         )
 
@@ -161,17 +161,17 @@ class Location(object):
     def get_url(self, force_empty_hash = False):
 
         if self.relative or self.host is None:
-            url = u""
+            url = ""
         else:
-            url = self.scheme + u"://" + self.host
+            url = self.scheme + "://" + self.host
 
             if self.port:
-                url += u":" + unicode(self.port)
+                url += ":" + str(self.port)
 
         url += percent_encode_uri(self.path_info)
 
         if self.query_string:
-            url += u"?" + urlencode(self.query_string, True)
+            url += "?" + urlencode(self.query_string, True)
 
         if self.hash:
             url += "#" + self.hash
@@ -184,7 +184,7 @@ class Location(object):
         return self.get_url()
 
     def __str__(self):
-        return unicode(self).encode("utf-8")
+        return str(self).encode("utf-8")
 
     @getter
     def params(self):
@@ -207,7 +207,7 @@ class Location(object):
     def get_client_redirect_html(self, method = None):
 
         html = []
-        url = unicode(self)
+        url = str(self)
 
         if not method:
             method = self.method
@@ -224,15 +224,15 @@ class Location(object):
             )
 
         if method == "GET":
-            javascript = u"""document.location.href = "%s";""" % url
-            content = u"""<noscript><p>%s</p><a href="%s">%s</a></noscript>""" % (
+            javascript = """document.location.href = "%s";""" % url
+            content = """<noscript><p>%s</p><a href="%s">%s</a></noscript>""" % (
                 explanation,
                 url,
                 control_label
             )
         elif method == "POST":
-            javascript = u"""document.getElementById("redirectionForm").submit();"""
-            content = u"""
+            javascript = """document.getElementById("redirectionForm").submit();"""
+            content = """
                 <form id="redirectionForm" method="%(method)s" action="%(action)s">
                     %(data)s
                     <noscript>
@@ -246,13 +246,13 @@ class Location(object):
                 "data": "\n".join(
                     """<input type="hidden" name="%s" value="%s">"""
                     % (key, value)
-                    for key, value in self.form_data.iteritems()
+                    for key, value in self.form_data.items()
                 ),
                 "explanation": explanation,
                 "control_label": control_label
             }
 
-        return u"""
+        return """
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html;charset=utf-8">

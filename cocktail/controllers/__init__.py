@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 Utilities for writing application controllers.
 
 @author:		Martí Congost

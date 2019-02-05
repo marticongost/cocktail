@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -314,10 +314,10 @@ class MemoryMonitorController(Controller):
 
             if ref_index:
                 try:
-                    ref_index = map(
+                    ref_index = list(map(
                         int,
                         [part.strip() for part in ref_index.split("-")]
-                    )
+                    ))
                 except (TypeError, ValueError):
                     pass
 

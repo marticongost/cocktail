@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -35,7 +35,7 @@ class SchemaObjectAccessor(MemberAccessor):
     @classmethod
     def languages(cls, obj, key):
         if obj.__class__.translated:
-            return obj.translations.keys()
+            return list(obj.translations.keys())
         else:
             return (None,)
 

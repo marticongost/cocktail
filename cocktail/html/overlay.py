@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -88,7 +88,7 @@ class Overlay(object):
     @classmethod
     def modify(cls, element):
 
-        for key, value in cls.__dict__.iteritems():
+        for key, value in cls.__dict__.items():
 
             if key in cls.excluded_keys:
                 continue

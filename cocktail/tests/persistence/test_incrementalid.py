@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -119,7 +119,7 @@ finally:
                         if return_code is None:
                             done = False
                         elif return_code == 0:
-                            ids.update(map(int, proc.stdout.read().split()))
+                            ids.update(list(map(int, proc.stdout.read().split())))
                         else:
                             raise OSError(
                                 "Error running child process: "

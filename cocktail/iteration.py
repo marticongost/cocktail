@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 This module provides several algorithms for iterating over sequences.
 """
 from itertools import groupby
@@ -17,7 +17,7 @@ def filter_by(collection, **kwargs):
         specified values.
     """
     for item in collection:
-        for key, value in kwargs.iteritems():
+        for key, value in kwargs.items():
             if not getattr(item, key) == value:
                 break
         else:
@@ -45,7 +45,7 @@ def first(collection, **kwargs):
         collection = filter_by(collection, **kwargs)
 
     try:
-        return iter(collection).next()
+        return next(iter(collection))
     except StopIteration:
         return None
 
@@ -86,7 +86,7 @@ def is_empty(collection):
         empty.
     """
     try:
-        iter(collection).next()
+        next(iter(collection))
     except StopIteration:
         return True
     else:
@@ -107,7 +107,7 @@ def grouped(collection, key):
         and an iterator of all the items in the original collection in that
         group.
     """
-    if isinstance(key, basestring):
+    if isinstance(key, str):
         attrib = key
         key = lambda item: getattr(item, attrib, None)
 
@@ -120,7 +120,7 @@ def find_max(collection, key = None, default = _undefined):
     max_item = _undefined
     max_key = _undefined
 
-    if isinstance(key, basestring):
+    if isinstance(key, str):
         attrib = key
         key = lambda item: getattr(item, attrib, None)
 
@@ -142,7 +142,7 @@ def find_min(collection, key = None, default = _undefined):
     min_item = _undefined
     min_key = _undefined
 
-    if isinstance(key, basestring):
+    if isinstance(key, str):
         attrib = key
         key = lambda item: getattr(item, attrib, None)
 

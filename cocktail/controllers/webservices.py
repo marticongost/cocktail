@@ -61,10 +61,7 @@ class PersistentClassWebService(RequestHandler):
         # universe)
         if path and _ids_expr.match(path[0]):
             ids = path.pop(0).split(",")
-            subset = filter(
-                None,
-                [self.type.get_instance(int(id)) for id in ids]
-            )
+            subset = [_f for _f in [self.type.get_instance(int(id)) for id in ids] if _f]
             controller = self.__class__()
 
             # All items on the selected subset are of the same type: set it as
@@ -109,7 +106,7 @@ class PersistentClassWebService(RequestHandler):
                 return list(obj)
 
             elif isinstance(obj, DictWrapper):
-                return dict(obj.iteritems())
+                return dict(iter(obj.items()))
 
             elif isinstance(obj, (date, datetime)):
                 return list(obj.timetuple())
@@ -121,7 +118,7 @@ class PersistentClassWebService(RequestHandler):
 
                 values = {"__class__": obj.__class__.full_name}
 
-                for key, member in obj.__class__.members().iteritems():
+                for key, member in obj.__class__.members().items():
 
                     # TODO: allow selecting a subset of the available
                     # translations

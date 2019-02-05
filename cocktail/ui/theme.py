@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -15,8 +15,8 @@ class Theme(object):
     """
 
     def __init__(self, locations, extensions = (".scss", ".css")):
-        self.__locations = map(self._normalize_location, locations)
-        self.__extensions = map(self._normalize_extension, extensions)
+        self.__locations = list(map(self._normalize_location, locations))
+        self.__extensions = list(map(self._normalize_extension, extensions))
 
     @property
     def locations(self):

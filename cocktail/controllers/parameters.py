@@ -1,17 +1,17 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
 @organization:	Whads/Accent SL
 @since:			October 2008
 """
-from itertools import izip_longest
+from itertools import zip_longest
 import decimal
 import time
 import datetime
 import cgi
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import cherrypy
 from cherrypy.lib import http
 from string import strip
@@ -84,7 +84,7 @@ schema.Member.parse_request_value = None
 
 # Extension property that allows members to define a serializer function for
 # request values
-schema.Member.serialize_request_value = unicode
+schema.Member.serialize_request_value = str
 
 # Extension property that allows members to define a reader function for
 # request values
@@ -113,7 +113,7 @@ def _read_mapping_request_value(self, reader):
         )
 
         if keys is not None and values is not None:
-            param_value = mapping_type(zip(keys, values))
+            param_value = mapping_type(list(zip(keys, values)))
 
     return param_value or None
 
@@ -358,7 +358,7 @@ def parse_collection(self, reader, value):
         else:
             return None
 
-    elif isinstance(value, basestring):
+    elif isinstance(value, str):
         value = reader.split_collection(self, value)
 
     collection_type = self.type or self.default_type or list
@@ -375,7 +375,7 @@ def serialize_collection(self, value):
         items = self.items
         serialize_item = self.items \
             and self.items.serialize_request_value \
-            or unicode
+            or str
         glue = getattr(self, "request_value_separator", ",")
         return glue.join(serialize_item(item) for item in value)
 
@@ -390,7 +390,7 @@ def parse_mapping(self, reader, value):
         else:
             return None
 
-    elif isinstance(value, basestring):
+    elif isinstance(value, str):
         mapping_type = self.type or self.default_type or dict
         items_sep = self.request_items_separator
         key_value_sep = self.request_key_value_separator
@@ -422,17 +422,17 @@ def serialize_mapping(self, value):
         serialize_key = (
             self.keys
             and self.keys.serialize_request_value
-            or unicode
+            or str
         )
         serialize_value = (
             self.values
             and self.values.serialize_request_value
-            or unicode
+            or str
         )
         key_value_glue = self.request_key_value_separator
         return self.request_items_separator.join(
             serialize_key(k) + key_value_glue + serialize_value(v)
-            for k, v in value.iteritems()
+            for k, v in value.items()
         )
 
 schema.Mapping.parse_request_value = parse_mapping
@@ -447,7 +447,7 @@ def parse_tuple(self, reader, value):
         chunks = value.split(separator)
         value = tuple(
             reader.process_value(member, chunk)
-            for chunk, member in izip_longest(chunks, self.items)
+            for chunk, member in zip_longest(chunks, self.items)
         )
 
     return value
@@ -790,7 +790,7 @@ class FormSchemaReader(object):
             values. Reading a translated member will produce a dictionary with
             language/value pairs.
         """
-        if isinstance(member, basestring):
+        if isinstance(member, str):
             member = schema.String(member)
 
         if path is None:
@@ -876,7 +876,7 @@ class FormSchemaReader(object):
         path.append(member)
 
         try:
-            for child_member in member.members().itervalues():
+            for child_member in member.members().values():
 
                 if child_member.editable != schema.EDITABLE:
                     continue
@@ -930,7 +930,7 @@ class FormSchemaReader(object):
         return target
 
     def get_parameter_name(self, member, language = None):
-        if isinstance(member, basestring):
+        if isinstance(member, str):
             # TODO: supporting arbitrary strings here as well as members is
             # necessary for historical reasons, but should be removed sometime
             # in the future
@@ -961,13 +961,13 @@ class FormSchemaReader(object):
             if not isinstance(value, cgi.FieldStorage):
                 norm = self.normalization
                 if norm:
-                    if isinstance(value, basestring):
+                    if isinstance(value, str):
                         value = norm(value)
                     elif isinstance(value, list):
                         value = [
                             (
                                 norm(part)
-                                if isinstance(part, basestring)
+                                if isinstance(part, str)
                                 else part
                             )
                             for part in value
@@ -1111,10 +1111,10 @@ class CookieParameterSource(object):
         # Persist a new value
         if param_value:
             if self.update:
-                if not isinstance(param_value, basestring):
-                    param_value = u",".join(param_value)
+                if not isinstance(param_value, str):
+                    param_value = ",".join(param_value)
 
-                if isinstance(param_value, unicode) and self.cookie_encoding:
+                if isinstance(param_value, str) and self.cookie_encoding:
                     cookie_value = param_value.encode(self.cookie_encoding)
                 else:
                     cookie_value = param_value
@@ -1139,7 +1139,7 @@ class CookieParameterSource(object):
 
                 # Restore a persisted value
                 else:
-                    param_value = urllib.unquote(request_cookie.value)
+                    param_value = urllib.parse.unquote(request_cookie.value)
 
                     if param_value and self.cookie_encoding:
                         param_value = param_value.decode(self.cookie_encoding)
@@ -1226,8 +1226,8 @@ class SessionParameterSource(object):
         # Persist a new value
         if param_value:
             if self.update:
-                if not isinstance(param_value, basestring):
-                    param_value = u",".join(param_value)
+                if not isinstance(param_value, str):
+                    param_value = ",".join(param_value)
 
                 session[key] = param_value
         else:

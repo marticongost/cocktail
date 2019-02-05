@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Javier Marrero
 @contact:		javier.marrero@whads.com

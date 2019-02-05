@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -97,7 +97,7 @@ class PhoneNumber(String):
 
         value = context.value
 
-        if isinstance(value, basestring):
+        if isinstance(value, str):
 
             valid = True
 

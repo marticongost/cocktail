@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 Provides a class to describe members that handle sets of values.
 
 @author:		Martí Congost
@@ -56,14 +56,14 @@ class Collection(RelationMember):
 
     def translate_value(self, value, language = None, **kwargs):
         if not value:
-            return u""
+            return ""
         else:
             if self.items:
                 item_translator = self.items.translate_value
             else:
-                item_translator = lambda item, **kwargs: unicode(item)
+                item_translator = lambda item, **kwargs: str(item)
 
-            return u", ".join(
+            return ", ".join(
                 item_translator(item, language, **kwargs) for item in value
             )
 
@@ -123,7 +123,7 @@ class Collection(RelationMember):
 
         filters = list(args)
 
-        for key, value in kwargs.iteritems():
+        for key, value in kwargs.items():
             filters.append(self.related_type[key].equal(value))
 
         return AnyExpression(self, filters)
@@ -135,7 +135,7 @@ class Collection(RelationMember):
 
         filters = list(args)
 
-        for key, value in kwargs.iteritems():
+        for key, value in kwargs.items():
             filters.append(self.related_type[key].equal(value))
 
         if not filters:
@@ -239,7 +239,7 @@ class Collection(RelationMember):
             get_related_member = self.related_type.get_member
             relation_constraints = (
                 get_related_member(key).equal(value)
-                for key, value in constraints_mapping.iteritems()
+                for key, value in constraints_mapping.items()
             )
 
         if relation_constraints:

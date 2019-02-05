@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 Provides the base class for all schema members.
 """
 from itertools import chain
@@ -19,7 +19,7 @@ EDITABLE = 1
 READ_ONLY = 2
 
 
-class Member(Variable):
+class Member(Variable, metaclass=EventHub):
     """A member describes the properties and metadata of a unit of data.
 
     Although not strictly an abstract class, the class is very generic in
@@ -61,7 +61,6 @@ class Member(Variable):
 
         An expression used by computed fields to produce their value.
     """
-    __metaclass__ = EventHub
 
     attached = Event(
         doc = """An event triggered when the member is added to a schema."""
@@ -156,7 +155,7 @@ class Member(Variable):
 
         validations = kwargs.pop("validations", None)
 
-        for key, value in kwargs.iteritems():
+        for key, value in kwargs.items():
             setattr(self, key, value)
 
         if validations is not None:
@@ -233,7 +232,7 @@ class Member(Variable):
     def _get_type(self):
 
         # Resolve string references
-        if isinstance(self.__type, basestring):
+        if isinstance(self.__type, str):
             self.__type = import_object(self.__type)
 
         return self.__type
@@ -304,7 +303,7 @@ class Member(Variable):
         if primary is not None:
             member_copy.primary = primary
 
-        for key, value in kwargs.iteritems():
+        for key, value in kwargs.items():
             obj = member_copy
 
             name_parts = key.split(".")
@@ -327,7 +326,7 @@ class Member(Variable):
             members = self.members()
             copy = self.__class__(self.name, self.__bases__, dict(
                 (key, value)
-                for key, value in self.__dict__.iteritems()
+                for key, value in self.__dict__.items()
                 if key not in self._special_copy_keys
                 and key not in members
             ))
@@ -339,7 +338,7 @@ class Member(Variable):
         memo[id(self)] = copy
 
         if not isinstance(copy, type):
-            for key, value in self.__dict__.iteritems():
+            for key, value in self.__dict__.items():
                 if key not in self._special_copy_keys:
                     copy.__dict__[key] = deepcopy(value, memo)
 
@@ -543,7 +542,7 @@ class Member(Variable):
                 suffix = ".values.%s" % value
             )
         else:
-            return unicode(value)
+            return str(value)
 
     def translate_error(self, error, language = None, **kwargs):
 
@@ -551,7 +550,7 @@ class Member(Variable):
 
             try:
                 error_class_name = get_full_name(error.__class__)
-            except Exception, ex:
+            except Exception as ex:
                 error_class_name = error.__class__.__name__
 
             error_translation = translations(

@@ -6,8 +6,8 @@
 @organization:	Whads/Accent SL
 @since:			May 2009
 """
-import urllib
-import urllib2
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
 import cherrypy
 
 def proxy_handler(url):
@@ -44,14 +44,14 @@ def proxy_handler(url):
 
     try:
 
-        data = urllib.urlencode(params,True)
+        data = urllib.parse.urlencode(params,True)
 
         # Sending the request
-        rfile = urllib2.urlopen(url, data)
+        rfile = urllib.request.urlopen(url, data)
 
-    except urllib2.HTTPError, error:
+    except urllib.error.HTTPError as error:
         raise cherrypy.HTTPError(error.code, error.msg)
 
     response_body = rfile.read()
-    response_body = unicode(response_body, encoding)
+    response_body = str(response_body, encoding)
     cherrypy.response.body = response_body

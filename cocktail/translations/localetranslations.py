@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -19,7 +19,7 @@ def translate_locale(locale, language = None):
     if trans:
         return trans
 
-    return u"".join(
+    return "".join(
         translations(
             "cocktail.locale_component." + component,
             language,
@@ -33,7 +33,7 @@ def translate_locale(locale, language = None):
             component = component,
             index = index
         )
-        or (u" - " if index else u"") + component
+        or (" - " if index else "") + component
         for index, component in enumerate(locale.split("-"))
     )
 

@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -150,12 +150,12 @@ class Grouping(object):
             group.add_item(item)
 
     def print_tree(self, indent = ""):
-        print indent + styled(repr(self), "slate_blue")
+        print(indent + styled(repr(self), "slate_blue"))
         indent += "  "
         for group in self.groups:
             group.print_tree(indent)
         for item in self.items:
-            print indent + styled(item, "pink")
+            print(indent + styled(item, "pink"))
 
 
 class GroupByMember(Grouping):

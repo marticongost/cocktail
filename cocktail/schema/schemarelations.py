@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -149,7 +149,7 @@ class RelationMember(Member):
                 ):
                     related_end = None
             else:
-                for member in related_type.members().itervalues():
+                for member in related_type.members().values():
                     if getattr(member, "bidirectional", False):
                         if member.related_key:
                             if self.name == member.related_key:

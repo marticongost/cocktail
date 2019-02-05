@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 Allows creating presentation components from XML markup.
 
 @author:		Martí Congost

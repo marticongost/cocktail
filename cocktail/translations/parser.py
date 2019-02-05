@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -146,7 +146,7 @@ class TranslationsFileParser(object):
                         "@end directive without an @init directive"
                     )
                 else:
-                    code = normalize_indentation(u"\n".join(self.__init_code))
+                    code = normalize_indentation("\n".join(self.__init_code))
                     self.__init_code = None
                     self._exec_code(code)
 
@@ -393,7 +393,7 @@ class TranslationsFileParser(object):
         if is_constant and not requirements:
             value = parts[0][0]
         else:
-            func_name = self.__node.func_name
+            func_name = self.__node.__name__
             func_args = self.__node.func_args or "*args, **kwargs"
             code = "def %s(%s):\n    return " % (func_name, func_args)
             glue = "(" if requirements else ""
@@ -404,13 +404,13 @@ class TranslationsFileParser(object):
                 elif part_type == self.EXPRESSION:
                     code += "_expr_value(" + part_value + ")"
                 elif part_type == self.TRANSLATION_EXPRESSION:
-                    code += u"translations(%s)" % part_value
+                    code += "translations(%s)" % part_value
                 glue = " + "
 
             if requirements:
                 code = "%s) if %s else None" % (
                     code,
-                    u" and ".join(requirements)
+                    " and ".join(requirements)
                 )
 
             context = self._exec_code(code, copy_context = True)
@@ -429,7 +429,7 @@ class TranslationsFileParser(object):
             context["key"] = self.__node.path
         else:
             context = self.context
-        exec code_obj in context
+        exec(code_obj, context)
         return context
 
     def _syntax_error(self, reason = None):
@@ -464,10 +464,10 @@ class TranslationsFileNode(object):
     def iter_definitions(self):
 
         if self.switch_condition:
-            indent = u" " * 4
-            code_lines = ["def %s(%s):" % (self.func_name, self.func_args)]
-            code_lines.append(u"%s__args, __kwargs = arguments()" % indent)
-            code_lines.append(u"%s__value = %s" % (indent, self.switch_condition))
+            indent = " " * 4
+            code_lines = ["def %s(%s):" % (self.__name__, self.func_args)]
+            code_lines.append("%s__args, __kwargs = arguments()" % indent)
+            code_lines.append("%s__value = %s" % (indent, self.switch_condition))
 
             if len(self.switch_cases) < 2:
                 self.parser._syntax_error(
@@ -477,15 +477,15 @@ class TranslationsFileNode(object):
             op = "if"
             for case_key, case_value in self.switch_cases:
                 if case_value is self.parser.default_case:
-                    code_lines.append(u"%selse:\n" % indent)
+                    code_lines.append("%selse:\n" % indent)
                 else:
-                    code_lines.append(u"%s%s __value == %s:\n" % (
+                    code_lines.append("%s%s __value == %s:\n" % (
                         indent,
                         op,
                         case_value
                     ))
                 code_lines.append(
-                    u"%sreturn translations('%s', *__args, **__kwargs)" % (
+                    "%sreturn translations('%s', *__args, **__kwargs)" % (
                         indent * 2,
                         case_key
                     )
@@ -497,14 +497,14 @@ class TranslationsFileNode(object):
             yield (
                 self.path,
                 None,
-                context[self.func_name]
+                context[self.__name__]
             )
         elif self.reused_key:
             code = (
                 "def %s(*args, **kwargs):\n"
                 "    return translations(%s, *args, **kwargs)"
                 % (
-                    self.func_name,
+                    self.__name__,
                     self.reused_key
                 )
             )
@@ -512,15 +512,15 @@ class TranslationsFileNode(object):
             yield (
                 self.path,
                 None,
-                context[self.func_name]
+                context[self.__name__]
             )
         else:
-            for locale, values in self.definitions.iteritems():
+            for locale, values in self.definitions.items():
                 yield (
                     self.path,
                     None if locale == "*" else locale,
                     self.parser._get_expression(
-                        u"\n".join(values),
+                        "\n".join(values),
                         requirements = self.requirements
                     )
                 )
@@ -546,5 +546,5 @@ class TranslationsFileSyntaxError(Exception):
 
 
 def _expr_value(value):
-    return u"" if value is None else unicode(value)
+    return "" if value is None else str(value)
 

@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 This package provides a set of high level interfaces for object persistence.
 It's built as a declarative layer over Zope's Object Data Base (ZODB), adding
 support for multi-language content and declarative queries over indexes.

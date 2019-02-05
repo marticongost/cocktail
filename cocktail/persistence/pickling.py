@@ -1,10 +1,10 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Jordi Fernández <jordi.fernandez@whads.com>
 """
 import pickle
-from cStringIO import StringIO
+from io import StringIO
 from cocktail.pkgutils import get_full_name
 from cocktail.schema import Schema, Member
 from cocktail.persistence.persistentobject import PersistentObject
@@ -52,5 +52,5 @@ def _persistent_load(persid):
         obj = _get_schema(name)
         return getattr(obj, member_name, None)
     else:
-        raise pickle.UnpicklingError, 'Invalid persistent id'
+        raise pickle.UnpicklingError('Invalid persistent id')
 

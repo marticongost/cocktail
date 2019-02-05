@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -186,10 +186,10 @@ schema.Collection.rebuild_index = _rebuild_collection_index
 def _rebuild_indexes(cls, recursive = False, verbose = True):
 
     if cls.indexed:
-        for member in cls.members(False).itervalues():
+        for member in cls.members(False).values():
             if member.indexed and not member.primary:
                 if verbose:
-                    print "Rebuilding index for %s" % member
+                    print("Rebuilding index for %s" % member)
                 member.rebuild_index()
 
         if recursive:
@@ -237,7 +237,7 @@ def _handle_changed(event):
         and event.previous_value != event.value
     ):
         if event.member.translated:
-            for lang, previous_value in event.translation_changes.iteritems():
+            for lang, previous_value in event.translation_changes.items():
                 remove_index_entry(
                     event.source,
                     event.member,
@@ -294,7 +294,7 @@ def _handle_inserting(event):
             keys.insert(id)
 
     # Regular indexes
-    for member in obj.__class__.members().itervalues():
+    for member in obj.__class__.members().values():
 
         if obj._should_index_member(member):
 
@@ -364,7 +364,7 @@ def _handle_deleting(event):
                 for lang in descend_language_tree(language):
                     languages.add(lang)
 
-        for member in obj.__class__.members().itervalues():
+        for member in obj.__class__.members().values():
 
             if member.indexed and obj._should_index_member(member):
                 if member.translated:

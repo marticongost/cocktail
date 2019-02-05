@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 Provides a class that tracks the state of a validation process across schema
 members.
 
@@ -125,7 +125,7 @@ class ValidationContext(DictWrapper):
                 return context.value
             context = context.__parent_context
 
-    def __nonzero__(self):
+    def __bool__(self):
         return True
 
     def __setitem__(self, key, value):

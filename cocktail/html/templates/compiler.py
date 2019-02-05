@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -101,7 +101,7 @@ class TemplateCompiler(object):
     def compile(self, xml):
         try:
             self.__parser.Parse(xml, True)
-        except expat.ExpatError, e:
+        except expat.ExpatError as e:
             raise ParseError(
                 "Error parsing template %s.%s: %s" % (
                 self.pkg_name,
@@ -121,7 +121,7 @@ class TemplateCompiler(object):
         )
 
     def get_source(self):
-        return unicode(self.__source)
+        return str(self.__source)
 
     def get_template_class(self):
         template_env = self.get_template_env()
@@ -131,7 +131,7 @@ class TemplateCompiler(object):
             "<%s.%s>" % (self.pkg_name, self.class_name),
             "exec"
         )
-        exec code in template_env
+        exec(code, template_env)
         return template_env[self.class_name]
 
     def get_template_env(self):
@@ -147,7 +147,7 @@ class TemplateCompiler(object):
                     translations(
                         (
                             ("%s.%s.%s" % (self.pkg_name, self.class_name, key))
-                            if isinstance(key, basestring)
+                            if isinstance(key, str)
                             else key
                         ),
                         *args,
@@ -699,7 +699,7 @@ class TemplateCompiler(object):
         source = self.__stack[-1].source_block
         place_holders = None
 
-        for key, value in attributes.iteritems():
+        for key, value in attributes.items():
 
             pos = key.find(">")
 

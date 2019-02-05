@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -43,14 +43,14 @@ def transaction(
     for i in range(max_attempts):
         if i > 0:
             if verbose:
-                print styled(
+                print(styled(
                     "Retrying transaction %s (%d/%d)" % (
                         action,
                         i,
                         max_attempts - 1
                     ),
                     {1: "yellow", 2: "brown", 3: "red"}.get(i, "violet")
-                )
+                ))
 
             if before_retrying is not None:
                 before_retrying(*action_args, **action_kwargs)
