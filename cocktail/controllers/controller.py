@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -40,7 +40,7 @@ class Controller(RequestHandler):
                 self.submit()
                 self.successful = True
             self.processed()
-        except Exception, ex:
+        except Exception as ex:
             self.handle_error(ex)
 
         return self.render()

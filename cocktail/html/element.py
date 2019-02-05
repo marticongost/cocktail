@@ -838,7 +838,7 @@ class Element(Invalidable):
         :type child: `Element` or basestring
         """
         if not isinstance(child, Element):
-            child = Content(unicode(child))
+            child = Content(str(child))
         else:
             child.release()
 
@@ -953,7 +953,7 @@ class Element(Invalidable):
             has no parent.
         """
         if not isinstance(replacement, Element):
-            replacement = Content(unicode(replacement))
+            replacement = Content(str(replacement))
 
         replacement.replace(self)
 
@@ -1070,7 +1070,7 @@ class Element(Invalidable):
 
             if style:
                 self["style"] = \
-                    "; ".join("%s: %s" % decl for decl in style.iteritems())
+                    "; ".join("%s: %s" % decl for decl in style.items())
             else:
                 del self["style"]
         else:
@@ -1079,7 +1079,7 @@ class Element(Invalidable):
     def update_style(self, styles):
         style = self.style.copy()
         style.update(styles)
-        self["style"] = "; ".join("%s: %s" % i for i in style.iteritems())
+        self["style"] = "; ".join("%s: %s" % i for i in style.items())
 
     # Resources
     #--------------------------------------------------------------------------
@@ -1121,7 +1121,7 @@ class Element(Invalidable):
             instantiated L{Resource}.
         """
         # Normalize the resource
-        if isinstance(resource, basestring):
+        if isinstance(resource, str):
             uri = resource
             resource = Resource.from_uri(uri, mime_type, **kwargs)
         else:
@@ -1151,7 +1151,7 @@ class Element(Invalidable):
         :raise: Raises `ValueError` if the indicated resource is not linked by
             the element.
         """
-        if isinstance(resource, basestring):
+        if isinstance(resource, str):
             removed_uri = resource
             resource = first(self.__resources, uri = removed_uri)
 
@@ -1489,12 +1489,12 @@ class Content(Element):
         return (
             self.visible
             and self.value is not None
-            and unicode(self.value).strip()
+            and str(self.value).strip()
         )
 
     def _render(self, rendering):
         if self.value is not None:
-            rendering.write(unicode(self.value))
+            rendering.write(str(self.value))
 
 
 class TranslatedValue(Content):

@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -111,7 +111,7 @@ def acquire_id_range(size, key = "default"):
         finally:
             conn.close()
 
-        id_range = range(base_id + 1, top_id + 1)
+        id_range = list(range(base_id + 1, top_id + 1))
         key_acquired_ids = _acquired_ids.get(key)
 
         if key_acquired_ids is None:

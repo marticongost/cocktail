@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""Defines classes to index key,value pairs.
+"""Defines classes to index key,value pairs.
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -259,9 +259,9 @@ class Index(Persistent):
 
         :return: An iterable sequence containing the keys defined by the index.
         """
-        return self.keys()
+        return list(self.keys())
 
-    def __nonzero__(self):
+    def __bool__(self):
         """Determines if the index is empty.
 
         :return: True if the index is empty, False otherwise.
@@ -359,7 +359,7 @@ class SingleValueIndex(Index):
     @overrides(Index.min_key)
     def min_key(self, exclude_none = False):
         if exclude_none:
-            for key in self.keys():
+            for key in list(self.keys()):
                 if key is not None:
                     return key
         else:
@@ -479,7 +479,7 @@ class MultipleValuesIndex(Index):
     @overrides(Index.min_key)
     def min_key(self, exclude_none = False):
         if exclude_none:
-            for key in self.keys():
+            for key in list(self.keys()):
                 if key is not None:
                     return key
         else:

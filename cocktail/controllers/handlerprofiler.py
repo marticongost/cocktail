@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 Profiler tool for CherryPy request handlers.
 
 @author:		Martí Congost
@@ -59,7 +59,7 @@ def handler_profiler(
 
         for expr in filter:
 
-            if isinstance(expr, basestring):
+            if isinstance(expr, str):
                 url = get_request_url()
                 if expr.startswith("!"):
                     reg_expr = re.compile(expr[1:])
@@ -204,11 +204,11 @@ if __name__ == "__main__":
         if options.sort:
             stats.sort_stats(options.sort)
 
-        print "Context"
-        print "-" * 80
-        print pprint(context)
-        print
-        print "Profile"
-        print "-" * 80
+        print("Context")
+        print("-" * 80)
+        print(pprint(context))
+        print()
+        print("Profile")
+        print("-" * 80)
         stats.print_stats(options.top or None)
 

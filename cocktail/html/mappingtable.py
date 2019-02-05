@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -19,10 +19,10 @@ class MappingTable(Element):
             if isinstance(self.value, Counter):
                 items = self.value.most_common()
             elif self.sorted:
-                items = self.value.items()
+                items = list(self.value.items())
                 items.sort()
             else:
-                items = self.value.iteritems()
+                items = iter(self.value.items())
 
             for key, value in items:
                 row = self.create_row(key, value)

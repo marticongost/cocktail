@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -61,7 +61,7 @@ class InsertionTestCase(TempStorageMixin, TestCase):
         self.assertFalse(self.test_type.test_field.index)
 
         instance.insert()
-        self.assertEquals(
+        self.assertEqual(
             list(self.test_type.test_field.index.items()),
             [("foo", instance.id)]
         )

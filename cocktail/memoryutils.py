@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""Utilities for formatting and parsing memory amounts.
+"""Utilities for formatting and parsing memory amounts.
 
 Parts of this module were adapted from a script by Martin Pool:
 http://mail.python.org/pipermail/python-list/1999-December/018519.html
@@ -36,7 +36,7 @@ _suffixes_by_base = {
 
 _sizes_by_suffix = {}
 
-for base, sizes in _suffixes_by_base.iteritems():
+for base, sizes in _suffixes_by_base.items():
     for size, suffix in sizes:
         _sizes_by_suffix[suffix] = size
 

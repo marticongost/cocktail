@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -16,7 +16,7 @@ class ValueDisplay(Element):
         if self.member:
             value = self.translate_value(self.value)
         else:
-            value = unicode(self.value)
+            value = str(self.value)
 
         self.append(value)
 

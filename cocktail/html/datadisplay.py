@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 Visual elements for data binding.
 
 @author:        Martí Congost
@@ -42,7 +42,7 @@ class DataDisplay(UIGenerator):
 
     def _resolve_member(self, member):
 
-        if isinstance(member, basestring):
+        if isinstance(member, str):
             if self.schema is None:
                 raise ValueError(
                     "Can't resolve a member by name on an unbound data display"
@@ -52,7 +52,7 @@ class DataDisplay(UIGenerator):
             return member
 
     def _normalize_member(self, member):
-        if isinstance(member, basestring):
+        if isinstance(member, str):
             return member
 
         if self.schema is None:
@@ -302,7 +302,7 @@ class DataDisplay(UIGenerator):
             yield display
 
     def translate_value(self, obj, member, value):
-        return member.translate_value(value) or u"-"
+        return member.translate_value(value) or "-"
 
 
 NO_SELECTION = 0

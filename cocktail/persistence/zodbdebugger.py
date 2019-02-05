@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -39,7 +39,7 @@ class ZODBDebugger(object):
 
     def show_count(self):
         for cls, count in self.count.most_common():
-            print styled(cls, "slate_blue"), count
+            print(styled(cls, "slate_blue"), count)
 
     @classmethod
     def install(cls):

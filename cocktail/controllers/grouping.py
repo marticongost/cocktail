@@ -88,7 +88,7 @@ class MemberGrouping(object):
             if cls is MemberGrouping:
                 break
 
-        return u""
+        return ""
 
 
 class DateGrouping(MemberGrouping):

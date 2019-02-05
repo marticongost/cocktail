@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 A set of constructs for modeling classes.
 
 @author:		Martí Congost
@@ -51,7 +51,7 @@ def overrides(source_method):
 
 def wrap(function, wrapper):
     wrapper.__doc__ = function.__doc__
-    wrapper.func_name = function.func_name
+    wrapper.__name__ = function.__name__
 
 def getter(function):
     return property(function, doc = function.__doc__)
@@ -61,7 +61,7 @@ def abstractmethod(func):
     def wrapper(self, *args, **kwargs):
         raise TypeError(
             "Calling abstract method %s on %s"
-            % (func.func_name, self)
+            % (func.__name__, self)
         )
 
     wrap(func, wrapper)
@@ -93,7 +93,7 @@ def cached_getter(function):
     Each instance of the method's class will gain its own cached value.
     """
     undefined = object()
-    key = "_" + function.func_name
+    key = "_" + function.__name__
 
     def wrapper(self):
         value = getattr(self, key, undefined)
@@ -128,7 +128,7 @@ def refine(element):
             return function(element, *args, **kwargs)
 
         wrap(function, wrapper)
-        setattr(element, function.func_name, wrapper)
+        setattr(element, function.__name__, wrapper)
         return wrapper
 
     return decorator
@@ -142,7 +142,7 @@ def extend(element):
 
     def decorator(function):
 
-        base = getattr(element, function.func_name, None)
+        base = getattr(element, function.__name__, None)
 
         if base:
             def wrapper(*args, **kwargs):
@@ -162,15 +162,15 @@ def extend(element):
                     _thread_data.method_stack.pop()
 
             wrap(function, wrapper)
-            wrapper.im_self = element
-            setattr(element, function.func_name, wrapper)
+            wrapper.__self__ = element
+            setattr(element, function.__name__, wrapper)
         else:
             def wrapper(*args, **kwargs):
                 return function(element, *args, **kwargs)
-            wrapper.func_name = function.func_name
-            wrapper.im_self = element
+            wrapper.__name__ = function.__name__
+            wrapper.__self__ = element
 
-        setattr(element, function.func_name, wrapper)
+        setattr(element, function.__name__, wrapper)
         return wrapper
 
     return decorator
@@ -228,10 +228,10 @@ def copy_mutable_containers(value):
 
     if isinstance(value, OrderedSet):
         return OrderedSet(
-            map(copy_mutable_containers, value)
+            list(map(copy_mutable_containers, value))
         )
     elif isinstance(value, (list, ListWrapper)):
-        return map(copy_mutable_containers, value)
+        return list(map(copy_mutable_containers, value))
     elif isinstance(value, (set, SetWrapper)):
         return set(
             copy_mutable_containers(item)
@@ -243,7 +243,7 @@ def copy_mutable_containers(value):
                 copy_mutable_containers(key),
                 copy_mutable_containers(value)
             )
-            for key, value in value.iteritems()
+            for key, value in value.items()
         )
 
     return value
@@ -257,7 +257,7 @@ def frozen(value):
     elif isinstance(value, (dict, DictWrapper)):
         return frozendict(
             (frozen(key), frozen(value))
-            for key, value in value.iteritems()
+            for key, value in value.items()
         )
 
     return value
@@ -339,25 +339,25 @@ class DictWrapper(object):
         return self._items.get(key, default)
 
     def has_key(self, key):
-        return self._items.has_key(key)
+        return key in self._items
 
     def items(self):
-        return self._items.items()
+        return list(self._items.items())
 
     def iteritems(self):
-        return self._items.iteritems()
+        return iter(self._items.items())
 
     def iterkeys(self):
-        return self._items.iterkeys()
+        return iter(self._items.keys())
 
     def itervalues(self):
-        return self._items.itervalues()
+        return iter(self._items.values())
 
     def keys(self):
-        return self._items.keys()
+        return list(self._items.keys())
 
     def values(self):
-        return self._items.values()
+        return list(self._items.values())
 
 class ListWrapper(object):
 
@@ -737,13 +737,13 @@ class OrderedDict(DictWrapper):
             source = args[0]
 
             if isinstance(source, (dict, DictWrapper)):
-                source = source.iteritems()
+                source = iter(source.items())
 
             for key, value in source:
                 self[key] = value
 
         if kwargs:
-            for key, value in kwargs.iteritems():
+            for key, value in kwargs.items():
                 self[key] = value
 
 
@@ -1181,7 +1181,7 @@ class InstrumentedDict(DictWrapper, InstrumentedCollection):
             self.changed(added, removed, context)
 
     def clear(self):
-        removed = self._items.items()
+        removed = list(self._items.items())
         if removed:
             added = []
             context = {}
@@ -1210,7 +1210,7 @@ class InstrumentedDict(DictWrapper, InstrumentedCollection):
 
     def popitem(self):
 
-        for item in self._items.iteritems():
+        for item in self._items.items():
             break
         else:
             raise KeyError("Can't pop from an empty dictionary")
@@ -1249,7 +1249,7 @@ class InstrumentedDict(DictWrapper, InstrumentedCollection):
             added = []
             removed = []
 
-            for key, value in items.iteritems():
+            for key, value in items.items():
                 try:
                     prev_value = self._items[key]
                 except KeyError:
@@ -1284,14 +1284,14 @@ class InstrumentedDict(DictWrapper, InstrumentedCollection):
                     for item in new_content
                 )
 
-            for key, old_value in previous_content.iteritems():
+            for key, old_value in previous_content.items():
                 if (
                     key not in self._items
                     or new_content.get(key) != old_value
                 ):
                     removed.append((key, old_value))
 
-            for key, new_value in new_content.iteritems():
+            for key, new_value in new_content.items():
                 if (
                     key not in previous_content
                     or previous_content.get(key) != new_value

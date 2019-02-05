@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. attribute:: whole_cache
 
@@ -25,7 +25,7 @@ def normalize_scope(scope):
 
 def resolve_selector(selector):
 
-    if isinstance(selector, (basestring, tuple)):
+    if isinstance(selector, (str, tuple)):
         yield selector
     elif isinstance(selector, (
         list,

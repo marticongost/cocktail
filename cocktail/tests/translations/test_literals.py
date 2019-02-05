@@ -1,12 +1,12 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Javier Marrero
 @contact:		javier.marrero@whads.com
 @organization:	Whads/Accent SL
 @since:			February 2009
 """
-from __future__ import with_statement
+
 from decimal import Decimal
 from unittest import TestCase
 from cocktail.translations import translations, language_context

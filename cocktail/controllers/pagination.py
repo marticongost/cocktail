@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""Defines the `Pagination` class.
+"""Defines the `Pagination` class.
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """

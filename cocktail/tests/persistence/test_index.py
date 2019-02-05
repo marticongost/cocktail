@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -283,27 +283,27 @@ class TranslationInheritanceIndexingTestCase(TempStorageMixin, TestCase):
             "en-CA": ["en"],
             "fr-CA": ["fr", "en-CA"]
         }):
-            obj.set("test_field", u"foo", "en")
+            obj.set("test_field", "foo", "en")
             assert set(TestObject.test_field.index.items()) == set([
-                (("en", u"foo"), obj.id),
-                (("en-CA", u"foo"), obj.id),
-                (("fr-CA", u"foo"), obj.id)
+                (("en", "foo"), obj.id),
+                (("en-CA", "foo"), obj.id),
+                (("fr-CA", "foo"), obj.id)
             ])
 
-            obj.set("test_field", u"bar", "fr")
+            obj.set("test_field", "bar", "fr")
             assert set(TestObject.test_field.index.items()) == set([
-                (("en", u"foo"), obj.id),
-                (("en-CA", u"foo"), obj.id),
-                (("fr", u"bar"), obj.id),
-                (("fr-CA", u"bar"), obj.id)
+                (("en", "foo"), obj.id),
+                (("en-CA", "foo"), obj.id),
+                (("fr", "bar"), obj.id),
+                (("fr-CA", "bar"), obj.id)
             ])
 
             del obj.translations["fr"]
-            print list(TestObject.test_field.index.items())
+            print(list(TestObject.test_field.index.items()))
             assert set(TestObject.test_field.index.items()) == set([
-                (("en", u"foo"), obj.id),
-                (("en-CA", u"foo"), obj.id),
-                (("fr-CA", u"foo"), obj.id)
+                (("en", "foo"), obj.id),
+                (("en-CA", "foo"), obj.id),
+                (("fr-CA", "foo"), obj.id)
             ])
 
     def test_no_automatic_reindexing_if_the_language_chain_changes(self):
@@ -326,21 +326,21 @@ class TranslationInheritanceIndexingTestCase(TempStorageMixin, TestCase):
             "en-CA": ["en"],
             "fr-CA": ["fr", "en-CA"]
         }):
-            obj.set("test_field", u"foo", "en")
+            obj.set("test_field", "foo", "en")
             assert set(TestObject.test_field.index.items()) == set([
-                (("en", u"foo"), obj.id),
-                (("en-CA", u"foo"), obj.id),
-                (("fr-CA", u"foo"), obj.id)
+                (("en", "foo"), obj.id),
+                (("en-CA", "foo"), obj.id),
+                (("fr-CA", "foo"), obj.id)
             ])
 
         with fallback_languages_context({
             "en-CA": ["en"],
             "fr-CA": ["fr"]
         }):
-            obj.set("test_field", u"foo", "en")
+            obj.set("test_field", "foo", "en")
             assert set(TestObject.test_field.index.items()) == set([
-                (("en", u"foo"), obj.id),
-                (("en-CA", u"foo"), obj.id),
-                (("fr-CA", u"foo"), obj.id)
+                (("en", "foo"), obj.id),
+                (("en-CA", "foo"), obj.id),
+                (("fr-CA", "foo"), obj.id)
             ])
 

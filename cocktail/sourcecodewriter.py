@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -11,18 +11,18 @@ class SourceCodeWriter(object):
     def __init__(self, indentation = 0):
         self.__content = []
         self.indentation = indentation
-        self.line_separator = u"\n"
+        self.line_separator = "\n"
         self.indent_str = " " * 4
 
     def __unicode__(self):
         return self.line_separator.join(
-            unicode(content)
+            str(content)
             for content in self.__content
         )
 
     def write(self, *text):
         indent_str = self.indent_str * self.indentation
-        code = u"".join(text)
+        code = "".join(text)
         lines = code.split(self.line_separator)
         for line in lines:
             self.__content.append(indent_str + line)
@@ -83,7 +83,7 @@ class SourceCodeWriter(object):
         return self.indented_block(opening, closure)
 
     def linejump(self, lines = 1):
-        for i in xrange(lines):
+        for i in range(lines):
             self.write()
 
     def __iadd__(self, content):

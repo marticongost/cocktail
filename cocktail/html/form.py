@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -146,7 +146,7 @@ class Form(Element, DataDisplay):
             hidden_button_block.set_style("left", "-1000px")
             hidden_button_block.set_style("top", "-1000px")
             hidden_button = Element(self.default_button.tag)
-            for key, value in self.default_button.attributes.iteritems():
+            for key, value in self.default_button.attributes.items():
                 hidden_button[key] = value
             hidden_button_block.append(hidden_button)
             self.insert(0, hidden_button_block)

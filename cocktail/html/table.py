@@ -1,12 +1,12 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
 @organization:	Whads/Accent SL
 @since:			October 2007
 """
-from __future__ import with_statement
+
 from cocktail.html import templates
 from cocktail.html.element import Element
 from cocktail.html.selectable import selectable
@@ -88,7 +88,7 @@ class Table(Element, CollectionDisplay):
         if self.grouping:
             self.set_member_displayed(self.grouping.member, False)
             self._grouping_member_translation = \
-                u"(" + translations(self.grouping.member) + u")"
+                "(" + translations(self.grouping.member) + ")"
             self._remove_grouping_translation = \
                 translations("cocktail.html.Table.remove_grouping")
 
@@ -193,7 +193,7 @@ class Table(Element, CollectionDisplay):
 
                     if iterator is not None:
                         try:
-                            self.__split_row_values[key] = iterator.next()
+                            self.__split_row_values[key] = next(iterator)
                         except StopIteration:
                             end = True
                         else:
@@ -239,7 +239,7 @@ class Table(Element, CollectionDisplay):
                     children = [self._grouping_member_translation]
                 ),
                 Element("a",
-                    href = u"?" + view_state(grouping = "", page = 0),
+                    href = "?" + view_state(grouping = "", page = 0),
                     class_name = "remove_grouping",
                     children = [self._remove_grouping_translation]
                 )
@@ -282,7 +282,7 @@ class Table(Element, CollectionDisplay):
                         self.__split_row_iterators[key] = iterator
 
                         try:
-                            value = iterator.next()
+                            value = next(iterator)
                         except StopIteration:
                             value = None
 
@@ -304,7 +304,7 @@ class Table(Element, CollectionDisplay):
         if parent is not None:
             raise RuntimeError("Nesting split rows not implemented yet")
 
-        if not isinstance(member, basestring):
+        if not isinstance(member, str):
             member = member.name
 
         self.__split_rows[member] = sequence_factory
@@ -382,7 +382,7 @@ class Table(Element, CollectionDisplay):
     def create_translation_label(self, language):
         label = Element("span")
         label.add_class("translation")
-        label.append(u"(" + translate_locale(language) + u")")
+        label.append("(" + translate_locale(language) + ")")
         return label
 
     def add_header_ui(self, header, column, language):

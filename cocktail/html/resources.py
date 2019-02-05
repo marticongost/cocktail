@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -7,22 +7,22 @@ u"""
 @since:			November 2007
 """
 try:
-    from cStringIO import StringIO
+    from io import StringIO
 except ImportError:
-    from StringIO import StringIO
+    from io import StringIO
 
 try:
     import sass
-except ImportError, sass_import_error:
+except ImportError as sass_import_error:
     sass = None
 
 import os
 import re
 import hashlib
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 from threading import local
 from shutil import copyfileobj
-from urlparse import urljoin
+from urllib.parse import urljoin
 from warnings import warn
 import mimetypes
 from pkg_resources import resource_filename
@@ -204,7 +204,7 @@ class Resource(object):
 
         # By extension
         else:
-            for extension, resource_type in cls.extensions.iteritems():
+            for extension, resource_type in cls.extensions.items():
                 if uri.endswith(extension):
                     break
             else:
@@ -262,7 +262,7 @@ class Resource(object):
 
     def _process_url(self, url, url_processor):
         if url_processor is not None:
-            if isinstance(url_processor, basestring):
+            if isinstance(url_processor, str):
                 url = url_processor % url
             elif callable(url_processor):
                 url = url_processor(url)
@@ -435,7 +435,7 @@ class ResourceRepositories(DictWrapper):
             resource_uri = resource_uri.strip("/")
             resource_uri_components = resource_uri.split("/")
 
-            for repo_uri, repo_path in self.itervalues():
+            for repo_uri, repo_path in self.values():
                 repo_uri_components = repo_uri.strip("/").split("/")
                 if (
                     resource_uri_components[:len(repo_uri_components)]
@@ -516,7 +516,7 @@ class ResourceSet(InstrumentedOrderedSet):
 
         if mime_type is None:
             self._match_mime_type = lambda mime_type: True
-        elif isinstance(mime_type, basestring):
+        elif isinstance(mime_type, str):
             self._match_mime_type = mime_type.__eq__
         elif callable(mime_type):
             self._match_mime_type = mime_type
@@ -532,7 +532,7 @@ class ResourceSet(InstrumentedOrderedSet):
         self.switch_param = switch_param
         InstrumentedOrderedSet.__init__(self, resources)
 
-        for key, value in kwargs.iteritems():
+        for key, value in kwargs.items():
             setattr(self, key, value)
 
     @classmethod
@@ -625,7 +625,7 @@ class ResourceAggregator(ResourceSet):
 
         try:
             src_file = self.open_resource(resource)
-        except ResourceNotFound, e:
+        except ResourceNotFound as e:
             src_file = e.path
 
         file_pub = self.file_publication
@@ -671,9 +671,9 @@ class ResourceAggregator(ResourceSet):
             if "://" not in url:
                 from cocktail.controllers import get_request_root_url
                 url = get_request_root_url().merge(url)
-            request = urllib2.Request(url)
+            request = urllib.request.Request(url)
             request.add_header("User-Agent", self.http_user_agent)
-            return urllib2.urlopen(request)
+            return urllib.request.urlopen(request)
 
         raise ValueError("Can't open %r" % resource)
 

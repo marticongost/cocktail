@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""Helper functions for translating strings into multiple languages.
+"""Helper functions for translating strings into multiple languages.
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -7,7 +7,7 @@ from decimal import Decimal
 from cocktail.modeling import ListWrapper
 from cocktail.translations.translation import get_language, iter_language_chain
 
-CA_APOSTROPHE_LETTERS = u"haàeèéiíoòóuú1"
+CA_APOSTROPHE_LETTERS = "haàeèéiíoòóuú1"
 
 def ca_apostrophe(word):
     norm_word = word.lstrip('"')
@@ -15,21 +15,21 @@ def ca_apostrophe(word):
 
 def ca_apostrophe_choose(no_apostrophe_particle, apostrophe_particle, word):
     if ca_apostrophe(word):
-        return u"%s'%s" % (apostrophe_particle, word)
+        return "%s'%s" % (apostrophe_particle, word)
     else:
-        return u"%s %s" % (no_apostrophe_particle, word)
+        return "%s %s" % (no_apostrophe_particle, word)
 
 def ca_possessive(text):
     if ca_apostrophe(text):
-        return u"d'" + text
+        return "d'" + text
     else:
-        return u"de " + text
+        return "de " + text
 
 def ca_possessive_with_article(text):
     if ca_apostrophe(text):
-        return u"de l'" + text
+        return "de l'" + text
     else:
-        return u"del " + text
+        return "del " + text
 
 def create_join_function(language, sep1, sep2):
 
@@ -46,19 +46,19 @@ def create_join_function(language, sep1, sep2):
         else:
             return ""
 
-    join.func_name = language + "_join"
+    join.__name__ = language + "_join"
     return join
 
-ca_join = create_join_function("ca", u", ", u" i ")
-ca_either = create_join_function("ca", u", ", u" o ")
-es_join = create_join_function("es", u", ", u" y ")
-es_either = create_join_function("ca", u", ", u" o ")
-en_join = create_join_function("en", u", ", u" and ")
-en_either = create_join_function("ca", u", ", u" or ")
-de_join = create_join_function("de", u", ", u" und ")
-de_either = create_join_function("ca", u", ", u" oder ")
-fr_join = create_join_function("fr", u", ", u" et ")
-fr_either = create_join_function("fr", u", ", u" ou ")
+ca_join = create_join_function("ca", ", ", " i ")
+ca_either = create_join_function("ca", ", ", " o ")
+es_join = create_join_function("es", ", ", " y ")
+es_either = create_join_function("ca", ", ", " o ")
+en_join = create_join_function("en", ", ", " and ")
+en_either = create_join_function("ca", ", ", " or ")
+de_join = create_join_function("de", ", ", " und ")
+de_either = create_join_function("ca", ", ", " oder ")
+fr_join = create_join_function("fr", ", ", " et ")
+fr_either = create_join_function("fr", ", ", " ou ")
 
 def join(sequence):
     g = globals()
@@ -80,7 +80,7 @@ def either(sequence):
 
 def plural2(count, singular, plural):
 
-    if not isinstance(count, (int, float, long, Decimal)):
+    if not isinstance(count, (int, float, Decimal)):
         count = len(count)
 
     if count == 1:

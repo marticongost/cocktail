@@ -1,10 +1,10 @@
 #-*- coding: utf-8 -*-
-u"""Utilities covering typical HTML design patterns.
+"""Utilities covering typical HTML design patterns.
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
 import re
-from itertools import izip, cycle
+from itertools import cycle
 from decimal import Decimal
 import bs4
 from cocktail.events import when
@@ -16,7 +16,7 @@ def alternate_classes(element, classes = ("odd", "even")):
     @when(element.ready_stage)
     def alternate_classes_handler(e):
         children = (child for child in element.children if child.rendered)
-        for child, cls in izip(children, cycle(classes)):
+        for child, cls in zip(children, cycle(classes)):
             child.add_class(cls)
 
 def first_last_classes(element, first_class = "first", last_class = "last"):
@@ -112,7 +112,7 @@ def add_html5_outline_classes(html):
             descend(child, level)
 
     descend(doc, None)
-    return unicode(doc)
+    return str(doc)
 
 inline_elements = {
     "b",
@@ -157,10 +157,10 @@ def serialize_value(value):
         return ""
     elif isinstance(value, URL):
         return str(value)
-    elif isinstance(value, (str, unicode)):
+    elif isinstance(value, str):
         return value
     elif isinstance(value, (int, float, Decimal)):
-        return unicode(value)
+        return str(value)
     else:
         raise ValueError("Can't serialize %r" % value)
 

@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -98,7 +98,7 @@ def _csrf_token_injection():
                 )
             )
         )
-        html = u"".join(
+        html = "".join(
             (
                 chunk.decode("utf-8")
                 if isinstance(chunk, str)

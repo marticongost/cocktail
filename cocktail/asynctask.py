@@ -1,9 +1,9 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
-from __future__ import with_statement
+
 from types import GeneratorType
 from time import time
 from threading import RLock, Thread
@@ -46,7 +46,7 @@ class TaskManager(DictWrapper):
     def remove_expired_tasks(self):
         with self.__lock:
             now = time()
-            for task in self.values():
+            for task in list(self.values()):
                 if task.completed and task.end_time - now > self.expiration:
                     self.remove_task(task)
 

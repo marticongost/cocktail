@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -44,16 +44,16 @@ class CocktailBuffetPlugin(object):
     def render(self, info, format="html", fragment=False, template=None):
         "Renders the template to a string using the provided info."
 
-        if isinstance(template, basestring):
+        if isinstance(template, str):
             element = templates.new(template)
         else:
             element = template()
 
         if self.extra_vars_func:
-            for key, value in self.extra_vars_func().iteritems():
+            for key, value in self.extra_vars_func().items():
                 setattr(element, key, value)
 
-        for key, value in info.iteritems():
+        for key, value in info.items():
             setattr(element, key, value)
 
         renderer = None

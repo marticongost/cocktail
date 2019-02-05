@@ -114,7 +114,7 @@ class CalendarPage(tuple):
 
 @translations.instances_of(CalendarPage)
 def _translate_calendar_page(page, abbreviated = False):
-    return u"%s %d" % (
+    return "%s %d" % (
         (month_abbr if abbreviated else month_name)(page[1]),
         page[0]
     )

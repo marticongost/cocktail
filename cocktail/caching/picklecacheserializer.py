@@ -1,9 +1,9 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
-from cPickle import dumps, loads
+from pickle import dumps, loads
 from base64 import encodestring, decodestring
 from cocktail.modeling import overrides
 from .cacheserializer import CacheSerializer

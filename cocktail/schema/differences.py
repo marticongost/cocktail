@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Javier Marrero
 @contact:		javier.marrero@whads.com
@@ -69,7 +69,7 @@ def diff(
                     "can't be ommitted if the two compared objects aren't "
                     "instances of the same SchemaObject derived class")
 
-    for member in schema.members().itervalues():
+    for member in schema.members().values():
 
         if exclude and exclude(member):
             continue

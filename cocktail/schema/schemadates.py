@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 Provides classes to describe members that take dates and times as values.
 
 @author:		Martí Congost

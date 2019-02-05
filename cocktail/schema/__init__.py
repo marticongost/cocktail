@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 Provides classes to describe the structure, properties and meta data of Python
 data types.
 """

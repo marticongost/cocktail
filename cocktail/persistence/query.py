@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -147,7 +147,7 @@ class Query(object):
 
     def _get_base_collection(self):
         if self.__base_collection is None:
-            return self.type.index.values()
+            return list(self.type.index.values())
         else:
             return self.__base_collection
 
@@ -188,7 +188,7 @@ class Query(object):
             return [value]
         elif isinstance(value, dict):
             return [
-                self.type[k].equal(v) for k, v in value.iteritems()
+                self.type[k].equal(v) for k, v in value.items()
             ]
         else:
             return list(value)
@@ -214,7 +214,7 @@ class Query(object):
         if value is None:
             order = []
         else:
-            if isinstance(value, (basestring, expressions.Expression)):
+            if isinstance(value, (str, expressions.Expression)):
                 value = value,
 
             order = []
@@ -251,7 +251,7 @@ class Query(object):
 
     def _normalize_order_criteria(self, criteria):
 
-        if isinstance(criteria, basestring):
+        if isinstance(criteria, str):
             if not criteria:
                 raise ValueError(
                     "An empty string is not a valid query filter"
@@ -319,7 +319,7 @@ class Query(object):
         """)
 
     def _verbose_message(self, style, *args, **kwargs):
-        print " " * 4 * self.nesting + self.styles[style](*args, **kwargs)
+        print(" " * 4 * self.nesting + self.styles[style](*args, **kwargs))
 
     # Execution
     #--------------------------------------------------------------------------
@@ -330,15 +330,15 @@ class Query(object):
         if verbose:
 
             if self.nesting:
-                print
-                heading = u"Nested query"
+                print()
+                heading = "Nested query"
                 heading_style = "nested_header"
             else:
-                heading = u"Query"
+                heading = "Query"
                 heading_style = "header"
 
             if self.description:
-                heading += u": " + self.description
+                heading += ": " + self.description
 
             self._verbose_message(heading_style, heading)
 
@@ -380,7 +380,7 @@ class Query(object):
             # Apply filters
             if verbose:
                 start = time()
-                print
+                print()
                 self._verbose_message("phase", "Applying filters")
 
             if self.__filters:
@@ -394,7 +394,7 @@ class Query(object):
 
             if verbose:
                 start = time()
-                print
+                print()
                 self._verbose_message("phase", "Applying order")
 
             # Preserve ordering when selecting items from a custom ordered
@@ -426,7 +426,7 @@ class Query(object):
         and not (self.cached and self.__cached_results_sliced):
             if verbose:
                 start = time()
-                print
+                print()
                 self._verbose_message("phase", "Applying range")
 
             dataset = self._apply_range(dataset)
@@ -443,7 +443,7 @@ class Query(object):
             self.__cached_results_sliced = _sliced
 
         if verbose:
-            print
+            print()
 
         return dataset
 
@@ -732,7 +732,7 @@ class Query(object):
         else:
             return len(self.execute(_sorted = False))
 
-    def __nonzero__(self):
+    def __bool__(self):
         if self.cached and self.__cached_length is not None:
             return bool(self.__cached_length)
 
@@ -1508,7 +1508,7 @@ def _search_resolution(self, query):
                         query = words.normalize(self.query, locale = language)
                         terms = words.split(query, locale = language)
 
-                    terms = [term + u"*" for term in terms]
+                    terms = [term + "*" for term in terms]
 
                 elif self.match_mode == "pattern":
                     search = index.search_glob
@@ -1547,10 +1547,10 @@ def _search_resolution(self, query):
                             break
 
                         if language_subset is None:
-                            language_subset = set(results.iterkeys())
+                            language_subset = set(results.keys())
                         else:
                             language_subset.intersection_update(
-                                results.iterkeys()
+                                iter(results.keys())
                             )
 
                     if language_subset is not None:
@@ -1560,7 +1560,7 @@ def _search_resolution(self, query):
                     for term in terms:
                         results = search(term)
                         if results:
-                            subset.update(results.iterkeys())
+                            subset.update(iter(results.keys()))
 
             dataset.intersection_update(subset)
             return dataset
@@ -1580,7 +1580,7 @@ def _query_translation_factory(filtered_format):
         if instance.filters:
             return filtered_format % {
                 "subject": subject,
-                "filters": u", ".join(
+                "filters": ", ".join(
                     translations(filter)
                     for filter in instance.filters
                 )

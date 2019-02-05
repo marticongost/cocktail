@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -145,7 +145,7 @@ class TemplateLoader(object):
             dependencies = set()
             self.__dependencies[name] = dependencies
 
-            for dependency in compiler.classes.keys():
+            for dependency in list(compiler.classes.keys()):
 
                 dependencies.add(dependency)
                 dependency_derivatives = self.__derivatives.get(dependency)
@@ -244,7 +244,7 @@ if __name__ == "__main__":
     from sys import argv, exit
 
     if len(argv) != 2:
-        print "Usage: %s <template file>" % argv[0]
+        print("Usage: %s <template file>" % argv[0])
         exit(1)
 
     loader = TemplateLoader()
@@ -261,5 +261,5 @@ if __name__ == "__main__":
     ).get_source()
 
     for i, line in enumerate(class_source.split("\n")):
-        print str(i + 1).rjust(5) + ": " + line
+        print(str(i + 1).rjust(5) + ": " + line)
 

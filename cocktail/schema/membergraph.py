@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -66,7 +66,7 @@ class MemberGraph(object):
     def add(self, child, replace_existing = False):
 
         # Select schema members by their name
-        if isinstance(child, basestring):
+        if isinstance(child, str):
             node_schema = self.schema
             if node_schema is None:
                 raise ValueError(
@@ -122,7 +122,7 @@ class MemberGraph(object):
         if include_self:
             yield self.__member
 
-        for child in self.__children.itervalues():
+        for child in self.__children.values():
             for descendant in child.iter_members(True):
                 yield descendant
 

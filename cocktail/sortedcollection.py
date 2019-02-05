@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""Provides a sequence sorted by a key function.
+"""Provides a sequence sorted by a key function.
 
 Written by Raymond Hettinger.
 http://code.activestate.com/recipes/577197-sortedcollection/
@@ -315,5 +315,5 @@ if __name__ == '__main__':
 
     import doctest
     from operator import itemgetter
-    print(doctest.testmod())
+    print((doctest.testmod()))
 

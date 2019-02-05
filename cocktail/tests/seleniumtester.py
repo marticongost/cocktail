@@ -10,7 +10,7 @@ A plugin that integrates Selenium with the Nose testing framework.
 import os
 import socket
 from time import time, sleep
-from urlparse import urlparse
+from urllib.parse import urlparse
 from cocktail.modeling import wrap
 from nose.plugins import Plugin
 from selenium import selenium as SeleniumSession
@@ -52,7 +52,7 @@ def _selenium_test_factory(test_func, session):
 
     wrap(test_func, wrapper)
     wrapper.description = "%s (%s)" % (
-        wrapper.func_name,
+        wrapper.__name__,
         session.browserStartCommand
     )
     return wrapper

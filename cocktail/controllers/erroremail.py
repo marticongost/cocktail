@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -14,7 +14,7 @@ from email.Utils import formatdate
 import cherrypy
 from cherrypy import _cperror
 
-TEMPLATE = u"""
+TEMPLATE = """
 <h2>Request info</h2>
 <table>
     <tr>
@@ -47,7 +47,7 @@ TEMPLATE = u"""
 </pre>
 """
 
-HEADER_TEMPLATE = PARAM_TEMPLATE = u"""
+HEADER_TEMPLATE = PARAM_TEMPLATE = """
         <tr>
             <td><strong>%s</strong></td>
             <td>%s</td>
@@ -69,16 +69,16 @@ def error_email(
     def _serialize_value(value):
         if isinstance(value, FieldStorage):
             return "FieldStorage"
-        elif isinstance(value, basestring):
+        elif isinstance(value, str):
             return _encode(value)
         else:
             return _encode(repr(value))
 
     def _encode(value):
-        if isinstance(value, unicode):
+        if isinstance(value, str):
             return value
 
-        return unicode(value, encoding, errors='replace')
+        return str(value, encoding, errors='replace')
 
     host_name = cherrypy.request.headers.get(
         "X-FORWARDED-HOST",
@@ -96,7 +96,7 @@ def error_email(
     elif callable(subject):
         subject = subject()
 
-    if isinstance(receivers, basestring):
+    if isinstance(receivers, str):
         receivers = receivers.split(",")
     receivers = set([receiver.strip() for receiver in receivers])
 
@@ -104,13 +104,13 @@ def error_email(
     tpl_params["base"] = _encode(cherrypy.request.base)
     tpl_params["path_info"] = _encode(cherrypy.request.path_info)
     tpl_params["query_string"] = _encode(cherrypy.request.query_string)
-    tpl_params["headers"] = u"".join(
+    tpl_params["headers"] = "".join(
         header_template % (_encode(k), _serialize_value(v))
         for k, v in cherrypy.request.header_list
     )
-    tpl_params["params"] = u"".join(
+    tpl_params["params"] = "".join(
         param_template % (_encode(k), _serialize_value(v))
-        for k, v in cherrypy.request.params.iteritems()
+        for k, v in cherrypy.request.params.items()
     )
     tpl_params["traceback"] = _cperror.format_exc()
 
