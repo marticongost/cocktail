@@ -110,12 +110,16 @@
 
     createFields() {
         for (let member of this.dataBinding.member.orderedMembers()) {
-            if (member[cocktail.ui.editable] != cocktail.ui.NOT_EDITABLE) {
+            if (this.shouldAddField(member)) {
                 this.addField(member);
             }
         }
         this[FIELDS_READY] = true;
         cocktail.ui.trigger(this, "fieldsReady");
+    }
+
+    shouldAddField(member) {
+        return member[cocktail.ui.editable] != cocktail.ui.NOT_EDITABLE;
     }
 
     awaitFields() {
