@@ -7,11 +7,17 @@ from decimal import Decimal
 from cocktail.modeling import ListWrapper
 from cocktail.translations.translation import get_language, iter_language_chain
 
-CA_APOSTROPHE_LETTERS = u"haàeèéiíoòóuú1"
+CA_APOSTROPHE_LETTERS = u"haàeèéiíoòóuú"
 
 def ca_apostrophe(word):
-    norm_word = word.lstrip('"')
-    return norm_word and norm_word[0].lower() in CA_APOSTROPHE_LETTERS
+    norm_word = word.lstrip('"').lower()
+    return (
+        norm_word
+        and (
+            norm_word[0] in CA_APOSTROPHE_LETTERS
+            or norm_word in ("1", "11")
+        )
+    )
 
 def ca_apostrophe_choose(no_apostrophe_particle, apostrophe_particle, word):
     if ca_apostrophe(word):
