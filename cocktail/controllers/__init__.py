@@ -1,11 +1,7 @@
 #-*- coding: utf-8 -*-
-"""
-Utilities for writing application controllers.
+"""Utilities for writing application controllers.
 
-@author:		Martí Congost
-@contact:		marti.congost@whads.com
-@organization:	Whads/Accent SL
-@since:			July 2008
+.. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
 from .request import (
     get_request_url,
@@ -13,24 +9,21 @@ from .request import (
     get_request_url_builder,
     get_request_root_url_builder
 )
-from cocktail.controllers.requestproperty import (
+from .requestproperty import (
     request_property,
     clear_request_properties
 )
-from cocktail.controllers.requesthandler import RequestHandler
-from cocktail.controllers.filepublication import (
-    FilePublication,
-    file_publication
-)
-from cocktail.controllers.static import (
+from .requesthandler import RequestHandler
+from .filepublication import FilePublication, file_publication
+from .static import (
     file_publisher,
     folder_publisher,
     serve_file
 )
-from cocktail.controllers.controller import Controller
-from cocktail.controllers.httpmethodcontroller import HTTPMethodController
-from cocktail.controllers.formprocessor import FormProcessor, Form
-from cocktail.controllers.dispatcher import (
+from .controller import Controller
+from .httpmethodcontroller import HTTPMethodController
+from .formprocessor import FormProcessor, Form
+from .dispatcher import (
     Dispatcher,
     StopRequest,
     context
@@ -48,13 +41,10 @@ from cocktail.controllers.parameters import (
     CookieParameterSource,
     SessionParameterSource
 )
-from cocktail.controllers.pagination import Pagination
-from cocktail.controllers.fileupload import FileUpload
-from cocktail.controllers.sessions import session
-import cocktail.controllers.grouping
-import cocktail.controllers.erroremail
-import cocktail.controllers.handlerprofiler
-from cocktail.controllers.cached import Cached
+from .pagination import Pagination
+from .fileupload import FileUpload
+from .sessions import session
+from .cached import Cached
 from .csrfprotection import (
     CSRFProtection,
     CSRFTokenError,
