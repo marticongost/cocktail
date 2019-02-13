@@ -429,7 +429,7 @@ class ProductExpression(Expression):
 
 
 class DivisionExpression(Expression):
-    op = operator.div
+    op = operator.truediv
 
 
 class AndExpression(Expression):

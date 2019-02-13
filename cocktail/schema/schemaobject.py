@@ -105,6 +105,9 @@ class SchemaClass(EventHub, Schema):
             bundle_path = cls.full_name.rsplit(".", 1)[0]
             translations.request_bundle(bundle_path)
 
+    def __hash__(self):
+        return EventHub.__hash__(self)
+
     def inherit(cls, *bases):
 
         if cls._declared:
@@ -748,9 +751,6 @@ class SchemaObject(object, metaclass=SchemaClass):
                 label += " (%s)" % trans
         except NoActiveLanguageError:
             pass
-
-        if isinstance(label, str):
-            label = label.encode("utf-8")
 
         return label
 

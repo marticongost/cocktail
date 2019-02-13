@@ -160,7 +160,7 @@ class EventSlot(SynchronizedList):
             if event_info.consumed:
                 break
 
-        for next_slot in self.__next__:
+        for next_slot in self.next:
             next_slot(_event_info = event_info)
 
         return event_info

@@ -825,21 +825,51 @@ class Comparator(object):
         self.value = value
         self.reversed = reversed
 
-    def __cmp__(self, other):
+    def __eq__(self, other):
+        return self.value == other.value
+
+    def __ne__(self, other):
+        return self.value != other.value
+
+    def __gt__(self, other):
+
         a = self.value
         b = other.value
 
         if self.reversed:
             a, b = b, a
 
-        if a is None and b is None:
-            return 0
-        elif a is None:
-            return -1
-        elif b is None:
-            return 1
+        return a is not None and (b is None or a > b)
 
-        return cmp(a, b)
+    def __ge__(self, other):
+
+        a = self.value
+        b = other.value
+
+        if self.reversed:
+            a, b = b, a
+
+        return a == b or (a is not None and (b is None or a > b))
+
+    def __lt__(self, other):
+
+        a = self.value
+        b = other.value
+
+        if self.reversed:
+            a, b = b, a
+
+        return b is not None and (a is None or a < b)
+
+    def __le__(self, other):
+
+        a = self.value
+        b = other.value
+
+        if self.reversed:
+            a, b = b, a
+
+        return a == b or (b is not None and (a is None or a < b))
 
 
 # Custom expression resolution

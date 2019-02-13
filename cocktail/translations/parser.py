@@ -119,7 +119,11 @@ class TranslationsFileParser(object):
     def __iter__(self):
 
         for n, line in enumerate(self.__file):
-            line = line.decode(self.encoding).rstrip()
+
+            if isinstance(line, bytes):
+                line = line.decode(self.encoding)
+
+            line = line.rstrip()
             self.__current_line = line
             self.__current_line_number = n + 1
 
@@ -393,7 +397,7 @@ class TranslationsFileParser(object):
         if is_constant and not requirements:
             value = parts[0][0]
         else:
-            func_name = self.__node.__name__
+            func_name = self.__node.func_name
             func_args = self.__node.func_args or "*args, **kwargs"
             code = "def %s(%s):\n    return " % (func_name, func_args)
             glue = "(" if requirements else ""
@@ -465,7 +469,7 @@ class TranslationsFileNode(object):
 
         if self.switch_condition:
             indent = " " * 4
-            code_lines = ["def %s(%s):" % (self.__name__, self.func_args)]
+            code_lines = ["def %s(%s):" % (self.func_name, self.func_args)]
             code_lines.append("%s__args, __kwargs = arguments()" % indent)
             code_lines.append("%s__value = %s" % (indent, self.switch_condition))
 
@@ -497,14 +501,14 @@ class TranslationsFileNode(object):
             yield (
                 self.path,
                 None,
-                context[self.__name__]
+                context[self.func_name]
             )
         elif self.reused_key:
             code = (
                 "def %s(*args, **kwargs):\n"
                 "    return translations(%s, *args, **kwargs)"
                 % (
-                    self.__name__,
+                    self.func_name,
                     self.reused_key
                 )
             )
@@ -512,7 +516,7 @@ class TranslationsFileNode(object):
             yield (
                 self.path,
                 None,
-                context[self.__name__]
+                context[self.func_name]
             )
         else:
             for locale, values in self.definitions.items():
@@ -535,7 +539,7 @@ class TranslationsFileSyntaxError(Exception):
             % (
                 file_path or "<?>",
                 line_number,
-                line.strip().encode("utf-8")
+                line.strip()
             )
             + (". " + reason if reason else "")
         )

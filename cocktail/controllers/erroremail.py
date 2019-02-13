@@ -10,7 +10,7 @@ import sys
 import smtplib
 from cgi import FieldStorage
 from email.mime.text import MIMEText
-from email.Utils import formatdate
+from email.utils import formatdate
 import cherrypy
 from cherrypy import _cperror
 
@@ -65,7 +65,7 @@ def error_email(
     header_template = HEADER_TEMPLATE,
     param_template = PARAM_TEMPLATE,
     encoding = "utf-8"):
-    
+
     def _serialize_value(value):
         if isinstance(value, FieldStorage):
             return "FieldStorage"

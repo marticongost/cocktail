@@ -78,13 +78,6 @@ from .csrfprotection import (
     set_csrf_protection
 )
 
-# The ZODB debugger needs collections.Counter, and therefore is not available
-# under Python 2.6
-try:
-    import cocktail.controllers.zodbdebuggertool
-except ImportError:
-    pass
-
 import cherrypy
 
 def apply_forwarded_url_scheme():

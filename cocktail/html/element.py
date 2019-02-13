@@ -29,7 +29,43 @@ from .utils import serialize_value
 default = object()
 
 
-class Element(Invalidable):
+class ElementMetaClass(EventHub):
+
+    def __init__(cls, name, bases, members):
+        EventHub.__init__(cls, name, bases, members)
+        cls._view_name = members.get("_view_name")
+
+        if "overlays_enabled" not in members:
+            cls.overlays_enabled = True
+
+        # Aggregate CSS classes from base types
+        cls._classes = list(cls.__mro__)[:-1]
+        cls._classes.reverse()
+        css_classes = []
+
+        if "styled_class" not in members:
+            cls.styled_class = True
+
+        for c in cls._classes:
+            if getattr(c, "styled_class", False):
+                css_classes.append(c.__name__)
+
+        cls.class_css = css_classes and " ".join(css_classes) or None
+
+        # Aggregate cache_tags
+        if "class_provides_cache_tag" not in members:
+            cls.class_provides_cache_tag = True
+
+        cls._class_cache_tags = set()
+        for c in cls.__mro__:
+            if getattr(c, "class_provides_cache_tag", False):
+                cls._class_cache_tags.add(c.view_name)
+
+        # Load translation bundles
+        translations.request_bundle(cls.view_name.lower())
+
+
+class Element(Invalidable, metaclass=ElementMetaClass):
     """Base class for all presentation components.
 
     An element provides an abstraction over a piece of HTML content. It can be
@@ -225,41 +261,6 @@ class Element(Invalidable):
             apply_overlays(self)
 
         self._build()
-
-    class __metaclass__(EventHub):
-
-        def __init__(cls, name, bases, members):
-            EventHub.__init__(cls, name, bases, members)
-            cls._view_name = members.get("_view_name")
-
-            if "overlays_enabled" not in members:
-                cls.overlays_enabled = True
-
-            # Aggregate CSS classes from base types
-            cls._classes = list(cls.__mro__)[:-1]
-            cls._classes.reverse()
-            css_classes = []
-
-            if "styled_class" not in members:
-                cls.styled_class = True
-
-            for c in cls._classes:
-                if getattr(c, "styled_class", False):
-                    css_classes.append(c.__name__)
-
-            cls.class_css = css_classes and " ".join(css_classes) or None
-
-            # Aggregate cache_tags
-            if "class_provides_cache_tag" not in members:
-                cls.class_provides_cache_tag = True
-
-            cls._class_cache_tags = set()
-            for c in cls.__mro__:
-                if getattr(c, "class_provides_cache_tag", False):
-                    cls._class_cache_tags.add(c.view_name)
-
-            # Load translation bundles
-            translations.request_bundle(cls.view_name.lower())
 
     _view_name = None
 

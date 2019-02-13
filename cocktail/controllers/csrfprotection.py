@@ -7,7 +7,7 @@ from types import GeneratorType
 from functools import wraps
 import cherrypy
 from json import dumps
-from string import letters, digits
+from string import ascii_letters, digits
 from cocktail.events import Event
 from cocktail.stringutils import random_string, normalize_indentation as ni
 from cocktail.html import resource_repositories
@@ -141,7 +141,7 @@ class CSRFProtection(object):
     """
     session_key = "cocktail.csrf_protection_token"
     cookie_name = session_key
-    token_characters = letters + digits
+    token_characters = ascii_letters + digits
     token_length = 40
     field = "__cocktail_csrf_token"
     header = "X-Cocktail-CSRF-Token"

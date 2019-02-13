@@ -4,20 +4,20 @@
 .. moduleauthor:: Jordi Fernández <jordi.fernandez@whads.com>
 """
 import pickle
-from io import StringIO
+from io import BytesIO
 from cocktail.pkgutils import get_full_name
 from cocktail.schema import Schema, Member
 from cocktail.persistence.persistentobject import PersistentObject
 
 def dumps(obj):
-    src = StringIO()
+    src = BytesIO()
     p = pickle.Pickler(src)
     p.persistent_id = _persistent_id
     p.dump(obj)
     return src.getvalue()
 
 def loads(datastream):
-    dst = StringIO(datastream)
+    dst = BytesIO(datastream)
     up = pickle.Unpickler(dst)
     up.persistent_load = _persistent_load
     return up.load()

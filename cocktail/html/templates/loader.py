@@ -132,7 +132,7 @@ class TemplateLoader(object):
         if source_file is not None:
 
             # Read the template's source
-            f = file(source_file, "r")
+            f = open(source_file, "r")
             try:
                 source = f.read()
             finally:

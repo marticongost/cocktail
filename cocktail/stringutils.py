@@ -5,7 +5,7 @@
 """
 import re
 from random import choice
-from string import letters, digits
+from string import ascii_letters, digits
 from html.parser import HTMLParser
 from html.entities import name2codepoint
 
@@ -15,7 +15,7 @@ def create_translation_map(pairs):
 
     translation_map = {}
 
-    iteritems = getattr(pairs, "iteritems", None)
+    iteritems = getattr(pairs, "items", None)
     if iteritems is not None:
         pairs = iteritems()
 
@@ -62,7 +62,7 @@ def normalize(string, normalization_map = None):
 
     return string
 
-def random_string(length, source = letters + digits + "!?.-$#&@*"):
+def random_string(length, source = ascii_letters + digits + "!?.-$#&@*"):
     return "".join(choice(source) for i in range(length))
 
 def normalize_indentation(string):
