@@ -119,15 +119,15 @@ def get_full_name(obj):
                     name = prefix + obj.__name__
                 else:
                     # Methods
-                    im_func = getattr(obj, "im_func", None)
-                    im_class = getattr(obj, "im_class", None)
+                    func = getattr(obj, "__func__", None)
+                    self = getattr(obj, "__self__", None)
 
-                    if im_func and im_class:
+                    if func and self:
                         name = "%s%s.%s" \
-                            % (prefix, im_class.__name__, im_func.__name__)
+                            % (prefix, self.__class__.__name__, func.__name__)
                     else:
                         # Functions
-                        func_name = getattr(obj, "func_name", None)
+                        func_name = getattr(obj, "__name__", None)
 
                         if func_name:
                             name = prefix + func_name
