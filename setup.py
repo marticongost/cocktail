@@ -10,7 +10,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = "cocktail",
-    version = "1.13b1",
+    version = "2.0a1",
     author = "Whads/Accent SL",
     author_email = "tech@whads.com",
     description = """A tasty mix of python web development utilities.""",
@@ -49,12 +49,10 @@ setup(
     },
     packages = find_packages(),
     include_package_data = True,
-
     # Cocktail can't yet access view resources (images, style sheets, client
     # side scripts, etc) that are packed inside a zipped egg, so distribution
     # in zipped form is disabled
     zip_safe = False,
-
     entry_points = {
         "python.templating.engines":
         ["cocktail=cocktail.html.templates.buffetplugin:CocktailBuffetPlugin"]
