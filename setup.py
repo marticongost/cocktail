@@ -40,7 +40,6 @@ setup(
         "cherrypy==3.1.2",
         "buffet>=1.0",
         "nose",
-        "pyExcelerator",
         "Beaker",
         "BeautifulSoup4",
         "lxml",
