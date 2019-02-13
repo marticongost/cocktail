@@ -3,10 +3,8 @@
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
-from operator import neg
+from functools import total_ordering
 from persistent import Persistent
-from BTrees.OOBTree import OOBTree, OOTreeSet
-from cocktail.modeling import overrides
 
 undefined = object()
 
@@ -259,7 +257,7 @@ class Index(Persistent):
 
         :return: An iterable sequence containing the keys defined by the index.
         """
-        return list(self.keys())
+        return self.keys()
 
     def __bool__(self):
         """Determines if the index is empty.
@@ -290,236 +288,8 @@ class Index(Persistent):
         return self.__contains__(key)
 
 
-class SingleValueIndex(Index):
-    """An `index <Index>` where each key may only have one single value."""
-
-    accepts_multiple_values = False
-
-    @overrides(Index.__init__)
-    def __init__(self, pairs = None):
-        self.__items = OOBTree()
-        self.__descending_items = OOBTree()
-        Index.__init__(self, pairs)
-
-    @overrides(Index.add)
-    def add(self, key, value):
-        self.__items[key] = value
-        self.__descending_items[Descending(key)] = value
-
-    @overrides(Index.remove)
-    def remove(self, key, value = undefined):
-
-        if value is not undefined \
-        and self.get(key, undefined) != value:
-            return
-
-        if value is undefined:
-            try:
-                del self.__items[key]
-                del self.__descending_items[key]
-            except KeyError:
-                pass
-
-    @overrides(Index.items)
-    def items(self,
-        min = undefined,
-        max = undefined,
-        exclude_min = False,
-        exclude_max = False,
-        descending = False):
-
-        min = self.__boundary(min, descending)
-        max = self.__boundary(max, descending)
-
-        if descending:
-            min, max = max, min
-            exclude_min, exclude_max = exclude_max, exclude_min
-
-            for desc_key, value in self.__descending_items.iteritems(
-                min = min,
-                max = max,
-                excludemin = exclude_min,
-                excludemax = exclude_max
-            ):
-                yield (desc_key.value, value)
-        else:
-            for pair in self.__items.iteritems(
-                min = min,
-                max = max,
-                excludemin = exclude_min,
-                excludemax = exclude_max
-            ):
-                yield pair
-
-    def __boundary(self, boundary, descending):
-        if boundary is undefined:
-            return None
-        return Descending(boundary) if descending else boundary
-
-    @overrides(Index.min_key)
-    def min_key(self, exclude_none = False):
-        if exclude_none:
-            for key in list(self.keys()):
-                if key is not None:
-                    return key
-        else:
-            return self.__items.minKey()
-
-    @overrides(Index.max_key)
-    def max_key(self):
-        return self.__descending_items.minKey().value
-
-    @overrides(Index.__len__)
-    def __len__(self):
-        return len(self.__items)
-
-    @overrides(Index.__nonzero__)
-    def __nonzero__(self):
-        return bool(self.__items)
-
-    @overrides(Index.__contains__)
-    def __contains__(self, key):
-        return key in self.__items
-
-    def __getitem__(self, key):
-        """Get the value for the specified key.
-
-        :param key: The key to retrieve the value for.
-
-        :return: The value for the specified key.
-
-        :raise KeyError: Raised if the indicated key isn't present in the
-            index.
-        """
-        if isinstance(key, slice):
-            raise ValueError(
-                "Slicing an index is not supported; use keys()/values() "
-                "instead")
-        else:
-            return self.__items[key]
-
-    def get(self, key, default = None):
-        """Get the value for the specified key, returning `default` if the key
-        is undefined.
-
-        :param key: The key to retrieve the value for.
-        :param default: The value that should be returned if the key is not
-            defined by the index.
-
-        :return: The value for the specified key.
-        """
-        return self.__items.get(key, default)
-
-
-class MultipleValuesIndex(Index):
-    """An `index <Index>` where keys may be defined multiple times."""
-
-    accepts_multiple_values = True
-
-    @overrides(Index.__init__)
-    def __init__(self, pairs = None):
-        self.__items = OOTreeSet()
-        self.__descending_items = OOTreeSet()
-        Index.__init__(self, pairs)
-
-    @overrides(Index.add)
-    def add(self, key, value):
-        pair = (key, value)
-        self.__items.insert(pair)
-        self.__descending_items.insert(Descending(pair))
-
-    @overrides(Index.remove)
-    def remove(self, key, value = undefined):
-        if value is undefined:
-            for value in list(self.values(key = key)):
-                self._remove_pair(key, value)
-        else:
-            self._remove_pair(key, value)
-
-    def _remove_pair(self, key, value):
-        pair = (key, value)
-        try:
-            self.__items.remove(pair)
-            self.__descending_items.remove(pair)
-        except KeyError:
-            pass
-
-    @overrides(Index.items)
-    def items(self,
-        min = undefined,
-        max = undefined,
-        exclude_min = False,
-        exclude_max = False,
-        descending = False):
-
-        min = self.__boundary(min, exclude_min, 1, descending)
-        max = self.__boundary(max, exclude_max, -1, descending)
-
-        if descending:
-            min, max = max, min
-            exclude_min, exclude_max = exclude_max, exclude_min
-
-            for desc_pair in self.__descending_items.keys(
-                min = min,
-                max = max
-            ):
-                yield desc_pair.value
-        else:
-            for pair in self.__items.keys(
-                min = min,
-                max = max
-            ):
-                yield pair
-
-    def __boundary(self, boundary, excluded, tie, descending):
-        if boundary is undefined:
-            return None
-        return PairComparator(boundary, tie if excluded else -tie)
-
-    @overrides(Index.min_key)
-    def min_key(self, exclude_none = False):
-        if exclude_none:
-            for key in list(self.keys()):
-                if key is not None:
-                    return key
-        else:
-            return self.__items.minKey()[0]
-
-    @overrides(Index.max_key)
-    def max_key(self):
-        return self.__descending_items.minKey().value[0]
-
-    @overrides(Index.__len__)
-    def __len__(self):
-        return len(self.__items)
-
-    @overrides(Index.__nonzero__)
-    def __nonzero__(self):
-        return bool(self.__items)
-
-    @overrides(Index.__contains__)
-    def __contains__(self, key):
-        for value in self.values(key = key):
-            return True
-
-        return False
-
-
-class PairComparator(object):
-    """A helper class used by `MultipleValuesIndex` to obtain entry subsets."""
-
-    def __init__(self, boundary, tie = 0):
-        self.boundary = boundary
-        self.tie = tie
-
-    def __repr__(self):
-        return "PairComparator(%r, %r)" % (self.boundary, self.tie)
-
-    def __cmp__(self, pair):
-        return cmp(self.boundary, pair[0]) or self.tie
-
-
-class Descending(object):
+@total_ordering
+class Descending:
     """A helper class for indexing keys in descending order."""
 
     def __init__(self, value):
@@ -528,9 +298,20 @@ class Descending(object):
     def __repr__(self):
         return "Descending(%r)" % (self.value,)
 
-    def __cmp__(self, other):
+    def __lt__(self, other):
+
         if isinstance(other, Descending):
             other = other.value
 
-        return -cmp(self.value, other)
+        if other is None:
+            return False
+
+        return self.value > other
+
+    def __eq__(self, other):
+
+        if isinstance(other, Descending):
+            other = other.value
+
+        return self.value == other
 

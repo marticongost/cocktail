@@ -46,11 +46,9 @@ from cocktail.persistence.incremental_id import (
     set_incremental_id_slice_size,
     incremental_id_slice_size_context
 )
-from cocktail.persistence.index import (
-    Index,
-    SingleValueIndex,
-    MultipleValuesIndex
-)
+from cocktail.persistence.index import Index
+from cocktail.persistence.singlevalueindex import SingleValueIndex
+from cocktail.persistence.multiplevaluesindex import MultipleValuesIndex
 from cocktail.persistence import indexing
 from cocktail.persistence import fulltextsearch
 from cocktail.persistence.maxvalue import MaxValue

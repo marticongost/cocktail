@@ -3,7 +3,7 @@
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
-from zope.interface import implements
+from zope.interface import implementer
 from zope.index.text.interfaces import IPipelineElement
 from zope.index.text.lexicon import Lexicon
 from zope.index.text.okapiindex import OkapiIndex
@@ -20,8 +20,8 @@ from cocktail.persistence.persistentobject import (
 )
 
 
+@implementer(IPipelineElement)
 class FullTextIndexProcessor(object):
-    implements(IPipelineElement)
     stemming = True
 
     def __init__(self, locale, stemming):
