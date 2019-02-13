@@ -36,7 +36,6 @@ setup(
         "zodbupdate",
         "zope.index",
         "cherrypy",
-        "buffet>=1.0",
         "nose",
         "Beaker",
         "BeautifulSoup4",
