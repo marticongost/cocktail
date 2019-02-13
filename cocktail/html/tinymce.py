@@ -7,7 +7,7 @@
 @since:			September 2008
 """
 from warnings import warn
-from simplejson import dumps
+from json import dumps
 from cocktail.translations import get_language, directionality
 from cocktail.html import Element, templates
 

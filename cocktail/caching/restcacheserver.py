@@ -4,7 +4,7 @@
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
 from base64 import urlsafe_b64decode
-from simplejson import loads, dumps
+from json import loads, dumps
 import cherrypy
 from cocktail.events import event_handler
 from cocktail.controllers import Controller, Dispatcher

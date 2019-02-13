@@ -33,7 +33,6 @@ setup(
     ],
     install_requires = [
         "frozendict",
-        "simplejson",
         "transaction==1.1.1",
         "ZODB3==3.10.5",
         "zodbupdate==0.5",

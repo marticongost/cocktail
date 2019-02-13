@@ -1,7 +1,7 @@
 #-*- coding: utf-8 -*-
 from time import time
 from warnings import warn
-from simplejson import dumps
+from json import dumps
 from cocktail.modeling import (
     classgetter,
     empty_list,
