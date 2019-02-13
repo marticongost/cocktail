@@ -5,7 +5,7 @@
 """
 from httplib2 import Http
 from base64 import urlsafe_b64encode
-from simplejson import loads, dumps
+from json import loads, dumps
 from cocktail.modeling import overrides
 from .exceptions import CacheKeyError
 from .cachestorage import CacheStorage

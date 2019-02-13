@@ -3,7 +3,7 @@
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
-from simplejson import dumps
+from json import dumps
 from cocktail.translations import translations, get_language, directionality
 from cocktail.html.element import Element, Content
 from cocktail.html.ieconditionalcomment import IEConditionalComment, IEWrapper

@@ -5,7 +5,7 @@
 """
 from abc import ABCMeta, abstractmethod
 import cherrypy
-from simplejson import dumps
+from json import dumps
 from cocktail import schema
 from cocktail.translations import words, set_language
 from cocktail.schema.expressions import Self

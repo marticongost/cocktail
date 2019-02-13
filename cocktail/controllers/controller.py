@@ -8,7 +8,7 @@
 """
 from warnings import warn
 import cherrypy
-from simplejson import dumps
+from json import dumps
 from cocktail.modeling import ListWrapper, cached_getter
 from cocktail.events import Event
 from cocktail.controllers.dispatcher import StopRequest, context
