@@ -60,9 +60,7 @@ setup(
 
     entry_points = {
         "python.templating.engines":
-        ["cocktail=cocktail.html.templates.buffetplugin:CocktailBuffetPlugin"],
-        "nose.plugins.0.10":
-        ["selenium_tester=cocktail.tests.seleniumtester:SeleniumTester"]
+        ["cocktail=cocktail.html.templates.buffetplugin:CocktailBuffetPlugin"]
     }
 )
 
