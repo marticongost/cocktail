@@ -428,7 +428,8 @@ class OrderTestCase(TempStorageMixin, TestCase):
             product_name = String(
                 unique = True,
                 indexed = True,
-                required = True
+                required = True,
+                descriptive = True
             )
             price = Integer(indexed = True)
             category = String(indexed = True)
@@ -506,33 +507,18 @@ class OrderTestCase(TempStorageMixin, TestCase):
 
     def test_single_indexed_unique_member(self):
 
-        a = self.Product()
-        a.product_name = "Wine"
-        a.insert()
+        a = self.Product.new(product_name = "Wine")
+        b = self.Product.new(product_name = "Cheese")
+        c = self.Product.new(product_name = "Ham")
+        d = self.Product.new(product_name = "Eggs")
+        e = self.Product.new()
+        f = self.Product.new()
 
-        b = self.Product()
-        b.product_name = "Cheese"
-        b.insert()
+        results = list(self.Product.select(order = "product_name"))
+        assert results == [b, d, c, a]
 
-        c = self.Product()
-        c.product_name = "Ham"
-        c.insert()
-
-        d = self.Product()
-        d.product_name = "Eggs"
-        d.insert()
-
-        e = self.Product()
-        e.insert()
-
-        results = [product
-                   for product in self.Product.select(order = "product_name")]
-        self.assertEqual([e, b, d, c, a], results)
-
-        results = [product
-                   for product in self.Product.select(order = "-product_name")]
-        results.reverse()
-        self.assertEqual([e, b, d, c, a], results)
+        results = list(self.Product.select(order = "-product_name"))
+        assert results == [a, c, d, b]
 
     def test_multiple_indexed_members(self):
 

@@ -13,12 +13,11 @@ from cocktail.stringutils import normalize
 from cocktail.events import when, Event
 from cocktail.translations import iter_language_chain, descend_language_tree
 from cocktail import schema
-from cocktail.persistence.datastore import datastore
-from cocktail.persistence.index import SingleValueIndex, MultipleValuesIndex
-from cocktail.persistence.persistentobject import (
-    PersistentObject, PersistentClass
-)
-from cocktail.persistence.utils import is_broken
+from .datastore import datastore
+from .singlevalueindex import SingleValueIndex
+from .multiplevaluesindex import MultipleValuesIndex
+from .persistentobject import PersistentObject, PersistentClass
+from .utils import is_broken
 
 # Index properties
 #------------------------------------------------------------------------------
@@ -26,6 +25,7 @@ from cocktail.persistence.utils import is_broken
 schema.expressions.Expression.index = None
 schema.Member.indexed = False
 schema.Member.index_type = OOBTree
+schema.Integer.index_type = IOBTree
 
 PersistentObject.indexed = True
 
@@ -70,19 +70,6 @@ def _set_index_key(self, index_key):
 
 schema.Member._index_key = None
 schema.Member.index_key = property(_get_index_key, _set_index_key)
-
-def _get_integer_index_type(self):
-    return self._index_type \
-        or (IOBTree if self.required else OOBTree)
-
-def _set_integer_index_type(self, index_type):
-    self._index_type = index_type
-
-schema.Integer._index_type = None
-schema.Integer.index_type = property(
-    _get_integer_index_type,
-    _set_integer_index_type
-)
 
 def _get_persistent_class_keys(cls):
 
@@ -423,6 +410,9 @@ def _handle_removing_translation(event):
                                 break
 
 def add_index_entry(obj, member, value, language = None):
+
+    if value is None and not member.index.accepts_multiple_values:
+        return
 
     if is_broken(obj) or is_broken(value):
         return

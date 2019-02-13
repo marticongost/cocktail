@@ -33,10 +33,9 @@ setup(
     ],
     install_requires = [
         "frozendict",
-        "transaction==1.1.1",
-        "ZODB3==3.10.5",
-        "zodbupdate==0.5",
-        "zope.index==3.6.1",
+        "ZODB",
+        "zodbupdate",
+        "zope.index",
         "cherrypy==3.1.2",
         "buffet>=1.0",
         "nose",

@@ -10,13 +10,13 @@ from cocktail.tests.persistence.tempstoragemixin import TempStorageMixin
 class MultipleValuesIndexTestCase(TestCase):
 
     pairs = (
-        (1, "foo"),
-        (2, "bar"),
-        (2, "bar2"),
-        (3, "spam"),
-        (4, "sprunge"),
-        (4, "sprunge2"),
-        (4, "sprunge3")
+        ("A", 1),
+        ("B", 2),
+        ("B", 3),
+        ("C", 4),
+        ("D", 5),
+        ("D", 6),
+        ("D", 7)
     )
 
     keys = []
@@ -34,6 +34,11 @@ class MultipleValuesIndexTestCase(TestCase):
 
     def assert_range(self, expected_items, **kwargs):
 
+        # Items
+        from cocktail.persistence.multiplevaluesindex import Entry
+        expected_items = [Entry(*item) for item in expected_items]
+        assert list(self.index.items(**kwargs)) == expected_items
+
         # Keys
         expected_keys = [key for key, value in expected_items]
         assert list(self.index.keys(**kwargs)) == expected_keys
@@ -42,14 +47,9 @@ class MultipleValuesIndexTestCase(TestCase):
         expected_values = [value for key, value in expected_items]
         assert list(self.index.values(**kwargs)) == expected_values
 
-        # Items
-        expected_items = list(expected_items)
-        assert list(self.index.items(**kwargs)) == expected_items
-
         # Descending keys
         kwargs["descending"] = True
         expected_keys.reverse()
-        rkeys = list(self.index.keys(**kwargs))
         assert list(self.index.keys(**kwargs)) == expected_keys
 
         # Descending values
@@ -72,45 +72,53 @@ class MultipleValuesIndexTestCase(TestCase):
 
     def test_supports_ranges_with_included_min(self):
         self.assert_range(
-            [(2, "bar"),
-             (2, "bar2"),
-             (3, "spam"),
-             (4, "sprunge"),
-             (4, "sprunge2"),
-             (4, "sprunge3")],
-            min = 2, exclude_min = False)
+            [("B", 2),
+             ("B", 3),
+             ("C", 4),
+             ("D", 5),
+             ("D", 6),
+             ("D", 7)],
+            min = "B",
+            exclude_min = False
+        )
 
     def test_supports_ranges_with_excluded_min(self):
         self.assert_range(
-            [(3, "spam"),
-             (4, "sprunge"),
-             (4, "sprunge2"),
-             (4, "sprunge3")],
-            min = 2, exclude_min = True)
+            [("C", 4),
+             ("D", 5),
+             ("D", 6),
+             ("D", 7)],
+            min = "B",
+            exclude_min = True
+        )
 
     def test_supports_ranges_with_included_max(self):
         self.assert_range(
-            [(1, "foo"),
-             (2, "bar"),
-             (2, "bar2"),
-             (3, "spam")],
-            max = 3, exclude_max = False)
+            [("A", 1),
+             ("B", 2),
+             ("B", 3),
+             ("C", 4)],
+            max = "C",
+            exclude_max = False
+        )
 
     def test_supports_ranges_with_excluded_max(self):
         self.assert_range(
-            [(1, "foo"),
-             (2, "bar"),
-             (2, "bar2")],
-            max = 3, exclude_max = True)
+            [("A", 1),
+             ("B", 2),
+             ("B", 3)],
+            max = "C",
+            exclude_max = True
+        )
 
     def test_supports_ranges_with_both_min_and_max(self):
         self.assert_range(
-            [(2, "bar"),
-             (2, "bar2"),
-             (3, "spam")],
-            min = 2,
+            [("B", 2),
+             ("B", 3),
+             ("C", 4)],
+            min = "B",
             exclude_min = False,
-            max = 3,
+            max = "C",
             exclude_max = False
         )
 
@@ -118,29 +126,30 @@ class MultipleValuesIndexTestCase(TestCase):
         key_count = len(self.keys)
         assert len(self.index) == key_count
 
-        new_key = self.keys[-1] + 1
-        self.index.add(new_key, "new_value")
+        new_key = "Z"
+        new_value = 1000
+        self.index.add(new_key, new_value)
         assert len(self.index) == key_count + 1
 
-        self.index.remove(new_key, "new_value")
+        self.index.remove(new_key, new_value)
         assert len(self.index) == key_count
 
     def test_can_retrieve_max_key(self):
-        assert self.index.max_key() == 4
+        assert self.index.max_key() == "D"
 
     def test_can_retrieve_min_key(self):
-        assert self.index.min_key() == 1
+        assert self.index.min_key() == "A"
 
 
 class SingleValueIndexTestCase(TestCase):
 
     pairs = (
-        (1, "foo"),
-        (2, "bar"),
-        (3, "spam"),
-        (4, "sprunge"),
-        (5, "hum"),
-        (6, "krong")
+        ("A", 1),
+        ("B", 2),
+        ("C", 3),
+        ("D", 4),
+        ("E", 5),
+        ("F", 6)
     )
 
     keys = []
@@ -196,42 +205,42 @@ class SingleValueIndexTestCase(TestCase):
 
     def test_supports_ranges_with_included_min(self):
         self.assert_range(
-            [(2, "bar"),
-             (3, "spam"),
-             (4, "sprunge"),
-             (5, "hum"),
-             (6, "krong")],
-            min = 2, exclude_min = False)
+            [("B", 2),
+             ("C", 3),
+             ("D", 4),
+             ("E", 5),
+             ("F", 6)],
+            min = "B", exclude_min = False)
 
     def test_supports_ranges_with_excluded_min(self):
         self.assert_range(
-            [(3, "spam"),
-             (4, "sprunge"),
-             (5, "hum"),
-             (6, "krong")],
-            min = 2, exclude_min = True)
+            [("C", 3),
+             ("D", 4),
+             ("E", 5),
+             ("F", 6)],
+            min = "B", exclude_min = True)
 
     def test_supports_ranges_with_included_max(self):
         self.assert_range(
-            [(1, "foo"),
-             (2, "bar"),
-             (3, "spam")],
-            max = 3, exclude_max = False)
+            [("A", 1),
+             ("B", 2),
+             ("C", 3)],
+            max = "C", exclude_max = False)
 
     def test_supports_ranges_with_excluded_max(self):
         self.assert_range(
-            [(1, "foo"),
-             (2, "bar")],
-            max = 3, exclude_max = True)
+            [("A", 1),
+             ("B", 2)],
+            max = "C", exclude_max = True)
 
     def test_supports_ranges_with_both_min_and_max(self):
         self.assert_range(
-            [(2, "bar"),
-             (3, "spam"),
-             (4, "sprunge")],
-            min = 2,
+            [("B", 2),
+             ("C", 3),
+             ("D", 4)],
+            min = "B",
             exclude_min = False,
-            max = 4,
+            max = "D",
             exclude_max = False
         )
 
@@ -239,15 +248,16 @@ class SingleValueIndexTestCase(TestCase):
         key_count = len(self.keys)
         assert len(self.index) == key_count
 
-        new_key = self.keys[-1] + 1
-        self.index.add(new_key, "new_value")
+        new_key = "Z"
+        new_value = 1000
+        self.index.add(new_key, new_value)
         assert len(self.index) == key_count + 1
 
     def test_can_retrieve_max_key(self):
-        assert self.index.max_key() == 6
+        assert self.index.max_key() == "F"
 
     def test_can_retrieve_min_key(self):
-        assert self.index.min_key() == 1
+        assert self.index.min_key() == "A"
 
     def test_adding_an_existing_key_overwrites_the_previous_value(self):
         key, prev_value = self.pairs[0]
