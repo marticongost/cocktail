@@ -7,7 +7,7 @@ import os
 import mimetypes
 import cherrypy
 import rfc6266
-from cherrypy.lib import cptools, http, file_generator_limited
+from cherrypy.lib import cptools, httputil, file_generator_limited
 from cocktail.events import Event, when
 from cocktail.html.resources import resource_repositories, SASSCompilation
 
@@ -97,7 +97,7 @@ class FilePublication(object):
             if stat.S_ISDIR(st.st_mode):
                 raise cherrypy.NotFound()
 
-            response.headers['Last-Modified'] = http.HTTPDate(st.st_mtime)
+            response.headers['Last-Modified'] = httputil.HTTPDate(st.st_mtime)
             cptools.validate_since()
             file = open(path, "rb")
         else:
@@ -163,7 +163,10 @@ class FilePublication(object):
         # HTTP/1.0 didn't have Range/Accept-Ranges headers, or the 206 code
         if cherrypy.request.protocol >= (1, 1):
             response.headers["Accept-Ranges"] = "bytes"
-            r = http.get_ranges(cherrypy.request.headers.get('Range'), c_len)
+            r = httputil.get_ranges(
+                cherrypy.request.headers.get('Range'),
+                c_len
+            )
             if r == []:
                 response.headers['Content-Range'] = "bytes */%s" % c_len
                 message = "Invalid Range (first-byte-pos greater than Content-Length)"

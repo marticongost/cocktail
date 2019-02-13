@@ -13,7 +13,7 @@ import datetime
 import cgi
 import urllib.request, urllib.parse, urllib.error
 import cherrypy
-from cherrypy.lib import http
+from cherrypy.lib import httputil
 from cocktail.modeling import GenericClassMethod
 from cocktail.iteration import first
 from cocktail import schema
@@ -1020,11 +1020,11 @@ def set_cookie_expiration(cookie, seconds=None):
         cookie["max-age"] = seconds
 
         if seconds == 0:
-            cookie["expires"] = http.HTTPDate(
+            cookie["expires"] = httputil.HTTPDate(
                 time.time() - (60 * 60 * 24 * 365)
             )
         else:
-            cookie["expires"] = http.HTTPDate(
+            cookie["expires"] = httputil.HTTPDate(
                 time.time() + seconds
             )
 
