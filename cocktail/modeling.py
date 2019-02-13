@@ -1323,11 +1323,6 @@ class SynchronizedList(object):
         self._items = items
         self.lock = self._lock_class()
 
-        # FIXME: This is a nasty hack, but its the only apparent way to turn
-        # off the nasty mandatory on-screen debugging imposed by
-        # threading.RLock
-        self.lock._note = lambda *args: None
-
     def __copy__(self):
         self.lock.acquire()
         try:

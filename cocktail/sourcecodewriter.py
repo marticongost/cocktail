@@ -14,7 +14,7 @@ class SourceCodeWriter(object):
         self.line_separator = "\n"
         self.indent_str = " " * 4
 
-    def __unicode__(self):
+    def __str__(self):
         return self.line_separator.join(
             str(content)
             for content in self.__content

@@ -162,6 +162,9 @@ class Member(Variable, metaclass=EventHub):
             for validation in validations:
                 self.add_validation(validation)
 
+    def __hash__(self):
+        return EventHub.__hash__(self)
+
     def __eq__(self, other):
         return self is other
 

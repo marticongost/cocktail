@@ -14,7 +14,6 @@ import cgi
 import urllib.request, urllib.parse, urllib.error
 import cherrypy
 from cherrypy.lib import http
-from string import strip
 from cocktail.modeling import GenericClassMethod
 from cocktail.iteration import first
 from cocktail import schema
@@ -498,7 +497,7 @@ def serialize_calendar_page(self, value):
 
 schema.CalendarPage.serialize_request_value = serialize_calendar_page
 
-NORMALIZATION_DEFAULT = strip
+NORMALIZATION_DEFAULT = lambda value: value.strip()
 UNDEFINED_DEFAULT = "set_default"
 ERRORS_DEFAULT = "set_none"
 IMPLICIT_BOOLEANS_DEFAULT = True

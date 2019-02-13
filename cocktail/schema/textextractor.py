@@ -184,7 +184,7 @@ class TextExtractor(object):
 
         return True
 
-    def __unicode__(self):
+    def __str__(self):
         return " ".join(
             " ".join(chunk for chunk in node.text)
             for node in self.__nodes
