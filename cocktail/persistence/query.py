@@ -30,7 +30,6 @@ from cocktail.schema import (
     SchemaObjectAccessor,
     RelationMember
 )
-from cocktail.schema.io import export_file
 from cocktail.schema.expressions import TranslationExpression
 
 inherit = object()
@@ -815,14 +814,6 @@ class Query(object):
             item = type_index.get(id)
             if item is not None:
                 item.delete()
-
-    # Exportation
-    #------------------------------------------------------------------------------
-    def export_file(
-        self, dest, mime_type = None, members = None, languages = None, **kwargs
-    ):
-        """Exports the query to a file"""
-        export_file(self, dest, self.type, mime_type, members, languages, **kwargs)
 
 
 class Comparator(object):
