@@ -9,36 +9,36 @@ support for multi-language content and declarative queries over indexes.
 @organization:	Whads/Accent SL
 @since:			July 2008
 """
-from cocktail.persistence.persistentlist import PersistentList
-from cocktail.persistence.persistentmapping import PersistentMapping
-from cocktail.persistence.persistentset import PersistentSet
-from cocktail.persistence.persistentorderedset import PersistentOrderedSet
-from cocktail.persistence.persistentrelations import (
+from .persistentlist import PersistentList
+from .persistentmapping import PersistentMapping
+from .persistentset import PersistentSet
+from .persistentorderedset import PersistentOrderedSet
+from .persistentrelations import (
     PersistentRelationList,
     PersistentRelationSet,
     PersistentRelationOrderedSet,
     PersistentRelationMapping
 )
-from cocktail.persistence.persistentobject import (
+from .persistentobject import (
     PersistentClass,
     PersistentObject,
     UniqueValueError,
     InstanceNotFoundError,
     NewObjectDeletedError
 )
-from cocktail.persistence.datastore import datastore
-from cocktail.persistence.transactional import (
+from .datastore import datastore
+from .transactional import (
     transactional,
     transaction,
     desisted
 )
-from cocktail.persistence.migration import (
+from .migration import (
     migrate,
     mark_all_migrations_as_executed,
     MigrationStep,
     migration_step
 )
-from cocktail.persistence.incremental_id import (
+from .incremental_id import (
     incremental_id,
     acquire_id_range,
     reset_incremental_id,
@@ -46,13 +46,13 @@ from cocktail.persistence.incremental_id import (
     set_incremental_id_slice_size,
     incremental_id_slice_size_context
 )
-from cocktail.persistence.index import Index
-from cocktail.persistence.singlevalueindex import SingleValueIndex
-from cocktail.persistence.multiplevaluesindex import MultipleValuesIndex
-from cocktail.persistence import indexing
-from cocktail.persistence import fulltextsearch
-from cocktail.persistence.maxvalue import MaxValue
-from cocktail.persistence.query import Query
-from cocktail.persistence.pickling import dumps, loads
-from cocktail.persistence.deletedryrun import delete_dry_run
+from .index import Index
+from .singlevalueindex import SingleValueIndex
+from .multiplevaluesindex import MultipleValuesIndex
+from . import indexing
+from . import fulltextsearch
+from .maxvalue import MaxValue
+from .query import Query
+from .pickling import dumps, loads
+from .deletedryrun import delete_dry_run
 
