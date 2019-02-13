@@ -6,7 +6,6 @@
 @organization:	Whads/Accent SL
 @since:			September 2008
 """
-from cocktail.modeling import getter
 from cocktail.events import when
 from cocktail.translations import translations
 from cocktail.html import Element
@@ -182,7 +181,7 @@ class Pager(Element):
     def _get_page_link(self, page_number):
         return "?" + self._view_state(**{str(self.page_param_name): page_number})
 
-    @getter
+    @property
     def page_count(self):
         if not self.page_size:
             return 1

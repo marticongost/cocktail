@@ -3,7 +3,6 @@
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
-from cocktail.modeling import getter
 from cocktail import schema
 
 
@@ -57,7 +56,7 @@ class Pagination(schema.SchemaObject):
         doc = """The number of items to paginate."""
     )
 
-    @getter
+    @property
     def page_count(self):
         """The total number of pages needed to cover the full item count."""
         if not self.page_size:
@@ -65,7 +64,7 @@ class Pagination(schema.SchemaObject):
         else:
             return -(-self.item_count / self.page_size) # Fast ceiling division trick
 
-    @getter
+    @property
     def current_page(self):
         """Gives the ordinal position of the currently selected page, starting
         at 0.
@@ -78,7 +77,7 @@ class Pagination(schema.SchemaObject):
             page = self.page_count + page
         return page
 
-    @getter
+    @property
     def current_page_items(self):
         """The items in the selected page."""
         if self.items is None:
@@ -89,12 +88,12 @@ class Pagination(schema.SchemaObject):
 
         return self.items[self.start:self.end]
 
-    @getter
+    @property
     def current_page_size(self):
         """The number of items in the selected page."""
         return self.end - self.start
 
-    @getter
+    @property
     def start(self):
         """The ordinal position in the item set where the selected page starts
         (inclusive).
@@ -107,7 +106,7 @@ class Pagination(schema.SchemaObject):
                 max(0, self.item_count - 1)
             )
 
-    @getter
+    @property
     def end(self):
         """The ordinal position in the item set where the selected page ends
         (exclusive).
@@ -118,12 +117,12 @@ class Pagination(schema.SchemaObject):
             return 0
         else:
             return min((self.current_page + 1) * self.page_size, self.item_count)
-    @getter
+    @property
     def at_first_page(self):
         """Indicates if the selected page is the first one."""
         return self.current_page == 0
 
-    @getter
+    @property
     def at_last_page(self):
         """Indicates if the selected page is the last one."""
         return self.current_page + 1 == self.page_count

@@ -6,7 +6,6 @@
 @organization:	Whads/Accent SL
 @since:			June 2008
 """
-from cocktail.modeling import getter
 from cocktail.events import event_handler
 from cocktail.pkgutils import import_object
 from cocktail.translations import translations
@@ -45,7 +44,7 @@ class Reference(RelationMember):
     def _remove_relation(self, obj, related_obj):
         get_accessor(obj).set(obj, self.name, None)
 
-    @getter
+    @property
     def related_type(self):
         return self.type
 

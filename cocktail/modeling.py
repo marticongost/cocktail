@@ -53,9 +53,6 @@ def wrap(function, wrapper):
     wrapper.__doc__ = function.__doc__
     wrapper.__name__ = function.__name__
 
-def getter(function):
-    return property(function, doc = function.__doc__)
-
 def abstractmethod(func):
 
     def wrapper(self, *args, **kwargs):
@@ -1442,7 +1439,7 @@ class ContextualDict(DictWrapper):
     def __init__(self):
         self.__local = local()
 
-    @getter
+    @property
     def _items(self):
         items = getattr(self.__local, "items", None)
 

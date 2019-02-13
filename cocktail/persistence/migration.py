@@ -5,7 +5,6 @@
 """
 from zodbupdate.update import Updater
 from cocktail.modeling import (
-    getter,
     ListWrapper,
     DictWrapper,
     OrderedSet,
@@ -75,7 +74,7 @@ class MigrationStep(object, metaclass=EventHub):
     def __repr__(self):
         return "MigrationStep(%r)" % self.__id
 
-    @getter
+    @property
     def id(self):
         """A unique identifier for the migration step."""
         return self.__id

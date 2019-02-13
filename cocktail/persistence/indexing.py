@@ -10,7 +10,6 @@
 from BTrees.IOBTree import IOBTree, IOTreeSet
 from BTrees.OOBTree import OOBTree, OOTreeSet
 from cocktail.stringutils import normalize
-from cocktail.modeling import getter
 from cocktail.events import when, Event
 from cocktail.translations import iter_language_chain, descend_language_tree
 from cocktail import schema
@@ -101,7 +100,7 @@ def _get_persistent_class_keys(cls):
 
     return keys
 
-PersistentClass.keys = getter(_get_persistent_class_keys)
+PersistentClass.keys = property(_get_persistent_class_keys)
 
 def _get_unique(self):
     return self.primary or self._unique

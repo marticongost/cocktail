@@ -7,7 +7,7 @@
 @since:			November 2008
 """
 from threading import local
-from cocktail.modeling import getter, abstractmethod
+from cocktail.modeling import abstractmethod
 from cocktail.events import Event, event_handler
 from cocktail.schema.accessors import get
 from cocktail.schema.member import Member
@@ -231,7 +231,7 @@ class RelationMember(Member):
     def anonymous(self):
         return self.__anonymous
 
-    @getter
+    @property
     @abstractmethod
     def related_type(self):
         pass

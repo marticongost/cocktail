@@ -6,7 +6,7 @@
 from time import time
 from threading import local
 from cocktail.translations import get_language
-from cocktail.modeling import getter, OrderedSet
+from cocktail.modeling import OrderedSet
 from cocktail.caching import Cache, CacheKeyError
 from cocktail.html.documentmetadata import DocumentMetadata
 

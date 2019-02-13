@@ -8,7 +8,6 @@
 """
 from datetime import date, datetime
 from cocktail.pkgutils import get_full_name
-from cocktail.modeling import getter
 from cocktail.translations import translations, get_language
 from cocktail.schema import Member, Date, Time, DateTime
 from cocktail.schema.expressions import (
@@ -30,14 +29,14 @@ class MemberGrouping(object):
     def get_grouping_value(self, item):
         return item.get(self.member, self.language)
 
-    @getter
+    @property
     def order(self):
         expr = self.member
         if self.language:
             expr = expr.translated_into(self.language)
         return self.sign(expr)
 
-    @getter
+    @property
     def request_value(self):
         if self.member is None:
             return None

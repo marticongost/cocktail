@@ -9,7 +9,7 @@
 import sys
 from inspect import isfunction, getargspec
 import cherrypy
-from cocktail.modeling import getter, ListWrapper, ContextualDict
+from cocktail.modeling import ListWrapper, ContextualDict
 from cocktail.controllers.requesthandler import RequestHandler
 
 context = ContextualDict()
@@ -276,7 +276,7 @@ class Dispatcher(object):
 
             return component
 
-        @getter
+        @property
         def current_path(self):
             return "/" + "/".join(component
                                   for component in self.__consumed_components)

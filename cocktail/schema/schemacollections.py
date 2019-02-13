@@ -8,7 +8,6 @@ Provides a class to describe members that handle sets of values.
 @since:			March 2008
 """
 from cocktail.modeling import (
-    getter,
     GenericMethod,
     OrderedSet,
     InstrumentedList,
@@ -91,7 +90,7 @@ class Collection(RelationMember):
     def _remove_relation(self, obj, related_obj):
         get_accessor(obj).get(obj, self.name).remove(related_obj)
 
-    @getter
+    @property
     def related_type(self):
         return self.items and self.items.type
 

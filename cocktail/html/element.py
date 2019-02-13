@@ -3,7 +3,6 @@ from time import time
 from warnings import warn
 from simplejson import dumps
 from cocktail.modeling import (
-    getter,
     classgetter,
     empty_list,
     empty_dict,
@@ -635,7 +634,7 @@ class Element(Invalidable):
     # Attributes
     #--------------------------------------------------------------------------
 
-    @getter
+    @property
     def attributes(self):
         """A dictionary containing the HTML attributes defined by the element.
 
@@ -724,7 +723,7 @@ class Element(Invalidable):
     # Visibility
     #--------------------------------------------------------------------------
 
-    @getter
+    @property
     def rendered(self):
         """Indicates if the element should be rendered.
 
@@ -734,7 +733,7 @@ class Element(Invalidable):
         return self.visible \
             and (not self.collapsible or self.has_rendered_children())
 
-    @getter
+    @property
     def substantial(self):
         """Indicates if the element has enough weight to influence the
         visibility of a `collapsible` element.
@@ -765,7 +764,7 @@ class Element(Invalidable):
     # Tree
     #--------------------------------------------------------------------------
 
-    @getter
+    @property
     def parent(self):
         """The `element <Element>` that the element is attached to.
 
@@ -775,7 +774,7 @@ class Element(Invalidable):
         """
         return self.__parent
 
-    @getter
+    @property
     def children(self):
         """The list of child `elements <Element>` attached to the element.
 
@@ -965,7 +964,7 @@ class Element(Invalidable):
     # CSS classes
     #--------------------------------------------------------------------------
 
-    @getter
+    @property
     def classes(self):
         """The list of CSS classes assigned to the element."""
         css_class = self["class"]
@@ -1021,7 +1020,7 @@ class Element(Invalidable):
     # Inline CSS styles
     #--------------------------------------------------------------------------
 
-    @getter
+    @property
     def style(self):
         """A dictionary containing the inline CSS declarations for the element.
         """
@@ -1084,7 +1083,7 @@ class Element(Invalidable):
     # Resources
     #--------------------------------------------------------------------------
 
-    @getter
+    @property
     def resources(self):
         """The list of `resources <Resource>` (scripts, stylesheets, etc)
         linked to the element.
@@ -1166,7 +1165,7 @@ class Element(Invalidable):
     # Meta attributes
     #--------------------------------------------------------------------------
 
-    @getter
+    @property
     def meta(self):
         """A dictionary containing the meta declarations for the element.
 
@@ -1217,7 +1216,7 @@ class Element(Invalidable):
         else:
             self.__document_ready_callbacks.append(callback)
 
-    @getter
+    @property
     def document_ready_callbacks(self):
         if self.__document_ready_callbacks is None:
             return empty_list
@@ -1265,7 +1264,7 @@ class Element(Invalidable):
         if self.__client_params is not None:
             self["data-cocktail-params"] = dumps(self.__client_params)
 
-    @getter
+    @property
     def client_params(self):
         """A dictionary with the client side parameters for the element.
 
@@ -1331,7 +1330,7 @@ class Element(Invalidable):
         if self.__client_code is not None:
             self["data-cocktail-code"] = "".join(self.__client_code)
 
-    @getter
+    @property
     def client_code(self):
         """A list containing the snippets of javascript code attached to
         the element.
@@ -1363,7 +1362,7 @@ class Element(Invalidable):
     # Client side variables
     #--------------------------------------------------------------------------
 
-    @getter
+    @property
     def client_variables(self):
         """A dictionary containing the client side variables declared by the
         element.
@@ -1431,7 +1430,7 @@ class Element(Invalidable):
     # Client side translations
     #--------------------------------------------------------------------------
 
-    @getter
+    @property
     def client_translations(self):
         """A set of translation keys to relay client side.
 
@@ -1480,11 +1479,11 @@ class Content(Element):
         Element.__init__(self, *args, **kwargs)
         self.value = value
 
-    @getter
+    @property
     def rendered(self):
         return self.visible
 
-    @getter
+    @property
     def substantial(self):
         return (
             self.visible

@@ -14,7 +14,6 @@ from pkg_resources import resource_filename
 from cocktail.styled import styled
 from cocktail.events import Event
 from cocktail.modeling import (
-    getter,
     DictWrapper,
     ListWrapper,
     OrderedSet

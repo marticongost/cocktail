@@ -7,7 +7,7 @@ Provides a class to describe members that handle sets of values.
 @organization:  Whads/Accent SL
 @since:         July 2008
 """
-from cocktail.modeling import getter, InstrumentedDict, DictWrapper
+from cocktail.modeling import InstrumentedDict, DictWrapper
 from cocktail.schema.member import Member
 from cocktail.schema.schemacollections import (
     Collection, RelationCollection, add, remove
@@ -32,7 +32,7 @@ class Mapping(Collection):
     default_type = dict
     get_item_key = None
 
-    @getter
+    @property
     def related_type(self):
         return self.values and self.values.type
 
