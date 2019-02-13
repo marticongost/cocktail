@@ -4,7 +4,7 @@
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
 import cherrypy
-from cocktail.modeling import getter, cached_getter, camel_to_underscore
+from cocktail.modeling import cached_getter, camel_to_underscore
 from cocktail.pkgutils import get_full_name
 from cocktail.events import Event, EventHub
 from cocktail import schema

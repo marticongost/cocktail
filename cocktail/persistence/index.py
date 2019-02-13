@@ -6,7 +6,7 @@
 from operator import neg
 from persistent import Persistent
 from BTrees.OOBTree import OOBTree, OOTreeSet
-from cocktail.modeling import getter, overrides
+from cocktail.modeling import overrides
 
 undefined = object()
 
@@ -27,7 +27,7 @@ class Index(Persistent):
             for key, value in pairs:
                 self.add(key, value)
 
-    @getter
+    @property
     def accepts_multiple_values(self):
         """Indicates if the index is capable of holding more than one value for
         the same key.

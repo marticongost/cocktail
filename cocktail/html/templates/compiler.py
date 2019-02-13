@@ -10,7 +10,7 @@ import re
 import weakref
 from xml.parsers import expat
 from cocktail.events import when
-from cocktail.modeling import refine, extend, call_base, getter, DictWrapper
+from cocktail.modeling import refine, extend, call_base, DictWrapper
 from cocktail.translations import translations, get_language
 from cocktail.sourcecodewriter import SourceCodeWriter
 from cocktail.html.element import default, PlaceHolder

@@ -7,7 +7,6 @@ Declares exception classes specific to the package.
 @organization:	Whads/Accent SL
 @since:			March 2008
 """
-from cocktail.modeling import getter
 from cocktail.stringutils import decapitalize
 from cocktail.translations import translations, translate_locale
 
@@ -90,7 +89,7 @@ class ValidationError(Exception):
 
         return desc
 
-    @getter
+    @property
     def invalid_members(self):
         """The set of members with invalid values that caused the error. This
         usually returns a list with a reference to the exception's L{member}

@@ -15,7 +15,7 @@ from BTrees.OIBTree import OIBTree
 from BTrees.IOBTree import IOTreeSet, IOSet
 from BTrees.OOBTree import OOTreeSet, OOSet
 from cocktail.styled import styled
-from cocktail.modeling import getter, ListWrapper
+from cocktail.modeling import ListWrapper
 from cocktail.stringutils import normalize
 from cocktail.translations import (
     translations,
@@ -134,7 +134,7 @@ class Query(object):
         self.__cached_results_sliced = False
         self.__cached_length = None
 
-    @getter
+    @property
     def type(self):
         """The base type of the instances returned by the query.
         @type: L{PersistentObject<cocktail.persistence.persistentobject.PersistentObject>}

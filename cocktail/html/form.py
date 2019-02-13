@@ -7,7 +7,7 @@
 @since:			September 2008
 """
 from cocktail.translations import get_language, language_context
-from cocktail.modeling import getter, ListWrapper
+from cocktail.modeling import ListWrapper
 from cocktail.translations import translations, translate_locale
 from cocktail import schema
 from cocktail.persistence import PersistentObject
@@ -503,15 +503,15 @@ class FormGroup(object):
             self.__match_expr = \
                 lambda member: self.__form._normalize_member(member) in members
 
-    @getter
+    @property
     def form(self):
         return self.__form
 
-    @getter
+    @property
     def id(self):
         return self.__id
 
-    @getter
+    @property
     def members_filter(self):
         return self.__members_filter
 

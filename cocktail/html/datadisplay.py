@@ -8,7 +8,7 @@ Visual elements for data binding.
 @since:         July 2008
 """
 from cocktail import schema
-from cocktail.modeling import getter, ListWrapper, empty_list
+from cocktail.modeling import ListWrapper, empty_list
 from cocktail.translations import translations, require_language
 
 # IMPORTANT: importing 'display_factory' is required for backwards
@@ -68,7 +68,7 @@ class DataDisplay(UIGenerator):
 
         return name
 
-    @getter
+    @property
     def displayed_members(self):
         if not self.schema:
             return empty_list
@@ -77,7 +77,7 @@ class DataDisplay(UIGenerator):
                 for member in self.schema.ordered_members(True)
                 if self.get_member_displayed(member))
 
-    @getter
+    @property
     def displayed_members_by_group(self):
         if not self.schema:
             return empty_list

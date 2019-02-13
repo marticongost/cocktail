@@ -11,7 +11,7 @@ from persistent import Persistent
 from BTrees.OOBTree import OOBTree
 from BTrees.IOBTree import IOBTree
 from cocktail import schema
-from cocktail.modeling import getter, OrderedSet
+from cocktail.modeling import OrderedSet
 from cocktail.events import Event, event_handler
 from cocktail.translations import translations
 from cocktail.schema import (
@@ -80,7 +80,7 @@ def _get_reference_is_persistent_relation(self):
     return self.type and issubclass(self.type, PersistentObject)
 
 schema.Reference.is_persistent_relation = \
-    getter(_get_reference_is_persistent_relation)
+    property(_get_reference_is_persistent_relation)
 
 def _get_collection_is_persistent_relation(self):
     items = self.items
@@ -89,7 +89,7 @@ def _get_collection_is_persistent_relation(self):
         and items.is_persistent_relation
 
 schema.Collection.is_persistent_relation = \
-    getter(_get_collection_is_persistent_relation)
+    property(_get_collection_is_persistent_relation)
 
 class PersistentClass(SchemaClass):
 
@@ -335,7 +335,7 @@ class PersistentObject(SchemaObject, Persistent, metaclass=PersistentClass):
         elif isinstance(event.value, dict):
             event.value = PersistentMapping(event.value)
 
-    @getter
+    @property
     def is_inserted(self):
         """Indicates wether the object has been inserted into the database.
         @type: bool
