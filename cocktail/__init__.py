@@ -4,5 +4,5 @@
 emphasis in declarative programming.
 """
 
-__version__ = "1.12b1"
+__version__ = "2.0a1"
 
