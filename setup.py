@@ -10,7 +10,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = "cocktail",
-    version = "1.13b1",
+    version = "1.14",
     author = "Whads/Accent SL",
     author_email = "tech@whads.com",
     description = """A tasty mix of python web development utilities.""",
@@ -34,11 +34,9 @@ setup(
     install_requires = [
         "frozendict",
         "simplejson",
-        "transaction==1.1.1",
-        "ZODB3==3.10.5",
-        "zodbupdate==0.5",
-        "zope.index==3.6.1",
-        "cherrypy==3.1.2",
+        "ZODB",
+        "zodbupdate",
+        "cherrypy",
         "buffet>=1.0",
         "nose",
         "pyExcelerator",
