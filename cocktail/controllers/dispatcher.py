@@ -242,7 +242,7 @@ class Dispatcher(object):
         except Exception as error:
             exc_info = sys.exc_info()
             def handler(*args, **kwargs):
-                raise exc_info[0](exc_info[1]).with_traceback(exc_info[2])
+                raise exc_info[1].with_traceback(exc_info[2])
             chain.append(handler)
 
         request.handler = HandlerActivator(handler, *path)
