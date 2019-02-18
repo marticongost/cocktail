@@ -327,8 +327,8 @@ class SASSPreprocessor(object):
                 if isinstance(source_map, str):
                     source_map = source_map.encode("utf-8")
 
-                open(css_path, "w").write(css)
-                open(map_path, "w").write(source_map)
+                open(css_path, "wb").write(css)
+                open(map_path, "wb").write(source_map)
 
             file_info["file"] = open(path)
 

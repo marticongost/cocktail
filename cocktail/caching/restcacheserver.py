@@ -13,6 +13,8 @@ from cocktail.caching.memorycachestorage import MemoryCacheStorage
 from cocktail.caching.scope import whole_cache
 from cocktail.caching.exceptions import CacheKeyError
 
+ENCODING = "utf-8"
+
 
 class CacheController(Controller):
 
@@ -28,8 +30,8 @@ class CacheController(Controller):
     def resolve(self, path):
         if len(path) >= 2 and path[0] == "keys":
             path.pop(0)
-            key = path.pop(0)
-            return KeyController(self, urlsafe_b64decode(key))
+            key = str(urlsafe_b64decode(path.pop(0).encode(ENCODING)))
+            return KeyController(self, key)
         else:
             return self
 
@@ -69,7 +71,7 @@ class CacheController(Controller):
 
         if cherrypy.request.method != "HEAD":
             cherrypy.response.body = [
-                dumps({"error": error.__class__.__name__})
+                dumps({"error": error.__class__.__name__}).encode("utf-8")
             ]
 
 
@@ -96,7 +98,7 @@ class KeyController(Controller):
                 "value": value,
                 "expiration": expiration,
                 "tags": tags
-            })
+            }).encode(ENCODING)
 
         elif method == "POST":
             record = loads(cherrypy.request.body.read())
@@ -111,7 +113,7 @@ class KeyController(Controller):
             if not self.cache.discard(self.key):
                 raise CacheKeyError(key)
             else:
-                return dumps(True)
+                return dumps(True).encode(ENCODING)
 
     @cherrypy.expose
     def value(self):

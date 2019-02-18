@@ -135,7 +135,7 @@ class Cached(object):
         if isinstance(content, GeneratorType):
             content_bytes = "".join(
                 chunk.encode("utf-8")
-                    if isinstance(chunk, str)
+                    if isinstance(chunk, bytes)
                     else chunk
                 for chunk in content
             )

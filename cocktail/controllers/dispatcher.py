@@ -84,7 +84,8 @@ class HandlerActivator(object):
                 raise
 
             # Custom error handlers
-            except Exception as request_error:
+            except Exception as e:
+                request_error = e
                 for handler in reversed(visited):
                     event_slot = getattr(handler, "exception_raised", None)
                     if event_slot is not None:

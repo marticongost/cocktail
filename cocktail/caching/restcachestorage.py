@@ -12,6 +12,8 @@ from .cachestorage import CacheStorage
 from .picklecacheserializer import Base64PickleCacheSerializer
 from .scope import whole_cache
 
+ENCODING = "utf-8"
+
 
 class RESTCacheStorage(object):
 
@@ -34,7 +36,11 @@ class RESTCacheStorage(object):
 
     def _key_request(self, key, *args, **kwargs):
 
-        url = self.__address + "/keys/" + urlsafe_b64encode(key)
+        url = (
+            self.__address
+            + "/keys/"
+            + urlsafe_b64encode(key.encode(ENCODING)).decode(ENCODING)
+        )
 
         extra_path = kwargs.pop("extra_path", None)
         if extra_path:
@@ -47,7 +53,7 @@ class RESTCacheStorage(object):
             raise CacheKeyError(key)
 
         if content and response.get("content-type") == "application/json":
-            content = loads(content)
+            content = loads(content.decode(ENCODING))
 
         return content
 
@@ -69,7 +75,7 @@ class RESTCacheStorage(object):
     def retrieve_with_metadata(self, key):
         data = self._key_request(key, "GET")
         return (
-            self.serializer.unserialize(data["value"]),
+            self.serializer.unserialize(data["value"].encode(ENCODING)),
             data["expiration"],
             data["tags"]
         )
@@ -83,7 +89,7 @@ class RESTCacheStorage(object):
                 "Content-Type": "application/json"
             },
             body = dumps({
-                "value": self.__serializer.serialize(value),
+                "value": self.__serializer.serialize(value).decode(ENCODING),
                 "expiration": expiration,
                 "tags": None if tags is None else list(tags)
             })
