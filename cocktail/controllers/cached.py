@@ -133,9 +133,9 @@ class Cached(object):
         content = self._produce_content(**kwargs)
 
         if isinstance(content, GeneratorType):
-            content_bytes = "".join(
+            content_bytes = b"".join(
                 chunk.encode("utf-8")
-                    if isinstance(chunk, bytes)
+                    if isinstance(chunk, str)
                     else chunk
                 for chunk in content
             )
