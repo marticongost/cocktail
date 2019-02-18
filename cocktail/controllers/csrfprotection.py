@@ -97,18 +97,18 @@ def _csrf_token_injection():
                     "cocktail://scripts/csrfprotection.js"
                 )
             )
-        )
-        html = "".join(
+        ).encode("utf-8")
+        html = b"".join(
             (
-                chunk.decode("utf-8")
+                chunk.encode("utf-8")
                 if isinstance(chunk, str)
                 else chunk
             )
             for chunk in cherrypy.response.body
         )
-        pos = html.find("</head>")
+        pos = html.find(b"</head>")
         if pos == -1:
-            pos = html.find("</body>")
+            pos = html.find(b"</body>")
         if pos != -1:
             html = html[:pos] + code + html[pos:]
         cherrypy.response.body = [html]

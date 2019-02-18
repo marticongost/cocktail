@@ -7,7 +7,7 @@ import sys
 from warnings import warn
 from time import time
 
-supported_platforms = ["linux2"]
+supported_platforms = ["linux"]
 
 foreground_codes = {
     "default": 39,

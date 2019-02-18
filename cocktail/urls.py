@@ -65,7 +65,7 @@ class URL(str):
                 values.setdefault("fragment", parts.fragment)
 
             # Decode byte strings
-            elif isinstance(url, str):
+            elif isinstance(url, bytes):
                 return cls.__new__(cls, _decode(unquote(url)), **values)
 
             else:
@@ -144,10 +144,10 @@ class URL(str):
             str.__repr__(self)
         )
 
-    def __str__(self):
+    def escape(self):
 
         if self.__scheme:
-            url_string = str(self.__scheme)
+            url_string = self.__scheme
 
             if self.hierarchical:
                 url_string += "://"
@@ -156,16 +156,18 @@ class URL(str):
 
             if self.__username or self.__password:
                 if self.__username:
-                    url_string += self.__username.encode(ENCODING)
+                    url_string += self.__username
                 if password:
-                    url_string += ":" + self.__password.encode(ENCODING)
+                    url_string += ":" + self.__password
                 url_string += "@"
 
             if self.__hostname:
                 try:
-                    url_string += self.__hostname.encode("ascii")
+                    self.__hostname.encode("ascii")
                 except UnicodeEncodeError:
-                    url_string += self.__hostname.encode("punycode")
+                    url_string += str(self.__hostname.encode("punycode"))
+                else:
+                    url_string += self.__hostname
 
             if self.__port:
                 url_string += ":%d" % self.__port
@@ -180,10 +182,10 @@ class URL(str):
             url_string += quote(self.__path.encode(ENCODING), safe)
 
         if self.__query:
-            url_string += "?" + str(self.__query)
+            url_string += "?" + self.__query.escape()
 
         if self.__fragment:
-            url_string += "#" + self.__fragment
+            url_string += "#" + self.__fragment.escape()
 
         return url_string
 
@@ -339,7 +341,7 @@ class URLBuilder(object):
     def _normalize_path_component(self, component):
         if isinstance(component, int):
             return str(component)
-        elif isinstance(component, str):
+        elif isinstance(component, bytes):
             return _decode(unquote(component))
         else:
             return component
@@ -355,7 +357,7 @@ class Path(str):
         elif isinstance(path, cls):
             return path
 
-        elif isinstance(path, str):
+        elif isinstance(path, bytes):
             return cls(_decode(unquote(path)))
 
         elif isinstance(path, str):
@@ -401,7 +403,7 @@ class Path(str):
             str.__repr__(self)
         )
 
-    def __str__(self):
+    def escape(self):
         return quote(self.encode(ENCODING))
 
     @property
@@ -516,7 +518,7 @@ class QueryString(str):
             return query
 
         # Decode and parse byte strings
-        elif isinstance(query, str):
+        elif isinstance(query, bytes):
             return cls.__new__(cls, _decode(query))
 
         # Parse unicode strings
@@ -552,7 +554,7 @@ class QueryString(str):
             str.__repr__(self)
         )
 
-    def __str__(self):
+    def escape(self):
         return quote(self.encode(ENCODING), "=&")
 
     def __add__(self, other):
@@ -583,7 +585,7 @@ class QueryString(str):
 
             if isinstance(query, str):
                 query_string = query
-                if isinstance(query_string, str):
+                if isinstance(query_string, bytes):
                     query_string = _decode(unquote(query_string))
                 query_string = query_string.lstrip("?").lstrip("&")
                 b = _parse_query_string(query_string, OrderedDict)
@@ -621,7 +623,7 @@ class QueryString(str):
 
 
 def _normalize_query_string_value(value):
-    if isinstance(value, str):
+    if isinstance(value, bytes):
         return (_decode(unquote(value)),)
     elif isinstance(value, str):
         return (value,)
@@ -631,7 +633,7 @@ def _normalize_query_string_value(value):
         return tuple(
             (
                 _decode(unquote(item))
-                if isinstance(item, str)
+                if isinstance(item, bytes)
                 else item
             )
             for item in value

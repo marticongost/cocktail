@@ -156,7 +156,7 @@ def serialize_value(value):
     if value is None:
         return ""
     elif isinstance(value, URL):
-        return str(value)
+        return value.escape()
     elif isinstance(value, str):
         return value
     elif isinstance(value, (int, float, Decimal)):

@@ -8,7 +8,7 @@
 """
 from cocktail.html.element import Element
 from cocktail.html.selector import Selector
-from cocktail.controllers.viewstate import view_state
+from cocktail.controllers import get_request_url
 
 
 class LinkSelector(Selector):
@@ -45,5 +45,7 @@ class LinkSelector(Selector):
             if isinstance(name, str):
                 name = str(name)
 
-            return "?" + view_state(**{name: self.get_item_value(item)})
+            query = get_request_url().query
+            query = query.merge(**{name: self.get_item_value(item)})
+            return "?" + query
 
