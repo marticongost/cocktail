@@ -197,6 +197,14 @@ def _cmp_key(a, b):
     if b is None:
         return 1
 
+    if isinstance(a, tuple):
+        for v1, v2 in zip(a, b):
+            comp = _cmp_key(v1, v2)
+            if comp:
+                return comp
+        else:
+            return 0
+
     return 1 if a > b else -1
 
 def _cmp_value(a, b):
