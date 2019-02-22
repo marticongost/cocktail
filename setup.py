@@ -45,7 +45,7 @@ setup(
         "rfc6266"
     ],
     extras_require = {
-        "sass": ["libsass==0.12.3"]
+        "sass": ["libsass"]
     },
     packages = find_packages(),
     include_package_data = True,
