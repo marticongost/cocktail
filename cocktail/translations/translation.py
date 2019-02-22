@@ -10,7 +10,7 @@
 from threading import local
 from contextlib import contextmanager
 from collections import Mapping, defaultdict
-from pkg_resources import resource_filename
+from cocktail.pkgutils import resource_filename
 from cocktail.styled import styled
 from cocktail.events import Event
 from cocktail.modeling import (

@@ -25,8 +25,8 @@ from shutil import copyfileobj
 from urllib.parse import urljoin
 from warnings import warn
 import mimetypes
-from pkg_resources import resource_filename
 import cherrypy
+from cocktail.pkgutils import resource_filename
 from cocktail.modeling import (
     abstractmethod,
     InstrumentedOrderedSet,
