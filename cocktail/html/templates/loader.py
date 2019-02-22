@@ -7,10 +7,13 @@
 @since:			February 2008
 """
 import os
-from pkg_resources import resource_filename
 from cocktail.modeling import extend
 from cocktail.resourceloader import ResourceLoader
-from cocktail.pkgutils import import_object, set_full_name
+from cocktail.pkgutils import (
+    import_object,
+    set_full_name,
+    resource_filename
+)
 from cocktail.html.rendering import rendering_cache
 from cocktail.html.viewnames import split_view_name
 from cocktail.html.templates.compiler import TemplateCompiler

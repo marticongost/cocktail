@@ -5,9 +5,34 @@ objects.
 """
 import sys
 import os.path
+import pkgutil
 from types import ModuleType
 
 PYTHON_EXTENSIONS = ".py", ".pyc", ".pyo", ".pyd"
+
+def resource_filename(module_name, *args):
+    """Retrieves a path relative to the given module.
+
+    This is analogous to `pkg_resources.resource_filename`, but it doesn't
+    import the module.
+
+    :param module_name: The name of the module that contains the requested
+        resource.
+    :type module_name: str
+
+    :param args: Any number of additional arguments; will be appended to the
+        produced path.
+    :type args: str
+
+    :return: The path of the indicated resource.
+    :rtype: str
+
+    :raise ImportError: Raised if the indicated module can't be found.
+    """
+    module = pkgutil.get_loader(module_name)
+    if module is None:
+        raise ImportError("Can't find module %s" % module_name)
+    return os.path.join(os.path.dirname(module.path), *args)
 
 def resolve(reference):
     """Resolves a reference to an object.

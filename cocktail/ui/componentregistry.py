@@ -3,9 +3,9 @@
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
-from pkg_resources import resource_filename
 from threading import RLock
 from collections import defaultdict
+from cocktail.pkgutils import resource_filename
 from .component import Component
 from .theme import default_theme
 from .exceptions import ComponentFileError
