@@ -14,22 +14,23 @@ from json import dumps
 from cocktail.memoryutils import format_bytes
 from cocktail.controllers.sessions import session
 from cocktail.controllers.controller import Controller
+from .jsonutils import json_out
 
 
 class AsyncUploadController(Controller):
 
     uploader = None
 
+    @json_out
     def __call__(self, *args, **kwargs):
         upload = self.uploader.process_request()
-        cherrypy.response.headers["Content-Type"] = "application/json"
-        return dumps({
+        return {
             "id": upload.id,
             "name": upload.name,
             "type": upload.type,
             "size": upload.size,
             "size_desc": format_bytes(upload.size)
-        })
+        }
 
 
 class AsyncUploader(object):
