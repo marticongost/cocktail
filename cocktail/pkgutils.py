@@ -125,10 +125,7 @@ def get_full_name(obj):
             if obj.__name__ == "__main__":
                 name = get_path_name(sys.argv[0])
             else:
-                try:
-                    name = get_path_name(obj.__file__)
-                except:
-                    name = obj.__name__
+                return obj.__name__
         else:
             module_name = getattr(obj, "__module__", None)
 
