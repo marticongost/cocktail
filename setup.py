@@ -34,8 +34,9 @@ setup(
     install_requires = [
         "frozendict",
         "simplejson",
-        "ZODB",
-        "zodbupdate",
+        "ZODB>=5",
+        "ZEO",
+        "zodbupdate>=0.5",
         "cherrypy",
         "buffet>=1.0",
         "nose",
