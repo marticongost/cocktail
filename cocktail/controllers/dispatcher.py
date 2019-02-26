@@ -56,7 +56,7 @@ class HandlerActivator(object):
                     callable = self.callable
 
                     if not isfunction(callable):
-                        callable = getattr(callable, "im_func", callable)
+                        callable = getattr(callable, "__func__", callable)
                         if not isfunction(callable) \
                         and hasattr(callable, "__call__"):
                             callable = callable.__call__.__func__
