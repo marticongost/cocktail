@@ -24,10 +24,11 @@ def get_rendering_engine(engine_name, options = None):
         if engine_request == (engine_name, options):
             return engine
 
-    for engine_class in iter_entry_points(
+    for entry_point in iter_entry_points(
         "python.templating.engines",
         engine_name
     ):
+        engine_class = entry_point.resolve()
         engine = engine_class(options = options.copy())
         _engine_instances.append(((engine_name, options), engine))
         return engine
