@@ -4,7 +4,7 @@
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
 import cherrypy
-from cocktail.urls import URLBuilder
+from cocktail.urls import URLBuilder, QueryString
 
 _default_ports = {"http": 80, "https": 443}
 
@@ -23,6 +23,13 @@ def get_request_url():
         url = get_request_url_builder().get_url()
         cherrypy.request._cocktail_request_url = url
         return url
+
+def get_request_query(**kwargs):
+    url = get_request_url()
+    if kwargs:
+        return url.query.merge(**kwargs)
+    else:
+        return url.query
 
 def get_request_root_url_builder():
 
