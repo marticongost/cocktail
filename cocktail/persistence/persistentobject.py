@@ -544,7 +544,7 @@ def _get_constraint_filters(self, parent):
     constraints = self.resolve_constraint(self.relation_constraints, context)
 
     if constraints:
-        if hasattr(constraints, "iteritems"):
+        if hasattr(constraints, "items"):
             get_related_member = self.related_type.get_member
             for key, value in constraints.items():
                 yield get_related_member(key).equal(value)
