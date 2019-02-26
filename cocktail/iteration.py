@@ -92,7 +92,11 @@ def is_empty(collection):
     else:
         return False
 
-def grouped(collection, key):
+def grouped(
+    collection,
+    key,
+    sorting = (lambda group, item: (group, item))
+):
     """Groups the items in a sequence by the given key.
 
     :param collection: The iterable object providing the items to group.
@@ -101,6 +105,14 @@ def grouped(collection, key):
         * The name of an attribute of items in the collection.
         * A function that takes an item as a parameter and returns a value
           identifying its group
+
+    :param sorting: An optional keying method to sort entries before
+        grouping them. Defaults to sorting by direct comparision between an
+        object's group, with ties being resolved by direct comparision
+        between the objects themselves. If set to a callable, it should
+        receive two arguments (a collection group and item), and return the
+        desired sorting key. Setting the parameter to None indicates the
+        collection is already in order, and will disable further sorting.
 
     :return: An iterator over the groups present in the provided collection.
         Each group is represented as a tuple, holding the value for the group
@@ -111,7 +123,13 @@ def grouped(collection, key):
         attrib = key
         key = lambda item: getattr(item, attrib, None)
 
-    return groupby(sorted(collection, key = key), key = key)
+    if sorting:
+        collection = sorted(
+            collection,
+            key = lambda item: sorting(key(item), item)
+        )
+
+    return groupby(collection, key = key)
 
 _undefined = object()
 
