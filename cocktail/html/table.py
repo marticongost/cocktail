@@ -7,7 +7,6 @@
 @since:			October 2007
 """
 
-from cocktail.html import templates
 from cocktail.html.element import Element
 from cocktail.html.selectable import selectable
 from cocktail.html.datadisplay import (
