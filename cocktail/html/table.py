@@ -26,7 +26,7 @@ from cocktail.schema.expressions import (
     PositiveExpression,
     NegativeExpression
 )
-from cocktail.controllers.viewstate import view_state
+from cocktail.controllers import get_request_query
 
 
 class Table(Element, CollectionDisplay):
@@ -238,7 +238,10 @@ class Table(Element, CollectionDisplay):
                     children = [self._grouping_member_translation]
                 ),
                 Element("a",
-                    href = "?" + view_state(grouping = "", page = 0),
+                    href = "?" + get_request_query(
+                        grouping = "",
+                        page = 0
+                    ).escape(),
                     class_name = "remove_grouping",
                     children = [self._remove_grouping_translation]
                 )
@@ -414,10 +417,10 @@ class Table(Element, CollectionDisplay):
             if language:
                 order_param += "." + language
 
-            header.label["href"] = "?" + view_state(
+            header.label["href"] = "?" + get_request_query(
                 order = order_param,
                 page = 0
-            )
+            ).escape()
 
     def create_cell(self, item, column, language = None):
         cell = Element("td")
