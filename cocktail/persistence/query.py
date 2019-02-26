@@ -526,7 +526,7 @@ class Query(object):
             for expr in _descend_expressions(filter):
                 plan.append((expr.resolve_filter(self), expr))
 
-        plan.sort()
+        plan.sort(key = lambda resolution: resolution[0][0])
 
         for resolution, expr in plan:
             yield (expr, resolution[1])
