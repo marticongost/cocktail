@@ -5,6 +5,7 @@
 """
 from .request import (
     get_request_url,
+    get_request_query,
     get_request_root_url,
     get_request_url_builder,
     get_request_root_url_builder
