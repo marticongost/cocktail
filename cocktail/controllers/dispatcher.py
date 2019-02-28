@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí­ Congost
 @contact:		marti.congost@whads.com
@@ -9,7 +9,7 @@ u"""
 import sys
 from inspect import isfunction, getargspec
 import cherrypy
-from cocktail.modeling import getter, ListWrapper, ContextualDict
+from cocktail.modeling import ListWrapper, ContextualDict
 from cocktail.controllers.requesthandler import RequestHandler
 
 context = ContextualDict()
@@ -51,15 +51,15 @@ class HandlerActivator(object):
                 try:
                     return self.callable(*self.args, **self.kwargs)
 
-                except TypeError, x:
+                except TypeError as x:
 
                     callable = self.callable
 
                     if not isfunction(callable):
-                        callable = getattr(callable, "im_func", callable)
+                        callable = getattr(callable, "__func__", callable)
                         if not isfunction(callable) \
                         and hasattr(callable, "__call__"):
-                            callable = callable.__call__.im_func
+                            callable = callable.__call__.__func__
 
                     if callable:
                         (args, varargs, varkw, defaults) = getargspec(callable)
@@ -84,7 +84,8 @@ class HandlerActivator(object):
                 raise
 
             # Custom error handlers
-            except Exception, request_error:
+            except Exception as e:
+                request_error = e
                 for handler in reversed(visited):
                     event_slot = getattr(handler, "exception_raised", None)
                     if event_slot is not None:
@@ -114,7 +115,7 @@ class HandlerActivator(object):
                                 flow_exception = flow_exception,
                                 error = request_error
                             )
-                        except flow_control_errors, exception:
+                        except flow_control_errors as exception:
                             if exception is not None:
                                 flow_exception = exception
 
@@ -152,7 +153,7 @@ class Dispatcher(object):
             request.config = config
 
         # Path components
-        if isinstance(path_info, basestring):
+        if isinstance(path_info, str):
             parts = self.split(path_info)
         else:
             parts = list(path_info)
@@ -238,10 +239,10 @@ class Dispatcher(object):
             if handler is None:
                 raise cherrypy.NotFound()
 
-        except Exception, error:
+        except Exception as error:
             exc_info = sys.exc_info()
             def handler(*args, **kwargs):
-                raise exc_info[0], exc_info[1], exc_info[2]
+                raise exc_info[1].with_traceback(exc_info[2])
             chain.append(handler)
 
         request.handler = HandlerActivator(handler, *path)
@@ -276,7 +277,7 @@ class Dispatcher(object):
 
             return component
 
-        @getter
+        @property
         def current_path(self):
             return "/" + "/".join(component
                                   for component in self.__consumed_components)

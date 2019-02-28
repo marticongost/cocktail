@@ -1,13 +1,13 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
-from __future__ import with_statement
+
 from types import GeneratorType
 from time import time
 from threading import RLock, Thread
-from cocktail.modeling import getter, DictWrapper
+from cocktail.modeling import DictWrapper
 
 
 class TaskManager(DictWrapper):
@@ -46,7 +46,7 @@ class TaskManager(DictWrapper):
     def remove_expired_tasks(self):
         with self.__lock:
             now = time()
-            for task in self.values():
+            for task in list(self.values()):
                 if task.completed and task.end_time - now > self.expiration:
                     self.remove_task(task)
 
@@ -62,15 +62,15 @@ class Task(Thread):
         self.__callback = callback
         self.__end_time = None
 
-    @getter
+    @property
     def id(self):
         return self.__id
 
-    @getter
+    @property
     def completed(self):
         return self.__end_time is not None
 
-    @getter
+    @property
     def end_time(self):
         return self.__end_time
 

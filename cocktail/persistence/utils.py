@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -54,7 +54,7 @@ def remove_broken_type(
                         base.get_full_text_index(language)
                     )
 
-            for member in base.members(recursive = False).itervalues():
+            for member in base.members(recursive = False).values():
                 if member.indexed:
                     indexes.append(member.index)
 

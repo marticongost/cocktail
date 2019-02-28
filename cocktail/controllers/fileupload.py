@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Javier Marrero
 @contact:		javier.marrero@whads.com
@@ -84,7 +84,7 @@ class FileUpload(schema.Schema):
 
     def _set_max_size(self, max_size):
 
-        if isinstance(max_size, basestring):
+        if isinstance(max_size, str):
             max_size = parse_bytes(max_size)
 
         self.__max_size = max_size
@@ -105,7 +105,7 @@ class FileUpload(schema.Schema):
         async_upload = None
         file = None
 
-        if isinstance(value, basestring):
+        if isinstance(value, str):
 
             if self.async \
             and self.async_uploader is not None \

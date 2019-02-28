@@ -15,7 +15,7 @@ def get_tag_cloud_font_sizes(tags, max_font_increment = 75):
     min_frequency = None
     max_frequency = 0
 
-    for frequency in tags.itervalues():
+    for frequency in tags.values():
 
         if min_frequency is None or frequency < min_frequency:
             min_frequency = frequency
@@ -30,7 +30,7 @@ def get_tag_cloud_font_sizes(tags, max_font_increment = 75):
         font_sizes = dict((tag, 100) for tag in tags)
     else:
         font_sizes = {}
-        for tag, frequency in tags.iteritems():
+        for tag, frequency in tags.items():
             ratio = float(frequency - min_frequency) / divergence
             font_sizes[tag] = 100 + int(ratio * max_font_increment)
 
@@ -63,7 +63,7 @@ class TagCloud(Element):
 	    self.append(" ")
 
     def sorted_tags(self, tags):
-        return sorted(tags.keys(), key = translations)
+        return sorted(list(tags.keys()), key = translations)
 
     def create_tag_entry(self, tag, frequency):
         entry = Element("a")

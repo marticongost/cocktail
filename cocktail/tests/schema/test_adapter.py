@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -54,8 +54,8 @@ class ImplicitCopyTestCase(TestCase):
         adapter.export_schema(user_schema, form_schema)
 
         self.assertEqual(
-            len(user_schema.members().keys()),
-            len(form_schema.members().keys())
+            len(list(user_schema.members().keys())),
+            len(list(form_schema.members().keys()))
         )
 
         self.assertEqual(
@@ -68,8 +68,8 @@ class ImplicitCopyTestCase(TestCase):
         adapter.import_schema(form_schema, user_schema_2)
 
         self.assertEqual(
-            form_schema.members().keys(),
-            user_schema_2.members().keys()
+            list(form_schema.members().keys()),
+            list(user_schema_2.members().keys())
         )
 
     def test_implicit_object_copy(self):

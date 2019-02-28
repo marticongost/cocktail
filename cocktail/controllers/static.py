@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""Serve and preprocess static files.
+"""Serve and preprocess static files.
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """

@@ -6,8 +6,10 @@
 @organization:	Whads/Accent SL
 @since:			December 2009
 """
+from pkg_resources import iter_entry_points
 rendering_options = {}
-_engine_cache = []
+_engine_instances = []
+
 
 def get_rendering_engine(engine_name, options = None):
 
@@ -18,12 +20,18 @@ def get_rendering_engine(engine_name, options = None):
     elif options is None:
         options = rendering_options
 
-    for engine_request, engine in _engine_cache:
-        if engine_request[0] == engine_name and engine_request[1] == options:
+    for engine_request, engine in _engine_instances:
+        if engine_request == (engine_name, options):
             return engine
 
-    import buffet
-    engine = buffet.available_engines[engine_name](options = options.copy())
-    _engine_cache.append(((engine_name, options), engine))
-    return engine
+    for entry_point in iter_entry_points(
+        "python.templating.engines",
+        engine_name
+    ):
+        engine_class = entry_point.resolve()
+        engine = engine_class(options = options.copy())
+        _engine_instances.append(((engine_name, options), engine))
+        return engine
+
+    raise ValueError("Can't find an engine with name %r" % engine_name)
 

@@ -15,18 +15,22 @@ from traceback import extract_tb
     link_style = "disabled" # "disabled", "file_only", "file_and_line_number"
 
     def _escape(self, value):
-        if isinstance(value, str):
+        if isinstance(value, bytes):
             value = value.decode("utf-8")
-        return escape(value or (u"<?" + u">"))
+        return escape(value or ("<?" + ">"))
 
     def get_exception_text(self, exception):
-        try:
-            return unicode(exception)
-        except UnicodeDecodeError:
-            return str(exception).decode("utf-8")
+        return str(exception)
     ?>
 
     <?resource cocktail://styles/traceback.css ?>
+
+    <py:ready>
+        <?py
+        if self.exception and self.traceback is None:
+            self.traceback = self.exception.__traceback__
+        ?>
+    </py:ready>
 
     <div py:id="exception_type">
         <py:ready>

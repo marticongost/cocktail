@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""Provides functions for styling output in CLI applications.
+"""Provides functions for styling output in CLI applications.
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -7,7 +7,7 @@ import sys
 from warnings import warn
 from time import time
 
-supported_platforms = ["linux2"]
+supported_platforms = ["linux"]
 
 foreground_codes = {
     "default": 39,
@@ -158,9 +158,9 @@ class ProgressBar(object):
                     label = "\033[2A\033[K" + label + "\n"
 
         if label:
-            print label
+            print(label)
 
-        print line
+        print(line)
         sys.stdout.flush()
         return True
 
@@ -217,6 +217,6 @@ if __name__ == "__main__":
     for fg in fg_list:
         for bg in bg_list:
             for st in st_list:
-                print fg.ljust(15), bg.ljust(15), st.ljust(15),
-                print styled("Example text", fg, bg, st)
+                print(fg.ljust(15), bg.ljust(15), st.ljust(15), end=' ')
+                print(styled("Example text", fg, bg, st))
 

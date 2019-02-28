@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -19,7 +19,7 @@ def get_accessor(obj):
 
 def get(obj, key, default = undefined, language = None):
 
-    if not isinstance(key, basestring):
+    if not isinstance(key, str):
         key = key.name
 
     accessor = get_accessor(obj)
@@ -27,7 +27,7 @@ def get(obj, key, default = undefined, language = None):
 
 def set(obj, key, value, language = None):
 
-    if not isinstance(key, basestring):
+    if not isinstance(key, str):
         key = key.name
 
     accessor = get_accessor(obj)
@@ -180,7 +180,7 @@ class DictAccessor(MemberAccessor):
     @classmethod
     def languages(cls, obj, key):
         items = obj.get(key)
-        return items.iterkeys() if items else ()
+        return iter(items.keys()) if items else ()
 
 
 AttributeAccessor.register()

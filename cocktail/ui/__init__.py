@@ -1,9 +1,9 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
-from pkg_resources import resource_filename
+from cocktail.pkgutils import resource_filename
 from cocktail.html import resource_repositories
 from .component import Component
 from .componentregistry import ComponentRegistry

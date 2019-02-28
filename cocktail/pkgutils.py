@@ -1,13 +1,38 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 Provides importing and naming services for packages, modules and their exported
 objects.
 """
 import sys
 import os.path
+import pkgutil
 from types import ModuleType
 
 PYTHON_EXTENSIONS = ".py", ".pyc", ".pyo", ".pyd"
+
+def resource_filename(module_name, *args):
+    """Retrieves a path relative to the given module.
+
+    This is analogous to `pkg_resources.resource_filename`, but it doesn't
+    import the module.
+
+    :param module_name: The name of the module that contains the requested
+        resource.
+    :type module_name: str
+
+    :param args: Any number of additional arguments; will be appended to the
+        produced path.
+    :type args: str
+
+    :return: The path of the indicated resource.
+    :rtype: str
+
+    :raise ImportError: Raised if the indicated module can't be found.
+    """
+    module = pkgutil.get_loader(module_name)
+    if module is None:
+        raise ImportError("Can't find module %s" % module_name)
+    return os.path.join(os.path.dirname(module.path), *args)
 
 def resolve(reference):
     """Resolves a reference to an object.
@@ -27,7 +52,7 @@ def resolve(reference):
     :raise: Raises `AttributeError` if the indicated module or package doesn't
         contain the requested object.
     """
-    if isinstance(reference, basestring):
+    if isinstance(reference, str):
         return import_object(reference)
     else:
         return reference
@@ -100,10 +125,7 @@ def get_full_name(obj):
             if obj.__name__ == "__main__":
                 name = get_path_name(sys.argv[0])
             else:
-                try:
-                    name = get_path_name(obj.__file__)
-                except:
-                    name = obj.__name__
+                return obj.__name__
         else:
             module_name = getattr(obj, "__module__", None)
 
@@ -119,15 +141,15 @@ def get_full_name(obj):
                     name = prefix + obj.__name__
                 else:
                     # Methods
-                    im_func = getattr(obj, "im_func", None)
-                    im_class = getattr(obj, "im_class", None)
+                    func = getattr(obj, "__func__", None)
+                    self = getattr(obj, "__self__", None)
 
-                    if im_func and im_class:
+                    if func and self:
                         name = "%s%s.%s" \
-                            % (prefix, im_class.__name__, im_func.func_name)
+                            % (prefix, self.__class__.__name__, func.__name__)
                     else:
                         # Functions
-                        func_name = getattr(obj, "func_name", None)
+                        func_name = getattr(obj, "__name__", None)
 
                         if func_name:
                             name = prefix + func_name

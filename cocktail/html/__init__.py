@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 Provides classes for building reusable (X)HTML components.
 
 This package supplies all the necessary building blocks to create visual

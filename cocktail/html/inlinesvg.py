@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -15,7 +15,7 @@ _xml_comment_regex = re.compile(r"<!--.*?-->")
 
 def _load_svg(svg_path):
     with open(svg_path) as file:
-        svg = file.read().decode("utf-8")
+        svg = file.read()
         svg = svg.replace("\r\n", "\n")
         svg = _xml_pi_regex.sub("", svg)
         svg = _xml_doctype_regex.sub("", svg)

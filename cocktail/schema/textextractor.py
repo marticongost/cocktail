@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -109,15 +109,15 @@ class TextExtractor(object):
             return False
 
         if self.verbose:
-            print (" " * 4 * len(self.__stack)) + "Extracting",
-            print styled(member, style = "bold"),
-            print "from",
-            print styled(value, style = "bold"),
+            print((" " * 4 * len(self.__stack)) + "Extracting", end=' ')
+            print(styled(member, style = "bold"), end=' ')
+            print("from", end=' ')
+            print(styled(value, style = "bold"), end=' ')
 
             if language:
-                print "in language", styled(language, style = "bold")
+                print("in language", styled(language, style = "bold"))
             else:
-                print
+                print()
 
         is_object = isinstance(type(value), Schema)
 
@@ -157,7 +157,7 @@ class TextExtractor(object):
             raise ValueError("The text extraction stack is empty")
 
         # Make sure we aren't fed crap
-        if not isinstance(text, basestring):
+        if not isinstance(text, str):
             raise TypeError(
                 "Non string value %r produced during text extraction. \n"
                 "Extraction stack: %r\n"
@@ -169,7 +169,7 @@ class TextExtractor(object):
         # Ignore strings that aren't or can't be converted to unicode
         if isinstance(text, str):
             try:
-                text = unicode(text)
+                text = str(text)
             except UnicodeDecodeError:
                 return False
 
@@ -179,14 +179,14 @@ class TextExtractor(object):
         node.text.append(text)
 
         if self.verbose:
-            print (" " * 4 * len(self.__stack)) + "Feeding",
-            print styled(text, "brown")
+            print((" " * 4 * len(self.__stack)) + "Feeding", end=' ')
+            print(styled(text, "brown"))
 
         return True
 
-    def __unicode__(self):
-        return u" ".join(
-            u" ".join(chunk for chunk in node.text)
+    def __str__(self):
+        return " ".join(
+            " ".join(chunk for chunk in node.text)
             for node in self.__nodes
         )
 
@@ -201,8 +201,8 @@ class TextExtractor(object):
             lang_buffer.extend(node.text)
 
         return dict(
-            (lang, u" ".join(buffer))
-            for lang, buffer in buffers.iteritems()
+            (lang, " ".join(buffer))
+            for lang, buffer in buffers.items()
         )
 
 

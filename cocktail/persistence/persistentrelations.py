@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -45,7 +45,7 @@ class PersistentRelationCollection(Persistent):
 
     def _set_member(self, member):
 
-        if isinstance(member, basestring):
+        if isinstance(member, str):
             self.__member_name = member
             self._v_member = None
         else:

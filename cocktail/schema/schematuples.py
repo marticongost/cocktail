@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -40,7 +40,7 @@ class Tuple(Member):
             desc = []
             for item, member in zip(value, self.items):
                 desc.append(member.translate_value(item))
-            return u", ".join(desc)
+            return ", ".join(desc)
         except:
             return Member.translate_value(
                 self,

@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -24,12 +24,12 @@ class IEConditionalComment(Element):
             condition = self.condition
             
             if condition:
-                rendering.write(u"<!--[if %s]>" % condition)
+                rendering.write("<!--[if %s]>" % condition)
             
             rendering.renderer.write_element(self, rendering)
 
             if condition:
-                rendering.write(u"<![endif]-->")
+                rendering.write("<![endif]-->")
 
 
 class IEWrapper(Element):
@@ -47,16 +47,16 @@ class IEWrapper(Element):
             css_class = self["class"] or ""
 
             for version in self.ie_versions:
-                rendering.write(u"<!--[if IE %d]>" % version)
+                rendering.write("<!--[if IE %d]>" % version)
                 self["class"] = (css_class + " IE IE%d" % version).lstrip()
                 rendering.renderer.write_element_opening(self, rendering)
-                rendering.write(u"<![endif]-->")
+                rendering.write("<![endif]-->")
 
-            rendering.write(u"<!--[if !IE]> -->")
+            rendering.write("<!--[if !IE]> -->")
             self["class"] = (css_class + " not_IE").lstrip()
             should_write_content = \
                 rendering.renderer.write_element_opening(self, rendering)
-            rendering.write(u"<!-- <![endif]-->")
+            rendering.write("<!-- <![endif]-->")
 
             self["class"] = css_class
 

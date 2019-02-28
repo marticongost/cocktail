@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -89,7 +89,7 @@ class SchemaClass(EventHub, Schema):
             cls._create_translation_schema({})
 
         # Fill the schema with members declared as class attributes
-        for name, member in members.iteritems():
+        for name, member in members.items():
             if isinstance(member, Member) \
             and not isinstance(member, SchemaClass):
                 member.name = name
@@ -104,6 +104,9 @@ class SchemaClass(EventHub, Schema):
         if cls.translation_source is None:
             bundle_path = cls.full_name.rsplit(".", 1)[0]
             translations.request_bundle(bundle_path)
+
+    def __hash__(self):
+        return EventHub.__hash__(self)
 
     def inherit(cls, *bases):
 
@@ -326,7 +329,7 @@ class SchemaClass(EventHub, Schema):
 
             # Set multiple translations at once
             if member.translated and isinstance(value, TranslatedValues):
-                for lang, lang_value in value.iteritems():
+                for lang, lang_value in value.items():
                     self.__set__(instance, lang_value, lang)
                 return
 
@@ -547,12 +550,12 @@ def _init_translation(cls,
             and translated_object is not None
         ):
             languages = iter_language_chain(language)
-            languages.next()
+            next(languages)
             get_translation = translated_object.translations.get
             for lang in languages:
                 base_translation = get_translation(lang)
                 if base_translation is not None:
-                    for key, member in cls.members().iteritems():
+                    for key, member in cls.members().items():
                         if member not in excluded_members:
                             values.setdefault(key, base_translation.get(key))
                     break
@@ -560,9 +563,8 @@ def _init_translation(cls,
     Schema.init_instance(cls, instance, values, accessor, excluded_members)
 
 
-class SchemaObject(object):
+class SchemaObject(object, metaclass=SchemaClass):
 
-    __metaclass__ = SchemaClass
     _generates_translation_schema = False
     _translation_schema_base = None
     bidirectional = True
@@ -750,9 +752,6 @@ class SchemaObject(object):
         except NoActiveLanguageError:
             pass
 
-        if isinstance(label, unicode):
-            label = label.encode("utf-8")
-
         return label
 
     def get(self, member, language = None):
@@ -760,7 +759,7 @@ class SchemaObject(object):
         # Normalize the member argument to a member reference
         if not isinstance(member, Member):
 
-            if isinstance(member, basestring):
+            if isinstance(member, str):
                 member = self.__class__[member]
             else:
                 raise TypeError("Expected a string or a member reference")
@@ -773,7 +772,7 @@ class SchemaObject(object):
         # Normalize the member argument to a member reference
         if not isinstance(member, Member):
 
-            if isinstance(member, basestring):
+            if isinstance(member, str):
                 member = self.__class__[member]
             else:
                 raise TypeError("Expected a string or a member reference")
@@ -898,7 +897,7 @@ class SchemaObject(object):
         return extractor
 
     def get_searchable_text(self, languages = None, **kwargs):
-        return unicode(
+        return str(
             self.create_text_extractor(
                 languages = languages,
                 **kwargs
@@ -914,7 +913,7 @@ class SchemaObject(object):
 
     def init_copy(self, copy, member_copy_modes = None):
 
-        for member in self.__class__.members().itervalues():
+        for member in self.__class__.members().values():
             copy_mode = self.get_member_copy_mode(
                 member,
                 member_copy_modes = member_copy_modes
@@ -1043,7 +1042,7 @@ class SchemaObject(object):
                 member_subset = set()
 
                 for member in members:
-                    if isinstance(member, basestring):
+                    if isinstance(member, str):
                         member_name = member
                         member = model.get_member(member_name)
                     else:
@@ -1072,7 +1071,7 @@ class SchemaObject(object):
 
     def get_translated_value(self, member, language = None, **kwargs):
 
-        if isinstance(member, basestring):
+        if isinstance(member, str):
             member = self.__class__.get_member(member)
 
         value = self.get(member, language)
@@ -1165,7 +1164,7 @@ class SchemaObjectAccessor(MemberAccessor):
     @classmethod
     def languages(cls, obj, key):
         if obj.__class__.translated:
-            return obj.translations.keys()
+            return list(obj.translations.keys())
         else:
             return (None,)
 
@@ -1213,7 +1212,7 @@ class TranslationMapping(DictWrapper):
         self._items.__delitem__(key)
 
     def clear(self):
-        for key, value in self._items.items():
+        for key, value in list(self._items.items()):
             self.__owner.removing_translation(
                 language = key,
                 translation = value
@@ -1239,7 +1238,7 @@ class TranslationMapping(DictWrapper):
         return value
 
     def popitem(self):
-        key = self._items.keys()
+        key = list(self._items.keys())
         if not keys:
             raise KeyError('popitem(): dictionary is empty')
 
@@ -1260,11 +1259,11 @@ class TranslationMapping(DictWrapper):
                     % len(args)
                 )
 
-            for key, value in args[0].iteritems():
+            for key, value in args[0].items():
                 self[key] = value
 
         if kwargs:
-            for key, value in kwargs.iteritems():
+            for key, value in kwargs.items():
                 self[key] = value
 
 

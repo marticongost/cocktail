@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -41,12 +41,12 @@ def post_redirection(destination, data):
     form_content = "\n".join(
         """<input type="hidden" name="%s" value="%s">"""
         % (key, value)
-        for key, value in data.iteritems()
+        for key, value in data.items()
     )
 
     cherrypy.response.status = 200
     cherrypy.response.body = (
-        u"""
+        """
         <html>
             <head>
                 <meta http-equiv="Content-Type" content="text/html;charset=utf-8">

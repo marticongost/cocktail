@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -10,9 +10,7 @@ import cherrypy
 from cocktail.events import Event, EventHub
 
 
-class RequestHandler(object):
-
-    __metaclass__ = EventHub
+class RequestHandler(object, metaclass=EventHub):
 
     exposed = True
 

@@ -1,11 +1,11 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
 from abc import ABCMeta, abstractmethod
 import cherrypy
-from simplejson import dumps
+from json import dumps
 from cocktail import schema
 from cocktail.translations import words, set_language
 from cocktail.schema.expressions import Self
@@ -16,9 +16,7 @@ from cocktail.controllers.controller import Controller
 from cocktail.controllers.requestproperty import request_property
 
 
-class AutocompleteSource(object):
-
-    __metaclass__ = ABCMeta
+class AutocompleteSource(object, metaclass=ABCMeta):
 
     query = None
 
@@ -141,15 +139,15 @@ class AutocompleteController(Controller):
 
         source = self.autocomplete_factory(self.query)
 
-        yield u"["
+        yield "["
 
         entry = {}
-        glue = u""
+        glue = ""
 
         for item in source.items:
             yield glue
-            glue = u","
+            glue = ","
             yield dumps(source.get_entry(item))
 
-        yield u"]"
+        yield "]"
 

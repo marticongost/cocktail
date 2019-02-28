@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -109,9 +109,9 @@ class Component(object):
 
     def get_source(self):
         if self.__state:
-            return unicode(self.__state.source)
+            return str(self.__state.source)
         else:
-            return u""
+            return ""
 
     @property
     def is_module(self):
@@ -196,7 +196,7 @@ class Component(object):
             dependencies.append(self)
 
             if self.__state:
-                subcomponents = self.__state.subcomponents.itervalues()
+                subcomponents = iter(self.__state.subcomponents.values())
 
                 if recursive:
                     for subcomponent in subcomponents:
@@ -403,7 +403,7 @@ class UIScript(Script):
             )
         )
 
-        for key, value in self.variables.iteritems():
+        for key, value in self.variables.items():
             declarations_script.append(
                 "cocktail.setVariable(%s, %s);" % (dumps(key), dumps(value))
             )

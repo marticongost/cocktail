@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -35,7 +35,7 @@ class DatePicker(TextBox):
 
             params = self.date_picker_params.copy()
 
-            for key, value in self.get_default_params().iteritems():
+            for key, value in self.get_default_params().items():
                 params.setdefault(key, value)
 
             self.set_client_param("datePickerParams", params)

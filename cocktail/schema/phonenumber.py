@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -97,7 +97,7 @@ class PhoneNumber(String):
 
         value = context.value
 
-        if isinstance(value, basestring):
+        if isinstance(value, str):
 
             valid = True
 
@@ -219,4 +219,5 @@ PhoneNumber.set_country_info("es", 34, NINE_DIGITS_EXPR)
 PhoneNumber.set_country_info("fr", 33, NINE_DIGITS_EXPR)
 PhoneNumber.set_country_info("gi", 350, re.compile(r"^\d{8}$"))
 PhoneNumber.set_country_info("pt", 351, NINE_DIGITS_EXPR)
+PhoneNumber.set_country_info("de", 49, re.compile(r"^\d{2,}"))
 

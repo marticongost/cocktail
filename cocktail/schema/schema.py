@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 Provides a member that handles compound values.
 
 @author:		Martí Congost
@@ -98,7 +98,7 @@ class Schema(Member):
                     schema_copy.inherit(base)
 
         if self.__members:
-            for member in self.__members.itervalues():
+            for member in self.__members.values():
                 schema_copy.add_member(deepcopy(member))
 
         return schema_copy
@@ -114,7 +114,7 @@ class Schema(Member):
 
         # Set the value of all object members, either from a parameter or from
         # a default value definition
-        for name, member in self.members().iteritems():
+        for name, member in self.members().items():
 
             if excluded_members is not None and member in excluded_members:
                 continue
@@ -269,7 +269,7 @@ class Schema(Member):
 
         # From a dictionary
         if isinstance(members, dict):
-            for name, member in members.iteritems():
+            for name, member in members.items():
 
                 if isinstance(member, type):
                     member = member()
@@ -299,7 +299,7 @@ class Schema(Member):
         """
 
         # Normalize string references to member objects
-        if isinstance(member, basestring):
+        if isinstance(member, str):
             member = self[member]
 
         if member._schema is not self:
@@ -352,7 +352,7 @@ class Schema(Member):
                     yield member
 
         if self.__members:
-            for member in self.__members.itervalues():
+            for member in self.__members.values():
                 yield member
 
     def get_member(self, name):
@@ -526,11 +526,11 @@ class Schema(Member):
 
         for schema in schemas:
             if schema.__members:
-                remaining = set(schema.__members.itervalues())
+                remaining = set(schema.__members.values())
 
                 if schema.members_order:
                     for member in schema.members_order:
-                        if isinstance(member, basestring):
+                        if isinstance(member, str):
                             member = schema[member]
                         if not (member.before_member or member.after_member):
                             remaining.remove(member)
@@ -566,7 +566,7 @@ class Schema(Member):
                 pos = -1
                 anchor = member.before_member or member.after_member
 
-                if isinstance(anchor, basestring):
+                if isinstance(anchor, str):
                     if recursive:
                         anchor = self.get_member(anchor)
                     else:

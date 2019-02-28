@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -38,7 +38,7 @@ class Currency(String):
             elif format == "code+label":
                 translation = translate_currency(value, language = language)
                 if translation:
-                    translation = u"%s - %s" % (value, translation)
+                    translation = "%s - %s" % (value, translation)
                 else:
                     translation = value
             elif format == "code":

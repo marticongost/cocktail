@@ -1,10 +1,10 @@
 #-*- coding: utf-8 -*-
-u"""Provides the `FormProcessor` and `Form` classes.
+"""Provides the `FormProcessor` and `Form` classes.
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
 import cherrypy
-from cocktail.modeling import getter, cached_getter, camel_to_underscore
+from cocktail.modeling import cached_getter, camel_to_underscore
 from cocktail.pkgutils import get_full_name
 from cocktail.events import Event, EventHub
 from cocktail import schema
@@ -77,7 +77,7 @@ class FormProcessor(object):
 
                     forms.append(form)
 
-            for form in self.forms.itervalues():
+            for form in self.forms.values():
                 find_submitted_forms(form)
 
             return forms
@@ -123,10 +123,8 @@ class FormProcessor(object):
         self.output["form_errors"] = self.errors
 
 
-class Form(object):
+class Form(object, metaclass=EventHub):
     """A description of a form based on a schema."""
-
-    __metaclass__ = EventHub
 
     controller = None
     actions = (None,)

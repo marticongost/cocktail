@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -38,7 +38,7 @@ class ResourceLoader(DictWrapper):
 
             oldest_creation_time = time() - self.expiration
 
-            for key, resource in self.__resources.items():
+            for key, resource in list(self.__resources.items()):
                 if resource.creation < oldest_creation_time:
                     del self[key]
 
@@ -58,8 +58,8 @@ class ResourceLoader(DictWrapper):
     def _miss(self, key, expiration):
 
         if self.verbose:
-            print styled("ResourceLoader: Generating", "white", "red", "bold"),
-            print key
+            print(styled("ResourceLoader: Generating", "white", "red", "bold"), end=' ')
+            print(key)
 
         value = self.load(key)
 
@@ -81,8 +81,8 @@ class ResourceLoader(DictWrapper):
                         raise ResourceExpired(resource)
                 else:
                     if self.verbose:
-                        print styled("ResourceLoader: Recovering", "white", "green", "bold"),
-                        print key
+                        print(styled("ResourceLoader: Recovering", "white", "green", "bold"), end=' ')
+                        print(key)
                     return resource.value
 
         if default is missing:
@@ -92,12 +92,12 @@ class ResourceLoader(DictWrapper):
 
     def set_value(self, key, value, expiration = None):
         if self.verbose:
-            print styled("ResourceLoader: Storing", "white", "pink", "bold"),
-            print key,
+            print(styled("ResourceLoader: Storing", "white", "pink", "bold"), end=' ')
+            print(key, end=' ')
             if expiration is None:
-                print
+                print()
             else:
-                print styled("expiration:", "pink"), expiration
+                print(styled("expiration:", "pink"), expiration)
         self.__resources[key] = Resource(key, value, expiration)
 
     def load(self, key):
@@ -122,7 +122,7 @@ class ResourceLoader(DictWrapper):
             return resource
 
     def clear(self):
-        resources = self.__resources.values()
+        resources = list(self.__resources.values())
         self.__resources.clear()
         for resource in resources:
             self._resource_removed(resource)
@@ -132,14 +132,14 @@ class ResourceLoader(DictWrapper):
         # Expiration
         if resource.has_expired(default_expiration = self.expiration):
             if verbose:
-                print styled(
+                print(styled(
                     "ResourceLoader: Resource expired",
                     "white", "brown", "bold"
-                ), resource.key,
+                ), resource.key, end=' ')
                 if resource.expiration is None:
-                    print self.expiration
+                    print(self.expiration)
                 else:
-                    print resource.expiration
+                    print(resource.expiration)
 
             return False
 
@@ -152,11 +152,11 @@ class ResourceLoader(DictWrapper):
                 invalidation = mktime(invalidation.timetuple())
             if invalidation > resource.creation:
                 if verbose:
-                    print styled(
+                    print(styled(
                         "ResourceLoader: Resource invalidated",
                         "white", "brown", "bold"
-                    ),
-                    print resource.key, invalidation
+                    ), end=' ')
+                    print(resource.key, invalidation)
                 return False
 
         return True

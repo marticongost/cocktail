@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -11,7 +11,7 @@ from persistent import Persistent
 from BTrees.OOBTree import OOBTree
 from BTrees.IOBTree import IOBTree
 from cocktail import schema
-from cocktail.modeling import getter, OrderedSet
+from cocktail.modeling import OrderedSet
 from cocktail.events import Event, event_handler
 from cocktail.translations import translations
 from cocktail.schema import (
@@ -80,7 +80,7 @@ def _get_reference_is_persistent_relation(self):
     return self.type and issubclass(self.type, PersistentObject)
 
 schema.Reference.is_persistent_relation = \
-    getter(_get_reference_is_persistent_relation)
+    property(_get_reference_is_persistent_relation)
 
 def _get_collection_is_persistent_relation(self):
     items = self.items
@@ -89,7 +89,7 @@ def _get_collection_is_persistent_relation(self):
         and items.is_persistent_relation
 
 schema.Collection.is_persistent_relation = \
-    getter(_get_collection_is_persistent_relation)
+    property(_get_collection_is_persistent_relation)
 
 class PersistentClass(SchemaClass):
 
@@ -137,9 +137,8 @@ class PersistentClass(SchemaClass):
         return translations_member
 
 
-class PersistentObject(SchemaObject, Persistent):
+class PersistentObject(SchemaObject, Persistent, metaclass=PersistentClass):
 
-    __metaclass__ = PersistentClass
     _generates_translation_schema = False
     __inserted = False
 
@@ -259,7 +258,7 @@ class PersistentObject(SchemaObject, Persistent):
                     "Can't call get_instance() if neither the requested class "
                     "or member have an index"
                 )
-            for instance in cls.index.values():
+            for instance in list(cls.index.values()):
                 if instance.get(member) == value:
                     match = instance
                     break
@@ -289,7 +288,7 @@ class PersistentObject(SchemaObject, Persistent):
         if instance is None:
 
             if id is None:
-                for key, value in criteria.iteritems():
+                for key, value in criteria.items():
                     break
             else:
                 key = "id"
@@ -336,7 +335,7 @@ class PersistentObject(SchemaObject, Persistent):
         elif isinstance(event.value, dict):
             event.value = PersistentMapping(event.value)
 
-    @getter
+    @property
     def is_inserted(self):
         """Indicates wether the object has been inserted into the database.
         @type: bool
@@ -362,7 +361,7 @@ class PersistentObject(SchemaObject, Persistent):
         self.inserting(inserted_objects = inserted_objects)
         self.__inserted = True
 
-        for member in self.__class__.members().itervalues():
+        for member in self.__class__.members().values():
 
             # Insert related objects
             if isinstance(member, Reference):
@@ -401,7 +400,7 @@ class PersistentObject(SchemaObject, Persistent):
         self.deleting(deleted_objects = deleted_objects)
         self.__inserted = False
 
-        for member in self.__class__.members().itervalues():
+        for member in self.__class__.members().values():
 
             if isinstance(member, schema.RelationMember):
 
@@ -545,9 +544,9 @@ def _get_constraint_filters(self, parent):
     constraints = self.resolve_constraint(self.relation_constraints, context)
 
     if constraints:
-        if hasattr(constraints, "iteritems"):
+        if hasattr(constraints, "items"):
             get_related_member = self.related_type.get_member
-            for key, value in constraints.iteritems():
+            for key, value in constraints.items():
                 yield get_related_member(key).equal(value)
         else:
             for constraint in constraints:

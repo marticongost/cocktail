@@ -1,11 +1,11 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
-from pkg_resources import resource_filename
 from threading import RLock
 from collections import defaultdict
+from cocktail.pkgutils import resource_filename
 from .component import Component
 from .theme import default_theme
 from .exceptions import ComponentFileError
@@ -23,7 +23,7 @@ class ComponentRegistry(object):
         self.__lock = RLock()
 
     def resolve(self, component):
-        if isinstance(component, basestring):
+        if isinstance(component, str):
             return self.get(component)
         else:
             return component
@@ -44,7 +44,7 @@ class ComponentRegistry(object):
                         component = Component(self, full_name)
                         self.__components[full_name] = component
                         component.load()
-                    except ComponentFileError, e:
+                    except ComponentFileError as e:
                         if e.full_name == full_name:
                             e.referrer = referrer
                             e.reference_type = reference_type

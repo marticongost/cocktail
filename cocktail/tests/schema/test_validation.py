@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -47,7 +47,7 @@ class ValidationTestCase(TestCase):
 
                 if error_attributes:
                     for attrib_key, attrib_value \
-                    in error_attributes.iteritems():
+                    in error_attributes.items():
                         assert getattr(error, attrib_key) == attrib_value
 
 
@@ -133,11 +133,11 @@ class MemberValidationTestCase(ValidationTestCase):
         from cocktail.schema import Member, exceptions
 
         self._test_validation(
-            Member(type = basestring),
-            [None, "hello world", u"Hola món!", ""],
+            Member(type = str),
+            [None, "hello world", "Hola món!", ""],
             [15, 0, [], ["hello world"], {}],
             exceptions.TypeCheckError,
-            {"type": basestring}
+            {"type": str}
         )
 
         self._test_validation(
@@ -418,7 +418,7 @@ class CollectionValidationTestCase(ValidationTestCase):
 
         self._test_validation(
             Collection(min = 3, required = False),
-            [None, [1, 2, 3], ["a", "b", "c", "d"], range(50)],
+            [None, [1, 2, 3], ["a", "b", "c", "d"], list(range(50))],
             [[], ["a"], [1, 2]],
             exceptions.MinItemsError
         )
@@ -430,7 +430,7 @@ class CollectionValidationTestCase(ValidationTestCase):
         self._test_validation(
             Collection(max = 3, required = False),
             [None, [], ["a"], (1, 2), set([1, 2, 3])],
-            [["a", "b", "c", "d"], range(10)],
+            [["a", "b", "c", "d"], list(range(10))],
             exceptions.MaxItemsError
         )
 

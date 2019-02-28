@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 Definition of multi-language string catalogs.
 
 @author:		Martí Congost

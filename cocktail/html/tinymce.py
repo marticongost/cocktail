@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -7,7 +7,7 @@ u"""
 @since:			September 2008
 """
 from warnings import warn
-from simplejson import dumps
+from json import dumps
 from cocktail.translations import get_language, directionality
 from cocktail.html import Element, templates
 

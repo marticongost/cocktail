@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -7,7 +7,7 @@ u"""
 @since:			November 2008
 """
 from threading import local
-from cocktail.modeling import getter, abstractmethod
+from cocktail.modeling import abstractmethod
 from cocktail.events import Event, event_handler
 from cocktail.schema.accessors import get
 from cocktail.schema.member import Member
@@ -149,7 +149,7 @@ class RelationMember(Member):
                 ):
                     related_end = None
             else:
-                for member in related_type.members().itervalues():
+                for member in related_type.members().values():
                     if getattr(member, "bidirectional", False):
                         if member.related_key:
                             if self.name == member.related_key:
@@ -231,7 +231,7 @@ class RelationMember(Member):
     def anonymous(self):
         return self.__anonymous
 
-    @getter
+    @property
     @abstractmethod
     def related_type(self):
         pass

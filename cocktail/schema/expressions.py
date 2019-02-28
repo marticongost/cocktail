@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -404,7 +404,7 @@ class SearchExpression(Expression):
                     return True
             else:
                 if self.match_mode == "prefix":
-                    query_tokens = [token + u"*" for token in query_tokens]
+                    query_tokens = [token + "*" for token in query_tokens]
 
                 operand = all if self.logic == "and" else any
                 if operand(
@@ -429,7 +429,7 @@ class ProductExpression(Expression):
 
 
 class DivisionExpression(Expression):
-    op = operator.div
+    op = operator.truediv
 
 
 class AndExpression(Expression):
@@ -511,7 +511,7 @@ class LacksExpression(Expression):
 class MatchExpression(Expression):
 
     def op(self, a, b):
-        if isinstance(b, basestring):
+        if isinstance(b, str):
             b = re.compile(b)
 
         return b.search(a)
@@ -703,7 +703,7 @@ class DescendsFromExpression(Expression):
 @translations.instances_of(Constant)
 def translate_constant(expr, **kwargs):
     if expr.value is None:
-        return u"Ø"
+        return "Ø"
     else:
-        return translations(expr.value, **kwargs) or unicode(expr.value)
+        return translations(expr.value, **kwargs) or str(expr.value)
 

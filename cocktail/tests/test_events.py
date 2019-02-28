@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -393,9 +393,7 @@ class EventTestCase(TestCase):
 
         from cocktail.events import Event, EventHub, event_handler
 
-        class Foo(object):
-            __metaclass__ = EventHub
-
+        class Foo(object, metaclass=EventHub):
             spammed = Event()
 
             @event_handler

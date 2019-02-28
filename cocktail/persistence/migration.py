@@ -1,11 +1,10 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
 from zodbupdate.update import Updater
 from cocktail.modeling import (
-    getter,
     ListWrapper,
     DictWrapper,
     OrderedSet,
@@ -30,12 +29,12 @@ def migrate(verbose = False, commit = False):
         informative messages of their progress.
     :type verbose: bool
     """
-    for step in migration_steps.itervalues():
+    for step in migration_steps.values():
         step.execute(verbose = verbose, commit = commit)
 
 def mark_all_migrations_as_executed():
     """Flags all migration steps as already executed."""
-    for step in migration_steps.itervalues():
+    for step in migration_steps.values():
         step.mark_as_executed()
 
 def migration_step(func):
@@ -45,9 +44,7 @@ def migration_step(func):
     return step
 
 
-class MigrationStep(object):
-
-    __metaclass__ = EventHub
+class MigrationStep(object, metaclass=EventHub):
 
     executing = Event()
 
@@ -77,7 +74,7 @@ class MigrationStep(object):
     def __repr__(self):
         return "MigrationStep(%r)" % self.__id
 
-    @getter
+    @property
     def id(self):
         """A unique identifier for the migration step."""
         return self.__id
@@ -104,10 +101,10 @@ class MigrationStep(object):
 
         # Launch migration logic
         if verbose:
-            print "%s%s" % (
+            print("%s%s" % (
                 styled("Executing migration step ", **self.step_styles),
                 styled(self.__id, **self.step_id_styles)
-            )
+            ))
 
         self.executing(verbose = verbose)
 
@@ -179,7 +176,7 @@ class MigrationStep(object):
 
         :type dependency: `MigrationStep` or str
         """
-        if isinstance(dependency, basestring):
+        if isinstance(dependency, str):
             dependency = migration_steps[dependency]
 
         self.__dependencies._items.append(dependency)
@@ -200,7 +197,7 @@ class MigrationStep(object):
                     (format_class_name(old_name),
                      format_class_name(new_name))
                     for old_name, new_name
-                    in step.__renamed_classes.iteritems()
+                    in step.__renamed_classes.items()
                 )
             )
             updater()
@@ -208,8 +205,8 @@ class MigrationStep(object):
             root = datastore.root
 
             # Rename indexes
-            for key in list(root.iterkeys()):
-                for old_name, new_name in step.__renamed_classes.iteritems():
+            for key in list(root.keys()):
+                for old_name, new_name in step.__renamed_classes.items():
                     if key == old_name + "-keys":
                         root[new_name + "-keys"] = root[key]
                         del root[key]
@@ -221,7 +218,7 @@ class MigrationStep(object):
     def _instance_processing_handler(cls, e):
         step = e.source
         root = datastore.root
-        for cls, processors in step.__class_processors.iteritems():
+        for cls, processors in step.__class_processors.items():
             for instance in resolve(cls).select():
                 for processor in processors:
                     processor(instance)
@@ -245,7 +242,7 @@ class MigrationStep(object):
 
     def _resolve_member(self, member):
 
-        if isinstance(member, basestring):
+        if isinstance(member, str):
             last_dot = member.rfind(".")
 
             if last_dot == -1:
@@ -281,7 +278,7 @@ class MigrationStep(object):
         if translated:
             @self.processor(cls)
             def process(instance):
-                for trans in instance.translations.itervalues():
+                for trans in instance.translations.values():
                     rename(trans)
         else:
             self.process_instances(cls, rename)
@@ -294,7 +291,7 @@ class MigrationStep(object):
             @self.processor(member.schema)
             def process(instance):
                 key = "_" + member.name
-                for trans in instance.translations.itervalues():
+                for trans in instance.translations.values():
                     try:
                         delattr(trans, key)
                     except AttributeError:
@@ -339,7 +336,7 @@ class MigrationStep(object):
                     if value is not undefined:
                         instance.set(member, value)
                         break
-            for trans in instance.translations.itervalues():
+            for trans in instance.translations.values():
                 delattr(trans, key)
 
 

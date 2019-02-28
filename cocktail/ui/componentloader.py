@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -329,7 +329,7 @@ class ComponentLoader(object):
             ) as b:
                 if self.properties:
                     with b.braces("return", ";") as b:
-                        props = self.properties.items()
+                        props = list(self.properties.items())
                         for prop_name, prop_params in props[:-1]:
                             b.write(
                                 "%s: %s," % (prop_name, dumps(prop_params))
@@ -841,7 +841,7 @@ class ComponentLoader(object):
                     self.insert_stylesheet(node, sheet)
 
         # Assign attributes
-        for attrib_name, attrib_value in attributes.iteritems():
+        for attrib_name, attrib_value in attributes.items():
 
             attrib_qname = QName(attrib_name)
             attrib_name = attrib_qname.localname
@@ -1051,7 +1051,7 @@ class ComponentLoader(object):
             try:
                 with open(path) as svg_file:
                     svg = svg_file.read()
-            except Exception, e:
+            except Exception as e:
                 self.trigger_parser_error(
                     "Error opening SVG file %s: %s" % (url, e)
                 )

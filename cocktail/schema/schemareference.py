@@ -1,12 +1,11 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
 @organization:	Whads/Accent SL
 @since:			June 2008
 """
-from cocktail.modeling import getter
 from cocktail.events import event_handler
 from cocktail.pkgutils import import_object
 from cocktail.translations import translations
@@ -45,7 +44,7 @@ class Reference(RelationMember):
     def _remove_relation(self, obj, related_obj):
         get_accessor(obj).set(obj, self.name, None)
 
-    @getter
+    @property
     def related_type(self):
         return self.type
 
@@ -53,7 +52,7 @@ class Reference(RelationMember):
 
         filters = list(args)
 
-        for key, value in kwargs.iteritems():
+        for key, value in kwargs.items():
             filters.append(self.related_type[key].equal(value))
 
         return HasExpression(self, filters)
@@ -68,7 +67,7 @@ class Reference(RelationMember):
     def _get_class_family(self):
 
         # Resolve string references
-        if isinstance(self.__class_family, basestring):
+        if isinstance(self.__class_family, str):
             self.__class_family = import_object(self.__class_family)
 
         return self.__class_family
@@ -119,7 +118,7 @@ class Reference(RelationMember):
                     constraints_mapping = relation_constraints
                     relation_constraints = (
                         self.type.get_member(key).equal(value)
-                        for key, value in constraints_mapping.iteritems()
+                        for key, value in constraints_mapping.items()
                     )
 
                 if relation_constraints:
@@ -167,7 +166,7 @@ class Reference(RelationMember):
                     order = getattr(self.type, "descriptive_member", None)
 
                 if order is not None:
-                    if isinstance(order, (basestring, Member)):
+                    if isinstance(order, (str, Member)):
                         query.add_order(order)
                     else:
                         for criteria in order:
