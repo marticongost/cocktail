@@ -5,9 +5,11 @@
     ca: Confirmar t{member.source_member}
     es: Confirmar t{member.source_member}
     en: t{member.source_member} confirmation
+    de: t{member.source_member} Wiederholung
 
     [ConfirmationError.instance(instance, **kwargs)]
     ca: El camp t{instance.member.source_member} i la seva confirmació no coincideixen
     es: El campo t{instance.member.source_member} y su confirmación no coinciden
     en: t{instance.member.source_member} doesn't match its confirmation
+    de: Das t{instance.member.source_member} feld stimmt nicht mit der Bestätigung überein
 
