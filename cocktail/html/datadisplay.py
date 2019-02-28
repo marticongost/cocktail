@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 Visual elements for data binding.
 
 @author:        Martí Congost
@@ -8,7 +8,7 @@ Visual elements for data binding.
 @since:         July 2008
 """
 from cocktail import schema
-from cocktail.modeling import getter, ListWrapper, empty_list
+from cocktail.modeling import ListWrapper, empty_list
 from cocktail.translations import translations, require_language
 
 # IMPORTANT: importing 'display_factory' is required for backwards
@@ -42,7 +42,7 @@ class DataDisplay(UIGenerator):
 
     def _resolve_member(self, member):
 
-        if isinstance(member, basestring):
+        if isinstance(member, str):
             if self.schema is None:
                 raise ValueError(
                     "Can't resolve a member by name on an unbound data display"
@@ -52,7 +52,7 @@ class DataDisplay(UIGenerator):
             return member
 
     def _normalize_member(self, member):
-        if isinstance(member, basestring):
+        if isinstance(member, str):
             return member
 
         if self.schema is None:
@@ -68,7 +68,7 @@ class DataDisplay(UIGenerator):
 
         return name
 
-    @getter
+    @property
     def displayed_members(self):
         if not self.schema:
             return empty_list
@@ -77,7 +77,7 @@ class DataDisplay(UIGenerator):
                 for member in self.schema.ordered_members(True)
                 if self.get_member_displayed(member))
 
-    @getter
+    @property
     def displayed_members_by_group(self):
         if not self.schema:
             return empty_list
@@ -302,7 +302,7 @@ class DataDisplay(UIGenerator):
             yield display
 
     def translate_value(self, obj, member, value):
-        return member.translate_value(value) or u"-"
+        return member.translate_value(value) or "-"
 
 
 NO_SELECTION = 0

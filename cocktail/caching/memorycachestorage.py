@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -44,7 +44,7 @@ class MemoryCacheStorage(CacheStorage):
 
     def _set_memory_limit(self, memory_limit):
 
-        if isinstance(memory_limit, basestring):
+        if isinstance(memory_limit, str):
             memory_limit = parse_bytes(memory_limit)
 
         reducing_size = memory_limit and (
@@ -127,7 +127,7 @@ class MemoryCacheStorage(CacheStorage):
         else:
             info = format_bytes(self.memory_usage)
 
-        print "Memory usage: %s\n" % info
+        print("Memory usage: %s\n" % info)
 
     def __require_entry(self, key):
         with self.__lock:
@@ -148,7 +148,7 @@ class MemoryCacheStorage(CacheStorage):
     def __remove_entry(self, entry):
 
         if self.verbose_invalidation:
-            print styled("  " + entry.key, "red")
+            print(styled("  " + entry.key, "red"))
 
         self.__memory_usage -= entry.size
 
@@ -285,7 +285,7 @@ class MemoryCacheStorage(CacheStorage):
                 for selector in scope:
 
                     # Strings select a single tag
-                    if isinstance(selector, basestring):
+                    if isinstance(selector, str):
                         selector_entries = self.__entries_by_tag.get(selector)
 
                     # Tuples of strings select the intersection of multiple

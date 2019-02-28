@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -7,10 +7,13 @@ u"""
 @since:			February 2008
 """
 import os
-from pkg_resources import resource_filename
 from cocktail.modeling import extend
 from cocktail.resourceloader import ResourceLoader
-from cocktail.pkgutils import import_object, set_full_name
+from cocktail.pkgutils import (
+    import_object,
+    set_full_name,
+    resource_filename
+)
 from cocktail.html.rendering import rendering_cache
 from cocktail.html.viewnames import split_view_name
 from cocktail.html.templates.compiler import TemplateCompiler
@@ -132,7 +135,7 @@ class TemplateLoader(object):
         if source_file is not None:
 
             # Read the template's source
-            f = file(source_file, "r")
+            f = open(source_file, "r")
             try:
                 source = f.read()
             finally:
@@ -145,7 +148,7 @@ class TemplateLoader(object):
             dependencies = set()
             self.__dependencies[name] = dependencies
 
-            for dependency in compiler.classes.keys():
+            for dependency in list(compiler.classes.keys()):
 
                 dependencies.add(dependency)
                 dependency_derivatives = self.__derivatives.get(dependency)
@@ -244,7 +247,7 @@ if __name__ == "__main__":
     from sys import argv, exit
 
     if len(argv) != 2:
-        print "Usage: %s <template file>" % argv[0]
+        print("Usage: %s <template file>" % argv[0])
         exit(1)
 
     loader = TemplateLoader()
@@ -261,5 +264,5 @@ if __name__ == "__main__":
     ).get_source()
 
     for i, line in enumerate(class_source.split("\n")):
-        print str(i + 1).rjust(5) + ": " + line
+        print(str(i + 1).rjust(5) + ": " + line)
 

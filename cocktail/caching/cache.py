@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -76,20 +76,20 @@ class Cache(object):
             try:
                 value = self.storage.retrieve(norm_key)
             except CacheKeyError:
-                print (
+                print((
                     styled("CACHE", "white", "dark_gray")
                     + " " + styled("Miss", "red", style = "bold") + "\n"
                     + styled("  Key:", "light_gray", style = "bold")
                     + " " + norm_key + "\n"
-                )
+                ))
                 raise
             else:
-                print (
+                print((
                     styled("CACHE", "white", "dark_gray")
                     + " " + styled("Hit", "bright_green", style = "bold") + "\n"
                     + styled("  Key:", "light_gray", style = "bold")
                     + " " + norm_key + "\n"
-                )
+                ))
                 return value
         else:
             return self.storage.retrieve(norm_key)
@@ -112,20 +112,20 @@ class Cache(object):
             try:
                 value = self.storage.retrieve_with_metadata(norm_key)
             except CacheKeyError:
-                print (
+                print((
                     styled("CACHE", "white", "dark_gray")
                     + " " + styled("Miss", "red", style = "bold") + "\n"
                     + styled("  Key:", "light_gray", style = "bold")
                     + " " + norm_key + "\n"
-                )
+                ))
                 raise
             else:
-                print (
+                print((
                     styled("CACHE", "white", "dark_gray")
                     + " " + styled("Hit", "bright_green", style = "bold") + "\n"
                     + styled("  Key:", "light_gray", style = "bold")
                     + " " + norm_key + "\n"
-                )
+                ))
                 return value
         else:
             return self.storage.retrieve_with_metadata(norm_key)
@@ -169,7 +169,7 @@ class Cache(object):
                     + " " + str(sorted(tags))
                 )
             lines.append("")
-            print "\n".join(lines)
+            print("\n".join(lines))
 
         if expiration is not None:
             expiration = normalize_expiration(expiration)
@@ -215,14 +215,14 @@ class Cache(object):
         norm_key = self.normalize_key(key)
 
         if self.verbose:
-            print (
+            print((
                 styled("CACHE", "white", "dark_gray")
                 + " " + styled("Set expiration", "pink", style = "bold") + "\n"
                 + styled("  Key:", "light_gray", style = "bold")
                 + " " + norm_key + "\n"
                 + styled("  Expiration:", "light_gray", style = "bold")
                 + " " + str(expiration) + "\n"
-            )
+            ))
 
         if expiration is not None:
             expiration = normalize_expiration(expiration)
@@ -247,7 +247,7 @@ class Cache(object):
         self.storage.remove(norm_key)
 
         if self.verbose:
-            print styled("CACHE: REMOVE", "white", "magenta"), key
+            print(styled("CACHE: REMOVE", "white", "magenta"), key)
 
     def discard(self, key):
         """Removes the given key from the cache, if it exists.
@@ -267,12 +267,12 @@ class Cache(object):
 
         if self.storage.discard(norm_key):
             if self.verbose:
-                print (
+                print((
                     styled("CACHE", "white", "dark_gray")
                     + " " + styled("Remove", "magenta", style = "bold") + "\n"
                     + styled("  Key:", "light_gray", style = "bold")
                     + " " + norm_key + "\n"
-                )
+                ))
             return True
         else:
             return False
@@ -300,14 +300,14 @@ class Cache(object):
         if self.enabled and self.storage is not None:
 
             if self.verbose:
-                print (
+                print((
                     styled("CACHE", "white", "dark_gray")
                     + " " + styled("Clear", "magenta", style = "bold") + "\n"
                     + styled("  Scope:", "light_gray", style = "bold")
                     + " " + (
                         "whole cache" if scope is whole_cache else repr(scope)
                     ) + "\n"
-                )
+                ))
 
             self.storage.clear(scope = normalize_scope(scope))
 
@@ -352,7 +352,7 @@ class Cache(object):
             transaction_invalidation_scope.update(scope)
 
         if self.verbose:
-            print (
+            print((
                 styled("CACHE", "white", "dark_gray")
                 + " " + styled("Clear after commit", "magenta", style = "bold")
                 + "\n"
@@ -360,7 +360,7 @@ class Cache(object):
                 + " " + (
                     "whole cache" if scope is whole_cache else repr(scope)
                 ) + "\n"
-            )
+            ))
 
     def drop_weight(self):
         """Removes an entry from the cache, in order to free resources.
@@ -374,12 +374,12 @@ class Cache(object):
         key = self.storage.drop_weight()
 
         if key and self.verbose:
-            print (
+            print((
                 styled("CACHE", "white", "dark_gray")
                 + " " + styled("Drop weight", "magenta", style = "bold") + "\n"
                 + styled("  Key:", "light_gray", style = "bold")
                 + " " + key + "\n"
-            )
+            ))
 
         return key
 
@@ -387,7 +387,7 @@ class Cache(object):
     def normalize_key(cls, key):
         """Processes a key to make sure it can be used as a caching key."""
         key = cls._obtain_key(key)
-        if not isinstance(key, basestring):
+        if not isinstance(key, str):
             key = repr(key)
         return key
 

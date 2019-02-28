@@ -2,14 +2,14 @@
 @init
 def min_size(error):
     return "%sx%s" % (
-        error.min_width or u"∞",
-        error.min_height or u"∞"
+        error.min_width or "∞",
+        error.min_height or "∞"
     )
 
 def max_size(error):
     return "%sx%s" % (
-        error.max_width or u"∞",
-        error.max_height or u"∞"
+        error.max_width or "∞",
+        error.max_height or "∞"
     )
 @end
 

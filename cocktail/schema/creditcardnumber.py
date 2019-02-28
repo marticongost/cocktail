@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -17,7 +17,7 @@ class CreditCardNumber(String):
         String.__init__(self, *args, **kwargs)
 
     def normalization(self, value):
-        if isinstance(value, basestring):
+        if isinstance(value, str):
             value = whitespace_expr.sub("", value)
         return value
 
@@ -29,7 +29,7 @@ class CreditCardNumber(String):
             yield error
 
         if (
-            isinstance(context.value, basestring)
+            isinstance(context.value, str)
             and not self.checksum(context.value)
         ):
             if min is not None and len(context.value) < min:

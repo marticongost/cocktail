@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -46,7 +46,7 @@ class Integer(Number):
             min_value = self.resolve_constraint(self.min, context)
             max_value = self.resolve_constraint(self.max, context)
             if min_value is not None and max_value is not None:
-                values = range(min_value, max_value + 1)
+                values = list(range(min_value, max_value + 1))
 
         return values
 
@@ -62,7 +62,7 @@ class Decimal(Number):
 
     def translate_value(self, value, language = None, **kwargs):
         if value is None:
-            return u""
+            return ""
         else:
             return translations(value, language, **kwargs)
 

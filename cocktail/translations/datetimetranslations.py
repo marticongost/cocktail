@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -56,32 +56,32 @@ def _date_instance_ca(instance, style = DATE_STYLE_NUMBERS, relative = False):
         elif day_diff == 1:
             return translations("cocktail.tomorrow")
         elif 1 < day_diff <= 7:
-            return weekday_name(instance) + u" que ve"
+            return weekday_name(instance) + " que ve"
         elif -7 <= day_diff < 0:
-            return weekday_name(instance) + u" passat"
+            return weekday_name(instance) + " passat"
 
     if style == DATE_STYLE_NUMBERS:
         return instance.strftime(translations("cocktail.date_format"))
     elif style == DATE_STYLE_ABBR:
-        desc = u"%s %s" % (instance.day, month_abbr(instance))
+        desc = "%s %s" % (instance.day, month_abbr(instance))
         if not relative or today.year != instance.year:
-            desc += u" %d" % instance.year
+            desc += " %d" % instance.year
         return desc
     elif style == DATE_STYLE_TEXT:
-        desc = u"%s %s" % (
+        desc = "%s %s" % (
             instance.day,
             ca_possessive(month_name(instance).lower())
         )
         if not relative or today.year != instance.year:
-            desc += u" de %d" % instance.year
+            desc += " de %d" % instance.year
         return desc
     elif style == DATE_STYLE_COMPACT_TEXT:
-        desc = u"%s %s" % (
+        desc = "%s %s" % (
             instance.day,
             month_name(instance).lower(),
         )
         if not relative or today.year != instance.year:
-            desc += u" %d" % instance.year
+            desc += " %d" % instance.year
         return desc
 
 def _date_instance_es(instance, style = DATE_STYLE_NUMBERS, relative = False):
@@ -100,29 +100,29 @@ def _date_instance_es(instance, style = DATE_STYLE_NUMBERS, relative = False):
         elif day_diff == 1:
             return translations("cocktail.tomorrow")
         elif 1 < day_diff <= 7:
-            return weekday_name(instance) + u" que viene"
+            return weekday_name(instance) + " que viene"
         elif -7 <= day_diff < 0:
-            return weekday_name(instance) + u" pasado"
+            return weekday_name(instance) + " pasado"
 
     if style == DATE_STYLE_NUMBERS:
         return instance.strftime(translations("cocktail.date_format"))
     elif style == DATE_STYLE_ABBR:
-        desc = u"%s %s" % (instance.day, month_abbr(instance))
+        desc = "%s %s" % (instance.day, month_abbr(instance))
         if not relative or today.year != instance.year:
-            desc += u" %d" % instance.year
+            desc += " %d" % instance.year
         return desc
     elif style == DATE_STYLE_TEXT:
-        desc = u"%s de %s" % (instance.day, month_name(instance).lower())
+        desc = "%s de %s" % (instance.day, month_name(instance).lower())
         if not relative or today.year != instance.year:
-            desc += u" de %d" % instance.year
+            desc += " de %d" % instance.year
         return desc
     elif style == DATE_STYLE_COMPACT_TEXT:
-        desc = u"%s %s" % (
+        desc = "%s %s" % (
             instance.day,
             month_name(instance).lower(),
         )
         if not relative or today.year != instance.year:
-            desc += u" %d" % instance.year
+            desc += " %d" % instance.year
         return desc
 
 def _date_instance_en(instance, style = DATE_STYLE_NUMBERS, relative = False):
@@ -141,29 +141,29 @@ def _date_instance_en(instance, style = DATE_STYLE_NUMBERS, relative = False):
         elif day_diff == 1:
             return translations("cocktail.tomorrow")
         elif 1 < day_diff <= 7:
-            return u"Next " + weekday_name(instance).lower()
+            return "Next " + weekday_name(instance).lower()
         elif -7 <= day_diff < 0:
-            return u"Past " + weekday_name(instance).lower()
+            return "Past " + weekday_name(instance).lower()
 
     if style == DATE_STYLE_NUMBERS:
         return instance.strftime(translations("cocktail.date_format"))
     elif style == DATE_STYLE_ABBR:
-        desc = u"%s %s" % (month_abbr(instance.month), instance.day)
+        desc = "%s %s" % (month_abbr(instance.month), instance.day)
         if not relative or today.year != instance.year:
-            desc += u" %d" % instance.year
+            desc += " %d" % instance.year
         return desc
     elif style == DATE_STYLE_TEXT:
-        desc = u"%s %s" % (month_name(instance), instance.day)
+        desc = "%s %s" % (month_name(instance), instance.day)
         if not relative or today.year != instance.year:
-            desc += u", %d" % instance.year
+            desc += ", %d" % instance.year
         return desc
     elif style == DATE_STYLE_COMPACT_TEXT:
-        desc = u"%s %s" % (
+        desc = "%s %s" % (
             month_name(instance).lower(),
             instance.day,
         )
         if not relative or today.year != instance.year:
-            desc += u" %d" % instance.year
+            desc += " %d" % instance.year
         return desc
 
 def _date_instance_fr(instance, style = DATE_STYLE_NUMBERS, relative = False):
@@ -182,24 +182,24 @@ def _date_instance_fr(instance, style = DATE_STYLE_NUMBERS, relative = False):
         elif day_diff == 1:
             return translations("cocktail.tomorrow")
         elif 1 < day_diff <= 7:
-            return weekday_name(instance) + u" prochain"
+            return weekday_name(instance) + " prochain"
         elif -7 <= day_diff < 0:
-            return weekday_name(instance) + u" dernier"
+            return weekday_name(instance) + " dernier"
 
     if style == DATE_STYLE_NUMBERS:
         return instance.strftime(translations("date format"))
     elif style == DATE_STYLE_ABBR:
-        desc = u"%s %s" % (
+        desc = "%s %s" % (
             instance.day,
             month_abbr(instance)
         )
         if not relative or today.year != instance.year:
-            desc += u" %d" % instance.year
+            desc += " %d" % instance.year
         return desc
     elif style in (DATE_STYLE_TEXT, DATE_STYLE_COMPACT_TEXT):
-        desc = u"%s %s" % (instance.day, month_name(instance).lower())
+        desc = "%s %s" % (instance.day, month_name(instance).lower())
         if not relative or today.year != instance.year:
-            desc += u" %d" % instance.year
+            desc += " %d" % instance.year
         return desc
 
 def _date_instance_pt(instance, style = DATE_STYLE_NUMBERS, relative = False):
@@ -210,21 +210,21 @@ def _date_instance_pt(instance, style = DATE_STYLE_NUMBERS, relative = False):
     if style == DATE_STYLE_NUMBERS:
         return instance.strftime(translations("cocktail.date_format"))
     elif style == DATE_STYLE_ABBR:
-        return u"%s %s %s" % (
+        return "%s %s %s" % (
             instance.day,
             month_abbr(instance),
             instance.year
         )
     elif style == DATE_STYLE_TEXT:
-        return u"%s de %s de %s" % (
+        return "%s de %s de %s" % (
             instance.day,
             month_name(instance).lower(),
             instance.year
         )
     elif style == DATE_STYLE_COMPACT_TEXT:
-        desc = u"%s %s" % (instance.day, month_name(instance).lower())
+        desc = "%s %s" % (instance.day, month_name(instance).lower())
         if not relative or today.year != instance.year:
-            desc += u" %d" % instance.year
+            desc += " %d" % instance.year
         return desc
 
 def _date_instance_de(instance, style = DATE_STYLE_NUMBERS, relative = False):
@@ -243,21 +243,21 @@ def _date_instance_de(instance, style = DATE_STYLE_NUMBERS, relative = False):
         elif day_diff == 1:
             return translations("cocktail.tomorrow")
         elif 1 < day_diff <= 7:
-            return u"Nächsten " + weekday_name(instance)
+            return "Nächsten " + weekday_name(instance)
         elif -7 <= day_diff < 0:
-            return u"Letzten " + weekday_name(instance)
+            return "Letzten " + weekday_name(instance)
 
     if style == DATE_STYLE_NUMBERS:
         return instance.strftime(translations("cocktail.date_format"))
     elif style == DATE_STYLE_ABBR:
-        desc = u"%d.%s" % (instance.day, month_abbr(instance.month))
+        desc = "%d.%s" % (instance.day, month_abbr(instance.month))
         if not relative or today.year != instance.year:
-            desc += u" %d" % instance.year
+            desc += " %d" % instance.year
         return desc
     elif style in (DATE_STYLE_TEXT, DATE_STYLE_COMPACT_TEXT):
-        desc = u"%d.%s" % (instance.day, month_name(instance))
+        desc = "%d.%s" % (instance.day, month_name(instance))
         if not relative or today.year != instance.year:
-            desc += u" %d" % instance.year
+            desc += " %d" % instance.year
         return desc
 
 translations.define("datetime.date.instance",
@@ -278,40 +278,40 @@ translations.define("datetime.datetime.instance",
         include_seconds = True,
         relative = False:
             _date_instance_ca(instance, style, relative)
-            + (u" a les " if style == DATE_STYLE_TEXT else u" ")
+            + (" a les " if style == DATE_STYLE_TEXT else " ")
             + _translate_time(instance, include_seconds),
     es = lambda instance,
         style = DATE_STYLE_NUMBERS,
         include_seconds = True,
         relative = False:
             _date_instance_es(instance, style, relative)
-            + (u" a las " if style == DATE_STYLE_TEXT else u" ")
+            + (" a las " if style == DATE_STYLE_TEXT else " ")
             + _translate_time(instance, include_seconds),
     en = lambda instance,
         style = DATE_STYLE_NUMBERS,
         include_seconds = True,
         relative = False:
             _date_instance_en(instance, style, relative)
-            + (u" at " if style == DATE_STYLE_TEXT else u" ")
+            + (" at " if style == DATE_STYLE_TEXT else " ")
             + _translate_time(instance, include_seconds),
     fr = lambda instance,
         style = DATE_STYLE_NUMBERS,
         include_seconds = True,
         relative = False:
             _date_instance_fr(instance, style, relative)
-            + (u" à " if style == DATE_STYLE_TEXT else u" ")
+            + (" à " if style == DATE_STYLE_TEXT else " ")
             + _translate_time(instance, include_seconds),
     pt = lambda instance, style = DATE_STYLE_NUMBERS, include_seconds = True:
         _date_instance_pt(instance, style)
-        + u" " + _translate_time(instance, include_seconds),
+        + " " + _translate_time(instance, include_seconds),
     de = lambda instance,
         style = DATE_STYLE_NUMBERS,
         include_seconds = True,
         relative = False:
             _date_instance_de(instance, style, relative)
-            + (u" um " if style == DATE_STYLE_TEXT else u" ")
+            + (" um " if style == DATE_STYLE_TEXT else " ")
             + _translate_time(instance, include_seconds)
-            + (u" Uhr" if style == DATE_STYLE_TEXT else "")
+            + (" Uhr" if style == DATE_STYLE_TEXT else "")
 )
 
 translations.define("datetime.time.instance",
@@ -342,50 +342,50 @@ def _create_time_span_function(span_format, forms, join):
 translations.define("cocktail.time_span",
     ca = _create_time_span_function(
         "%.2d.%.2d.%2d",
-        [[u"dia", u"dies"],
-         [u"hora", u"hores"],
-         [u"minut", u"minuts"],
-         [u"segon", u"segons"],
-         [u"mil·lisegon", u"mil·lisegons"]],
+        [["dia", "dies"],
+         ["hora", "hores"],
+         ["minut", "minuts"],
+         ["segon", "segons"],
+         ["mil·lisegon", "mil·lisegons"]],
         ca_join
     ),
     es = _create_time_span_function(
         "%.2d:%.2d:%2d",
-        [[u"día", u"días"],
-         [u"hora", u"horas"],
-         [u"minuto", u"minutos"],
-         [u"segundo", u"segundos"],
-         [u"milisegundo", u"milisegundos"]],
+        [["día", "días"],
+         ["hora", "horas"],
+         ["minuto", "minutos"],
+         ["segundo", "segundos"],
+         ["milisegundo", "milisegundos"]],
         es_join
     ),
     en = _create_time_span_function(
         "%.2d:%.2d:%2d",
-        [[u"day", u"days"],
-         [u"hour", u"hours"],
-         [u"minute", u"minutes"],
-         [u"second", u"seconds"],
-         [u"millisecond", u"milliseconds"]],
+        [["day", "days"],
+         ["hour", "hours"],
+         ["minute", "minutes"],
+         ["second", "seconds"],
+         ["millisecond", "milliseconds"]],
         en_join
     ),
     fr = _create_time_span_function(
         "%.2d:%.2d:%2d",
-        [[u"jour", u"jours"],
-         [u"heure", u"heures"],
-         [u"minute", u"minutes"],
-         [u"seconde", u"secondes"],
-         [u"milliseconde", u"millisecondes"]],
+        [["jour", "jours"],
+         ["heure", "heures"],
+         ["minute", "minutes"],
+         ["seconde", "secondes"],
+         ["milliseconde", "millisecondes"]],
         en_join
     )
 )
 
 def _date_range_ca(start, end):
     if start.year != end.year:
-        return u"Del %s al %s" % (
+        return "Del %s al %s" % (
             translations(start, style = DATE_STYLE_TEXT),
             translations(end, style = DATE_STYLE_TEXT)
         )
     elif start.month != end.month:
-        return u"Del %d %s al %d %s de %d" % (
+        return "Del %d %s al %d %s de %d" % (
             start.day,
             ca_possessive(month_name(start)),
             end.day,
@@ -393,7 +393,7 @@ def _date_range_ca(start, end):
             start.year
         )
     else:
-        return u"Del %d al %d %s de %d" % (
+        return "Del %d al %d %s de %d" % (
             start.day,
             end.day,
             ca_possessive(month_name(start)),
@@ -402,12 +402,12 @@ def _date_range_ca(start, end):
 
 def _date_range_es(start, end):
     if start.year != end.year:
-        return u"Del %s al %s" % (
+        return "Del %s al %s" % (
             translations(start, style = DATE_STYLE_TEXT),
             translations(end, style = DATE_STYLE_TEXT)
         )
     elif start.month != end.month:
-        return u"Del %d de %s al %d de %s de %d" % (
+        return "Del %d de %s al %d de %s de %d" % (
             start.day,
             month_name(start),
             end.day,
@@ -415,7 +415,7 @@ def _date_range_es(start, end):
             start.year
         )
     else:
-        return u"Del %d al %d de %s de %d" % (
+        return "Del %d al %d de %s de %d" % (
             start.day,
             end.day,
             month_name(start),
@@ -424,12 +424,12 @@ def _date_range_es(start, end):
 
 def _date_range_en(start, end):
     if start.year != end.year:
-        return u"From %s until %s" % (
+        return "From %s until %s" % (
             translations(start, style = DATE_STYLE_TEXT),
             translations(end, style = DATE_STYLE_TEXT)
         )
     elif start.month != end.month:
-        return u"From the %s of %s until the %s of %s %d" % (
+        return "From the %s of %s until the %s of %s %d" % (
             translations("cocktail.ordinal", number = start.day),
             month_name(start),
             translations("cocktail.ordinal", number = end.day),
@@ -437,7 +437,7 @@ def _date_range_en(start, end):
             start.year
         )
     else:
-        return u"From the %s until the %s of %s %d" % (
+        return "From the %s until the %s of %s %d" % (
             translations("cocktail.ordinal", number = start.day),
             translations("cocktail.ordinal", number = end.day),
             month_name(start),
@@ -446,12 +446,12 @@ def _date_range_en(start, end):
 
 def _date_range_fr(start, end):
     if start.year != end.year:
-        return u"Du %s au %s" % (
+        return "Du %s au %s" % (
             translations(start, style = DATE_STYLE_TEXT),
             translations(end, style = DATE_STYLE_TEXT)
         )
     elif start.month != end.month:
-        return u"Du %s %s au %s %s %d" % (
+        return "Du %s %s au %s %s %d" % (
             translations("cocktail.ordinal", number = start.day),
             month_name(start).lower(),
             translations("cocktail.ordinal", number = end.day),
@@ -459,7 +459,7 @@ def _date_range_fr(start, end):
             start.year
         )
     else:
-        return u"Du %s au %s %s %d" % (
+        return "Du %s au %s %s %d" % (
             translations("cocktail.ordinal", number = start.day),
             translations("cocktail.ordinal", number = end.day),
             month_name(start).lower(),
@@ -468,12 +468,12 @@ def _date_range_fr(start, end):
 
 def _date_range_pt(start, end):
     if start.year != end.year:
-        return u"De %s a %s" % (
+        return "De %s a %s" % (
             translations(start, style = DATE_STYLE_TEXT),
             translations(end, style = DATE_STYLE_TEXT)
         )
     elif start.month != end.month:
-        return u"De %d de %s a %d de %s de %d" % (
+        return "De %d de %s a %d de %s de %d" % (
             start.day,
             month_name(start).lower(),
             end.day,
@@ -481,7 +481,7 @@ def _date_range_pt(start, end):
             start.year
         )
     else:
-        return u"De %d a %d de %s de %d" % (
+        return "De %d a %d de %s de %d" % (
             start.day,
             end.day,
             month_name(start).lower(),

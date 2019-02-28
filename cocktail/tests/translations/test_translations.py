@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -20,7 +20,7 @@ class TranslationsTestCase(TestCase):
     def test_returns_empty_string_for_undefined_key(self):
         from cocktail.translations.translation import Translations
         translations = Translations()
-        translations.define("parrot", es = u"Loro")
+        translations.define("parrot", es = "Loro")
         assert translations("parrot", "en") == ""
 
     def test_translates_keys(self):
@@ -28,27 +28,27 @@ class TranslationsTestCase(TestCase):
         from cocktail.translations import translations
 
         translations.define("parrot",
-            ca = u"Lloro",
-            es = u"Loro",
-            en = u"Parrot"
+            ca = "Lloro",
+            es = "Loro",
+            en = "Parrot"
         )
 
-        assert translations("parrot", "ca") == u"Lloro"
-        assert translations("parrot", "es") == u"Loro"
-        assert translations("parrot", "en") == u"Parrot"
+        assert translations("parrot", "ca") == "Lloro"
+        assert translations("parrot", "es") == "Loro"
+        assert translations("parrot", "en") == "Parrot"
 
     def test_uses_implicit_language(self):
 
         from cocktail.translations import translations, set_language
 
         translations.define("parrot",
-            ca = u"Lloro",
-            es = u"Loro",
-            en = u"Parrot"
+            ca = "Lloro",
+            es = "Loro",
+            en = "Parrot"
         )
 
         set_language("ca")
-        assert translations("parrot") == u"Lloro"
+        assert translations("parrot") == "Lloro"
 
     def test_fails_with_undefined_implicit_language(self):
 
@@ -59,9 +59,9 @@ class TranslationsTestCase(TestCase):
         )
 
         translations.define("parrot",
-            ca = u"Lloro",
-            es = u"Loro",
-            en = u"Parrot"
+            ca = "Lloro",
+            es = "Loro",
+            en = "Parrot"
         )
 
         assert_raises(NoActiveLanguageError, translations, "parrot")

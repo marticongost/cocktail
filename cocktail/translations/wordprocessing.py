@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -69,9 +69,7 @@ class PerLocaleWordProcessing(dict):
         )
 
 
-class WordProcessor(object):
-
-    __metaclass__ = ABCMeta
+class WordProcessor(object, metaclass=ABCMeta):
 
     non_word_regexp = re.compile(r"\W+", re.UNICODE)
     non_pattern_regexp = re.compile(r"[^\w*?]+", re.UNICODE)
@@ -107,7 +105,7 @@ class WordProcessor(object):
         pass
 
     def get_stems(self, text, preserve_patterns = False):
-        if isinstance(text, basestring):
+        if isinstance(text, str):
             return list(
                 self.iter_stems(
                     text,
@@ -131,7 +129,7 @@ class WordProcessor(object):
             )
 
     def get_unique_stems(self, text, preserve_patterns = False):
-        if isinstance(text, basestring):
+        if isinstance(text, str):
             return set(
                 self.iter_stems(
                     text,

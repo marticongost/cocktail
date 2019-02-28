@@ -1,12 +1,12 @@
 #-*- coding: utf-8 -*-
-u"""Defines the `DocumentMetadata` class.
+"""Defines the `DocumentMetadata` class.
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
 from time import time
 from threading import local
 from cocktail.translations import get_language
-from cocktail.modeling import getter, OrderedSet
+from cocktail.modeling import OrderedSet
 from cocktail.caching import Cache, CacheKeyError
 from cocktail.html.documentmetadata import DocumentMetadata
 
@@ -225,7 +225,7 @@ class Rendering(object):
     def markup(self):
         """Returns the accumulated markup text from write operations."""
         try:
-            return u"".join(self.__content)
+            return "".join(self.__content)
         except TypeError:
             for i, chunk in enumerate(self.__content):
                 if chunk is None:

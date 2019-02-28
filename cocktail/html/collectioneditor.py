@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -44,14 +44,14 @@ class CollectionEditor(Element):
         button = Element("button")
         button.add_class("remove_button")
         button["type"] = "button"
-        button.append(u"✖")
+        button.append("✖")
         return button
 
     def create_add_button(self):
         button = Element("button")
         button.add_class("add_button")
         button["type"] = "button"
-        button.append(u"✚")
+        button.append("✚")
         return button
 
     def create_new_entry(self):

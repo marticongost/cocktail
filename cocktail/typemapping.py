@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 Defines the `TypeMapping` class.
 """
 from inspect import getmro

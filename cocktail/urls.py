@@ -1,12 +1,12 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
 from collections import Iterable, Mapping, OrderedDict
-from itertools import izip
-from urllib import quote, unquote, unquote_plus
-from urlparse import urlparse
+
+from urllib.parse import quote, unquote, unquote_plus
+from urllib.parse import urlparse
 from frozendict import frozendict
 
 ENCODING = "utf-8"
@@ -24,14 +24,14 @@ _path_safe_characters = {
 def _decode(string):
     try:
         return string.decode("utf-8")
-    except UnicodeDecodeError, e:
+    except UnicodeDecodeError as e:
         try:
             return string.decode("latin-1")
         except UnicodeDecodeError:
             raise e
 
 
-class URL(unicode):
+class URL(str):
 
     def __new__(cls, url = None, **values):
 
@@ -53,7 +53,7 @@ class URL(unicode):
                     return url
 
             # Parse an URL string
-            elif isinstance(url, unicode):
+            elif isinstance(url, str):
                 parts = urlparse(url)
                 values.setdefault("scheme", parts.scheme)
                 values.setdefault("hostname", parts.hostname)
@@ -65,7 +65,7 @@ class URL(unicode):
                 values.setdefault("fragment", parts.fragment)
 
             # Decode byte strings
-            elif isinstance(url, str):
+            elif isinstance(url, bytes):
                 return cls.__new__(cls, _decode(unquote(url)), **values)
 
             else:
@@ -76,9 +76,9 @@ class URL(unicode):
                 )
 
         scheme = values.get("scheme")
-        hostname = values.get("hostname") or u""
-        username = values.get("username") or u""
-        password = values.get("password") or u""
+        hostname = values.get("hostname") or ""
+        username = values.get("username") or ""
+        password = values.get("password") or ""
 
         port = values.get("port")
         if port and not isinstance(port, int):
@@ -86,14 +86,14 @@ class URL(unicode):
 
         has_abs_components = (hostname or username or password or port)
         if not scheme and has_abs_components:
-            scheme = u"http"
+            scheme = "http"
 
         path = Path(values.get("path"))
         if has_abs_components:
             path = path.make_absolute()
 
         query = QueryString(values.get("query"))
-        fragment = values.get("fragment") or u""
+        fragment = values.get("fragment") or ""
 
         if scheme:
             url_string = scheme
@@ -107,27 +107,27 @@ class URL(unicode):
                 if username:
                     url_string += username
                 if password:
-                    url_string += u":" + password
-                url_string += u"@"
+                    url_string += ":" + password
+                url_string += "@"
 
             if hostname:
                 url_string += hostname
 
             if port:
-                url_string += u":%d" % port
+                url_string += ":%d" % port
         else:
-            url_string = u""
+            url_string = ""
 
         if path:
             url_string += path
 
         if query:
-            url_string += u"?" + query
+            url_string += "?" + query
 
         if fragment:
-            url_string += u"#" + fragment
+            url_string += "#" + fragment
 
-        obj = unicode.__new__(cls, url_string)
+        obj = str.__new__(cls, url_string)
         obj.__scheme = scheme
         obj.__username = username
         obj.__password = password
@@ -141,13 +141,13 @@ class URL(unicode):
     def __repr__(self):
         return "%s(%s)" % (
             self.__class__.__name__,
-            unicode.__repr__(self)
+            str.__repr__(self)
         )
 
-    def __str__(self):
+    def escape(self):
 
         if self.__scheme:
-            url_string = str(self.__scheme)
+            url_string = self.__scheme
 
             if self.hierarchical:
                 url_string += "://"
@@ -156,16 +156,18 @@ class URL(unicode):
 
             if self.__username or self.__password:
                 if self.__username:
-                    url_string += self.__username.encode(ENCODING)
+                    url_string += self.__username
                 if password:
-                    url_string += ":" + self.__password.encode(ENCODING)
+                    url_string += ":" + self.__password
                 url_string += "@"
 
             if self.__hostname:
                 try:
-                    url_string += self.__hostname.encode("ascii")
+                    self.__hostname.encode("ascii")
                 except UnicodeEncodeError:
-                    url_string += self.__hostname.encode("punycode")
+                    url_string += str(self.__hostname.encode("punycode"))
+                else:
+                    url_string += self.__hostname
 
             if self.__port:
                 url_string += ":%d" % self.__port
@@ -180,10 +182,10 @@ class URL(unicode):
             url_string += quote(self.__path.encode(ENCODING), safe)
 
         if self.__query:
-            url_string += "?" + str(self.__query)
+            url_string += "?" + self.__query.escape()
 
         if self.__fragment:
-            url_string += "#" + self.__fragment
+            url_string += "#" + self.__fragment.escape()
 
         return url_string
 
@@ -296,7 +298,7 @@ class URLBuilder(object):
         elif isinstance(path, Path):
             self.__path_is_relative = path.relative
             self.__path = list(path.segments)
-        elif isinstance(path, basestring):
+        elif isinstance(path, str):
             self.__path_is_relative = not path.startswith("/")
             path = path.strip("/")
             self.__path = path.split("/") if path else []
@@ -313,7 +315,7 @@ class URLBuilder(object):
             self.__query = OrderedDict()
         elif isinstance(query, QueryString):
             self.__query = OrderedDict(query.fields)
-        elif isinstance(query, basestring):
+        elif isinstance(query, str):
             self.__query = _parse_query_string(query, dict_type = OrderedDict)
         else:
             self.__query = OrderedDict(query)
@@ -321,14 +323,14 @@ class URLBuilder(object):
     query = property(_get_query, _set_query)
 
     def get_url(self):
-        prefix = u"" if self.path_is_relative else u"/"
+        prefix = "" if self.path_is_relative else "/"
         return self.url_class(
             scheme = self.scheme,
             username = self.username,
             password = self.password,
             hostname = self.hostname,
             port = self.port,
-            path = prefix + u"/".join(
+            path = prefix + "/".join(
                 self._normalize_path_component(item)
                 for item in self.path
             ),
@@ -338,27 +340,27 @@ class URLBuilder(object):
 
     def _normalize_path_component(self, component):
         if isinstance(component, int):
-            return unicode(component)
-        elif isinstance(component, str):
+            return str(component)
+        elif isinstance(component, bytes):
             return _decode(unquote(component))
         else:
             return component
 
 
-class Path(unicode):
+class Path(str):
 
     def __new__(cls, path):
 
         if path is None:
-            return cls(u"")
+            return cls("")
 
         elif isinstance(path, cls):
             return path
 
-        elif isinstance(path, str):
+        elif isinstance(path, bytes):
             return cls(_decode(unquote(path)))
 
-        elif isinstance(path, unicode):
+        elif isinstance(path, str):
 
             absolute = path.startswith("/")
             path = path.strip("/")
@@ -379,7 +381,7 @@ class Path(unicode):
             if absolute:
                 path = "/" + path
 
-            obj = unicode.__new__(cls, path)
+            obj = str.__new__(cls, path)
             obj.__relative = not absolute
             obj.__segments = tuple(norm_segments)
             return obj
@@ -398,10 +400,10 @@ class Path(unicode):
     def __repr__(self):
         return "%s(%s)" % (
             self.__class__.__name__,
-            unicode.__repr__(self)
+            str.__repr__(self)
         )
 
-    def __str__(self):
+    def escape(self):
         return quote(self.encode(ENCODING))
 
     @property
@@ -414,7 +416,7 @@ class Path(unicode):
 
     def make_absolute(self):
         if self.__relative:
-            return self.__class__(u"/" + self)
+            return self.__class__("/" + self)
         else:
             return self
 
@@ -422,17 +424,17 @@ class Path(unicode):
 
         path_str = str(self)
 
-        if not isinstance(other, unicode):
-            other = unicode(Path(other))
+        if not isinstance(other, str):
+            other = str(Path(other))
 
-        return self.__class__(path_str + u"/" + other.lstrip(u"/"))
+        return self.__class__(path_str + "/" + other.lstrip("/"))
 
     def prepend(self, other):
 
-        path_str = unicode(self)
+        path_str = str(self)
 
-        if not isinstance(other, unicode):
-            other = unicode(Path(other))
+        if not isinstance(other, str):
+            other = str(Path(other))
 
         if not self.__relative and not other.startswith("/"):
             other = "/" + other
@@ -440,7 +442,7 @@ class Path(unicode):
         return self.__class__(other + "/" + path_str.lstrip("/"))
 
     def __add__(self, other):
-        return self.__class__(unicode(self) + unicode(other))
+        return self.__class__(str(self) + str(other))
 
     def merge(self, other):
 
@@ -476,7 +478,7 @@ class Path(unicode):
         if len(prefix.__segments) > len(self.__segments):
             return False
 
-        for a, b in izip(prefix.__segments, self.__segments):
+        for a, b in zip(prefix.__segments, self.__segments):
             if a != b:
                 return False
 
@@ -492,7 +494,7 @@ class Path(unicode):
         if len(suffix.__segments) > len(self.__segments):
             return False
 
-        for a, b in izip(
+        for a, b in zip(
             reversed(suffix.__segments),
             reversed(self.__segments)
         ):
@@ -502,7 +504,7 @@ class Path(unicode):
         return True
 
 
-class QueryString(unicode):
+class QueryString(str):
 
     def __new__(cls, query = None):
 
@@ -516,11 +518,11 @@ class QueryString(unicode):
             return query
 
         # Decode and parse byte strings
-        elif isinstance(query, str):
+        elif isinstance(query, bytes):
             return cls.__new__(cls, _decode(query))
 
         # Parse unicode strings
-        elif isinstance(query, unicode):
+        elif isinstance(query, str):
             query_string = unquote_plus(query.lstrip("?").lstrip("&"))
             fields = _parse_query_string(query_string)
 
@@ -542,21 +544,21 @@ class QueryString(unicode):
                 % query
             )
 
-        obj = unicode.__new__(cls, query_string)
+        obj = str.__new__(cls, query_string)
         obj.__fields = _normalize_query_string_mapping(fields, frozendict)
         return obj
 
     def __repr__(self):
         return "%s(%s)" % (
             self.__class__.__name__,
-            unicode.__repr__(self)
+            str.__repr__(self)
         )
 
-    def __str__(self):
+    def escape(self):
         return quote(self.encode(ENCODING), "=&")
 
     def __add__(self, other):
-        return self.__class__(unicode(self) + unicode(other))
+        return self.__class__(str(self) + str(other))
 
     @property
     def fields(self):
@@ -579,11 +581,11 @@ class QueryString(unicode):
         if query is None:
             merge = self
         else:
-            a = _parse_query_string(unicode(self), OrderedDict)
+            a = _parse_query_string(str(self), OrderedDict)
 
-            if isinstance(query, basestring):
+            if isinstance(query, str):
                 query_string = query
-                if isinstance(query_string, str):
+                if isinstance(query_string, bytes):
                     query_string = _decode(unquote(query_string))
                 query_string = query_string.lstrip("?").lstrip("&")
                 b = _parse_query_string(query_string, OrderedDict)
@@ -600,7 +602,7 @@ class QueryString(unicode):
 
             a.update(b)
 
-            for key, value in a.items():
+            for key, value in list(a.items()):
                 if value is None:
                     del a[key]
 
@@ -615,15 +617,15 @@ class QueryString(unicode):
         query = self.__class__(query)
 
         if self and query:
-            return self.__class__(unicode(self) + u"&" + unicode(query))
+            return self.__class__(str(self) + "&" + str(query))
         else:
             return self or query
 
 
 def _normalize_query_string_value(value):
-    if isinstance(value, str):
+    if isinstance(value, bytes):
         return (_decode(unquote(value)),)
-    elif isinstance(value, unicode):
+    elif isinstance(value, str):
         return (value,)
     elif isinstance(value, int):
         return (str(value),)
@@ -631,7 +633,7 @@ def _normalize_query_string_value(value):
         return tuple(
             (
                 _decode(unquote(item))
-                if isinstance(item, str)
+                if isinstance(item, bytes)
                 else item
             )
             for item in value
@@ -649,17 +651,17 @@ def _normalize_query_string_mapping(mapping, dict_type = dict):
             key,
             _normalize_query_string_value(value)
         )
-        for key, value in mapping.iteritems()
+        for key, value in mapping.items()
         if value is not None
     )
 
 def _join_query_string_values(values):
-    return u"&".join(
-        u"&".join(
-            u"%s=%s" % (key, item)
+    return "&".join(
+        "&".join(
+            "%s=%s" % (key, item)
             for item in _normalize_query_string_value(value)
         )
-        for key, value in values.iteritems()
+        for key, value in values.items()
     )
 
 def _parse_query_string(query_string, dict_type = dict):

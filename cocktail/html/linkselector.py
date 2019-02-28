@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -8,7 +8,7 @@ u"""
 """
 from cocktail.html.element import Element
 from cocktail.html.selector import Selector
-from cocktail.controllers.viewstate import view_state
+from cocktail.controllers import get_request_url
 
 
 class LinkSelector(Selector):
@@ -42,8 +42,10 @@ class LinkSelector(Selector):
 
             # Ugly hack: view_state uses urlencode(), which can't take unicode
             # strings
-            if isinstance(name, unicode):
+            if isinstance(name, str):
                 name = str(name)
 
-            return "?" + view_state(**{name: self.get_item_value(item)})
+            query = get_request_url().query
+            query = query.merge(**{name: self.get_item_value(item)})
+            return "?" + query
 

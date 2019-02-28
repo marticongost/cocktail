@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -786,7 +786,7 @@ class BidirectionalTestCase(TestCase):
         b.add_member(Reference("rel_a", type = a))
 
         def resolve_relation():
-            print a["rel_b"].related_end
+            print(a["rel_b"].related_end)
 
         self.assertRaises(SchemaIntegrityError, resolve_relation)
 

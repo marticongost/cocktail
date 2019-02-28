@@ -1,20 +1,19 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
 @organization:	Whads/Accent SL
 @since:			July 2008
 """
-from __future__ import with_statement
+
 from threading import local
 from contextlib import contextmanager
 from collections import Mapping, defaultdict
-from pkg_resources import resource_filename
+from cocktail.pkgutils import resource_filename
 from cocktail.styled import styled
 from cocktail.events import Event
 from cocktail.modeling import (
-    getter,
     DictWrapper,
     ListWrapper,
     OrderedSet
@@ -105,7 +104,7 @@ def fallback_languages_context(fallback_chains):
     try:
         _thread_data.fallback = {}
         _thread_data.derived = {}
-        for language, chain in fallback_chains.iteritems():
+        for language, chain in fallback_chains.items():
             set_fallback_languages(language, chain)
         yield None
     finally:
@@ -141,7 +140,7 @@ def set_fallback_languages(language, fallback_languages):
 def add_fallback_language(language, fallback_language):
     fallback_languages = []
     language_chain = iter_language_chain(language)
-    language_chain.next()
+    next(language_chain)
     fallback_languages.extend(language_chain)
     fallback_languages.append(fallback_language)
     set_fallback_languages(language, fallback_languages)
@@ -165,7 +164,7 @@ class Translations(object):
     def _get_key(self, key, verbose):
 
         if verbose:
-            print (verbose - 1) * 2 * " " + styled("Key", "slate_blue"), key
+            print((verbose - 1) * 2 * " " + styled("Key", "slate_blue"), key)
 
         return self.definitions.get(key)
 
@@ -222,7 +221,7 @@ class Translations(object):
                             self.definitions[key] = value
                         else:
                             self.set(key, language, value)
-            except IOError, e:
+            except IOError as e:
                 file_error = e
             else:
                 self.bundle_loaded(file_path = file_path)
@@ -287,14 +286,14 @@ class Translations(object):
             verbose = 1 if verbose else 0
 
         if verbose == 1:
-            print styled("TRANSLATION", "white", "blue"),
-            print styled(obj, style = "bold")
+            print(styled("TRANSLATION", "white", "blue"), end=' ')
+            print(styled(obj, style = "bold"))
 
         if verbose:
             kwargs["verbose"] = verbose + 1
 
         # Look for a explicit definition for the given value
-        if isinstance(obj, basestring):
+        if isinstance(obj, str):
             translation = self._get_key(obj, verbose)
         else:
             # Translation of class instances
@@ -320,10 +319,10 @@ class Translations(object):
                 with language_context(language):
 
                     if verbose:
-                        print styled("Function", "slate_blue"),
-                        print translation
+                        print(styled("Function", "slate_blue"), end=' ')
+                        print(translation)
 
-                    if isinstance(obj, basestring):
+                    if isinstance(obj, str):
                         translation = translation(**kwargs)
                     else:
                         translation = translation(obj, **kwargs)
@@ -337,7 +336,7 @@ class Translations(object):
                     if translation:
                         if callable(translation):
                             with language_context(prev_lang):
-                                if isinstance(obj, basestring):
+                                if isinstance(obj, str):
                                     translation = translation(**kwargs)
                                 else:
                                     translation = translation(obj, **kwargs)
@@ -359,7 +358,7 @@ class Translations(object):
             )
 
         if not translation:
-            translation = unicode(default)
+            translation = str(default)
 
         return translation or ""
 

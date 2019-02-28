@@ -1,9 +1,8 @@
 #-*- coding: utf-8 -*-
 from time import time
 from warnings import warn
-from simplejson import dumps
+from json import dumps
 from cocktail.modeling import (
-    getter,
     classgetter,
     empty_list,
     empty_dict,
@@ -30,7 +29,43 @@ from .utils import serialize_value
 default = object()
 
 
-class Element(Invalidable):
+class ElementMetaClass(EventHub):
+
+    def __init__(cls, name, bases, members):
+        EventHub.__init__(cls, name, bases, members)
+        cls._view_name = members.get("_view_name")
+
+        if "overlays_enabled" not in members:
+            cls.overlays_enabled = True
+
+        # Aggregate CSS classes from base types
+        cls._classes = list(cls.__mro__)[:-1]
+        cls._classes.reverse()
+        css_classes = []
+
+        if "styled_class" not in members:
+            cls.styled_class = True
+
+        for c in cls._classes:
+            if getattr(c, "styled_class", False):
+                css_classes.append(c.__name__)
+
+        cls.class_css = css_classes and " ".join(css_classes) or None
+
+        # Aggregate cache_tags
+        if "class_provides_cache_tag" not in members:
+            cls.class_provides_cache_tag = True
+
+        cls._class_cache_tags = set()
+        for c in cls.__mro__:
+            if getattr(c, "class_provides_cache_tag", False):
+                cls._class_cache_tags.add(c.view_name)
+
+        # Load translation bundles
+        translations.request_bundle(cls.view_name.lower())
+
+
+class Element(Invalidable, metaclass=ElementMetaClass):
     """Base class for all presentation components.
 
     An element provides an abstraction over a piece of HTML content. It can be
@@ -226,41 +261,6 @@ class Element(Invalidable):
             apply_overlays(self)
 
         self._build()
-
-    class __metaclass__(EventHub):
-
-        def __init__(cls, name, bases, members):
-            EventHub.__init__(cls, name, bases, members)
-            cls._view_name = members.get("_view_name")
-
-            if "overlays_enabled" not in members:
-                cls.overlays_enabled = True
-
-            # Aggregate CSS classes from base types
-            cls._classes = list(cls.__mro__)[:-1]
-            cls._classes.reverse()
-            css_classes = []
-
-            if "styled_class" not in members:
-                cls.styled_class = True
-
-            for c in cls._classes:
-                if getattr(c, "styled_class", False):
-                    css_classes.append(c.__name__)
-
-            cls.class_css = css_classes and " ".join(css_classes) or None
-
-            # Aggregate cache_tags
-            if "class_provides_cache_tag" not in members:
-                cls.class_provides_cache_tag = True
-
-            cls._class_cache_tags = set()
-            for c in cls.__mro__:
-                if getattr(c, "class_provides_cache_tag", False):
-                    cls._class_cache_tags.add(c.view_name)
-
-            # Load translation bundles
-            translations.request_bundle(cls.view_name.lower())
 
     _view_name = None
 
@@ -635,7 +635,7 @@ class Element(Invalidable):
     # Attributes
     #--------------------------------------------------------------------------
 
-    @getter
+    @property
     def attributes(self):
         """A dictionary containing the HTML attributes defined by the element.
 
@@ -724,7 +724,7 @@ class Element(Invalidable):
     # Visibility
     #--------------------------------------------------------------------------
 
-    @getter
+    @property
     def rendered(self):
         """Indicates if the element should be rendered.
 
@@ -734,7 +734,7 @@ class Element(Invalidable):
         return self.visible \
             and (not self.collapsible or self.has_rendered_children())
 
-    @getter
+    @property
     def substantial(self):
         """Indicates if the element has enough weight to influence the
         visibility of a `collapsible` element.
@@ -765,7 +765,7 @@ class Element(Invalidable):
     # Tree
     #--------------------------------------------------------------------------
 
-    @getter
+    @property
     def parent(self):
         """The `element <Element>` that the element is attached to.
 
@@ -775,7 +775,7 @@ class Element(Invalidable):
         """
         return self.__parent
 
-    @getter
+    @property
     def children(self):
         """The list of child `elements <Element>` attached to the element.
 
@@ -838,7 +838,7 @@ class Element(Invalidable):
         :type child: `Element` or basestring
         """
         if not isinstance(child, Element):
-            child = Content(unicode(child))
+            child = Content(str(child))
         else:
             child.release()
 
@@ -953,7 +953,7 @@ class Element(Invalidable):
             has no parent.
         """
         if not isinstance(replacement, Element):
-            replacement = Content(unicode(replacement))
+            replacement = Content(str(replacement))
 
         replacement.replace(self)
 
@@ -965,7 +965,7 @@ class Element(Invalidable):
     # CSS classes
     #--------------------------------------------------------------------------
 
-    @getter
+    @property
     def classes(self):
         """The list of CSS classes assigned to the element."""
         css_class = self["class"]
@@ -1021,7 +1021,7 @@ class Element(Invalidable):
     # Inline CSS styles
     #--------------------------------------------------------------------------
 
-    @getter
+    @property
     def style(self):
         """A dictionary containing the inline CSS declarations for the element.
         """
@@ -1070,7 +1070,7 @@ class Element(Invalidable):
 
             if style:
                 self["style"] = \
-                    "; ".join("%s: %s" % decl for decl in style.iteritems())
+                    "; ".join("%s: %s" % decl for decl in style.items())
             else:
                 del self["style"]
         else:
@@ -1079,12 +1079,12 @@ class Element(Invalidable):
     def update_style(self, styles):
         style = self.style.copy()
         style.update(styles)
-        self["style"] = "; ".join("%s: %s" % i for i in style.iteritems())
+        self["style"] = "; ".join("%s: %s" % i for i in style.items())
 
     # Resources
     #--------------------------------------------------------------------------
 
-    @getter
+    @property
     def resources(self):
         """The list of `resources <Resource>` (scripts, stylesheets, etc)
         linked to the element.
@@ -1121,7 +1121,7 @@ class Element(Invalidable):
             instantiated L{Resource}.
         """
         # Normalize the resource
-        if isinstance(resource, basestring):
+        if isinstance(resource, str):
             uri = resource
             resource = Resource.from_uri(uri, mime_type, **kwargs)
         else:
@@ -1151,7 +1151,7 @@ class Element(Invalidable):
         :raise: Raises `ValueError` if the indicated resource is not linked by
             the element.
         """
-        if isinstance(resource, basestring):
+        if isinstance(resource, str):
             removed_uri = resource
             resource = first(self.__resources, uri = removed_uri)
 
@@ -1166,7 +1166,7 @@ class Element(Invalidable):
     # Meta attributes
     #--------------------------------------------------------------------------
 
-    @getter
+    @property
     def meta(self):
         """A dictionary containing the meta declarations for the element.
 
@@ -1217,7 +1217,7 @@ class Element(Invalidable):
         else:
             self.__document_ready_callbacks.append(callback)
 
-    @getter
+    @property
     def document_ready_callbacks(self):
         if self.__document_ready_callbacks is None:
             return empty_list
@@ -1265,7 +1265,7 @@ class Element(Invalidable):
         if self.__client_params is not None:
             self["data-cocktail-params"] = dumps(self.__client_params)
 
-    @getter
+    @property
     def client_params(self):
         """A dictionary with the client side parameters for the element.
 
@@ -1331,7 +1331,7 @@ class Element(Invalidable):
         if self.__client_code is not None:
             self["data-cocktail-code"] = "".join(self.__client_code)
 
-    @getter
+    @property
     def client_code(self):
         """A list containing the snippets of javascript code attached to
         the element.
@@ -1363,7 +1363,7 @@ class Element(Invalidable):
     # Client side variables
     #--------------------------------------------------------------------------
 
-    @getter
+    @property
     def client_variables(self):
         """A dictionary containing the client side variables declared by the
         element.
@@ -1431,7 +1431,7 @@ class Element(Invalidable):
     # Client side translations
     #--------------------------------------------------------------------------
 
-    @getter
+    @property
     def client_translations(self):
         """A set of translation keys to relay client side.
 
@@ -1480,21 +1480,21 @@ class Content(Element):
         Element.__init__(self, *args, **kwargs)
         self.value = value
 
-    @getter
+    @property
     def rendered(self):
         return self.visible
 
-    @getter
+    @property
     def substantial(self):
         return (
             self.visible
             and self.value is not None
-            and unicode(self.value).strip()
+            and str(self.value).strip()
         )
 
     def _render(self, rendering):
         if self.value is not None:
-            rendering.write(unicode(self.value))
+            rendering.write(str(self.value))
 
 
 class TranslatedValue(Content):

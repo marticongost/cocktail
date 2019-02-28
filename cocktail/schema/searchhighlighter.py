@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -27,7 +27,7 @@ class SearchHighlighter(object):
     ):
         self.match_mode = match_mode
 
-        if isinstance(emphasis, basestring):
+        if isinstance(emphasis, str):
             self.__emphasize = lambda text: emphasis % text
         elif callable(emphasis):
             self.__emphasize = emphasis
@@ -55,7 +55,7 @@ class SearchHighlighter(object):
                 preserve_patterns = (match_mode == "pattern")
             )
             if match_mode == "prefix":
-                terms = [term + u"*" for term in terms]
+                terms = [term + "*" for term in terms]
             self.__query_terms.update(terms)
 
         if context_radius is not None:
@@ -113,12 +113,12 @@ class SearchHighlighter(object):
             pos = 0
             queue = []
             trailing_context = 0
-            text = u" ".join(node.text)
+            text = " ".join(node.text)
             ellipsis = False
 
             # Separate the output of different nodes
             if output:
-                text = u" " + text
+                text = " " + text
 
             while True:
                 match = self.word_expr.search(text, pos)
@@ -149,7 +149,7 @@ class SearchHighlighter(object):
 
                 pos = word_end
 
-        return u"".join(output)
+        return "".join(output)
 
     def should_include(self, node):
         return True

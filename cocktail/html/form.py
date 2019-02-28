@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -7,7 +7,7 @@ u"""
 @since:			September 2008
 """
 from cocktail.translations import get_language, language_context
-from cocktail.modeling import getter, ListWrapper
+from cocktail.modeling import ListWrapper
 from cocktail.translations import translations, translate_locale
 from cocktail import schema
 from cocktail.persistence import PersistentObject
@@ -146,7 +146,7 @@ class Form(Element, DataDisplay):
             hidden_button_block.set_style("left", "-1000px")
             hidden_button_block.set_style("top", "-1000px")
             hidden_button = Element(self.default_button.tag)
-            for key, value in self.default_button.attributes.iteritems():
+            for key, value in self.default_button.attributes.items():
                 hidden_button[key] = value
             hidden_button_block.append(hidden_button)
             self.insert(0, hidden_button_block)
@@ -503,15 +503,15 @@ class FormGroup(object):
             self.__match_expr = \
                 lambda member: self.__form._normalize_member(member) in members
 
-    @getter
+    @property
     def form(self):
         return self.__form
 
-    @getter
+    @property
     def id(self):
         return self.__id
 
-    @getter
+    @property
     def members_filter(self):
         return self.__members_filter
 

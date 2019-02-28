@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -26,20 +26,20 @@ class TextExtractionTestCase(TestCase):
             m3 = schema.String(translated = True)
 
         obj1 = Model1()
-        obj1.field1 = u"John"
-        obj1.field2 = u"Johnson"
-        obj1.set("m3", u"Cat", "en")
-        obj1.set("m3", u"Gato", "es")
+        obj1.field1 = "John"
+        obj1.field2 = "Johnson"
+        obj1.set("m3", "Cat", "en")
+        obj1.set("m3", "Gato", "es")
 
-        self.assert_text(obj1, [None], u"John Johnson")
+        self.assert_text(obj1, [None], "John Johnson")
 
         obj2 = Model1()
-        obj2.field1 = u"James"
-        obj2.field2 = u"Jameson"
-        obj2.set("m3", u"Dog", "en")
-        obj2.set("m3", u"Perro", "es")
+        obj2.field1 = "James"
+        obj2.field2 = "Jameson"
+        obj2.set("m3", "Dog", "en")
+        obj2.set("m3", "Perro", "es")
 
-        self.assert_text(obj2, [None], u"James Jameson")
+        self.assert_text(obj2, [None], "James Jameson")
 
     def test_can_extract_text_from_translated_members(self):
 
@@ -51,24 +51,24 @@ class TextExtractionTestCase(TestCase):
             m3 = schema.String(translated = True)
 
         obj1 = Model1()
-        obj1.field1 = u"John"
-        obj1.field2 = u"Johnson"
-        obj1.set("m3", u"Cat", "en")
-        obj1.set("m3", u"Gato", "es")
+        obj1.field1 = "John"
+        obj1.field2 = "Johnson"
+        obj1.set("m3", "Cat", "en")
+        obj1.set("m3", "Gato", "es")
 
-        self.assert_text(obj1, ["en"], u"Cat")
-        self.assert_text(obj1, ["es"], u"Gato")
-        self.assert_text(obj1, ["es", "en"], u"Gato Cat")
+        self.assert_text(obj1, ["en"], "Cat")
+        self.assert_text(obj1, ["es"], "Gato")
+        self.assert_text(obj1, ["es", "en"], "Gato Cat")
 
         obj2 = Model1()
-        obj2.field1 = u"James"
-        obj2.field2 = u"Jameson"
-        obj2.set("m3", u"Dog", "en")
-        obj2.set("m3", u"Perro", "es")
+        obj2.field1 = "James"
+        obj2.field2 = "Jameson"
+        obj2.set("m3", "Dog", "en")
+        obj2.set("m3", "Perro", "es")
 
-        self.assert_text(obj2, ["en"], u"Dog")
-        self.assert_text(obj2, ["es"], u"Perro")
-        self.assert_text(obj2, ["en", "es"], u"Dog Perro")
+        self.assert_text(obj2, ["en"], "Dog")
+        self.assert_text(obj2, ["es"], "Perro")
+        self.assert_text(obj2, ["en", "es"], "Dog Perro")
 
     def test_can_extract_text_including_translated_and_untranslated_members(self):
 
@@ -80,14 +80,14 @@ class TextExtractionTestCase(TestCase):
             m3 = schema.String(translated = True)
 
         obj1 = Model1()
-        obj1.field1 = u"John"
-        obj1.field2 = u"Johnson"
-        obj1.set("m3", u"Cat", "en")
-        obj1.set("m3", u"Gato", "es")
+        obj1.field1 = "John"
+        obj1.field2 = "Johnson"
+        obj1.set("m3", "Cat", "en")
+        obj1.set("m3", "Gato", "es")
 
-        self.assert_text(obj1, [None, "en"], u"John Johnson Cat")
-        self.assert_text(obj1, ["es", None], u"Gato John Johnson")
-        self.assert_text(obj1, [None, "es", "en"], u"John Johnson Gato Cat")
+        self.assert_text(obj1, [None, "en"], "John Johnson Cat")
+        self.assert_text(obj1, ["es", None], "Gato John Johnson")
+        self.assert_text(obj1, [None, "es", "en"], "John Johnson Gato Cat")
 
     def test_extraction_languages_default_to_object_translations(self):
 
@@ -101,25 +101,25 @@ class TextExtractionTestCase(TestCase):
 
         translations.define(
             Model.full_name + ".members.field3.values.icecream",
-            es = u"Helado",
-            en = u"Ice cream"
+            es = "Helado",
+            en = "Ice cream"
         )
 
         translations.define(
             Model.full_name + ".members.field3.values.pie",
-            es = u"Pastel",
-            en = u"Pie"
+            es = "Pastel",
+            en = "Pie"
         )
 
         obj = Model()
         obj.field1 = "Foobar"
-        obj.set("field2", u"Dog", "en")
-        obj.set("field2", u"Perro", "es")
+        obj.set("field2", "Dog", "en")
+        obj.set("field2", "Perro", "es")
         obj.field3 = "pie"
 
         assert (
             set(obj.get_searchable_text().split())
-            == {u"Foobar", u"Dog", u"Perro", u"Pastel", u"Pie"}
+            == {"Foobar", "Dog", "Perro", "Pastel", "Pie"}
         )
 
     def test_enumerations_produce_translated_text(self):
@@ -132,32 +132,32 @@ class TextExtractionTestCase(TestCase):
 
         translations.define(
             Model1.full_name + ".members.field1.values.cat",
-            es = u"Gato",
-            en = u"Cat"
+            es = "Gato",
+            en = "Cat"
         )
 
         translations.define(
             Model1.full_name + ".members.field1.values.dog",
-            es = u"Perro",
-            en = u"Dog"
+            es = "Perro",
+            en = "Dog"
         )
 
         obj1 = Model1()
 
         obj1.field1 = "cat"
-        self.assert_text(obj1, ["en"], u"Cat")
-        self.assert_text(obj1, ["es"], u"Gato")
+        self.assert_text(obj1, ["en"], "Cat")
+        self.assert_text(obj1, ["es"], "Gato")
         self.assert_text(obj1, [None], set())
 
         obj1.field1 = "dog"
-        self.assert_text(obj1, ["en"], u"Dog")
-        self.assert_text(obj1, ["es"], u"Perro")
-        self.assert_text(obj1, [None], u"")
+        self.assert_text(obj1, ["en"], "Dog")
+        self.assert_text(obj1, ["es"], "Perro")
+        self.assert_text(obj1, [None], "")
 
         Model1.field1.translatable_enumeration = False
-        self.assert_text(obj1, ["en"], u"")
-        self.assert_text(obj1, ["es"], u"")
-        self.assert_text(obj1, [None], u"dog")
+        self.assert_text(obj1, ["en"], "")
+        self.assert_text(obj1, ["es"], "")
+        self.assert_text(obj1, [None], "dog")
 
     def test_can_exclude_members_from_text_extraction(self):
 
@@ -168,10 +168,10 @@ class TextExtractionTestCase(TestCase):
             field2 = schema.String(text_search = False)
 
         obj1 = Model1()
-        obj1.field1 = u"John"
-        obj1.field2 = u"Johnson"
+        obj1.field1 = "John"
+        obj1.field2 = "Johnson"
 
-        self.assert_text(obj1, [None], u"John")
+        self.assert_text(obj1, [None], "John")
 
     def test_can_recurse_into_references(self):
 
@@ -185,21 +185,21 @@ class TextExtractionTestCase(TestCase):
         Model.ref.type = Model
 
         obj = Model()
-        obj.text = u"Foo"
+        obj.text = "Foo"
         obj.ref = Model()
-        obj.ref.text = u"Bar"
+        obj.ref.text = "Bar"
         obj.ref.ref = Model()
-        obj.ref.set("translated_text", u"Hola", "es")
-        obj.ref.ref.text = u"Spam"
-        obj.ref.ref.set("translated_text", u"Hello", "en")
+        obj.ref.set("translated_text", "Hola", "es")
+        obj.ref.ref.text = "Spam"
+        obj.ref.ref.set("translated_text", "Hello", "en")
 
-        self.assert_text(obj, [None, "es", "en"], u"Foo")
+        self.assert_text(obj, [None, "es", "en"], "Foo")
 
         Model.ref.text_search = True
 
-        self.assert_text(obj, [None, "es", "en"], u"Foo Bar Spam Hola Hello")
-        self.assert_text(obj.ref, [None, "es", "en"], u"Bar Spam Hola Hello")
-        self.assert_text(obj.ref.ref, [None, "es", "en"], u"Spam Hello")
+        self.assert_text(obj, [None, "es", "en"], "Foo Bar Spam Hola Hello")
+        self.assert_text(obj.ref, [None, "es", "en"], "Bar Spam Hola Hello")
+        self.assert_text(obj.ref.ref, [None, "es", "en"], "Spam Hello")
 
     def test_extraction_avoids_reference_cycles(self):
 
@@ -217,8 +217,8 @@ class TextExtractionTestCase(TestCase):
         obj.ref.text = "Bar"
         obj.ref.ref = obj
 
-        self.assert_text(obj, [None], u"Foo Bar")
-        self.assert_text(obj.ref, [None], u"Foo Bar")
+        self.assert_text(obj, [None], "Foo Bar")
+        self.assert_text(obj.ref, [None], "Foo Bar")
 
     def test_can_recurse_into_collections(self):
 
@@ -232,16 +232,16 @@ class TextExtractionTestCase(TestCase):
         Model.items.items = schema.Reference(type = Model)
 
         obj = Model()
-        obj.text = u"Foo"
+        obj.text = "Foo"
         obj.items.append(Model())
-        obj.items[0].text = u"Bar"
-        obj.items[0].set("translated_text", u"Hola", "es")
+        obj.items[0].text = "Bar"
+        obj.items[0].set("translated_text", "Hola", "es")
         obj.items.append(Model())
-        obj.items[1].text = u"Spam"
-        obj.items[1].set("translated_text", u"Hello", "en")
+        obj.items[1].text = "Spam"
+        obj.items[1].set("translated_text", "Hello", "en")
 
-        self.assert_text(obj, [None, "es", "en"], u"Foo")
+        self.assert_text(obj, [None, "es", "en"], "Foo")
 
         Model.items.text_search = True
-        self.assert_text(obj, [None, "es", "en"], u"Foo Bar Spam Hola Hello")
+        self.assert_text(obj, [None, "es", "en"], "Foo Bar Spam Hola Hello")
 

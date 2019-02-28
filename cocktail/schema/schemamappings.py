@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 Provides a class to describe members that handle sets of values.
 
 @author:        Martí Congost
@@ -7,7 +7,7 @@ Provides a class to describe members that handle sets of values.
 @organization:  Whads/Accent SL
 @since:         July 2008
 """
-from cocktail.modeling import getter, InstrumentedDict, DictWrapper
+from cocktail.modeling import InstrumentedDict, DictWrapper
 from cocktail.schema.member import Member
 from cocktail.schema.schemacollections import (
     Collection, RelationCollection, add, remove
@@ -32,18 +32,18 @@ class Mapping(Collection):
     default_type = dict
     get_item_key = None
 
-    @getter
+    @property
     def related_type(self):
         return self.values and self.values.type
 
     def translate_value(self, value, language = None, **kwargs):
         if self.keys and self.values and value:
-            return u", ".join(
-                u"%s: %s" % (
+            return ", ".join(
+                "%s: %s" % (
                     self.keys.translate_value(key),
                     self.values.translate_value(value)
                 )
-                for key, value in value.iteritems()
+                for key, value in value.items()
             )
         return Member.translate_value(self, value, language, **kwargs)
 
@@ -59,7 +59,7 @@ class Mapping(Collection):
 
             if keys is not None or values is not None:
 
-                for key, value in context.value.iteritems():
+                for key, value in context.value.items():
                     if keys is not None:
                         for error in keys.get_errors(
                             key,

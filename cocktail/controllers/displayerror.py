@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -111,7 +111,7 @@ def format_error(error_type, error, traceback):
         }
 
 def _escape_error_property(string):
-    if isinstance(string, unicode):
+    if isinstance(string, str):
         string = string.encode("utf-8")
     return escape(string)
 

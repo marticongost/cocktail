@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 Provides a member that handles textual values.
 
 @author:		Martí Congost
@@ -30,7 +30,7 @@ class String(Member):
     @type max: int
     """
 
-    type = basestring
+    type = str
     min = None
     max = None
     text_search = True
@@ -43,7 +43,7 @@ class String(Member):
     def _set_format(self, value):
 
         # Normalize strings to regular expressions
-        if isinstance(value, basestring):
+        if isinstance(value, str):
             value = re.compile(value)
 
         self._format = value

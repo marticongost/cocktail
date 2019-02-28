@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -7,7 +7,7 @@ from types import GeneratorType
 from functools import wraps
 import cherrypy
 from json import dumps
-from string import letters, digits
+from string import ascii_letters, digits
 from cocktail.events import Event
 from cocktail.stringutils import random_string, normalize_indentation as ni
 from cocktail.html import resource_repositories
@@ -97,18 +97,18 @@ def _csrf_token_injection():
                     "cocktail://scripts/csrfprotection.js"
                 )
             )
-        )
-        html = u"".join(
+        ).encode("utf-8")
+        html = b"".join(
             (
-                chunk.decode("utf-8")
+                chunk.encode("utf-8")
                 if isinstance(chunk, str)
                 else chunk
             )
             for chunk in cherrypy.response.body
         )
-        pos = html.find("</head>")
+        pos = html.find(b"</head>")
         if pos == -1:
-            pos = html.find("</body>")
+            pos = html.find(b"</body>")
         if pos != -1:
             html = html[:pos] + code + html[pos:]
         cherrypy.response.body = [html]
@@ -141,7 +141,7 @@ class CSRFProtection(object):
     """
     session_key = "cocktail.csrf_protection_token"
     cookie_name = session_key
-    token_characters = letters + digits
+    token_characters = ascii_letters + digits
     token_length = 40
     field = "__cocktail_csrf_token"
     header = "X-Cocktail-CSRF-Token"

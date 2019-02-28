@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 Declares exception classes specific to the package.
 
 @author:		Martí Congost
@@ -7,7 +7,6 @@ Declares exception classes specific to the package.
 @organization:	Whads/Accent SL
 @since:			March 2008
 """
-from cocktail.modeling import getter
 from cocktail.stringutils import decapitalize
 from cocktail.translations import translations, translate_locale
 
@@ -90,7 +89,7 @@ class ValidationError(Exception):
 
         return desc
 
-    @getter
+    @property
     def invalid_members(self):
         """The set of members with invalid values that caused the error. This
         usually returns a list with a reference to the exception's L{member}
@@ -102,7 +101,7 @@ class ValidationError(Exception):
         return [self.member]
 
     def member_desc(self):
-        return u"<em>%s</em>" % self.translate_member()
+        return "<em>%s</em>" % self.translate_member()
 
     def translate_member(self):
 
@@ -128,7 +127,7 @@ class ValidationError(Exception):
 
             if context.collection_index is not None:
                 if isinstance(context.collection_index, int):
-                    label += u" %d" % (context.collection_index + 1)
+                    label += " %d" % (context.collection_index + 1)
                 elif (
                     context.parent_context
                     and isinstance(context.parent_context.member, schema.Mapping)
@@ -139,18 +138,18 @@ class ValidationError(Exception):
                     )
                     if label:
                         if key_label:
-                            label = u"%s: %s" % (key_label, label)
+                            label = "%s: %s" % (key_label, label)
                     else:
                         label = key_label
                 else:
-                    label = u"%s: %s" % (context.collection_index, label)
+                    label = "%s: %s" % (context.collection_index, label)
 
             if self.language:
-                label += u" (%s)" % translate_locale(self.language)
+                label += " (%s)" % translate_locale(self.language)
 
             desc.append(label.strip())
 
-        return u" » ".join(desc)
+        return " » ".join(desc)
 
 
 class ValueRequiredError(ValidationError):

@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -26,7 +26,7 @@ def display_factory(display_name, **kwargs):
     def func(ui_generation, obj, member, value, **context):
         display = templates.new(display_name)
 
-        for k, v in kwargs.iteritems():
+        for k, v in kwargs.items():
             if hasattr(display, k):
                 setattr(display, k, v)
             else:
@@ -209,7 +209,7 @@ class UIGenerator(object):
             else:
                 display = display(self, obj, member, value, **context)
 
-        if isinstance(display, basestring):
+        if isinstance(display, str):
             display = templates.new(display)
 
         if display is not None:
@@ -229,7 +229,7 @@ class UIGenerator(object):
             display.language = get_language()
             display.value = value
 
-            for key, value in context.iteritems():
+            for key, value in context.items():
                 setattr(display, key, value)
 
         return display

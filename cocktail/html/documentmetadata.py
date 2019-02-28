@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""Defines the `DocumentMetadata` class.
+"""Defines the `DocumentMetadata` class.
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """

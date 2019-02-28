@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -206,7 +206,7 @@ class AttributeTestCase(TestCase):
 
         self.assertFalse(events)
 
-        for key, value in values.iteritems():
+        for key, value in values.items():
             self.assertEqual(getattr(foo, key), value)
 
     def test_defaults(self):
@@ -415,27 +415,27 @@ class TranslationTestCase(TestCase):
             spam = String(translated = True)
 
         foo = Foo()
-        foo.set("spam", u"green", "en")
-        foo.set("spam", u"grün", "de")
+        foo.set("spam", "green", "en")
+        foo.set("spam", "grün", "de")
 
         events = EventLog()
         events.listen(foo_changed = foo.changed)
 
-        foo.set("spam", u"red", "en")
-        foo.set("spam", u"rot", "de")
+        foo.set("spam", "red", "en")
+        foo.set("spam", "rot", "de")
 
         event = events.pop(0)
         assert event.slot is foo.changed
         assert event.member is Foo.spam
-        assert event.value == u"red"
-        assert event.previous_value == u"green"
+        assert event.value == "red"
+        assert event.previous_value == "green"
         assert event.language == "en"
 
         event = events.pop(0)
         assert event.slot is foo.changed
         assert event.member is Foo.spam
-        assert event.value == u"rot"
-        assert event.previous_value == u"grün"
+        assert event.value == "rot"
+        assert event.previous_value == "grün"
         assert event.language == "de"
 
     def test_adding_translation_triggers_event(self):
@@ -450,7 +450,7 @@ class TranslationTestCase(TestCase):
         events = EventLog()
         events.listen(foo_adding_translation = foo.adding_translation)
 
-        foo.set("spam", u"green", "en")
+        foo.set("spam", "green", "en")
 
         event = events.pop(0)
         assert event.slot is foo.adding_translation
@@ -464,7 +464,7 @@ class TranslationTestCase(TestCase):
             spam = String(translated = True)
 
         foo = Foo()
-        foo.set("spam", u"green", "en")
+        foo.set("spam", "green", "en")
 
         events = EventLog()
         events.listen(foo_removing_translation = foo.removing_translation)
@@ -485,27 +485,27 @@ class TranslationTestCase(TestCase):
             spam = String(translated = True)
 
         foo = Foo()
-        foo.set("spam", u"green", "en")
-        foo.set("spam", u"grün", "de")
+        foo.set("spam", "green", "en")
+        foo.set("spam", "grün", "de")
 
         events = EventLog()
         events.listen(foo_changed = foo.changed)
 
-        foo.translations["en"].spam = u"red"
-        foo.translations["de"].spam = u"rot"
+        foo.translations["en"].spam = "red"
+        foo.translations["de"].spam = "rot"
 
         event = events.pop(0)
         assert event.slot is foo.changed
         assert event.member is Foo.spam
-        assert event.value == u"red"
-        assert event.previous_value == u"green"
+        assert event.value == "red"
+        assert event.previous_value == "green"
         assert event.language == "en"
 
         event = events.pop(0)
         assert event.slot is foo.changed
         assert event.member is Foo.spam
-        assert event.value == u"rot"
-        assert event.previous_value == u"grün"
+        assert event.value == "rot"
+        assert event.previous_value == "grün"
         assert event.language == "de"
 
     def test_adding_translation_notifies_owner(self):
@@ -522,34 +522,34 @@ class TranslationTestCase(TestCase):
         events = EventLog()
         events.listen(foo_changed = foo.changed)
 
-        foo.set("spam", u"green", "en")
-        foo.set("spam", u"grün", "de")
+        foo.set("spam", "green", "en")
+        foo.set("spam", "grün", "de")
 
         event = events.pop(0)
         assert event.slot is foo.changed
         assert event.member is Foo.spam
-        assert event.value == u"green"
+        assert event.value == "green"
         assert event.previous_value is None
         assert event.language == "en"
 
         event = events.pop(0)
         assert event.slot is foo.changed
         assert event.member is Foo.bar
-        assert event.value == u"gray"
+        assert event.value == "gray"
         assert event.previous_value is None
         assert event.language == "en"
 
         event = events.pop(0)
         assert event.slot is foo.changed
         assert event.member is Foo.spam
-        assert event.value == u"grün"
+        assert event.value == "grün"
         assert event.previous_value is None
         assert event.language == "de"
 
         event = events.pop(0)
         assert event.slot is foo.changed
         assert event.member is Foo.bar
-        assert event.value == u"gray"
+        assert event.value == "gray"
         assert event.previous_value is None
         assert event.language == "de"
 
@@ -575,21 +575,21 @@ class TranslationInheritanceTestCase(TestCase):
             "en-CA": ["en"],
             "fr-CA": ["fr", "en-CA"]
         }):
-            obj.set("test_field", u"I'm full", "en")
-            assert obj.get("test_field", "en-CA") == u"I'm full"
-            assert obj.get("test_field", "fr-CA") == u"I'm full"
+            obj.set("test_field", "I'm full", "en")
+            assert obj.get("test_field", "en-CA") == "I'm full"
+            assert obj.get("test_field", "fr-CA") == "I'm full"
 
-            obj.set("test_field", u"j'ai trop mangé", "fr")
-            assert obj.get("test_field", "fr-CA") == u"j'ai trop mangé"
+            obj.set("test_field", "j'ai trop mangé", "fr")
+            assert obj.get("test_field", "fr-CA") == "j'ai trop mangé"
 
-            obj.set("test_field", u"je suis plein", "fr-CA")
-            assert obj.get("test_field", "fr-CA") == u"je suis plein"
+            obj.set("test_field", "je suis plein", "fr-CA")
+            assert obj.get("test_field", "fr-CA") == "je suis plein"
 
             del obj.translations["fr-CA"]
-            assert obj.get("test_field", "fr-CA") == u"j'ai trop mangé"
+            assert obj.get("test_field", "fr-CA") == "j'ai trop mangé"
 
             del obj.translations["fr"]
-            assert obj.get("test_field", "fr-CA") == u"I'm full"
+            assert obj.get("test_field", "fr-CA") == "I'm full"
 
     def test_new_translations_inherit_values(self):
 
@@ -605,18 +605,18 @@ class TranslationInheritanceTestCase(TestCase):
             )
 
         obj = TestObject()
-        obj.set("test_field", u"I'm full", "en")
-        obj.set("test_field", u"j'ai trop mangé", "fr")
+        obj.set("test_field", "I'm full", "en")
+        obj.set("test_field", "j'ai trop mangé", "fr")
 
         with fallback_languages_context({
             "en-CA": ["en"],
             "fr-CA": ["fr", "en-CA"]
         }):
             obj.new_translation("en-CA")
-            assert obj.get("test_field", "en-CA") == u"I'm full"
+            assert obj.get("test_field", "en-CA") == "I'm full"
 
             obj.new_translation("fr-CA")
-            assert obj.get("test_field", "fr-CA") == u"j'ai trop mangé"
+            assert obj.get("test_field", "fr-CA") == "j'ai trop mangé"
 
     def test_changing_the_language_chain_affects_translation_inheritance(self):
 
@@ -632,20 +632,20 @@ class TranslationInheritanceTestCase(TestCase):
             )
 
         obj = TestObject()
-        obj.set("test_field", u"I'm full", "en")
-        obj.set("test_field", u"j'ai trop mangé", "fr")
+        obj.set("test_field", "I'm full", "en")
+        obj.set("test_field", "j'ai trop mangé", "fr")
 
         with fallback_languages_context({
             "en-CA": ["en"],
             "fr-CA": ["fr", "en-CA"]
         }):
-            assert obj.get("test_field", "fr-CA") == u"j'ai trop mangé"
+            assert obj.get("test_field", "fr-CA") == "j'ai trop mangé"
 
         with fallback_languages_context({
             "en-CA": ["en"],
             "fr-CA": ["en-CA"]
         }):
-            assert obj.get("test_field", "fr-CA") == u"I'm full"
+            assert obj.get("test_field", "fr-CA") == "I'm full"
 
 
 class CopyTestCase(TestCase):
@@ -686,7 +686,7 @@ class CopyTestCase(TestCase):
 
         copy = TestClass.copy()
 
-        assert copy.members().keys() == TestClass.members().keys()
+        assert list(copy.members().keys()) == list(TestClass.members().keys())
 
         assert copy.member1 is not TestClass.member1
         assert isinstance(copy.member1, String)

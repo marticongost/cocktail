@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -10,7 +10,7 @@ from cocktail.html import Element
 
 class TranslationDisplay(Element):
 
-    empty_label = u"∅"
+    empty_label = "∅"
 
     def _ready(self):
 

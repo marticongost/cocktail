@@ -10,7 +10,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = "cocktail",
-    version = "1.13b1",
+    version = "2.0a1",
     author = "Whads/Accent SL",
     author_email = "tech@whads.com",
     description = """A tasty mix of python web development utilities.""",
@@ -27,21 +27,16 @@ setup(
         "Framework :: ZODB",
         "License :: OSI Approved :: GNU Affero General Public License v3",
         "Operating System :: OS Independent",
-        "Programming Language :: Python :: 2.7",
         "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
         "Topic :: Text Processing :: Markup :: HTML"
     ],
     install_requires = [
         "frozendict",
-        "simplejson",
-        "transaction==1.1.1",
-        "ZODB3==3.10.5",
-        "zodbupdate==0.5",
-        "zope.index==3.6.1",
-        "cherrypy==3.1.2",
-        "buffet>=1.0",
+        "ZODB",
+        "zodbupdate",
+        "zope.index",
+        "cherrypy",
         "nose",
-        "pyExcelerator",
         "Beaker",
         "BeautifulSoup4",
         "lxml",
@@ -50,21 +45,17 @@ setup(
         "rfc6266"
     ],
     extras_require = {
-        "sass": ["libsass==0.12.3"]
+        "sass": ["libsass"]
     },
     packages = find_packages(),
     include_package_data = True,
-
     # Cocktail can't yet access view resources (images, style sheets, client
     # side scripts, etc) that are packed inside a zipped egg, so distribution
     # in zipped form is disabled
     zip_safe = False,
-
     entry_points = {
         "python.templating.engines":
-        ["cocktail=cocktail.html.templates.buffetplugin:CocktailBuffetPlugin"],
-        "nose.plugins.0.10":
-        ["selenium_tester=cocktail.tests.seleniumtester:SeleniumTester"]
+        ["cocktail=cocktail.html.templates.buffetplugin:CocktailBuffetPlugin"]
     }
 )
 

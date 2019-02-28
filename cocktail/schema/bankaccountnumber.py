@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Javier Marrero <javier.marrero@whads.com>
 """
@@ -22,7 +22,7 @@ class BankAccountNumber(String):
         String.__init__(self, *args, **kwargs)
 
     def normalization(self, value):
-        if isinstance(value, basestring):
+        if isinstance(value, str):
             value = divider_expr.sub("", value)
         return value
 
@@ -33,7 +33,7 @@ class BankAccountNumber(String):
             yield error
 
         if (
-            isinstance(context.value, basestring)
+            isinstance(context.value, str)
             and not self.checksum(context.value)
         ):
             yield BankAccountChecksumError(context)
@@ -47,6 +47,6 @@ class BankAccountNumber(String):
 
     def translate_value(self, value, language = None, **kwargs):
         if value:
-            return value[0:4] + u"-" + value[4:8] + u"-" + value[8:]
+            return value[0:4] + "-" + value[4:8] + "-" + value[8:]
         else:
             return ""

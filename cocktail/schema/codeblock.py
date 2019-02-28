@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -25,6 +25,6 @@ class CodeBlock(String):
             "<%r.%s>" % (obj, self.name), # label
             "exec"
         )
-        exec code in context
+        exec(code, context)
         return context
 

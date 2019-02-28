@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -7,7 +7,7 @@ import os
 import mimetypes
 import cherrypy
 import rfc6266
-from cherrypy.lib import cptools, http, file_generator_limited
+from cherrypy.lib import cptools, httputil, file_generator_limited
 from cocktail.events import Event, when
 from cocktail.html.resources import resource_repositories, SASSCompilation
 
@@ -25,7 +25,7 @@ class FilePublication(object):
         content_type = None,
         processing_options = None
     ):
-        if isinstance(file, basestring):
+        if isinstance(file, str):
             path = file
             try:
                 file = open(path, "rb")
@@ -82,7 +82,7 @@ class FilePublication(object):
         response = cherrypy.response
         st = None
 
-        if isinstance(file, basestring):
+        if isinstance(file, str):
 
             path = file
 
@@ -97,7 +97,7 @@ class FilePublication(object):
             if stat.S_ISDIR(st.st_mode):
                 raise cherrypy.NotFound()
 
-            response.headers['Last-Modified'] = http.HTTPDate(st.st_mtime)
+            response.headers['Last-Modified'] = httputil.HTTPDate(st.st_mtime)
             cptools.validate_since()
             file = open(path, "rb")
         else:
@@ -163,7 +163,10 @@ class FilePublication(object):
         # HTTP/1.0 didn't have Range/Accept-Ranges headers, or the 206 code
         if cherrypy.request.protocol >= (1, 1):
             response.headers["Accept-Ranges"] = "bytes"
-            r = http.get_ranges(cherrypy.request.headers.get('Range'), c_len)
+            r = httputil.get_ranges(
+                cherrypy.request.headers.get('Range'),
+                c_len
+            )
             if r == []:
                 response.headers['Content-Range'] = "bytes */%s" % c_len
                 message = "Invalid Range (first-byte-pos greater than Content-Length)"
@@ -188,7 +191,7 @@ class FilePublication(object):
                     boundary = mimetools.choose_boundary()
                     ct = "multipart/byteranges; boundary=%s" % boundary
                     response.headers['Content-Type'] = ct
-                    if response.headers.has_key("Content-Length"):
+                    if "Content-Length" in response.headers:
                         # Delete Content-Length header so finalize() recalcs it.
                         del response.headers["Content-Length"]
 
@@ -318,14 +321,14 @@ class SASSPreprocessor(object):
                     **self.get_sass_compiler_options()
                 )
 
-                if isinstance(css, unicode):
+                if isinstance(css, str):
                     css = css.encode("utf-8")
 
-                if isinstance(source_map, unicode):
+                if isinstance(source_map, str):
                     source_map = source_map.encode("utf-8")
 
-                open(css_path, "w").write(css)
-                open(map_path, "w").write(source_map)
+                open(css_path, "wb").write(css)
+                open(map_path, "wb").write(source_map)
 
             file_info["file"] = open(path)
 

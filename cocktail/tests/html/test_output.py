@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -50,12 +50,12 @@ class HTML4RendererTestCase(TestCase):
         from cocktail.html.element import Element
         e = Element()
         e.tag = None
-        self.assertEquals(self.get_html(e), u"")
+        self.assertEqual(self.get_html(e), "")
 
     def test_content(self):
         from cocktail.html.element import Content
         e = Content("hello world")
-        self.assertEquals(self.get_html(e), u"hello world")
+        self.assertEqual(self.get_html(e), "hello world")
 
     def test_invisible_element_not_rendered(self):
 
@@ -63,60 +63,60 @@ class HTML4RendererTestCase(TestCase):
 
         e = Element()
         e.visible = False
-        self.assertEquals(self.get_html(e), u"")
+        self.assertEqual(self.get_html(e), "")
 
         e.visible = True
         e.collapsible = True
-        self.assertEquals(self.get_html(e), u"")
+        self.assertEqual(self.get_html(e), "")
 
         child = Element()
         child.visible = False
         e.append(child)
-        self.assertEquals(self.get_html(e), u"")
+        self.assertEqual(self.get_html(e), "")
 
     def test_empty_single_elements(self):
 
         from cocktail.html.element import Element
 
-        for tag in (u"img", u"link", u"hr", u"br"):
+        for tag in ("img", "link", "hr", "br"):
             e = Element()
             e.tag = tag
-            self.assertEquals(self.get_html(e), u"<%s>" % tag)
+            self.assertEqual(self.get_html(e), "<%s>" % tag)
 
     def test_empty_compound_elements(self):
 
         from cocktail.html.element import Element
 
-        for tag in (u"div", u"script", u"table", u"p", u"b"):
+        for tag in ("div", "script", "table", "p", "b"):
             e = Element()
             e.tag = tag
-            self.assertEquals(self.get_html(e), u"<%s></%s>" % (tag, tag))
+            self.assertEqual(self.get_html(e), "<%s></%s>" % (tag, tag))
 
     def test_empty_single_elements_with_attributes(self):
 
         from cocktail.html.element import Element
 
-        for tag in (u"img", u"link", u"hr", u"br"):
+        for tag in ("img", "link", "hr", "br"):
             e = Element()
             e.tag = tag
             e["title"] = "hello world"
-            self.assertEquals(
+            self.assertEqual(
                 self.get_html(e),
-                u'<%s title="hello world">' % tag
+                '<%s title="hello world">' % tag
             )
 
-        for tag in (u"img", u"link", u"hr", u"br"):
+        for tag in ("img", "link", "hr", "br"):
             e = Element()
             e.tag = tag
             e["title"] = "hello world"
             e["id"] = "foo"
             html = self.get_html(e)
             self.assertTrue(
-                html == u'<%s title="hello world" id="foo">' % tag
-                or html == u'<%s id="foo" title="hello world">' % tag
+                html == '<%s title="hello world" id="foo">' % tag
+                or html == '<%s id="foo" title="hello world">' % tag
             )
 
-        for tag in (u"img", u"link", u"hr", u"br"):
+        for tag in ("img", "link", "hr", "br"):
             e = Element()
             e.tag = tag
             e["selected"] = True
@@ -124,24 +124,24 @@ class HTML4RendererTestCase(TestCase):
             e["id"] = "foo"
             html = self.get_html(e)
             self.assertTrue(
-                html == u'<%s selected id="foo">' % tag
-                or html == u'<%s id="foo" selected>' % tag
+                html == '<%s selected id="foo">' % tag
+                or html == '<%s id="foo" selected>' % tag
             )
 
     def test_empty_compound_elements_with_attributes(self):
 
         from cocktail.html.element import Element
 
-        for tag in (u"div", u"script", u"table", u"p", u"b"):
+        for tag in ("div", "script", "table", "p", "b"):
             e = Element()
             e.tag = tag
             e["title"] = "hello world"
-            self.assertEquals(
+            self.assertEqual(
                 self.get_html(e),
-                u'<%s title="hello world"></%s>' % (tag, tag)
+                '<%s title="hello world"></%s>' % (tag, tag)
             )
 
-        for tag in (u"div", u"script", u"table", u"p", u"b"):
+        for tag in ("div", "script", "table", "p", "b"):
             e = Element()
             e.tag = tag
             e["selected"] = True
@@ -149,21 +149,21 @@ class HTML4RendererTestCase(TestCase):
             e["id"] = "foo"
             html = self.get_html(e)
             self.assertTrue(
-                html == u'<%s selected id="foo"></%s>' % (tag, tag)
+                html == '<%s selected id="foo"></%s>' % (tag, tag)
                 or
-                html == u'<%s id="foo" selected></%s>' % (tag, tag)
+                html == '<%s id="foo" selected></%s>' % (tag, tag)
             )
 
-        for tag in (u"div", u"script", u"table", u"p", u"b"):
+        for tag in ("div", "script", "table", "p", "b"):
             e = Element()
             e.tag = tag
             e["title"] = "hello world"
             e["id"] = "foo"
             html = self.get_html(e)
             self.assertTrue(
-                html == u'<%s title="hello world" id="foo"></%s>' % (tag, tag)
+                html == '<%s title="hello world" id="foo"></%s>' % (tag, tag)
                 or
-                html == u'<%s id="foo" title="hello world"></%s>' % (tag, tag)
+                html == '<%s id="foo" title="hello world"></%s>' % (tag, tag)
             )
 
     def test_single_elements_with_children(self):
@@ -178,7 +178,7 @@ class HTML4RendererTestCase(TestCase):
     def test_element_tree(self):
         tree = self.get_test_tree()
         html = self.get_html(tree)
-        self.assertEquals(self.get_html(tree), self.get_test_tree_html())
+        self.assertEqual(self.get_html(tree), self.get_test_tree_html())
 
 
 class XHTMLRendererTestCase(TestCase):
@@ -191,12 +191,12 @@ class XHTMLRendererTestCase(TestCase):
         from cocktail.html.element import Element
         e = Element()
         e.tag = None
-        self.assertEquals(self.get_html(e), u"")
+        self.assertEqual(self.get_html(e), "")
 
     def test_content(self):
         from cocktail.html.element import Content
         e = Content("hello world")
-        self.assertEquals(self.get_html(e), u"hello world")
+        self.assertEqual(self.get_html(e), "hello world")
 
     def test_invisible_element_not_rendered(self):
 
@@ -204,60 +204,60 @@ class XHTMLRendererTestCase(TestCase):
 
         e = Element()
         e.visible = False
-        self.assertEquals(self.get_html(e), u"")
+        self.assertEqual(self.get_html(e), "")
 
         e.visible = True
         e.collapsible = True
-        self.assertEquals(self.get_html(e), u"")
+        self.assertEqual(self.get_html(e), "")
 
         child = Element()
         child.visible = False
         e.append(child)
-        self.assertEquals(self.get_html(e), u"")
+        self.assertEqual(self.get_html(e), "")
 
     def test_empty_single_elements(self):
 
         from cocktail.html.element import Element
 
-        for tag in (u"img", u"link", u"hr", u"br"):
+        for tag in ("img", "link", "hr", "br"):
             e = Element()
             e.tag = tag
-            self.assertEquals(self.get_html(e), u"<%s/>" % tag)
+            self.assertEqual(self.get_html(e), "<%s/>" % tag)
 
     def test_empty_compound_elements(self):
 
         from cocktail.html.element import Element
 
-        for tag in (u"div", u"script", u"table", u"p", u"b"):
+        for tag in ("div", "script", "table", "p", "b"):
             e = Element()
             e.tag = tag
-            self.assertEquals(self.get_html(e), u"<%s></%s>" % (tag, tag))
+            self.assertEqual(self.get_html(e), "<%s></%s>" % (tag, tag))
 
     def test_empty_single_elements_with_attributes(self):
 
         from cocktail.html.element import Element
 
-        for tag in (u"img", u"link", u"hr", u"br"):
+        for tag in ("img", "link", "hr", "br"):
             e = Element()
             e.tag = tag
             e["title"] = "hello world"
-            self.assertEquals(
+            self.assertEqual(
                 self.get_html(e),
-                u'<%s title="hello world"/>' % tag
+                '<%s title="hello world"/>' % tag
             )
 
-        for tag in (u"img", u"link", u"hr", u"br"):
+        for tag in ("img", "link", "hr", "br"):
             e = Element()
             e.tag = tag
             e["title"] = "hello world"
             e["id"] = "foo"
             html = self.get_html(e)
             self.assertTrue(
-                html == u'<%s title="hello world" id="foo"/>' % tag
-                or html == u'<%s id="foo" title="hello world"/>' % tag
+                html == '<%s title="hello world" id="foo"/>' % tag
+                or html == '<%s id="foo" title="hello world"/>' % tag
             )
 
-        for tag in (u"img", u"link", u"hr", u"br"):
+        for tag in ("img", "link", "hr", "br"):
             e = Element()
             e.tag = tag
             e["selected"] = True
@@ -265,24 +265,24 @@ class XHTMLRendererTestCase(TestCase):
             e["id"] = "foo"
             html = self.get_html(e)
             self.assertTrue(
-                html == u'<%s selected="selected" id="foo"/>' % tag
-                or html == u'<%s id="foo" selected="selected"/>' % tag
+                html == '<%s selected="selected" id="foo"/>' % tag
+                or html == '<%s id="foo" selected="selected"/>' % tag
             )
 
     def test_empty_compound_elements_with_attributes(self):
 
         from cocktail.html.element import Element
 
-        for tag in (u"div", u"script", u"table", u"p", u"b"):
+        for tag in ("div", "script", "table", "p", "b"):
             e = Element()
             e.tag = tag
             e["title"] = "hello world"
-            self.assertEquals(
+            self.assertEqual(
                 self.get_html(e),
-                u'<%s title="hello world"></%s>' % (tag, tag)
+                '<%s title="hello world"></%s>' % (tag, tag)
             )
 
-        for tag in (u"div", u"script", u"table", u"p", u"b"):
+        for tag in ("div", "script", "table", "p", "b"):
             e = Element()
             e.tag = tag
             e["selected"] = True
@@ -290,21 +290,21 @@ class XHTMLRendererTestCase(TestCase):
             e["id"] = "foo"
             html = self.get_html(e)
             self.assertTrue(
-                html == u'<%s selected="selected" id="foo"></%s>' % (tag, tag)
+                html == '<%s selected="selected" id="foo"></%s>' % (tag, tag)
                 or
-                html == u'<%s id="foo" selected="selected"></%s>' % (tag, tag)
+                html == '<%s id="foo" selected="selected"></%s>' % (tag, tag)
             )
 
-        for tag in (u"div", u"script", u"table", u"p", u"b"):
+        for tag in ("div", "script", "table", "p", "b"):
             e = Element()
             e.tag = tag
             e["title"] = "hello world"
             e["id"] = "foo"
             html = self.get_html(e)
             self.assertTrue(
-                html == u'<%s title="hello world" id="foo"></%s>' % (tag, tag)
+                html == '<%s title="hello world" id="foo"></%s>' % (tag, tag)
                 or
-                html == u'<%s id="foo" title="hello world"></%s>' % (tag, tag)
+                html == '<%s id="foo" title="hello world"></%s>' % (tag, tag)
             )
 
     def test_single_elements_with_children(self):
@@ -339,7 +339,7 @@ class XHTMLRendererTestCase(TestCase):
 
         html = self.get_html(tree)
 
-        self.assertEquals(
+        self.assertEqual(
             html,
             '<div>'
                 '<p>'

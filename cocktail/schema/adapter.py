@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -406,7 +406,7 @@ class Adapter(object):
 
         import_rule = Copy(
                         dict((value, key)
-                            for key, value in export_rule.mapping.iteritems()),
+                            for key, value in export_rule.mapping.items()),
                         transform = import_transform,
                         condition = import_condition)
 
@@ -415,7 +415,7 @@ class Adapter(object):
 
     def exclude(self, members, rule_position = None):
 
-        if isinstance(members, basestring):
+        if isinstance(members, str):
             members = [members]
 
         exclusion = Exclusion(members)
@@ -551,7 +551,7 @@ class RuleSet(object):
             ordered_members = set()
 
             for source_member in source_schema.ordered_members():
-                for target_member in target_members.itervalues():
+                for target_member in target_members.values():
                     if target_member.source_member is source_member \
                     and target_member not in ordered_members:
                         members_order.append(target_member.name)
@@ -562,7 +562,7 @@ class RuleSet(object):
             # Preserve group order
             target_groups = set(
                 target_member.member_group
-                for target_member in target_members.itervalues()
+                for target_member in target_members.values()
                 if target_member.member_group
             )
             target_schema.groups_order = [
@@ -625,7 +625,7 @@ class Rule(object):
             member_type = properties["__class__"]
             member = member_type()
 
-        for key, value in properties.iteritems():
+        for key, value in properties.items():
             if key != "__class__":
                 setattr(member, key, value)
 
@@ -652,7 +652,7 @@ class Copy(Rule):
         return self.__mapping
 
     def __set_mapping(self, mapping):
-        if isinstance(mapping, basestring):
+        if isinstance(mapping, str):
             self.__mapping = {mapping: mapping}
         elif hasattr(mapping, "items"):
             self.__mapping = mapping
@@ -670,7 +670,7 @@ class Copy(Rule):
 
     def adapt_schema(self, context):
 
-        for source_name, target_name in self.mapping.iteritems():
+        for source_name, target_name in self.mapping.items():
 
             if context.consume(source_name):
                 source_member = context.source_schema[source_name]
@@ -685,7 +685,7 @@ class Copy(Rule):
                 target_member.original_member = source_member.original_member
 
                 if self.properties:
-                    for prop_name, prop_value in self.properties.iteritems():
+                    for prop_name, prop_value in self.properties.items():
                         setattr(target_member, prop_name, prop_value)
 
                 if context.copy_validations:
@@ -716,7 +716,7 @@ class Copy(Rule):
             elif not self.condition:
                 condition_fulfilled = False
 
-        for source_name, target_name in self.mapping.iteritems():
+        for source_name, target_name in self.mapping.items():
 
             if context.consume(source_name):
 
@@ -776,7 +776,7 @@ class Split(Rule):
         norm_targets = []
 
         for target in targets:
-            if isinstance(target, basestring):
+            if isinstance(target, str):
                 norm_targets.append({"name": target, "__class__": String})
             elif isinstance(target, dict):
                 if "name" not in target:
@@ -818,7 +818,7 @@ class Join(Rule):
         self.sources = sources
         self.glue = glue
 
-        if isinstance(target, basestring):
+        if isinstance(target, str):
             target = {"name": target, "__class__": String}
 
         self.target = target
@@ -859,7 +859,7 @@ class Join(Rule):
                 else:
                     parts.append(value)
             else:
-                value = self.glue.join(unicode(part) for part in parts)
+                value = self.glue.join(str(part) for part in parts)
                 context.set(self.target["name"], value)
 
 

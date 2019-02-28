@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -22,7 +22,7 @@ class ErrorList(ListWrapper):
                 self.add(error)
 
     def _normalize_member(self, member):
-        if not isinstance(member, basestring):
+        if not isinstance(member, str):
             member = member.name
 
         return member

@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -10,16 +10,14 @@ u"""
 from BTrees.IOBTree import IOBTree, IOTreeSet
 from BTrees.OOBTree import OOBTree, OOTreeSet
 from cocktail.stringutils import normalize
-from cocktail.modeling import getter
 from cocktail.events import when, Event
 from cocktail.translations import iter_language_chain, descend_language_tree
 from cocktail import schema
-from cocktail.persistence.datastore import datastore
-from cocktail.persistence.index import SingleValueIndex, MultipleValuesIndex
-from cocktail.persistence.persistentobject import (
-    PersistentObject, PersistentClass
-)
-from cocktail.persistence.utils import is_broken
+from .datastore import datastore
+from .singlevalueindex import SingleValueIndex
+from .multiplevaluesindex import MultipleValuesIndex
+from .persistentobject import PersistentObject, PersistentClass
+from .utils import is_broken
 
 # Index properties
 #------------------------------------------------------------------------------
@@ -27,6 +25,7 @@ from cocktail.persistence.utils import is_broken
 schema.expressions.Expression.index = None
 schema.Member.indexed = False
 schema.Member.index_type = OOBTree
+schema.Integer.index_type = IOBTree
 
 PersistentObject.indexed = True
 
@@ -72,19 +71,6 @@ def _set_index_key(self, index_key):
 schema.Member._index_key = None
 schema.Member.index_key = property(_get_index_key, _set_index_key)
 
-def _get_integer_index_type(self):
-    return self._index_type \
-        or (IOBTree if self.required else OOBTree)
-
-def _set_integer_index_type(self, index_type):
-    self._index_type = index_type
-
-schema.Integer._index_type = None
-schema.Integer.index_type = property(
-    _get_integer_index_type,
-    _set_integer_index_type
-)
-
 def _get_persistent_class_keys(cls):
 
     index_key = cls.full_name + "-keys"
@@ -101,7 +87,7 @@ def _get_persistent_class_keys(cls):
 
     return keys
 
-PersistentClass.keys = getter(_get_persistent_class_keys)
+PersistentClass.keys = property(_get_persistent_class_keys)
 
 def _get_unique(self):
     return self.primary or self._unique
@@ -186,10 +172,10 @@ schema.Collection.rebuild_index = _rebuild_collection_index
 def _rebuild_indexes(cls, recursive = False, verbose = True):
 
     if cls.indexed:
-        for member in cls.members(False).itervalues():
+        for member in cls.members(False).values():
             if member.indexed and not member.primary:
                 if verbose:
-                    print "Rebuilding index for %s" % member
+                    print("Rebuilding index for %s" % member)
                 member.rebuild_index()
 
         if recursive:
@@ -237,7 +223,7 @@ def _handle_changed(event):
         and event.previous_value != event.value
     ):
         if event.member.translated:
-            for lang, previous_value in event.translation_changes.iteritems():
+            for lang, previous_value in event.translation_changes.items():
                 remove_index_entry(
                     event.source,
                     event.member,
@@ -294,7 +280,7 @@ def _handle_inserting(event):
             keys.insert(id)
 
     # Regular indexes
-    for member in obj.__class__.members().itervalues():
+    for member in obj.__class__.members().values():
 
         if obj._should_index_member(member):
 
@@ -364,7 +350,7 @@ def _handle_deleting(event):
                 for lang in descend_language_tree(language):
                     languages.add(lang)
 
-        for member in obj.__class__.members().itervalues():
+        for member in obj.__class__.members().values():
 
             if member.indexed and obj._should_index_member(member):
                 if member.translated:
@@ -424,6 +410,9 @@ def _handle_removing_translation(event):
                                 break
 
 def add_index_entry(obj, member, value, language = None):
+
+    if value is None and not member.index.accepts_multiple_values:
+        return
 
     if is_broken(obj) or is_broken(value):
         return

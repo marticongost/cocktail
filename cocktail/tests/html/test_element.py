@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -18,12 +18,12 @@ class ElementAttributesTestCase(TestCase):
         # Attributes can be set and read
         e["id"] = "foo"
         e["title"] = "hello world"
-        self.assertEquals(e["id"], "foo")
-        self.assertEquals(e["title"], "hello world")
+        self.assertEqual(e["id"], "foo")
+        self.assertEqual(e["title"], "hello world")
 
         # Attributes can be changed
         e["id"] = "bar"
-        self.assertEquals(e["id"], "bar")
+        self.assertEqual(e["id"], "bar")
 
     def get_undefined(self):
 
@@ -70,8 +70,8 @@ class ElementAttributesTestCase(TestCase):
 
         # Attributes can be set using the element's constructor
         e = Element(id = "foo", title = "hello world")
-        self.assertEquals(e["id"], "foo")
-        self.assertEquals(e["title"], "hello world")
+        self.assertEqual(e["id"], "foo")
+        self.assertEqual(e["title"], "hello world")
 
     def test_list(self):
 
@@ -79,12 +79,12 @@ class ElementAttributesTestCase(TestCase):
 
         # An element starts with no attributes
         e = Element()
-        self.assertEquals(e.attributes, {})
+        self.assertEqual(e.attributes, {})
 
         # Attributes set on the element show on its 'attributes' collection
         e["id"] = "foo"
         e["title"] = "hello world"
-        self.assertEquals(e.attributes, {"id": "foo", "title": "hello world"})
+        self.assertEqual(e.attributes, {"id": "foo", "title": "hello world"})
 
 class ElementMetaAttributesTestCase(TestCase):
 
@@ -96,12 +96,12 @@ class ElementMetaAttributesTestCase(TestCase):
         # Meta attributes can be set and read
         e.set_meta("desc", "this is a test element")
         e.set_meta("keywords", "foo bar")
-        self.assertEquals(e.get_meta("desc"), "this is a test element")
-        self.assertEquals(e.get_meta("keywords"), "foo bar")
+        self.assertEqual(e.get_meta("desc"), "this is a test element")
+        self.assertEqual(e.get_meta("keywords"), "foo bar")
 
         # Meta attributes can be changed
         e.set_meta("keywords", "sprunge")
-        self.assertEquals(e.get_meta("keywords"), "sprunge")
+        self.assertEqual(e.get_meta("keywords"), "sprunge")
 
     def get_undefined(self):
 
@@ -128,8 +128,8 @@ class ElementMetaAttributesTestCase(TestCase):
 
         # Attributes can be set using the element's constructor
         e = Element(id = "foo", title = "hello world")
-        self.assertEquals(e["id"], "foo")
-        self.assertEquals(e["title"], "hello world")
+        self.assertEqual(e["id"], "foo")
+        self.assertEqual(e["title"], "hello world")
 
     def test_list(self):
 
@@ -137,12 +137,12 @@ class ElementMetaAttributesTestCase(TestCase):
 
         # An element starts with no meta attributes
         e = Element()
-        self.assertEquals(e.meta, {})
+        self.assertEqual(e.meta, {})
 
         # Meta attributes set on the element show on its 'meta' collection
         e.set_meta("desc", "this is a test element")
         e.set_meta("keywords", "foo bar")
-        self.assertEquals(e.meta, {
+        self.assertEqual(e.meta, {
             "desc": "this is a test element",
             "keywords": "foo bar"
         })
@@ -254,20 +254,20 @@ class ElementTreeTestCase(TestCase):
         child1 = Element()
         parent.append(child1)
         self.assertTrue(child1.parent is parent)
-        self.assertEquals(parent.children, [child1])
+        self.assertEqual(parent.children, [child1])
 
         child2 = Element()
         parent.append(child2)
         self.assertTrue(child2.parent is parent)
-        self.assertEquals(parent.children, [child1, child2])
+        self.assertEqual(parent.children, [child1, child2])
 
         child2.append(child1)
         self.assertTrue(child1.parent is child2)
-        self.assertEquals(child2.children, [child1])
+        self.assertEqual(child2.children, [child1])
 
         parent.append(child1)
         self.assertTrue(child1.parent is parent)
-        self.assertEquals(parent.children, [child2, child1])
+        self.assertEqual(parent.children, [child2, child1])
 
     def test_append_content(self):
 
@@ -276,18 +276,18 @@ class ElementTreeTestCase(TestCase):
         parent = Element()
         parent.append("hello world")
 
-        self.assertEquals(len(parent.children), 1)
+        self.assertEqual(len(parent.children), 1)
         child = parent.children[0]
         self.assertTrue(isinstance(child, Content))
-        self.assertEquals(child.value, "hello world")
+        self.assertEqual(child.value, "hello world")
         self.assertTrue(child.parent is parent)
 
         parent = Element(children = ["hello world"])
 
-        self.assertEquals(len(parent.children), 1)
+        self.assertEqual(len(parent.children), 1)
         child = parent.children[0]
         self.assertTrue(isinstance(child, Content))
-        self.assertEquals(child.value, "hello world")
+        self.assertEqual(child.value, "hello world")
         self.assertTrue(child.parent is parent)
 
     def test_insert(self):
@@ -299,27 +299,27 @@ class ElementTreeTestCase(TestCase):
         child1 = Element()
         parent.insert(0, child1)
         self.assertTrue(child1.parent is parent)
-        self.assertEquals(parent.children, [child1])
+        self.assertEqual(parent.children, [child1])
 
         child2 = Element()
         parent.insert(1, child2)
         self.assertTrue(child2.parent is parent)
-        self.assertEquals(parent.children, [child1, child2])
+        self.assertEqual(parent.children, [child1, child2])
 
         child3 = Element()
         parent.insert(0, child3)
         self.assertTrue(child3.parent is parent)
-        self.assertEquals(parent.children, [child3, child1, child2])
+        self.assertEqual(parent.children, [child3, child1, child2])
 
         child4 = Element()
         parent.insert(2, child4)
         self.assertTrue(child4.parent is parent)
-        self.assertEquals(parent.children, [child3, child1, child4, child2])
+        self.assertEqual(parent.children, [child3, child1, child4, child2])
 
         child5 = Element()
         parent.insert(-1, child5)
         self.assertTrue(child5.parent is parent)
-        self.assertEquals(
+        self.assertEqual(
             parent.children,
             [child3, child1, child4, child5, child2]
         )
@@ -327,7 +327,7 @@ class ElementTreeTestCase(TestCase):
         child6 = Element()
         parent.insert(5, child6)
         self.assertTrue(child6.parent is parent)
-        self.assertEquals(
+        self.assertEqual(
             parent.children,
             [child3, child1, child4, child5, child2, child6]
         )
@@ -339,10 +339,10 @@ class ElementTreeTestCase(TestCase):
         parent = Element()
         parent.insert(0, "hello world")
 
-        self.assertEquals(len(parent.children), 1)
+        self.assertEqual(len(parent.children), 1)
         child = parent.children[0]
         self.assertTrue(isinstance(child, Content))
-        self.assertEquals(child.value, "hello world")
+        self.assertEqual(child.value, "hello world")
         self.assertTrue(child.parent is parent)
 
     def test_place_before_root(self):
@@ -367,16 +367,16 @@ class ElementTreeTestCase(TestCase):
         child2 = Element()
         child2.place_before(child1)
         self.assertTrue(child2.parent is parent)
-        self.assertEquals(parent.children, [child2, child1])
+        self.assertEqual(parent.children, [child2, child1])
 
         child3 = Element()
         child3.place_before(child1)
         self.assertTrue(child3.parent is parent)
-        self.assertEquals(parent.children, [child2, child3, child1])
+        self.assertEqual(parent.children, [child2, child3, child1])
 
         child3.place_before(child2)
         self.assertTrue(child3.parent is parent)
-        self.assertEquals(parent.children, [child3, child2, child1])
+        self.assertEqual(parent.children, [child3, child2, child1])
 
     def test_place_after_root(self):
 
@@ -400,16 +400,16 @@ class ElementTreeTestCase(TestCase):
         child2 = Element()
         child2.place_after(child1)
         self.assertTrue(child2.parent is parent)
-        self.assertEquals(parent.children, [child1, child2])
+        self.assertEqual(parent.children, [child1, child2])
 
         child3 = Element()
         child3.place_after(child1)
         self.assertTrue(child3.parent is parent)
-        self.assertEquals(parent.children, [child1, child3, child2])
+        self.assertEqual(parent.children, [child1, child3, child2])
 
         child3.place_after(child2)
         self.assertTrue(child3.parent is parent)
-        self.assertEquals(parent.children, [child1, child2, child3])
+        self.assertEqual(parent.children, [child1, child2, child3])
 
     def test_place_before(self):
         pass
@@ -427,7 +427,7 @@ class ElementTreeTestCase(TestCase):
         parent.append(child)
         child.release()
         self.assertTrue(child.parent is None)
-        self.assertEquals(parent.children, [])
+        self.assertEqual(parent.children, [])
 
     def test_empty(self):
 
@@ -444,7 +444,7 @@ class ElementTreeTestCase(TestCase):
         child2 = Element()
         parent.append(child2)
         parent.empty()
-        self.assertEquals(parent.children, [])
+        self.assertEqual(parent.children, [])
         self.assertTrue(child1.parent is None)
         self.assertTrue(child2.parent is None)
 
@@ -454,8 +454,8 @@ class ElementCSSClassesTestCase(TestCase):
 
         from cocktail.html.element import Element
         e = Element()
-        self.assertEquals(e["class"], None)
-        self.assertEquals(e.classes, [])
+        self.assertEqual(e["class"], None)
+        self.assertEqual(e.classes, [])
 
     def test_styled_class(self):
 
@@ -465,7 +465,7 @@ class ElementCSSClassesTestCase(TestCase):
             pass
 
         foo = Foo()
-        self.assertEquals(foo["class"], "Foo")
+        self.assertEqual(foo["class"], "Foo")
 
         class Bar(Element):
             styled_class = False
@@ -477,7 +477,7 @@ class ElementCSSClassesTestCase(TestCase):
             pass
 
         sprunge = Sprunge()
-        self.assertEquals(sprunge["class"], "Foo Sprunge")
+        self.assertEqual(sprunge["class"], "Foo Sprunge")
 
         class Spam(Element):
             pass
@@ -486,14 +486,14 @@ class ElementCSSClassesTestCase(TestCase):
             pass
 
         scrum = Scrum()
-        self.assertEquals(scrum["class"], "Spam Foo Scrum")
+        self.assertEqual(scrum["class"], "Spam Foo Scrum")
 
     def test_constructor(self):
 
         from cocktail.html.element import Element
         e = Element(class_name = "huge fugly")
-        self.assertEquals(e["class"], "huge fugly")
-        self.assertEquals(e.classes, ["huge", "fugly"])
+        self.assertEqual(e["class"], "huge fugly")
+        self.assertEqual(e.classes, ["huge", "fugly"])
 
     def test_set_attribute(self):
 
@@ -504,13 +504,13 @@ class ElementCSSClassesTestCase(TestCase):
         # Setting the 'class' attribute reflects on the element's 'classes'
         # property
         e["class"] = "craptastic"
-        self.assertEquals(e["class"], "craptastic")
-        self.assertEquals(e.classes, ["craptastic"])
+        self.assertEqual(e["class"], "craptastic")
+        self.assertEqual(e.classes, ["craptastic"])
 
         # Same test again, but this time with more than one class
         e["class"] = "craptastic shiny"
-        self.assertEquals(e["class"], "craptastic shiny")
-        self.assertEquals(e.classes, ["craptastic", "shiny"])
+        self.assertEqual(e["class"], "craptastic shiny")
+        self.assertEqual(e.classes, ["craptastic", "shiny"])
 
     def test_add_class(self):
 
@@ -520,18 +520,18 @@ class ElementCSSClassesTestCase(TestCase):
 
         # Adding a class works as expected
         e.add_class("craptastic")
-        self.assertEquals(e["class"], "craptastic")
-        self.assertEquals(e.classes, ["craptastic"])
+        self.assertEqual(e["class"], "craptastic")
+        self.assertEqual(e.classes, ["craptastic"])
 
         # Adding a second class works ok
         e.add_class("shiny")
-        self.assertEquals(e["class"], "craptastic shiny")
-        self.assertEquals(e.classes, ["craptastic", "shiny"])
+        self.assertEqual(e["class"], "craptastic shiny")
+        self.assertEqual(e.classes, ["craptastic", "shiny"])
 
         # Adding an existing class is a no-op
         e.add_class("shiny")
-        self.assertEquals(e["class"], "craptastic shiny")
-        self.assertEquals(e.classes, ["craptastic", "shiny"])
+        self.assertEqual(e["class"], "craptastic shiny")
+        self.assertEqual(e.classes, ["craptastic", "shiny"])
 
     def test_remove_class(self):
 
@@ -547,16 +547,16 @@ class ElementCSSClassesTestCase(TestCase):
         e.add_class("important")
 
         e.remove_class("shiny")
-        self.assertEquals(e["class"], "craptastic important")
-        self.assertEquals(e.classes, ["craptastic", "important"])
+        self.assertEqual(e["class"], "craptastic important")
+        self.assertEqual(e.classes, ["craptastic", "important"])
 
         e.remove_class("important")
-        self.assertEquals(e["class"], "craptastic")
-        self.assertEquals(e.classes, ["craptastic"])
+        self.assertEqual(e["class"], "craptastic")
+        self.assertEqual(e.classes, ["craptastic"])
 
         e.remove_class("craptastic")
-        self.assertEquals(e["class"], None)
-        self.assertEquals(e.classes, [])
+        self.assertEqual(e["class"], None)
+        self.assertEqual(e.classes, [])
 
 class ElementStyleTestCase(TestCase):
 
@@ -568,12 +568,12 @@ class ElementStyleTestCase(TestCase):
         # Style declarations can be set and read
         e.set_style("font-weight", "bold")
         e.set_style("margin", "1em")
-        self.assertEquals(e.get_style("font-weight"), "bold")
-        self.assertEquals(e.get_style("margin"), "1em")
+        self.assertEqual(e.get_style("font-weight"), "bold")
+        self.assertEqual(e.get_style("margin"), "1em")
 
         # Style declarations can be changed
         e.set_style("font-weight", "normal")
-        self.assertEquals(e.get_style("font-weight"), "normal")
+        self.assertEqual(e.get_style("font-weight"), "normal")
 
     def get_undefined(self):
 
@@ -600,12 +600,12 @@ class ElementStyleTestCase(TestCase):
 
         # An element starts with no style declarations
         e = Element()
-        self.assertEquals(e.style, {})
+        self.assertEqual(e.style, {})
 
         # Style declarations set on the element show on its 'style' collection
         e.set_style("text-decoration", "underline")
         e.set_style("font-size", "2em")
-        self.assertEquals(e.style, {
+        self.assertEqual(e.style, {
             "text-decoration": "underline",
             "font-size": "2em"
         })
@@ -616,10 +616,10 @@ class ElementStyleTestCase(TestCase):
 
         e = Element()
         e.set_style("font-weight", "bold")
-        self.assertEquals(e["style"], "font-weight: bold")
+        self.assertEqual(e["style"], "font-weight: bold")
 
         e.set_style("font-style", "italic")
-        self.assertEquals(
+        self.assertEqual(
             set(e["style"].split("; ")),
             set(["font-weight: bold", "font-style: italic"])
         )
@@ -628,12 +628,12 @@ class ElementResourcesTestCase(TestCase):
 
     def test_starts_empty(self):
         from cocktail.html.element import Element
-        self.assertEquals(Element().resources, [])
+        self.assertEqual(Element().resources, [])
 
     def __test_create_resource_from_uri(self, uri, expected_type):
         from cocktail.html.resources import Resource
         resource = Resource.from_uri(uri)
-        self.assertEquals(resource.uri, uri)
+        self.assertEqual(resource.uri, uri)
         self.assertTrue(isinstance(resource, expected_type))
 
     def test_create_unknown_resource_from_uri(self):
@@ -656,10 +656,10 @@ class ElementResourcesTestCase(TestCase):
 
         e = Element()
         e.add_resource(uri)
-        self.assertEquals(len(e.resources), 1)
+        self.assertEqual(len(e.resources), 1)
 
         resource = e.resources[0]
-        self.assertEquals(resource.uri, uri)
+        self.assertEqual(resource.uri, uri)
         self.assertTrue(isinstance(resource, expected_type))
 
     def test_add_script_uri(self):
@@ -679,11 +679,11 @@ class ElementResourcesTestCase(TestCase):
 
         r1 = Resource("foo.js")
         e.add_resource(r1)
-        self.assertEquals(e.resources, [r1])
+        self.assertEqual(e.resources, [r1])
 
         r2 = Resource("bar.js")
         e.add_resource(r2)
-        self.assertEquals(e.resources, [r1, r2])
+        self.assertEqual(e.resources, [r1, r2])
 
     def test_remove_uri(self):
 
@@ -703,7 +703,7 @@ class ElementResourcesTestCase(TestCase):
 
         # Elements are correctly removed
         e.remove_resource("bar.js")
-        self.assertEquals(e.resources, [r1, r3])
+        self.assertEqual(e.resources, [r1, r3])
 
         # Removing an undefined resource raises an exception
         def remove_undefined():
@@ -713,10 +713,10 @@ class ElementResourcesTestCase(TestCase):
 
         # Removing the remaining resources works ok
         e.remove_resource("foo.js")
-        self.assertEquals(e.resources, [r3])
+        self.assertEqual(e.resources, [r3])
 
         e.remove_resource("spam.js")
-        self.assertEquals(e.resources, [])
+        self.assertEqual(e.resources, [])
 
     def test_remove_resource(self):
 
@@ -736,7 +736,7 @@ class ElementResourcesTestCase(TestCase):
 
         # Elements are correctly removed
         e.remove_resource(r2)
-        self.assertEquals(e.resources, [r1, r3])
+        self.assertEqual(e.resources, [r1, r3])
 
         # Removing an undefined resource raises an exception
         def remove_undefined():
@@ -746,10 +746,10 @@ class ElementResourcesTestCase(TestCase):
 
         # Removing the remaining resources works ok
         e.remove_resource(r1)
-        self.assertEquals(e.resources, [r3])
+        self.assertEqual(e.resources, [r3])
 
         e.remove_resource(r3)
-        self.assertEquals(e.resources, [])
+        self.assertEqual(e.resources, [])
 
     def test_resource_set(self):
 
@@ -762,22 +762,22 @@ class ElementResourcesTestCase(TestCase):
         # Adding the same resource object twice only adds the resource once
         e.add_resource(r1)
         e.add_resource(r1)
-        self.assertEquals(e.resources, [r1])
+        self.assertEqual(e.resources, [r1])
 
         # Adding a different resource object with the same resource URI adds a
         # single resource
         e.add_resource(Resource("foo.js"))
-        self.assertEquals(e.resources, [r1])
+        self.assertEqual(e.resources, [r1])
 
         # A different resource object with the same URI counts as a different
         # resource
         r2 = Script("foo.js")
         e.add_resource(r2)
-        self.assertEquals(e.resources, [r1, r2])
+        self.assertEqual(e.resources, [r1, r2])
 
         # Adding the same URI using a string is also ignored
         e.add_resource("foo.js")
-        self.assertEquals(e.resources, [r1, r2])
+        self.assertEqual(e.resources, [r1, r2])
 
     def test_set_resource_uri(self):
 
@@ -785,7 +785,7 @@ class ElementResourcesTestCase(TestCase):
 
         # A resource's uri can be set through its constructor
         r = Resource("foo.js")
-        self.assertEquals(r.uri, "foo.js")
+        self.assertEqual(r.uri, "foo.js")
 
         # But can't be changed afterwards
         def change_uri():
@@ -797,7 +797,7 @@ class ElementClientParamsTestCase(TestCase):
 
     def test_defaults(self):
         from cocktail.html.element import Element
-        self.assertEquals(Element().client_params, {})
+        self.assertEqual(Element().client_params, {})
 
     def test_get_set(self):
 
@@ -805,16 +805,16 @@ class ElementClientParamsTestCase(TestCase):
         e = Element()
 
         e.set_client_param("foo", 3)
-        self.assertEquals(e.get_client_param("foo"), 3)
-        self.assertEquals(e.client_params, {"foo": 3})
+        self.assertEqual(e.get_client_param("foo"), 3)
+        self.assertEqual(e.client_params, {"foo": 3})
 
         e.set_client_param("bar", "hello world")
-        self.assertEquals(e.get_client_param("bar"), "hello world")
-        self.assertEquals(e.client_params, {"foo": 3, "bar": "hello world"})
+        self.assertEqual(e.get_client_param("bar"), "hello world")
+        self.assertEqual(e.client_params, {"foo": 3, "bar": "hello world"})
 
         e.set_client_param("foo", 12)
-        self.assertEquals(e.get_client_param("foo"), 12)
-        self.assertEquals(e.client_params, {"foo": 12, "bar": "hello world"})
+        self.assertEqual(e.get_client_param("foo"), 12)
+        self.assertEqual(e.client_params, {"foo": 12, "bar": "hello world"})
 
     def test_get_undefined(self):
         from cocktail.html.element import Element
@@ -826,7 +826,7 @@ class ElementClientParamsTestCase(TestCase):
         e = Element()
         e.set_client_param("foo", None)
         self.assertTrue(e.get_client_param("foo") is None)
-        self.assertEquals(e.client_params, {"foo": None})
+        self.assertEqual(e.client_params, {"foo": None})
 
     def test_remove(self):
 
@@ -834,7 +834,7 @@ class ElementClientParamsTestCase(TestCase):
         e = Element()
         e.set_client_param("foo", 5)
         e.remove_client_param("foo")
-        self.assertEquals(e.client_params, {})
+        self.assertEqual(e.client_params, {})
         self.assertRaises(KeyError, e.get_client_param, "foo")
         self.assertRaises(KeyError, e.remove_client_param, "foo")
 

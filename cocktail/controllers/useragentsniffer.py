@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -21,7 +21,7 @@ class UserAgentSniffer(object):
 
     def add_pattern(self, pattern, flags = 0):
 
-        if isinstance(pattern, basestring):
+        if isinstance(pattern, str):
             pattern = re.compile(pattern, flags)
 
         self._patterns._items.add(pattern)
@@ -46,7 +46,7 @@ class UserAgentSniffer(object):
 
         return match
 
-    def __nonzero__(self):
+    def __bool__(self):
         return self.match_request()
 
 

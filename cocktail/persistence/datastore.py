@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -11,7 +11,6 @@ from threading import local, RLock
 from weakref import WeakKeyDictionary
 from ZODB import DB
 import transaction
-from cocktail.modeling import getter
 from cocktail.events import Event
 from cocktail.pkgutils import get_full_name
 
@@ -83,14 +82,14 @@ class DataStore(object):
             from cocktail.persistence.migration import migrate
             migrate()
 
-    @getter
+    @property
     def db(self):
         if self.__db is None:
             self.__db = DB(self.storage)
 
         return self.__db
 
-    @getter
+    @property
     def root(self):
         """Gives access to the root container of the database. The property is
         thread safe; accessing it on different threads will produce different
@@ -105,7 +104,7 @@ class DataStore(object):
 
         return root
 
-    @getter
+    @property
     def connection(self):
         """Returns the database connection for the current thread. The property
         is thread safe; accessing it on different threads will produce

@@ -34,7 +34,7 @@ class EventHub(type):
     def __init__(cls, name, bases, members):
         type.__init__(cls, name, bases, members)
 
-        for key, member in members.iteritems():
+        for key, member in members.items():
 
             if isinstance(member, event_handler):
                 handler = getattr(cls, key)
@@ -102,7 +102,7 @@ class Event(object):
             if is_instance:
                 slot.next = self.__get_slot(target.__class__),
             else:
-                slot.next = map(self.__get_slot, target.__bases__)
+                slot.next = list(map(self.__get_slot, target.__bases__))
 
         return slot
 
@@ -191,9 +191,9 @@ class EventSlot(SynchronizedList):
         # reference to the target object, which would keep the target object
         # alive undefinitely
         if isinstance(callback, MethodType) \
-        and callback.im_self is self.target() \
-        and not isinstance(callback.im_self, type):
-            callback = BoundCallback(callback.im_func)
+        and callback.__self__ is self.target() \
+        and not isinstance(callback.__self__, type):
+            callback = BoundCallback(callback.__func__)
 
         return callback
 
@@ -241,7 +241,7 @@ class EventInfo(object):
     consumed = False
 
     def __init__(self, params):
-        for key, value in params.iteritems():
+        for key, value in params.items():
             setattr(self, key, value)
 
     @property

@@ -1,12 +1,12 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
 @organization:	Whads/Accent SL
 @since:			January 2009
 """
-from __future__ import with_statement
+
 from cocktail import schema
 from cocktail.html.element import Element
 from cocktail.html.datadisplay import DataDisplay

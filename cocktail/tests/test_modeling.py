@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -150,14 +150,14 @@ class OrderedDictTestCase(TestCase):
         ordered_values = [value for key, value in pairs]
 
         assert list(dictionary) == ordered_keys
-        assert dictionary.keys() == ordered_keys
-        assert list(dictionary.iterkeys()) == ordered_keys
+        assert list(dictionary.keys()) == ordered_keys
+        assert list(dictionary.keys()) == ordered_keys
 
-        assert dictionary.values() == ordered_values
-        assert list(dictionary.itervalues()) == ordered_values
+        assert list(dictionary.values()) == ordered_values
+        assert list(dictionary.values()) == ordered_values
 
-        assert dictionary.items() == pairs
-        assert list(dictionary.iteritems()) == pairs
+        assert list(dictionary.items()) == pairs
+        assert list(dictionary.items()) == pairs
 
     def test_constructor(self):
         from cocktail.modeling import OrderedDict
