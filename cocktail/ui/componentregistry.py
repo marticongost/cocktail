@@ -54,7 +54,7 @@ class ComponentRegistry(object):
             for dep in list(
                 component.dependencies(include_self = already_existed)
             ):
-                if dep.loaded and dep.needs_update():
+                if dep.parent is None and dep.loaded and dep.needs_update():
                     dep.load()
 
         return component
@@ -68,9 +68,16 @@ class ComponentRegistry(object):
 
     def _subcomponent(self, parent, name):
         full_name = parent.full_name + "." + name
-        subcomponent = Component(self, full_name, parent)
-        self.__components[full_name] = subcomponent
-        return subcomponent
+        try:
+            return self.__components[full_name]
+        except KeyError:
+            with self.__lock:
+                try:
+                    return self.__components[full_name]
+                except KeyError:
+                    subcomponent = Component(self, full_name, parent)
+                    self.__components[full_name] = subcomponent
+                    return subcomponent
 
     def get_overlays(self, component_name):
         return self.__overlays.get(component_name) or []
