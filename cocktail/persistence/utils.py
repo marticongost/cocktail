@@ -3,6 +3,7 @@
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
+from ZODB.broken import Broken
 from cocktail import schema
 from .datastore import datastore
 
@@ -23,7 +24,7 @@ def solidify_defaults(cls):
                 instance.get(member)
 
 def is_broken(obj):
-    return hasattr(obj, "__Broken_Persistent__")
+    return isinstance(obj, Broken)
 
 def is_broken_instance_of(obj, cls_name):
     bp = getattr(obj, "__Broken_Persistent__", None)
