@@ -36,7 +36,7 @@ setup(
         "simplejson",
         "ZODB>=5",
         "ZEO",
-        "zodbupdate>=0.5",
+        "zodbupdate>=1.1",
         "cherrypy",
         "buffet>=1.0",
         "nose",
