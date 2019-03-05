@@ -188,6 +188,7 @@ $cell-padding: 0.6em;
 
     .rowExpanderIcon,
     .emptyRowIcon {
+        font-size: 1em;
         margin-right: 0.5em;
         margin-left: calc(#{$cell-padding} + var(--depth) * 2em);
 
