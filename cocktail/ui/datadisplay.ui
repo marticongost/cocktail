@@ -101,10 +101,10 @@
 
             // Reflect the context in the display's attributes
             if (newValue.member.name) {
-                newValue.member[cocktail.ui.addAnnotations](this);
+                newValue.member[cocktail.ui.addAnnotations](this, newValue.language);
             }
             else {
-                newValue.member[cocktail.ui.removeAnnotations](this);
+                newValue.member[cocktail.ui.removeAnnotations](this, newValue.language);
             }
 
             if (newValue.language) {
