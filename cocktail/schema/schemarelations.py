@@ -286,8 +286,8 @@ class RelationMember(Member):
         # Unknown constraint type
         else:
             raise TypeError(
-                "%s is not a valid relation constraint; "
+                "%r is not a valid relation constraint for %r; "
                 "expected a callable or an Expression instance"
-                % constraint
+                % (constraint, self)
             )
 
