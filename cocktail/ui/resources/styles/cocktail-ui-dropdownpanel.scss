@@ -30,6 +30,10 @@ $hpadding: 0.5em;
         order: 2;
     }
 
+    :host([dropdownEnabled='false']) & {
+        cursor: default;
+    }
+
     &:focus {
         outline: none;
     }
@@ -63,6 +67,10 @@ $hpadding: 0.5em;
     display: inline-block;
     margin-left: 0.3rem;
 
+    :host([dropdownEnabled='false']) & {
+        display: none;
+    }
+
     :host(:not([dropdownType='arrow'])) & {
         display: none;
     }
@@ -78,6 +86,10 @@ $hpadding: 0.5em;
 
 #menuIcon {
     padding: 0 0.3rem;
+
+    :host([dropdownEnabled='false']) & {
+        display: none;
+    }
 
     :host(:not([dropdownType='menu'])) & {
         display: none;
