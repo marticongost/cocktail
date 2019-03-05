@@ -13,12 +13,47 @@
 
     <ui:requires component="cocktail.ui.datasources"/>
     <ui:requires component="cocktail.ui.displayfactories"/>
+    <ui:requires component="cocktail.ui.RadioSelector"/>
 
     <ui:resource href="cocktail.ui://scripts/scrollwatcher.js"/>
     <ui:symbol name="CONTENT_XHR_REQUEST"/>
 
     <?tail
     cls.delegatesFocus = true;
+
+    cls.SortAction = class SortAction extends cocktail.ui.Action {
+
+        constructor(member, language, direction, position = null) {
+            super("sort-" + direction, position);
+            this.member = member;
+            this.language = language;
+            this.direction = direction;
+            this.order = member.name;
+            if (this.language) {
+                this.order += "-" + this.language;
+            }
+            if (this.direction == "descending") {
+                this.order = "-" + this.order;
+            }
+        }
+
+        get iconURL() {
+            return `cocktail.ui://images/${this.id}.svg`;
+        }
+
+        getState(context) {
+
+            if (context.table.order == this.order) {
+                return "emphasized";
+            }
+
+            return super.getState(context);
+        }
+
+        invoke(context) {
+            context.table.order = this.order;
+        }
+    }
     ?>
 
     <?on dataBinding:changed
@@ -139,6 +174,48 @@
         ?>
     </ui:property>
 
+    <ui:property
+        name="sortable"
+        reflected="true"
+        type="boolean"
+        default="false">
+        <?on changed
+        if (this.headers) {
+            for (let child of this.headers.children) {
+                child.dropdownEnabled = newValue;
+            }
+        }
+        ?>
+    </ui:property>
+
+    <ui:property
+        name="order"
+        type="string"
+        reflected="true">
+
+        <?on changed
+        if (oldValue) {
+            const header = this.getHeaderForOrder(oldValue);
+            if (header) {
+                header.sorted = false;
+                header.headerActions.updateEntries();
+            }
+        }
+
+        if (newValue) {
+            const header = this.getHeaderForOrder(newValue);
+            if (header) {
+                header.sorted = true;
+                header.headerActions.updateEntries();
+            }
+        }
+
+        if (this.autoload) {
+            this.reload();
+        }
+        ?>
+    </ui:property>
+
     <?class
     get model() {
         return this.dataBinding && this.dataBinding.member.items.type;
@@ -247,6 +324,10 @@
             this.addSearchParameter(options);
         }
 
+        if (this.order) {
+            this.addOrderParameter(options);
+        }
+
         return options;
     }
 
@@ -291,6 +372,10 @@
         return member.serializeValue(value);
     }
 
+    addOrderParameter(options) {
+        options.parameters.order = this.order;
+    }
+
     loadNextPage() {
         let nextPage = this.page + 1;
         return this.loadPage(nextPage).then((data) => {
@@ -307,34 +392,62 @@
         this.columnsReady = true;
 
         if (this.treeRelations) {
-            const heading = document.createElement("div");
-            heading.id = "expanderHeading";
-            this.headers.append(heading);
+            const header = document.createElement("div");
+            header.id = "expanderHeader";
+            this.headers.append(header);
         }
 
         for (let member of this.visibleMembers) {
             let locales = member.translated ? this.visibleLocales : [null];
             for (let language of locales) {
-                const heading = this.createHeading(member, language);
-                this.headers.appendChild(heading);
+                const header = this.createHeader(member, language);
+                this.headers.appendChild(header);
             }
         }
     }
 
-    createHeading(member, language = null) {
-        let heading = this.constructor.Heading.create();
-        heading.member = member;
-        heading.language = language;
-        member[cocktail.ui.addAnnotations](heading);
-        heading.label.innerHTML = member.translate();
+    createHeader(member, language = null) {
+        let header = this.constructor.Header.create();
+        header.member = member;
+        header.language = language;
+        member[cocktail.ui.addAnnotations](header, language);
+        header.memberLabel.innerHTML = member.translate();
         if (language) {
-            heading.languageLabel.innerHTML = cocktail.ui.translations["cocktail.locales." + language];
+            header.languageLabel.innerHTML = cocktail.ui.translations["cocktail.locales." + language];
         }
         else {
-            heading.languageLabel.style.display = "none";
+            header.languageLabel.style.display = "none";
         }
-        cocktail.ui.Table.setCellWidth(heading, member);
-        return heading;
+        cocktail.ui.Table.setCellWidth(header, member);
+        header.headerActions.actionParameters.table = this;
+        header.headerActions.actions = this.getHeaderActions(member, language);
+
+        if (this.order) {
+            let headerOrder = member.name;
+            if (language) {
+                headerOrder += "-" + language;
+            }
+            let tableOrder = this.order;
+            if (tableOrder.charAt(0) == "-") {
+                tableOrder = tableOrder.substr(1);
+            }
+            if (headerOrder == tableOrder) {
+                header.sorted = true;
+            }
+        }
+
+        if (!this.sortable || !member[cocktail.ui.sortable]) {
+            header.dropdownEnabled = false;
+        }
+
+        return header;
+    }
+
+    getHeaderActions(member, language = null) {
+        return [
+            new cls.SortAction(member, language, "ascending"),
+            new cls.SortAction(member, language, "descending")
+        ];
     }
 
     setRows(records) {
@@ -350,7 +463,7 @@
             row = this.addRow(record);
         }
 
-        // Subtract the scrollbar width from the headings row
+        // Subtract the scrollbar width from the headers row
         let table = this;
         function fixScrollWidth() {
             let outerWidth = table.body.offsetWidth;
@@ -503,6 +616,36 @@
 
         return super.getSelectionMotionForKeyboardEvent(e);
     }
+
+    getHeader(member, language = null) {
+        if (typeof(member) != "string") {
+            member = member.name;
+        }
+        let selector = `[member='${member}']`;
+        if (language) {
+            selector += `[lang='${language}']`;
+        }
+        return this.headers.querySelector(selector);
+    }
+
+    getHeaderForOrder(orderStr) {
+
+        if (orderStr.charAt(0) == "-") {
+            orderStr = orderStr.substr(1);
+        }
+
+        let pos = orderStr.indexOf("-");
+
+        if (pos == -1) {
+            return this.getHeader(orderStr);
+        }
+        else {
+            return this.getHeader(
+                orderStr.substr(0, pos),
+                orderStr.substr(pos + 1)
+            );
+        }
+    }
     ?>
 
     <?js
@@ -533,10 +676,31 @@
 
     </div>
 
-    <div ui:component="Heading">
-        <span id="label"/>
-        <span id="languageLabel"/>
-    </div>
+    <ui:cocktail.ui.DropdownPanel ui:component="Header">
+
+        <ui:resource href="cocktail.ui://styles/cocktail-ui-table--header.scss.css"/>
+
+        <ui:property
+            name="sorted"
+            type="boolean"
+            reflected="true"
+            default="false"/>
+
+        <div id="headerLabel" slot="label">
+            <span id="memberLabel"/>
+            <span id="languageLabel"/>
+        </div>
+
+        <ui:HeaderActions id="headerActions">
+            <?js
+            element.classList.add("without-frame");
+            element.classList.add("vertical");
+            ?>
+        </ui:HeaderActions>
+
+        <ui:cocktail.ui.ActionList ui:component="HeaderActions"/>
+
+    </ui:cocktail.ui.DropdownPanel>
 
     <div ui:component="Row">
 
@@ -595,7 +759,14 @@
                 member = member.name;
             }
             for (let cell of this.cells) {
-                if (cell.dataBinding && cell.dataBinding.member.name == member) {
+                if (
+                    cell.dataBinding
+                    && cell.dataBinding.member.name == member
+                    && (
+                        !language
+                        || cell.dataBinding.language == language
+                    )
+                ) {
                     return cell;
                 }
             }
