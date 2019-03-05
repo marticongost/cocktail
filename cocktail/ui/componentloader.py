@@ -19,6 +19,7 @@ from cocktail.html.resources import (
     SASSCompilation,
     resource_repositories
 )
+from cocktail.html.inlinesvg import get_uri_svg
 from cocktail.sourcecodewriter import SourceCodeWriter
 from .exceptions import ComponentFileError, ParseError
 
@@ -1043,18 +1044,11 @@ class ComponentLoader(object):
         elif target == "svg":
 
             url = pi.text.strip()
-            path = resource_repositories.locate(url)
-
-            if not path:
-                self.trigger_parser_error("Can't locale SVG file %s" % url)
 
             try:
-                with open(path) as svg_file:
-                    svg = svg_file.read()
-            except Exception as e:
-                self.trigger_parser_error(
-                    "Error opening SVG file %s: %s" % (url, e)
-                )
+                svg = get_uri_svg(url)
+            except OSError:
+                self.trigger_parser_error("Can't locale SVG file %s" % url)
 
             self.init_source.write(
                 "%s.appendChild("
