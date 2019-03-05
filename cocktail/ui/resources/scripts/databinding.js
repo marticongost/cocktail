@@ -29,25 +29,31 @@
     }
 }
 
-cocktail.schema.Member.prototype[cocktail.ui.addAnnotations] = function (element) {
+cocktail.schema.Member.prototype[cocktail.ui.addAnnotations] = function (element, language = null) {
     element.setAttribute("member", this.name);
     element.setAttribute("memberType", cocktail.ui.getMemberTypes(this.constructor));
+    if (language) {
+        element.setAttribute("lang", language);
+    }
 }
 
-cocktail.schema.Member.prototype[cocktail.ui.removeAnnotations] = function (element) {
+cocktail.schema.Member.prototype[cocktail.ui.removeAnnotations] = function (element, language = null) {
     element.removeAttribute("member");
     element.removeAttribute("memberType");
+    if (language) {
+        element.removeAttribute("lang");
+    }
 }
 
-cocktail.schema.Collection.prototype[cocktail.ui.addAnnotations] = function (element) {
-    cocktail.schema.Member.prototype[cocktail.ui.addAnnotations].call(this, element);
+cocktail.schema.Collection.prototype[cocktail.ui.addAnnotations] = function (element, language = null) {
+    cocktail.schema.Member.prototype[cocktail.ui.addAnnotations].call(this, element, language);
     if (this.items) {
         element.setAttribute("itemsType", cocktail.ui.getMemberTypes(this.items.constructor));
     }
 }
 
-cocktail.schema.Collection.prototype[cocktail.ui.removeAnnotations] = function (element) {
-    cocktail.schema.Member.prototype[cocktail.ui.removeAnnotations].call(this, element);
+cocktail.schema.Collection.prototype[cocktail.ui.removeAnnotations] = function (element, language = null) {
+    cocktail.schema.Member.prototype[cocktail.ui.removeAnnotations].call(this, element, language);
     element.removeAttribute("itemsType");
 }
 
