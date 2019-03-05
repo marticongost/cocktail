@@ -339,22 +339,13 @@ class DictWrapper(object):
         return key in self._items
 
     def items(self):
-        return list(self._items.items())
-
-    def iteritems(self):
-        return iter(self._items.items())
-
-    def iterkeys(self):
-        return iter(self._items.keys())
-
-    def itervalues(self):
-        return iter(self._items.values())
+        return self._items.items()
 
     def keys(self):
-        return list(self._items.keys())
+        return self._items.keys()
 
     def values(self):
-        return list(self._items.values())
+        return self._items.values()
 
 class ListWrapper(object):
 
@@ -673,22 +664,13 @@ class OrderedDict(DictWrapper):
         return self.__sequence.__iter__()
 
     def keys(self):
-        return list(self.__sequence)
-
-    def iterkeys(self):
         return self.__sequence.__iter__()
 
     def values(self):
-        return [self._items[key] for key in self.__sequence]
-
-    def itervalues(self):
         for key in self.__sequence:
             yield self._items[key]
 
     def items(self):
-        return [(key, self._items[key]) for key in self.__sequence]
-
-    def iteritems(self):
         for key in self.__sequence:
             yield (key, self._items[key])
 
