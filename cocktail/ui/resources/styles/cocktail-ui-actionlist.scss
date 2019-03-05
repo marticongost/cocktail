@@ -13,11 +13,6 @@
     border: $secondary-panel-border;
 }
 
-:host(.without-frame) {
-    background: transparent;
-    border: none;
-}
-
 :host-context(.cocktail-ui-Toolbar) {
     background: none;
     border: none;
@@ -26,6 +21,11 @@
 :host-context(.cocktail-ui-DropdownPanel) {
     background: $panel-background;
     border: $panel-border;
+}
+
+:host(.without-frame) {
+    background: transparent;
+    border: none;
 }
 
 #entryList {
@@ -37,6 +37,7 @@
 
     :host(.vertical) & {
         flex-direction: column;
+        width: 100%;
     }
 }
 
