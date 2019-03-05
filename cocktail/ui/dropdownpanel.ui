@@ -27,6 +27,18 @@
         default="arrow"/>
 
     <ui:property
+        name="dropdownEnabled"
+        type="boolean"
+        default="true"
+        reflected="true">
+        <?on changed
+        if (!newValue) {
+            this.expanded = false;
+        }
+        ?>
+    </ui:property>
+
+    <ui:property
         name="footerVisible"
         type="boolean"
         default="false"
@@ -70,7 +82,9 @@
 
     <button id="button">
         <?on click
-        instance.expanded = !instance.expanded;
+        if (instance.dropdownEnabled) {
+            instance.expanded = !instance.expanded;
+        }
         e.stopPropagation();
         ?>
         <span id="label">
