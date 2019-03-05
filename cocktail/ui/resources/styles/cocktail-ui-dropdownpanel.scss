@@ -25,6 +25,8 @@ $hpadding: 0.5em;
     cursor: pointer;
     font-size: 1em;
     color: inherit;
+    display: flex;
+    align-items: center;
 
     :host([panelPosition="above"]) & {
         order: 2;
