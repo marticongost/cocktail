@@ -114,7 +114,7 @@ class Reference(RelationMember):
                 relation_constraints = \
                     self.resolve_constraint(self.relation_constraints, context)
 
-                if hasattr(relation_constraints, "iteritems"):
+                if hasattr(relation_constraints, "items"):
                     constraints_mapping = relation_constraints
                     relation_constraints = (
                         self.type.get_member(key).equal(value)

@@ -233,7 +233,7 @@ class Collection(RelationMember):
             self.relation_constraints, context
         )
 
-        if hasattr(relation_constraints, "iteritems"):
+        if hasattr(relation_constraints, "items"):
             constraints_mapping = relation_constraints
             get_related_member = self.related_type.get_member
             relation_constraints = (
