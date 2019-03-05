@@ -76,31 +76,41 @@ $cell-padding: 0.6em;
     border-bottom: 1px solid #ddd;
 }
 
-#expanderHeading,
-.Heading {
+#expanderHeader,
+.Header {
     flex: 1;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: left;
     color: #5a564e;
+    margin-top: -0.5rem;
+    margin-bottom: -0.5rem;
+    outline: none;
 
-    & + .Heading {
+    & + .Header {
         border-left: 1px solid #ddd;
     }
 
-    .languageLabel {
-        margin-left: 0.4rem;
-        font-size: 0.8rem;
-        color: #777;
-        font-weight: normal;
+    &[sorted='true'] .headerLabel {
+        font-weight: bold;
+    }
 
-        &:before {
-            content: '(';
-        }
+    .headerLabel {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: left;
 
-        &:after {
-            content: ')';
+        .languageLabel {
+            margin-left: 0.4rem;
+            font-size: 0.8rem;
+            color: #777;
+            font-weight: normal;
+
+            &:before {
+                content: '(';
+            }
+
+            &:after {
+                content: ')';
+            }
         }
     }
 }
@@ -142,7 +152,7 @@ $cell-padding: 0.6em;
 @include table-column-size("[memberType~='Time']", 6em);
 @include table-column-size("[memberType~='DateTime']", 10em);
 
-.Heading,
+.Header,
 .Cell {
     padding: $cell-padding;
     padding-right: 1em;

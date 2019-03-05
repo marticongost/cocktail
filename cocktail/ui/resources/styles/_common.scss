@@ -81,7 +81,7 @@ $input-error-color: #8a1717 !default;
 }
 
 @mixin table-column-size($selector, $size) {
-    .Heading#{$selector},
+    .Header#{$selector},
     .Cell#{$selector} {
         flex: 0 0 $size;
     }

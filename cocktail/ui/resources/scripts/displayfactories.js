@@ -193,6 +193,12 @@ cocktail.ui.formLabelDisposition = Symbol("cocktail.ui.formLabelDisposition");
 cocktail.ui.listedByDefault = Symbol("cocktail.ui.listedByDefault");
 cocktail.schema.Member.prototype[cocktail.ui.listedByDefault] = true;
 
+// A symbol that controls wether a member can be used as a sorting criteria in
+// controls that allow sorting result sets (such as cocktail.ui.Table)
+cocktail.ui.sortable = Symbol("cocktail.ui.sortable");
+cocktail.schema.Member.prototype[cocktail.ui.sortable] = true;
+cocktail.schema.Collection.prototype[cocktail.ui.sortable] = false;
+
 // A symbol that controls wether a member should be included in a form, or if it
 // should be presented as a read only field
 cocktail.ui.editable = Symbol("cocktail.ui.editable");

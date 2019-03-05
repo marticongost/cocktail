@@ -1,0 +1,16 @@
+
+@import "cocktail.ui://styles/common";
+
+#panel {
+    min-width: 15rem;
+}
+
+#panelContent {
+    padding: 0 !important;
+}
+
+#arrow svg {
+    &, * {
+        fill: #666 !important;
+    }
+}
