@@ -20,6 +20,12 @@
     </ui:property>
 
     <ui:property
+        name="separateExtraActions"
+        type="boolean"
+        reflected="true"
+        default="true"/>
+
+    <ui:property
         name="hasExtraActions"
         type="boolean"
         reflected="true"
@@ -141,7 +147,12 @@
             position = action.position;
         }
 
+        if (position === "extra" && !this.separateExtraActions) {
+            position = null;
+        }
+
         entry.extra = (position === "extra");
+
         if (entry.buttonStyle == "auto") {
             entry.buttonStyle = entry.extra ? "iconBesideText" : this.buttonStyle;
         }
