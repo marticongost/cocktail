@@ -930,6 +930,7 @@
                     if (
                         this.integral
                         || (this.membershipType == pkg.membershipTypes.collectionItems && this.owner && this.owner.integral)
+                        || (parameters && parameters.expandReferences)
                     ) {
                         const type = value._class;
                         value = type.toJSONValue(value, parameters);
