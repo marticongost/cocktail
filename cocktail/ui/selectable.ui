@@ -618,6 +618,9 @@
                     for (let node of mutation.addedNodes) {
                         if (node.nodeType == Document.ELEMENT_NODE) {
                             altered = this[ADD_SELECTABLE_ELEMENT](node) || altered;
+                            for (let descendant of node.querySelectorAll(this.selectableEntriesSelector)) {
+                                altered = this[ADD_SELECTABLE_ELEMENT](descendant) || altered;
+                            }
                         }
                     }
 
@@ -625,6 +628,9 @@
                     for (let node of mutation.removedNodes) {
                         if (node.nodeType == Document.ELEMENT_NODE) {
                             altered = this[REMOVE_SELECTABLE_ELEMENT](node, unselected) || altered;
+                            for (let descendant of node.querySelectorAll(this.selectableEntriesSelector)) {
+                                altered = this[REMOVE_SELECTABLE_ELEMENT](descendant, unselected) || altered;
+                            }
                         }
                     }
                 }
