@@ -9,7 +9,7 @@
 from cocktail.events import when
 from cocktail.translations import translations
 from cocktail.html import Element
-from cocktail.controllers.viewstate import view_state
+from cocktail.controllers.request import get_request_query
 
 
 class Pager(Element):
@@ -168,7 +168,7 @@ class Pager(Element):
         return page_link
 
     def _view_state(self, **params):
-        return view_state(
+        return get_request_query(
             **dict(
                 (self._get_qualified_name(param), value)
                 for param, value in params.items()
