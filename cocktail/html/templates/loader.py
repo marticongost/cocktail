@@ -252,7 +252,7 @@ if __name__ == "__main__":
 
     loader = TemplateLoader()
 
-    f = file(argv[1])
+    f = open(argv[1])
     source = f.read()
     f.close()
 
