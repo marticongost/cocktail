@@ -651,7 +651,7 @@
         }
 
         toJSONValue(value, parameters = null) {
-            let record = {};
+            let record = Object.assign({}, value);
             record._class = this.originalMember.fullName;
             for (let member of this.members()) {
                 if (!parameters || !parameters.includeMember || parameters.includeMember(member)) {
