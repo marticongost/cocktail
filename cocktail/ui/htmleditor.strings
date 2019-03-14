@@ -1,0 +1,40 @@
+
+[cocktail.ui.HTMLEditor]
+
+    [actions]
+
+        [bold]
+        ca: Negreta
+        es: Negrita
+        en: Bold
+
+        [italic]
+        ca: Cursiva
+        es: Cursiva
+        en: Italic
+
+        [ul]
+        ca: Llista de punts
+        es: Lista de puntos
+        en: Bullet list
+
+        [ol]
+        ca: Llista ordenada
+        es: Lista ordenada
+        en: Ordered list
+
+        [indent]
+        ca: Indentar
+        es: Indentar
+        en: Indent
+
+        [unindent]
+        ca: Treure indentació
+        es: Quitar indentación
+        en: Unindent
+
+        [clean]
+        ca: Treure format
+        es: Quitar format
+        en: Remove format
+

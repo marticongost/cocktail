@@ -21,14 +21,115 @@
         reflected="true"
         default="true"/>
 
+    <ui:property
+        name="toolboxVisible"
+        type="boolean"
+        reflected="true"
+        default="false"/>
+
+    <?tail
+    cls.EditorAction = class EditorAction extends cocktail.ui.Action {
+
+        get translationKey() {
+            return `cocktail.ui.HTMLEditor.actions.${this.id}`;
+        }
+
+        get iconURL() {
+            return `cocktail.ui://images/${this.id}.svg`;
+        }
+    }
+
+    cls.BoldAction = class BoldAction extends cls.EditorAction {
+
+        invoke(context) {
+            document.execCommand("bold");
+        }
+    }
+
+    cls.ItalicAction = class ItalicAction extends cls.EditorAction {
+
+        invoke(context) {
+            document.execCommand("italic");
+        }
+    }
+
+    cls.ULAction = class ULAction extends cls.EditorAction {
+
+        invoke(context) {
+            document.execCommand("insertUnorderedList");
+        }
+    }
+
+    cls.OLAction = class OLAction extends cls.EditorAction {
+
+        invoke(context) {
+            document.execCommand("insertOrderedList");
+        }
+    }
+
+    cls.IndentAction = class IndentAction extends cls.EditorAction {
+
+        invoke(context) {
+            document.execCommand("indent");
+        }
+    }
+
+    cls.UnindentAction = class UnindentAction extends cls.EditorAction {
+
+        invoke(context) {
+            document.execCommand("unindent");
+        }
+    }
+
+    cls.CleanAction = class CleanAction extends cls.EditorAction {
+
+        invoke(context) {
+            document.execCommand("removeFormat");
+        }
+    }
+    ?>
+
+    <?class
+    createToolbars() {
+        for (let actions of this.getActionSets()) {
+            const toolbar = this.constructor.Toolbar.create();
+            toolbar.actionParameters = {editor: this};
+            toolbar.actions = actions;
+            this.toolbox.appendChild(toolbar);
+        }
+    }
+
+    getActionSets() {
+        return [
+            [
+                new cls.BoldAction("bold"),
+                new cls.ItalicAction("italic"),
+                new cls.ULAction("ul"),
+                new cls.OLAction("ol"),
+                new cls.IndentAction("indent"),
+                new cls.UnindentAction("unindent"),
+                new cls.CleanAction("clean")
+            ]
+        ];
+    }
+    ?>
+
     <?on value:changed
     if (!this[PROCESSING_INPUT]) {
         this.contentArea.innerHTML = newValue;
     }
     ?>
 
+    <?on focus
+    this.toolboxVisible = true;
+    ?>
+
+    <?on blur
+    this.toolboxVisible = false;
+    ?>
+
     <?js
-    this.updateDelay = new cocktail.ui.Delay(500, () => {
+    this.updateDelay = new cocktail.ui.Delay(200, () => {
         if (!instance[PROCESSING_INPUT]) {
             instance[PROCESSING_INPUT] = true;
             try {
@@ -40,6 +141,16 @@
         }
     });
     ?>
+
+    <div id="toolbox"/>
+
+    <ui:cocktail.ui.ActionList
+        ui:component="Toolbar"
+        buttonStyle="iconOnly">
+        <?js
+        element.classList.add("compact");
+        ?>
+    </ui:cocktail.ui.ActionList>
 
     <div id="contentArea" contenteditable="true">
 
@@ -54,6 +165,10 @@
         }
         ?>
     </div>
+
+    <?js
+    this.createToolbars();
+    ?>
 
 </div>
 

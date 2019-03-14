@@ -2,9 +2,8 @@
 @import "cocktail.ui://styles/common";
 
 :host {
-    border: $input-border;
-    display: flex;
     width: 30em;
+    position: relative;
 }
 
 :host([error]) {
@@ -20,8 +19,9 @@
 }
 
 #contentArea {
+    border: $input-border;
     flex: 1;
-    padding: $input-padding;
+    padding: 0.5em;
 
     :host([autoHeight='false']) & {
         overflow-y: auto;
@@ -37,6 +37,25 @@
 
     & > *:last-child {
         margin-bottom: 0;
+    }
+}
+
+#toolbox {
+    position: absolute;
+    bottom: 100%;
+    right: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+
+    :host([toolboxVisible='true']) & {
+        opacity: 1;
+        pointer-events: all;
+    }
+
+    .Toolbar {
+        --width: auto;
+        --height: 1.5em;
     }
 }
 
