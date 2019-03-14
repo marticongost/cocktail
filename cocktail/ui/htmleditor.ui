@@ -8,6 +8,7 @@
     <ui:using mixin="cocktail.ui.DataDisplay"/>
     <ui:symbol name="PROCESSING_INPUT"/>
     <ui:symbol name="CONTENT_AREA_INITIALIZED"/>
+    <ui:symbol name="UPDATE_TOOLBARS"/>
 
     <ui:property
         name="multiline"
@@ -32,11 +33,7 @@
         type="string"
         reflected="true">
         <?on changed
-        if (this.toolbox) {
-            for (let actionList of this.toolbox.querySelectorAll(".cocktail-ui-ActionList")) {
-                actionList.updateEntries();
-            }
-        }
+        this[UPDATE_TOOLBARS]();
         if (this.codeEditor.codeMirror) {
             setTimeout(() => this.codeEditor.codeMirror.refresh(), 1);
         }
@@ -66,54 +63,38 @@
         }
     }
 
-    cls.BoldAction = class BoldAction extends cls.EditorAction {
+    cls.CommandAction = (command, query = false) => class CommandAction extends cls.EditorAction {
+
+        get command() {
+            return command;
+        }
+
+        getState(context) {
+            const state = super.getState(context);
+            if (state == "visible" && query && document.queryCommandState(command)) {
+                return "emphasized";
+            }
+            return state;
+        }
 
         invoke(context) {
-            document.execCommand("bold");
+            document.execCommand(command);
         }
     }
 
-    cls.ItalicAction = class ItalicAction extends cls.EditorAction {
+    cls.BoldAction = class BoldAction extends cls.CommandAction("bold", true)  {}
 
-        invoke(context) {
-            document.execCommand("italic");
-        }
-    }
+    cls.ItalicAction = class ItalicAction extends cls.CommandAction("italic", true)  {}
 
-    cls.ULAction = class ULAction extends cls.EditorAction {
+    cls.ULAction = class ULAction extends cls.CommandAction("insertUnorderedList", true)  {}
 
-        invoke(context) {
-            document.execCommand("insertUnorderedList");
-        }
-    }
+    cls.OLAction = class OLAction extends cls.CommandAction("insertOrderedList", true)  {}
 
-    cls.OLAction = class OLAction extends cls.EditorAction {
+    cls.IndentAction = class IndentAction extends cls.CommandAction("indent")  {}
 
-        invoke(context) {
-            document.execCommand("insertOrderedList");
-        }
-    }
+    cls.UnindentAction = class UnindentAction extends cls.CommandAction("unindent")  {}
 
-    cls.IndentAction = class IndentAction extends cls.EditorAction {
-
-        invoke(context) {
-            document.execCommand("indent");
-        }
-    }
-
-    cls.UnindentAction = class UnindentAction extends cls.EditorAction {
-
-        invoke(context) {
-            document.execCommand("unindent");
-        }
-    }
-
-    cls.CleanAction = class CleanAction extends cls.EditorAction {
-
-        invoke(context) {
-            document.execCommand("removeFormat");
-        }
-    }
+    cls.CleanAction = class CleanAction extends cls.CommandAction("removeFormat") {}
 
     cls.HTMLAction = class HTMLAction extends cls.EditorAction {
 
@@ -143,6 +124,14 @@
     ?>
 
     <?class
+    [UPDATE_TOOLBARS]() {
+        if (this.toolbox) {
+            for (let actionList of this.toolbox.querySelectorAll(".cocktail-ui-ActionList")) {
+                actionList.updateEntries();
+            }
+        }
+    }
+
     createToolbars() {
         for (let actions of this.getActionSets()) {
             const toolbar = this.constructor.Toolbar.create();
@@ -210,6 +199,23 @@
 
         <?on input
         instance.updateDelay.begin();
+        instance[UPDATE_TOOLBARS]();
+        ?>
+
+        <?on mousedown
+        instance[UPDATE_TOOLBARS]();
+        ?>
+
+        <?on mouseup
+        instance[UPDATE_TOOLBARS]();
+        ?>
+
+        <?on keydown
+        instance[UPDATE_TOOLBARS]();
+        ?>
+
+        <?on keyup
+        instance[UPDATE_TOOLBARS]();
         ?>
 
         <?on focus
