@@ -76,13 +76,11 @@
             cls.requireMode(this.editorMode).then(() => {
                 this[SYNCHING] = true;
                 try {
-                    this[CODE_MIRROR] = CodeMirror(
-                        this.editorWrapper,
-                        {
-                            value: this.value || "",
-                            mode: this.submode
-                        }
-                    );
+                    let options = Object.assign(this.options || {}, {
+                        value: this.value || "",
+                        mode: this.submode
+                    });
+                    this[CODE_MIRROR] = CodeMirror(this.editorWrapper, options);
                     this[CODE_MIRROR].on("change", () => {
                         this[SYNCHING] = true;
                         try {
@@ -126,6 +124,10 @@
     cls.requiredModes = {
         "htmlmixed": ["xml", "javascript", "css"]
     }
+    ?>
+
+    <?js
+    this.options = {};
     ?>
 
     <?on dataBinding:changed
