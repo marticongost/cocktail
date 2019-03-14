@@ -1274,7 +1274,7 @@
             ];
         }
 
-        fromJSONValue(value) {
+        parseValue(value) {
             if (value) {
                 const date = new JSDate(value);
                 if (!isNaN(date)) {
@@ -1284,8 +1284,16 @@
             return value;
         }
 
-        toJSONValue(value) {
+        serializeValue(value) {
             return value ? value.toISOString() : value;
+        }
+
+        fromJSONValue(value) {
+            return this.parseValue(value);
+        }
+
+        toJSONValue(value) {
+            return this.serializeValue(value);
         }
 
         translateValue(value, params = null) {
