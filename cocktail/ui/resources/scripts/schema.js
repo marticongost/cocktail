@@ -1212,7 +1212,7 @@
             ];
         }
 
-        fromJSONValue(value) {
+        parseValue(value) {
             if (value) {
                 const date = new JSDate(value);
                 if (!isNaN(date)) {
@@ -1222,8 +1222,29 @@
             return value;
         }
 
+        serializeValue(value) {
+            if (value) {
+                let month = (value.getMonth() + 1).toString();
+                if (month.length == 1) {
+                    month = "0" + month;
+                }
+                return (
+                    value.getFullYear()
+                    + "-"
+                    + month
+                    + "-"
+                    + value.getDate()
+                );
+            }
+            return value;
+        }
+
+        fromJSONValue(value) {
+            return this.parseValue(value);
+        }
+
         toJSONValue(value) {
-            return value ? value.toISOString() : value;
+            return this.serializeValue(value);
         }
 
         translateValue(value, params = null) {
