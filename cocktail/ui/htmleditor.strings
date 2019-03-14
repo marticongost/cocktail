@@ -38,3 +38,8 @@
         es: Quitar format
         en: Remove format
 
+        [html]
+        ca: Editar el codi font
+        es: Editar el código fuente
+        en: Edit source code
+

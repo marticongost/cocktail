@@ -27,6 +27,22 @@
         reflected="true"
         default="false"/>
 
+    <ui:property
+        name="mode"
+        type="string"
+        reflected="true">
+        <?on changed
+        if (this.toolbox) {
+            for (let actionList of this.toolbox.querySelectorAll(".cocktail-ui-ActionList")) {
+                actionList.updateEntries();
+            }
+        }
+        if (this.codeEditor.codeMirror) {
+            setTimeout(() => this.codeEditor.codeMirror.refresh(), 1);
+        }
+        ?>
+    </ui:property>
+
     <?tail
     cls.EditorAction = class EditorAction extends cocktail.ui.Action {
 
@@ -36,6 +52,17 @@
 
         get iconURL() {
             return `cocktail.ui://images/${this.id}.svg`;
+        }
+
+        getState(context) {
+            if (!this.availableInMode(context.editor.mode)) {
+                return "hidden";
+            }
+            return super.getState(context);
+        }
+
+        availableInMode(mode) {
+            return mode == "visual";
         }
     }
 
@@ -87,6 +114,32 @@
             document.execCommand("removeFormat");
         }
     }
+
+    cls.HTMLAction = class HTMLAction extends cls.EditorAction {
+
+        getState(context) {
+            const state = super.getState(context);
+            if (state == "visible" && context.editor.mode == "source") {
+                return "emphasized";
+            }
+            return state;
+        }
+
+        availableInMode(mode) {
+            return mode == "visual" || mode == "source";
+        }
+
+        invoke(context) {
+            if (context.editor.mode == "visual") {
+                context.editor.mode = "source";
+                context.editor.codeEditor.codeMirror.focus();
+            }
+            else {
+                context.editor.mode = "visual";
+                context.editor.contentArea.focus();
+            }
+        }
+    }
     ?>
 
     <?class
@@ -108,7 +161,8 @@
                 new cls.OLAction("ol"),
                 new cls.IndentAction("indent"),
                 new cls.UnindentAction("unindent"),
-                new cls.CleanAction("clean")
+                new cls.CleanAction("clean"),
+                new cls.HTMLAction("html")
             ]
         ];
     }
@@ -166,7 +220,21 @@
         ?>
     </div>
 
+    <ui:cocktail.ui.CodeEditor id="codeEditor">
+        <?js
+        element.options = {lineWrapping: true};
+        element.dataBinding = {
+            member: new cocktail.schema.CodeBlock({
+                name: "source",
+                language: "html"
+            })
+        };
+        ?>
+    </ui:cocktail.ui.CodeEditor>
+
     <?js
+    cocktail.ui.link(this, this.codeEditor, "value");
+    this.mode = "visual";
     this.createToolbars();
     ?>
 

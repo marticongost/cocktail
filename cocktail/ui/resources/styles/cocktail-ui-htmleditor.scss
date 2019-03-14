@@ -18,10 +18,15 @@
     height: 1.9em;
 }
 
+:host(:not([mode='visual'])) #contentArea,
+:host(:not([mode='source'])) #codeEditor {
+    display: none;
+}
+
 #contentArea {
     border: $input-border;
+    padding: $input-padding;
     flex: 1;
-    padding: 0.5em;
 
     :host([autoHeight='false']) & {
         overflow-y: auto;
