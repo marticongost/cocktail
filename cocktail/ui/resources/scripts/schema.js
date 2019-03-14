@@ -669,6 +669,9 @@
                     }
                     record[member.name] = memberValue;
                 }
+                else {
+                    delete record[member.name];
+                }
             }
             return record;
         }
