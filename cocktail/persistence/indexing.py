@@ -429,6 +429,9 @@ def remove_index_entry(obj, member, value, language = None):
 
     key = member.get_index_value(value)
 
+    if key is None and not member.index.accepts_multiple_values:
+        return
+
     if language:
         key = (language, key)
 
