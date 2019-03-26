@@ -22,9 +22,6 @@ from cocktail.html import (
 from .componentloader import ComponentLoader
 from .exceptions import ComponentFileError
 
-POLYFILL_URI = "//cdnjs.cloudflare.com/ajax/libs/document-register-element/" \
-               "1.4.1/document-register-element.js"
-
 DEFAULT_GLOBAL_STYLE_SHEET = "cocktail.ui://styles/global.scss.css"
 
 
@@ -280,7 +277,6 @@ class Component(object):
         document = HTMLDocument()
         document.metadata = DocumentMetadata()
         document.metadata.page_title = title
-        document.metadata.resources.append(Script(POLYFILL_URI))
         document.metadata.resources.append(
             UIScript(
                 self,
