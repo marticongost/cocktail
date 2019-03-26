@@ -2,6 +2,7 @@
 @import "cocktail.ui://styles/common";
 
 :host {
+    display: inline-block;
     width: 30em;
     position: relative;
 }
