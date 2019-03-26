@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<div
+<ui:element
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:ui="http://www.whads.com/ns/cocktail/ui">
 
@@ -82,5 +82,5 @@
         <div id="label"/>
     </div>
 
-</div>
+</ui:element>
 

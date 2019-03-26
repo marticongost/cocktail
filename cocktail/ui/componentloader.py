@@ -48,7 +48,7 @@ class ComponentLoader(object):
         "data": "HTMLDataElement",
         "datalist": "HTMLDataListElement",
         "dialog": "HTMLDialogElement",
-        #"div": "HTMLDivElement",
+        "div": "HTMLDivElement",
         "embed": "HTMLEmbedElement",
         "fieldset": "HTMLFieldSetElement",
         "form": "HTMLFormElement",
@@ -192,7 +192,9 @@ class ComponentLoader(object):
         inheriting_component = False
 
         if is_ui_node:
-            if local_name == "module":
+            if local_name == "element":
+                base_name = "cocktail.ui.base.HTMLElement"
+            elif local_name == "module":
                 self.is_module = True
             elif local_name == "mixin":
                 self.is_mixin = True
