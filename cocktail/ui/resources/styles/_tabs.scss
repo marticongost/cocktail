@@ -17,6 +17,7 @@ $tab-hover-underline-color: lighten($tab-active-underline-color, 25) !default;
     display: flex;
     flex-direction: column;
     align-items: stretch;
+    overflow: hidden;
 }
 
 @mixin tab-strip {
@@ -67,5 +68,6 @@ $tab-hover-underline-color: lighten($tab-active-underline-color, 25) !default;
     display: flex;
     contain: content;
     background-color: white;
+    overflow: hidden;
 }
 
