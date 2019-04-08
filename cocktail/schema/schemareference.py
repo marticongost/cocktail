@@ -58,7 +58,7 @@ class Reference(RelationMember):
         return HasExpression(self, filters)
 
     @event_handler
-    def handle_attached_as_orphan(cls, event):
+    def handle_attached_as_orphan(event):
         member = event.source
         member.type = member.related_end.schema
 

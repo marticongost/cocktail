@@ -21,7 +21,7 @@ Classes declare `event <Event>` objects for each kind of condition that they
 want to publicize.
 
 For example, the following snippet declares three different events on a class::
-    
+
     class Letter(object):
         written = Event()
         sending = Event()
@@ -80,7 +80,7 @@ To exemplify the use of the `EventInfo` object, here's how the previous example
 could use the standard `~EventInfo.source` attribute to obtain a reference to
 the letter for which the callback is being invoked::
 
-    def print_message(e):        
+    def print_message(e):
         print "Sending letter %s to %s" % (e.source.title, e.source.receiver)
 
     my_letter.sending.append(print_message)
@@ -101,7 +101,7 @@ callback::
 
     def print_message(e):
         print "Sending letter %s to %s" % (e.source.title, e.source.receiver)
-    
+
     def blacklist_receivers(e):
         if is_blacklisted(e.source.receiver):
             raise ValueError(
@@ -159,8 +159,8 @@ clean and compact. It works like this::
 
 .. _event-hub:
 
-Using the `EventHub` metaclass
-++++++++++++++++++++++++++++++
+Using the `event_handler` decorator
++++++++++++++++++++++++++++++++++++
 A very common need that can arise when subclassing a type that exposes an event
 is to register a callback for the subclass. One can do this the usual way::
 
@@ -178,24 +178,21 @@ is to register a callback for the subclass. One can do this the usual way::
 But this is rather verbose, and moves logic that should belong to the class
 outside of its definition.
 
-To solve this issues, the module supplies an `EventHub` metaclass and an
-`event_handler` decorator. Any class that uses this metaclass will
-automatically register any of its methods marked with the `event_handler`
-decorator as class level event callbacks. A naming convention is used to match
-the methods with their target event: method names must consist of the *handle_*
-prefix, followed by the name of the event that the callback should be
-registered to.
+To solve this issues, the module provides an `event_handler` decorator. Any
+method decorated by it will be automatically registered as a class level
+callback for an event. A naming convention is used to match the methods with
+their target event: method names must consist of the *handle_* prefix, followed
+by the name of the event that the callback should be registered to.
 
 This is how the last example would look like using this alternative form::
 
-    class BaseClass(object):
-        __metaclass__ = EventHub
+    class BaseClass:
         base_event = Event()
 
     class DerivedClass(BaseClass):
 
         @event_handler
-        def handle_base_event(cls, e):
+        def handle_base_event(e):
             pass
 
 .. _triggering:
@@ -268,8 +265,6 @@ Here are the details on all the objects provided by the module:
     :members:
 
 .. autofunction:: when
-
-.. autoclass:: EventHub
 
 .. autoclass:: event_handler
 

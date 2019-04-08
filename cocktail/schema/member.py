@@ -5,7 +5,7 @@ Provides the base class for all schema members.
 from itertools import chain
 from copy import deepcopy
 from warnings import warn
-from cocktail.events import Event, EventHub
+from cocktail.events import Event
 from cocktail.modeling import ListWrapper, OrderedSet
 from cocktail.pkgutils import import_object, get_full_name
 from cocktail.translations import translations
@@ -19,7 +19,7 @@ EDITABLE = 1
 READ_ONLY = 2
 
 
-class Member(Variable, metaclass=EventHub):
+class Member(Variable):
     """A member describes the properties and metadata of a unit of data.
 
     Although not strictly an abstract class, the class is very generic in
@@ -163,7 +163,7 @@ class Member(Variable, metaclass=EventHub):
                 self.add_validation(validation)
 
     def __hash__(self):
-        return EventHub.__hash__(self)
+        return object.__hash__(self)
 
     def __eq__(self, other):
         return self is other
