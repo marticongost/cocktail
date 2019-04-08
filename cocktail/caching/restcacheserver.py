@@ -55,11 +55,11 @@ class CacheController(Controller):
             self.__cache.clear(scope = selectors)
 
     @event_handler
-    def handle_before_request(cls, e):
+    def handle_before_request(e):
         cherrypy.response.headers["Content-Type"] = "application/json"
 
     @event_handler
-    def handle_exception_raised(cls, e):
+    def handle_exception_raised(e):
 
         error = e.exception
         e.handled = True

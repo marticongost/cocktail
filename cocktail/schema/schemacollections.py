@@ -95,7 +95,7 @@ class Collection(RelationMember):
         return self.items and self.items.type
 
     @event_handler
-    def handle_attached_as_orphan(cls, event):
+    def handle_attached_as_orphan(event):
 
         member = event.source
 

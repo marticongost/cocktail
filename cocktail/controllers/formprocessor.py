@@ -6,7 +6,7 @@
 import cherrypy
 from cocktail.modeling import cached_getter, camel_to_underscore
 from cocktail.pkgutils import get_full_name
-from cocktail.events import Event, EventHub
+from cocktail.events import Event
 from cocktail import schema
 from cocktail.persistence import PersistentClass, transactional
 from cocktail.controllers.parameters import get_parameter
@@ -123,7 +123,7 @@ class FormProcessor(object):
         self.output["form_errors"] = self.errors
 
 
-class Form(object, metaclass=EventHub):
+class Form:
     """A description of a form based on a schema."""
 
     controller = None

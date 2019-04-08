@@ -98,7 +98,7 @@ class PersistentClass(SchemaClass):
     _generated_id = False
 
     @event_handler
-    def handle_member_added(metacls, event):
+    def handle_member_added(event):
 
         cls = event.source
         member = event.member
@@ -319,7 +319,7 @@ class PersistentObject(SchemaObject, Persistent, metaclass=PersistentClass):
         SchemaClass._create_translation_schema(cls, members)
 
     @event_handler
-    def handle_changing(cls, event):
+    def handle_changing(event):
 
         # Disallow changing the primary key of an inserted member
         if event.member.primary and event.source.is_inserted:

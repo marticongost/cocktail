@@ -198,7 +198,7 @@ class RelationMember(Member):
         """)
 
     @event_handler
-    def handle_attached(cls, event):
+    def handle_attached(event):
         event.source._bind_orphan_related_end()
 
     def _bind_orphan_related_end(self):

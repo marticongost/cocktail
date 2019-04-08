@@ -9,7 +9,7 @@
 import sys
 from collections import Counter
 from cocktail.modeling import refine, OrderedSet, InstrumentedDict, DictWrapper
-from cocktail.events import Event, EventHub
+from cocktail.events import Event
 from cocktail.pkgutils import get_full_name
 from cocktail.translations import (
     translations,
@@ -50,13 +50,13 @@ SHALLOW_COPY = 2
 DEEP_COPY = 3
 
 
-class SchemaClass(EventHub, Schema):
+class SchemaClass(type, Schema):
 
     def __init__(cls, name, bases, members):
 
         cls._declared = False
 
-        EventHub.__init__(cls, name, bases, members)
+        type.__init__(cls, name, bases, members)
         Schema.__init__(cls)
 
         cls.name = name
@@ -106,7 +106,7 @@ class SchemaClass(EventHub, Schema):
             translations.request_bundle(bundle_path)
 
     def __hash__(self):
-        return EventHub.__hash__(self)
+        return type.__hash__(self)
 
     def inherit(cls, *bases):
 
