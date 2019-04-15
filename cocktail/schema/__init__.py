@@ -40,6 +40,7 @@ from cocktail.schema.schemanumbers import (
     Float
 )
 from cocktail.schema.memberreference import MemberReference
+from cocktail.schema.record import Record
 from cocktail.schema.money import Money
 from cocktail.schema.currency import Currency
 from cocktail.schema.month import Month
