@@ -78,6 +78,7 @@ class Schema(Member):
     def __init__(self, *args, **kwargs):
 
         members = kwargs.pop("members", None)
+        bases = kwargs.pop("bases", None)
         Member.__init__(self, *args, **kwargs)
 
         self.__bases = None
@@ -90,6 +91,9 @@ class Schema(Member):
                 self.members_order = [member.name for member in members]
 
             self.expand(members)
+
+        if bases:
+            self.inherit(*bases)
 
     def __deepcopy__(self, memo):
         schema_copy = Member.__deepcopy__(self, memo)
