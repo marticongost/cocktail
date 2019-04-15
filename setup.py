@@ -42,7 +42,8 @@ setup(
         "lxml",
         "httplib2",
         "PyStemmer",
-        "rfc6266"
+        "rfc6266",
+        "pyyaml"
     ],
     extras_require = {
         "sass": ["libsass"]
