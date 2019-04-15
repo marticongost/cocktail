@@ -264,6 +264,26 @@ class Collection(RelationMember):
                         ):
                             yield RelationConstraintError(context, constraint)
 
+    def to_json_value(self, value, **options):
+
+        if value is None:
+            return None
+
+        if not self.items:
+            return list(value)
+
+        return [self.items.to_json_value(item, **options) for item in value]
+
+    def from_json_value(self, value, **options):
+
+        if value is None:
+            return None
+
+        if not self.items:
+            return value
+
+        return [self.items.from_json_value(item, **options) for item in value]
+
 
 # Generic add/remove methods
 #------------------------------------------------------------------------------
