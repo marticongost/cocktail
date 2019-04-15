@@ -7,7 +7,6 @@
 @since:			June 2008
 """
 from cocktail.events import event_handler
-from cocktail.pkgutils import import_object
 from cocktail.translations import translations
 from cocktail.schema.member import Member
 from cocktail.schema.schema import Schema
@@ -20,6 +19,7 @@ from cocktail.schema.exceptions import (
     RelationCycleError,
     RelationConstraintError
 )
+from .registry import import_type
 
 
 class Reference(RelationMember):
@@ -68,7 +68,7 @@ class Reference(RelationMember):
 
         # Resolve string references
         if isinstance(self.__class_family, str):
-            self.__class_family = import_object(self.__class_family)
+            self.__class_family = import_type(self.__class_family)
 
         return self.__class_family
 

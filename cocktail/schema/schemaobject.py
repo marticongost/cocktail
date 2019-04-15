@@ -35,6 +35,7 @@ from cocktail.schema.schemacollections import (
 from cocktail.schema.schemamappings import Mapping, RelationMapping
 from cocktail.schema.accessors import MemberAccessor
 from cocktail.schema.textextractor import TextExtractor
+from .registry import register_schema
 
 # Extension property that allows members to knowingly shadow existing
 # class attributes
@@ -95,6 +96,7 @@ class SchemaClass(type, Schema):
                 member.name = name
                 cls.add_member(member)
 
+        register_schema(cls, cls.full_name)
         cls._declared = True
 
         if cls.translation:
