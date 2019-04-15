@@ -7,12 +7,13 @@ from copy import deepcopy
 from warnings import warn
 from cocktail.events import Event
 from cocktail.modeling import ListWrapper, OrderedSet
-from cocktail.pkgutils import import_object, get_full_name
+from cocktail.pkgutils import get_full_name
 from cocktail.translations import translations
 from cocktail.schema import exceptions
 from cocktail.schema.expressions import Expression, Variable
 from cocktail.schema.validationcontext import ValidationContext
 from cocktail.schema.accessors import get_accessor
+from .registry import import_type
 
 NOT_EDITABLE = 0
 EDITABLE = 1
@@ -236,7 +237,7 @@ class Member(Variable):
 
         # Resolve string references
         if isinstance(self.__type, str):
-            self.__type = import_object(self.__type)
+            self.__type = import_type(self.__type)
 
         return self.__type
 

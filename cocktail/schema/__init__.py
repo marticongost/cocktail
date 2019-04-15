@@ -11,6 +11,12 @@ from cocktail.schema.member import (
     READ_ONLY
 )
 from cocktail.schema.schema import Schema
+from .registry import (
+    register_schema,
+    iter_schemas,
+    get_schema,
+    import_type
+)
 from cocktail.schema.rangedmember import RangedMember
 from cocktail.schema.schematuples import Tuple
 from cocktail.schema.schemacollections import (
