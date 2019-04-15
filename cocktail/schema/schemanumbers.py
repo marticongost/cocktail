@@ -63,8 +63,36 @@ class Decimal(Number):
         else:
             return translations(value, language, **kwargs)
 
+    def to_json_value(self, value, **options):
+
+        if value is None:
+            return None
+
+        return str(value)
+
+    def from_json_value(self, value, **options):
+
+        if value is None:
+            return None
+
+        return self.type(value)
+
 
 class Fraction(Number):
     """A numeric field limited to fractional values."""
     type = fractions.Fraction
+
+    def to_json_value(self, value, **options):
+
+        if value is None:
+            return None
+
+        return str(value)
+
+    def from_json_value(self, value, **options):
+
+        if value is None:
+            return None
+
+        return self.type(value)
 

@@ -8,6 +8,8 @@ Provides a member that handles compound values.
 @since:			March 2008
 """
 from copy import deepcopy
+from collections import Mapping
+
 from cocktail.pkgutils import get_full_name
 from cocktail.modeling import (
     empty_dict,
@@ -17,7 +19,7 @@ from cocktail.modeling import (
     OrderedSet
 )
 from cocktail.events import Event
-from cocktail.translations import translations
+from cocktail.translations import translations, get_language
 from cocktail.schema.member import Member, DynamicDefault
 from cocktail.schema.accessors import get_accessor, get, undefined
 from cocktail.schema.exceptions import SchemaIntegrityError
@@ -743,6 +745,68 @@ class Schema(Member):
                 else:
                     value = get(obj, member)
                     extractor.extract(member, value)
+
+    def to_json_value(self, value, **options):
+
+        languages = options.get("languages", None)
+        if languages is None:
+            languages = get_language()
+
+        if value is None:
+            return None
+
+        record = {}
+        accessor = get_accessor(value)
+
+        for member in self.iter_members():
+            if member.translated and not isinstance(languages, str):
+                member_value = dict(
+                    (
+                        lang,
+                        member.to_json_value(
+                            accessor.get(value, language=lang),
+                            **options
+                        )
+                    )
+                    for lang in accessor.languages(value, member.name)
+                )
+            else:
+                member_value = member.to_json_value(
+                    accessor.get(value, member.name),
+                    **options
+                )
+
+            record[member.name] = member_value
+
+        return record
+
+    def from_json_value(self, value, **options):
+
+        if value is None:
+            return None
+
+        record = (self.type or dict)()
+        accessor = get_accessor(record)
+
+        for key, member_value in value.items():
+            member = self.get_member(key)
+            if member.translated and isinstance(member_value, Mapping):
+                if member_value:
+                    for lang, lang_value in member_value.items():
+                        accessor.set(
+                            value,
+                            member.name,
+                            member.from_json_value(lang_value, **options),
+                            language=lang
+                        )
+            else:
+                accessor.set(
+                    value,
+                    member.name,
+                    member.from_json_value(member_value, **options)
+                )
+
+        return record
 
 
 @translations.instances_of(Schema)

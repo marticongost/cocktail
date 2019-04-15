@@ -635,6 +635,12 @@ class Member(Variable):
 
     editable = property(_get_editable, _set_editable)
 
+    def to_json_value(self, value, **options):
+        return value
+
+    def from_json_value(self, value, **options):
+        return value
+
 
 class DynamicDefault(object):
 
