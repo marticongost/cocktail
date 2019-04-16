@@ -425,7 +425,7 @@ class Schema(Member):
         """
         return self.get_member(name) is not None
 
-    def validations(self, recursive = True):
+    def validations(self, recursive = True, **validation_parameters):
         """Iterates over all the validation rules that apply to the schema.
 
         @param recursive: Indicates if validations inherited from base schemas
