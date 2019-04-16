@@ -388,7 +388,7 @@ class Member(Variable):
         """
         self._validations.remove(validation)
 
-    def validations(self, recursive = True):
+    def validations(self, recursive = True, **validation_parameters):
         """Iterates over all the validation rules that apply to the member.
 
         :param recursive: Indicates if the produced set of validations should
@@ -442,7 +442,7 @@ class Member(Variable):
         for error in self._default_validation(context):
             yield error
 
-        for validation in self.validations():
+        for validation in self.validations(**validation_parameters):
             for error in validation(context):
                 yield error
 
