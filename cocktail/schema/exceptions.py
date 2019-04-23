@@ -56,6 +56,18 @@ class MemberReacquiredError(SchemaIntegrityError):
         self.schema = schema
 
 
+class CoercionError(Exception):
+    """An exception raised by `cocktail.schema.Member.coerce` when trying to
+    coerce an invalid value with a `cocktail.schema.Coercion.FAIL` policy.
+    """
+
+    def __init__(self, member, value, errors):
+        super().__init__(f"{value} doesn't conform to {member} ({errors})")
+        self.member = member
+        self.value = value
+        self.errors = errors
+
+
 class ValidationError(Exception):
     """Base class for all exceptions produced during a schema validation."""
 

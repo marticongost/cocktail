@@ -5,6 +5,7 @@ Provides the base class for all schema members.
 from itertools import chain
 from copy import deepcopy
 from warnings import warn
+from typing import Any
 from cocktail.events import Event
 from cocktail.modeling import ListWrapper, OrderedSet
 from cocktail.pkgutils import get_full_name
@@ -13,6 +14,8 @@ from cocktail.schema import exceptions
 from cocktail.schema.expressions import Expression, Variable
 from cocktail.schema.validationcontext import ValidationContext
 from cocktail.schema.accessors import get_accessor
+from .coercion import Coercion
+from .exceptions import CoercionError
 from .registry import import_type
 
 NOT_EDITABLE = 0
@@ -445,6 +448,40 @@ class Member(Variable):
         for validation in self.validations(**validation_parameters):
             for error in validation(context):
                 yield error
+
+    def coerce(
+            self,
+            value: Any,
+            coercion: Coercion,
+            **validation_parameters) -> Any:
+        """Coerces the given value to conform to the member definition.
+
+        The method applies the behavior indicated by the `coercion` parameter,
+        either accepting or rejecting the given value. Depending on the
+        selected coercion strategy, rejected values may be transformed into a
+        new value or raise an exception.
+
+        New values are both modified in place (when possible) and returned.
+        """
+        if coercion is Coercion.NONE:
+            return value
+
+        errors = self.get_errors(value, **validation_parameters)
+
+        if coercion is Coercion.FAIL:
+            errors = list(errors)
+            if errors:
+                raise CoercionError(self, value, errors)
+        else:
+            for error in errors:
+                if coercion is Coercion.FAIL_IMMEDIATELY:
+                    raise error
+                elif coercion is Coercion.SET_NONE:
+                    return None
+                elif coercion is Coercion.SET_DEFAULT:
+                    return self.produce_default()
+
+        return value
 
     @classmethod
     def resolve_constraint(cls, expr, context):
