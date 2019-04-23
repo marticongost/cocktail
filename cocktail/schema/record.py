@@ -14,9 +14,9 @@ class Record(Member):
 
         yield from Member._default_validation(self, context)
 
-        if self.record_schema and context.validable is not None:
+        if self.record_schema and context.value is not None:
             yield from self.record_schema.get_errors(
-                context.validable,
+                context.value,
                 parent_context=context
             )
 
