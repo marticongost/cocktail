@@ -798,14 +798,14 @@ class Schema(Member):
                 if member_value:
                     for lang, lang_value in member_value.items():
                         accessor.set(
-                            value,
+                            record,
                             member.name,
                             member.from_json_value(lang_value, **options),
                             language=lang
                         )
             else:
                 accessor.set(
-                    value,
+                    record,
                     member.name,
                     member.from_json_value(member_value, **options)
                 )
