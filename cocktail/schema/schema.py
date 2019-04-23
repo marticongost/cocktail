@@ -9,6 +9,7 @@ Provides a member that handles compound values.
 """
 from copy import deepcopy
 from collections import Mapping
+from typing import Any
 
 from cocktail.pkgutils import get_full_name
 from cocktail.modeling import (
@@ -22,7 +23,9 @@ from cocktail.events import Event
 from cocktail.translations import translations, get_language
 from cocktail.schema.member import Member, DynamicDefault
 from cocktail.schema.accessors import get_accessor, get, undefined
-from cocktail.schema.exceptions import SchemaIntegrityError
+from .coercion import Coercion
+from .exceptions import SchemaIntegrityError, CoercionError
+
 
 default = object()
 
@@ -500,6 +503,91 @@ class Schema(Member):
                     parent_context = context
                 ):
                     yield error
+
+    def coerce(
+            self,
+            value: Any,
+            coercion: Coercion,
+            **validation_parameters) -> Any:
+        """Coerces the given value to conform to the member definition.
+
+        The method applies the behavior indicated by the `coercion` parameter
+        to each member of the scheam, either accepting or rejecting its value.
+        Depending on the selected coercion strategy, rejected values may be
+        transformed into a new value or raise an exception.
+
+        New values are modified in place.
+        """
+        if coercion is Coercion.NONE:
+            return value
+
+        if coercion is Coercion.FAIL:
+            errors = list(self.get_errors(value, **validation_parameters))
+            if errors:
+                raise CoercionError(self, value, errors)
+        else:
+            # Coercion of members affected by schema wide validation rules
+            accessor = get_accessor(value)
+            schema_level_errors = self.get_errors(
+                value,
+                recursive=False,
+                **validation_parameters
+            )
+
+            for error in schema_level_errors:
+                if coercion is Coercion.FAIL_IMMEDIATELY:
+                    raise error
+                elif coercion is Coercion.SET_NONE:
+                    for member in error.invalid_members:
+                        if member.schema is self:
+                            accessor.set(
+                                value,
+                                member.name,
+                                None,
+                                error.language
+                            )
+                elif coercion is Coercion.SET_DEFAULT:
+                    for member in error.invalid_members:
+                        if member.schema is self:
+                            accessor.set(
+                                value,
+                                member.name,
+                                member.produce_default(value),
+                                error.language
+                            )
+
+            # Per member coercion
+            for member in self.iter_members():
+                if member.translated:
+                    for language in accessor.languages(value, member.name):
+                        lang_value = accessor.get(value, member.name, language)
+                        coerced_lang_value = member.coerce(
+                            lang_value,
+                            coercion,
+                            **validation_parameters
+                        )
+                        if lang_value != coerced_lang_value:
+                            accessor.set(
+                                value,
+                                member.name,
+                                coerced_lang_value,
+                                language
+                            )
+                else:
+                    member_value = accessor.get(value, member.name)
+                    coerced_member_value = member.coerce(
+                        member_value,
+                        coercion,
+                        **validation_parameters
+                    )
+                    if member_value != coerced_member_value:
+                        accessor.set(
+                            value,
+                            member.name,
+                            coerced_member_value
+                        )
+
+        return value
 
     def ordered_members(self, recursive = True):
         """Gets a list containing all the members defined by the schema, in

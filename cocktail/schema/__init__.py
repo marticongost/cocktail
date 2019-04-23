@@ -10,6 +10,7 @@ from cocktail.schema.member import (
     EDITABLE,
     READ_ONLY
 )
+from .coercion import Coercion
 from cocktail.schema.schema import Schema
 from .registry import (
     register_schema,
