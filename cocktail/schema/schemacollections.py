@@ -95,7 +95,7 @@ class Collection(RelationMember):
         return self.items and self.items.type
 
     @event_handler
-    def handle_attached_as_orphan(cls, event):
+    def handle_attached_as_orphan(event):
 
         member = event.source
 
@@ -263,6 +263,26 @@ class Collection(RelationMember):
                             item
                         ):
                             yield RelationConstraintError(context, constraint)
+
+    def to_json_value(self, value, **options):
+
+        if value is None:
+            return None
+
+        if not self.items:
+            return list(value)
+
+        return [self.items.to_json_value(item, **options) for item in value]
+
+    def from_json_value(self, value, **options):
+
+        if value is None:
+            return None
+
+        if not self.items:
+            return value
+
+        return [self.items.from_json_value(item, **options) for item in value]
 
 
 # Generic add/remove methods

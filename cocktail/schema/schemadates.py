@@ -105,6 +105,23 @@ class DateTime(BaseDateTime):
     _is_time = True
     translate_value = translations
 
+    def to_json_value(self, value, **options):
+
+        if value is None:
+            return value
+
+        return value.isoformat()
+
+    def from_json_value(self, value, **options):
+
+        if value is None:
+            return None
+
+        try:
+            return datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
+        except ValueError:
+            return datetime.strptime(value, "%Y-%m-%dT%H:%M:%S")
+
 
 class Date(BaseDateTime):
     type = datetime.date
@@ -129,10 +146,38 @@ class Date(BaseDateTime):
 
         return values
 
+    def to_json_value(self, value, **options):
+
+        if value is None:
+            return value
+
+        return value.isoformat()
+
+    def from_json_value(self, value, **options):
+
+        if value is None:
+            return None
+
+        return datetime.datetime.strptime(value, "%Y-%m-%d").date()
+
 
 class Time(BaseDateTime):
     type = datetime.time
     _is_time = True
+
+    def to_json_value(self, value, **options):
+
+        if value is None:
+            return value
+
+        return value.isoformat()
+
+    def from_json_value(self, value, **options):
+
+        if value is None:
+            return None
+
+        return datetime.datetime.strptime(value, "%H:%M:%S.%f").time()
 
 
 translations.instances_of(BaseDateTime)(translate_member)

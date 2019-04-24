@@ -7,10 +7,10 @@
 @since:			December 2008
 """
 import cherrypy
-from cocktail.events import Event, EventHub
+from cocktail.events import Event
 
 
-class RequestHandler(object, metaclass=EventHub):
+class RequestHandler:
 
     exposed = True
 

@@ -389,32 +389,27 @@ class EventTestCase(TestCase):
         self.assertEqual(len(Foo.spammed), 1)
         self.assertTrue(Foo.spammed[0] is class_callback)
 
-    def test_event_hub(self):
+    def test_event_handler(self):
 
-        from cocktail.events import Event, EventHub, event_handler
+        from cocktail.events import Event, event_handler
 
-        class Foo(object, metaclass=EventHub):
+        class Foo:
+
             spammed = Event()
 
             @event_handler
-            def handle_spammed(cls):
+            def handle_spammed(e):
                 pass
 
-        self.assertEqual(
-            list(Foo.spammed),
-            [Foo.spammed.wrap_callback(Foo.handle_spammed)]
-        )
+        assert list(Foo.spammed) == [Foo.handle_spammed.__func__]
 
         class Bar(Foo):
 
             @event_handler
-            def handle_spammed(cls):
+            def handle_spammed(e):
                 pass
 
-        self.assertEqual(
-            list(Bar.spammed),
-            [Bar.spammed.wrap_callback(Bar.handle_spammed)]
-        )
+        assert list(Bar.spammed) == [Bar.handle_spammed.__func__]
 
     def test_can_customize_event_info_class(self):
 

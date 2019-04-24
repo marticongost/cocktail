@@ -23,8 +23,8 @@ class SchemaInheritanceCycleError(Exception):
     directly or indirectly."""
 
     def __init__(self, schema):
-        SchemaIntegrityError.__init__(self,
-            "%s tried to use itself as an inheritance base."
+        super().__init__(
+            f"{schema} tried to use itself as an inheritance base."
         )
         self.schema = schema
 
@@ -35,10 +35,9 @@ class MemberRenamedError(SchemaIntegrityError):
     """
 
     def __init__(self, member, name):
-        SchemaIntegrityError.__init__(self,
-            "Can't rename %s to '%s'; "
+        super.__init__(
+            f"Can't rename {member} to '{name}'; "
             "the name of a bound schema member must remain constant."
-            % (member, name)
         )
         self.member = member
         self.name = name
@@ -48,20 +47,47 @@ class MemberReacquiredError(SchemaIntegrityError):
     """An exception raised when trying to move a member between schemas."""
 
     def __init__(self, member, schema):
-        SchemaIntegrityError.__init__(self,
-            "Can't add %s to '%s'; once bound to a schema, members can't be "
-            "relocated to another schema"
+        super().__init__(
+            f"Can't add {member} to {schema}; once bound to a schema, "
+            "members can't be relocated to another schema"
             % (member, schema)
         )
         self.member = member
         self.schema = schema
 
 
+class InputError(Exception):
+    """An exception raised by `cocktail.schema.Member.coerce` when trying to
+    coerce an invalid value with a `cocktail.schema.Coercion.FAIL` policy.
+    """
+
+    def __init__(self, member, value, errors):
+        super().__init__(f"{value} doesn't conform to {member} ({errors})")
+        self.member = member
+        self.value = value
+        self.errors = errors
+
+
 class ValidationError(Exception):
     """Base class for all exceptions produced during a schema validation."""
 
-    def __init__(self, context):
-        Exception.__init__(self)
+    default_reason: str = None
+
+    def __init__(self, context, reason=None):
+
+        desc = (
+            f"{self.__class__.__name__}: "
+            f"{context.value} is not a valid value for {context.member}"
+        )
+
+        if context.language:
+            desc += f"[{self.context.language}]"
+
+        reason = reason or self.default_reason
+        if reason:
+            desc += f" ({reason})"
+
+        super().__init__(desc)
         self.context = context
 
     @property
@@ -75,19 +101,6 @@ class ValidationError(Exception):
     @property
     def language(self):
         return self.context.language
-
-    def __str__(self):
-
-        desc = "%s: %s is not a valid value for %s" % (
-            self.__class__.__name__,
-            self.context.value,
-            self.context.member
-        )
-
-        if self.context.language:
-            desc = "%s [%s]" % (desc, self.context.language)
-
-        return desc
 
     @property
     def invalid_members(self):
@@ -157,17 +170,13 @@ class ValueRequiredError(ValidationError):
     concrete value.
     """
 
-    def __str__(self):
-        return "%s (expected a non empty value)" \
-            % ValidationError.__str__(self)
+    default_reason = "expected a non empty value"
 
 
 class NoneRequiredError(ValidationError):
     """A validation error produced when a field that should be empty isn't."""
 
-    def __str__(self):
-        return "%s (expected an empty value)" \
-            % ValidationError.__str__(self)
+    default_reason = "expected an empty value"
 
 
 class TypeCheckError(ValidationError):
@@ -177,16 +186,15 @@ class TypeCheckError(ValidationError):
     @ivar type: The type accepted by the field, at the time of validation.
     """
 
-    def __init__(self, context, type):
-        ValidationError.__init__(self, context)
-        self.type = type
-
-    def __str__(self):
-        return "%s (expected a value of type %s, got %s instead)" % (
-            ValidationError.__str__(self),
-            self.type,
-            type(self.value)
+    def __init__(self, context, type, reason=None):
+        super().__init__(
+            context,
+            reason or (
+                f"expected a value of type {type}, "
+                f"got {type(context.value)} instead"
+            )
         )
+        self.type = type
 
 
 class ClassFamilyError(ValidationError):
@@ -197,16 +205,13 @@ class ClassFamilyError(ValidationError):
         the time of validation.
     """
 
-    def __init__(self, context, class_family):
-        ValidationError.__init__(self, context)
+    def __init__(self, context, class_family, reason=None):
+        super().__init__(
+            context,
+            reason or f"expected a subclass of {class_family}"
+        )
         self.class_family = class_family
 
-    def __str__(self):
-        return "%s (expected a subclass of %s, got %s instead)" % (
-            ValidationError.__str__(self),
-            self.class_family,
-            self.value
-        )
 
 class EnumerationError(ValidationError):
     """A validation error produced when a field is set to a value that falls
@@ -216,13 +221,12 @@ class EnumerationError(ValidationError):
         validation.
     """
 
-    def __init__(self, context, enumeration):
-        ValidationError.__init__(self, context)
+    def __init__(self, context, enumeration, reason=None):
+        super().__init__(
+            context,
+            f"should be one of {enumeration}"
+        )
         self.enumeration = enumeration
-
-    def __str__(self):
-        return "%s (should be one of %s)" \
-            % (ValidationError.__str__(self), self.enumeration)
 
 
 class MinLengthError(ValidationError):
@@ -234,13 +238,12 @@ class MinLengthError(ValidationError):
     @type max: int
     """
 
-    def __init__(self, context, min):
-        ValidationError.__init__(self, context)
+    def __init__(self, context, min, reason=None):
+        super().__init__(
+            context,
+            reason or f"should be at least {min} characters long"
+        )
         self.min = min
-
-    def __str__(self):
-        return "%s (should be %d or more characters long)" \
-            % (ValidationError.__str__(self), self.min)
 
 
 class MaxLengthError(ValidationError):
@@ -252,13 +255,12 @@ class MaxLengthError(ValidationError):
     @type max: int
     """
 
-    def __init__(self, context, max):
-        ValidationError.__init__(self, context)
+    def __init__(self, context, max, reason=None):
+        super().__init__(
+            context,
+            reason or f"can't be more than {max} characters long"
+        )
         self.max = max
-
-    def __str__(self):
-        return "%s (can't be more than %d characters long)" \
-            % (ValidationError.__str__(self), self.max)
 
 
 class FormatError(ValidationError):
@@ -269,13 +271,12 @@ class FormatError(ValidationError):
     @type format: Regular Expression
     """
 
-    def __init__(self, context, format):
-        ValidationError.__init__(self, context)
+    def __init__(self, context, format, reason=None):
+        super().__init__(
+            context,
+            reason or f"should match format {format}"
+        )
         self.format = format
-
-    def __str__(self):
-        return "%s (should match format %s)" \
-            % (ValidationError.__str__(self), self.format)
 
 
 class InvalidJSONError(ValidationError):
@@ -293,13 +294,12 @@ class MinValueError(ValidationError):
         validation.
     """
 
-    def __init__(self, context, min):
-        ValidationError.__init__(self, context)
+    def __init__(self, context, min, reason=None):
+        super().__init__(
+            context,
+            reason or f"should be {min} or higher"
+        )
         self.min = min
-
-    def __str__(self):
-        return "%s (should be %s or higher)" \
-            % (ValidationError.__str__(self), self.min)
 
 
 class MaxValueError(ValidationError):
@@ -310,13 +310,12 @@ class MaxValueError(ValidationError):
         validation.
     """
 
-    def __init__(self, context, max):
-        ValidationError.__init__(self, context)
+    def __init__(self, context, max, reason=None):
+        super().__init__(
+            context,
+            reason or f"should be {max} or lower"
+        )
         self.max = max
-
-    def __str__(self):
-        return "%s (should be %s or lower)" \
-            % (ValidationError.__str__(self), self.max)
 
 
 class MinItemsError(ValidationError):
@@ -328,13 +327,12 @@ class MinItemsError(ValidationError):
     @type min: int
     """
 
-    def __init__(self, context, min):
-        ValidationError.__init__(self, context)
+    def __init__(self, context, min, reason=None):
+        super().__init__(
+            context,
+            reason or f"can't have fewer than {min} items"
+        )
         self.min = min
-
-    def __str__(self):
-        return "%s (can't have less than %d items)" \
-            % (ValidationError.__str__(self), self.min)
 
 
 class MaxItemsError(ValidationError):
@@ -345,13 +343,12 @@ class MaxItemsError(ValidationError):
     @type max: int
     """
 
-    def __init__(self, context, max):
-        ValidationError.__init__(self, context)
+    def __init__(self, context, max, reason=None):
+        super().__init__(
+            context,
+            reason or f"can't have more than {max} items"
+        )
         self.max = max
-
-    def __str__(self):
-        return "%s (can't have more than %d items)" \
-            % (ValidationError.__str__(self), self.max)
 
 
 class InternationalPhoneNumbersNotAllowedError(ValidationError):
@@ -389,13 +386,12 @@ class RelationConstraintError(ValidationError):
     @type constraint: callable or L{Expression<cocktail.schema.expressions.Expression>}
     """
 
-    def __init__(self, context, constraint):
-        ValidationError.__init__(self, context)
+    def __init__(self, context, constraint, reason=None):
+        super().__init__(
+            context,
+            reason or f"constraint {self.constraint} not satisfied"
+        )
         self.constraint = constraint
-
-    def __str__(self):
-        return "%s (constraint %s not satisfied)" \
-            % (ValidationError.__str__(self), self.constraint)
 
 
 class CreditCardChecksumError(ValidationError):
@@ -408,3 +404,4 @@ class BankAccountChecksumError(ValidationError):
     """A validation error produced for bank account numbers that have an
     invalid format.
     """
+

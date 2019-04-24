@@ -47,6 +47,32 @@ class Mapping(Collection):
             )
         return Member.translate_value(self, value, language, **kwargs)
 
+    def to_json_value(self, value, **options):
+
+        if value is None:
+            return None
+
+        return dict(
+            (
+                self.keys.to_json_value(k, **options),
+                self.values.to_json_value(v, **options)
+            )
+            for k, v in value.items()
+        )
+
+    def from_json_value(self, value, **options):
+
+        if value is None:
+            return None
+
+        return (self.type or dict)(
+            (
+                self.keys.from_json_value(k, **options),
+                self.values.from_json_value(v, **options)
+            )
+            for k, v in value.items()
+        )
+
     # Validation
     #--------------------------------------------------------------------------
     def _items_validation(self, context):

@@ -10,7 +10,14 @@ from cocktail.schema.member import (
     EDITABLE,
     READ_ONLY
 )
+from .coercion import Coercion
 from cocktail.schema.schema import Schema
+from .registry import (
+    register_schema,
+    iter_schemas,
+    get_schema,
+    import_type
+)
 from cocktail.schema.rangedmember import RangedMember
 from cocktail.schema.schematuples import Tuple
 from cocktail.schema.schemacollections import (
@@ -34,6 +41,7 @@ from cocktail.schema.schemanumbers import (
     Float
 )
 from cocktail.schema.memberreference import MemberReference
+from cocktail.schema.record import Record
 from cocktail.schema.money import Money
 from cocktail.schema.currency import Currency
 from cocktail.schema.month import Month

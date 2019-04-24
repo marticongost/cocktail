@@ -49,3 +49,29 @@ class Tuple(Member):
                 **kwargs
             )
 
+    def to_json_value(self, value, **options):
+
+        if value is None:
+            return None
+
+        if not self.items:
+            return list(value)
+
+        return [
+            member.to_json_value(item, **options)
+            for member, item in zip(self.items, value)
+        ]
+
+    def from_json_value(self, value, **options):
+
+        if value is None:
+            return None
+
+        if not self.items:
+            return value
+
+        return self.type(
+            member.from_json_value(item, **options)
+            for member, item in zip(self.items, value)
+        )
+

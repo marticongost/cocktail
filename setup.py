@@ -35,14 +35,15 @@ setup(
         "ZODB",
         "zodbupdate",
         "zope.index",
-        "cherrypy",
+        "cherrypy==11.0.*",
         "nose",
         "Beaker",
         "BeautifulSoup4",
         "lxml",
         "httplib2",
         "PyStemmer",
-        "rfc6266"
+        "rfc6266",
+        "pyyaml"
     ],
     extras_require = {
         "sass": ["libsass"]
