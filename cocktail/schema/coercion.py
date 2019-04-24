@@ -34,7 +34,7 @@ class Coercion(enum.Enum):
 
         If any validation errors are found, collect them into a
         `cocktail.schema.ErrorList` object and raise a
-        `cocktail.schema.exceptions.CoercionError` exception.
+        `cocktail.schema.exceptions.InputError` exception.
     """
     NONE = enum.auto()
     SET_NONE = enum.auto()

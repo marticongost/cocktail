@@ -24,7 +24,7 @@ from cocktail.translations import translations, get_language
 from cocktail.schema.member import Member, DynamicDefault
 from cocktail.schema.accessors import get_accessor, get, undefined
 from .coercion import Coercion
-from .exceptions import SchemaIntegrityError, CoercionError
+from .exceptions import SchemaIntegrityError, InputError
 
 
 default = object()
@@ -524,7 +524,7 @@ class Schema(Member):
         if coercion is Coercion.FAIL:
             errors = list(self.get_errors(value, **validation_parameters))
             if errors:
-                raise CoercionError(self, value, errors)
+                raise InputError(self, value, errors)
         else:
             # Coercion of members affected by schema wide validation rules
             accessor = get_accessor(value)
@@ -536,7 +536,7 @@ class Schema(Member):
 
             for error in schema_level_errors:
                 if coercion is Coercion.FAIL_IMMEDIATELY:
-                    raise error
+                    raise InputError(self, value, [error])
                 elif coercion is Coercion.SET_NONE:
                     for member in error.invalid_members:
                         if member.schema is self:

@@ -15,7 +15,7 @@ from cocktail.schema.expressions import Expression, Variable
 from cocktail.schema.validationcontext import ValidationContext
 from cocktail.schema.accessors import get_accessor
 from .coercion import Coercion
-from .exceptions import CoercionError
+from .exceptions import InputError
 from .registry import import_type
 
 NOT_EDITABLE = 0
@@ -471,11 +471,11 @@ class Member(Variable):
         if coercion is Coercion.FAIL:
             errors = list(errors)
             if errors:
-                raise CoercionError(self, value, errors)
+                raise InputError(self, value, errors)
         else:
             for error in errors:
                 if coercion is Coercion.FAIL_IMMEDIATELY:
-                    raise error
+                    raise InputError(self, value, [error])
                 elif coercion is Coercion.SET_NONE:
                     return None
                 elif coercion is Coercion.SET_DEFAULT:
