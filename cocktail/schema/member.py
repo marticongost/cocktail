@@ -5,21 +5,25 @@ Provides the base class for all schema members.
 from itertools import chain
 from copy import deepcopy
 from warnings import warn
-from cocktail.events import Event, EventHub
+from typing import Any
+from cocktail.events import Event
 from cocktail.modeling import ListWrapper, OrderedSet
-from cocktail.pkgutils import import_object, get_full_name
+from cocktail.pkgutils import get_full_name
 from cocktail.translations import translations
 from cocktail.schema import exceptions
 from cocktail.schema.expressions import Expression, Variable
 from cocktail.schema.validationcontext import ValidationContext
 from cocktail.schema.accessors import get_accessor
+from .coercion import Coercion
+from .exceptions import InputError
+from .registry import import_type
 
 NOT_EDITABLE = 0
 EDITABLE = 1
 READ_ONLY = 2
 
 
-class Member(Variable, metaclass=EventHub):
+class Member(Variable):
     """A member describes the properties and metadata of a unit of data.
 
     Although not strictly an abstract class, the class is very generic in
@@ -163,7 +167,7 @@ class Member(Variable, metaclass=EventHub):
                 self.add_validation(validation)
 
     def __hash__(self):
-        return EventHub.__hash__(self)
+        return object.__hash__(self)
 
     def __eq__(self, other):
         return self is other
@@ -236,7 +240,7 @@ class Member(Variable, metaclass=EventHub):
 
         # Resolve string references
         if isinstance(self.__type, str):
-            self.__type = import_object(self.__type)
+            self.__type = import_type(self.__type)
 
         return self.__type
 
@@ -387,7 +391,7 @@ class Member(Variable, metaclass=EventHub):
         """
         self._validations.remove(validation)
 
-    def validations(self, recursive = True):
+    def validations(self, recursive = True, **validation_parameters):
         """Iterates over all the validation rules that apply to the member.
 
         :param recursive: Indicates if the produced set of validations should
@@ -441,9 +445,43 @@ class Member(Variable, metaclass=EventHub):
         for error in self._default_validation(context):
             yield error
 
-        for validation in self.validations():
+        for validation in self.validations(**validation_parameters):
             for error in validation(context):
                 yield error
+
+    def coerce(
+            self,
+            value: Any,
+            coercion: Coercion,
+            **validation_parameters) -> Any:
+        """Coerces the given value to conform to the member definition.
+
+        The method applies the behavior indicated by the `coercion` parameter,
+        either accepting or rejecting the given value. Depending on the
+        selected coercion strategy, rejected values may be transformed into a
+        new value or raise an exception.
+
+        New values are both modified in place (when possible) and returned.
+        """
+        if coercion is Coercion.NONE:
+            return value
+
+        errors = self.get_errors(value, **validation_parameters)
+
+        if coercion is Coercion.FAIL:
+            errors = list(errors)
+            if errors:
+                raise InputError(self, value, errors)
+        else:
+            for error in errors:
+                if coercion is Coercion.FAIL_IMMEDIATELY:
+                    raise InputError(self, value, [error])
+                elif coercion is Coercion.SET_NONE:
+                    return None
+                elif coercion is Coercion.SET_DEFAULT:
+                    return self.produce_default()
+
+        return value
 
     @classmethod
     def resolve_constraint(cls, expr, context):
@@ -633,6 +671,12 @@ class Member(Variable, metaclass=EventHub):
         self.__editable = editable
 
     editable = property(_get_editable, _set_editable)
+
+    def to_json_value(self, value, **options):
+        return value
+
+    def from_json_value(self, value, **options):
+        return value
 
 
 class DynamicDefault(object):

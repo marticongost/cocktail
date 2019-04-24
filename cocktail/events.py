@@ -26,35 +26,38 @@ def when(event):
     return decorator
 
 
-class EventHub(type):
-    """A convenience metaclass that automatically registers methods marked with
-    the `event_handler` decorator as class-level event-handlers.
-    """
+class event_handler:
+    """A decorator that simplifies defining class level event handlers."""
 
-    def __init__(cls, name, bases, members):
-        type.__init__(cls, name, bases, members)
+    prefix = "handle_"
 
-        for key, member in members.items():
+    def __init__(self, func):
+        self.__func__ = func
 
-            if isinstance(member, event_handler):
-                handler = getattr(cls, key)
-                event_name = key[7:]
-                event_slot = getattr(cls, event_name, None)
+    def __get__(self, instance, type = None):
+        if instance:
+            return self.__func__
+        else:
+            return self
 
-                if event_slot is None or not isinstance(event_slot, EventSlot):
-                    raise TypeError(
-                        "Can't attach %s to the %s event on %s, "
-                        "indicated event doesn't exist"
-                        % (member, event_name, cls)
-                    )
+    def __set_name__(self, owner, name):
 
-                event_slot.append(handler)
+        if not name.startswith(self.prefix):
+            raise ValueError(
+                f"Event handler {name} at {owner} should have a name starting "
+                f"with {self.prefix}"
+            )
 
+        event_name = name[len(self.prefix):]
+        event_slot = getattr(owner, event_name, None)
 
-class event_handler(classmethod):
-    """A decorator that works hand in hand with `EventHub` in order to ease
-    the attachment of handlers to events.
-    """
+        if event_slot is None or not isinstance(event_slot, EventSlot):
+            raise TypeError(
+                f"Can't attach {name}() at {owner} to the {event_name} event, "
+                "the indicated event doesn't exist"
+            )
+
+        event_slot.append(self.__func__)
 
 
 class Event(object):

@@ -11,7 +11,7 @@ from cocktail.modeling import (
 )
 from cocktail.iteration import first
 from cocktail.pkgutils import get_full_name
-from cocktail.events import EventHub, Event, when
+from cocktail.events import Event, when
 from cocktail.translations import translations, directionality
 from cocktail.caching import Invalidable
 from cocktail.html.viewnames import get_view_full_name, split_view_name
@@ -29,10 +29,10 @@ from .utils import serialize_value
 default = object()
 
 
-class ElementMetaClass(EventHub):
+class ElementMetaClass(type):
 
     def __init__(cls, name, bases, members):
-        EventHub.__init__(cls, name, bases, members)
+        super().__init__(name, bases, members)
         cls._view_name = members.get("_view_name")
 
         if "overlays_enabled" not in members:

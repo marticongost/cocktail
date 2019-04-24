@@ -10,7 +10,7 @@ from cocktail.modeling import (
     OrderedSet,
     OrderedDict
 )
-from cocktail.events import EventHub, Event, when
+from cocktail.events import Event, when
 from cocktail.typemapping import TypeMapping
 from cocktail.pkgutils import resolve, import_object, get_full_name
 from cocktail.styled import styled
@@ -44,7 +44,7 @@ def migration_step(func):
     return step
 
 
-class MigrationStep(object, metaclass=EventHub):
+class MigrationStep:
 
     executing = Event()
 

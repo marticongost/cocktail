@@ -7,10 +7,7 @@
 @since:			April 2008
 """
 import decimal
-try:
-    import fractions
-except ImportError:
-    fractions = None
+import fractions
 from cocktail.translations import translations
 from cocktail.schema.member import Member
 from cocktail.schema.validationcontext import ValidationContext
@@ -66,10 +63,36 @@ class Decimal(Number):
         else:
             return translations(value, language, **kwargs)
 
+    def to_json_value(self, value, **options):
 
-if fractions:
-    class Fraction(Number):
-        """A numeric field limited to fractional values."""
-        type = fractions.Fraction
+        if value is None:
+            return None
 
+        return str(value)
+
+    def from_json_value(self, value, **options):
+
+        if value is None:
+            return None
+
+        return self.type(value)
+
+
+class Fraction(Number):
+    """A numeric field limited to fractional values."""
+    type = fractions.Fraction
+
+    def to_json_value(self, value, **options):
+
+        if value is None:
+            return None
+
+        return str(value)
+
+    def from_json_value(self, value, **options):
+
+        if value is None:
+            return None
+
+        return self.type(value)
 
