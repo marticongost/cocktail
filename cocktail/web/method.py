@@ -166,12 +166,13 @@ class Method(Handler):
 
             for parameter in self.parameters:
                 value = get_parameter(parameter, **self.parameter_options)
-                if self.coercion is not Coercion.FAIL:
+                if self.parameter_coercion is not Coercion.FAIL:
                     value = parameter.coerce(
                         value,
                         self.parameter_coercion,
                         **self.parameter_validation_options
                     )
+                self.values[parameter.name] = value
 
             # If parameter coercion was set to FAIL, apply the delayed
             # validation now that all parameters have been collected
