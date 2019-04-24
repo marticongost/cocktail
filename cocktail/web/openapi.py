@@ -455,6 +455,10 @@ class OpenAPIGenerator:
         elif isinstance(member, schema.Date):
             dest["type"] = "string"
             dest["format"] = "date"
+        elif isinstance(member, schema.Enumeration):
+            dest["type"] = "string"
+            if member.type:
+                dest["enum"] = list(member.type.__members__)
         elif isinstance(member, schema.Mapping):
             dest["type"] = "object"
 

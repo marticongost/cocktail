@@ -40,6 +40,7 @@ from cocktail.schema.schemanumbers import (
     Decimal,
     Float
 )
+from .enumeration import Enumeration
 from cocktail.schema.memberreference import MemberReference
 from cocktail.schema.record import Record
 from cocktail.schema.money import Money
