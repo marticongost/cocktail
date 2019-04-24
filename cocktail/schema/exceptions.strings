@@ -1,5 +1,10 @@
 [cocktail.schema.exceptions]
 
+    [InputError.instance(error)]
+    ca: Les dades facilitades no són vàlides.
+    es: Los datos facilitados no son válidos.
+    en: The supplied data is invalid.
+
     [ValidationError.instance(error)]
     ca: El camp ${error.member_desc()} no és vàlid
     es: El campo ${error.member_desc()} no es válido

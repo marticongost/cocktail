@@ -56,7 +56,7 @@ class MemberReacquiredError(SchemaIntegrityError):
         self.schema = schema
 
 
-class CoercionError(Exception):
+class InputError(Exception):
     """An exception raised by `cocktail.schema.Member.coerce` when trying to
     coerce an invalid value with a `cocktail.schema.Coercion.FAIL` policy.
     """
