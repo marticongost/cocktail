@@ -319,6 +319,15 @@ def serialize_reference(self, value):
 schema.Reference.parse_request_value = parse_reference
 schema.Reference.serialize_request_value = serialize_reference
 
+def parse_enum(self, reader, value):
+    return value and getattr(self.type, value, value) or value
+
+def serialize_enum(self, value):
+    return value and value.name or ""
+
+schema.Enumeration.parse_request_value = parse_enum
+schema.Enumeration.serialize_request_value = serialize_enum
+
 def parse_member_reference(self, reader, value):
 
     if value is not None:
