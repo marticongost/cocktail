@@ -16,6 +16,7 @@ from typing import (
 )
 from decimal import Decimal
 from fractions import Fraction
+from enum import Enum
 from copy import deepcopy
 
 import json
@@ -117,6 +118,10 @@ def list_wrapper_to_json_value(value):
 @to_json_value.implementation_for(DictWrapper)
 def dict_wrapper_to_json_value(value):
     return value._items
+
+@to_json_value.implementation_for(Enum)
+def enum_to_json_value(value):
+    return value.name
 
 
 class ExtensibleJSONEncoder(json.JSONEncoder):
