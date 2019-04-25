@@ -191,7 +191,7 @@ class TypeCheckError(ValidationError):
             context,
             reason or (
                 f"expected a value of type {type}, "
-                f"got {type(context.value)} instead"
+                f"got {context.value.__class__} instead"
             )
         )
         self.type = type
