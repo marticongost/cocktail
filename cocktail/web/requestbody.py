@@ -13,7 +13,6 @@ import json
 import cherrypy
 
 from cocktail.schema import Member, Coercion
-from cocktail.controllers import get_parameter
 
 
 class Default:
@@ -83,11 +82,7 @@ class RequestBody:
     def _process_payload(self, payload: Union[bytes, str]) -> Any:
 
         if self.schema:
-            payload = get_parameter(
-                self.schema,
-                source=(lambda key: payload),
-                errors="ignore"
-            )
+            payload = self.schema.parse(payload)
 
         return payload
 
