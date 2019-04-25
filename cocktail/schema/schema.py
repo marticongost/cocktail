@@ -557,35 +557,36 @@ class Schema(Member):
                             )
 
             # Per member coercion
-            for member in self.iter_members():
-                if member.translated:
-                    for language in accessor.languages(value, member.name):
-                        lang_value = accessor.get(value, member.name, language)
-                        coerced_lang_value = member.coerce(
-                            lang_value,
+            if value is not None:
+                for member in self.iter_members():
+                    if member.translated:
+                        for language in accessor.languages(value, member.name):
+                            lang_value = accessor.get(value, member.name, language)
+                            coerced_lang_value = member.coerce(
+                                lang_value,
+                                coercion,
+                                **validation_parameters
+                            )
+                            if lang_value != coerced_lang_value:
+                                accessor.set(
+                                    value,
+                                    member.name,
+                                    coerced_lang_value,
+                                    language
+                                )
+                    else:
+                        member_value = accessor.get(value, member.name)
+                        coerced_member_value = member.coerce(
+                            member_value,
                             coercion,
                             **validation_parameters
                         )
-                        if lang_value != coerced_lang_value:
+                        if member_value != coerced_member_value:
                             accessor.set(
                                 value,
                                 member.name,
-                                coerced_lang_value,
-                                language
+                                coerced_member_value
                             )
-                else:
-                    member_value = accessor.get(value, member.name)
-                    coerced_member_value = member.coerce(
-                        member_value,
-                        coercion,
-                        **validation_parameters
-                    )
-                    if member_value != coerced_member_value:
-                        accessor.set(
-                            value,
-                            member.name,
-                            coerced_member_value
-                        )
 
         return value
 
