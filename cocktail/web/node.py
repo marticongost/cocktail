@@ -19,7 +19,6 @@ import cherrypy
 
 from cocktail.events import Event
 from cocktail.yamlutils import yaml_template
-from cocktail.controllers import get_parameter
 from cocktail import schema
 from .errorresponses import error_response
 from .handler import Handler
@@ -241,17 +240,16 @@ class Node(Handler):
 
         for n, arg in enumerate(self.arguments):
             try:
-                raw_value = path[n]
+                value = path[n]
             except IndexError:
-                raw_value = None
-
-            value = get_parameter(
-                arg,
-                source=(lambda key: raw_value),
-                errors="ignore",
-                undefined="set_default",
-                implicit_booleans=False
-            )
+                if arg.required:
+                    return None
+                value = arg.produce_default()
+            else:
+                try:
+                    value = arg.parse(value)
+                except ValueError:
+                    return None
 
             if not arg.validate(value):
                 return None

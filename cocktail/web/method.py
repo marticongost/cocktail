@@ -23,7 +23,7 @@ import cherrypy
 
 from cocktail.events import Event
 from cocktail.schema import Schema, Member, Coercion
-from cocktail.controllers import request_property, get_parameter
+from cocktail.controllers import request_property
 from cocktail.yamlutils import yaml_template
 from cocktail.pkgutils import get_full_name
 from .handler import Handler, any_origin
@@ -49,11 +49,6 @@ class Method(Handler):
     cors_enabled: bool = True
     parameters: Sequence[Member] = []
     parameter_coercion: Coercion = Coercion.FAIL_IMMEDIATELY
-    parameter_options: dict = {
-        "errors": "ignore",
-        "undefined": "set_default",
-        "implicit_booleans": False
-    }
     parameter_validation_options: dict = {}
     values: dict = {}
     request_body: RequestBody = None
@@ -165,13 +160,24 @@ class Method(Handler):
             self.values = {}
 
             for parameter in self.parameters:
-                value = get_parameter(parameter, **self.parameter_options)
+
+                try:
+                    value = cherrypy.request.params[parameter.name]
+                except KeyError:
+                    value = parameter.produce_default()
+                else:
+                    try:
+                        value = parameter.parse(value)
+                    except ValueError:
+                        pass
+
                 if self.parameter_coercion is not Coercion.FAIL:
                     value = parameter.coerce(
                         value,
                         self.parameter_coercion,
                         **self.parameter_validation_options
                     )
+
                 self.values[parameter.name] = value
 
             # If parameter coercion was set to FAIL, apply the delayed
