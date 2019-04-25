@@ -2,6 +2,8 @@
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
+from typing import Optional
+import enum
 from .member import Member
 
 
@@ -23,4 +25,12 @@ class Enumeration(Member):
             and self.type
             and getattr(self.type, value, value)
         )
+
+    def serialize(self, value: enum.Enum, **options) -> str:
+        return value.name
+
+    def parse(self, value: str, **options) -> Optional[enum.Enum]:
+        if not value.strip():
+            return None
+        return getattr(self.type, value)
 

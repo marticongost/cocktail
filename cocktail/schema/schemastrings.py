@@ -104,3 +104,6 @@ class String(Member):
         copy.format = self.format
         return copy
 
+    def parse(self, value: str, **options) -> str:
+        return value
+

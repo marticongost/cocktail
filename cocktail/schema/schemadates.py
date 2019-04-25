@@ -7,7 +7,8 @@ Provides classes to describe members that take dates and times as values.
 @organization:	Whads/Accent SL
 @since:			April 2008
 """
-import datetime
+from typing import Optional
+from datetime import datetime, date, time, timedelta
 from calendar import monthrange
 from cocktail.translations import translations
 from cocktail.schema.member import Member, translate_member
@@ -100,7 +101,7 @@ class BaseDateTime(Schema, RangedMember):
 
 
 class DateTime(BaseDateTime):
-    type = datetime.datetime
+    type = datetime
     _is_date = True
     _is_time = True
     translate_value = translations
@@ -113,8 +114,17 @@ class DateTime(BaseDateTime):
         return value.isoformat()
 
     def from_json_value(self, value, **options):
+        return self.parse(value, **options) if value else None
 
-        if value is None:
+    def serialize(self, value: datetime, **options) -> str:
+        if not value:
+            return ""
+        else:
+            return value.isoformat()
+
+    def parse(self, value: str, **options) -> Optional[datetime]:
+
+        if not value.strip():
             return None
 
         try:
@@ -124,7 +134,7 @@ class DateTime(BaseDateTime):
 
 
 class Date(BaseDateTime):
-    type = datetime.date
+    type = date
     _is_date = True
     translate_value = translations
 
@@ -137,7 +147,7 @@ class Date(BaseDateTime):
             min_value = context.resolve_constraint(self.min)
             max_value = context.resolve_constraint(self.max)
             if min_value is not None and max_value is not None:
-                one_day = datetime.timedelta(days = 1)
+                one_day = timedelta(days = 1)
                 values = []
                 d = min_value
                 while d < max_value:
@@ -154,15 +164,19 @@ class Date(BaseDateTime):
         return value.isoformat()
 
     def from_json_value(self, value, **options):
+        return self.parse(value, **options) if value else None
 
-        if value is None:
+    def serialize(self, value: date, **options) -> str:
+        return value.isoformat()
+
+    def parse(self, value: str, **options) -> Optional[date]:
+        if not value.strip():
             return None
-
-        return datetime.datetime.strptime(value, "%Y-%m-%d").date()
+        return datetime.strptime(value, "%Y-%m-%d").date()
 
 
 class Time(BaseDateTime):
-    type = datetime.time
+    type = time
     _is_time = True
 
     def to_json_value(self, value, **options):
@@ -173,11 +187,15 @@ class Time(BaseDateTime):
         return value.isoformat()
 
     def from_json_value(self, value, **options):
+        return self.parse(value, **options) if value else None
 
-        if value is None:
+    def serialize(self, value: time, **options) -> str:
+        return value.isoformat()
+
+    def parse(self, value: str, **options) -> Optional[time]:
+        if not value.strip():
             return None
-
-        return datetime.datetime.strptime(value, "%H:%M:%S.%f").time()
+        return datetime.strptime(value, "%H:%M:%S.%f").time()
 
 
 translations.instances_of(BaseDateTime)(translate_member)

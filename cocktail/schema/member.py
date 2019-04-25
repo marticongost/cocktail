@@ -678,6 +678,19 @@ class Member(Variable):
     def from_json_value(self, value, **options):
         return value
 
+    def serialize(self, value: Any, **options) -> str:
+        return str(value)
+
+    def parse(self, value: str, **options) -> Any:
+
+        if not value.strip():
+            return None
+
+        if self.type:
+            return self.type(value)
+        else:
+            return value
+
 
 class DynamicDefault(object):
 
