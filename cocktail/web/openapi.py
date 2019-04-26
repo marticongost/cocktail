@@ -496,7 +496,7 @@ class OpenAPIGenerator:
                 dest["properties"] = props_info = {}
 
                 required_fields = []
-                for field in source_schema.iter_members():
+                for field in source_schema.ordered_members():
                     props_info[field.name] = self.export_schema(field)
                     if field.required:
                         required_fields.append(field.name)
