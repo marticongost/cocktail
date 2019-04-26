@@ -22,16 +22,10 @@ from cocktail.typemapping import ChainTypeMapping
 from cocktail import schema
 from cocktail.controllers.displayerror import format_error
 from .responseformats import format_response
+from .mimetypes import structured_content_types
 
 ErrorDataProducer = Callable[[Exception], json_object]
 StatusDefinition = Union[int, Set[int]]
-
-structured_content_types = {
-    "application/json",
-    "application/yaml",
-    "application/x-yaml"
-}
-
 ErrorResponseMap = Mapping[Type[Exception], 'ErrorResponse']
 
 error_responses: ErrorResponseMap = ChainTypeMapping()

@@ -24,4 +24,5 @@ from .errorresponses import (
     error_response,
     handles_error
 )
+from .mimetypes import structured_content_types
 
