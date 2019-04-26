@@ -5,7 +5,13 @@
 from .handler import Handler, inherit, any_origin
 from .node import Node
 from .method import Method
-from .requestbody import RequestBody, JSONBody
+from .requestbody import (
+    RequestBody,
+    CSVBody,
+    JSONBody,
+    MultipleRequestBodies,
+    PlainTextBody
+)
 from .responsespec import ResponseSpec
 from .responseformats import (
     response_formatters,

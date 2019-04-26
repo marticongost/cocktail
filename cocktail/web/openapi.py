@@ -33,7 +33,7 @@ from cocktail import schema
 from cocktail.controllers import get_request_root_url
 from .node import Node
 from .method import Method
-from .requestbody import RequestBody
+from .requestbody import RequestBody, MultipleRequestBodies
 from .responsespec import ResponseSpec
 from .errorresponses import ErrorResponse, structured_content_types
 
@@ -338,10 +338,12 @@ class OpenAPIGenerator:
             data["required"] = True
 
         data["content"] = content_info = {}
-        for type in request_body.types:
-            content_info[type] = type_info = {}
-            if request_body.schema:
-                type_info["schema"] = self.export_schema(request_body.schema)
+
+        for body in request_body.iter_bodies():
+            for type in body.types:
+                content_info[type] = type_info = {}
+                if body.schema:
+                    type_info["schema"] = self.export_schema(body.schema)
 
         return data
 
