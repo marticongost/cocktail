@@ -36,6 +36,7 @@ from .method import Method
 from .requestbody import RequestBody, MultipleRequestBodies
 from .responsespec import ResponseSpec
 from .errorresponses import ErrorResponse, structured_content_types
+from .mimetypes import structured_content_types
 
 JSON_MIME = "application/json"
 YAML_MIME = "application/x-yaml"
@@ -342,7 +343,7 @@ class OpenAPIGenerator:
         for body in request_body.iter_bodies():
             for type in body.types:
                 content_info[type] = type_info = {}
-                if body.schema:
+                if body.schema and type in structured_content_types:
                     type_info["schema"] = self.export_schema(body.schema)
 
         return data
