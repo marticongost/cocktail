@@ -2,11 +2,12 @@
 """
 Provides a class to describe members that handle sets of values.
 
-@author:		Martí Congost
-@contact:		marti.congost@whads.com
+@author:	Martí Congost
+@contact:	marti.congost@whads.com
 @organization:	Whads/Accent SL
-@since:			March 2008
+@since:		March 2008
 """
+from typing import Optional, Sequence
 from cocktail.modeling import (
     GenericMethod,
     OrderedSet,
@@ -264,6 +265,9 @@ class Collection(RelationMember):
                         ):
                             yield RelationConstraintError(context, constraint)
 
+    # Serialization
+    #--------------------------------------------------------------------------
+
     def to_json_value(self, value, **options):
 
         if value is None:
@@ -283,6 +287,49 @@ class Collection(RelationMember):
             return value
 
         return [self.items.from_json_value(item, **options) for item in value]
+
+    def serialize(self, value: Sequence, **options) -> str:
+
+        separator = options.get("item_separator", ",")
+
+        item_serializer = options.get(
+            "item_serializer",
+            self.items and self.items.serialize
+        )
+
+        if not item_serializer:
+            raise ValueError(
+                "Can't serialize a collection without defining its items "
+                "property or supplying an item_serializer parameter"
+            )
+
+        return separator.join(
+            item_serializer(item, **options)
+            for item in value
+        )
+
+    def parse(self, value: str, **options) -> Optional[Sequence]:
+
+        if not value.strip():
+            return self.type()
+
+        separator = options.get("item_separator", ",")
+
+        item_parser = options.get(
+            "item_parser",
+            self.items and self.items.parse
+        )
+
+        if not item_parser:
+            raise ValueError(
+                "Can't parse a collection without defining its items "
+                "property or supplying an item_parser parameter"
+            )
+
+        return (self.type or list)(
+            item_parser(item, **options)
+            for item in value.split(separator)
+        )
 
 
 # Generic add/remove methods
