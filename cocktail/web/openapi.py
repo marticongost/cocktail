@@ -741,11 +741,11 @@ class OpenAPIGenerator:
         if isinstance(api_spec, str):
             data = api_spec
         elif isinstance(api_spec, type) and issubclass(api_spec, Node):
-            data = yaml.dump(self.create_document(api_spec()))
+            data = yaml.dump(self.create_document(api_spec()), sort_keys=False)
         elif isinstance(api_spec, Node):
-            data = yaml.dump(self.create_document(api_spec))
+            data = yaml.dump(self.create_document(api_spec), sort_keys=False)
         else:
-            data = yaml.dump(api_spec)
+            data = yaml.dump(api_spec, sort_keys=False)
 
         response = requests.post(
             SWAGGERHUB_ENDPOINT.format(owner=owner, api=api_name),
