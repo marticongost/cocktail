@@ -106,7 +106,7 @@ class TemplateCompiler(object):
                 "Error parsing template %s.%s: %s" % (
                 self.pkg_name,
                 self.class_name,
-                e.message
+                str(e)
             )
         )
 
