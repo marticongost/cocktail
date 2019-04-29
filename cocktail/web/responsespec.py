@@ -2,7 +2,7 @@
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
-from typing import Dict, List, Union, Sequence, Mapping
+from typing import Dict, List, Optional, Union, Sequence, Mapping
 
 from cocktail.schema import Member, Schema
 
@@ -60,4 +60,24 @@ class ResponseSpec:
             self.headers = list(self.headers)
         else:
             self.headers = list(headers)
+
+    def resolve_response_type(
+            self, type: str, subtype: str, **kwargs) -> Optional[str]:
+        """Determines if the response matches the given response type."""
+
+        requested_mime_type = f"{type}/{subtype}"
+
+        if type == "*":
+            return requested_mime_type
+
+        if subtype == "*":
+            prefix = type + "/"
+            for mime_type in self.content:
+                if mime_type.startswith(prefix):
+                    return requested_mime_type
+
+        if requested_mime_type in self.content:
+            return requested_mime_type
+
+        return None
 

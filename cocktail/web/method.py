@@ -10,6 +10,7 @@ from typing import (
     Optional,
     Sequence,
     Set,
+    Tuple,
     Type,
     Union
 )
@@ -32,6 +33,9 @@ from .responsespec import ResponseSpec
 from .requestbody import RequestBody
 from .responseformats import format_response
 
+AcceptHeaderComponent = Tuple[str, str, dict]
+
+
 
 class Method(Handler):
     """An HTTP method implementation for a `Node`."""
@@ -42,6 +46,7 @@ class Method(Handler):
     parameter_validation_options: dict = {}
     values: dict = {}
     request_body: RequestBody = None
+    strict_content_negotiation: bool = False
     response_type: str = None
     responses: Mapping[int, Union[ResponseSpec, dict]] = ChainMap()
     format_response: bool = True
@@ -129,14 +134,15 @@ class Method(Handler):
 
     def handle_request(self):
 
+        # Set the starting MIME type for the response (handlers may change it
+        # uppon invocation)
+        response_type = self.choose_response_type()
+        if response_type:
+            cherrypy.response.headers["Content-Type"] = response_type
+
         # Handle CORS
         if self.should_handle_cors():
             self.handle_cors()
-
-        # Set the default MIME type for the response
-        response_type = self.get_default_response_type()
-        if response_type:
-            cherrypy.response.headers["Content-Type"] = response_type
 
         # Fire the 'before_reading_input' event
         for handler in self.iter_handlers_from_root():
@@ -211,7 +217,76 @@ class Method(Handler):
 
         return response_data
 
-    def get_default_response_type(self) -> Optional[str]:
+    def choose_response_type(self) -> str:
+        """Apply content negotiation to determine the response type for the
+        current request.
+        """
+        accept = cherrypy.request.headers.get("Accept")
+        if accept:
+            for type, subtype, params in self._parse_accept_header(accept):
+                mime_type = self.resolve_response_type(type, subtype, **params)
+                if mime_type:
+                    return mime_type
+
+            if self.strict_content_negotiation:
+                raise cherrypy.HTTPError(406)
+
+        return self.get_default_response_type()
+
+    def resolve_response_type(
+            self, type: str, subtype: str, **kwargs) -> Optional[str]:
+        """Resolves the MIME type supported by the method that satisfies the
+        constraints imposed by the request.
+        """
+
+        if type == "*":
+            return self.get_default_response_type(**kwargs)
+
+        if self.responses:
+            for response in self.responses.values():
+                mime_type = response.resolve_response_type(
+                    type,
+                    subtype,
+                    **kwargs
+                )
+                if mime_type:
+                    return mime_type
+
+        default_mime_type = self.get_default_response_type(**kwargs)
+        if default_mime_type:
+            if subtype == "*":
+                if default_mime_type.startswith(type + "/"):
+                    return default_mime_type
+            elif mime_type == f"{type}/{subtype}":
+                return default_mime_type
+
+        return None if self.strict_content_negotiation else default_mime_type
+
+    def _parse_accept_header(
+            self, header_value: str) -> Sequence[AcceptHeaderComponent]:
+
+        parts = [
+            self._parse_accept_header_component(part)
+            for part in header_value.split(",")
+        ]
+        parts.sort(key = lambda entry: entry[2]["q"])
+        return parts
+
+    def _parse_accept_header_component(
+            self, component: str) -> AcceptHeaderComponent:
+
+        parts = component.split(";")
+        type, subtype = parts[0].strip().split("/")
+        params = dict(part.split("=") for part in parts[1:])
+
+        try:
+            params["q"] = float(params["q"])
+        except (KeyError, ValueError):
+            params["q"] = 1.0
+
+        return type, subtype, params
+
+    def get_default_response_type(self, **kwargs) -> Optional[str]:
         """Obtains the default response type for the method."""
         for handler in self.ascend_handlers():
             if handler.response_type:
