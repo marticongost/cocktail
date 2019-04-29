@@ -883,6 +883,8 @@ class Schema(Member):
 
         for key, member_value in value.items():
             member = self.get_member(key)
+            if member is None:
+                continue
             if member.translated and isinstance(member_value, Mapping):
                 if member_value:
                     for lang, lang_value in member_value.items():
