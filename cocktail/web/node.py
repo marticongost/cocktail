@@ -26,11 +26,25 @@ from .method import Method
 
 
 class Node(Handler):
-    """Base class for nodes in a RESTful API."""
+    """Base class for nodes in a RESTful API.
 
-    arguments: Sequence[Dict] = ()
+    .. attribute:: children
+
+        The child nodes of this node.
+
+    .. attribute:: wildcards
+
+        The list of wildcard nodes (anonymous, argument based nodes) of this
+        node.
+
+    .. attribute:: arguments
+
+        The positional arguments expected by the node.
+    """
+
     children: Mapping[str, Type["Node"]] = {}
     wildcards: Sequence[Type["Node"]] = []
+    arguments: Sequence[schema.Member] = []
     response_type: str = None
     private: bool = False
     open_api: yaml_template = None
@@ -46,20 +60,31 @@ class Node(Handler):
         """)
 
     def __init__(self):
+
         super().__init__()
+
+        children = self.children
+        wildcards = self.wildcards
+        arguments = self.arguments
+
         self.__name = None
         self.__parent = None
-        self.__children = {}
-        self.__wildcards = []
+        self.children = {}
+        self.wildcards = []
+        self.arguments = []
         self.__methods = {}
 
         # Instantiate child nodes
-        for name, node_cls in self.children.items():
+        for name, node_cls in children.items():
             self.add(node_cls(), name)
 
         # Instantiate wildcard nodes
-        for node_cls in self.wildcards:
+        for node_cls in wildcards:
             self.add(node_cls())
+
+        # Add positional arguments
+        for arg in arguments:
+            self.add_argument(arg)
 
         # Instantiate methods
         for key in dir(self):
@@ -113,18 +138,6 @@ class Node(Handler):
 
         return components
 
-    @property
-    def children(self) -> Dict[str, "Node"]:
-        """The child nodes of this node."""
-        return self.__children
-
-    @property
-    def wildcards(self) -> List["Node"]:
-        """The list of wildcard nodes (anonymous, argument based nodes) of this
-        node.
-        """
-        return self.__wildcards
-
     def add(self, node: "Node", name: str = None):
         """Add a nested node."""
 
@@ -135,9 +148,13 @@ class Node(Handler):
 
         if name:
             node.__name = name
-            self.__children[node.__name] = node
+            self.children[node.__name] = node
         else:
-            self.__wildcards.append(node)
+            self.wildcards.append(node)
+
+    def add_argument(self, argument: schema.Member):
+        """Declare a position argument on the node."""
+        self.arguments.append(argument)
 
     @property
     def name(self) -> Optional[str]:
@@ -159,19 +176,19 @@ class Node(Handler):
             yield self
 
         if recursive:
-            for child in self.__children.values():
+            for child in self.children.values():
                 yield from child.iter_nodes(
                     include_self=True,
                     recursive=True
                 )
 
-            for wildcard in self.__wildcards:
+            for wildcard in self.wildcards:
                 yield from wildcard.iter_nodes(
                     include_self=True,
                     recursive=True
                 )
         else:
-            yield from self.__children.values()
+            yield from self.children.values()
 
     @property
     def methods(self) -> Dict[str, "Method"]:
@@ -196,7 +213,7 @@ class Node(Handler):
         self.traversed(path = vpath)
 
         if vpath:
-            child = self.__children.get(vpath[0])
+            child = self.children.get(vpath[0])
             if child:
                 vpath.pop(0)
                 return child
@@ -209,7 +226,7 @@ class Node(Handler):
             return None
 
         if vpath:
-            for wildcard in self.__wildcards:
+            for wildcard in self.wildcards:
                 if wildcard.process_arguments(vpath):
                     cherrypy.request.wildcard = wildcard
                     return wildcard
