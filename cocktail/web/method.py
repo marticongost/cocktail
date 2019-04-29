@@ -36,16 +36,6 @@ from .responseformats import format_response
 class Method(Handler):
     """An HTTP method implementation for a `Node`."""
 
-    responding = Event(
-        doc="""
-            An event triggered just before a method starts producing the
-            response for the current HTTP request.
-
-            Arguments, parameters and request bodies have already been
-            processed at this point.
-            """
-    )
-
     cors_enabled: bool = True
     parameters: Sequence[Member] = []
     parameter_coercion: Coercion = Coercion.FAIL_IMMEDIATELY
@@ -148,6 +138,10 @@ class Method(Handler):
         if response_type:
             cherrypy.response.headers["Content-Type"] = response_type
 
+        # Fire the 'before_reading_input' event
+        for handler in self.iter_handlers_from_root():
+            handler.before_reading_input(handler=self)
+
         # Assign arguments in the path
         args = getattr(cherrypy.request, "arguments", None)
         self.arguments = args if args else {}
@@ -201,7 +195,8 @@ class Method(Handler):
             self.data = self.request_body.process()
 
         # Fire the 'responding' event
-        self.responding()
+        for handler in self.iter_handlers_from_root():
+            handler.responding(handler=self)
 
         # Invoke the method's logic
         response_data = self.respond()

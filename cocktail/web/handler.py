@@ -66,6 +66,24 @@ class Handler(metaclass=ABCMeta):
         has been executed.
         """)
 
+    before_reading_input = Event(doc="""
+        An event triggered just before a method starts parsing request
+        parameters.
+
+        Arguments, parameters and request bodies are not yet available at this
+        point this point.
+        """
+    )
+
+    responding = Event(doc="""
+        An event triggered just before a method starts producing the response
+        for the current HTTP request.
+
+        Arguments, parameters and request bodies have already been processed at
+        this point.
+        """
+    )
+
     after_request = Event(doc = """
         An event triggered after the controller (or one of its nested handlers)
         has been executed. This is guaranteed to run, regardless of errors.
@@ -144,11 +162,9 @@ class Handler(metaclass=ABCMeta):
     def __call__(self) -> Any:
         """Handle the current request, producing the appropiate response."""
 
-        handlers = list(self.ascend_handlers())
-
         try:
-            for handler in reversed(handlers):
-                handler.before_request()
+            for handler in self.iter_handlers_from_root():
+                handler.before_request(handler=self)
 
             return self.handle_request()
 
@@ -164,8 +180,8 @@ class Handler(metaclass=ABCMeta):
             return self.handle_error(error)
 
         finally:
-            for handler in handlers:
-                self.after_request()
+            for handler in self.iter_handlers_from_root():
+                handler.after_request(handler=self)
 
     @cherrypy.expose
     def index(self, **kwargs):
