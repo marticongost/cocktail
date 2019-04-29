@@ -103,6 +103,18 @@ class Handler(metaclass=ABCMeta):
             yield handler
             handler = handler.parent
 
+    def iter_handlers_from_root(self) -> Iterable["Handler"]:
+        """Produces the iterable sequence of `Handler` objects for this handler
+        and its ancestors, starting from the root.
+
+        The method yields the root handler first, and iterates inwards towards
+        the handler itself, which is returned in last place.
+        """
+        parent = self.parent
+        if parent:
+            yield from parent.iter_handlers_from_root()
+        yield self
+
     @property
     @abstractmethod
     def parent(self) -> "Handler":
