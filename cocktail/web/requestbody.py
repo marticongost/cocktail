@@ -85,7 +85,7 @@ class RequestBody:
         """Determines whether the request body can serve a request with the
         given Content-Type.
         """
-        return not self.types or type in self.types
+        return not self.types or type.split(";", 1)[0] in self.types
 
     def process(self) -> Any:
         """Attempt to process the request's body, extracting and possibly
