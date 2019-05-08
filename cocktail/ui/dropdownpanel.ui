@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ui:element
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:property
+        name="expanded"
+        type="boolean"
+        default="false"
+        reflected="true">
+
+        <?on changed
+        if (cls.current && cls.current !== instance && newValue) {
+            cls.current.expanded = false;
+        }
+        instance.expanded = newValue;
+        cls.current = newValue ? instance : null;
+        ?>
+
+    </ui:property>
+
+    <ui:property
+        name="dropdownType"
+        type="string"
+        reflected="true"
+        default="arrow"/>
+
+    <ui:property
+        name="dropdownEnabled"
+        type="boolean"
+        default="true"
+        reflected="true">
+        <?on changed
+        if (!newValue) {
+            this.expanded = false;
+        }
+        ?>
+    </ui:property>
+
+    <ui:property
+        name="footerVisible"
+        type="boolean"
+        default="false"
+        reflected="true"/>
+
+    <ui:property
+        name="panelAlignment"
+        type="string"
+        reflected="true"
+        default="start"/>
+
+    <ui:property
+        name="panelPosition"
+        type="string"
+        reflected="true"
+        default="below"/>
+
+    <?tail
+    window.addEventListener("click", function () {
+        cls.closeExpandedPanel();
+    });
+
+    cls.delegatesFocus = true;
+    ?>
+
+    <?class
+    static closeExpandedPanel() {
+        if (this.current) {
+            this.current.expanded = false;
+        }
+    }
+    ?>
+
+    <?on keydown
+    if (e.which == cocktail.ui.keys.ESC && this.expanded) {
+        this.expanded = false;
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    ?>
+
+    <button id="button">
+        <?on click
+        if (instance.dropdownEnabled) {
+            instance.expanded = !instance.expanded;
+        }
+        e.stopPropagation();
+        ?>
+        <span id="label">
+            <slot name="label"/>
+        </span>
+        <span id="arrow">
+            <?svg cocktail.ui://images/dropdown.svg ?>
+        </span>
+        <span id="menuIcon">
+            <?svg cocktail.ui://images/menu.svg ?>
+        </span>
+    </button>
+
+    <div id="panelWrapper">
+        <div id="panel">
+            <?on click
+            e.stopPropagation();
+            ?>
+            <div id="panelContent">
+                <slot/>
+            </div>
+            <div id="footer">
+                <slot name="footer"/>
+            </div>
+        </div>
+    </div>
+
+</ui:element>
+

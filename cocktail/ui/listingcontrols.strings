@@ -1,0 +1,29 @@
+
+[cocktail.ui.ListingControls]
+
+    [localesPanel]
+    ca: Idiomes
+    es: Idiomas
+    en: Languages
+
+    [membersPanel]
+    ca: Camps
+    es: Campos
+    en: Fields
+
+    [searchButton]
+    ca: Cercar
+    es: Buscar
+    en: Search
+
+    [apply]
+    ca: Aplicar
+    es: Aplicar
+    en: Apply
+
+    [applyLocalesButton]
+    @reuse "cocktail.ui.ListingControls.apply"
+
+    [applyMembersButton]
+    @reuse "cocktail.ui.ListingControls.apply"
+

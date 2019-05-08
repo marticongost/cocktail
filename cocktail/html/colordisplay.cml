@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:py="http://www.whads.com/ns/cocktail/templates">
+
+    <?py-class
+    show_label = True
+
+    def get_color_label(self):
+        if self.member is not None:
+            return self.member.translate_value(self.value)
+
+        return self.value
+    ?>
+
+    <span py:id="example">
+        <py:binding>
+            <?py
+            if not self.show_label:
+                element.visible = False
+            ?>
+        </py:binding>
+        <py:ready>
+            <?py
+            element.set_style("background-color", self.value)
+            ?>
+        </py:ready>
+    </span>
+
+    <span py:id="label">
+        @{self.get_color_label()}
+    </span>
+
+</div>
+

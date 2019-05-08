@@ -1,0 +1,17 @@
+
+[cocktail.html.AsyncFileUploader]
+
+    [drop_area]
+    ca: Arrossega un fitxer aquí per pujar-lo
+    es: Arrastra un fichero aquí para subirlo
+    en: Drop a file here to upload it
+    pt: Upload de arquivo
+    de: Upload-Datei
+
+    [button]
+    ca: Pujar fitxer
+    es: Subir fichero
+    en: Upload file
+    pt: Upload de arquivo
+    de: Upload-Datei
+

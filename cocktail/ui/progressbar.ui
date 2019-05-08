@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ui:element
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:property
+        name="value"
+        type="number"
+        reflected="true"
+        default="0">
+        <?on changed
+        const percent = newValue + "%";
+        this.label.innerText = percent;
+        this.bar.style.width = percent;
+        ?>
+    </ui:property>
+
+    <span id="label"/>
+    <div id="bar"/>
+
+</ui:element>
+

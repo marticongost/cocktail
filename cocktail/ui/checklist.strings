@@ -1,0 +1,13 @@
+
+[cocktail.ui.CheckList]
+
+    [selectAllButton]
+    ca: Tots
+    es: Todos
+    en: All
+
+    [selectNoneButton]
+    ca: Cap
+    es: Ninguno
+    en: None
+

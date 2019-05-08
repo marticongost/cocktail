@@ -1,0 +1,12 @@
+
+@import "cocktail.ui://styles/common";
+
+:host {
+    border: $input-border;
+}
+
+.CodeMirror {
+    font-size: 1em !important;
+    height: auto !important;
+}
+

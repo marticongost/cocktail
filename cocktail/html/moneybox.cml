@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:py="http://www.whads.com/ns/cocktail/templates">
+
+    <?py-class
+    currency = None
+    ?>
+
+    <py:ready>
+        <?py
+        if self.member:
+            currency = getattr(self.member, "currency", None)
+            if currency:
+                self.currency = currency
+        ?>
+    </py:ready>
+
+    <py:cocktail.html.TextBox py:id="input"/>
+
+    <?py
+    self.data_binding_delegate = self.input
+    ?>
+
+    <span py:id="currency_label">
+        <py:ready>
+            <?py
+            if self.currency:
+                element.append(self.currency)
+            else:
+                element.visible = False
+            ?>
+        </py:ready>
+    </span>
+
+</div>
+

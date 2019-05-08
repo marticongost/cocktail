@@ -1,0 +1,4 @@
+include cocktail/COPYRIGHT
+include cocktail/LICENSE
+include cocktail/html/*.cml
+graft cocktail/html/resources

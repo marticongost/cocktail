@@ -1,0 +1,234 @@
+
+@import "cocktail.ui://styles/common";
+
+$cell-padding: 0.6em;
+
+:host {
+    display: flex;
+    flex-direction: column;
+}
+
+:host(:focus) {
+    outline: none !important;
+
+    #table {
+        @include focus;
+    }
+}
+
+:host([empty='true']) {
+
+    #table {
+        display: none;
+    }
+}
+
+:host(:not([selectionType='none'])) {
+    user-select: none;
+
+    td {
+        cursor: default;
+    }
+}
+
+:host(:not([dataState='loading'])) {
+
+    #loadingSign {
+        display: none;
+    }
+}
+
+:host(:not([dataState='error'])) {
+
+    #errorBox {
+        display: none;
+    }
+}
+
+#loadingSign {
+    background-color: #ece6da;
+    padding: 0.4rem;
+    text-align: center;
+    color: #706347;
+}
+
+#emptyNotice {
+    display: none;
+    padding: 1em;
+    color: #666;
+
+    :host([empty='true'][dataState='loaded']) & {
+        display: block;
+    }
+}
+
+#table {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    border: 1px solid #ddd;
+    overflow: hidden;
+}
+
+#headers {
+    display: flex;
+    flex: 0 0 auto;
+    background-image: linear-gradient(white, #eee);
+    border-bottom: 1px solid #ddd;
+}
+
+#expanderHeader,
+.Header {
+    flex: 1;
+    color: #5a564e;
+    margin-top: -0.5rem;
+    margin-bottom: -0.5rem;
+    outline: none;
+
+    & + .Header {
+        border-left: 1px solid #ddd;
+    }
+
+    &[sorted='true'] .headerLabel {
+        font-weight: bold;
+    }
+
+    .headerLabel {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: left;
+
+        .languageLabel {
+            margin-left: 0.4rem;
+            font-size: 0.8rem;
+            color: #777;
+            font-weight: normal;
+
+            &:before {
+                content: '(';
+            }
+
+            &:after {
+                content: ')';
+            }
+        }
+    }
+}
+
+#body {
+    display: block;
+    overflow: scroll;
+    overflow-x: hidden;
+    flex: 1 1 auto;
+
+    &:focus {
+        outline: none;
+    }
+}
+
+.Row {
+    display: flex;
+
+    :host([hierarchical='false']) & {
+        @include alternate-background-color;
+    }
+}
+
+.Cell {
+    display: block;
+    flex: 1;
+    overflow-wrap: break-word;
+}
+
+.Row[selected] > .Cell,
+.TreeRow[selected] > .rowContent > * {
+    background: $selection-background;
+    color: $selection-foreground;
+}
+
+@include table-column-size("[memberType~='Number']", 8em);
+@include table-column-size("[memberType~='Boolean']", 6em);
+@include table-column-size("[memberType~='Date']", 6em);
+@include table-column-size("[memberType~='Time']", 6em);
+@include table-column-size("[memberType~='DateTime']", 10em);
+
+.Header,
+.Cell {
+    padding: $cell-padding;
+    padding-right: 1em;
+}
+
+.Cell[memberType~='HTML'] {
+
+    & > :first-child {
+        margin-top: 0;
+    }
+
+    & > :last-child {
+        margin-bottom: 0;
+    }
+}
+
+.TreeRow {
+    display: block;
+
+    .rowContent {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+    }
+
+    .rowExpander {
+        flex: 1;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        padding: 0.6em;
+    }
+
+    .rowExpanderIcon,
+    .emptyRowIcon {
+        font-size: 1em;
+        margin-right: 0.5em;
+        margin-left: calc(#{$cell-padding} + var(--depth) * 2em);
+
+        svg {
+            width: auto;
+            height: 1em;
+        }
+    }
+
+    &[hasNestedRows='true'] {
+        & > .rowContent .emptyRowIcon {
+            display: none;
+        }
+    }
+
+    &[hasNestedRows='false'] {
+        & > .rowContent .rowExpanderIcon {
+            display: none;
+        }
+    }
+
+    .rowExpanderIcon {
+        cursor: pointer;
+        background: none;
+        border: none;
+        padding: 0;
+
+        &:focus {
+            outline: none !important;
+
+            svg * {
+                stroke: darken($focus-color, 30) !important;
+                fill: $focus-color !important;
+            }
+        }
+    }
+
+    &[expanded='true'] > .rowContent .rowExpanderIcon {
+        transform: rotate(90deg);
+    }
+}
+

@@ -1,0 +1,12 @@
+
+@init
+from cocktail.translations import translate_locale
+@end
+
+[cocktail.html.TranslationDisplay]
+
+    [translation_inheritance_remark(source_locale)]
+    ca: Traducció heretada ${ca_possessive_with_article(translate_locale(source_locale))}
+    es: Traducción heredada del ${translate_locale(source_locale)}
+    en: Translation inherited from ${translate_locale(source_locale)}
+

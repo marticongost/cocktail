@@ -1,0 +1,64 @@
+
+.AsyncFileUploader .uploader {
+    display: inline-block;
+}
+
+.AsyncFileUploader .drop_area {
+    display: none;
+    border: 1px dashed #d5ab03;
+    background-color: #f6e7ad;
+    padding: 1.5em;
+    margin: 1em 0;
+    color: #49411d;
+    font-weight: bold;
+    font-size: 0.9em;
+}
+
+.drag .AsyncFileUploader .drop_area {
+    display: block;
+}
+
+.drag .AsyncFileUploader .button {
+    display: none;
+}
+
+.AsyncFileUploader.dragOver .drop_area {
+    border: 1px solid #dfb200;
+    background-color: #e5ca60;
+}
+
+.AsyncFileUploader .progress_bar_frame {
+    display: none;
+    position: relative;
+    border: 1px solid #8a8f9d;
+    width: 200px;
+    height: 12px;
+}
+
+.AsyncFileUploader.uploading .button {
+    display: none;
+}
+
+.AsyncFileUploader.uploading .progress_bar_frame {
+    display: block;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.AsyncFileUploader .progress_bar {
+    width: 0;
+    overflow: hidden;
+    border: 1px solid #a8abb4;
+    background-color: #c0c4cf;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    height: 12px;
+}
+
+.AsyncFileUploader .progress_label {
+    position: absolute;
+    left: 0.2em;
+    top: 0;
+    font-size: 0.7em;
+}
+

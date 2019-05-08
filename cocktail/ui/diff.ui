@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ui:element
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:using mixin="cocktail.ui.DataDisplay"/>
+    <ui:resource href="cocktail.ui://scripts/difflib.js"/>
+
+    <?on value:changed
+    this.label.innerHTML = newValue ? difflib.getDiffString(newValue[0] || "", newValue[1] || "") : "";
+    ?>
+
+    <div id="label"/>
+
+</ui:element>
+

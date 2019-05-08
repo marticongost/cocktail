@@ -1,0 +1,32 @@
+
+@init
+from cocktail.stringutils import decapitalize
+
+def desc_member(member):
+    return decapitalize(translations(member))
+@end
+
+[cocktail.schema]
+
+    [qualified_member(member)]
+    ca: t{member} ${ca_possessive(translations(member.schema))}
+    es: t{member} de t{member.schema}
+    en: t{member.schema} t{member}
+
+    [schemaobject.TranslationsMember.default_member_translation]
+    ca: Traduccions
+    es: Traducciones
+    en: Translations
+
+    [member.Member.default_member_translation]
+
+        [add(member)]
+        ca: Afegir ${desc_member(member)}
+        es: Añadir ${desc_member(member)}
+        en: Add ${desc_member(member)}
+
+        [select(member)]
+        ca: Seleccionar ${desc_member(member)}
+        es: Seleccionar ${desc_member(member)}
+        en: Select ${desc_member(member)}
+

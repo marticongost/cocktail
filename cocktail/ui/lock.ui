@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ui:element
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:property
+        name="lockState"
+        type="string"
+        default="processing"
+        reflected="true"/>
+
+    <ui:property
+        name="message"
+        type="string"
+        reflected="true">
+        <?on changed
+        this.label.innerHTML = newValue;
+        ?>
+    </ui:property>
+
+    <ui:property
+        name="iconURL"
+        type="string"
+        reflected="true">
+        <?on changed
+        cocktail.loadSVG(newValue, this.icon);
+        ?>
+    </ui:property>
+
+    <ui:property
+        name="iconAnimation"
+        type="string"
+        reflected="true"
+        default="spin"/>
+
+    <?head
+    const INSTANCE = Symbol("cocktail.ui.Lock.INSTANCE");
+    ?>
+
+    <?class
+    static get instance() {
+        return this[INSTANCE];
+    }
+
+    static show(parameters = null) {
+
+        let instance = this[INSTANCE];
+        let parent = parameters && parameters.parent || document.body;
+        let message = parameters && parameters.message || cocktail.ui.translations["cocktail.ui.Lock.label"];
+        let icon = parameters && parameters.icon || "cocktail.ui://images/spinner.svg";
+        let animation = parameters && parameters.animation || (parameters && parameters.icon ? "pulsate" : "spin");
+
+        if (!instance) {
+            instance = this.create();
+            this[INSTANCE] = instance;
+        }
+
+        instance.message = message;
+        instance.iconURL = icon;
+        instance.iconAnimation = animation;
+        parent.appendChild(instance);
+    }
+
+    static clear() {
+        let instance = this[INSTANCE];
+        if (instance) {
+            instance.lockState = "closing";
+        }
+    }
+    ?>
+
+    <?on animationend
+    if (this.lockState == "closing") {
+        this.parentNode.removeChild(this);
+        cls[INSTANCE] = null;
+    }
+    ?>
+
+    <div id="panel">
+        <div id="icon"/>
+        <div id="label"/>
+    </div>
+
+</ui:element>
+

@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ui:element
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:requires component="cocktail.ui.sorting"/>
+    <ui:using mixin="cocktail.ui.DataDisplay"/>
+
+    <ui:property
+        name="sorted"
+        type="boolean"
+        reflected="true"
+        default="false"/>
+
+    <ui:property
+        name="selectionControlsVisible"
+        type="boolean"
+        reflected="true"
+        default="false"/>
+
+    <ui:symbol name="ENTRY_MAP"/>
+    <ui:symbol name="SELECTING_ENTRY"/>
+    <ui:symbol name="SERIALIZED_VALUE"/>
+    <ui:symbol name="UPDATE_SELECTION_CONTROLS"/>
+
+    <?tail
+    cls.InexistentEntryError = class InexistentEntryError {
+
+        constructor(checkList, value) {
+            this.checkList = checkList;
+            this.value = value;
+        }
+
+        toString() {
+            return `Can't find an entry with value ${this.value} in ${this.checkList}`;
+        }
+    }
+    ?>
+
+    <?class
+    getEntry(value) {
+        let items = this.dataBinding && this.dataBinding.member && this.dataBinding.member.items;
+        if (items) {
+            value = items.serializeValue(value);
+            return this[ENTRY_MAP].get(value);
+        }
+        return null;
+    }
+
+    clearEntries() {
+        this[ENTRY_MAP].clear();
+        cocktail.ui.empty(this.entries);
+    }
+
+    createEntries() {
+        let items = this.dataBinding && this.dataBinding.member && this.dataBinding.member.items;
+        if (items) {
+            let possibleValuesResolution = Promise.resolve(items.getPossibleValues());
+            possibleValuesResolution.then((values) => {
+                if (this.sorted) {
+                    values = this.sortValues(values);
+                }
+                this.clearEntries();
+                this.addEntries(values)
+            });
+        }
+    }
+
+    sortValues(values) {
+        return cocktail.ui.sorting.localeSort(values, (value) => this.dataBinding.member.items.translateValue(value));
+    }
+
+    addEntries(values) {
+        if (values) {
+            for (let value of values) {
+                this.addEntry(value);
+            }
+        }
+    }
+
+    addEntry(value) {
+        const entry = this.createEntry(value);
+        this[ENTRY_MAP].set(this.dataBinding.member.items.serializeValue(value), entry);
+        this.entries.appendChild(entry);
+        this[UPDATE_SELECTION_CONTROLS]();
+    }
+
+    createEntry(value, prepend = false) {
+
+        const serializedValue = this.dataBinding.member.items.serializeValue(value);
+
+        const entry = this.constructor.Entry.create();
+        entry.entryValue = value;
+        entry.checkBox.input.value = serializedValue;
+        entry.selected = this[SERIALIZED_VALUE].has(serializedValue);
+        entry.labelText.innerHTML = this.dataBinding.member.items.translateValue(value);
+
+        if (this.errors && this.errors.length) {
+            entry.checkBox.setAttribute("error", "");
+        }
+
+        return entry;
+    }
+
+    isSelected(value) {
+        const entry = this.getEntry(value);
+        return entry ? entry.selected : null;
+    }
+
+    setSelected(value, selected) {
+
+        const entry = this.getEntry(value);
+
+        if (entry) {
+            entry.selected = selected;
+
+            this[SELECTING_ENTRY] = true;
+            try {
+                const serializedSelection = this[SERIALIZED_VALUE] || new Set();
+                let serializedValue = this.dataBinding.member.items.serializeValue(value);
+
+                if (selected) {
+                    serializedSelection.add(serializedValue);
+                }
+                else {
+                    serializedSelection.delete(serializedValue);
+                }
+
+                const selection = new Set();
+                const entryMap = this[ENTRY_MAP];
+                for (serializedValue of serializedSelection) {
+                    const entry = entryMap.get(serializedValue);
+                    selection.add(entry.entryValue);
+                }
+
+                this.value = selection;
+            }
+            finally {
+                this[SELECTING_ENTRY] = false;
+            }
+        }
+        else {
+            throw new cls.InexistentEntryError(this, value);
+        }
+    }
+
+    [UPDATE_SELECTION_CONTROLS]() {
+        const size = this[SERIALIZED_VALUE] && this[SERIALIZED_VALUE].size || 0;
+        cocktail.ui.setFlag(this.selectAllButton, "disabled", size == this.entries.children.length);
+        cocktail.ui.setFlag(this.selectNoneButton, "disabled", !size);
+    }
+    ?>
+
+    <?on value:changed
+    if (this.dataBinding) {
+
+        if (newValue) {
+            this[SERIALIZED_VALUE] = new Set(
+                Array.from(newValue, (item) => this.dataBinding.member.items.serializeValue(item))
+            );
+        }
+        else {
+            this[SERIALIZED_VALUE] = null;
+        }
+
+        this[UPDATE_SELECTION_CONTROLS]();
+
+        if (!this[SELECTING_ENTRY]) {
+            this[SELECTING_ENTRY] = true;
+            for (let entry of this.entries.children) {
+                entry.selected = this[SERIALIZED_VALUE].has(entry.checkBox.input.value);
+            }
+            this[SELECTING_ENTRY] = false;
+        }
+    }
+    ?>
+
+    <?on dataBinding:changed
+    this.createEntries();
+    ?>
+
+    <?on errors:changed
+    if (newValue.length) {
+        for (let entry of this.entries.children) {
+            entry.checkBox.setAttribute("error", "");
+        }
+    }
+    else {
+        for (let entry of this.entries.children) {
+            entry.checkBox.removeAttribute("error");
+        }
+    }
+    ?>
+
+    <?js
+    this[ENTRY_MAP] = new Map();
+    ?>
+
+    <div id="selectionControls">
+
+        <button id="selectAllButton">
+            <?on click
+            instance.value = Array.from(instance.entries.children, (entry) => entry.entryValue);
+            ?>
+            <ui:translation/>
+        </button>
+
+        <button id="selectNoneButton">
+            <?on click
+            instance.value = [];
+            ?>
+            <ui:translation/>
+        </button>
+
+    </div>
+
+    <ul id="entries"/>
+
+    <li ui:component="Entry">
+
+        <ui:symbol name="..SELECTING_ENTRY"/>
+
+        <ui:property
+            name="selected"
+            type="boolean"
+            reflected="true">
+            <?on changed
+            if (instance.parentInstance && !instance.parentInstance[SELECTING_ENTRY]) {
+                instance.parentInstance.setSelected(instance.entryValue, newValue);
+            }
+            this.checkBox.checked = newValue;
+            ?>
+        </ui:property>
+
+        <ui:CheckBox id="checkBox"/>
+
+        <?js
+        cocktail.ui.link(this, this.checkBox, ["selected", "value"],
+            (entry, checkBox) => {
+                checkBox.value = entry.selected;
+            },
+            (checkBox, entry) => {
+                if (!instance.parentInstance || !instance.parentInstance[SELECTING_ENTRY]) {
+                    entry.selected = checkBox.value;
+                }
+            }
+        );
+        cocktail.ui.link(this, this.checkBox, "errors");
+        ?>
+
+        <label id="label">
+            <?on click
+            instance.checkBox.formLabelClicked();
+            ?>
+            <span id="labelText"/>
+        </label>
+
+        <ui:cocktail.ui.CheckBox ui:component="CheckBox"/>
+    </li>
+
+</ui:element>
+

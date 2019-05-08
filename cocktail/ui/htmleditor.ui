@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ui:element
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:requires component="cocktail.ui.delay"/>
+    <ui:using mixin="cocktail.ui.DataDisplay"/>
+    <ui:symbol name="PROCESSING_INPUT"/>
+    <ui:symbol name="CONTENT_AREA_INITIALIZED"/>
+    <ui:symbol name="UPDATE_TOOLBARS"/>
+
+    <ui:property
+        name="multiline"
+        type="boolean"
+        reflected="true"
+        default="true"/>
+
+    <ui:property
+        name="autoHeight"
+        type="boolean"
+        reflected="true"
+        default="true"/>
+
+    <ui:property
+        name="toolboxVisible"
+        type="boolean"
+        reflected="true"
+        default="false"/>
+
+    <ui:property
+        name="mode"
+        type="string"
+        reflected="true">
+        <?on changed
+        this[UPDATE_TOOLBARS]();
+        if (this.codeEditor.codeMirror) {
+            setTimeout(() => this.codeEditor.codeMirror.refresh(), 1);
+        }
+        ?>
+    </ui:property>
+
+    <?tail
+    cls.EditorAction = class EditorAction extends cocktail.ui.Action {
+
+        get translationKey() {
+            return `cocktail.ui.HTMLEditor.actions.${this.id}`;
+        }
+
+        get iconURL() {
+            return `cocktail.ui://images/${this.id}.svg`;
+        }
+
+        getState(context) {
+            if (!this.availableInMode(context.editor.mode)) {
+                return "hidden";
+            }
+            return super.getState(context);
+        }
+
+        availableInMode(mode) {
+            return mode == "visual";
+        }
+    }
+
+    cls.CommandAction = (command, query = false) => class CommandAction extends cls.EditorAction {
+
+        get command() {
+            return command;
+        }
+
+        getState(context) {
+            const state = super.getState(context);
+            if (state == "visible" && query && document.queryCommandState(command)) {
+                return "emphasized";
+            }
+            return state;
+        }
+
+        invoke(context) {
+            document.execCommand(command);
+        }
+    }
+
+    cls.BoldAction = class BoldAction extends cls.CommandAction("bold", true)  {}
+
+    cls.ItalicAction = class ItalicAction extends cls.CommandAction("italic", true)  {}
+
+    cls.ULAction = class ULAction extends cls.CommandAction("insertUnorderedList", true)  {}
+
+    cls.OLAction = class OLAction extends cls.CommandAction("insertOrderedList", true)  {}
+
+    cls.IndentAction = class IndentAction extends cls.CommandAction("indent")  {}
+
+    cls.UnindentAction = class UnindentAction extends cls.CommandAction("unindent")  {}
+
+    cls.CleanAction = class CleanAction extends cls.CommandAction("removeFormat") {}
+
+    cls.HTMLAction = class HTMLAction extends cls.EditorAction {
+
+        getState(context) {
+            const state = super.getState(context);
+            if (state == "visible" && context.editor.mode == "source") {
+                return "emphasized";
+            }
+            return state;
+        }
+
+        availableInMode(mode) {
+            return mode == "visual" || mode == "source";
+        }
+
+        invoke(context) {
+            if (context.editor.mode == "visual") {
+                context.editor.mode = "source";
+                context.editor.codeEditor.codeMirror.focus();
+            }
+            else {
+                context.editor.mode = "visual";
+                context.editor.contentArea.focus();
+            }
+        }
+    }
+    ?>
+
+    <?class
+    [UPDATE_TOOLBARS]() {
+        if (this.toolbox) {
+            for (let actionList of this.toolbox.querySelectorAll(".cocktail-ui-ActionList")) {
+                actionList.updateEntries();
+            }
+        }
+    }
+
+    createToolbars() {
+        for (let actions of this.getActionSets()) {
+            const toolbar = this.constructor.Toolbar.create();
+            toolbar.actionParameters = {editor: this};
+            toolbar.actions = actions;
+            this.toolbox.appendChild(toolbar);
+        }
+    }
+
+    getActionSets() {
+        return [
+            [
+                new cls.BoldAction("bold"),
+                new cls.ItalicAction("italic"),
+                new cls.ULAction("ul"),
+                new cls.OLAction("ol"),
+                new cls.IndentAction("indent"),
+                new cls.UnindentAction("unindent"),
+                new cls.CleanAction("clean"),
+                new cls.HTMLAction("html")
+            ]
+        ];
+    }
+    ?>
+
+    <?on value:changed
+    if (!this[PROCESSING_INPUT]) {
+        this.contentArea.innerHTML = newValue;
+    }
+    ?>
+
+    <?on focus
+    this.toolboxVisible = true;
+    ?>
+
+    <?on blur
+    this.toolboxVisible = false;
+    ?>
+
+    <?js
+    this.updateDelay = new cocktail.ui.Delay(200, () => {
+        if (!instance[PROCESSING_INPUT]) {
+            instance[PROCESSING_INPUT] = true;
+            try {
+                instance.value = this.contentArea.innerHTML;
+            }
+            finally {
+                instance[PROCESSING_INPUT] = false;
+            }
+        }
+    });
+    ?>
+
+    <div id="toolbox"/>
+
+    <ui:cocktail.ui.ActionList
+        ui:component="Toolbar"
+        buttonStyle="iconOnly">
+        <?js
+        element.classList.add("compact");
+        ?>
+    </ui:cocktail.ui.ActionList>
+
+    <div id="contentArea" contenteditable="true">
+
+        <?on input
+        instance.updateDelay.begin();
+        instance[UPDATE_TOOLBARS]();
+        ?>
+
+        <?on mousedown
+        instance[UPDATE_TOOLBARS]();
+        ?>
+
+        <?on mouseup
+        instance[UPDATE_TOOLBARS]();
+        ?>
+
+        <?on keydown
+        instance[UPDATE_TOOLBARS]();
+        ?>
+
+        <?on keyup
+        instance[UPDATE_TOOLBARS]();
+        ?>
+
+        <?on focus
+        if (!instance[CONTENT_AREA_INITIALIZED]) {
+            instance[CONTENT_AREA_INITIALIZED] = true;
+            document.execCommand("DefaultParagraphSeparator", false, "p");
+        }
+        ?>
+    </div>
+
+    <ui:cocktail.ui.CodeEditor id="codeEditor">
+        <?js
+        element.options = {lineWrapping: true};
+        element.dataBinding = {
+            member: new cocktail.schema.CodeBlock({
+                name: "source",
+                language: "html"
+            })
+        };
+        ?>
+    </ui:cocktail.ui.CodeEditor>
+
+    <?js
+    cocktail.ui.link(this, this.codeEditor, "value");
+    this.mode = "visual";
+    this.createToolbars();
+    ?>
+
+</ui:element>
+

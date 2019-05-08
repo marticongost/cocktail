@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ui:mixin
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:requires component="cocktail.ui.schema"/>
+    <ui:resource href="cocktail.ui://scripts/copy.js"/>
+    <ui:resource href="cocktail.ui://scripts/databinding.js"/>
+
+    <ui:symbol name="INVALIDATION"/>
+
+    <?head
+    const normalizeDataBinding = (value) => {
+        // Accept arbitrary objects.
+        // This allows to set the property using an object literal, instead of
+        // having to instantiate cocktail.ui.DataBinding explicitly.
+        if (value && !(value instanceof cocktail.ui.DataBinding)) {
+            value = new cocktail.ui.DataBinding(
+                value.object,
+                value.member,
+                value.language,
+                value.index,
+                value.value
+            );
+        }
+        return value;
+    }
+
+    // Data invalidation
+    Object.defineProperty(
+        cocktail.schema.Schema.prototype,
+        "invalidation", {
+            get: function () {
+                return this[INVALIDATION] || (this[INVALIDATION] = new cocktail.ui.Observable());
+            },
+            enumerable: true
+        }
+    );
+
+    const subscribe = function (display, dataBinding) {
+        if (display.parentNode && dataBinding && dataBinding.member.relatedType) {
+            let model = dataBinding.member.relatedType.originalMember;
+            display.observe(model.invalidation);
+        }
+    }
+
+    const unsubscribe = (display, dataBinding) => {
+        if (dataBinding && dataBinding.member.relatedType) {
+            let model = dataBinding.member.relatedType.originalMember;
+            display.stopObserving(model.invalidation);
+        }
+    }
+
+    cocktail.ui.invalidation = function (changes) {
+
+        const perModelChanges = new Map();
+
+        for (let changeType of ["created", "modified", "deleted"]) {
+            const objectMap = changes[changeType];
+
+            for (let id in objectMap) {
+                const object = objectMap[id];
+                for (let model of object._class.ascendInheritance()) {
+                    let modelChanges = perModelChanges.get(model);
+                    if (!modelChanges) {
+                        modelChanges = {
+                            created: new Map(),
+                            modified: new Map(),
+                            deleted: new Map()
+                        };
+                        perModelChanges.set(model, modelChanges);
+                    }
+                    modelChanges[changeType].set(id, object);
+                }
+            }
+        }
+
+        for (let [model, modelChanges] of perModelChanges) {
+            model.invalidation.trigger(modelChanges);
+        }
+
+        return perModelChanges;
+    }
+    ?>
+
+    <ui:property
+        name="dataBinding"
+        reflected="false"
+        normalization="normalizeDataBinding">
+        <?on changed
+        if (this.invalidable) {
+            unsubscribe(this, oldValue);
+            subscribe(this, newValue);
+        }
+
+        if (newValue) {
+
+            // Set the display's value when a new data context is assigned
+            this.value = newValue.value;
+
+            // Reflect the context in the display's attributes
+            if (newValue.member.name) {
+                newValue.member[cocktail.ui.addAnnotations](this, newValue.language);
+            }
+            else {
+                newValue.member[cocktail.ui.removeAnnotations](this, newValue.language);
+            }
+
+            if (newValue.language) {
+                this.setAttribute("language", newValue.language);
+                this.setAttribute("dir", cocktail.ui.directionality[newValue.language]);
+            }
+            else {
+                this.removeAttribute("language");
+                this.removeAttribute("dir");
+            }
+        }
+        else {
+            this.removeAttribute("member");
+            this.removeAttribute("language");
+        }
+        ?>
+    </ui:property>
+
+    <ui:property
+        name="displayFactory"
+        reflected="false"/>
+
+    <ui:property
+        name="value"
+        type="(obj) => obj.dataBinding &amp;&amp; obj.dataBinding.member || cocktail.ui.Property.types.string"
+        reflected="false">
+        <?set
+        if (this.dataBinding === undefined) {
+            const defaultBinding = this.createDefaultDataBinding();
+            if (defaultBinding) {
+                this.dataBinding = defaultBinding;
+            }
+        }
+        this[property.VALUE] = value;
+        ?>
+    </ui:property>
+
+    <ui:property
+        name="formLabelDisposition"
+        type="string"
+        reflected="true"/>
+
+    <ui:property
+        name="errors"
+        reflected="false">
+        <?on changed
+        if (cocktail.isEmptyValue(newValue)) {
+            this.removeAttribute("error");
+        }
+        else {
+            this.setAttribute("error", "");
+        }
+        ?>
+    </ui:property>
+
+    <?class
+    connectedCallback() {
+        super.connectedCallback();
+        if (this.invalidable) {
+            subscribe(this, this.dataBinding);
+        }
+    }
+
+    disconnectedCallback() {
+        super.disconnectedCallback();
+        if (this.invalidable) {
+            unsubscribe(this, this.dataBinding);
+        }
+    }
+
+    createDefaultDataBinding() {
+        return null;
+    }
+
+    get invalidable() {
+        return true;
+    }
+
+    invalidation(changes) {
+        // Default invalidation procedure for Reference based displays;
+        // displays based on Collection members or with more sophisticated
+        // invalidation logic should override this method.
+        if (
+            this.value
+            && this.dataBinding
+            && this.dataBinding.member instanceof cocktail.schema.Reference
+            && this.dataBinding.member.relatedType
+        ) {
+            const valueId = this.dataBinding.member.relatedType.getId(this.value);
+
+            // The object that was being displayed has been deleted;
+            // clear the display
+            if (changes.deleted.has(valueId)) {
+                this.value = null;
+            }
+            // The object that was being displayed has been modified;
+            // show the new value
+            else {
+                const newState = changes.modified.get(valueId);
+                if (newState) {
+                    this.value = newState;
+                }
+            }
+        }
+    }
+
+    translateValue(params = null) {
+        return this.dataBinding.member.translateValue(this.value, params);
+    }
+
+    linkDisplay(linkedDisplay, initialize = true) {
+        this.addEventListener("dataBindingChanged", (e) => {
+            linkedDisplay.dataBinding = e.detail.newValue;
+        });
+        cocktail.ui.link(
+            this,
+            linkedDisplay,
+            "value",
+            (display, linkedDisplay) => {
+                if (display.dataBinding === linkedDisplay.dataBinding) {
+                    linkedDisplay.value = display.value;
+                }
+            },
+            (linkedDisplay, display) => {
+                if (display.dataBinding === linkedDisplay.dataBinding) {
+                    display.value = linkedDisplay.value;
+                }
+            },
+            initialize
+        );
+        cocktail.ui.link(
+            this,
+            linkedDisplay,
+            "errors",
+            (display, linkedDisplay) => {
+                if (display.dataBinding === linkedDisplay.dataBinding) {
+                    linkedDisplay.errors = display.errors;
+                }
+            },
+            (linkedDisplay, display) => {
+                if (display.dataBinding === linkedDisplay.dataBinding) {
+                    display.errors = linkedDisplay.errors;
+                }
+            },
+            initialize
+        );
+    }
+
+    getJSONValue(parameters = null) {
+        if (!this.dataBinding) {
+            return {};
+        }
+        return this.dataBinding.member.toJSONValue(this.value, parameters);
+    }
+
+    clearValue() {
+        this.value = null;
+    }
+
+    get allowsEmptyInput() {
+        return true;
+    }
+    ?>
+
+</ui:mixin>
+

@@ -1,0 +1,21 @@
+
+@import "cocktail.ui://styles/common";
+
+#entries {
+    margin: -1em -1.3em;
+
+    .Entry {
+        cursor: pointer;
+        white-space: nowrap;
+        padding: 0.7em 1.3em;
+
+        &[selected] {
+            font-weight: bold;
+        }
+
+        &:hover {
+            background-color: darken($panel-background-color, 10);
+        }
+    }
+}
+

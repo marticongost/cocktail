@@ -1,0 +1,669 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ui:mixin
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:requires component="cocktail.ui.collections"/>
+    <ui:requires component="cocktail.ui.iteration"/>
+    <ui:requires component="cocktail.ui.dom"/>
+
+    <ui:symbol name="PREV_CLICK_ELEMENT"/>
+    <ui:symbol name="PREV_CLICK_TIME"/>
+    <ui:symbol name="FIRST_SELECTABLE_ELEMENT"/>
+    <ui:symbol name="LAST_SELECTABLE_ELEMENT"/>
+    <ui:symbol name="NEXT_SELECTABLE_ELEMENT"/>
+    <ui:symbol name="PREV_SELECTABLE_ELEMENT"/>
+    <ui:symbol name="ADD_SELECTABLE_ELEMENT"/>
+    <ui:symbol name="REMOVE_SELECTABLE_ELEMENT"/>
+    <ui:symbol name="ALTERNATE_CSS_CLASSES"/>
+    <ui:symbol name="ALTERNATING_CSS_CLASSES"/>
+
+    <ui:property
+        name="selectedElements"
+        reflected="false"
+        normalization="cocktail.sets.normalize">
+        <?on changed
+        let [added, removed] = cocktail.sets.addedRemoved(oldValue, newValue);
+        if (added.size || removed.size) {
+            let item;
+            for (item of removed) {
+                item.removeAttribute("selected");
+                item.setAttribute("aria-selected", "false");
+                item.classList.remove("cocktail-ui-selected");
+            }
+            for (item of added) {
+                item.setAttribute("selected", "");
+                item.setAttribute("aria-selected", "true");
+                item.classList.add("cocktail-ui-selected");
+            }
+            if (added.size) {
+                this.selectionCursor = item;
+            }
+            cocktail.ui.trigger(this, "selectionChanged", {
+                added: added,
+                removed: removed
+            });
+        }
+        ?>
+    </ui:property>
+
+    <ui:property
+        name="selectionType"
+        type="string"
+        reflected="true"
+        default="single"/>
+
+    <ui:property
+        name="selectionAxis"
+        type="string"
+        reflected="true"
+        default="vertical"/>
+
+    <ui:property
+        name="selectionCursor"
+        reflected="false"/>
+
+    <ui:property
+        name="selectableEntriesSelector"
+        type="string"
+        reflected="true"
+        final="true"/>
+
+    <ui:property
+        name="activationType"
+        type="string"
+        reflected="true"
+        default="doubleClick"/>
+
+    <ui:property
+        name="activationDoubleClickDelay"
+        type="number"
+        reflected="true"
+        default="300"/>
+
+    <ui:property
+        name="appliesAlternateCSSClasses"
+        type="boolean"
+        reflected="true"
+        default="false"/>
+
+    <?js
+    this[this.constructor.selectedElements.VALUE] = new Set();
+    ?>
+
+    <?on click
+    this.clickSelection(e);
+    ?>
+
+    <?on keydown
+    this.keyboardSelection(e);
+    ?>
+
+    <?class
+    selectionActivated() {
+    }
+
+    clickSelection(e, target = null) {
+
+        if (this.selectionType == "none") {
+            return;
+        }
+
+        target = target || this.getSelectableElementInPath(e.path);
+
+        if (target) {
+
+            let multiple = (this.selectionType == "multiple");
+
+            // Ctrl + click: toggle selection
+            if (multiple && e.ctrlKey) {
+                this.setElementSelected(target, !this.selectedElements.has(target));
+            }
+            // Shift + click: range selection
+            else if (multiple && e.shiftKey) {
+                this.setRangeSelected(
+                    this.selectionCursor || this.getFirstSelectableElement(),
+                    target,
+                    true
+                );
+            }
+            // Regular click: replace selection
+            else {
+                this.selectedElements = [target];
+            }
+
+            // Double click activation
+            let now = new Date();
+            if (
+                this.activationType == "singleClick"
+                || (
+                    this.activationType == "doubleClick"
+                    && target == this[PREV_CLICK_ELEMENT]
+                    && now - this[PREV_CLICK_TIME] <= this.activationDoubleClickDelay
+                )
+            ) {
+                this.selectionActivated();
+                cocktail.ui.trigger(this, "selectionActivated");
+            }
+            this[PREV_CLICK_ELEMENT] = target;
+            this[PREV_CLICK_TIME] = now;
+
+            this.selectionCursor = target;
+            if (e.preventDefault) {
+                e.preventDefault();
+            }
+            if (e.stopPropagation) {
+                e.stopPropagation();
+            }
+        }
+    }
+
+    keyboardSelection(e) {
+        if (this.selectionType == "none") {
+            return;
+        }
+
+        const multiple = (this.selectionType == "multiple");
+
+        // Enter activates the current selection
+        if (
+            e.which == cocktail.ui.keys.ENTER
+            && this.activationType != "none"
+            && this.selectedElements.size
+        ) {
+            if (e.preventDefault) {
+                e.preventDefault();
+            }
+            if (e.stopPropagation) {
+                e.stopPropagation();
+            }
+            this.selectionActivated();
+            cocktail.ui.trigger(this, "selectionActivated");
+        }
+        // Select all (ctrl + a), empty selection (ctrl + shift + a)
+        else if (e.which == 65 && e.ctrlKey) {
+            if (e.preventDefault) {
+                e.preventDefault();
+            }
+            if (e.stopPropagation) {
+                e.stopPropagation();
+            }
+            if (e.shiftKey) {
+                this.selectedElements = [];
+                this.selectionCursor = null;
+            }
+            else if (multiple) {
+                let elements = new Set(this.iterSelectableElements());
+                this.selectedElements = elements;
+                this.selectionCursor = elements[elements.length - 1];
+            }
+        }
+        else {
+            const motion = this.getSelectionMotionForKeyboardEvent(e);
+
+            if (motion) {
+                if (e.preventDefault) {
+                    e.preventDefault();
+                }
+                if (e.stopPropagation) {
+                    e.stopPropagation();
+                }
+                if (motion.target) {
+                    if (multiple && e.ctrlKey) {
+                        this.setElementSelected(motion.target, true);
+                    }
+                    else if (multiple && e.shiftKey) {
+                        this.setRangeSelected(this.selectionCursor, motion.target, true);
+                    }
+                    else {
+                        this.selectedElements = [motion.target];
+                    }
+                    this.selectionCursor = motion.target;
+                    motion.target.scrollIntoViewIfNeeded(false);
+                }
+                else if (motion.direction) {
+                    cocktail.ui.trigger(this, "keyboardSelectionOverflow", {
+                        direction: motion.direction
+                    });
+                }
+            }
+        }
+    }
+
+    get selectedElement() {
+        for (let element of this.selectedElements) {
+            return element;
+        }
+        return null;
+    }
+
+    set selectedElement(element) {
+        this.selectedElements = element ? [element] : [];
+    }
+
+    get selectedValues() {
+        return Array.from(this.selectedElements, (element) => element.value);
+    }
+
+    *iterSelectableElements() {
+        let element = this[FIRST_SELECTABLE_ELEMENT];
+        while (element) {
+            yield element;
+            element = element[NEXT_SELECTABLE_ELEMENT];
+        }
+    }
+
+    getSelectableElements() {
+        return Array.from(this.iterSelectableElements());
+    }
+
+    getFirstSelectableElement() {
+        return this[FIRST_SELECTABLE_ELEMENT] || null;
+    }
+
+    getLastSelectableElement() {
+        return this[LAST_SELECTABLE_ELEMENT] || null;
+    }
+
+    getNextSelectableElement(element = null) {
+
+        if (!element) {
+            element = this.selectionCursor;
+        }
+
+        if (element) {
+            return element[NEXT_SELECTABLE_ELEMENT];
+        }
+        else {
+            return this.getFirstSelectableElement();
+        }
+    }
+
+    getPreviousSelectableElement(element = null) {
+
+        if (!element) {
+            element = this.selectionCursor;
+        }
+
+        return element && element[PREV_SELECTABLE_ELEMENT] || null;
+    }
+
+    getSelectableElementInPath(path) {
+        for (let element of path) {
+            if (element.matches && element.matches(this.selectableEntriesSelector)) {
+                return element;
+            }
+        }
+        return null;
+    }
+
+    elementIsSelected(element) {
+        return this.selectedElements.has(element);
+    }
+
+    setElementSelected(element, selected) {
+        this.setElementsSelected([element], selected);
+    }
+
+    setElementsSelected(elements, selected) {
+
+        let added = new Set();
+        let removed = new Set();
+        let selectedElements = this.selectedElements;
+
+        for (let element of elements) {
+            let wasSelected = selectedElements.has(element);
+            if (selected != wasSelected) {
+                if (selected) {
+                    element.setAttribute("selected", "");
+                    element.classList.add("cocktail-ui-selected");
+                    element.setAttribute("aria-selected", "true");
+                    selectedElements.add(element);
+                    added.add(element);
+                }
+                else {
+                    element.removeAttribute("selected");
+                    element.classList.remove("cocktail-ui-selected");
+                    element.setAttribute("aria-selected", "false");
+                    selectedElements.delete(element);
+                    removed.add(element);
+                }
+            }
+        }
+
+        if (added.size || removed.size) {
+            cocktail.ui.trigger(this, "selectionChanged", {
+                added: added,
+                removed: removed
+            });
+        }
+    }
+
+    setRangeSelected(start, end, selected) {
+        let range = (
+            this.getSelectionRange(start, end, 1)
+            || this.getSelectionRange(start, end, -1)
+        );
+        this.setElementsSelected(range, selected);
+    }
+
+    getSelectionRange(start, end, direction = 1) {
+
+        let range = [];
+        let element = start;
+        let next = this["get" + (direction < 0 ? "Previous" : "Next") + "SelectableElement"];
+
+        while (true) {
+            range.push(element);
+            if (!element) {
+                return null;
+            }
+            else if (element === end) {
+                return range;
+            }
+            element = next.call(this, element);
+        }
+    }
+
+    selectFirst(scroll = true) {
+        const first = this.getFirstSelectableElement();
+        if (first) {
+            this.selectedElements = [first];
+            if (scroll) {
+                first.scrollIntoViewIfNeeded(false);
+            }
+            return true;
+        }
+        return false;
+    }
+
+    selectLast(scroll = true) {
+        const last = this.getLastSelectableElement();
+        if (last) {
+            this.selectedElements = [last];
+            if (scroll) {
+                last.scrollIntoViewIfNeeded(false);
+            }
+            return true;
+        }
+        return false;
+    }
+
+    selectNext(scroll = true) {
+        let next = this.getNextSelectableElement();
+        if (next) {
+            this.selectedElements = [next];
+            if (scroll) {
+                next.scrollIntoViewIfNeeded(false);
+            }
+            return true;
+        }
+        return false;
+    }
+
+    selectPrevious(scroll = true) {
+        let previous = this.getPreviousSelectableElement();
+        if (previous) {
+            this.selectedElements = [previous];
+            if (scroll) {
+                previous.scrollIntoViewIfNeeded(false);
+            }
+            return true;
+        }
+        return false;
+    }
+
+    get selectionContainer() {
+        return this.shadowRoot || this;
+    }
+
+    [ADD_SELECTABLE_ELEMENT](node) {
+        if (node.matches && node.matches(this.selectableEntriesSelector)) {
+            const prev = cocktail.iteration.first(
+                cocktail.dom.iterElementsBackwards(node, this.selectionContainer),
+                (item) => item === this[LAST_SELECTABLE_ELEMENT] || item[NEXT_SELECTABLE_ELEMENT]
+            );
+            const next = cocktail.iteration.first(
+                cocktail.dom.iterElementsForward(node, this.selectionContainer),
+                (item) => item === this[FIRST_SELECTABLE_ELEMENT] || item[PREV_SELECTABLE_ELEMENT]
+            );
+
+            if (prev) {
+                prev[NEXT_SELECTABLE_ELEMENT] = node;
+                node[PREV_SELECTABLE_ELEMENT] = prev;
+            }
+            else {
+                this[FIRST_SELECTABLE_ELEMENT] = node;
+            }
+
+            if (next) {
+                next[PREV_SELECTABLE_ELEMENT] = node;
+                node[NEXT_SELECTABLE_ELEMENT] = next;
+            }
+            else {
+                this[LAST_SELECTABLE_ELEMENT] = node;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    [REMOVE_SELECTABLE_ELEMENT](node, unselected) {
+
+        let altered = false;
+        const prev = node[PREV_SELECTABLE_ELEMENT];
+        const next = node[NEXT_SELECTABLE_ELEMENT];
+        delete node[PREV_SELECTABLE_ELEMENT];
+        delete node[NEXT_SELECTABLE_ELEMENT];
+
+        if (prev) {
+            prev[NEXT_SELECTABLE_ELEMENT] = next;
+            altered = true;
+        }
+
+        if (next) {
+            next[PREV_SELECTABLE_ELEMENT] = prev;
+            altered = true;
+        }
+
+        if (node === this[FIRST_SELECTABLE_ELEMENT]) {
+            this[FIRST_SELECTABLE_ELEMENT] = next;
+            altered = true;
+        }
+
+        if (node === this[LAST_SELECTABLE_ELEMENT]) {
+            this[LAST_SELECTABLE_ELEMENT] = prev;
+            altered = true;
+        }
+
+        if (node === this.selectionCursor) {
+            this.selectionCursor = prev;
+            altered = true;
+        }
+
+        if (node.getAttribute("aria-selected", "true")) {
+            unselected.add(node);
+            altered = true;
+        }
+
+        return altered;
+    }
+
+    [ALTERNATE_CSS_CLASSES]() {
+        if (this[ALTERNATING_CSS_CLASSES]) {
+            return;
+        }
+        this[ALTERNATING_CSS_CLASSES] = true;
+        try {
+            let odd = true;
+            for (let element of this.iterSelectableElements()) {
+                if (this.includeInEvenOddSequence(element)) {
+                    if (odd) {
+                        element.classList.remove("cocktail-ui-even");
+                        element.classList.add("cocktail-ui-odd");
+                    }
+                    else {
+                        element.classList.remove("cocktail-ui-odd");
+                        element.classList.add("cocktail-ui-even");
+                    }
+                    odd = !odd;
+                }
+            }
+        }
+        finally {
+            window.setTimeout(() => this[ALTERNATING_CSS_CLASSES] = false, 1);
+        }
+    }
+
+    includeInEvenOddSequence(element) {
+        return true;
+    }
+
+    getSelectionMotionForKeyboardEvent(e) {
+
+        const axis = this.selectionAxis;
+
+        // Home
+        if (e.which == cocktail.ui.keys.HOME && !e.ctrlKey && !e.altKey) {
+            return {
+                direction: (axis == "vertical" ? "up" : "left"),
+                target: this.getFirstSelectableElement()
+            };
+        }
+        // End
+        else if (e.which == cocktail.ui.keys.END && !e.ctrlKey && !e.altKey) {
+            return {
+                direction: (axis == "vertical" ? "bottom" : "right"),
+                target: this.getLastSelectableElement()
+            };
+        }
+        else {
+            if (axis == "vertical") {
+                // Up
+                if (e.which == cocktail.ui.keys.UP) {
+                    return {direction: "up", target: this.getPreviousSelectableElement()};
+                }
+                // Down
+                else if (e.which == cocktail.ui.keys.DOWN) {
+                    return {direction: "bottom", target: this.getNextSelectableElement()};
+                }
+            }
+            else if (axis == "horizontal") {
+                // Left
+                if (e.which == cocktail.ui.keys.LEFT) {
+                    return {direction: "left", target: this.getPreviousSelectableElement()};
+                }
+                // Right
+                else if (e.which == cocktail.ui.keys.RIGHT) {
+                    return {direction: "right", target: this.getNextSelectableElement()};
+                }
+            }
+        }
+
+        return null;
+    }
+    ?>
+
+    <?js
+    // Maintain a linked list of selectable elements, to relocate the selection cursor when its referred element is removed
+    const observeSelectableElements = () => {
+
+        // Initial sequence
+        let previous = null;
+        for (let node of this.selectionContainer.querySelectorAll(this.selectableEntriesSelector)) {
+            if (previous) {
+                previous[NEXT_SELECTABLE_ELEMENT] = node;
+                node[PREV_SELECTABLE_ELEMENT] = previous;
+            }
+            else {
+                this[FIRST_SELECTABLE_ELEMENT] = node;
+            }
+            previous = node;
+        }
+        this[LAST_SELECTABLE_ELEMENT] = previous;
+
+        if (this.appliesAlternateCSSClasses) {
+            this[ALTERNATE_CSS_CLASSES]();
+        }
+
+        // Track changes to the sequence
+        new MutationObserver((mutations) => {
+
+            if (this[ALTERNATING_CSS_CLASSES]) {
+                return;
+            }
+
+            const unselected = new Set();
+            let altered = false;
+
+            for (let mutation of mutations) {
+
+                if (mutation.type == "attributes") {
+                    const wasSelectable = PREV_SELECTABLE_ELEMENT in mutation.target;
+                    const isSelectable = mutation.target.matches(this.selectableEntriesSelector);
+                    if (wasSelectable != isSelectable) {
+                        if (isSelectable) {
+                            altered = this[ADD_SELECTABLE_ELEMENT](mutation.target) || altered;
+                        }
+                        else {
+                            altered = this[REMOVE_SELECTABLE_ELEMENT](mutation.target, unselected) || altered;
+                        }
+                    }
+                }
+                else {
+                    // Add selectable nodes
+                    for (let node of mutation.addedNodes) {
+                        if (node.nodeType == Document.ELEMENT_NODE) {
+                            altered = this[ADD_SELECTABLE_ELEMENT](node) || altered;
+                            for (let descendant of node.querySelectorAll(this.selectableEntriesSelector)) {
+                                altered = this[ADD_SELECTABLE_ELEMENT](descendant) || altered;
+                            }
+                        }
+                    }
+
+                    // Remove selectable nodes
+                    for (let node of mutation.removedNodes) {
+                        if (node.nodeType == Document.ELEMENT_NODE) {
+                            altered = this[REMOVE_SELECTABLE_ELEMENT](node, unselected) || altered;
+                            for (let descendant of node.querySelectorAll(this.selectableEntriesSelector)) {
+                                altered = this[REMOVE_SELECTABLE_ELEMENT](descendant, unselected) || altered;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (unselected.size) {
+                this.setElementsSelected(unselected, false);
+            }
+
+            if (altered && this.appliesAlternateCSSClasses) {
+                window.setTimeout(() => this[ALTERNATE_CSS_CLASSES](), 1);
+            }
+        }).observe(this.selectionContainer, {
+            childList: true,
+            subtree: true,
+            attributes: true
+        });
+    }
+
+    // Wait until the root element for selectable elements is available
+    if (this.selectionContainer) {
+        observeSelectableElements();
+    }
+    else {
+        const observer = new MutationObserver((mutations) => {
+            if (this.selectionContainer) {
+                observer.disconnect();
+                observeSelectableElements();
+            }
+        });
+        observer.observe(this.shadowRoot || this, {childList: true, subtree: true});
+    }
+    ?>
+
+</ui:mixin>
+

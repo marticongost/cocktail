@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ui:element
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:using mixin="cocktail.ui.DataDisplay"/>
+
+    <ui:resource href="cocktail://codemirror/lib/codemirror.css"/>
+    <ui:resource href="cocktail://codemirror/lib/codemirror.js"/>
+    <ui:resource href="cocktail://codemirror/addon/display/fullscreen.css"/>
+    <ui:resource href="cocktail://codemirror/addon/display/fullscreen.js"/>
+
+    <ui:property
+        name="editorMode"
+        type="string"
+        reflected="true"
+        final="true">
+        <?on changed
+        if (newValue) {
+            cls.requireMode(newValue);
+        }
+        ?>
+    </ui:property>
+
+    <ui:property
+        name="submode"
+        type="string"
+        reflected="true"
+        final="true"/>
+
+    <ui:symbol name="SYNCHING"/>
+    <ui:symbol name="CODE_MIRROR"/>
+
+    <?class
+    static requireMode(name) {
+
+        let promise = modePromises[name];
+
+        if (!promise) {
+
+            // Load dependencies
+            let requiredModes = this.requiredModes[name];
+            let promises = null;
+            if (requiredModes) {
+                promises = requiredModes.map((depName) => this.requireMode(depName));
+            }
+
+            // Load the mode itself
+            modePromises[name] = promise = new Promise((resolve, reject) => {
+                const script = document.createElement("script");
+                script.type = "text/javascript";
+                script.src = cocktail.normalizeResourceURI(`cocktail://codemirror/mode/${name}/${name}.js`);
+                script.onload = (e) => resolve(null);
+                script.onerror = (e) => reject(null);
+                document.head.appendChild(script);
+            });
+
+            // Resolve when the mode and its dependencies have been loaded
+            if (promises) {
+                promises.push(promise);
+                promise = Promise.all(promises);
+            }
+        }
+
+        return promise;
+    }
+
+    get codeMirror() {
+        return this[CODE_MIRROR];
+    }
+
+    connectedCallback() {
+        super.connectedCallback();
+        if (!this[CODE_MIRROR]) {
+            cls.requireMode(this.editorMode).then(() => {
+                this[SYNCHING] = true;
+                try {
+                    let options = Object.assign(this.options || {}, {
+                        value: this.value || "",
+                        mode: this.submode
+                    });
+                    this[CODE_MIRROR] = CodeMirror(this.editorWrapper, options);
+                    this[CODE_MIRROR].on("change", () => {
+                        this[SYNCHING] = true;
+                        try {
+                            this.value = this[CODE_MIRROR].getDoc().getValue() || null;
+                        }
+                        finally {
+                            this[SYNCHING] = false;
+                        }
+                    });
+
+                    // Fix for a CodeMirror bug
+                    const timer = setInterval(
+                        () => {
+                            if (this.editorWrapper.offsetHeight) {
+                                this[CODE_MIRROR].refresh();
+                                clearInterval(timer);
+                            }
+                        },
+                        100
+                    );
+                }
+                finally {
+                    this[SYNCHING] = false;
+                }
+            });
+        }
+    }
+    ?>
+
+    <?head
+    CodeMirror.defaults.indentUnit = 4;
+    const modePromises = {};
+    ?>
+
+    <?tail
+    cls.languageModes = {
+        "scss": ["css", "text/x-scss"],
+        "html": ["htmlmixed", "text/html"]
+    };
+
+    cls.requiredModes = {
+        "htmlmixed": ["xml", "javascript", "css"]
+    }
+    ?>
+
+    <?js
+    this.options = {};
+    ?>
+
+    <?on dataBinding:changed
+    const language = newValue.member.language;
+    const mode = cls.languageModes[language];
+
+    if (!mode) {
+        this.editorMode = language;
+        this.submode = language;
+    }
+    else if (mode instanceof Array) {
+        this.editorMode = mode[0];
+        this.submode = mode[1];
+    }
+    else {
+        this.editorMode = mode;
+        this.submode = mode;
+    }
+    ?>
+
+    <?on value:changed
+    if (!this[SYNCHING] && this[CODE_MIRROR]) {
+        this[CODE_MIRROR].getDoc().setValue(newValue || "");
+    }
+    ?>
+
+    <div id="editorWrapper"/>
+
+</ui:element>
+

@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ui:element
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:requires component="cocktail.ui.sorting"/>
+    <ui:using mixin="cocktail.ui.DataDisplay"/>
+    <ui:requires component="cocktail.ui.displayfactories"/>
+
+    <ui:symbol name="ENTRIES_MAP"/>
+    <ui:symbol name="SYNCHRONIZE"/>
+    <ui:symbol name="SYNCHRONIZING"/>
+
+    <ui:property
+        name="sorted"
+        type="boolean"
+        reflected="true"
+        default="false"/>
+
+    <ui:property
+        name="empty"
+        type="boolean"
+        reflected="true"
+        default="true"/>
+
+    <?tail
+    cls.prototype.itemsDisplayFactory = cocktail.ui.displays;
+    cls.prototype.itemsDisplayParameters = {};
+    ?>
+
+    <?class
+    [SYNCHRONIZE](callback) {
+        if (!this[SYNCHRONIZING]) {
+            this[SYNCHRONIZING] = true;
+            try {
+                callback();
+            }
+            finally {
+                this[SYNCHRONIZING] = false;
+            }
+        }
+    }
+
+    clear() {
+        this[ENTRIES_MAP] = {};
+        cocktail.ui.empty(this.list);
+        this[SYNCHRONIZE](() => {
+            this.value = [];
+        });
+    }
+
+    get entries() {
+        return this.list.childNodes;
+    }
+
+    sortValues(values) {
+        return cocktail.ui.sorting.localeSort(values, (value) => this.dataBinding.member.items.translateValue(value));
+    }
+
+    createEntries() {
+        if (this.dataBinding && this.value) {
+            let values = this.value;
+            if (this.sorted) {
+                values = this.sortValues(values);
+            }
+            for (let item of values) {
+                this.addEntry(item);
+            }
+        }
+    }
+
+    addEntry(item) {
+        if (!this.dataBinding) {
+            throw `${this} defines no data binding`;
+        }
+        const id = this.dataBinding.member.items.serializeValue(item);
+        let entry = this[ENTRIES_MAP][id];
+        if (!entry) {
+            entry = this.createEntry(item);
+            this.list.appendChild(entry);
+            this[ENTRIES_MAP][id] = entry;
+            this[SYNCHRONIZE](() => {
+                let value = Array.from(this.value);
+                value.push(item);
+                this.value = value;
+            });
+        }
+        return entry;
+    }
+
+    insertEntry(item, index) {
+
+        if (!this.dataBinding) {
+            throw `${this} defines no data binding`;
+        }
+
+        const id = this.dataBinding.member.items.serializeValue(item);
+        let entry = this[ENTRIES_MAP][id];
+        let reindexPosition;
+
+        if (entry) {
+            // Same position as before; do nothing
+            if (entry.dataBinding.index == index) {
+                return entry;
+            }
+            reindexPosition = Math.min(index, entry.dataBinding.index);
+        }
+        else {
+            reindexPosition = index;
+            entry = this.createEntry(item);
+            this[ENTRIES_MAP][id] = entry;
+        }
+
+        this.list.insertBefore(entry, this.entries[index]);
+
+        while (reindexPosition < this.entries.length) {
+            this.entries[reindexPosition].dataBinding.index = reindexPosition;
+            reindexPosition++;
+        }
+
+        this[SYNCHRONIZE](() => {
+            this.value = Array.from(this.entries, (entry) => entry.value);
+        });
+
+        return entry;
+    }
+
+    createEntry(item) {
+        if (!this.dataBinding) {
+            throw `${this} defines no data binding`;
+        }
+        let entry = this.constructor.Entry.create();
+        entry.displayFactory = this.itemsDisplayFactory;
+        entry.displayParameters = this.itemsDisplayParameters;
+        entry.dataBinding = this.dataBinding.itemBinding(this.list.childNodes.length, item);
+        return entry;
+    }
+
+    getEntry(item) {
+        if (!this.dataBinding) {
+            throw `${this} defines no data binding`;
+        }
+        return this[ENTRIES_MAP][this.dataBinding.member.items.serializeValue(item)];
+    }
+
+    removeEntry(item) {
+
+        // Find the entry to remove
+        if (!this.dataBinding) {
+            throw `${this} defines no data binding`;
+        }
+
+        const serializedValue = this.dataBinding.member.items.serializeValue(item);
+        const removedEntry = this[ENTRIES_MAP][serializedValue];
+        if (!removedEntry) {
+            throw `Can't find an entry for value ${item} in ${this}`;
+        }
+
+        // Compact .dataBinding.index
+        let index = removedEntry.dataBinding.index;
+        let nextEntry = removedEntry;
+        while (nextEntry = nextEntry.nextSibling) {
+            nextEntry.dataBinding.index = index;
+            index++;
+        }
+
+        // Remove the entry from the DOM and from the entry map
+        this.list.removeChild(removedEntry);
+        delete this[ENTRIES_MAP][serializedValue];
+
+        // Update .value
+        this[SYNCHRONIZE](() => {
+            const value = Array.from(this.value);
+            value.splice(removedEntry.dataBinding.index, 1);
+            this.value = value;
+        });
+    }
+    ?>
+
+    <?js
+    this[ENTRIES_MAP] = {};
+    ?>
+
+    <?on value:changed
+    this[SYNCHRONIZE](() => {
+        this.clear();
+        this.createEntries();
+    });
+    this.empty = !(newValue && (newValue.length || newValue.size));
+    ?>
+
+    <ul id="list"/>
+
+    <li ui:component="Entry">
+
+        <ui:symbol name="RAW"/>
+        <ui:using mixin="cocktail.ui.DataDisplay"/>
+
+        <?on dataBinding:changed
+        if (this.display) {
+            this.removeChild(this.display);
+        }
+        this.display = this.displayFactory.createDisplay(newValue, this.displayParameters);
+        if (this.display) {
+            this[RAW] = false;
+            this.appendChild(this.display);
+            this.linkDisplay(this.display, false);
+        }
+        else {
+            this[RAW] = true;
+            this.innerHTML = this.translateValue();
+        }
+        ?>
+
+        <?on value:changed
+        if (this[RAW]) {
+            this.innerHTML = this.translateValue();
+        }
+        ?>
+
+    </li>
+
+</ui:element>
+

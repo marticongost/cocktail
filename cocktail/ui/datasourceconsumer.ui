@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ui:mixin
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:requires component="cocktail.ui.datasources"/>
+
+    <ui:property
+        name="dataSource"
+        reflected="false"/>
+
+    <ui:property
+        name="dataState"
+        type="string"
+        reflected="true"/>
+
+</ui:mixin>
+

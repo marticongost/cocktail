@@ -1,0 +1,67 @@
+
+@import "cocktail.ui://styles/common";
+
+:host {
+    display: inline-block;
+    width: 30em;
+    position: relative;
+}
+
+:host([error]) {
+    @include input-with-error;
+}
+
+:host([multiline='true'][autoHeight='false']) {
+    height: 20em;
+}
+
+:host([multiline='false']) {
+    height: 1.9em;
+}
+
+:host(:not([mode='visual'])) #contentArea,
+:host(:not([mode='source'])) #codeEditor {
+    display: none;
+}
+
+#contentArea {
+    border: $input-border;
+    padding: $input-padding;
+    flex: 1;
+
+    :host([autoHeight='false']) & {
+        overflow-y: auto;
+    }
+
+    :host([multiline='false']) & {
+        white-space: nowrap;
+    }
+
+    & > *:first-child {
+        margin-top: 0;
+    }
+
+    & > *:last-child {
+        margin-bottom: 0;
+    }
+}
+
+#toolbox {
+    position: absolute;
+    bottom: 100%;
+    right: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+
+    :host([toolboxVisible='true']) & {
+        opacity: 1;
+        pointer-events: all;
+    }
+
+    .Toolbar {
+        --width: auto;
+        --height: 1.5em;
+    }
+}
+
