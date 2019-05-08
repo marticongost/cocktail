@@ -35,7 +35,7 @@
 
         [clean]
         ca: Treure format
-        es: Quitar format
+        es: Quitar formato
         en: Remove format
 
         [html]
