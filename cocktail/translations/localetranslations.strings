@@ -132,3 +132,33 @@
         en: Croatian
         hr: Hrvatski
 
+        [da]
+        ca: Danès
+        es: Danés
+        en: Danish
+        da: Dansk
+
+        [fi]
+        ca: Finlandès
+        es: Finlandés
+        en: Finnish
+        fi: Suomi
+
+        [fa]
+        ca: Farsi
+        es: Farsi
+        en: Farsi
+        fa: فارسی
+
+        [bg]
+        ca: Búlgar
+        es: Búlgaro
+        en: Bulgarian
+        bg: български
+
+        [id]
+        ca: Indonesi
+        es: Indonesio
+        en: Indonesian
+        id: bahasa Indonesia
+
