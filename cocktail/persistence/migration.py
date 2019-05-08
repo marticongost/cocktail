@@ -37,11 +37,30 @@ def mark_all_migrations_as_executed():
     for step in migration_steps.values():
         step.mark_as_executed()
 
-def migration_step(func):
+def migration_step(func=None, before=None, after=None):
     """A decorator to quickly define function based migrations."""
-    step = MigrationStep(get_full_name(func))
-    step.executing.append(func)
-    return step
+
+    if func:
+        if before and after:
+            raise ValueError(
+                "Can't specify both 'before' and 'after' parameters when "
+                "registering a migration step"
+            )
+
+        step = MigrationStep(get_full_name(func))
+        step.executing.append(func)
+
+        if before:
+            before.require(step)
+        elif after:
+            step.require(after)
+
+        return step
+
+    def decorator(func):
+        return migration_step(func, before=before, after=after)
+
+    return decorator
 
 
 class MigrationStep:
