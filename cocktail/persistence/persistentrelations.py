@@ -35,6 +35,9 @@ class PersistentRelationCollection(Persistent):
 
         self._base_collection_class.__init__(self, items, owner, member)
 
+    def __repr__(self):
+        return repr(self.__items)
+
     def _get_member(self):
         if self._v_member is None \
         and self.__member_name \
