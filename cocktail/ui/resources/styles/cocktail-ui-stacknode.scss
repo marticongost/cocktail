@@ -99,8 +99,7 @@
 #stackNodeContent {
     display: flex;
     flex-direction: column;
-    flex: 1 1 auto;
-    overflow: hidden;
+    height: 100%;
     border: 1px solid $stacknode-exposed-border-color;
     border-right: none !important;
     border-bottom: none !important;
