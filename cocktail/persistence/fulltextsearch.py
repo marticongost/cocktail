@@ -310,7 +310,7 @@ def _handle_deleting(event):
                 for index in indexes.values():
                     index.unindex_doc(id)
 
-def _rebuild_full_text_index(self):
+def _rebuild_full_text_index(self, languages=None):
 
     datastore.root[self.full_text_index_key] = PersistentMapping()
 
@@ -320,12 +320,20 @@ def _rebuild_full_text_index(self):
         persistent_type = self.schema
 
     for obj in persistent_type.select():
-        self.index_text(obj)
+        if languages:
+            for lang in languages:
+                self.index_text(obj, lang)
+        else:
+            self.index_text(obj)
 
 PersistentClass.rebuild_full_text_index = _rebuild_full_text_index
 schema.String.rebuild_full_text_index = _rebuild_full_text_index
 
-def _rebuild_full_text_indexes(cls, recursive = False, verbose = True):
+def _rebuild_full_text_indexes(
+    cls,
+    languages=None,
+    recursive=False,
+    verbose=True):
 
     if cls.full_text_indexed and not any(
         isinstance(base, PersistentClass) and base.full_text_indexed
@@ -333,18 +341,22 @@ def _rebuild_full_text_indexes(cls, recursive = False, verbose = True):
     ):
         if verbose:
             print("Rebuilding full text index for %s" % cls)
-        cls.rebuild_full_text_index()
+        cls.rebuild_full_text_index(languages=languages)
 
     for member in cls.iter_members(recursive = False):
         if member.full_text_indexed:
             if verbose:
                 print("Rebuilding full text index for %s" % member)
-            member.rebuild_full_text_index()
+            member.rebuild_full_text_index(languages=languages)
 
     if recursive:
         for derived in cls.derived_schemas():
             if derived.translation_source is None:
-                derived.rebuild_full_text_indexes(True, verbose)
+                derived.rebuild_full_text_indexes(
+                    languages=languages,
+                    recursive=True,
+                    verbose=verbose
+                )
 
 PersistentClass.rebuild_full_text_indexes = _rebuild_full_text_indexes
 
