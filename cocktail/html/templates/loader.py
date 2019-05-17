@@ -130,9 +130,8 @@ class TemplateLoader(object):
         except TemplateNotFoundError:
             source_file = None
 
-        full_name = pkg_name + "." + class_name.lower() + "." + class_name
-
         if source_file is not None:
+            full_name = f"{pkg_name}.{class_name}"
 
             # Read the template's source
             f = open(source_file, "r")
@@ -160,12 +159,13 @@ class TemplateLoader(object):
                 dependency_derivatives.add(name)
 
             cls = compiler.get_template_class()
-            set_full_name(cls, full_name)
 
         # If no template file for the requested template is found, try to import
         # the template class from a regular python module
         # Note that by convention, foo.Bar becomes foo.bar.Bar
         else:
+            full_name = f"{pkg_name}.{class_name.lower()}.{class_name}"
+
             try:
                 cls = import_object(full_name)
             except ImportError:
@@ -173,6 +173,7 @@ class TemplateLoader(object):
 
             self.__dependencies[name] = None
 
+        set_full_name(cls, full_name)
         cls.source_file = source_file
         return cls
 
