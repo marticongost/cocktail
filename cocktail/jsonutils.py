@@ -2,24 +2,24 @@
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
+from typing import (
+    Dict,
+    List,
+    Union
+)
+from datetime import datetime, date, time
+from decimal import Decimal
+from fractions import Fraction
+from enum import Enum
+from copy import deepcopy
+import json
+
 from cocktail.modeling import (
     GenericMethod,
     SetWrapper,
     ListWrapper,
     DictWrapper
 )
-from datetime import datetime, date, time
-from typing import (
-    Dict,
-    List,
-    Union
-)
-from decimal import Decimal
-from fractions import Fraction
-from enum import Enum
-from copy import deepcopy
-
-import json
 
 json_object = Dict[str, "json_data"]
 json_list = List["json_data"]
@@ -128,4 +128,12 @@ class ExtensibleJSONEncoder(json.JSONEncoder):
 
     def default(self, obj):
         return to_json_value(obj)
+
+
+def dumps(value, **kwargs):
+    return json.dumps(
+        value,
+        cls=ExtensibleJSONEncoder,
+        **kwargs
+    )
 
