@@ -81,7 +81,7 @@ class ValidationError(Exception):
         )
 
         if context.language:
-            desc += f"[{self.context.language}]"
+            desc += f"[{context.language}]"
 
         reason = reason or self.default_reason
         if reason:
