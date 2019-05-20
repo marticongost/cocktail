@@ -576,7 +576,6 @@ class LinkedResources(ResourceSet):
 
 class ResourceAggregator(ResourceSet):
 
-    source_encoding = "utf-8"
     file_glue = "\n"
     download_remote_resources = False
     base_url = None
@@ -599,22 +598,12 @@ class ResourceAggregator(ResourceSet):
     def get_source(self):
         buffer = StringIO()
         self.write_source(buffer)
-        source = buffer.getvalue()
-
-        if self.source_encoding:
-            return source.decode(self.source_encoding)
-        else:
-            return source
+        return buffer.getvalue()
 
     def get_resource_source(self, resource):
         buffer = StringIO()
         self.write_resource_source(resource, buffer)
-        source = buffer.getvalue()
-
-        if self.source_encoding:
-            return source.decode(self.source_encoding)
-        else:
-            return source
+        return buffer.getvalue()
 
     def write_source(self, dest):
         for resource in self:
