@@ -3,8 +3,9 @@
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
-from collections import Mapping, Sequence
-import json
+from collections import Mapping, Sequence, Set
+
+from . import jsonutils
 
 
 class JS(str):
@@ -24,8 +25,8 @@ def dumps(value):
             for k, v in value.items()
         )
 
-    if isinstance(value, Sequence) and not isinstance(value, str):
+    if isinstance(value, (Sequence, Set)) and not isinstance(value, str):
         return "[%s]" % ",".join(dumps(item) for item in value)
 
-    return json.dumps(value)
+    return jsonutils.dumps(value)
 
