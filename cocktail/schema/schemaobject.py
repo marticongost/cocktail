@@ -1286,13 +1286,18 @@ def translate_schema_object(obj, **kwargs):
 
     # Generic translation
     if not desc and not kwargs.get("discard_generic_translation", False):
+        desc = generic_schema_object_translation(obj, **kwargs)
 
-        desc = translations(obj.__class__, **kwargs)
+    return desc
 
-        if obj.__class__.primary_member:
-            id = getattr(obj, obj.__class__.primary_member.name)
-            if id is not None:
-                desc += " #" + str(id)
+def generic_schema_object_translation(obj: SchemaObject, **kwargs) -> str:
+
+    desc = translations(obj.__class__, **kwargs)
+
+    if obj.__class__.primary_member:
+        id = getattr(obj, obj.__class__.primary_member.name)
+        if id is not None:
+            desc += " #" + str(id)
 
     return desc
 
