@@ -236,3 +236,36 @@ def decapitalize(string):
     else:
         return string
 
+
+def html_extract(html: str, max_length: int, ellipsis: str = "…") -> str:
+    """Extracts a plain-text fragment from the start of an HTML string.
+
+    @param html: The HTML string to extract the text from.
+    @param max_length: The maximum length of the returned fragment.
+    @param ellipsis: A string to append to the returned extract if the original
+        text exceeds the character length set by `max_length`. Defaults to the
+        unicode horizontal ellipsis character (…).
+    @return: The extract, in plain text form. Note that line jumps, tabs and
+        any other form of whitespace will be normalized to a single space.
+    """
+
+    # Convert to plain text
+    x = HTMLPlainTextExtractor()
+    x.indentation = " "
+    x.bullet = " "
+    x.feed(html)
+    text = x.get_text()
+
+    # Add words until they don't fit the maximum length
+    words = []
+    text_length = 0
+
+    for word in text.split():
+        text_length += len(word)
+        if text_length > max_length:
+            return " ".join(words) + ellipsis
+        else:
+            words.append(word)
+
+    return " ".join(words)
+
