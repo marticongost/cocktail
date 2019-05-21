@@ -241,3 +241,7 @@ cocktail.ui.formGroupComponents = Symbol("cocktail.ui.formGroupComponents");
 // instances
 cocktail.ui.columnWidth = Symbol.for("cocktail.ui.columnWidth");
 
+// A symbol that allows schemas to specify which of their members should be
+// automatically focused when opening a form
+cocktail.ui.autofocusMember = Symbol.for("cocktail.ui.autofocusMember");
+
