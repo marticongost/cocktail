@@ -155,6 +155,15 @@
             ]
         ];
     }
+
+    focus() {
+        if (this.mode == "source") {
+            this.codeEditor.codeMirror.focus();
+        }
+        else {
+            this.contentArea.focus();
+        }
+    }
     ?>
 
     <?on value:changed
