@@ -289,6 +289,22 @@
         }
     }
 
+    focusDefaultControl(groupId = null) {
+
+        // Try to focus the default member for the form's schema
+        const defaultMemberName = this.dataBinding.member[cocktail.ui.autofocusMember];
+        if (defaultMemberName) {
+            const defaultField = this[FIELD_MAP].get(defaultMemberName);
+            if (defaultField && (!groupId || groupId == defaultField.dataBinding.member[cocktail.ui.group])) {
+                defaultField.focusControl();
+                return;
+            }
+        }
+
+        // Fall back to the first control if the default member is undefined or unavailable
+        return this.focusFirstControl(groupId);
+    }
+
     focusFirstControl(groupId = null) {
         for (let field of this[FIELD_MAP].values()) {
             if (groupId) {
