@@ -164,6 +164,12 @@
             this.contentArea.focus();
         }
     }
+
+    selectRange(range) {
+        const sel = cocktail.ui.getShadow(this).getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+    }
     ?>
 
     <?on value:changed
