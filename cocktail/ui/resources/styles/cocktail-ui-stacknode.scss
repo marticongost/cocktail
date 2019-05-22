@@ -7,14 +7,12 @@
 
 @mixin covered-heading {
     color: $stacknode-covered-heading-color;
-    font-size: 1em;
+    transform: scale(0.8) translate(-1em, -1.3em);
 }
 
 @mixin covered-header {
     border-color: $stacknode-covered-panel-border-color;
     background-color: $stacknode-covered-panel-background-color;
-    padding-left: 1em;
-    flex-basis: 4em;
 }
 
 @mixin covered-main {
@@ -70,7 +68,6 @@
     from {
         border-color: $stacknode-exposed-panel-border-color;
         background-color: $stacknode-exposed-panel-background-color;
-        padding-left: 1.3em;
     }
     to {
         @include covered-header;
