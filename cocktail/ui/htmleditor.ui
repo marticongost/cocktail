@@ -9,6 +9,7 @@
     <ui:symbol name="PROCESSING_INPUT"/>
     <ui:symbol name="CONTENT_AREA_INITIALIZED"/>
     <ui:symbol name="UPDATE_TOOLBARS"/>
+    <ui:symbol name="WRAP_TEXT_IN_P_ELEMENT"/>
 
     <ui:property
         name="multiline"
@@ -170,6 +171,21 @@
         sel.removeAllRanges();
         sel.addRange(range);
     }
+
+    [WRAP_TEXT_IN_P_ELEMENT]() {
+        // Automatically wrap text inside a <p> element
+        const node = this.contentArea.firstChild;
+        if (node && node.nodeType == document.TEXT_NODE && node.nodeValue.length) {
+            const p = document.createElement("p");
+            p.appendChild(node);
+            this.contentArea.insertBefore(p, this.contentArea.firstChild);
+
+            const range = document.createRange();
+            range.setStart(node, node.nodeValue.length);
+            range.collapse(true);
+            this.selectRange(range);
+        }
+    }
     ?>
 
     <?on value:changed
@@ -215,17 +231,7 @@
         <?on input
         instance.updateDelay.begin();
         instance[UPDATE_TOOLBARS]();
-
-        // Automatically wrap text inside a <p> element
-        if (this.firstChild.nodeType == document.TEXT_NODE) {
-            const p = document.createElement("p");
-            p.appendChild(this.firstChild);
-            this.insertBefore(p, this.firstChild);
-
-            const range = document.createRange();
-            range.setStart(p, p.firstChild.length);
-            instance.selectRange(range);
-        }
+        instance[WRAP_TEXT_IN_P_ELEMENT]();
         ?>
 
         <?on mousedown
@@ -249,6 +255,7 @@
             instance[CONTENT_AREA_INITIALIZED] = true;
             document.execCommand("DefaultParagraphSeparator", false, "p");
             document.execCommand("insertBrOnReturn", false, "false");
+            instance[WRAP_TEXT_IN_P_ELEMENT]();
         }
         ?>
     </div>
