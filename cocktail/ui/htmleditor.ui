@@ -215,6 +215,17 @@
         <?on input
         instance.updateDelay.begin();
         instance[UPDATE_TOOLBARS]();
+
+        // Automatically wrap text inside a <p> element
+        if (this.firstChild.nodeType == document.TEXT_NODE) {
+            const p = document.createElement("p");
+            p.appendChild(this.firstChild);
+            this.insertBefore(p, this.firstChild);
+
+            const range = document.createRange();
+            range.setStart(p, p.firstChild.length);
+            instance.selectRange(range);
+        }
         ?>
 
         <?on mousedown
@@ -237,6 +248,7 @@
         if (!instance[CONTENT_AREA_INITIALIZED]) {
             instance[CONTENT_AREA_INITIALIZED] = true;
             document.execCommand("DefaultParagraphSeparator", false, "p");
+            document.execCommand("insertBrOnReturn", false, "false");
         }
         ?>
     </div>
