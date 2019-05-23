@@ -107,6 +107,9 @@ cocktail.schema.Collection.prototype[cocktail.ui.removeAnnotations] = function (
             if (object === undefined) {
                 return undefined;
             }
+            if (this[MEMBER].membershipType == cocktail.schema.membershipTypes.collectionItems) {
+                return object[index];
+            }
             return this[MEMBER].getObjectValue(object, language, index);
         }
 
