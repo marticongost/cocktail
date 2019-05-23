@@ -45,10 +45,11 @@
     createEntry(value = undefined) {
         let entry = this.constructor.Entry.create();
         entry.displayFactory = this.entriesDisplayFactory;
-        entry.dataBinding = this.dataBinding.child(
+        entry.dataBinding = this.dataBinding.childBinding(
             this.value,
             this.entriesMember,
             null,
+            this.entries.childNodes.length,
             value === undefined ? this.entriesMember.getDefaultValue() : value
         );
         return entry;
