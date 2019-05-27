@@ -35,6 +35,27 @@ cocktail.ui.HTTPDataSource = class HTTPDataSource extends cocktail.ui.DataSource
         }
     }
 
+    getURL(parameters = null) {
+
+        let url = this.url;
+
+        if (parameters) {
+            if (parameters.url) {
+                url = parameters.url;
+            }
+            if (parameters.parameters) {
+                const urlBuilder = URI(url);
+                for (let key in parameters.parameters) {
+                    urlBuilder.removeSearch(key);
+                    urlBuilder.addSearch(key, parameters.parameters[key]);
+                }
+                url = urlBuilder.toString();
+            }
+        }
+
+        return url;
+    }
+
     getRequestParameters(parameters = null) {
 
         parameters = Object.assign(
