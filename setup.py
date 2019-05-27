@@ -43,7 +43,8 @@ setup(
         "httplib2",
         "PyStemmer",
         "rfc6266",
-        "pyyaml"
+        "pyyaml",
+        "openpyxl"
     ],
     extras_require = {
         "sass": ["libsass"]
