@@ -1317,6 +1317,19 @@
         }
     }
 
+    cocktail.schema.Time = class Time extends cocktail.schema.Member {
+
+        [cocktail.ui.CONSOLE_CHILDREN](config) {
+            return [
+                ...super[cocktail.ui.CONSOLE_CHILDREN](config),
+                ...[
+                    ["min", this.min],
+                    ["max", this.max]
+                ]
+            ];
+        }
+    }
+
     cocktail.schema.HTML = class HTML extends cocktail.schema.String {
     }
 
