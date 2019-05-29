@@ -549,6 +549,10 @@
 
         <ui:using mixin="cocktail.ui.DataDisplay"/>
 
+        <?head
+        const FIELDS_READY = Symbol.for("cocktail.ui.Form.FIELDS_READY");
+        ?>
+
         <ui:property
             name="modified"
             type="boolean"
@@ -609,6 +613,12 @@
         this.label.innerHTML = this.inGroup && newValue.member.translate(".inGroup") || newValue.member.translate();
         this.explanation.innerHTML = newValue.member.translate(".explanation");
         this.updateTranslations();
+        ?>
+
+        <?on value:changed
+        if (this.parentInstance && this.parentInstance[FIELDS_READY]) {
+            this.modified = true;
+        }
         ?>
 
         <?class
@@ -751,8 +761,7 @@
             ?>
 
             <?on value:changed
-            let form = this.parentInstance && this.parentInstance.parentInstance;
-            if (form && form[FIELDS_READY]) {
+            if (this.parentInstance && this.parentInstance[FIELDS_READY]) {
                 this.modified = true;
             }
             ?>
