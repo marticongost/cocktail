@@ -1263,6 +1263,17 @@
                 }
             );
         }
+
+        sameValue(value1, value2) {
+            if (value1 && value2) {
+                value1 = new Date(value1);
+                value1.setHours(0, 0, 0, 0);
+                value2 = new Date(value2);
+                value2.setHours(0, 0, 0, 0);
+                return value1.getTime() == value2.getTime();
+            }
+            return super.sameValue(value1, value2);
+        }
     }
 
     cocktail.schema.DateTime = class DateTime extends cocktail.schema.Member {
@@ -1314,6 +1325,13 @@
                     second: "2-digit"
                 }
             );
+        }
+
+        sameValue(value1, value2) {
+            if (value1 && value2) {
+                return value1.getTime() == value2.getTime();
+            }
+            return super.sameValue(value1, value2);
         }
     }
 
