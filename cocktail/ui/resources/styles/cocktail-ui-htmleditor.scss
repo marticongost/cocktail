@@ -1,5 +1,7 @@
-
 @import "cocktail.ui://styles/common";
+
+$inline-color: orange;
+$block-color: #ddd;
 
 :host {
     display: inline-block;
@@ -43,6 +45,26 @@
 
     & > *:last-child {
         margin-bottom: 0;
+    }
+
+    $blocks: (
+        p h1 h2 h3 h4 h5 h6 ol ul pre address blockquote dl fieldset hr noscript table div section article aside nav form
+    );
+    $inline: (
+        b big i small tt abbr acronym cite code dfn em kdbd strong samp var a bdo br img map object q script span sub sup
+        button input label select textarea
+    );
+
+    #{join-list-items($blocks, ", ")} {
+        border: 1px dashed $block-color;
+        padding: 1em;
+        margin-top: 9px;
+        margin-bottom: 9px;
+    }
+
+    #{join-list-items($inline, ", ")} {
+        border: 1px dashed $inline-color;
+        padding: 0.1em;
     }
 }
 
