@@ -676,9 +676,16 @@
             return record;
         }
 
-        *diff(obj1, obj2) {
+        *diff(obj1, obj2, params = null) {
 
             for (let member of this.members()) {
+
+                if (params && params.includeMember) {
+                    if (!params.includeMember(member)) {
+                        continue;
+                    }
+                }
+
                 const value1 = obj1[member.name];
                 const value2 = obj2[member.name];
 
