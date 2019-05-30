@@ -143,7 +143,7 @@ legend {
             }
         }
 
-        .explanation {
+        .ExplanationLabel {
             margin-bottom: 0.8em;
             width: 35em;
         }
@@ -235,6 +235,11 @@ legend {
     }
 }
 
+.labelContainer {
+    display: flex;
+    align-items: center;
+}
+
 .field[labelDisposition='hidden'] .labelContainer {
     display: none !important;
 }
@@ -246,7 +251,7 @@ legend {
     margin-left: 0.4em;
 }
 
-.explanation {
+.ExplanationLabel {
     margin-top: 0.4em;
     color: #666;
     font-size: 0.85em;
@@ -257,6 +262,15 @@ legend {
 
     :host([fieldsExplanationDisposition='hidden']) & {
         display: none;
+    }
+}
+
+.ExplanationTooltip {
+    margin-left: 5px;
+
+    .triggerIcon {
+        --height: 12px;
+        color: #999;
     }
 }
 

@@ -42,7 +42,7 @@
         name="fieldsExplanationDisposition"
         type="string"
         reflected="true"
-        default="belowLabel"/>
+        default="tooltip"/>
 
     <ui:property
         name="modified"
@@ -273,6 +273,7 @@
         field.inGroup = this.grouped && member[cocktail.ui.group];
         field.required = member.required;
         field.dataBinding = this.dataBinding.memberBinding(member);
+        this.addExplanation(member, field.labelContainer);
         return field;
     }
 
@@ -318,7 +319,36 @@
             }
         }
     }
+
+    addExplanation(member, target) {
+        const explanation = member.translate(".explanation");
+        if (explanation) {
+            let element;
+            if (this.fieldsExplanationDisposition == "belowLabel") {
+                element = this.constructor.ExplanationLabel.create();
+                element.innerHTML = explanation;
+            }
+            else if (this.fieldsExplanationDisposition == "tooltip") {
+                element = this.constructor.ExplanationTooltip.create();
+                element.tooltip.innerHTML = explanation;
+            }
+            target.appendChild(element);
+        }
+    }
     ?>
+
+    <div ui:component="ExplanationLabel">
+        <slot/>
+    </div>
+
+    <div ui:component="ExplanationTooltip">
+
+        <ui:cocktail.ui.SVG
+            id="triggerIcon"
+            src="cocktail.ui://images/help.svg"/>
+
+        <ui:cocktail.ui.Tooltip id="tooltip"/>
+    </div>
 
     <?js
     this[FIELD_MAP] = new Map();
@@ -456,9 +486,6 @@
         // Set the field label
         this.label.innerHTML = this.inGroup && newValue.member.translate(".inGroup") || newValue.member.translate();
 
-        // Set the field explanatory text
-        this.explanation.innerHTML = newValue.member.translate(".explanation");
-
         // Create the new field control
         this.makeControl();
         ?>
@@ -539,7 +566,6 @@
                 }
                 ?>
             </label>
-            <div id="explanation"/>
         </div>
 
         <div id="controlContainer"/>
@@ -611,7 +637,6 @@
 
         <?on dataBinding:changed
         this.label.innerHTML = this.inGroup && newValue.member.translate(".inGroup") || newValue.member.translate();
-        this.explanation.innerHTML = newValue.member.translate(".explanation");
         this.updateTranslations();
         ?>
 
@@ -717,7 +742,6 @@
 
         <div id="labelContainer">
             <div id="label"/>
-            <div id="explanation"/>
         </div>
 
         <div id="translations"/>
