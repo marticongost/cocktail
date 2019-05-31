@@ -4,60 +4,40 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:ui="http://www.whads.com/ns/cocktail/ui" tabindex="0">
 
-    <ui:requires component="cocktail.ui.delay"/>
     <ui:using mixin="cocktail.ui.DataDisplay"/>
 
-    <ui:symbol name="SYNCHRONIZING"/>
-    <ui:symbol name="SYNCHRONIZE"/>
+    <ui:symbol name="SYNC"/>
 
     <?tail
     cls.delegatesFocus = true;
     ?>
 
-    <?class
-    updateValue() {
-        if (this.dataBinding) {
-            this.value = this.dataBinding.member.parseValue(this.input.value)
-        }
-        else {
-            this.value = this.input.value;
-        }
-    }
-
-    [SYNCHRONIZE]() {
-        this[SYNCHRONIZING] = true;
-        try {
-            this.updateValue();
-        }
-        finally {
-            this[SYNCHRONIZING] = false;
-        }
-    }
+    <?js
+    this[SYNC] = cocktail.ui.sync();
     ?>
 
     <?on value:changed
-    if (this.dataBinding && !this[SYNCHRONIZING]) {
-        this.input.value = this.dataBinding.member.serializeValue(newValue);
-    }
-    ?>
-
-    <?js
-    this.updateDelay = new cocktail.ui.Delay(300, () => this[SYNCHRONIZE]());
+    this[SYNC](() => {
+        if (this.dataBinding) {
+            this.input.value = this.dataBinding.member.serializeValue(newValue)
+        }
+        else {
+            this.input.value = newValue;
+        }
+    });
     ?>
 
     <input id="input">
 
-        <?on keydown
-        if (e.which == cocktail.ui.keys.ENTER) {
-            instance[SYNCHRONIZE]();
-        }
-        else if (!cocktail.ui.nonTextKeys.has(e.which)) {
-            instance.updateDelay.begin();
-        }
-        ?>
-
-        <?on change
-        instance[SYNCHRONIZE]();
+        <?on input
+        instance[SYNC](() => {
+            if (instance.dataBinding) {
+                instance.value = instance.dataBinding.member.parseValue(this.value)
+            }
+            else {
+                instance.value = this.value;
+            }
+        });
         ?>
 
     </input>
