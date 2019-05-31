@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ui:mixin
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:symbol name="SEARCH_BOX"/>
+    <ui:symbol name="DELAY"/>
+    <ui:requires component="cocktail.ui.delay"/>
+    <ui:resource href="cocktail://scripts/xregexp.js"/>
+
+    <ui:property
+        name="searchableEntriesSelector"
+        type="string"
+        reflected="true"
+        default=".entry"/>
+
+    <?head
+    const latinNormalization = {
+        a: /[àáâãäåāăą]/g,
+        A: /[ÀÁÂÃÄÅĀĂĄ]/g,
+        e: /[èééêëēĕėęě]/g,
+        E: /[ÈÉĒĔĖĘĚ]/g,
+        i: /[ìíîïìĩīĭ]/g,
+        I: /[ÌÍÎÏÌĨĪĬ]/g,
+        o: /[òóôõöōŏő]/g,
+        O: /[OÒÓÔÕÖŌŎŐ]/g,
+        u: /[ùúûüũūŭů]/g,
+        U: /[ÙUÚÛÜŨŪŬŮ]/g
+    };
+    ?>
+
+    <?class
+    applySearch(query) {
+        const normalizedQuery = query && this.normalizeSearchableText(query) || "";
+        const queryTokens = this.tokenizeSearchableText(normalizedQuery);
+        const entries = this.getSearchableEntries();
+        if (queryTokens.length) {
+            for (let entry of entries) {
+                const searchableText = this.getSearchableText(entry);
+                const normalizedSearchableText = this.normalizeSearchableText(searchableText);
+                const matches = this.matchesSearchTerms(normalizedSearchableText, queryTokens);
+                this.applyMatchState(entry, matches);
+            }
+        }
+        else {
+            const matches = [];
+            for (let entry of entries) {
+                this.applyMatchState(entry, matches);
+            }
+        }
+    }
+
+    normalizeLatin(text){
+        text = text.trim();
+        if (!text.length) {
+            return text;
+        }
+        for (var c in latinNormalization) {
+            text = text.replace(latinNormalization[c], c);
+        }
+        return text.toLowerCase();
+    }
+
+    getSearchableEntries(matchState /* = null */) {
+        let selector = this.searchableEntriesSelector;
+        if (matchState !== null && matchState !== undefined) {
+            selector += matchState ? ".cocktail-ui-Searchable-match" : ".cocktail-ui-Searchable-no_match";
+        }
+        return this.shadowRoot.querySelectorAll(selector);
+    }
+
+    getSearchableText(node) {
+        const text = [];
+        const descend = (node) => {
+            if (node.nodeType == Document.TEXT_NODE) {
+                text.push(node.nodeValue);
+            }
+            else if (node.nodeType == Document.ELEMENT_NODE) {
+                for (let child of node.childNodes) {
+                    descend(child);
+                }
+                if (node.shadowRoot) {
+                    descend(node.shadowRoot);
+                }
+            }
+        }
+        descend(node);
+        return text.join(" ");
+    }
+
+    normalizeSearchableText(text) {
+        return this.normalizeLatin(text);
+    }
+
+    tokenizeSearchableText(text) {
+        return text.split(/\s+/).filter((token) => token);
+    }
+
+    matchesSearchTerms(searchableText, queryTokens, acceptPartialMatch = false) {
+
+        // Find terms preceded by the start of the string or a non-letter
+        // character. Using XRegExp, since the native \b pattern is not Unicode
+        // aware. Also, Javascript doesn't support look-behind expressions. :(
+
+        if (!queryTokens.length) {
+            return [];
+        }
+
+        let matches = [];
+        let matchedTerms = {};
+
+        for (let token of queryTokens) {
+            matchedTerms[token] = false;
+        }
+
+        const nonWordExpr = XRegExp("\\p{^L}");
+        let expr = XRegExp("(" + queryTokens.join("|") + ")");
+
+        expr.forEach(searchableText, function (match) {
+            if (match.index == 0 || nonWordExpr.test(searchableText.charAt(match.index - 1))) {
+                matches.push(match);
+                matchedTerms[match[0]] = true;
+            }
+        });
+
+        if (!matches.length) {
+            return null;
+        }
+
+        if (!acceptPartialMatch) {
+            for (var t in matchedTerms) {
+                if (!matchedTerms[t]) {
+                    return null;
+                }
+            }
+        }
+
+        return matches;
+    }
+
+    applyMatchState(entry, matches) {
+        if (matches) {
+            entry.classList.add("cocktail-ui-Searchable-match");
+            entry.classList.remove("cocktail-ui-Searchable-no_match");
+        }
+        else {
+            entry.classList.remove("cocktail-ui-Searchable-match");
+            entry.classList.add("cocktail-ui-Searchable-no_match");
+        }
+    }
+
+    connectedCallback() {
+        super.connectedCallback();
+        const searchBox = this.shadowRoot.querySelector(".cocktail-ui-SearchInput");
+        this[SEARCH_BOX] = searchBox;
+        searchBox.addEventListener("valueChanged", (e) => {
+            if (!e.detail.newValue) {
+                this.applySearch("");
+            }
+            else {
+                this[DELAY].begin();
+            }
+        });
+    }
+    ?>
+
+    <?js
+    this[DELAY] = new cocktail.ui.Delay(250, () => {
+        this.applySearch(this[SEARCH_BOX].value);
+    });
+    ?>
+
+</ui:mixin>
+
