@@ -15,15 +15,18 @@ def zodb_debugger():
         cmd_parts = cmd.split("-", 1)
         action = cmd_parts[0]
 
-        if action in ("count", "interrupt"):
-            with ZODBDebugger(
-                filter = cmd_parts[1] if len(cmd_parts) > 1 else None,
-                action = action
-            ):
-                return cherrypy.request.handler()
+        if action in ("count", "blame", "interrupt"):
 
-    # Debugger disabled
-    return cherrypy.request.handler()
+            handler = cherrypy.request.handler
+
+            def instrumented_handler(*args, **kwargs):
+                with ZODBDebugger(
+                    filter = cmd_parts[1] if len(cmd_parts) > 1 else None,
+                    action = action
+                ):
+                    return handler(*args, **kwargs)
+
+            cherrypy.request.handler = instrumented_handler
 
 cherrypy.tools.zodb_debugger = cherrypy.Tool(
     'before_handler',
