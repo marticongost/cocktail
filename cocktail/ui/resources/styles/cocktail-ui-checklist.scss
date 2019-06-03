@@ -10,6 +10,16 @@
     }
 }
 
+#searchBox {
+    :host([searchable='false']) & {
+        display: none;
+    }
+
+    & + #selectionControls {
+        margin-top: 0.4em;
+    }
+}
+
 #selectionControls {
     margin-bottom: 0.8em;
     white-space: nowrap;
