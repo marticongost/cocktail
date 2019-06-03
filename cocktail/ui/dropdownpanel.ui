@@ -16,6 +16,11 @@
         }
         instance.expanded = newValue;
         cls.current = newValue ? instance : null;
+
+        // Autofocus the first control in the panel content
+        if (newValue && cocktail.ui.Input) {
+            this.autofocusPanelContent();
+        }
         ?>
 
     </ui:property>
@@ -69,6 +74,16 @@
         if (this.current) {
             this.current.expanded = false;
         }
+    }
+
+    autofocusPanelContent() {
+        for (let node of cocktail.ui.descendShadowDOM(this.panelContent)) {
+            if (node instanceof cocktail.ui.Input) {
+                node.focus();
+                return true;
+            }
+        }
+        return false;
     }
     ?>
 
