@@ -6,6 +6,7 @@
 
     <ui:requires component="cocktail.ui.sorting"/>
     <ui:using mixin="cocktail.ui.DataDisplay"/>
+    <ui:using mixin="cocktail.ui.Searchable"/>
 
     <ui:property
         name="sorted"
@@ -18,6 +19,12 @@
         type="boolean"
         reflected="true"
         default="false"/>
+
+    <ui:property
+        name="searchable"
+        type="boolean"
+        reflected="true"
+        default="true"/>
 
     <ui:symbol name="ENTRY_MAP"/>
     <ui:symbol name="SELECTING_ENTRY"/>
@@ -196,6 +203,8 @@
     <?js
     this[ENTRY_MAP] = new Map();
     ?>
+
+    <ui:cocktail.ui.SearchInput id="searchBox"/>
 
     <div id="selectionControls">
 
