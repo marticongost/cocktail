@@ -41,8 +41,14 @@
         const normalizedQuery = query && this.normalizeSearchableText(query) || "";
         const queryTokens = this.tokenizeSearchableText(normalizedQuery);
         const entries = this.getSearchableEntries();
+
         if (queryTokens.length) {
             let matchesFound = false;
+
+            if (this.selectionSearchBehavior == "selectFirstMatch") {
+                this.selectedElements = [];
+            }
+
             for (let entry of entries) {
                 const searchableText = this.getSearchableText(entry);
                 const normalizedSearchableText = this.normalizeSearchableText(searchableText);
@@ -59,6 +65,7 @@
                     else if (this.selectionSearchBehavior == "selectFirstMatch") {
                         if (matches && !matchesFound) {
                             this.setElementSelected(entry, true);
+                            this.selectionCursor = entry;
                         }
                     }
                 }
@@ -72,6 +79,11 @@
             const matches = [];
             for (let entry of entries) {
                 this.applyMatchState(entry, matches);
+            }
+
+            if (this.selectionSearchBehavior == "selectFirstMatch") {
+                this.selectedElements = [entries[0]];
+                this.selectionCursor = entries[0];
             }
         }
     }
