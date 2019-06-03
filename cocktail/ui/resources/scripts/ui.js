@@ -453,6 +453,28 @@ cocktail.ui.splash = function (splash, mainComponent) {
         return element.shadowRoot || element.getRootNode();
     }
 
+    cocktail.ui.descendShadowDOM = function* (node) {
+        yield node;
+
+        if (node.shadowRoot) {
+            for (let child of node.shadowRoot.childNodes) {
+                yield* cocktail.ui.descendShadowDOM(child);
+            }
+        }
+
+        if (node instanceof HTMLSlotElement) {
+            for (let child of node.assignedNodes()) {
+                yield* cocktail.ui.descendShadowDOM(child);
+            }
+        }
+
+        if (node.nodeType == document.ELEMENT_NODE) {
+            for (let child of node.childNodes) {
+                yield* cocktail.ui.descendShadowDOM(child);
+            }
+        }
+    }
+
     cocktail.ui.insertTranslation = function (element, key) {
         let text = cocktail.ui.translations[key];
         if (text) {
