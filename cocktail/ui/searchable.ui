@@ -13,7 +13,13 @@
         name="searchableEntriesSelector"
         type="string"
         reflected="true"
-        default=".entry"/>
+        default=".Entry"/>
+
+    <ui:property
+        name="selectionSearchBehavior"
+        type="string"
+        reflected="true"
+        default="selectFirstMatch"/>
 
     <?head
     const latinNormalization = {
@@ -36,11 +42,30 @@
         const queryTokens = this.tokenizeSearchableText(normalizedQuery);
         const entries = this.getSearchableEntries();
         if (queryTokens.length) {
+            let matchesFound = false;
             for (let entry of entries) {
                 const searchableText = this.getSearchableText(entry);
                 const normalizedSearchableText = this.normalizeSearchableText(searchableText);
                 const matches = this.matchesSearchTerms(normalizedSearchableText, queryTokens);
                 this.applyMatchState(entry, matches);
+
+                // Update the selection of Selectable elements as entries match / stop matching
+                if (this.setElementSelected) {
+                    if (this.selectionSearchBehavior == "updateSelection") {
+                        if (!matches) {
+                            this.setElementSelected(entry, false);
+                        }
+                    }
+                    else if (this.selectionSearchBehavior == "selectFirstMatch") {
+                        if (matches && !matchesFound) {
+                            this.setElementSelected(entry, true);
+                        }
+                    }
+                }
+
+                if (matches && !matchesFound) {
+                    matchesFound = true;
+                }
             }
         }
         else {
