@@ -18,6 +18,7 @@
     <ui:symbol name="REMOVE_SELECTABLE_ELEMENT"/>
     <ui:symbol name="ALTERNATE_CSS_CLASSES"/>
     <ui:symbol name="ALTERNATING_CSS_CLASSES"/>
+    <ui:symbol name="SELECTABLE_ENTRIES_SELECTOR"/>
 
     <ui:property
         name="selectedElements"
@@ -68,7 +69,11 @@
         name="selectableEntriesSelector"
         type="string"
         reflected="true"
-        final="true"/>
+        final="true">
+        <?on changed
+        this[SELECTABLE_ENTRIES_SELECTOR] = newValue ? newValue + ":not(.cocktail-ui-Searchable-no_match)" : null;
+        ?>
+    </ui:property>
 
     <ui:property
         name="activationType"
@@ -291,7 +296,7 @@
 
     getSelectableElementInPath(path) {
         for (let element of path) {
-            if (element.matches && element.matches(this.selectableEntriesSelector)) {
+            if (element.matches && element.matches(this[SELECTABLE_ENTRIES_SELECTOR])) {
                 return element;
             }
         }
@@ -419,7 +424,7 @@
     }
 
     [ADD_SELECTABLE_ELEMENT](node) {
-        if (node.matches && node.matches(this.selectableEntriesSelector)) {
+        if (node.matches && node.matches(this[SELECTABLE_ENTRIES_SELECTOR])) {
             const prev = cocktail.iteration.first(
                 cocktail.dom.iterElementsBackwards(node, this.selectionContainer),
                 (item) => item === this[LAST_SELECTABLE_ELEMENT] || item[NEXT_SELECTABLE_ELEMENT]
@@ -573,7 +578,7 @@
 
         // Initial sequence
         let previous = null;
-        for (let node of this.selectionContainer.querySelectorAll(this.selectableEntriesSelector)) {
+        for (let node of this.selectionContainer.querySelectorAll(this[SELECTABLE_ENTRIES_SELECTOR])) {
             if (previous) {
                 previous[NEXT_SELECTABLE_ELEMENT] = node;
                 node[PREV_SELECTABLE_ELEMENT] = previous;
@@ -603,7 +608,7 @@
 
                 if (mutation.type == "attributes") {
                     const wasSelectable = PREV_SELECTABLE_ELEMENT in mutation.target;
-                    const isSelectable = mutation.target.matches(this.selectableEntriesSelector);
+                    const isSelectable = mutation.target.matches(this[SELECTABLE_ENTRIES_SELECTOR]);
                     if (wasSelectable != isSelectable) {
                         if (isSelectable) {
                             altered = this[ADD_SELECTABLE_ELEMENT](mutation.target) || altered;
@@ -618,7 +623,7 @@
                     for (let node of mutation.addedNodes) {
                         if (node.nodeType == Document.ELEMENT_NODE) {
                             altered = this[ADD_SELECTABLE_ELEMENT](node) || altered;
-                            for (let descendant of node.querySelectorAll(this.selectableEntriesSelector)) {
+                            for (let descendant of node.querySelectorAll(this[SELECTABLE_ENTRIES_SELECTOR])) {
                                 altered = this[ADD_SELECTABLE_ELEMENT](descendant) || altered;
                             }
                         }
@@ -628,7 +633,7 @@
                     for (let node of mutation.removedNodes) {
                         if (node.nodeType == Document.ELEMENT_NODE) {
                             altered = this[REMOVE_SELECTABLE_ELEMENT](node, unselected) || altered;
-                            for (let descendant of node.querySelectorAll(this.selectableEntriesSelector)) {
+                            for (let descendant of node.querySelectorAll(this[SELECTABLE_ENTRIES_SELECTOR])) {
                                 altered = this[REMOVE_SELECTABLE_ELEMENT](descendant, unselected) || altered;
                             }
                         }
