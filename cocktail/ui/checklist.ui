@@ -24,7 +24,7 @@
         name="searchable"
         type="boolean"
         reflected="true"
-        default="true"/>
+        default="false"/>
 
     <ui:symbol name="ENTRY_MAP"/>
     <ui:symbol name="SELECTING_ENTRY"/>
