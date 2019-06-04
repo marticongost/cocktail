@@ -392,7 +392,7 @@ class Path(unicode):
 
     def append(self, other):
 
-        path_str = str(self)
+        path_str = unicode(self)
 
         if not isinstance(other, unicode):
             other = unicode(Path(other))
