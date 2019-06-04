@@ -5,8 +5,19 @@
     xmlns:ui="http://www.whads.com/ns/cocktail/ui" tabindex="0">
 
     <ui:using mixin="cocktail.ui.DataDisplay"/>
+    <ui:requires component="cocktail.ui.Delay"/>
 
     <ui:symbol name="SYNC"/>
+    <ui:symbol name="DELAY"/>
+
+    <ui:property
+        name="inputDelay"
+        type="number"
+        reflected="true">
+        <?on changed
+        instance[DELAY].threshold = newValue;
+        ?>
+    </ui:property>
 
     <?tail
     cls.delegatesFocus = true;
@@ -14,6 +25,16 @@
 
     <?js
     this[SYNC] = cocktail.ui.sync();
+    this[DELAY] = new cocktail.ui.Delay(0, () => {
+        this[SYNC](() => {
+            if (this.dataBinding) {
+                this.value = this.dataBinding.member.parseValue(this.input.value)
+            }
+            else {
+                this.value = this.input.value;
+            }
+        })
+    });
     ?>
 
     <?on value:changed
@@ -30,14 +51,7 @@
     <input id="input">
 
         <?on input
-        instance[SYNC](() => {
-            if (instance.dataBinding) {
-                instance.value = instance.dataBinding.member.parseValue(this.value)
-            }
-            else {
-                instance.value = this.value;
-            }
-        });
+        instance[DELAY].begin();
         ?>
 
     </input>
