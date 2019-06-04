@@ -21,10 +21,16 @@
 
         begin() {
             this.cancel();
-            this[TIMER] = setTimeout(() => {
+            if (this.threshold) {
+                this[TIMER] = setTimeout(() => {
+                    this[TIMER] = null;
+                    this.callback()
+                }, this.threshold);
+            }
+            else {
                 this[TIMER] = null;
-                this.callback()
-            }, this.threshold);
+                this.callback();
+            }
         }
 
         cancel() {
