@@ -389,9 +389,9 @@
             return undefined;
         }
 
-        getInstance(id) {
+        getInstance(id, options = null) {
             let dataSource = this.dataSource;
-            return dataSource ? dataSource.loadObject(id) : undefined;
+            return dataSource ? dataSource.loadObject(id, options) : undefined;
         }
 
         initialize(parameters) {
