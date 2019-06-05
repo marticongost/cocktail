@@ -2,39 +2,55 @@
 
 <ui:element
     xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui" tabindex="0">
 
     <ui:using mixin="cocktail.ui.DataDisplay"/>
-    <ui:requires component="cocktail.ui.delay"/>
+    <ui:requires component="cocktail.ui.Delay"/>
+
+    <ui:symbol name="SYNC"/>
+    <ui:symbol name="DELAY"/>
+
+    <ui:property
+        name="inputDelay"
+        type="number"
+        reflected="true">
+        <?on changed
+        instance[DELAY].threshold = newValue;
+        ?>
+    </ui:property>
 
     <?tail
     cls.delegatesFocus = true;
     ?>
 
-    <?class
-    updateValue() {
-        this.setAttribute("value", this.textArea.value);
-    }
-    ?>
-
     <?js
-    this.updateDelay = new cocktail.ui.Delay(300, () => this.updateValue());
+    this[SYNC] = cocktail.ui.sync();
+    this[DELAY] = new cocktail.ui.Delay(0, () => {
+        this[SYNC](() => {
+            if (this.dataBinding) {
+                this.value = this.dataBinding.member.parseValue(this.textarea.value)
+            }
+            else {
+                this.value = this.textarea.value;
+            }
+        })
+    });
     ?>
 
     <?on value:changed
-    if (this.dataBinding) {
-        this.textArea.value = this.dataBinding.member.serializeValue(newValue);
-    }
+    this[SYNC](() => {
+        if (this.dataBinding) {
+            this.textarea.value = this.dataBinding.member.serializeValue(newValue)
+        }
+        else {
+            this.textarea.value = newValue;
+        }
+    });
     ?>
 
-    <textarea id="textArea">
-        <?on keydown
-        if (!cocktail.ui.nonTextKeys.has(e.which)) {
-            instance.updateDelay.begin();
-        }
-        ?>
-        <?on change
-        instance.updateValue();
+    <textarea id="textarea">
+        <?on input
+        instance[DELAY].begin();
         ?>
     </textarea>
 
