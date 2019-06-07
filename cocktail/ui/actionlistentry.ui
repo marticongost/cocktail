@@ -6,7 +6,7 @@
     role="listitem">
 
     <ui:property
-        name="action"
+        name="actionSource"
         reflected="false"
         final="true">
         <?on changed
@@ -15,6 +15,11 @@
         }
         ?>
     </ui:property>
+
+    <ui:property
+        name="actionList"
+        reflected="false"
+        final="true"/>
 
     <ui:property
         name="state"
@@ -33,21 +38,33 @@
         reflected="true"/>
 
     <?class
+    getActionContext() {
+        return this.actionList ? this.actionList.getActionContext() : {};
+    }
+
+    actionSetup() {
+        this.update(this.getActionContext());
+    }
+
     update(context) {
-        this.state = this.action.getState(context);
+        this.state = this.actionSource.getState(context);
     }
 
     invoke() {
-        this.action.invoke(this.actionList.getActionContext());
+        this.actionSource.invoke(this.getActionContext());
     }
 
     get actionList() {
         return this.parentInstance;
     }
 
-    get underlinedLabel() {
-        let shortcut = this.action.shortcut;
-        let label = this.action.translate();
+    getLabel() {
+        return this.actionSource.translate(this.getActionContext());
+    }
+
+    getUnderlinedLabel() {
+        let shortcut = this.actionSource.getShortcut(this.getActionContext());
+        let label = this.getLabel();
         if (shortcut) {
             label = label.replace(new RegExp(shortcut, "i"), function (c) {
                 return `<u>${c}</u>`;

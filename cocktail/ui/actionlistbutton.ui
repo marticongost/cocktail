@@ -8,22 +8,24 @@
 
     <?class
     [UPDATE_TITLE]() {
-        if (this.action) {
+        if (this.actionSource && this.actionList) {
             if (this.buttonStyle == "iconOnly") {
-                this.title = this.action.translate();
+                this.title = this.getLabel();
             }
             else {
-                this.label.innerHTML = this.underlinedLabel;
+                this.label.innerHTML = this.getUnderlinedLabel();
                 this.title = "";
             }
         }
     }
-    ?>
 
-    <?on action:changed
-    this.icon.src = newValue.iconURL;
-    this.button.accessKey = this.action.shortcut || "";
-    this[UPDATE_TITLE]();
+    actionSetup() {
+        super.actionSetup();
+        const context = this.getActionContext();
+        this.icon.src = this.actionSource.getIconURL(context);
+        this.button.accessKey = this.actionSource.getShortcut(context) || "";
+        this[UPDATE_TITLE]();
+    }
     ?>
 
     <?on state:changed
@@ -33,6 +35,7 @@
     else if (newValue == "disabled") {
         this.button.disabled = true;
     }
+    this[UPDATE_TITLE]();
     ?>
 
     <?on buttonStyle:changed

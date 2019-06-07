@@ -38,11 +38,8 @@
         padding: 0.3em 0.7em;
     }
 
-    :host([extra='true']) & {
-        display: block;
-        width: 100%;
+    :host([buttonStyle='iconBesideText']) & {
         text-align: left;
-        padding: 0.7em 0.7em;
     }
 
     &:hover {

@@ -112,6 +112,52 @@
             this[SELECTING_ENTRY] = false;
         }
     }
+
+    getSelectedEntriesActions() {
+        return new cocktail.ui.ActionSet("split-selector-selected-toolbar", {
+            entries: [
+                new class DeselectAction extends cocktail.ui.Action {
+                    invoke(context) {
+                        for (let value of context.selection) {
+                            context.view.setSelected(value, false);
+                        }
+                    }
+                    get min() {
+                        return 1;
+                    }
+                    translate() {
+                        return cocktail.ui.translations["cocktail.ui.SplitSelector.deselect"];
+                    }
+                    getIconURL() {
+                        return cocktail.normalizeResourceURI("cocktail.ui://images/remove.svg");
+                    }
+                }("transfer")
+            ]
+        });
+    }
+
+    getAvailableEntriesActions() {
+        return new cocktail.ui.ActionSet("split-selector-available-toolbar", {
+            entries: [
+                new class SelectAction extends cocktail.ui.Action {
+                    invoke(context) {
+                        for (let value of context.selection) {
+                            context.view.setSelected(value, true);
+                        }
+                    }
+                    get min() {
+                        return 1;
+                    }
+                    translate() {
+                        return cocktail.ui.translations["cocktail.ui.SplitSelector.select"];
+                    }
+                    getIconURL() {
+                        return cocktail.normalizeResourceURI("cocktail.ui://images/add.svg");
+                    }
+                }("transfer")
+            ]
+        });
+    }
     ?>
 
     <?tail
@@ -211,24 +257,9 @@
         </ui:with>
         <ui:with ui:element="actionList">
             <?js
-            element.actions = [
-                new class DeselectAction extends cocktail.ui.Action {
-                    invoke(context) {
-                        for (let value of context.selection) {
-                            instance.setSelected(value, false);
-                        }
-                    }
-                    get min() {
-                        return 1;
-                    }
-                    translate() {
-                        return cocktail.ui.translations["cocktail.ui.SplitSelector.deselect"];
-                    }
-                    get iconURL() {
-                        return cocktail.normalizeResourceURI("cocktail.ui://images/remove.svg");
-                    }
-                }("transfer")
-            ];
+            element.actionContext = {view: this};
+            element.actionSource = this.getSelectedEntriesActions();
+            element.actionSetup();
             ?>
         </ui:with>
     </ui:Panel>
@@ -239,24 +270,9 @@
         </ui:with>
         <ui:with ui:element="actionList">
             <?js
-            element.actions = [
-                new class SelectAction extends cocktail.ui.Action {
-                    invoke(context) {
-                        for (let value of context.selection) {
-                            instance.setSelected(value, true);
-                        }
-                    }
-                    get min() {
-                        return 1;
-                    }
-                    translate() {
-                        return cocktail.ui.translations["cocktail.ui.SplitSelector.select"];
-                    }
-                    get iconURL() {
-                        return cocktail.normalizeResourceURI("cocktail.ui://images/add.svg");
-                    }
-                }("transfer")
-            ];
+            element.actionContext = {view: this};
+            element.actionSource = this.getAvailableEntriesActions();
+            element.actionSetup();
             ?>
         </ui:with>
     </ui:Panel>
