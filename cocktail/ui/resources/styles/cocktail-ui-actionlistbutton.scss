@@ -112,6 +112,10 @@
         --width: 1.8em;
     }
 
+    :host([buttonStyle='iconOnly']):host-context(.cocktail-ui-ActionList.compact) & {
+        --width: 1.2em;
+    }
+
     :host([buttonStyle='textOnly']) & {
         display: none;
     }
