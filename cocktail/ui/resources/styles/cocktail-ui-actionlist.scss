@@ -23,33 +23,14 @@
     border: $panel-border;
 }
 
-:host(.without-frame) {
+:host(.without-frame),
+::slotted(.cocktail-ui-ActionList) {
     background: transparent;
     border: none;
 }
 
-#entryList {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    align-content: stretch;
-
-    :host(.vertical) & {
-        flex-direction: column;
-        width: 100%;
-    }
-}
-
-#extraDropdown {
-    :host([hasExtraActions='false']) & {
-        display: none;
-    }
-}
-
-#extraEntryList {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
+:host(.vertical) {
+    flex-direction: column;
+    width: 100%;
 }
 

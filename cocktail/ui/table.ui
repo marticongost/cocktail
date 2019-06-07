@@ -419,8 +419,9 @@
             header.languageLabel.style.display = "none";
         }
         cocktail.ui.Table.setCellWidth(header, member);
-        header.headerActions.actionParameters.table = this;
-        header.headerActions.actions = this.getHeaderActions(member, language);
+        header.headerActions.actionContext.table = this;
+        header.headerActions.actionSource = this.getHeaderActions(member, language);
+        header.headerActions.actionSetup();
 
         if (this.order) {
             let headerOrder = member.name;
@@ -444,10 +445,12 @@
     }
 
     getHeaderActions(member, language = null) {
-        return [
-            new cls.SortAction(member, language, "ascending"),
-            new cls.SortAction(member, language, "descending")
-        ];
+        return new cocktail.ui.ActionSet("table-header", {
+            entries: [
+                new cls.SortAction(member, language, "ascending"),
+                new cls.SortAction(member, language, "descending")
+            ]
+        });
     }
 
     setRows(records) {

@@ -95,7 +95,7 @@
         ?>
     </ui:property>
 
-    <ui:cocktail.ui.SplitSelector id="splitSelector">
+    <ui:TranslationsSplitSelector id="splitSelector">
 
         <?on value:changed
         if (!instance[CHANGING_LOCALE_STATE]) {
@@ -113,6 +113,8 @@
 
         <ui:with ui:element="selectedEntriesPanel">
             <?js
+            element.actionList.actionContext.translationsSelector = this;
+
             element.selectionActivated = function () {
                 let commonState;
                 for (let locale of this.selectedValues) {
@@ -132,53 +134,61 @@
                 }
             }
             ?>
-
-            <ui:with ui:element="actionList">
-                <?js
-                class TranslationSelectorAction extends cocktail.ui.Action {
-                    get iconURL() {
-                        return cocktail.normalizeResourceURI(`cocktail.ui://images/${this.id}.svg`);
-                    }
-                    translate() {
-                        return cocktail.ui.translations["cocktail.ui.TranslationsSelector.actions." + this.id];
-                    }
-                }
-
-                class ShowAction extends TranslationSelectorAction {
-                    getState(context) {
-                        if (!context.selection.some((locale) => instance.getLocaleState(locale) == "hidden")) {
-                            return "disabled";
-                        }
-                        return super.getState(context);
-                    }
-                    invoke(context) {
-                        for (let locale of context.selection) {
-                            instance.setLocaleState(locale, "visible");
-                        }
-                        context.actionList.updateEntries();
-                    }
-                }
-
-                class HideAction extends TranslationSelectorAction {
-                    getState(context) {
-                        if (!context.selection.some((locale) => instance.getLocaleState(locale) == "visible")) {
-                            return "disabled";
-                        }
-                        return super.getState(context)
-                    }
-                    invoke(context) {
-                        for (let locale of context.selection) {
-                            instance.setLocaleState(locale, "hidden");
-                        }
-                        context.actionList.updateEntries();
-                    }
-                }
-
-                element.addAction(new ShowAction("show"), "before transfer");
-                element.addAction(new HideAction("hide"), "after show");
-                ?>
-            </ui:with>
         </ui:with>
+
+    </ui:TranslationsSplitSelector>
+
+    <ui:cocktail.ui.SplitSelector ui:component="TranslationsSplitSelector">
+
+        <?class
+        getSelectedEntriesActions() {
+
+            const actionSource = super.getSelectedEntriesActions();
+
+            class TranslationSelectorAction extends cocktail.ui.Action {
+                getIconURL() {
+                    return cocktail.normalizeResourceURI(`cocktail.ui://images/${this.id}.svg`);
+                }
+                translate() {
+                    return cocktail.ui.translations["cocktail.ui.TranslationsSelector.actions." + this.id];
+                }
+            }
+
+            class ShowAction extends TranslationSelectorAction {
+                getState(context) {
+                    if (!context.selection.some((locale) => context.translationsSelector.getLocaleState(locale) == "hidden")) {
+                        return "disabled";
+                    }
+                    return super.getState(context);
+                }
+                invoke(context) {
+                    for (let locale of context.selection) {
+                        context.translationsSelector.setLocaleState(locale, "visible");
+                    }
+                    context.actionList.updateEntries();
+                }
+            }
+
+            class HideAction extends TranslationSelectorAction {
+                getState(context) {
+                    if (!context.selection.some((locale) => context.translationsSelector.getLocaleState(locale) == "visible")) {
+                        return "disabled";
+                    }
+                    return super.getState(context)
+                }
+                invoke(context) {
+                    for (let locale of context.selection) {
+                        context.translationsSelector.setLocaleState(locale, "hidden");
+                    }
+                    context.actionList.updateEntries();
+                }
+            }
+            actionSource.add(new ShowAction("show"), "before transfer");
+            actionSource.add(new HideAction("hide"), "after show");
+            return actionSource;
+        }
+        ?>
+
     </ui:cocktail.ui.SplitSelector>
 
     <?js
