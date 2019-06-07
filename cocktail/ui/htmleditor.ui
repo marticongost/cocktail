@@ -8,7 +8,6 @@
     <ui:using mixin="cocktail.ui.DataDisplay"/>
     <ui:symbol name="PROCESSING_INPUT"/>
     <ui:symbol name="CONTENT_AREA_INITIALIZED"/>
-    <ui:symbol name="UPDATE_TOOLBARS"/>
     <ui:symbol name="WRAP_TEXT_IN_P_ELEMENT"/>
     <ui:symbol name="SHOW_SELECTION_PATH"/>
     <ui:symbol name="CURRENT_ANCHOR_NODE"/>
@@ -36,7 +35,7 @@
         type="string"
         reflected="true">
         <?on changed
-        this[UPDATE_TOOLBARS]();
+        this.toolbox.updateEntries();
         if (this.codeEditor.codeMirror) {
             setTimeout(() => this.codeEditor.codeMirror.refresh(), 1);
         }
@@ -50,7 +49,7 @@
             return `cocktail.ui.HTMLEditor.actions.${this.id}`;
         }
 
-        get iconURL() {
+        getIconURL() {
             return `cocktail.ui://images/${this.id}.svg`;
         }
 
@@ -126,39 +125,22 @@
     }
     ?>
 
+    <?tail
+    cls.toolbox = new cocktail.ui.ActionSet("html-toolbox", {
+        entries: [
+            new cls.BoldAction("bold"),
+            new cls.ItalicAction("italic"),
+            new cls.ULAction("ul"),
+            new cls.OLAction("ol"),
+            new cls.IndentAction("indent"),
+            new cls.UnindentAction("unindent"),
+            new cls.CleanAction("clean"),
+            new cls.HTMLAction("html")
+        ]
+    });
+    ?>
+
     <?class
-    [UPDATE_TOOLBARS]() {
-        if (this.toolbox) {
-            for (let actionList of this.toolbox.querySelectorAll(".cocktail-ui-ActionList")) {
-                actionList.updateEntries();
-            }
-        }
-    }
-
-    createToolbars() {
-        for (let actions of this.getActionSets()) {
-            const toolbar = this.constructor.Toolbar.create();
-            toolbar.actionParameters = {editor: this};
-            toolbar.actions = actions;
-            this.toolbox.appendChild(toolbar);
-        }
-    }
-
-    getActionSets() {
-        return [
-            [
-                new cls.BoldAction("bold"),
-                new cls.ItalicAction("italic"),
-                new cls.ULAction("ul"),
-                new cls.OLAction("ol"),
-                new cls.IndentAction("indent"),
-                new cls.UnindentAction("unindent"),
-                new cls.CleanAction("clean"),
-                new cls.HTMLAction("html")
-            ]
-        ];
-    }
-
     focus() {
         if (this.mode == "source") {
             this.codeEditor.codeMirror.focus();
@@ -188,17 +170,17 @@
             this.selectRange(range);
         }
     }
-    
-    [SHOW_SELECTION_PATH]() {        
+
+    [SHOW_SELECTION_PATH]() {
         const selection = cocktail.ui.getShadow(this).getSelection();
-        
+
         let node = selection.anchorNode;
 
         if (node == this[CURRENT_ANCHOR_NODE]) {
             return;
         }
         this[CURRENT_ANCHOR_NODE] = node;
-        
+
         cocktail.ui.empty(this.breadcrumbs);
         let count = 0;
         while (node && node != this.contentArea) {
@@ -214,7 +196,7 @@
                 this.breadcrumbs.insertBefore(li, this.firstChild);
             }
             count++
-            node = node.parentNode;                
+            node = node.parentNode;
         }
     }
     ?>
@@ -247,13 +229,13 @@
     });
     ?>
 
-    <div id="toolbox"/>
-
-    <ui:cocktail.ui.ActionList
-        ui:component="Toolbar"
-        buttonStyle="iconOnly">
+    <ui:cocktail.ui.ActionList id="toolbox">
         <?js
         element.classList.add("compact");
+        element.buttonStyle = "iconOnly";
+        element.actionContext.editor = this;
+        element.actionSource = cls.toolbox;
+        element.actionSetup();
         ?>
     </ui:cocktail.ui.ActionList>
 
@@ -263,25 +245,25 @@
 
             <?on input
             instance.updateDelay.begin();
-            instance[UPDATE_TOOLBARS]();
+            instance.toolbox.updateEntries();
             instance[WRAP_TEXT_IN_P_ELEMENT]();
             ?>
 
             <?on mousedown
-            instance[UPDATE_TOOLBARS]();            
+            instance.toolbox.updateEntries();
             ?>
 
             <?on mouseup
-            instance[UPDATE_TOOLBARS]();
+            instance.toolbox.updateEntries();
             instance[SHOW_SELECTION_PATH]();
             ?>
 
             <?on keydown
-            instance[UPDATE_TOOLBARS]();
+            instance.toolbox.updateEntries();
             ?>
 
             <?on keyup
-            instance[UPDATE_TOOLBARS]();
+            instance.toolbox.updateEntries();
             instance[SHOW_SELECTION_PATH]();
             ?>
 
@@ -318,7 +300,6 @@
     <?js
     cocktail.ui.link(this, this.codeEditor, "value");
     this.mode = "visual";
-    this.createToolbars();
     ?>
 
 </ui:element>
