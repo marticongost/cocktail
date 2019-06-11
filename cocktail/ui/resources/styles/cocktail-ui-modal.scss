@@ -1,0 +1,66 @@
+
+@import "cocktail.ui://styles/common";
+
+$transition: 0.3s ease;
+$modal-padding: 1.5rem;
+
+:host {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 100000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(black, 0.2);
+    pointer-events: none;
+    transition: opacity $transition;
+    opacity: 0;
+}
+
+:host([visible='true']) {
+    opacity: 1;
+    transform: none;
+    pointer-events: all;
+}
+
+#dialog {
+    background-color: white;
+    border: $panel-border;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 0 1rem rgba(black, 0.5);
+    transition: transform $transition;
+    transform: scale(0);
+
+    :host([visible='true']) & {
+        transform: none;
+    }
+}
+
+#header {
+    flex: 0 0 auto;
+    border-bottom: $panel-border;
+    background: $panel-background;
+    display: flex;
+}
+
+#heading {
+    padding: $modal-padding;
+    margin: 0;
+    margin-right: $modal-padding;
+    color: $heading-color;
+    font-size: 1.3rem;
+}
+
+#actionList {
+    margin-left: auto;
+}
+
+#content {
+    flex: 1 1 auto;
+    padding: $modal-padding;
+}
+

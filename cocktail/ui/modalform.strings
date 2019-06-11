@@ -1,0 +1,15 @@
+
+[cocktail.ui.ModalForm]
+
+    [actions]
+
+        [accept]
+        ca: Acceptar
+        es: Aceptar
+        en: Accept
+
+        [cancel]
+        ca: Cancel·lar
+        es: Cancelar
+        en: Cancel
+
