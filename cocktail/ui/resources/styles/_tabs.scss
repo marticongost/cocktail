@@ -25,6 +25,7 @@ $tab-hover-underline-color: lighten($tab-active-underline-color, 25) !default;
     flex: 0 0 auto;
     border-bottom: $tab-strip-border-thickness solid $tab-inactive-underline-color;
     box-shadow: 0 0.2em 1.2em rgba(black, 0.1);
+    background-color: white;
     display: flex;
 }
 

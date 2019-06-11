@@ -1,0 +1,23 @@
+
+@import "cocktail.ui://styles/common";
+
+:host {
+    border: $panel-border;
+    background: $panel-background;
+}
+
+#strip {
+    background: none;
+    box-shadow: none;
+    border: none;
+
+    button {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.9em;
+    }
+}
+
+#content {
+    background: none;
+}
+
