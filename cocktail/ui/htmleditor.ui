@@ -191,30 +191,24 @@
     }
 
     [SHOW_SELECTION_PATH]() {
-        const selection = cocktail.ui.getShadow(this).getSelection();
 
+        const selection = cocktail.ui.getShadow(this).getSelection();
         let node = selection.anchorNode;
 
+        // There's no point in updating the breadcrumbs if the selected element hasn't changed
         if (node == this[CURRENT_ANCHOR_NODE]) {
             return;
         }
         this[CURRENT_ANCHOR_NODE] = node;
 
         cocktail.ui.empty(this.breadcrumbs);
-        let count = 0;
-        while (node && node != this.contentArea) {
 
+        while (node && node != this.contentArea) {
             if (node.nodeType == document.ELEMENT_NODE) {
                 const li = document.createElement("li");
                 li.innerText = node.tagName;
                 this.breadcrumbs.insertBefore(li, this.firstChild);
             }
-            if(count > 0 && node.parentNode && node.parentNode!=this.contentArea){
-                const li = document.createElement("li");
-                li.innerText = "»"
-                this.breadcrumbs.insertBefore(li, this.firstChild);
-            }
-            count++
             node = node.parentNode;
         }
     }
@@ -293,6 +287,7 @@
                 instance[WRAP_TEXT_IN_P_ELEMENT]();
             }
             ?>
+
             <?on blur
             cocktail.ui.empty(instance.breadcrumbs);
             this[CURRENT_ANCHOR_NODE] = null;
