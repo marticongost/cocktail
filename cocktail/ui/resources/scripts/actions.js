@@ -33,7 +33,7 @@
         }
 
         getComponent(context) {
-            let component = this.component || this.constructor.defaultComponent;
+            let component = this.component || context.defaultComponent || this.constructor.defaultComponent;
             return component.create ? component : component();
         }
 
