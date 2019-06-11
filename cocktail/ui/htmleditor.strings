@@ -50,6 +50,11 @@
         es: Quitar indentación
         en: Unindent
 
+        [link]
+        ca: Inserir enllaç
+        es: Insertar enlace
+        en: Insert link
+
         [clean]
         ca: Treure format
         es: Quitar formato
@@ -59,4 +64,38 @@
         ca: Editar el codi font
         es: Editar el código fuente
         en: Edit source code
+
+    [LinkEditor]
+
+        [heading]
+        ca: Inserir enllaç
+        es: Insertar enlace
+        en: Insert link
+
+        [form]
+
+            [members]
+
+                [url]
+                ca: Adreça URL
+                es: Dirección URL
+                en: URL address
+
+                [text]
+                ca: Text
+                es: Texto
+                en: Text
+
+                [title]
+                ca: Títol
+                es: Título
+                en: Title
+
+                [rel]
+                *: Rel
+
+                [opensInNewWindow]
+                ca: Obrir a una nova finestra
+                es: Abrir en ventana nueva
+                en: Open in a new window
 
