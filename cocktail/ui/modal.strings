@@ -1,0 +1,10 @@
+
+[cocktail.ui.Modal]
+
+    [actions]
+
+        [close]
+        ca: Tancar
+        es: Cerrar
+        en: Close
+
