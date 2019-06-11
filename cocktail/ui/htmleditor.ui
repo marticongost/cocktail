@@ -35,7 +35,7 @@
         type="string"
         reflected="true">
         <?on changed
-        this.toolbox.updateEntries();
+        this.toolbox.updateActions();
         if (this.codeEditor.codeMirror) {
             setTimeout(() => this.codeEditor.codeMirror.refresh(), 1);
         }
@@ -250,20 +250,20 @@
             ?>
 
             <?on mousedown
-            instance.toolbox.updateEntries();
+            instance.toolbox.updateActions();
             ?>
 
             <?on mouseup
-            instance.toolbox.updateEntries();
+            instance.toolbox.updateActions();
             instance[SHOW_SELECTION_PATH]();
             ?>
 
             <?on keydown
-            instance.toolbox.updateEntries();
+            instance.toolbox.updateActions();
             ?>
 
             <?on keyup
-            instance.toolbox.updateEntries();
+            instance.toolbox.updateActions();
             instance[SHOW_SELECTION_PATH]();
             ?>
 
