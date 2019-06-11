@@ -34,8 +34,9 @@
         padding: 0.4em 0.6em;
     }
 
-    :host-context(.cocktail-ui-ActionList.compact) & {
-        padding: 0.3em 0.7em;
+    :host-context(.cocktail-ui-ActionList.compact) &,
+    :host-context(.cocktail-ui-TabbedActionList) & {
+        padding: 0.5em 0.7em;
     }
 
     :host([buttonStyle='iconBesideText']) & {
@@ -112,7 +113,8 @@
         --width: 1.8em;
     }
 
-    :host([buttonStyle='iconOnly']):host-context(.cocktail-ui-ActionList.compact) & {
+    :host([buttonStyle='iconOnly']):host-context(.cocktail-ui-ActionList.compact) &,
+    :host([buttonStyle='iconOnly']):host-context(.cocktail-ui-TabbedActionList) & {
         --width: 1.2em;
     }
 

@@ -1,0 +1,13 @@
+
+@import "cocktail.ui://styles/common";
+
+:host {
+    background: none;
+    padding: 0;
+}
+
+#content {
+    display: flex;
+    align-content: stretch;
+}
+

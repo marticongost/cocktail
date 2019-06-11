@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ui:cocktail.ui.Tabs
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui"
+    updatesQuery="false">
+
+    <ui:using mixin="cocktail.ui.ActionContainer"/>
+
+    <?class
+    getDefaultActionComponent(action) {
+        return this.constructor.Tab;
+    }
+    ?>
+
+    <ui:cocktail.ui.Tab
+        ui:component="Tab"
+        buttonStyle="iconOnly">
+
+        <ui:using mixin="cocktail.ui.ActionContainer"/>
+        <ui:resource href="cocktail.ui://styles/cocktail-ui-tabbedactionlist--tab.scss.css"/>
+
+        <?class
+        actionSetup() {
+            super.actionSetup();
+            this.tabId = this.actionSource.id;
+        }
+
+        update(context) {
+            super.update(context);
+            this.button.innerHTML = this.actionSource.translate(context);
+        }
+        ?>
+
+    </ui:cocktail.ui.Tab>
+
+</ui:cocktail.ui.Tabs>
+
