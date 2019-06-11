@@ -1,6 +1,23 @@
 
 [cocktail.ui.HTMLEditor]
 
+    [actionSets]
+
+        [format]
+        ca: Format
+        es: Formato
+        en: Format
+
+        [lists]
+        ca: Llistes
+        es: Listas
+        en: Lists
+
+        [tools]
+        ca: Eines
+        es: Herramientas
+        en: Tools
+
     [actions]
 
         [bold]

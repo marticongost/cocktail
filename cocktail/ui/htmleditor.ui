@@ -43,6 +43,13 @@
     </ui:property>
 
     <?tail
+    cls.EditorActionSet = class EditorActionSet extends cocktail.ui.ActionSet {
+
+        get translationKey() {
+            return `cocktail.ui.HTMLEditor.actionSets.${this.id}`;
+        }
+    }
+
     cls.EditorAction = class EditorAction extends cocktail.ui.Action {
 
         get translationKey() {
@@ -128,14 +135,26 @@
     <?tail
     cls.toolbox = new cocktail.ui.ActionSet("html-toolbox", {
         entries: [
-            new cls.BoldAction("bold"),
-            new cls.ItalicAction("italic"),
-            new cls.ULAction("ul"),
-            new cls.OLAction("ol"),
-            new cls.IndentAction("indent"),
-            new cls.UnindentAction("unindent"),
-            new cls.CleanAction("clean"),
-            new cls.HTMLAction("html")
+            new cls.EditorActionSet("format", {
+                entries: [
+                    new cls.BoldAction("bold"),
+                    new cls.ItalicAction("italic"),
+                    new cls.CleanAction("clean")
+                ]
+            }),
+            new cls.EditorActionSet("lists", {
+                entries: [
+                    new cls.ULAction("ul"),
+                    new cls.OLAction("ol"),
+                    new cls.IndentAction("indent"),
+                    new cls.UnindentAction("unindent")
+                ]
+            }),
+            new cls.EditorActionSet("tools", {
+                entries: [
+                    new cls.HTMLAction("html")
+                ]
+            })
         ]
     });
     ?>
@@ -229,15 +248,14 @@
     });
     ?>
 
-    <ui:cocktail.ui.ActionList id="toolbox">
+    <ui:cocktail.ui.TabbedActionList id="toolbox">
         <?js
         element.classList.add("compact");
-        element.buttonStyle = "iconOnly";
         element.actionContext.editor = this;
         element.actionSource = cls.toolbox;
         element.actionSetup();
         ?>
-    </ui:cocktail.ui.ActionList>
+    </ui:cocktail.ui.TabbedActionList>
 
     <div id="contentFrame">
 
@@ -245,7 +263,7 @@
 
             <?on input
             instance.updateDelay.begin();
-            instance.toolbox.updateEntries();
+            instance.toolbox.updateActions();
             instance[WRAP_TEXT_IN_P_ELEMENT]();
             ?>
 
