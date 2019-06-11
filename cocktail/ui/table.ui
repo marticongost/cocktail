@@ -198,7 +198,7 @@
             const header = this.getHeaderForOrder(oldValue);
             if (header) {
                 header.sorted = false;
-                header.headerActions.updateEntries();
+                header.headerActions.updateActions();
             }
         }
 
@@ -206,7 +206,7 @@
             const header = this.getHeaderForOrder(newValue);
             if (header) {
                 header.sorted = true;
-                header.headerActions.updateEntries();
+                header.headerActions.updateActions();
             }
         }
 

@@ -165,7 +165,7 @@
                     for (let locale of context.selection) {
                         context.translationsSelector.setLocaleState(locale, "visible");
                     }
-                    context.actionList.updateEntries();
+                    context.actionList.updateActions();
                 }
             }
 
@@ -180,7 +180,7 @@
                     for (let locale of context.selection) {
                         context.translationsSelector.setLocaleState(locale, "hidden");
                     }
-                    context.actionList.updateEntries();
+                    context.actionList.updateActions();
                 }
             }
             actionSource.add(new ShowAction("show"), "before transfer");
