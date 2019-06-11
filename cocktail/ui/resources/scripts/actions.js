@@ -41,6 +41,18 @@
             return null;
         }
 
+        get translationPrefix() {
+            return "cocktail.ui.actions";
+        }
+
+        get translationKey() {
+            return `${this.translationPrefix}.${this.id}`;
+        }
+
+        translate(context) {
+            return cocktail.ui.translations[this.translationKey];
+        }
+
         static get enabled() {
             const enabled = this[ENABLED];
             return enabled === undefined ? true : enabled;
@@ -172,18 +184,6 @@
 
         getIconURL(context) {
             return null;
-        }
-
-        get translationPrefix() {
-            return "cocktail.ui.actions";
-        }
-
-        get translationKey() {
-            return `${this.translationPrefix}.${this.id}`;
-        }
-
-        translate(context) {
-            return cocktail.ui.translations[this.translationKey];
         }
 
         getShortcut(context) {
