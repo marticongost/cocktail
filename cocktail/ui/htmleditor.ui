@@ -294,7 +294,8 @@
             }
             ?>
             <?on blur
-                cocktail.ui.empty(instance.breadcrumbs);
+            cocktail.ui.empty(instance.breadcrumbs);
+            this[CURRENT_ANCHOR_NODE] = null;
             ?>
 
         </div>
