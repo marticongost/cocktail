@@ -207,7 +207,7 @@
             if (node.nodeType == document.ELEMENT_NODE) {
                 const li = document.createElement("li");
                 li.innerText = node.tagName;
-                this.breadcrumbs.insertBefore(li, this.firstChild);
+                this.breadcrumbs.insertBefore(li, this.breadcrumbs.firstChild);
             }
             node = node.parentNode;
         }
