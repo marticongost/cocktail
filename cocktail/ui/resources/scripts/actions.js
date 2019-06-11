@@ -127,8 +127,9 @@
                 this[ACTION_LIST].push(entry);
             }
             else if (typeof(order) == "string") {
+                let placement, anchorId;
                 try {
-                    let [placement, anchorId] = order.split(" ");
+                    [placement, anchorId] = order.split(" ");
                 }
                 catch (e) {
                     throw new cocktail.ui.ActionRegistrationError(
@@ -136,14 +137,14 @@
                     );
                 }
 
-                const anchor = actionMap[anchorId];
+                const anchor = this[ACTION_MAP][anchorId];
                 if (!anchor) {
                     throw new cocktail.ui.ActionRegistrationError(
                         `Invalid anchor "${anchorId}"; no action with that ID exists on ${this}`
                     );
                 }
 
-                let anchorIndex = actionList.indexOf(anchor);
+                let anchorIndex = this[ACTION_LIST].indexOf(anchor);
                 if (placement == "after") {
                     anchorIndex++;
                 }
