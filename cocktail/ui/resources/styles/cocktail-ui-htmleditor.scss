@@ -72,9 +72,12 @@ $block-color: #ddd;
     position: absolute;
     bottom: 100%;
     right: 0;
+    width: 80%;
     pointer-events: none;
     opacity: 0;
     transition: opacity 0.2s ease;
+    box-shadow: 0 0.2em 1.2em rgba(black, 0.1);
+    border: $panel-border;
 
     :host([toolboxVisible='true']) & {
         opacity: 1;
