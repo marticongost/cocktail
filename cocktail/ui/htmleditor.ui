@@ -103,6 +103,13 @@
 
     cls.UnindentAction = class UnindentAction extends cls.CommandAction("unindent")  {}
 
+    cls.LinkAction = class LinkAction extends cls.EditorAction {
+
+        invoke(context) {
+            context.editor.showLinkEditor();
+        }
+    }
+
     cls.CleanAction = class CleanAction extends cls.CommandAction("removeFormat") {}
 
     cls.HTMLAction = class HTMLAction extends cls.EditorAction {
@@ -139,6 +146,7 @@
                 entries: [
                     new cls.BoldAction("bold"),
                     new cls.ItalicAction("italic"),
+                    new cls.LinkAction("link"),
                     new cls.CleanAction("clean")
                 ]
             }),
@@ -167,6 +175,38 @@
         else {
             this.contentArea.focus();
         }
+    }
+
+    showLinkEditor() {
+
+        const selection = cocktail.ui.getShadow(this).getSelection();
+        let node = selection.anchorNode;
+        this.linkEditor.linkNode = null;
+        this.linkEditor.selectionRange = selection.getRangeAt(0);
+        let value;
+
+        while (node && node != this.contentArea) {
+            if (node.nodeType == document.ELEMENT_NODE && node.tagName == "A") {
+                this.linkEditor.linkNode = node;
+                value = {
+                    url: node.getAttribute("href"),
+                    text: node.innerText,
+                    title: node.title,
+                    rel: node.getAttribute("rel"),
+                    opensInNewWindow: (node.target == "_blank")
+                };
+                break;
+            }
+            node = node.parentNode;
+        }
+
+        if (!value) {
+            value = this.linkEditor.form.dataBinding.member.defaults();
+            value.text = selection.toString();
+        }
+
+        this.linkEditor.form.value = value;
+        this.linkEditor.show();
     }
 
     selectRange(range) {
@@ -315,6 +355,109 @@
     cocktail.ui.link(this, this.codeEditor, "value");
     this.mode = "visual";
     ?>
+
+    <ui:LinkEditor id="linkEditor"/>
+
+    <ui:cocktail.ui.ModalForm ui:component="LinkEditor">
+
+        <ui:property
+            name="linkNode"
+            reflected="false"/>
+
+        <ui:property
+            name="selectionRange"
+            reflected="false"/>
+
+        <ui:property
+            name="linkValues"
+            reflected="false"/>
+
+        <?class
+        getFormSchema() {
+            return new cocktail.schema.Schema({
+                name: "cocktail.ui.HTMLEditor.LinkEditor.form",
+                members: [
+                    new cocktail.schema.String({
+                        name: "url",
+                        required: true
+                    }),
+                    new cocktail.schema.String({
+                        name: "text",
+                        required: true
+                    }),
+                    new cocktail.schema.String({
+                        name: "title"
+                    }),
+                    new cocktail.schema.String({
+                        name: "rel"
+                    }),
+                    new cocktail.schema.Boolean({
+                        name: "opensInNewWindow",
+                        required: true,
+                        defaultValue: false
+                    })
+                ]
+            });
+        }
+        ?>
+
+        <?on accepted
+        if (!this.linkNode) {
+            this.linkNode = document.createElement("a");
+            this.selectionRange.deleteContents();
+            this.selectionRange.insertNode(this.linkNode);
+        }
+
+        const value = e.detail.value;
+        this.linkNode.setAttribute("href", value.url);
+        this.linkNode.innerText = value.text;
+
+        if (value.title) {
+            this.linkNode.setAttribute("title", value.title);
+        }
+        else {
+            this.linkNode.removeAttribute("title");
+        }
+
+        if (value.rel) {
+            this.linkNode.setAttribute("rel", value.rel);
+        }
+        else {
+            this.linkNode.removeAttribute("rel");
+        }
+
+        if (value.opensInNewWindow) {
+            this.linkNode.setAttribute("target", "_blank");
+        }
+        else {
+            this.linkNode.removeAttribute("target");
+        }
+
+        this.parentInstance.updateDelay.begin();
+        ?>
+
+        <?on closed
+        if (this.linkNode) {
+            const range = document.createRange();
+            range.selectNode(this.linkNode);
+            this.parentInstance.selectRange(range);
+        }
+        this.parentInstance.focus();
+        ?>
+
+        <span slot="heading">
+            <ui:translation key=".heading"/>
+        </span>
+
+        <ui:with ui:element="form">
+            <?js
+            const member = instance.getFormSchema();
+            const value = member.defaults();
+            element.dataBinding = {member, value};
+            ?>
+        </ui:with>
+
+    </ui:cocktail.ui.ModalForm>
 
 </ui:element>
 
