@@ -20,6 +20,11 @@
 
     [actions]
 
+        [block-type]
+        ca: Tipus de bloc
+        es: Tipo de bloque
+        en: Block type
+
         [bold]
         ca: Negreta
         es: Negrita
@@ -98,4 +103,58 @@
                 ca: Obrir a una nova finestra
                 es: Abrir en ventana nueva
                 en: Open in a new window
+
+    [BlockTypeSelector]
+
+        [blockTypes]
+
+            [p]
+            ca: Paràgraf
+            es: Párrafo
+            en: Paragraph
+
+            [h1]
+            ca: Capçalera 1
+            es: Cabecera 1
+            en: Heading 1
+
+            [h2]
+            ca: Capçalera 2
+            es: Cabecera 2
+            en: Heading 2
+
+            [h3]
+            ca: Capçalera 3
+            es: Cabecera 3
+            en: Heading 3
+
+            [h4]
+            ca: Capçalera 4
+            es: Cabecera 4
+            en: Heading 4
+
+            [h5]
+            ca: Capçalera 5
+            es: Cabecera 5
+            en: Heading 5
+
+            [h6]
+            ca: Capçalera 6
+            es: Cabecera 6
+            en: Heading 6
+
+            [div]
+            ca: Bloc genèric (div)
+            es: Bloque genérico (div)
+            en: Generic block (div)
+
+            [blockquote]
+            ca: Cita
+            es: Cita
+            en: Quote
+
+            [code]
+            ca: Bloc de codi
+            es: Bloque de código
+            en: Code block
 
