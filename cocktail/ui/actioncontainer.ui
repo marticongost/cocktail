@@ -70,6 +70,37 @@
         return container && container.getEntry(id.substr(pos + 1));
     }
 
+    *iterActionEntries(selector = null) {
+
+        let filter;
+
+        if (selector) {
+            if (typeof selector == "string") {
+                filter = (element) => element.actionSource.id == selector;
+            }
+            else if (typeof selector == "function") {
+                if (selector.prototype instanceof cocktail.ui.ActionSource) {
+                    filter = (element) => element.actionSource instanceof selector;
+                }
+                else {
+                    filter = selector;
+                }
+            }
+            else {
+                throw "Invalid action selector: expected an action local name or a filter function";
+            }
+        }
+
+        for (let element of this.actionEntriesContainer.children) {
+            if (element.iterActionEntries) {
+                yield *element.iterActionEntries(filter);
+            }
+            if (!filter || filter(element)) {
+                yield element;
+            }
+        }
+    }
+
     requireEntry(id) {
         const entry = this.getEntry(id);
         if (!entry) {
