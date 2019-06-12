@@ -23,13 +23,6 @@
     flex-direction: column;
     padding: 0;
 
-    :host([extra='true']) & {
-        display: block;
-        width: 100%;
-        text-align: left;
-        padding: 0.7em 0.7em;
-    }
-
     &[expanded='false']:hover {
 
         :host(:not([state='disabled'])) & {
