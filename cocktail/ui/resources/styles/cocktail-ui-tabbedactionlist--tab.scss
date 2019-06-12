@@ -4,10 +4,12 @@
 :host {
     background: none;
     padding: 0;
+    overflow: visible;
 }
 
 #content {
     display: flex;
     align-content: stretch;
+    overflow: visible;
 }
 
