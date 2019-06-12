@@ -74,6 +74,10 @@
         entry.value = value;
         return entry;
     }
+
+    focusAfterSelection() {
+        this.dropdownPanel.button.focus();
+    }
     ?>
 
     <?js
@@ -120,7 +124,7 @@
         selectionActivated() {
             this.parentInstance.value = this.selectedElement.value;
             this.parentInstance.dropdownPanel.expanded = false;
-            this.parentInstance.dropdownPanel.button.focus();
+            this.parentInstance.focusAfterSelection();
         }
         ?>
     </div>
