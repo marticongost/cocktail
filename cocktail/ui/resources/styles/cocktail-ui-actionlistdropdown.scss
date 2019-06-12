@@ -88,18 +88,10 @@
 
     svg {
         height: auto;
+        width: var(--action-list-icon-width);
 
         * {
             fill: $panel-action-color !important;
-        }
-
-        :host([buttonStyle='iconBesideText']) & {
-            width: 1.5em;
-        }
-
-        :host([buttonStyle='iconAboveText']) &,
-        :host([buttonStyle='iconOnly']) & {
-            width: 1.8em;
         }
 
         :host([state='emphasized']) & * {
@@ -134,5 +126,4 @@
         color: $focus-color;
     }
 }
-
 

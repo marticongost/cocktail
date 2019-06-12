@@ -4,6 +4,8 @@
 :host {
     border: $panel-border;
     background: $panel-background;
+    --action-list-button-padding: 0.5em 0.7em;
+    --action-list-icon-width: 1.2em;
 }
 
 #strip {

@@ -3,7 +3,7 @@
 
 #button {
     flex: 1 1 auto;
-    padding: 0.7em 1.3em;
+    padding: var(--action-list-button-padding);
     font-size: 1em;
     margin: 0;
 
@@ -26,10 +26,10 @@
 }
 
 :host(:not([dropdownType='menu'])) #panelContent {
-    padding: 1em 1.3em;
+    padding: 0;
 }
 
 #footer {
-    padding: 0.5em 1.3em;
+    padding: var(--action-list-button-padding);
 }
 
