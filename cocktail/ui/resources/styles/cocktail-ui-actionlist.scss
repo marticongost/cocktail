@@ -6,6 +6,27 @@
     border: $panel-border;
     display: flex;
     align-content: stretch;
+    --action-list-button-padding: 1em 1.3em;
+}
+
+:host([buttonStyle='iconAboveText']),
+:host([buttonStyle='iconOnly']) {
+    --action-list-icon-width: 1.8em;
+}
+
+:host([buttonStyle='iconBesideText']) {
+    --action-list-icon-width: 1.5em;
+}
+
+:host(.compact) {
+    --action-list-button-padding: 0.5em 0.7em;
+    --action-list-icon-width: 1.2em;
+}
+
+:host(.vertical) {
+    flex-direction: column;
+    width: 100%;
+    --action-list-button-padding: 0.4em 0.6em;
 }
 
 :host(.secondary) {
@@ -27,10 +48,5 @@
 ::slotted(.cocktail-ui-ActionList) {
     background: transparent;
     border: none;
-}
-
-:host(.vertical) {
-    flex-direction: column;
-    width: 100%;
 }
 
