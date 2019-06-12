@@ -10,7 +10,12 @@
     <ui:symbol name="CONTENT_AREA_INITIALIZED"/>
     <ui:symbol name="WRAP_TEXT_IN_P_ELEMENT"/>
     <ui:symbol name="SHOW_SELECTION_PATH"/>
+    <ui:symbol name="SHOW_BLOCK_TYPE"/>
     <ui:symbol name="CURRENT_ANCHOR_NODE"/>
+    <ui:symbol name="CURRENT_RANGE"/>
+    <ui:symbol name="STORE_RANGE"/>
+    <ui:symbol name="RESTORE_RANGE"/>
+    <ui:symbol name="SYNC"/>
 
     <ui:property
         name="multiline"
@@ -91,6 +96,13 @@
         }
     }
 
+    cls.SelectBlockTypeAction = class SelectBlockTypeAction extends cls.EditorAction {
+
+        static get defaultComponent() {
+            return cls.BlockTypeSelector;
+        }
+    }
+
     cls.BoldAction = class BoldAction extends cls.CommandAction("bold", true)  {}
 
     cls.ItalicAction = class ItalicAction extends cls.CommandAction("italic", true)  {}
@@ -144,6 +156,7 @@
         entries: [
             new cls.EditorActionSet("format", {
                 entries: [
+                    new cls.SelectBlockTypeAction("block-type"),
                     new cls.BoldAction("bold"),
                     new cls.ItalicAction("italic"),
                     new cls.LinkAction("link"),
@@ -179,7 +192,7 @@
 
     showLinkEditor() {
 
-        const selection = cocktail.ui.getShadow(this).getSelection();
+        const selection = this.getSelection();
         let node = selection.anchorNode;
         this.linkEditor.linkNode = null;
         this.linkEditor.selectionRange = selection.getRangeAt(0);
@@ -209,8 +222,25 @@
         this.linkEditor.show();
     }
 
+    getSelection() {
+        return cocktail.ui.getShadow(this).getSelection();
+    }
+
+    [STORE_RANGE]() {
+        const selection = this.getSelection();
+        this[CURRENT_RANGE] = selection.rangeCount ? selection.getRangeAt(0) : null;
+    }
+
+    [RESTORE_RANGE]() {
+        if (this[CURRENT_RANGE]) {
+            const selection = this.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(this[CURRENT_RANGE]);
+        }
+    }
+
     selectRange(range) {
-        const sel = cocktail.ui.getShadow(this).getSelection();
+        const sel = this.getSelection();
         sel.removeAllRanges();
         sel.addRange(range);
     }
@@ -232,7 +262,7 @@
 
     [SHOW_SELECTION_PATH]() {
 
-        const selection = cocktail.ui.getShadow(this).getSelection();
+        const selection = this.getSelection();
         let node = selection.anchorNode;
 
         // There's no point in updating the breadcrumbs if the selected element hasn't changed
@@ -252,6 +282,38 @@
             node = node.parentNode;
         }
     }
+
+    [SHOW_BLOCK_TYPE]() {
+        const selection = this.getSelection();
+        let node = selection.anchorNode;
+        while (node) {
+            if (node.parentNode === this.contentArea) {
+                break;
+            }
+            node = node.parentNode;
+        }
+        let value = null;
+        if (node && node.nodeType == document.ELEMENT_NODE) {
+            value = node.tagName.toLowerCase();
+        }
+        this[SYNC](() => {
+            for (let selector of this.toolbox.iterActionEntries(cls.SelectBlockTypeAction)) {
+                selector.value = value;
+            }
+        });
+    }
+
+    setBlockType(tagName) {
+        this.focus();
+        this[RESTORE_RANGE]();
+        document.execCommand("formatBlock", false, tagName.toLowerCase());
+        this[STORE_RANGE]();
+        this[SYNC](() => {
+            for (let selector of this.toolbox.iterActionEntries(cls.SelectBlockTypeAction)) {
+                selector.value = tagName.toLowerCase();
+            }
+        });
+    }
     ?>
 
     <?on value:changed
@@ -269,6 +331,8 @@
     ?>
 
     <?js
+    this[SYNC] = cocktail.ui.sync();
+
     this.updateDelay = new cocktail.ui.Delay(200, () => {
         if (!instance[PROCESSING_INPUT]) {
             instance[PROCESSING_INPUT] = true;
@@ -307,7 +371,9 @@
 
             <?on mouseup
             instance.toolbox.updateActions();
+            instance[STORE_RANGE]();
             instance[SHOW_SELECTION_PATH]();
+            instance[SHOW_BLOCK_TYPE]();
             ?>
 
             <?on keydown
@@ -316,7 +382,9 @@
 
             <?on keyup
             instance.toolbox.updateActions();
+            instance[STORE_RANGE]();
             instance[SHOW_SELECTION_PATH]();
+            instance[SHOW_BLOCK_TYPE]();
             ?>
 
             <?on focus
@@ -326,6 +394,7 @@
                 document.execCommand("insertBrOnReturn", false, "false");
                 instance[WRAP_TEXT_IN_P_ELEMENT]();
             }
+            instance[SHOW_BLOCK_TYPE]();
             ?>
 
             <?on blur
@@ -458,6 +527,48 @@
         </ui:with>
 
     </ui:cocktail.ui.ModalForm>
+
+    <ui:cocktail.ui.ActionListDropdownSelector
+        ui:component="BlockTypeSelector">
+
+        <ui:symbol name="..SYNC"/>
+
+        <?class
+        actionSetup() {
+            this.dataBinding = {
+                member: new cocktail.schema.String({
+                    enumeration: [
+                        "p",
+                        "h1",
+                        "h2",
+                        "h3",
+                        "h4",
+                        "h5",
+                        "h6",
+                        "div",
+                        "blockquote",
+                        "code"
+                    ],
+                    translateValue(value) {
+                        return cocktail.ui.translations[cls.fullName + ".blockTypes." + value];
+                    }
+                })
+            };
+            super.actionSetup();
+        }
+
+        focusAfterSelection() {
+        }
+        ?>
+
+        <?on value:changed
+        const editor = this.getActionContext().editor;
+        editor[SYNC](() => {
+            editor.setBlockType(newValue);
+        });
+        ?>
+
+    </ui:cocktail.ui.ActionListDropdownSelector>
 
 </ui:element>
 
