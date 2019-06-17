@@ -112,9 +112,9 @@
     invokeAction(id, extraContext = null) {
         const entry = this.getEntry(id);
         if (entry) {
-            const context = this.getActionContext();
+            let context = this.getActionContext();
             if (extraContext) {
-                Object.assign(context, extraContext);
+                context = Object.assign({}, context, extraContext);
             }
             entry.actionSource.invoke(context);
             return true;
