@@ -51,6 +51,7 @@ from .singlevalueindex import SingleValueIndex
 from .multiplevaluesindex import MultipleValuesIndex
 from . import indexing
 from . import fulltextsearch
+from .fulltextsearch import full_text_indexing_disabled
 from .maxvalue import MaxValue
 from .query import Query
 from .pickling import dumps, loads
