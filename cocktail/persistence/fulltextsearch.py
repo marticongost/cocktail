@@ -3,6 +3,8 @@
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
+from contextlib import contextmanager
+
 from zope.interface import implementer
 from zope.index.text.interfaces import IPipelineElement
 from zope.index.text.lexicon import Lexicon
@@ -18,6 +20,8 @@ from cocktail.persistence.persistentobject import (
     PersistentObject,
     PersistentClass
 )
+
+indexing_enabled = True
 
 
 @implementer(IPipelineElement)
@@ -192,6 +196,9 @@ schema.String.index_text = _string_index_text
 @when(PersistentObject.changed)
 def _handle_changed(event):
 
+    if not indexing_enabled:
+        return
+
     obj = event.source
 
     if obj.is_inserted and event.previous_value != event.value:
@@ -237,6 +244,9 @@ def _cascade_index(obj, language, visited):
 @when(PersistentObject.inserting)
 def _handle_inserting(event):
 
+    if not indexing_enabled:
+        return
+
     obj = event.source
 
     if obj._should_index_member_full_text(obj.__class__):
@@ -248,6 +258,9 @@ def _handle_inserting(event):
 
 @when(PersistentObject.removing_translation)
 def _handle_translation_removed(event):
+
+    if not indexing_enabled:
+        return
 
     obj = event.source
     id = obj.id
@@ -298,6 +311,9 @@ def _handle_translation_removed(event):
 
 @when(PersistentObject.deleting)
 def _handle_deleting(event):
+
+    if not indexing_enabled:
+        return
 
     obj = event.source
     id = obj.id
@@ -359,4 +375,18 @@ def _rebuild_full_text_indexes(
                 )
 
 PersistentClass.rebuild_full_text_indexes = _rebuild_full_text_indexes
+
+
+@contextmanager
+def full_text_indexing_disabled():
+    """A context manager that temporarily disables full text indexing."""
+
+    global indexing_enabled
+    indexing_was_enabled = indexing_enabled
+    indexing_enabled = False
+
+    try:
+        yield None
+    finally:
+        indexing_enabled = indexing_was_enabled
 
