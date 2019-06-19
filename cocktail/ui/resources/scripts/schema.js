@@ -1144,6 +1144,25 @@
             }
             return value;
         }
+
+        translateValue(value, params = null) {
+
+            var items = [];
+
+            if (value) {
+                for (let [k, v] of value.entries()) {
+                    if (this.keys) {
+                        k = this.keys.translateValue(k);
+                    }
+                    if (this.values) {
+                        v = this.values.translateValue(v);
+                    }
+                    items.push(`${k}: ${v}`);
+                }
+            }
+
+            return items.join(", ");
+        }
     }
 
     cocktail.schema.Mapping.prototype.keys = null;
