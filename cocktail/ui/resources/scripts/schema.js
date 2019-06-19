@@ -1123,10 +1123,10 @@
         fromJSONValue(value) {
             if (value && this.keys && this.values) {
                 var items = new Map();
-                for (let key of value) {
+                for (let [k, v] of value) {
                     items.set(
-                        this.keys.fromJSONValue(key),
-                        this.values.fromJSONValue(value[key])
+                        this.keys.fromJSONValue(k),
+                        this.values.fromJSONValue(v)
                     );
                 }
                 return items;
