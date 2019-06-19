@@ -130,7 +130,7 @@ $cell-padding: 0.6em;
 .Row {
     display: flex;
 
-    :host([hierarchical='false']) & {
+    :host([hierarchical='false']) &:not([selected]) {
         @include alternate-background-color;
     }
 }
@@ -141,9 +141,11 @@ $cell-padding: 0.6em;
     overflow-wrap: break-word;
 }
 
+.Row[selected],
 .Row[selected] > .Cell,
+.TreeRow[selected],
 .TreeRow[selected] > .rowContent > * {
-    background: $selection-background;
+    background-color: $selection-background;
     color: $selection-foreground;
 }
 
