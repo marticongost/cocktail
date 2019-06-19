@@ -142,10 +142,12 @@ $cell-padding: 0.6em;
 }
 
 .Row[selected],
-.Row[selected] > .Cell,
-.TreeRow[selected],
-.TreeRow[selected] > .rowContent > * {
+.TreeRow[selected] {
     background-color: $selection-background;
+}
+
+.Row[selected] > .Cell,
+.TreeRow[selected] > .rowContent > * {
     color: $selection-foreground;
 }
 
