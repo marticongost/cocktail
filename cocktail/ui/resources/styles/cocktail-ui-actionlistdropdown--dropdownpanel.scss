@@ -26,7 +26,7 @@
 }
 
 :host(:not([dropdownType='menu'])) #panelContent {
-    padding: 0;
+    padding: var(--action-list-dropdown-panel-padding, 1em 1.3em);
 }
 
 #footer {
