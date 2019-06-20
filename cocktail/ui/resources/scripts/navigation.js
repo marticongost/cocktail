@@ -28,7 +28,7 @@
                     }
                     currentQuery[key] = newValue;
                 }
-                changed = changed || (newValue != currentValue);
+                changed = changed || (newValue !== currentValue);
             }
             return currentQuery;
         });
