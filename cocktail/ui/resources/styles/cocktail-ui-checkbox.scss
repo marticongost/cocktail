@@ -18,6 +18,7 @@
     width: 1.1em;
     height: 1.1em;
     position: relative;
+    background-color: white;
 
     &:focus {
         @include focus;
