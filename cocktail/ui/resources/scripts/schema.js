@@ -1072,6 +1072,9 @@
         }
 
         splitValue(value) {
+            if (value.trim() == "") {
+                return [];
+            }
             return value.split(this.stringSeparator);
         }
 
