@@ -922,7 +922,7 @@
                 }
 
                 let id = this.type.getId(value);
-                if (!id) {
+                if (id === undefined) {
                     throw new cocktail.schema.SerializationError(this, value, `${this.type.name} can't produce an ID for ${value}`);
                 }
 
