@@ -70,7 +70,7 @@
         }
 
         disconnect() {
-            this[TARGET].removeEventListener(this.listener);
+            this[TARGET].removeEventListener("scroll", this.listener);
             this[TARGET] = null;
         }
     }
