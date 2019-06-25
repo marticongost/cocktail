@@ -79,7 +79,7 @@
     }
 
     pkg.objectsFromJSONValue = function (value) {
-        return value.map(this.objectFromJSONValue);
+        return Array.from(value, (obj) => this.objectFromJSONValue(obj));
     }
 
     cocktail.schema.Member = class Member {
