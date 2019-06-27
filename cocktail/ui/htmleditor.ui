@@ -478,41 +478,52 @@
         }
 
         const value = e.detail.value;
-
-        // Fix/normalize the URL
         let url = value.url;
-        
-        if (!url.includes(":")) {
-            if (url.includes("@") && !url.includes("/")) {
-                url = "mailto:" + url;
+
+        if (url.trim().length) {
+
+            // Fix/normalize the URL
+
+            if (!url.includes(":")) {
+                if (url.includes("@") && !url.includes("/")) {
+                    url = "mailto:" + url;
+                }
+                else {
+                    url = "http://" + url;
+                }
+            }
+            
+            this.linkNode.setAttribute("href", url);
+            this.linkNode.innerText = value.text;
+
+            if (value.title) {
+                this.linkNode.setAttribute("title", value.title);
             }
             else {
-                url = "http://" + url;
+                this.linkNode.removeAttribute("title");
             }
-        }
-        
-        this.linkNode.setAttribute("href", url);
-        this.linkNode.innerText = value.text;
 
-        if (value.title) {
-            this.linkNode.setAttribute("title", value.title);
-        }
-        else {
-            this.linkNode.removeAttribute("title");
-        }
+            if (value.rel) {
+                this.linkNode.setAttribute("rel", value.rel);
+            }
+            else {
+                this.linkNode.removeAttribute("rel");
+            }
 
-        if (value.rel) {
-            this.linkNode.setAttribute("rel", value.rel);
-        }
+            if (value.opensInNewWindow) {
+                this.linkNode.setAttribute("target", "_blank");
+            }
+            else {
+                this.linkNode.removeAttribute("target");
+            }
+        } 
         else {
-            this.linkNode.removeAttribute("rel");
-        }
-
-        if (value.opensInNewWindow) {
-            this.linkNode.setAttribute("target", "_blank");
-        }
-        else {
-            this.linkNode.removeAttribute("target");
+            if(value.text.trim().length){
+                this.linkNode.before(value.text);
+            }
+            
+            this.linkNode.remove();
+            this.linkNode = null;
         }
 
         this.parentInstance.updateDelay.begin();
