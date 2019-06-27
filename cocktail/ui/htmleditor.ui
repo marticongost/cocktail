@@ -478,7 +478,20 @@
         }
 
         const value = e.detail.value;
-        this.linkNode.setAttribute("href", value.url);
+
+        // Fix/normalize the URL
+        let url = value.url;
+        
+        if (!url.includes(":")) {
+            if (url.includes("@") && !url.includes("/")) {
+                url = "mailto:" + url;
+            }
+            else {
+                url = "http://" + url;
+            }
+        }
+        
+        this.linkNode.setAttribute("href", url);
         this.linkNode.innerText = value.text;
 
         if (value.title) {
