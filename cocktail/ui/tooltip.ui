@@ -120,7 +120,12 @@
     <?class
     connectedCallback() {
         super.connectedCallback();
-        this.tooltipTrigger = this.parentNode;
+        if (this.parentNode.nodeType == Document.DOCUMENT_FRAGMENT_NODE) {
+            this.tooltipTrigger = this.parentNode.host;
+        }
+        else {
+            this.tooltipTrigger = this.parentNode;
+        }
     }
 
     static hideVisibleTooltip() {
