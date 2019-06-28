@@ -572,10 +572,8 @@
                     }
 
                     let targetMember;
-                    let copyParams = {};
-
-                    Object.assign(
-                        copyParams,
+                    let copyParams = Object.assign(
+                        {},
                         generalParameters,
                         memberParameters && memberParameters[sourceMember.name]
                     );
@@ -1012,7 +1010,7 @@
 
         copyAttribute(copy, key, value, parameters) {
             if (key == ITEMS && value) {
-                value = value.copy(parameters);
+                value = value.copy();
                 claimMember(copy, value, pkg.membershipTypes.collectionItems);
             }
             super.copyAttribute(copy, key, value, parameters);
