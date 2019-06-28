@@ -28,6 +28,7 @@
     pkg.MEMBERS = Symbol("cocktail.schema.MEMBERS");
     pkg.PARAMETERS = Symbol("cocktail.schema.PARAMETERS");
     pkg.MEMBER_PARAMETERS = Symbol("cocktail.schema.MEMBER_PARAMETERS");
+    pkg.ITEMS_PARAMETERS = Symbol("cocktail.schema.ITEMS_PARAMETERS");
 
     pkg.membershipTypes = {
         member: Symbol("cocktail.schema.membershipTypes.member"),
@@ -1010,7 +1011,7 @@
 
         copyAttribute(copy, key, value, parameters) {
             if (key == ITEMS && value) {
-                value = value.copy();
+                value = value.copy(parameters[pkg.ITEMS_PARAMETERS]);
                 claimMember(copy, value, pkg.membershipTypes.collectionItems);
             }
             super.copyAttribute(copy, key, value, parameters);
