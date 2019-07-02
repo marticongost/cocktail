@@ -691,6 +691,19 @@ class Member(Variable):
         else:
             return value
 
+    def resolve_expression(self, obj, language=None):
+        expression = self.expression
+        if getattr(expression, "__self__", None) is obj:
+            if self.translated:
+                return expression(obj, language)
+            else:
+                return expression(obj)
+        else:
+            if self.translated:
+                return expression(self, obj, language)
+            else:
+                return expression(self, obj)
+
 
 class DynamicDefault(object):
 
