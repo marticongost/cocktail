@@ -83,6 +83,22 @@
         return Array.from(value, (obj) => this.objectFromJSONValue(obj));
     }
 
+    pkg.updateMemberCopyParameters = function (copyParameters, memberName, memberParameters) {
+
+        let perMemberParams = copyParameters[pkg.MEMBER_PARAMETERS];
+        if (!perMemberParams) {
+            perMemberParams = copyParameters[pkg.MEMBER_PARAMETERS] = {};
+        }
+
+        const existingMemberParams = perMemberParams[memberName];
+        if (existingMemberParams) {
+            Object.assign(existingMemberParams, memberParameters);
+        }
+        else {
+            perMemberParams[memberName] = memberParameters;
+        }
+    }
+
     cocktail.schema.Member = class Member {
 
         constructor(parameters = null) {
