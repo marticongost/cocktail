@@ -195,16 +195,6 @@
             return member;
         }
 
-        get translationKey() {
-            let schema = this.schema;
-            if (schema) {
-                return schema.translationKey + ".members." + this[NAME];
-            }
-            else {
-                return this[NAME];
-            }
-        }
-
         applyParameter(key, value) {
             if (key == "name") {
                 this[NAME] = value;
@@ -263,7 +253,7 @@
         }
 
         translate(suffix = "") {
-            let translation = cocktail.ui.translations[this.translationKey + suffix];
+            let translation = this.translations && this.translations[suffix];
             if (translation) {
                 return translation;
             }
@@ -275,10 +265,10 @@
 
         translateValue(value, params = null) {
             if (value === undefined || value === null || value === "") {
-                return this.translate(".none");
+                return this.translate("none");
             }
             else if (this.enumeration && this.translatableEnumeration) {
-                return this.translate(".values." + value);
+                return this.translate("values." + value);
             }
             else {
                 return value;
