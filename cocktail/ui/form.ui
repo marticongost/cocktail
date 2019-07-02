@@ -243,7 +243,7 @@
         const groupClass = this.getGroupComponent(groupId);
         const group = groupClass.create();
         group.groupId = groupId;
-        group.setGroupTitle(this.dataBinding.member.translate(".groups." + groupId));
+        group.setGroupTitle(this.dataBinding.member.translate("groups." + groupId));
         return group;
     }
 
@@ -253,7 +253,7 @@
 
     createTab(groupId) {
         let tab = cocktail.ui.Tab.create();
-        tab.button.innerHTML = this.dataBinding.member.translate(".groups." + groupId);
+        tab.button.innerHTML = this.dataBinding.member.translate("groups." + groupId);
         return tab;
     }
 
