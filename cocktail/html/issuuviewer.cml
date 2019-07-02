@@ -1,42 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<div
+<iframe
     xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:py="http://www.whads.com/ns/cocktail/templates">
+    xmlns:py="http://www.whads.com/ns/cocktail/templates"
+    allowfullscreen=""
+    allow="fullscreen">
+
+    <?resource cocktail://styles/issuuviewer.scss.css ?>
 
     <?py-class
-    config_id = None
+    document_name = None
+    username = None
     width = None
     height = None
-    page_number = None
-    https = True
     ?>
 
     <py:ready>
         <?py
-        self.add_resource(
-            ("https" if self.https else "http")
-            + "://e.issuu.com/embed.js",
-            async = True
+        element["src"] = (
+            "//e.issuu.com/embed.html"
+            + "?d=" + self.document_name
+            + "&u=" + self.username
         )
 
-        if self.page_number:
-            self.set_client_param("pageNumber", self.page_number)
-            self.set_client_param("configId", self.config_id)
-            self.add_resource("cocktail://scripts/issuuviewer.js")
+        if self.width and self.height:
+            element["style"] = "width: %spx; height: %spx;" % (str(self.width), str(self.height))
+        elif self.width:
+            element["style"] = "width: %spx;" % (str(self.width),)
+        elif self.height:
+            element["style"] = "height: %spx;" % (str(self.height),)
         ?>
     </py:ready>
 
-    <div data-configid="@{self.config_id}" class="issuuembed">
-        <py:ready>
-            <?py
-            if self.width and self.height:
-                element["style"] = "width: %spx; height: %spx;" % (str(self.width), str(self.height))
-            elif self.width:
-                element["style"] = "width: %spx;" % (str(self.width),)
-            elif self.height:
-                element["style"] = "height: %spx;" % (str(self.height),)
-            ?>
-        </py:ready>
-    </div>
-</div>
+</iframe>
