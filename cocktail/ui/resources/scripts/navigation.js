@@ -356,16 +356,15 @@
                 const parameter = this.parameters[i];
 
                 // Defined parameters
-                if (i < path.length) {
-                    const value = await parameter.parseValue(path[i]);
+                if (path.length) {
+                    const value = await parameter.parseValue(path[0]);
                     this.applyParameter(parameter, value);
                     this.consumePathSegment(path, "parameter " + parameter.name);
                 }
                 // Undefined parameters (segments missing)
                 else {
                     if (parameter.required) {
-                        reject(parameter);
-                        break;
+                        throw parameter;
                     }
                     else {
                         const value = await parameter.getDefaultValue(this);
