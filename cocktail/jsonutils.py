@@ -81,7 +81,7 @@ def merge_json_data(
 
 @GenericMethod
 def to_json_value(value):
-    raise TypeError(f"Can't serialize {obj} to JSON")
+    raise TypeError(f"Can't serialize {value} to JSON")
 
 
 @to_json_value.implementation_for(datetime)
