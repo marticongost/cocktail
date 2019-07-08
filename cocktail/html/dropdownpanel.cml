@@ -7,12 +7,28 @@
     <?resource cocktail://scripts/dropdownpanel.js ?>
     <?resource cocktail://styles/dropdownpanel.css ?>
 
+    <?py-class
+    arrow_type = "bitmap"
+    arrow_bitmap = "cocktail://images/dropdown.png"
+    arrow_svg = "cocktail://images/dropdown.svg"
+    ?>
+
     <button py:id="button" type="button">
         <div py:id="label"></div>
-        <img
-            py:id="dropdown_arrow"
-            src="${normalize_resource_uri('cocktail://images/dropdown.png')}"
-            alt=""/>
+        <span py:id="dropdown_arrow">
+            <py:ready>
+                <?py
+                if self.arrow_type == "bitmap":
+                    element.tag = "img"
+                    element["alt"] = None
+                    element["src"] = normalize_resource_uri(self.arrow_image)
+                elif self.arrow_type == "svg":
+                    element.append(get_uri_svg(self.arrow_svg))
+                else:
+                    element.visible = False
+                ?>
+            </py:ready>
+        </span>
     </button>
 
     <div py:id="panel_wrapper">
