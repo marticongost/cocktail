@@ -268,14 +268,32 @@
             }
         }
 
+        get translationKey() {
+            if (this.schema) {
+                return this.schema.translationKey + ".members." + this.name;
+            }
+            return null;
+        }
+
         translate(suffix = "") {
+
             let translation = this.translations && this.translations[suffix];
             if (translation) {
                 return translation;
             }
-            else if (this[SOURCE_MEMBER]) {
+
+            const key = this.translationKey;
+            if (key) {
+                translation = cocktail.ui.translations[key + suffix];
+                if (translation) {
+                    return translation;
+                }
+            }
+
+            if (this[SOURCE_MEMBER]) {
                 return this[SOURCE_MEMBER].translate(suffix);
             }
+
             return "";
         }
 
@@ -387,6 +405,10 @@
                 }
             }
             return name;
+        }
+
+        get translationKey() {
+            return this.name;
         }
 
         getId(record) {
