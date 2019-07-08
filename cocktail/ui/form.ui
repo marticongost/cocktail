@@ -321,7 +321,7 @@
     }
 
     addExplanation(member, target) {
-        const explanation = member.translate(".explanation");
+        const explanation = member.translate("explanation");
         if (explanation) {
             let element;
             if (this.fieldsExplanationDisposition == "belowLabel") {
