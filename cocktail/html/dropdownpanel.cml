@@ -2,12 +2,14 @@
 
 <div
     xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:py="http://www.whads.com/ns/cocktail/templates">
+    xmlns:py="http://www.whads.com/ns/cocktail/templates"
+    data-panel-alignment="@{self.panel_alignment}">
 
     <?resource cocktail://scripts/dropdownpanel.js ?>
     <?resource cocktail://styles/dropdownpanel.css ?>
 
     <?py-class
+    panel_alignment = "left"
     arrow_type = "bitmap"
     arrow_bitmap = "cocktail://images/dropdown.png"
     arrow_svg = "cocktail://images/dropdown.svg"

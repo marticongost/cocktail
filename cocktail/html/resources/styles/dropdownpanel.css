@@ -51,6 +51,11 @@
     padding: 0.2em;
 }
 
+.scripted .DropdownPanel[data-panel-alignment='right'] > .panel_wrapper > .panel {
+    left: auto;
+    right: 0;
+}
+
 .scripted .DropdownPanel-expanded > .button,
 .scripted .DropdownPanel-expanded > .button:hover {
     background-color: white;
