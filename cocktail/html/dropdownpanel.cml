@@ -23,7 +23,7 @@
                 if self.arrow_type == "bitmap":
                     element.tag = "img"
                     element["alt"] = None
-                    element["src"] = normalize_resource_uri(self.arrow_image)
+                    element["src"] = normalize_resource_uri(self.arrow_bitmap)
                 elif self.arrow_type == "svg":
                     element.append(get_uri_svg(self.arrow_svg))
                 else:
