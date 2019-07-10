@@ -10,10 +10,21 @@
 
     <?py-class
     panel_alignment = "left"
+    dropdown_enabled = True
     arrow_type = "bitmap"
     arrow_bitmap = "cocktail://images/dropdown.png"
     arrow_svg = "cocktail://images/dropdown.svg"
     ?>
+
+    <py:ready>
+        <?py
+        if not self.dropdown_enabled:
+            self.remove_class("DropdownPanel")
+            self.button.visible = False
+            self.panel_wrapper.tag = None
+            self.panel.tag = None
+        ?>
+    </py:ready>
 
     <button py:id="button" type="button">
         <div py:id="label"></div>
