@@ -110,7 +110,8 @@
 }
 
 #header {
-    flex: 0 0 7em;
+    flex: 0 0 auto;
+    height: 7em;
     display: flex;
     flex-direction: row;
     align-items: stretch;
