@@ -6,6 +6,7 @@
 
     <ui:requires component="cocktail.ui.delay"/>
     <ui:using mixin="cocktail.ui.DataDisplay"/>
+    <ui:symbol name="UPDATE_VALUE"/>
     <ui:symbol name="PROCESSING_INPUT"/>
     <ui:symbol name="CONTENT_AREA_INITIALIZED"/>
     <ui:symbol name="WRAP_TEXT_IN_P_ELEMENT"/>
@@ -25,6 +26,12 @@
 
     <ui:property
         name="autoHeight"
+        type="boolean"
+        reflected="true"
+        default="true"/>
+
+    <ui:property
+        name="autoclean"
         type="boolean"
         reflected="true"
         default="true"/>
@@ -152,6 +159,12 @@
     ?>
 
     <?tail
+    cls.containerElements = new Set([
+        "DIV",
+        "P",
+        "SPAN"
+    ]);
+
     cls.toolbox = new cocktail.ui.ActionSet("html-toolbox", {
         entries: [
             new cls.EditorActionSet("format", {
@@ -239,6 +252,62 @@
         }
     }
 
+    cleanContainer(container) {
+
+        let wasDirty = false;
+        let dirty = true;
+
+        function isWhitespace(node) {
+            if (node.nodeType == Document.TEXT_NODE) {
+                return !node.nodeValue.trim();
+            }
+            else if (node.nodeType == Document.ELEMENT_NODE) {
+                return node.tagName == "BR";
+            }
+        }
+
+        while (dirty) {
+
+            dirty = false;
+            let node = container.firstChild;
+
+            while (node) {
+                const nextNode = node.nextSibling;
+
+                // Remove whitespace or BR nodes that are either consecutive or at the beginning
+                // or end of a container
+                if (isWhitespace(node)) {
+                    if (
+                        !node.previousSibling
+                        || !node.nextSibling
+                        || isWhitespace(node.previousSibling)
+                        || isWhitespace(node.nextSibling)
+                    ) {
+                        node.remove();
+                        dirty = true;
+                    }
+                }
+                // Remove empty containers, or containers that only contain cruft
+                else if (node.nodeType == Document.ELEMENT_NODE) {
+                    if (this.constructor.containerElements.has(node.tagName)) {
+                        const containerWasDirty = this.cleanContainer(node);
+                        wasDirty = wasDirty || containerWasDirty;
+                        if (!node.childNodes.length) {
+                            node.remove();
+                            dirty = true;
+                        }
+                    }
+                }
+
+                node = nextNode;
+            }
+
+            wasDirty = wasDirty || dirty;
+        }
+
+        return wasDirty;
+    }
+
     selectRange(range) {
         const sel = this.getSelection();
         sel.removeAllRanges();
@@ -319,6 +388,18 @@
             }
         });
     }
+
+    [UPDATE_VALUE]() {
+        if (!this[PROCESSING_INPUT]) {
+            this[PROCESSING_INPUT] = true;
+            try {
+                this.value = this.contentArea.innerHTML;
+            }
+            finally {
+                this[PROCESSING_INPUT] = false;
+            }
+        }
+    }
     ?>
 
     <?on value:changed
@@ -339,15 +420,7 @@
     this[SYNC] = cocktail.ui.sync();
 
     this.updateDelay = new cocktail.ui.Delay(200, () => {
-        if (!instance[PROCESSING_INPUT]) {
-            instance[PROCESSING_INPUT] = true;
-            try {
-                instance.value = this.contentArea.innerHTML;
-            }
-            finally {
-                instance[PROCESSING_INPUT] = false;
-            }
-        }
+        this[UPDATE_VALUE]();
     });
     ?>
 
@@ -410,6 +483,9 @@
 
             <?on blur
             cocktail.ui.empty(instance.breadcrumbs);
+            if (instance.autoclean && instance.cleanContainer(instance.contentArea)) {
+                instance[UPDATE_VALUE]();
+            }
             this[CURRENT_ANCHOR_NODE] = null;
             ?>
 
