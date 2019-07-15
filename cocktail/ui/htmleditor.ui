@@ -147,13 +147,14 @@
 
         invoke(context) {
             if (context.editor.mode == "visual") {
+                context.editor[STORE_RANGE]();
                 context.editor.mode = "source";
-                context.editor.codeEditor.codeMirror.focus();
             }
             else {
                 context.editor.mode = "visual";
-                context.editor.contentArea.focus();
+                context.editor[RESTORE_RANGE]();
             }
+            context.editor.focus();
         }
     }
     ?>
@@ -425,6 +426,14 @@
     ?>
 
     <ui:cocktail.ui.TabbedActionList id="toolbox">
+
+        <?on selectedTab:changed
+        // Go back to the visual editor when changing the tab
+        instance.mode = "visual";
+        instance.focus();
+        instance[RESTORE_RANGE]();
+        ?>
+
         <?js
         element.classList.add("compact");
         element.actionContext.editor = this;
