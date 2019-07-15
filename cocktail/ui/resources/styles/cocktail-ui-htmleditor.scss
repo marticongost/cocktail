@@ -21,22 +21,27 @@ $block-color: #ddd;
     height: 1.9em;
 }
 
-:host(:not([mode='visual'])) #contentArea,
+:host(:not([mode='visual'])) #contentFrame,
 :host(:not([mode='source'])) #codeEditor {
-    display: none;
+    display: none !important;
+}
+
+#contentFrame {
+    border: $input-border;
+    padding: $input-padding;
 }
 
 #contentArea {
-    border: $input-border;
-    padding: $input-padding;
     flex: 1;
 
     :host([autoHeight='false']) & {
         overflow-y: auto;
     }
 
-    :host([multiline='false']) & {
+    :host([inlineContent='true']) & {
+        display: inline-block;
         white-space: nowrap;
+        width: 100%;
     }
 
     & > *:first-child {
