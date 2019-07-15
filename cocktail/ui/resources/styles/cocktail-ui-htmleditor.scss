@@ -28,11 +28,11 @@ $block-color: #ddd;
 
 #contentFrame {
     border: $input-border;
-    padding: $input-padding;
 }
 
 #contentArea {
     flex: 1;
+    padding: $input-padding;
 
     :host([autoHeight='false']) & {
         overflow-y: auto;
