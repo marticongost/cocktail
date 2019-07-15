@@ -18,10 +18,10 @@
     <ui:symbol name="SYNC"/>
 
     <ui:property
-        name="multiline"
+        name="inlineContent"
         type="boolean"
         reflected="true"
-        default="true"/>
+        default="false"/>
 
     <ui:property
         name="autoHeight"
@@ -246,6 +246,11 @@
     }
 
     [WRAP_TEXT_IN_P_ELEMENT]() {
+
+        if (this.inlineContent) {
+            return;
+        }
+
         // Automatically wrap text inside a <p> element
         const node = this.contentArea.firstChild;
         if (node && node.nodeType == document.TEXT_NODE && node.nodeValue.length) {
@@ -390,8 +395,14 @@
             <?on focus
             if (!instance[CONTENT_AREA_INITIALIZED]) {
                 instance[CONTENT_AREA_INITIALIZED] = true;
-                document.execCommand("DefaultParagraphSeparator", false, "p");
-                document.execCommand("insertBrOnReturn", false, "false");
+                if (this.inlineContent) {
+                    document.execCommand("DefaultParagraphSeparator", false, "p");
+                    document.execCommand("insertBrOnReturn", false, "true");
+                }
+                else {
+                    document.execCommand("DefaultParagraphSeparator", false, "br");
+                    document.execCommand("insertBrOnReturn", false, "false");
+                }
                 instance[WRAP_TEXT_IN_P_ELEMENT]();
             }
             instance[SHOW_BLOCK_TYPE]();
@@ -492,7 +503,7 @@
                     url = "http://" + url;
                 }
             }
-            
+
             this.linkNode.setAttribute("href", url);
             this.linkNode.innerText = value.text;
 
@@ -516,12 +527,12 @@
             else {
                 this.linkNode.removeAttribute("target");
             }
-        } 
+        }
         else {
             if(value.text.trim().length){
                 this.linkNode.before(value.text);
             }
-            
+
             this.linkNode.remove();
             this.linkNode = null;
         }
