@@ -70,7 +70,8 @@ $padding: 1em;
 }
 
 #tooltipContent {
-    font-size: 0.9em;
+    font-size: 0.9rem;
+    line-height: 1.3rem;
 
     ::slotted(:first-child) {
         margin-top: 0;
