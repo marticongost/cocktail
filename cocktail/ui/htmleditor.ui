@@ -6,6 +6,7 @@
 
     <ui:requires component="cocktail.ui.delay"/>
     <ui:using mixin="cocktail.ui.DataDisplay"/>
+    <ui:symbol name="UPDATE_VALUE"/>
     <ui:symbol name="PROCESSING_INPUT"/>
     <ui:symbol name="CONTENT_AREA_INITIALIZED"/>
     <ui:symbol name="WRAP_TEXT_IN_P_ELEMENT"/>
@@ -18,13 +19,19 @@
     <ui:symbol name="SYNC"/>
 
     <ui:property
-        name="multiline"
+        name="inlineContent"
+        type="boolean"
+        reflected="true"
+        default="false"/>
+
+    <ui:property
+        name="autoHeight"
         type="boolean"
         reflected="true"
         default="true"/>
 
     <ui:property
-        name="autoHeight"
+        name="autoclean"
         type="boolean"
         reflected="true"
         default="true"/>
@@ -140,18 +147,25 @@
 
         invoke(context) {
             if (context.editor.mode == "visual") {
+                context.editor[STORE_RANGE]();
                 context.editor.mode = "source";
-                context.editor.codeEditor.codeMirror.focus();
             }
             else {
                 context.editor.mode = "visual";
-                context.editor.contentArea.focus();
+                context.editor[RESTORE_RANGE]();
             }
+            context.editor.focus();
         }
     }
     ?>
 
     <?tail
+    cls.containerElements = new Set([
+        "DIV",
+        "P",
+        "SPAN"
+    ]);
+
     cls.toolbox = new cocktail.ui.ActionSet("html-toolbox", {
         entries: [
             new cls.EditorActionSet("format", {
@@ -239,6 +253,62 @@
         }
     }
 
+    cleanContainer(container) {
+
+        let wasDirty = false;
+        let dirty = true;
+
+        function isWhitespace(node) {
+            if (node.nodeType == Document.TEXT_NODE) {
+                return !node.nodeValue.trim();
+            }
+            else if (node.nodeType == Document.ELEMENT_NODE) {
+                return node.tagName == "BR";
+            }
+        }
+
+        while (dirty) {
+
+            dirty = false;
+            let node = container.firstChild;
+
+            while (node) {
+                const nextNode = node.nextSibling;
+
+                // Remove whitespace or BR nodes that are either consecutive or at the beginning
+                // or end of a container
+                if (isWhitespace(node)) {
+                    if (
+                        !node.previousSibling
+                        || !node.nextSibling
+                        || isWhitespace(node.previousSibling)
+                        || isWhitespace(node.nextSibling)
+                    ) {
+                        node.remove();
+                        dirty = true;
+                    }
+                }
+                // Remove empty containers, or containers that only contain cruft
+                else if (node.nodeType == Document.ELEMENT_NODE) {
+                    if (this.constructor.containerElements.has(node.tagName)) {
+                        const containerWasDirty = this.cleanContainer(node);
+                        wasDirty = wasDirty || containerWasDirty;
+                        if (!node.childNodes.length) {
+                            node.remove();
+                            dirty = true;
+                        }
+                    }
+                }
+
+                node = nextNode;
+            }
+
+            wasDirty = wasDirty || dirty;
+        }
+
+        return wasDirty;
+    }
+
     selectRange(range) {
         const sel = this.getSelection();
         sel.removeAllRanges();
@@ -246,6 +316,11 @@
     }
 
     [WRAP_TEXT_IN_P_ELEMENT]() {
+
+        if (this.inlineContent) {
+            return;
+        }
+
         // Automatically wrap text inside a <p> element
         const node = this.contentArea.firstChild;
         if (node && node.nodeType == document.TEXT_NODE && node.nodeValue.length) {
@@ -314,6 +389,18 @@
             }
         });
     }
+
+    [UPDATE_VALUE]() {
+        if (!this[PROCESSING_INPUT]) {
+            this[PROCESSING_INPUT] = true;
+            try {
+                this.value = this.contentArea.innerHTML;
+            }
+            finally {
+                this[PROCESSING_INPUT] = false;
+            }
+        }
+    }
     ?>
 
     <?on value:changed
@@ -334,19 +421,19 @@
     this[SYNC] = cocktail.ui.sync();
 
     this.updateDelay = new cocktail.ui.Delay(200, () => {
-        if (!instance[PROCESSING_INPUT]) {
-            instance[PROCESSING_INPUT] = true;
-            try {
-                instance.value = this.contentArea.innerHTML;
-            }
-            finally {
-                instance[PROCESSING_INPUT] = false;
-            }
-        }
+        this[UPDATE_VALUE]();
     });
     ?>
 
     <ui:cocktail.ui.TabbedActionList id="toolbox">
+
+        <?on selectedTab:changed
+        // Go back to the visual editor when changing the tab
+        instance.mode = "visual";
+        instance.focus();
+        instance[RESTORE_RANGE]();
+        ?>
+
         <?js
         element.classList.add("compact");
         element.actionContext.editor = this;
@@ -390,8 +477,14 @@
             <?on focus
             if (!instance[CONTENT_AREA_INITIALIZED]) {
                 instance[CONTENT_AREA_INITIALIZED] = true;
-                document.execCommand("DefaultParagraphSeparator", false, "p");
-                document.execCommand("insertBrOnReturn", false, "false");
+                if (this.inlineContent) {
+                    document.execCommand("DefaultParagraphSeparator", false, "p");
+                    document.execCommand("insertBrOnReturn", false, "true");
+                }
+                else {
+                    document.execCommand("DefaultParagraphSeparator", false, "br");
+                    document.execCommand("insertBrOnReturn", false, "false");
+                }
                 instance[WRAP_TEXT_IN_P_ELEMENT]();
             }
             instance[SHOW_BLOCK_TYPE]();
@@ -399,6 +492,9 @@
 
             <?on blur
             cocktail.ui.empty(instance.breadcrumbs);
+            if (instance.autoclean && instance.cleanContainer(instance.contentArea)) {
+                instance[UPDATE_VALUE]();
+            }
             this[CURRENT_ANCHOR_NODE] = null;
             ?>
 
@@ -492,7 +588,7 @@
                     url = "http://" + url;
                 }
             }
-            
+
             this.linkNode.setAttribute("href", url);
             this.linkNode.innerText = value.text;
 
@@ -516,12 +612,12 @@
             else {
                 this.linkNode.removeAttribute("target");
             }
-        } 
+        }
         else {
             if(value.text.trim().length){
                 this.linkNode.before(value.text);
             }
-            
+
             this.linkNode.remove();
             this.linkNode = null;
         }
