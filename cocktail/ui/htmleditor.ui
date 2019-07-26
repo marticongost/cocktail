@@ -584,7 +584,7 @@
                 if (url.includes("@") && !url.includes("/")) {
                     url = "mailto:" + url;
                 }
-                else {
+                else if (url.startsWith("www.")) {
                     url = "http://" + url;
                 }
             }
