@@ -11,6 +11,7 @@
     <ui:symbol name="ENTRIES_MAP"/>
     <ui:symbol name="SYNCHRONIZE"/>
     <ui:symbol name="SYNCHRONIZING"/>
+    <ui:symbol name="REMOVE"/>
 
     <ui:property
         name="sorted"
@@ -38,6 +39,25 @@
             }
             finally {
                 this[SYNCHRONIZING] = false;
+            }
+        }
+    }
+
+    invalidation(changes) {
+
+        // Remove the rows representing deleted objects
+        for (let [id, object] of changes.deleted) {
+            const entry = this[ENTRIES_MAP][id];
+            if (entry) {
+                this[REMOVE](entry, id);
+            }
+        }
+
+        // Update the entrys representing modified objects
+        for (let [id, object] of changes.modified) {
+            const entry = this[ENTRIES_MAP][id];
+            if (entry) {
+                entry.value = object;
             }
         }
     }
@@ -152,27 +172,32 @@
         }
 
         const serializedValue = this.dataBinding.member.items.serializeValue(item);
-        const removedEntry = this[ENTRIES_MAP][serializedValue];
-        if (!removedEntry) {
-            throw `Can't find an entry for value ${item} in ${this}`;
+        const entry = this[ENTRIES_MAP][serializedValue];
+        if (!entry) {
+            throw `Can't find an entry for ${item} in ${this}`;
         }
 
+        this[REMOVE](entry, serializedValue);
+    }
+
+    [REMOVE](entry, serializedValue) {
+
         // Compact .dataBinding.index
-        let index = removedEntry.dataBinding.index;
-        let nextEntry = removedEntry;
+        let index = entry.dataBinding.index;
+        let nextEntry = entry;
         while (nextEntry = nextEntry.nextSibling) {
             nextEntry.dataBinding.index = index;
             index++;
         }
 
         // Remove the entry from the DOM and from the entry map
-        this.list.removeChild(removedEntry);
+        this.list.removeChild(entry);
         delete this[ENTRIES_MAP][serializedValue];
 
         // Update .value
         this[SYNCHRONIZE](() => {
             const value = Array.from(this.value);
-            value.splice(removedEntry.dataBinding.index, 1);
+            value.splice(entry.dataBinding.index, 1);
             this.value = value;
         });
     }
