@@ -365,7 +365,7 @@
     ?>
 
     <?on value:changed
-    if (this[FIELDS_READY]) {
+    if (this[FIELDS_READY] && !cocktail.ui.invalidationInProgress) {
         this.modified = true;
     }
     ?>
@@ -491,7 +491,7 @@
         ?>
 
         <?on value:changed
-        if (this.parentInstance && this.parentInstance[FIELDS_READY]) {
+        if (this.parentInstance && this.parentInstance[FIELDS_READY] && !cocktail.ui.invalidationInProgress) {
             this.modified = true;
         }
         ?>
@@ -641,7 +641,7 @@
         ?>
 
         <?on value:changed
-        if (this.parentInstance && this.parentInstance[FIELDS_READY]) {
+        if (this.parentInstance && this.parentInstance[FIELDS_READY] && !cocktail.ui.invalidationInProgress) {
             this.modified = true;
         }
         ?>
@@ -785,7 +785,7 @@
             ?>
 
             <?on value:changed
-            if (this.parentInstance && this.parentInstance[FIELDS_READY]) {
+            if (this.parentInstance && this.parentInstance[FIELDS_READY] && !cocktail.ui.invalidationInProgress) {
                 this.modified = true;
             }
             ?>
