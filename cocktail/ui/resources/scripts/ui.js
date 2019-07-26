@@ -177,6 +177,8 @@ cocktail.ui.splash = function (splash, mainComponent) {
     const OBSERVED_OBJECTS = Symbol("cocktail.ui.Observer.OBSERVED_OBJECTS");
     const OBSERVERS = Symbol("cocktail.ui.Observable.OBSERVERS");
 
+    cocktail.ui.invalidationInProgress = false;
+
     cocktail.ui.observer = (cls) => class Observer extends (cls) {
 
         observe(observable) {
@@ -231,10 +233,17 @@ cocktail.ui.splash = function (splash, mainComponent) {
 
         trigger(change) {
             change.source = this;
-            let observers = this[OBSERVERS];
+            const observers = this[OBSERVERS];
             if (observers) {
-                for (let observer of this[OBSERVERS]) {
-                    observer.invalidation(change);
+                const invalidationWasAlreadyInProgress = cocktail.ui.invalidationInProgress;
+                cocktail.ui.invalidationInProgress = true;
+                try {
+                    for (let observer of this[OBSERVERS]) {
+                        observer.invalidation(change);
+                    }
+                }
+                finally {
+                    cocktail.ui.invalidationInProgress = invalidationWasAlreadyInProgress;
                 }
             }
         }
