@@ -313,7 +313,7 @@
             return this[WILDCARDS];
         }
 
-        static resolve(path, parentNode, segment = null) {
+        static async resolve(path, parentNode, segment = null) {
 
             let remainingPath = Array.from(path);
             let node = parentNode ? parentNode.createChild(this) : new this();
@@ -323,7 +323,11 @@
                 node[PATH].push(segment);
             }
 
+            await node.initialize();
             return node.resolvePath(remainingPath);
+        }
+
+        initialize() {
         }
 
         createChild(nodeClass) {
