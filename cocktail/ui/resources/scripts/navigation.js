@@ -316,7 +316,7 @@
         static async resolve(path, parentNode, segment = null) {
 
             let remainingPath = Array.from(path);
-            let node = parentNode ? parentNode.createChild(this) : new this();
+            let node = parentNode ? await parentNode.createChild(this) : new this();
 
             if (segment) {
                 cocktail.navigation.log(`${this.name} consumed segment "${segment}" (regular child)`);
