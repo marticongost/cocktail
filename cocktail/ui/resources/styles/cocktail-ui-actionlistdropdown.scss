@@ -14,6 +14,7 @@
 :host([buttonStyle='iconAboveText']) {
     flex-direction: column;
     align-items: stretch;
+    justify-content: space-between;
 }
 
 #dropdownPanel {
@@ -67,7 +68,6 @@
 
     :host([buttonStyle='iconAboveText']) & {
         display: block;
-        margin-bottom: 0.1em;
     }
 
     :host([buttonStyle='textOnly']) & {
