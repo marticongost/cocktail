@@ -1608,6 +1608,9 @@
     cocktail.schema.CodeBlock = class CodeBlock extends cocktail.schema.String {
     }
 
+    cocktail.schema.Color = class Color extends cocktail.schema.String {
+    }
+
     cocktail.schema.addLocale = function (object, schema, locale) {
         for (let member of schema.members()) {
             if (member.translated) {
