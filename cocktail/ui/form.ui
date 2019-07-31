@@ -17,6 +17,7 @@
     <ui:requires component="cocktail.ui.DateTimeInput"/>
     <ui:requires component="cocktail.ui.TextInput"/>
     <ui:requires component="cocktail.ui.PasswordInput"/>
+    <ui:requires component="cocktail.ui.ColorInput"/>
     <ui:requires component="cocktail.ui.TextArea"/>
     <ui:requires component="cocktail.ui.HTMLEditor"/>
     <ui:requires component="cocktail.ui.CodeEditor"/>
@@ -98,6 +99,7 @@
         cocktail.schema.DateTime[formControl] = cocktail.ui.DateTimeInput;
         cocktail.schema.Locale[formControl] = cocktail.ui.DropdownSelector;
         cocktail.schema.HTML[formControl] = cocktail.ui.HTMLEditor;
+        cocktail.schema.Color[formControl] = cocktail.ui.ColorInput;
         cocktail.schema.CodeBlock[formControl] = cocktail.ui.CodeEditor;
         cocktail.schema.SchemaReference[formControl] = cocktail.ui.DropdownSelector;
     }
