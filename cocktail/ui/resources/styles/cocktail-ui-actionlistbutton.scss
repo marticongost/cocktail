@@ -26,6 +26,7 @@
     padding: var(--action-list-button-padding);
     cursor: pointer;
     font-size: 1em;
+    border: 1px solid transparent; // Required to match the height of ActionListDropdown
 
     :host-context(.cocktail-ui-ActionList.vertical) & {
         display: block;
@@ -35,6 +36,13 @@
 
     :host([buttonStyle='iconBesideText']) & {
         text-align: left;
+    }
+
+    :host([buttonStyle='iconAboveText']) & {
+        display: inline-flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
     }
 
     &:hover {
@@ -98,7 +106,6 @@
 
     :host([buttonStyle='iconAboveText']) & {
         display: block;
-        margin-bottom: 0.1em;
     }
 
     :host([buttonStyle='iconOnly']) & {

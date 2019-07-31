@@ -15,6 +15,11 @@
 
 #label {
     font-size: 1em;
+
+    :host-context(.cocktail-ui-ActionListDropdown[buttonStyle='iconAboveText']) & {
+        display: flex;
+        flex-direction: column;
+    }
 }
 
 #arrow svg * {
