@@ -81,16 +81,12 @@ legend {
     }
 }
 
-#fieldsContainer:not(:empty) + #groupsContainer:not(:empty) {
+.fieldsContainer:not(:empty) + .groupsContainer:not(:empty) {
     margin-top: $group-separation;
 }
 
-.Group[level='0'] + .Group {
+.Group[level='0']:not(:first-child) {
     margin-top: $group-separation;
-}
-
-:host([tabbed='true']) .Group[level='0']:first-child {
-    margin-top: $subgroup-separation;
 }
 
 .fields_container:not(:empty) + .groups_container:not(:empty) {
