@@ -8,7 +8,13 @@
 input {
     box-sizing: border-box;
 
-    &:not([type='checkbox']):not([type='color']) {
+    &[type='text'],
+    &[type='email'],
+    &[type='number'],
+    &[type='password'],
+    &[type='search'],
+    &[type='tel'],
+    &[type='url'] {
         border: 1px solid $input-border-color;
         padding: $input-padding;
         width: 100%;
