@@ -22,58 +22,6 @@
         );
         this.close();
     }
-
-    cancel() {
-        cocktail.ui.trigger(this, "canceled");
-        this.close();
-    }
-    ?>
-
-    <?tail
-    cls.AcceptAction = class AcceptAction extends cocktail.ui.Action {
-
-        getIconURL(context) {
-            return "cocktail.ui://images/accept.svg";
-        }
-
-        get translationPrefix() {
-            return cls.fullName + ".actions";
-        }
-
-        invoke(context) {
-            context.modal.close();
-        }
-    }
-
-    cls.AcceptAction = class AcceptAction extends cocktail.ui.Action {
-
-        getIconURL(context) {
-            return "cocktail.ui://images/accept.svg";
-        }
-
-        get translationPrefix() {
-            return cls.fullName + ".actions";
-        }
-
-        invoke(context) {
-            context.modal.accept();
-        }
-    }
-
-    cls.CancelAction = class AcceptAction extends cocktail.ui.Action {
-
-        getIconURL(context) {
-            return "cocktail.ui://images/close.svg";
-        }
-
-        get translationPrefix() {
-            return cls.fullName + ".actions";
-        }
-
-        invoke(context) {
-            context.modal.cancel();
-        }
-    }
     ?>
 
     <ui:with ui:element="content">
