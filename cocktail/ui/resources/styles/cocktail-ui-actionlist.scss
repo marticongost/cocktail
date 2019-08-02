@@ -50,3 +50,32 @@
     border: none;
 }
 
+// Nested list separators
+$separator-length: 2.6em;
+$separator-thickness: 1px;
+
+:host(:not(.vertical)) ::slotted(.cocktail-ui-ActionList.separator) {
+    position: relative;
+
+    &:before {
+        content: '';
+        height: $separator-length;
+        width: $separator-thickness;
+        background-color: $panel-border-color;
+        position: absolute;
+        left: 0;
+        top: calc(50% - #{$separator-length / 2});
+    }
+}
+
+:host(.vertical) ::slotted(.cocktail-ui-ActionList.separator) {
+    position: relative;
+
+    &:before {
+        display: block;
+        content: '';
+        height: $separator-thickness;
+        background-color: $panel-border-color;
+    }
+}
+
