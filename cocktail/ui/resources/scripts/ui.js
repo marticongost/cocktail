@@ -291,6 +291,13 @@ cocktail.ui.splash = function (splash, mainComponent) {
             }
             instance.initialize();
             if (properties) {
+                const classes = properties.classList;
+                if (classes) {
+                    delete properties.classList;
+                    for (let className of classes) {
+                        instance.classList.add(className);
+                    }
+                }
                 Object.assign(instance, properties);
             }
             return instance;
