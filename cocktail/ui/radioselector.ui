@@ -12,6 +12,12 @@
         default="vertical"
         reflected="true"/>
 
+    <ui:property
+        name="emptyOptionDisplayed"
+        type="boolean"
+        default="false"
+        reflected="true"/>
+
     <?head
     const ENTRIES_READY = Symbol("cocktail.ui.RadioSelector.ENTRIES_READY");
     const ENTRY_MAP = Symbol("cocktail.ui.RadioSelector.ENTRY_MAP");
@@ -40,6 +46,9 @@
         if (member) {
             let possibleValuesResolution = Promise.resolve(member.getPossibleValues());
             possibleValuesResolution.then((values) => {
+                if (this.emptyOptionDisplayed) {
+                    this.addEntry(null);
+                }
                 this.addEntries(values);
                 this[ENTRIES_READY] = true;
                 cocktail.ui.trigger(this, "entriesReady");
