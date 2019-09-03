@@ -31,6 +31,7 @@ class ComponentRegistry(object):
     def get(self, full_name, referrer = None, reference_type = None):
 
         already_existed = True
+        component = None
 
         try:
             component = self.__components[full_name]
@@ -42,13 +43,26 @@ class ComponentRegistry(object):
                     already_existed = False
                     try:
                         component = Component(self, full_name)
-                        self.__components[full_name] = component
-                        component.load()
                     except ComponentFileError as e:
-                        if e.full_name == full_name:
+                        # Component file not found; it may be defined as a
+                        # subcomponent. Attempt to load its parent component
+                        # first, recursively.
+                        parent_name, child_name = full_name.rsplit(".", 1)
+                        if "." in parent_name:
+                            try:
+                                parent = self.get(parent_name)
+                            except ComponentFileError:
+                                pass
+                            else:
+                                component = parent.subcomponents.get(child_name)
+
+                        if component is None:
                             e.referrer = referrer
                             e.reference_type = reference_type
-                        raise e
+                            raise e
+                    else:
+                        self.__components[full_name] = component
+                        component.load()
 
         if not referrer and self.auto_reload and component.loaded:
             for dep in list(
