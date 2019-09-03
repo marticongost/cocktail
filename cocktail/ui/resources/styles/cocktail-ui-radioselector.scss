@@ -17,7 +17,7 @@
             display: flex;
 
             & + li {
-                margin-top: 0.3em;
+                margin-top: var(--entry-separation, 0.3rem);
             }
         }
 
@@ -25,7 +25,7 @@
             display: inline-flex;
 
             & + li {
-                margin-left: 0.8em;
+                margin-left: var(--entry-separation, 0.8rem);
             }
         }
 
