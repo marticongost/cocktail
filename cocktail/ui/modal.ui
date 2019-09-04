@@ -4,6 +4,9 @@
     xmlns="http://www.w3.org/1999/xhtml"
     xmlns:ui="http://www.whads.com/ns/cocktail/ui">
 
+    <ui:symbol name="ACCEPT_CALLBACK"/>
+    <ui:symbol name="REJECT_CALLBACK"/>
+
     <ui:property
         name="visible"
         type="boolean"
@@ -28,13 +31,36 @@
     }
 
     close() {
+        if (this[REJECT_CALLBACK]) {
+            this[REJECT_CALLBACK]();
+            this[ACCEPT_CALLBACK] = null;
+            this[REJECT_CALLBACK] = null;
+        }
         this.visible = false;
         cocktail.ui.trigger(this, "closed");
     }
 
+    comply() {
+        this.show();
+        return new Promise((accept, reject) => {
+            this[ACCEPT_CALLBACK] = accept;
+            this[REJECT_CALLBACK] = reject;
+        });
+    }
+
     accept() {
-        cocktail.ui.trigger(this, "accepted");
+        const context = this.getAcceptContext();
+        cocktail.ui.trigger(this, "accepted", context);
+        if (this[ACCEPT_CALLBACK]) {
+            this[ACCEPT_CALLBACK](context);
+            this[ACCEPT_CALLBACK] = null;
+            this[REJECT_CALLBACK] = null;
+        }
         this.close();
+    }
+
+    getAcceptContext() {
+        return {};
     }
 
     cancel() {

@@ -14,13 +14,8 @@
         });
     }
 
-    accept() {
-        cocktail.ui.trigger(
-            this,
-            "accepted",
-            {value: this.form.value}
-        );
-        this.close();
+    getAcceptContext() {
+        return {value: this.form.value};
     }
     ?>
 
