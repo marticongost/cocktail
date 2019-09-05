@@ -1,10 +1,12 @@
-#-*- coding: utf-8 -*-
+"""This module provides several algorithms for iterating over sequences.
+
+.. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
-This module provides several algorithms for iterating over sequences.
-"""
+from typing import Any, Callable, Iterable, Union
 from itertools import groupby
 
-def filter_by(collection, **kwargs):
+
+def filter_by(collection: Iterable, **kwargs) -> Iterable:
     """Iterate over the items in a collection that have the specified values.
 
     :param collection: The iterable sequence to filter.
@@ -23,7 +25,8 @@ def filter_by(collection, **kwargs):
         else:
             yield item
 
-def first(collection, **kwargs):
+
+def first(collection: Iterable, **kwargs) -> Any:
     """Obtains the first element in the given sequence.
 
     This function can operate on both 'solid' collections (lists, tuples, etc)
@@ -49,7 +52,8 @@ def first(collection, **kwargs):
     except StopIteration:
         return None
 
-def last(collection, **kwargs):
+
+def last(collection: Iterable, **kwargs) -> Any:
     """Obtains the last element in the given sequence.
 
     This function can operate on both 'solid' collections (lists, tuples, etc)
@@ -75,7 +79,8 @@ def last(collection, **kwargs):
 
     return item
 
-def is_empty(collection):
+
+def is_empty(collection: Iterable) -> bool:
     """Indicates if the given iterable object contains at least one item.
 
     Note that calling this function on an iterator will consume its first item.
@@ -92,10 +97,11 @@ def is_empty(collection):
     else:
         return False
 
+
 def grouped(
-    collection,
-    key,
-    sorting = (lambda group, item: (group, item))
+    collection: Iterable,
+    key: Union[str, Callable[[Any], Any]],
+    sorting: Callable[[Any, Any], Any] = (lambda group, item: (group, item))
 ):
     """Groups the items in a sequence by the given key.
 
@@ -133,8 +139,28 @@ def grouped(
 
 _undefined = object()
 
-def find_max(collection, key = None, default = _undefined):
 
+def find_max(
+        collection: Iterable,
+        key: Union[str, Callable[[Any], Any]] = None,
+        default: Any = _undefined) -> Any:
+    """Finds the item with the highest value in the given collection.
+
+    :param collection: The collection to inspect.
+    :param key: An optional keying method to determine the value of each entry
+        in the collection. If not given or set to None, items are compared
+        using a direct comparison. If given, it can take one of two forms:
+
+            * The name of an attribute of the items in the collection.
+            * A function that takes one of the items in the collection and
+              returns its value
+
+    :param default: The value to return if the collection is empty. If no
+        default is given the function will raise a `ValueError` exception
+        instead.
+
+    :return: The item in the collection with the highest value.
+    """
     max_item = _undefined
     max_key = _undefined
 
@@ -155,8 +181,28 @@ def find_max(collection, key = None, default = _undefined):
 
     return max_item
 
-def find_min(collection, key = None, default = _undefined):
 
+def find_min(
+        collection: Iterable,
+        key: Union[str, Callable[[Any], Any]] = None,
+        default: Any = _undefined) -> Any:
+    """Finds the item with the lowest value in the given collection.
+
+    :param collection: The collection to inspect.
+    :param key: An optional keying method to determine the value of each entry
+        in the collection. If not given or set to None, items are compared
+        using a direct comparison. If given, it can take one of two forms:
+
+            * The name of an attribute of the items in the collection.
+            * A function that takes one of the items in the collection and
+              returns its value
+
+    :param default: The value to return if the collection is empty. If no
+        default is given the function will raise a `ValueError` exception
+        instead.
+
+    :return: The item in the collection with the lowest value.
+    """
     min_item = _undefined
     min_key = _undefined
 
@@ -177,7 +223,20 @@ def find_min(collection, key = None, default = _undefined):
 
     return min_item
 
-def batch(iterable, batch_size):
+
+def batch(iterable: Iterable, batch_size: int) -> Iterable[Iterable]:
+    """Splits an iterable sequence into several sequences of the given size (at
+    the most).
+
+    Note that the last yielded sequence may hold fewer elements than their
+    predecessors, if the given sequence can't be split evenly into batches of
+    the given size.
+
+    :param iterable: The iterable sequence to split.
+    :param batch_size: The size of the returned batches.
+
+    :return: An iterable sequence of iterable sequences.
+    """
 
     if not batch_size:
         yield iterable
