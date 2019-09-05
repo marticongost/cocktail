@@ -11,9 +11,6 @@
 svg {
     width: var(--width, auto);
     height: var(--height, 100%);
-
-    &, * {
-        fill: var(--color, currentColor) !important;
-    }
+    fill: var(--color, currentColor);
 }
 
