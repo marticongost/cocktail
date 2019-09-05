@@ -1,23 +1,24 @@
-#-*- coding: utf-8 -*-
 """
-An event mechanism for python.
+
+.. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
+from typing import Any, Callable, Iterable, Mapping, Tuple, Type
 from types import MethodType
 from weakref import ref, WeakKeyDictionary
 from cocktail.modeling import SynchronizedList
 from threading import Lock, current_thread
 from contextlib import contextmanager
 
+EventHandler = Callable[["EventInfo"], Any]
 
-def when(event):
+
+def when(event: "EventSlot") -> Callable[[EventHandler], EventHandler]:
     """A decorator factory that attaches decorated functions as event handlers
     for the given event slot.
 
     :param event: The event slot to register the decorated function on.
-    :type event: `EventSlot`
 
     :return: The decorator that does the binding.
-    :rtype: callable
     """
     def decorator(function):
         event.append(function)
@@ -34,7 +35,7 @@ class event_handler:
     def __init__(self, func):
         self.__func__ = func
 
-    def __get__(self, instance, type = None):
+    def __get__(self, instance, type=None):
         if instance:
             return self.__func__
         else:
@@ -60,7 +61,7 @@ class event_handler:
         event_slot.append(self.__func__)
 
 
-class Event(object):
+class Event:
     """An event describes a certain condition that can be triggered on a class
     and/or its instances. Users of the class can register callback functions
     that will be invoked when the event is triggered, which results in a
@@ -73,13 +74,23 @@ class Event(object):
     life cycle.
     """
 
-    def __init__(self, doc = None, event_info_class = None):
+    def __init__(
+            self,
+            doc: str = None,
+            event_info_class: Type["EventInfo"] = None):
+        """Declares a new event.
+
+        @param doc: The docstring for the event.
+        @param event_info_class: If given, invoking this event will use
+            instances of the given subclass of `EventInfo` in order to describe
+            their context. If not set, `EventInfo` will be used by default.
+        """
         self.__doc__ = doc
         self.__slots = WeakKeyDictionary()
         self.__lock = Lock()
         self.event_info_class = event_info_class or EventInfo
 
-    def __get__(self, instance, type = None):
+    def __get__(self, instance, type=None):
 
         self.__lock.acquire()
 
@@ -91,7 +102,7 @@ class Event(object):
         finally:
             self.__lock.release()
 
-    def __get_slot(self, target, is_instance = False):
+    def __get_slot(self, target, is_instance=False):
 
         slot = self.__slots.get(target)
 
@@ -139,7 +150,10 @@ class EventSlot(SynchronizedList):
     target = None
     next = ()
 
-    def __call__(self, _event_info = None, **kwargs):
+    def __call__(
+            self,
+            _event_info: "EventInfo" = None,
+            **kwargs) -> "EventInfo":
 
         target = self.target()
 
@@ -168,26 +182,47 @@ class EventSlot(SynchronizedList):
 
         return event_info
 
-    def append(self, callback):
+    def append(self, callback: EventHandler):
+        """Registers an event handler as the last entry in the slot.
+
+        :param callback: The handler to append.
+        """
         SynchronizedList.append(self, self.wrap_callback(callback))
 
-    def insert(self, position, callback):
+    def insert(self, position: int, callback: EventHandler):
+        """Inserts an event handler as the given ordinal position of the slot.
+
+        :param position: The index to place the handler at.
+        :param callback: The handler to append.
+        """
         SynchronizedList.insert(self, position, self.wrap_callback(callback))
 
-    def __setitem__(self, position, callback):
+    def __setitem__(self, position: int, callback: EventHandler):
+        """Replaces the event handler at the given index with a new event
+        handler.
+
+        :param position: The index to replace.
+        :param callback: The handler to append.
+        """
         SynchronizedList.__setitem__(
             self,
             position,
             self.wrap_callback(callback)
         )
 
-    def extend(self, callback_sequence):
+    def extend(self, callback_sequence: Iterable[EventHandler]):
+        """Extends all the event handlers in the given sequence at the end of
+        the slot.
+
+        :param callback_sequence: The iterable sequence of event handlers to
+            add to the slot.
+        """
         SynchronizedList.extend(
             self,
             (self.wrap_callback(callback) for callback in callback_sequence)
         )
 
-    def wrap_callback(self, callback):
+    def wrap_callback(self, callback: EventHandler):
 
         # Transform methods bound to the target for the event slot into a
         # callable that achieves the same effect without maintining a hard
@@ -201,21 +236,21 @@ class EventSlot(SynchronizedList):
         return callback
 
 
-class BoundCallback(object):
+class BoundCallback:
 
     def __init__(self, func):
         self._func = func
 
-    def __call__(self, event):
+    def __call__(self, event: "EventInfo") -> Any:
         return self._func(event.source, event)
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         return type(self) is type(other) and self._func is other._func
 
 
-class EventInfo(object):
-    """An object that encapsulates all the information passed on to callbacks
-    when an `event slot <EventSlot>` is triggered.
+class EventInfo:
+    """An object that encapsulates all the information passed on to event
+    handlers when an `event slot <EventSlot>` is triggered.
 
     .. attribute:: target
 
@@ -238,21 +273,34 @@ class EventInfo(object):
         If a callback sets this flag to True, no further callbacks will be
         invoked for this event.
     """
-    target = None
-    source = None
-    slot = None
-    consumed = False
+    target: Any = None
+    source: Any = None
+    slot: EventSlot = None
+    consumed: bool = False
 
-    def __init__(self, params):
+    def __init__(self, params: Mapping[str, Any]):
         for key, value in params.items():
             setattr(self, key, value)
 
     @property
-    def event(self):
+    def event(self) -> Event:
         return self.slot.event
 
+
 @contextmanager
-def monitor_thread_events(*monitoring):
+def monitor_thread_events(
+        *monitoring: Iterable[Tuple[EventSlot, EventHandler]]):
+    """A context manager that installs temporary event handlers for the current
+    thread.
+
+    The context manager receives a sequence of slot, handler tuples. Within its
+    context, whenever the given slots are triggered their matching event
+    handlers will be invoked, but only if they are triggered from the current
+    thread. All the registered handlers are guaranteed to be removed when the
+    context finishes.
+
+    :param monitoring: An iterable sequence of slot, event handler pairs.
+    """
 
     handlers = []
 
