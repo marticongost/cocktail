@@ -8,8 +8,8 @@
     getActions() {
         return new cocktail.ui.ActionSet("modal-form-actions", {
             entries: [
-                new cls.AcceptAction("accept"),
-                new cls.CancelAction("cancel")
+                new this.constructor.AcceptAction("accept"),
+                new this.constructor.CancelAction("cancel")
             ]
         });
     }
@@ -31,6 +31,12 @@
                 e.stopPropagation();
                 e.preventDefault();
             }
+            ?>
+
+            <?on value:changed
+            const actionList = instance.actionList;
+            actionList.actionContext.value = newValue;
+            actionList.updateActions();
             ?>
 
         </ui:cocktail.ui.Form>
