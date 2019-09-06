@@ -113,6 +113,7 @@ $covered-panel-border-color: white;
     border-bottom: none !important;
     box-shadow: 0 0 25px rgba(30,30,30,0.1);
     background-color: white;
+    overflow: hidden;
 
     :host([stackNodeVisibility='covered']) & {
         pointer-events: none;
