@@ -299,10 +299,10 @@
 
         translateValue(value, params = null) {
             if (value === undefined || value === null || value === "") {
-                return this.translate("none");
+                return this.translate(".none");
             }
             else if (this.enumeration && this.translatableEnumeration) {
-                return this.translate("values." + value);
+                return this.translate(".values." + value);
             }
             else {
                 return value;
