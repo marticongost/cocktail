@@ -1,6 +1,13 @@
 
 @import "cocktail.ui://styles/common";
 
+:host-context(.cocktail-ui-Form[formLayout='column']) {
+
+    .labelText {
+        font-size: 0.9em;
+    }
+}
+
 #entries {
     display: block;
     list-style-type: none;
@@ -17,7 +24,7 @@
             display: flex;
 
             & + li {
-                margin-top: var(--entry-separation, 0.3rem);
+                margin-top: var(--entry-separation, 0.4rem);
             }
         }
 
