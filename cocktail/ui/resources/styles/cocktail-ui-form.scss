@@ -130,12 +130,12 @@ legend {
     .field {
 
         & + .field {
-            margin-top: 1.5em;
+            margin-top: var(--form-field-separation, 1.5em);
         }
 
         &[labelDisposition='normal'] {
             .labelContainer + .controlContainer {
-                margin-top: 0.3em;
+                margin-top: var(--form-control-separation, 0.3em);
             }
         }
 
@@ -163,13 +163,13 @@ legend {
                 }
 
                 &[labelDisposition='normal'] {
-                    margin-left: 2em;
+                    margin-left: var(--form-field-separation, 2em);
                 }
             }
 
             &[labelDisposition='normal'] {
                 .labelContainer + .controlContainer {
-                    margin-left: 1em;
+                    margin-left: var(--form-control-separation, 1em);
                 }
             }
         }
@@ -186,7 +186,7 @@ legend {
 
             .labelContainer {
                 display: table-cell;
-                padding-right: 1em;
+                padding-right: var(--form-control-separation, 1em);
                 white-space: nowrap;
             }
 
@@ -197,7 +197,7 @@ legend {
             & + .field {
                 .labelContainer,
                 .controlContainer {
-                    padding-top: 0.5em;
+                    padding-top: var(--form-field-separation, 0.5em);
                 }
             }
         }
@@ -219,7 +219,7 @@ legend {
 
     .controlContainer {
         order: 1;
-        margin-right: 0.5em;
+        margin-right: var(--form-control-separation, 0.5em);
 
         .control {
             display: block;
@@ -273,7 +273,7 @@ legend {
 .FieldTranslations {
 
     & > .labelContainer {
-        margin-bottom: 0.5em;
+        margin-bottom: var(--form-control-separation, 0.5em);
     }
 
     .translations {
