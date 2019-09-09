@@ -220,6 +220,10 @@ class Component(object):
             return {}
 
     @property
+    def overlays(self):
+        return self.__state.overlays
+
+    @property
     def resources(self):
         if self.__state:
             return self.__state.resources
@@ -349,15 +353,23 @@ class UIScript(Script):
                     .dependencies(include_self = True)
             )
 
-        def _add_translation_keys(trans_key):
-            if trans_key.endswith(".*"):
-                translation_prefixes.add(trans_key[:-1])
-            else:
-                translation_keys.add(trans_key)
-
         for component in dependencies:
             components_script.append("\n")
             components_script.append(component.get_source())
+
+        asset_sources = set()
+
+        def _add_assets(component):
+
+            if component in asset_sources:
+                return
+
+            asset_sources.add(component)
+
+            for dependency in component.dependencies(recursive=False):
+                if dependency not in component.overlays:
+                    _add_assets(dependency)
+
             document.metadata.resources.extend(
                 resource
                 for resource in component.resources
@@ -366,6 +378,21 @@ class UIScript(Script):
 
             for trans_key in component.translation_keys:
                 _add_translation_keys(trans_key)
+
+            for overlay in component.overlays:
+                _add_assets(overlay)
+
+        def _add_translation_keys(trans_key):
+            if trans_key.endswith(".*"):
+                translation_prefixes.add(trans_key[:-1])
+            else:
+                translation_keys.add(trans_key)
+
+        _add_assets(self.root_component)
+
+        if self.extra_dependencies is not None:
+            for dependency in self.extra_dependencies:
+                _add_assets(dependency)
 
         if self.extra_translations:
             for trans_key in self.extra_translations:

@@ -113,6 +113,7 @@ class ComponentLoader(object):
         self.component = component
         self.base_component = None
         self.dependencies = OrderedSet()
+        self.overlays = OrderedSet()
         self.subcomponents = {}
         self.is_module = False
         self.is_mixin = False
@@ -145,6 +146,7 @@ class ComponentLoader(object):
                     % mixin_name
                 )
             self.dependencies.append(mixin)
+            self.overlays.append(mixin)
             self.decorators.append(mixin_name)
 
         if node is None:
@@ -163,6 +165,7 @@ class ComponentLoader(object):
         self.component = None
         self.base_component = None
         self.dependencies = None
+        self.overlays = None
         self.subcomponents = None
         self.resources = None
         self.translation_keys = None
