@@ -294,6 +294,11 @@ class ComponentLoader(object):
                 base_expr = "%s(%s)" % (decorator, base_expr)
 
             if self.is_mixin:
+                if self.component.package_name != "cocktail.ui":
+                    self.declaration_source.write(
+                        "cocktail.declare(%s);"
+                        % dumps(self.component.package_name)
+                    )
                 self.declaration_source.write(
                     "const mixin = %s = (cls) => class %s extends %s {" % (
                         self.component.full_name,
