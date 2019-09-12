@@ -8,6 +8,16 @@
 
     <ui:using mixin="cocktail.ui.DataDisplay"/>
 
+    <ui:property
+        name="disabled"
+        type="boolean"
+        reflected="true"
+        default="false">
+        <?on changed
+        this.input.disabled = newValue;
+        ?>
+    </ui:property>
+
     <?tail
     cls.delegatesFocus = true;
     ?>

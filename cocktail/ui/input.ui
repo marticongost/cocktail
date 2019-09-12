@@ -11,6 +11,16 @@
     <ui:symbol name="DELAY"/>
 
     <ui:property
+        name="disabled"
+        type="boolean"
+        reflected="true"
+        default="false">
+        <?on changed
+        this.input.disabled = newValue;
+        ?>
+    </ui:property>
+
+    <ui:property
         name="inputDelay"
         type="number"
         reflected="true">

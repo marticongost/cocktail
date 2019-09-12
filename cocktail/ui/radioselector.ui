@@ -18,6 +18,17 @@
         default="false"
         reflected="true"/>
 
+    <ui:property
+        name="disabled"
+        type="boolean"
+        reflected="true">
+        <?on changed
+        for (let [key, entry] of this[ENTRY_MAP]) {
+            cocktail.ui.setReasonForDisabling(entry, "cocktail.ui.RadioSelector", newValue);
+        }
+        ?>
+    </ui:property>
+
     <?head
     const ENTRIES_READY = Symbol("cocktail.ui.RadioSelector.ENTRIES_READY");
     const ENTRY_MAP = Symbol("cocktail.ui.RadioSelector.ENTRY_MAP");
@@ -84,6 +95,7 @@
     createEntry(value, prepend = false) {
         let serializedValue = this.dataBinding.member.serializeValue(value);
         let entry = this.constructor.Entry.create();
+        cocktail.ui.setReasonForDisabling(entry, "cocktail.ui.RadioSelector", this.disabled);
         entry.entryValue = value;
         entry.input.value = serializedValue;
         entry.input.checked = this[SERIALIZED_VALUE] == entry.input.value;
@@ -135,6 +147,16 @@
     <ul id="entries"/>
 
     <li ui:component="Entry">
+
+        <ui:property
+            name="disabled"
+            type="boolean"
+            default="false"
+            reflected="true">
+            <?on changed
+            this.input.disabled = newValue;
+            ?>
+        </ui:property>
 
         <input id="input" type="radio" name="radio">
             <?on change
