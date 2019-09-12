@@ -1121,5 +1121,43 @@ cocktail.ui.splash = function (splash, mainComponent) {
         ...cocktail.ui.navigationKeys,
         ...cocktail.ui.functionKeys
     ]);
+
+    const REASONS_FOR_DISABLING = Symbol("cocktail.ui.REASONS_FOR_DISABLING");
+
+    cocktail.ui.setReasonForDisabling = function setReasonForDisabling(element, reason, reasonApplies) {
+        let reasons = element[REASONS_FOR_DISABLING];
+        if (reasonApplies) {
+            if (reasons === undefined) {
+                reasons = element[REASONS_FOR_DISABLING] = new Set();
+            }
+            reasons.add(reason);
+            element.disabled = true;
+        }
+        else if (reasons !== undefined) {
+            reasons.delete(reason);
+            if (!reasons.size) {
+                element.disabled = false;
+            }
+        }
+    }
+
+    const REASONS_FOR_HIDING = Symbol("cocktail.ui.REASONS_FOR_HIDING");
+
+    cocktail.ui.setReasonForHiding = function setReasonForHiding(element, reason, reasonApplies) {
+        let reasons = element[REASONS_FOR_HIDING];
+        if (reasonApplies) {
+            if (reasons === undefined) {
+                reasons = element[REASONS_FOR_HIDING] = new Set();
+            }
+            reasons.add(reason);
+            element.hidden = true;
+        }
+        else if (reasons !== undefined) {
+            reasons.delete(reason);
+            if (!reasons.size) {
+                element.hidden = false;
+            }
+        }
+    }
 }
 

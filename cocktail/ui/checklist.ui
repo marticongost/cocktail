@@ -26,6 +26,18 @@
         reflected="true"
         default="false"/>
 
+    <ui:property
+        name="disabled"
+        type="boolean"
+        reflected="true"
+        default="false">
+        <?on changed
+        for (let [key, entry] of this[ENTRY_MAP]) {
+            cocktail.ui.setReasonForDisabling(entry, "cocktail.ui.CheckList", newValue);
+        }
+        ?>
+    </ui:property>
+
     <ui:symbol name="ENTRY_MAP"/>
     <ui:symbol name="SELECTING_ENTRY"/>
     <ui:symbol name="SERIALIZED_VALUE"/>
@@ -107,6 +119,7 @@
             entry.checkBox.setAttribute("error", "");
         }
 
+        cocktail.ui.setReasonForDisabling(entry, "cocktail.ui.CheckList", this.disabled);
         return entry;
     }
 
@@ -239,6 +252,16 @@
                 instance.parentInstance.setSelected(instance.entryValue, newValue);
             }
             this.checkBox.checked = newValue;
+            ?>
+        </ui:property>
+
+        <ui:property
+            name="disabled"
+            type="boolean"
+            reflected="true"
+            default="false">
+            <?on changed
+            cocktail.ui.setReasonForDisabling(this.checkBox, "cocktail.ui.CheckList.Entry", newValue);
             ?>
         </ui:property>
 

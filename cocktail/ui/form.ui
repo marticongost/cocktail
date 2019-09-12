@@ -403,6 +403,16 @@
     <div id="fieldsContainer"/>
     <div id="groupsContainer"/>
 
+    <ui:mixin ui:component="BaseField">
+
+        <ui:property
+            name="disabled"
+            type="boolean"
+            reflected="true"
+            default="false"/>
+
+    </ui:mixin>
+
     <li ui:component="ErrorMessage">
 
         <ui:property
@@ -446,6 +456,7 @@
     <div ui:component="Field">
 
         <ui:using mixin="cocktail.ui.DataDisplay"/>
+        <ui:using mixin="cocktail.ui.Form.BaseField"/>
 
         <ui:property
             name="modified"
@@ -498,6 +509,12 @@
         }
         ?>
 
+        <?on disabled:changed
+        if (this.control) {
+            cocktail.ui.setReasonForDisabling(this.control, "cocktail.ui.Form.Field", newValue);
+        }
+        ?>
+
         <?class
         get form() {
             return cocktail.ui.closestInstance(this, cocktail.ui.Form);
@@ -542,6 +559,7 @@
                     this.readOnlyDisplayFactory : this.displayFactory
                 );
                 this.control = displayFactory.requireDisplay(this.dataBinding);
+                cocktail.ui.setReasonForDisabling(this.control, "cocktail.ui.Form.Field", this.disabled);
                 cocktail.ui.link(this, this.control, "value");
                 cocktail.ui.link(this, this.control, "errors");
                 this.controlContainer.appendChild(this.control);
@@ -576,6 +594,7 @@
     <div ui:component="FieldTranslations">
 
         <ui:using mixin="cocktail.ui.DataDisplay"/>
+        <ui:using mixin="cocktail.ui.Form.BaseField"/>
 
         <?head
         const FIELDS_READY = Symbol.for("cocktail.ui.Form.FIELDS_READY");
@@ -738,6 +757,16 @@
         }
         ?>
 
+        <?on disabled:changed
+        for (let [locale, translation] of this[TRANSLATIONS_MAP]) {
+            cocktail.ui.setReasonForDisabling(
+                translation,
+                "cocktail.ui.Form.FieldTranslations",
+                newValue
+            );
+        }
+        ?>
+
         <?js
         this[TRANSLATIONS_MAP] = new Map();
         ?>
@@ -767,6 +796,18 @@
                 name="visible"
                 type="boolean"
                 reflected="true"/>
+
+            <ui:property
+                name="disabled"
+                type="boolean"
+                reflected="true"
+                default="false">
+                <?on changed
+                if (this.control) {
+                    cocktail.ui.setReasonForDisabling(this.control, "cocktail.ui.Form.Translation", newValue);
+                }
+                ?>
+            </ui:property>
 
             <?head
             const FIELDS_READY = Symbol.for("cocktail.ui.Form.FIELDS_READY");
@@ -839,6 +880,7 @@
                         this.readOnlyDisplayFactory : this.displayFactory
                     );
                     this.control = displayFactory.requireDisplay(this.dataBinding);
+                    cocktail.ui.setReasonForDisabling(this.control, "cocktail.ui.Form.Translation", this.disabled);
                     cocktail.ui.link(this, this.control, "value");
                     cocktail.ui.link(this, this.control, "errors");
                     this.controlContainer.appendChild(this.control);
