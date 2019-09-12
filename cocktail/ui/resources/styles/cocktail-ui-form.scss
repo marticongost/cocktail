@@ -9,6 +9,10 @@ $subgroup-separation: 1.5em;
     flex-direction: column;
 }
 
+*[hidden] {
+    display: none !important;
+}
+
 #errorList {
     background-color: $form-errors-background-color;
     padding: 1rem 1.3rem;
