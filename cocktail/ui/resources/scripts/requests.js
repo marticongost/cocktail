@@ -9,17 +9,16 @@
 
 cocktail.ui.request = function (params) {
 
-    return new Promise(function (resolve, reject) {
+    let xhr;
 
-        const promise = this;
+    const promise = new Promise(function (resolve, reject) {
 
         function makeRequest() {
 
             const errorHandler = cocktail.ui.request.errorHandler;
-            const xhr = new XMLHttpRequest();
-            promise.xhr = xhr;
-            xhr.method = params.method || "GET";
 
+            xhr = new XMLHttpRequest();
+            xhr.method = params.method || "GET";
             xhr.url = params.url;
             xhr.data = params.data;
 
@@ -100,6 +99,12 @@ cocktail.ui.request = function (params) {
 
         makeRequest();
     });
+
+    Object.defineProperty(promise, "xhr", {
+        get: () => xhr
+    });
+
+    return promise;
 }
 
 cocktail.ui.request.addErrorHandler = function (handler) {
