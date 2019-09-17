@@ -590,9 +590,17 @@ class Query(object):
 
         index, index_kw = self._get_expression_index(expr)
 
-        if index is not None and not index.accepts_repetition and (
-            len(order) == 1
-            or not index.accepts_multiple_values
+        if (
+            index is not None
+            and not index.accepts_repetition
+            and (
+                len(order) == 1
+                or not index.accepts_multiple_values
+            )
+            # An index for a translated member can't use the fast path, because
+            # it holds no values for objects that don't have a translation in
+            # the active language
+            and not getattr(expr, "translated", False)
         ):
             desc = isinstance(order[0], expressions.NegativeExpression)
             is_btree = isinstance(index, (IIBTree, OIBTree))
@@ -605,11 +613,6 @@ class Query(object):
 
                 if isinstance(expr, Member) and expr.primary:
                     sequence = index.keys(descending = desc, **index_kw)
-                elif getattr(expr, "translated", False):
-                    sequence = (id
-                                for key, id
-                                in index.items(descending = desc, **index_kw)
-                                if key[0] == language)
                 elif is_btree:
                     sequence = index.values(**index_kw)
                 else:
@@ -706,7 +709,10 @@ class Query(object):
 
                     add_sorting_key(c, id, Comparator(value, desc))
 
-        return sorted(dataset, key = sorting_keys.get)
+        return sorted(
+            dataset,
+            key=(lambda value: sorting_keys.get(value, minus_infinite))
+        )
 
     def _apply_range(self, dataset):
 
@@ -814,6 +820,30 @@ class Query(object):
             item = type_index.get(id)
             if item is not None:
                 item.delete()
+
+
+class MinusInfinite:
+
+    def __eq__(self, other):
+        return other is minus_infinite
+
+    def __ne__(self, other):
+        return other is not minus_infinite
+
+    def __gt__(self, other):
+        return False
+
+    def __ge__(self, other):
+        return other is minus_infinite
+
+    def __lt__(self, other):
+        return other is not minus_infinite
+
+    def __le__(self, other):
+        return True
+
+
+minus_infinite = MinusInfinite()
 
 
 class Comparator(object):
