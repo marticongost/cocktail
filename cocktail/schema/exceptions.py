@@ -389,7 +389,7 @@ class RelationConstraintError(ValidationError):
     def __init__(self, context, constraint, reason=None):
         super().__init__(
             context,
-            reason or f"constraint {self.constraint} not satisfied"
+            reason or f"constraint {constraint} not satisfied"
         )
         self.constraint = constraint
 
