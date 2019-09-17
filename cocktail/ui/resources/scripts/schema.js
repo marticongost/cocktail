@@ -282,9 +282,12 @@
                 return translation;
             }
 
-            const key = this.translationKey;
+            let key = this.translationKey;
             if (key) {
-                translation = cocktail.ui.translations[key + suffix];
+                if (suffix) {
+                    key += "." + suffix;
+                }
+                translation = cocktail.ui.translations[key];
                 if (translation) {
                     return translation;
                 }
@@ -299,10 +302,10 @@
 
         translateValue(value, params = null) {
             if (value === undefined || value === null || value === "") {
-                return this.translate(".none");
+                return this.translate("none");
             }
             else if (this.enumeration && this.translatableEnumeration) {
-                return this.translate(".values." + value);
+                return this.translate("values." + value);
             }
             else {
                 return value;
