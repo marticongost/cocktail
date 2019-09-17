@@ -6,6 +6,7 @@
 @organization:	Whads/Accent SL
 @since:			July 2008
 """
+from typing import Iterable
 from time import time
 from warnings import warn
 from itertools import chain, islice
@@ -343,6 +344,13 @@ class Query(object):
 
             self._verbose_message("attrib", "type", self.type.full_name)
 
+            if self.base_collection is not None:
+                self._verbose_message(
+                    "attrib",
+                    "base coll.",
+                    self._describe_collection(self.base_collection)
+                )
+
             if self.filters:
                 self._verbose_message("attrib", "filters", self.filters)
 
@@ -445,6 +453,21 @@ class Query(object):
             print()
 
         return dataset
+
+    def _describe_collection(
+            self,
+            collection: Iterable,
+            max_elements: int = 10) -> str:
+
+        if hasattr(collection, "__len__"):
+            size = len(collection)
+
+            if size <= max_elements:
+                return repr(collection)
+            else:
+                return f"{collection.__class__.__name__} <{len(collection)}>"
+        else:
+            return collection.__class__.__name__
 
     def _apply_filters(self, dataset):
 
