@@ -48,16 +48,16 @@ class ScalarFieldCoercionTestCase(TestCase):
     def test_can_raise_errors_immediately(self):
 
         from cocktail.schema import Coercion
-        from cocktail.schema.exceptions import ValidationError
+        from cocktail.schema.exceptions import InputError
 
         for value in self.invalid_values:
             try:
                 self.member.coerce(value, Coercion.FAIL_IMMEDIATELY)
-            except ValidationError:
+            except InputError:
                 pass
             else:
                 raise AssertionError(
-                    f"Coercing {value} should raise a validation error"
+                    f"Coercing {value} should raise an input error"
                 )
 
         for value in self.valid_values:
@@ -67,12 +67,12 @@ class ScalarFieldCoercionTestCase(TestCase):
     def test_can_aggregate_errors(self):
 
         from cocktail.schema import Coercion
-        from cocktail.schema.exceptions import CoercionError
+        from cocktail.schema.exceptions import InputError
 
         for value in self.invalid_values:
             try:
                 self.member.coerce(value, Coercion.FAIL)
-            except CoercionError as e:
+            except InputError as e:
                 assert e.member is self.member
                 assert e.errors
             else:
@@ -171,7 +171,11 @@ class SchemaCoercionTestCase(TestCase):
     def test_can_raise_errors_immediately(self):
 
         from cocktail.schema import Coercion
-        from cocktail.schema.exceptions import ValidationError
+        from cocktail.schema.exceptions import (
+            InputError,
+            MinValueError,
+            MinLengthError
+        )
 
         FI = Coercion.FAIL_IMMEDIATELY
 
@@ -179,19 +183,27 @@ class SchemaCoercionTestCase(TestCase):
         obj = {"num": 3, "text": None}
         try:
             self.schema.coerce(obj, FI)
-        except ValidationError as e:
-            assert e.member is self.schema["num"]
+        except InputError as e:
+            assert e.member is self.schema
+            assert len(e.errors) == 1
+            error = e.errors[0]
+            assert isinstance(error, MinValueError)
+            assert error.member is self.schema["num"]
         else:
             raise AssertionError(
-                f"Coercing {obj} should raise a validation error on 'num'"
+                f"Coercing {obj} should raise an input error on 'num'"
             )
 
         # num valid, text invalid
         obj = {"num": 20, "text": "hum"}
         try:
             self.schema.coerce(obj, FI)
-        except ValidationError as e:
-            assert e.member is self.schema["text"]
+        except InputError as e:
+            assert e.member is self.schema
+            assert len(e.errors) == 1
+            error = e.errors[0]
+            assert isinstance(error, MinLengthError)
+            assert error.member is self.schema["text"]
         else:
             raise AssertionError(
                 f"Coercing {obj} should raise a validation error on 'text'"
@@ -201,8 +213,10 @@ class SchemaCoercionTestCase(TestCase):
         obj = {"num": 3, "text": "hum"}
         try:
             self.schema.coerce(obj, FI)
-        except ValidationError as e:
-            pass
+        except InputError as e:
+            assert e.member is self.schema
+            assert len(e.errors) == 1
+            assert e.errors[0].member in list(self.schema.members().values())
         else:
             raise AssertionError(
                 f"Coercing {obj} should raise a validation error"
@@ -218,7 +232,7 @@ class SchemaCoercionTestCase(TestCase):
     def test_can_aggregate_errors(self):
 
         from cocktail.schema import Coercion
-        from cocktail.schema.exceptions import CoercionError
+        from cocktail.schema.exceptions import InputError
 
         def bad_keys(e):
             keys = set()
@@ -230,7 +244,7 @@ class SchemaCoercionTestCase(TestCase):
         obj = {"num": 3, "text": None}
         try:
             self.schema.coerce(obj, Coercion.FAIL)
-        except CoercionError as e:
+        except InputError as e:
             assert bad_keys(e) == {"num"}
         else:
             raise AssertionError(
@@ -241,7 +255,7 @@ class SchemaCoercionTestCase(TestCase):
         obj = {"num": 20, "text": "hum"}
         try:
             self.schema.coerce(obj, Coercion.FAIL)
-        except CoercionError as e:
+        except InputError as e:
             assert bad_keys(e) == {"text"}
         else:
             raise AssertionError(
@@ -252,7 +266,7 @@ class SchemaCoercionTestCase(TestCase):
         obj = {"num": 3, "text": "hum"}
         try:
             self.schema.coerce(obj, Coercion.FAIL)
-        except CoercionError as e:
+        except InputError as e:
             assert bad_keys(e) == {"num", "text"}
         else:
             raise AssertionError(
