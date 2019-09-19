@@ -50,6 +50,7 @@ class TemplateCompiler(object):
         self.__class_names = set()
         self.__bases = None
         self.__element_id = 0
+        self.__ref_id = 0
         self.__stack = []
         self.__root_element_found = False
         self.__is_overlay = False
@@ -576,11 +577,13 @@ class TemplateCompiler(object):
                 )
 
     def _wait_for_stage(self, source, frame, element_id, stage):
-        source.write("_self_ref = weakref.ref(self)")
+        self.__ref_id += 1
+        ref_name = f"_self_ref_{self.__ref_id}"
+        source.write(f"{ref_name} = weakref.ref(self)")
         source.write("@when(%s.%s_stage)" % (element_id, stage))
         source.write("def _handler(e):")
         source.indent()
-        source.write("self = _self_ref()")
+        source.write(f"self = {ref_name}()")
         source.write("element = e.source")
         frame.close_actions.append(source.unindent)
 
@@ -750,12 +753,14 @@ class TemplateCompiler(object):
                 source.write(assignment)
 
         if place_holders:
-            source.write("_self_ref = weakref.ref(self)")
+            self.__ref_id += 1
+            ref_name = f"_self_ref_{self.__ref_id}"
+            source.write(f"{ref_name} = weakref.ref(self)")
             source.write("@when(%s.binding_stage)" % id)
             source.write("def _bindings(e):")
             source.indent()
             source.write("element = e.source")
-            source.write("self = _self_ref()")
+            source.write(f"self = {ref_name}()")
 
             parent_id = self._get_parent_id()
             if parent_id:
