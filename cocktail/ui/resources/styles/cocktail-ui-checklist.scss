@@ -52,7 +52,7 @@
 }
 
 .CheckBox {
-    margin-right: 0.3rem;
+    margin-right: var(--selector-label-separation, 0.4rem);
 }
 
 .labelText {

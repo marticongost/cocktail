@@ -223,7 +223,7 @@ legend {
 
     .controlContainer {
         order: 1;
-        margin-right: var(--form-control-separation, 0.5em);
+        margin-right: var(--selector-label-separation, 0.4rem);
 
         .control {
             display: block;
