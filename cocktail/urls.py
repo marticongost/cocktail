@@ -260,6 +260,9 @@ class URL(str):
 
         return url
 
+    def append(self, path):
+        return self.copy(path=self.path.append(path))
+
 
 class URLBuilder(object):
 
