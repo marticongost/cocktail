@@ -192,19 +192,19 @@ class Component(object):
         if include_self:
             dependencies.append(self)
 
-            if self.__state:
-                subcomponents = iter(self.__state.subcomponents.values())
+        if self.__state:
+            subcomponents = self.__state.subcomponents.values()
 
-                if recursive:
-                    for subcomponent in subcomponents:
-                        dependencies.extend(
-                            subcomponent.dependencies(
-                                include_self = True,
-                                _visited = _visited
-                            )
+            if recursive:
+                for subcomponent in subcomponents:
+                    dependencies.extend(
+                        subcomponent.dependencies(
+                            include_self = True,
+                            _visited = _visited
                         )
-                else:
-                    dependencies.extend(subcomponents)
+                    )
+            else:
+                dependencies.extend(subcomponents)
 
         return dependencies
 
