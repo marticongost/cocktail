@@ -70,7 +70,7 @@
         return container && container.getEntry(id.substr(pos + 1));
     }
 
-    *iterActionEntries(selector = null) {
+    *iterActionEntries(selector = null, recursive = true) {
 
         let filter;
 
@@ -92,7 +92,7 @@
         }
 
         for (let element of this.actionEntriesContainer.children) {
-            if (element.iterActionEntries) {
+            if (recursive && element.iterActionEntries) {
                 yield *element.iterActionEntries(filter);
             }
             if (!filter || filter(element)) {
