@@ -7,6 +7,8 @@
     <ui:requires component="cocktail.ui.actions"/>
     <ui:requires component="cocktail.ui.ActionListButton"/>
 
+    <ui:symbol name="INHERITS_BUTTON_STYLE"/>
+
     <ui:property
         name="actionSource"
         reflected="false">
@@ -23,7 +25,15 @@
         name="buttonStyle"
         type="string"
         reflected="true"
-        default="iconBesideText"/>
+        default="iconBesideText">
+        <?on changed
+        for (let entry of this.iterActionEntries(null, false)) {
+            if (entry[INHERITS_BUTTON_STYLE]) {
+                entry.buttonStyle = newValue;
+            }
+        }
+        ?>
+    </ui:property>
 
     <?head
     const SELECTION_CHANGED_HANDLER = Symbol();
@@ -167,6 +177,7 @@
 
         if (entry.buttonStyle == "auto") {
             entry.buttonStyle = this.buttonStyle;
+            entry[INHERITS_BUTTON_STYLE] = true;
         }
 
         entry.actionList = this;
