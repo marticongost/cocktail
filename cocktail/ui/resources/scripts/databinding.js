@@ -103,13 +103,21 @@ cocktail.schema.Collection.prototype[cocktail.ui.removeAnnotations] = function (
         }
 
         getValue(language = null, index = null) {
-            let object = this[OBJECT];
+
+            const object = this[OBJECT];
+
             if (object === undefined) {
                 return undefined;
             }
+
             if (this[MEMBER].membershipType == cocktail.schema.membershipTypes.collectionItems) {
                 return object[index];
             }
+
+            if (this[MEMBER].membershipType == cocktail.schema.membershipTypes.tupleItem) {
+                return object && object[this[MEMBER].tupleIndex];
+            }
+
             return this[MEMBER].getObjectValue(object, language, index);
         }
 

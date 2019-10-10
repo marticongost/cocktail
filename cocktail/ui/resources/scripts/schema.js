@@ -13,6 +13,7 @@
     const OWNER = Symbol("cocktail.schema.OWNER");
     const NAME = Symbol("cocktail.schema.NAME");
     const MEMBERSHIP_TYPE = Symbol("cocktail.schema.MEMBERSHIP_TYPE");
+    const TUPLE_INDEX = Symbol("cocktail.schema.TUPLE_INDEX");
     const TRANSLATED = Symbol("cocktail.schema.TRANSLATED");
     const MEMBER_MAP = Symbol("cocktail.schema.MEMBER_MAP");
     const BASE = Symbol("cocktail.schema.BASE");
@@ -32,7 +33,8 @@
 
     pkg.membershipTypes = {
         member: Symbol("cocktail.schema.membershipTypes.member"),
-        collectionItems: Symbol("cocktail.schema.membershipTypes.collectionItems")
+        collectionItems: Symbol("cocktail.schema.membershipTypes.collectionItems"),
+        tupleItem: Symbol("cocktail.schema.membershipTypes.tupleItem")
     }
 
     const claimMember = (owner, member, membershipType) => {
@@ -182,6 +184,9 @@
                 else if (this[MEMBERSHIP_TYPE] == pkg.membershipTypes.collectionItems) {
                     return `${this[OWNER].fullName}.items`;
                 }
+                else if (this[MEMBERSHIP_TYPE] == pkg.membershipTypes.tupleItem) {
+                    return `${this[OWNER].fullName}.items.${this[NAME] || this[TUPLE_INDEX]}`;
+                }
             }
             return this[NAME];
         }
@@ -197,6 +202,10 @@
             else {
                 return null;
             }
+        }
+
+        get tupleIndex() {
+            return this[TUPLE_INDEX];
         }
 
         get sourceMember() {
@@ -1256,9 +1265,40 @@
 
             return true;
         }
-    }
 
-    cocktail.schema.Tuple.prototype.items = [];
+        // Common interface with Schema
+        orderedMembers() {
+            return this[ITEMS];
+        }
+
+        get items() {
+            return this[ITEMS];
+        }
+
+        set items(value) {
+            for (var i = 0; i < value.length; i++) {
+                const member = value[i];
+                claimMember(this, member, pkg.membershipTypes.tupleItem);
+                member[TUPLE_INDEX] = i;
+            }
+            this[ITEMS] = value;
+        }
+
+        copyAttribute(copy, key, value, parameters) {
+            if (key == ITEMS && value) {
+                const itemParams = parameters && parameters[pkg.ITEMS_PARAMETERS];
+                const valueCopy = [];
+                for (var i = 0; i < value.length; i++) {
+                    const memberCopy = value[i].copy(itemParams && itemParams[i]);
+                    valueCopy.push(memberCopy);
+                    claimMember(copy, memberCopy, pkg.membershipTypes.tupleItem);
+                    memberCopy[TUPLE_INDEX] = i;
+                }
+                value = valueCopy;
+            }
+            super.copyAttribute(copy, key, value, parameters);
+        }
+    }
 
     const JSDate = Date;
 

@@ -90,6 +90,10 @@
         cocktail.ui.formControls.enumerationControl = cocktail.ui.DropdownSelector;
         const formControl = cocktail.ui.formControl;
         cocktail.schema.Schema[formControl] = cocktail.ui.Form;
+        cocktail.schema.Tuple[formControl] = cocktail.ui.Form.withProperties({
+            formLayout: "row",
+            fieldsLabelDisposition: "hidden"
+        });
         cocktail.schema.String[formControl] = cocktail.ui.TextInput;
         cocktail.schema.Number[formControl] = cocktail.ui.NumberInput;
         cocktail.schema.Boolean[formControl] = cocktail.ui.CheckBox;
@@ -144,24 +148,38 @@
     }
 
     addField(member) {
-        let field = this.createField(member);
+
+        const field = this.createField(member);
+
+        let fieldKey, defaultFormValue;
+
+        if (member.membershipType == cocktail.schema.membershipTypes.tupleItem) {
+            fieldKey = member.tupleIndex;
+            defaultFormValue = () => [];
+        }
+        else {
+            fieldKey = member.name;
+            defaultFormValue = () => {};
+        }
+
         cocktail.ui.link(
             this,
             field,
             "value",
             (form, field) => {
                 if (form.value && field.dataBinding) {
-                    field.value = form.value[field.dataBinding.member.name];
+                    field.value = form.value[fieldKey];
                 }
             },
             (field, form) => {
                 if (field.dataBinding) {
-                    let formValue = form.value ? cocktail.ui.copyValue(form.value) : {};
-                    formValue[field.dataBinding.member.name] = field.value;
+                    let formValue = form.value ? cocktail.ui.copyValue(form.value) : defaultFormValue();
+                    formValue[fieldKey] = field.value;
                     form.value = formValue;
                 }
             }
         );
+
         this[FIELD_MAP].set(member.name, field);
 
         let parent = this;
