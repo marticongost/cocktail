@@ -494,7 +494,16 @@ cocktail.ui.splash = function (splash, mainComponent) {
     cocktail.ui.insertTranslation = function (element, key) {
         let text = cocktail.ui.translations[key];
         if (text) {
-            element.appendChild(document.createTextNode(text));
+            if (text.charAt(0) == "<") {
+                const container = document.createElement("div")
+                container.innerHTML = text;
+                while (container.firstChild) {
+                    element.appendChild(container.firstChild);
+                }
+            }
+            else {
+                element.appendChild(document.createTextNode(text));
+            }
         }
     }
 
