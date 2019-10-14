@@ -137,11 +137,17 @@
 
         push(state) {
             this.log("pushing state", state);
-            return this.resolve(state).then((node) => {
-                history.pushState({}, "", node.url);
-                this.log(`processing URL ${node.url}`);
-                this.process(node);
-            });
+            const currentNode = cocktail.navigation.node;
+            return this.resolve(state)
+                .then((node) => currentNode ? currentNode.transitionTo(node) : node)
+                .then((node) => node ? node.transitionFrom(currentNode) : null)
+                .then((node) => {
+                    if (node) {
+                        history.pushState({}, "", node.url);
+                        this.log(`processing URL ${node.url}`);
+                        this.process(node);
+                    }
+                });
         },
 
         replace(state) {
@@ -203,6 +209,14 @@
             return this[PARENT];
         }
 
+        transitionTo(node) {
+            return node;
+        }
+
+        transitionFrom(node) {
+            return this;
+        }
+
         consumePathSegment(path, reason = null) {
             if (!path.length) {
                 throw "Can't consume a segment from an empty path";
@@ -247,6 +261,15 @@
                 }
             }
             yield this;
+        }
+
+        isAncestorOf(descendant) {
+            for (let node of descendant.towardsRoot()) {
+                if (node.pathString == this.pathString) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         get url() {
