@@ -1,15 +1,17 @@
-#-*- coding: utf-8 -*-
 """
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
+from typing import Any, Optional, Sequence, Set, Tuple, Union
 from sys import getsizeof
 from time import time
 from threading import RLock
+
 from cocktail.modeling import overrides
 from cocktail.styled import styled
 from cocktail.memoryutils import parse_bytes, format_bytes
-from .scope import whole_cache, normalize_scope
+from .scope import whole_cache, Scope
+from .cachekey import CacheKey
 from .cachestorage import CacheStorage
 from .exceptions import CacheKeyError
 
@@ -17,12 +19,13 @@ from .exceptions import CacheKeyError
 class MemoryCacheStorage(CacheStorage):
     """A cache backend that stores data on a Python dictionary."""
 
-    __memory_limit = None
-    __memory_usage = 0
-    verbose_invalidation = False
-    verbose_memory_usage = False
+    __memory_limit: Optional[int] = None
+    __memory_usage: int = 0
 
-    def __init__(self, memory_limit = None):
+    verbose_invalidation: bool = False
+    verbose_memory_usage: bool = False
+
+    def __init__(self, memory_limit: Optional[int] = None):
         self.__lock = RLock()
         self.__dict = {}
         self.__oldest_entry = None
@@ -31,7 +34,7 @@ class MemoryCacheStorage(CacheStorage):
         self.memory_limit = memory_limit
 
     @property
-    def memory_usage(self):
+    def memory_usage(self) -> int:
         return (
             self.__memory_usage
             + getsizeof(self)
@@ -39,10 +42,10 @@ class MemoryCacheStorage(CacheStorage):
             + getsizeof(self.__entries_by_tag)
         )
 
-    def _get_memory_limit(self):
+    def _get_memory_limit(self) -> Optional[int]:
         return self.__memory_limit
 
-    def _set_memory_limit(self, memory_limit):
+    def _set_memory_limit(self, memory_limit: Optional[Union[str, int]]):
 
         if isinstance(memory_limit, str):
             memory_limit = parse_bytes(memory_limit)
@@ -69,7 +72,7 @@ class MemoryCacheStorage(CacheStorage):
         """
     )
 
-    def _exceeds_memory_limit(self):
+    def _exceeds_memory_limit(self) -> bool:
         return self.__memory_limit and self.memory_usage > self.__memory_limit
 
     def _apply_memory_limit(self):
@@ -78,7 +81,7 @@ class MemoryCacheStorage(CacheStorage):
         while self._exceeds_memory_limit() and self.drop_weight():
             pass
 
-    def _get_entry_memory_usage(self, entry):
+    def _get_entry_memory_usage(self, entry: "Entry") -> int:
         return (
               getsizeof(entry)
             + getsizeof(entry.key)
@@ -87,12 +90,12 @@ class MemoryCacheStorage(CacheStorage):
             + self._get_value_memory_usage(entry.value)
         )
 
-    def _get_value_memory_usage(self, value):
+    def _get_value_memory_usage(self, value: Any) -> int:
         return getsizeof(value)
 
-    memory_usage_bar_width = 50
+    memory_usage_bar_width: int = 50
 
-    memory_usage_colors = [
+    memory_usage_colors: Sequence[Tuple[int, str]] = [
         (90, "red"),
         (70, "brown"),
         (50, "yellow"),
@@ -129,7 +132,7 @@ class MemoryCacheStorage(CacheStorage):
 
         print("Memory usage: %s\n" % info)
 
-    def __require_entry(self, key):
+    def __require_entry(self, key: CacheKey) -> "Entry":
         with self.__lock:
             entry = self.__dict.get(key)
 
@@ -145,7 +148,7 @@ class MemoryCacheStorage(CacheStorage):
 
             return entry
 
-    def __remove_entry(self, entry):
+    def __remove_entry(self, entry: "Entry"):
 
         if self.verbose_invalidation:
             print(styled("  " + entry.key, "red"))
@@ -169,7 +172,8 @@ class MemoryCacheStorage(CacheStorage):
         entry.tags = None
         entry.size = None
 
-    def __release(self, entry):
+    def __release(self, entry: "Entry"):
+
         if entry is self.__oldest_entry:
             self.__oldest_entry = entry.next_entry
 
@@ -185,7 +189,7 @@ class MemoryCacheStorage(CacheStorage):
         entry.prev_entry = None
         entry.next_entry = None
 
-    def __update_last_access(self, entry):
+    def __update_last_access(self, entry: "Entry"):
 
         if entry is self.__newest_entry:
             return
@@ -202,26 +206,35 @@ class MemoryCacheStorage(CacheStorage):
         self.__newest_entry = entry
 
     @overrides(CacheStorage.exists)
-    def exists(self, key):
+    def exists(self, key: CacheKey) -> bool:
         with self.__lock:
             return self.__require_entry(key) is not None
 
     @overrides(CacheStorage.retrieve)
-    def retrieve(self, key):
+    def retrieve(self, key: CacheKey) -> Any:
         with self.__lock:
             entry = self.__require_entry(key)
             self.__update_last_access(entry)
             return entry.value
 
     @overrides(CacheStorage.retrieve_with_metadata)
-    def retrieve_with_metadata(self, key):
+    def retrieve_with_metadata(
+            self,
+            key: CacheKey) -> Tuple[Any, int, Set[str]]:
+
         with self.__lock:
             entry = self.__require_entry(key)
             self.__update_last_access(entry)
             return (entry.value, entry.expiration, entry.tags)
 
     @overrides(CacheStorage.store)
-    def store(self, key, value, expiration = None, tags = None):
+    def store(
+            self,
+            key: CacheKey,
+            value: Any,
+            expiration: Optional[int] = None,
+            tags: Optional[Set[str]] = None):
+
         with self.__lock:
             try:
                 self.remove(key)
@@ -247,18 +260,19 @@ class MemoryCacheStorage(CacheStorage):
             self._apply_memory_limit()
 
     @overrides(CacheStorage.get_expiration)
-    def get_expiration(self, key):
+    def get_expiration(self, key: CacheKey) -> Optional[int]:
         return self.__require_entry(key).expiration
 
     @overrides(CacheStorage.set_expiration)
-    def set_expiration(self, key, expiration):
+    def set_expiration(self, key: CacheKey, expiration: Optional[int]):
         with self.__lock:
             entry = self.__require_entry(key)
             entry.expiration = expiration
             self.__update_last_access(entry)
 
     @overrides(CacheStorage.discard)
-    def discard(self, key):
+    def discard(self, key: CacheKey) -> bool:
+
         with self.__lock:
             try:
                 entry = self.__require_entry(key)
@@ -270,7 +284,8 @@ class MemoryCacheStorage(CacheStorage):
         return True
 
     @overrides(CacheStorage.clear)
-    def clear(self, scope = whole_cache):
+    def clear(self, scope: Scope = whole_cache):
+
         with self.__lock:
 
             # Clear the whole cache
@@ -323,9 +338,21 @@ class MemoryCacheStorage(CacheStorage):
 
 class Entry(object):
 
-    size = 0
+    key: CacheKey
+    value: Any
+    expiration: Optional[int]
+    tags: Optional[Set[str]]
+    size: int = 0
+    prev_entry: Optional["Entry"]
+    next_entry: Optional["Entry"]
 
-    def __init__(self, key, value, expiration, tags):
+    def __init__(
+            self,
+            key: CacheKey,
+            value: Any,
+            expiration: Optional[int],
+            tags: Optional[Set[str]]):
+
         self.key = key
         self.value = value
         self.expiration = expiration

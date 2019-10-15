@@ -1,19 +1,15 @@
-#-*- coding: utf-8 -*-
 """
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
+from typing import Any
 
 
-class CacheSerializer(object):
+class CacheSerializer:
 
-    def serialize(self, obj):
-        raise TypeError(
-            "%s doesn't implement the serialize() method" % self
-        )
+    def serialize(self, obj: Any) -> bytes:
+        raise TypeError(f"{self} doesn't implement the serialize() method")
 
-    def unserialize(self, obj):
-        raise TypeError(
-            "%s doesn't implement the unserialize() method" % self
-        )
+    def unserialize(self, string: bytes) -> Any:
+        raise TypeError(f"{self} doesn't implement the unserialize() method")
 

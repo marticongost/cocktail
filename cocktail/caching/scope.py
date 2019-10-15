@@ -1,4 +1,3 @@
-#-*- coding: utf-8 -*-
 """
 
 .. attribute:: whole_cache
@@ -8,22 +7,33 @@
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
+from typing import Iterable, Union
+
 from cocktail.modeling import (
     OrderedSet,
     ListWrapper,
     SetWrapper
 )
 
-whole_cache = object()
 
-def normalize_scope(scope):
+class WholeCache:
+    pass
 
+
+whole_cache = WholeCache()
+
+ScopeSelector = Union[str, Iterable[str]]
+Scope = Union[WholeCache, Iterable[ScopeSelector]]
+
+
+def normalize_scope(scope: Scope) -> Scope:
     if scope is whole_cache:
         return whole_cache
     else:
         return set(selector for selector in resolve_selector(scope))
 
-def resolve_selector(selector):
+
+def resolve_selector(selector: ScopeSelector) -> Iterable[ScopeSelector]:
 
     if isinstance(selector, (str, tuple)):
         yield selector

@@ -1,9 +1,9 @@
-#-*- coding: utf-8 -*-
 """
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
 from .exceptions import CacheKeyError
+from .cachekey import CacheKey
 from .invalidable import (
     Invalidable,
     get_cache_dependencies,

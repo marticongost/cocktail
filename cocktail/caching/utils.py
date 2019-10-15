@@ -1,12 +1,15 @@
-#-*- coding: utf-8 -*-
 """
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
+from typing import Optional, Union
 from time import time
 from datetime import date, datetime, timedelta
 
-def nearest_expiration(*args):
+Expiration = Union[int, float, timedelta, datetime, date]
+
+
+def nearest_expiration(*args: Optional[Expiration]) -> Optional[int]:
     """Obtains the nearest of any number of dates.
 
     See `normalize_expiration` for details on all the different ways of
@@ -27,7 +30,8 @@ def nearest_expiration(*args):
 
     return expiration
 
-def normalize_expiration(expiration):
+
+def normalize_expiration(expiration: Expiration) -> int:
     """Obtains a normalized representation of an expiration date.
 
     This method takes an expiration date expressed in any of several

@@ -1,18 +1,20 @@
-#-*- coding: utf-8 -*-
 """
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
-from .scope import whole_cache
+from typing import Any, Iterable, Optional, Set, Tuple
+
+from .cachekey import CacheKey
+from .scope import whole_cache, Scope
 from .exceptions import CacheKeyError
 
 
-class CacheStorage(object):
+class CacheStorage:
     """A cache backend, used by :class:`~cocktail.caching.Cache` to
     implement its storage.
     """
 
-    def exists(self, key):
+    def exists(self, key: CacheKey) -> bool:
         """Indicates if the given key is contained within the storage.
 
         This method should take into account key expiration, and consider
@@ -26,7 +28,7 @@ class CacheStorage(object):
             "%s doesn't implement the has_key() method" % self
         )
 
-    def retrieve(self, key):
+    def retrieve(self, key: CacheKey) -> bool:
         """Obtains the value stored for the given key.
 
         :param key: The key to retrieve.
@@ -38,7 +40,9 @@ class CacheStorage(object):
             "%s doesn't implement the retrieve() method" % self
         )
 
-    def retrieve_with_metadata(self, key):
+    def retrieve_with_metadata(
+            self,
+            key: CacheKey) -> Tuple[Any, int, Set[str]]:
         """Obtains the value, expiration and tags for the given key.
 
         :param key: The key to retrieve.
@@ -51,7 +55,12 @@ class CacheStorage(object):
             "%s doesn't implement the retrieve_with_metadata() method" % self
         )
 
-    def store(self, key, value, expiration = None, tags = None):
+    def store(
+            self,
+            key: CacheKey,
+            value: Any,
+            expiration: Optional[int] = None,
+            tags: Optional[Iterable[str]] = None):
         """Inserts or updates a value in the storage.
 
         If the key already existed, the given value, expiration and tags will
@@ -71,7 +80,7 @@ class CacheStorage(object):
             "%s doesn't implement the store() method" % self
         )
 
-    def get_expiration(self, key):
+    def get_expiration(self, key: CacheKey) -> Optional[int]:
         """Determines the expiration assigned to the given key.
 
         :return: An integer timestamp indicating the point in time at which the
@@ -84,7 +93,7 @@ class CacheStorage(object):
             "%s doesn't implement the get_expiration() method" % self
         )
 
-    def set_expiration(self, key, expiration):
+    def set_expiration(self, key: CacheKey, expiration: Optional[int]):
         """Sets the expiration assigned to the given key.
 
         :param key: The key to update the expiration for.
@@ -99,7 +108,7 @@ class CacheStorage(object):
             "%s doesn't implement the set_expiration() method" % self
         )
 
-    def remove(self, key):
+    def remove(self, key: CacheKey):
         """Removes the given key from the storage, or fails.
 
         This method is similar to `.discard`, but it will raise an exception
@@ -113,7 +122,7 @@ class CacheStorage(object):
         if not self.discard(key):
             raise CacheKeyError(key)
 
-    def discard(self, key):
+    def discard(self, key: CacheKey) -> bool:
         """Removes the given key from the storage, if it exists.
 
         This method is similar to `.remove`, but it will return a boolean
@@ -128,7 +137,7 @@ class CacheStorage(object):
             "%s doesn't implement the discard() method" % self
         )
 
-    def clear(self, scope = whole_cache):
+    def clear(self, scope: Scope = whole_cache):
         """Discards all keys in the storage matching the given scope.
 
         :param scope: A selector indicating the keys that should be removed. It
@@ -154,7 +163,7 @@ class CacheStorage(object):
             "%s doesn't implement the clear() method" % self
         )
 
-    def drop_weight(self):
+    def drop_weight(self) -> Optional[CacheKey]:
         """Removes an entry from the storage, in order to free resources.
 
         :return: The key that has been removed, or ``None`` if the storage is
