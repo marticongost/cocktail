@@ -2,11 +2,15 @@
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
-from typing import Any, Callable, Iterable, Union
+from typing import Any, Callable, Iterable, Mapping, Optional, Tuple, Union
 from itertools import groupby
 
+Key = Union[str, Callable[[Any], Any]]
+AttributeFilters = Mapping[str, Any]
+_undefined = object()
 
-def filter_by(collection: Iterable, **kwargs) -> Iterable:
+
+def filter_by(collection: Iterable, **kwargs: AttributeFilters) -> Iterable:
     """Iterate over the items in a collection that have the specified values.
 
     :param collection: The iterable sequence to filter.
@@ -26,7 +30,7 @@ def filter_by(collection: Iterable, **kwargs) -> Iterable:
             yield item
 
 
-def first(collection: Iterable, **kwargs) -> Any:
+def first(collection: Iterable, **kwargs: AttributeFilters) -> Any:
     """Obtains the first element in the given sequence.
 
     This function can operate on both 'solid' collections (lists, tuples, etc)
@@ -53,7 +57,7 @@ def first(collection: Iterable, **kwargs) -> Any:
         return None
 
 
-def last(collection: Iterable, **kwargs) -> Any:
+def last(collection: Iterable, **kwargs: AttributeFilters) -> Any:
     """Obtains the last element in the given sequence.
 
     This function can operate on both 'solid' collections (lists, tuples, etc)
@@ -99,10 +103,10 @@ def is_empty(collection: Iterable) -> bool:
 
 
 def grouped(
-    collection: Iterable,
-    key: Union[str, Callable[[Any], Any]],
-    sorting: Callable[[Any, Any], Any] = (lambda group, item: (group, item))
-):
+        collection: Iterable,
+        key: Key,
+        sorting: Callable[[Any, Any], Any] = (lambda group, item: (group, item))
+    ) -> Iterable[Tuple[Any, Iterable]]:
     """Groups the items in a sequence by the given key.
 
     :param collection: The iterable object providing the items to group.
@@ -132,17 +136,15 @@ def grouped(
     if sorting:
         collection = sorted(
             collection,
-            key = lambda item: sorting(key(item), item)
+            key=(lambda item: sorting(key(item), item))
         )
 
-    return groupby(collection, key = key)
-
-_undefined = object()
+    return groupby(collection, key=key)
 
 
 def find_max(
         collection: Iterable,
-        key: Union[str, Callable[[Any], Any]] = None,
+        key: Optional[Key] = None,
         default: Any = _undefined) -> Any:
     """Finds the item with the highest value in the given collection.
 
@@ -184,7 +186,7 @@ def find_max(
 
 def find_min(
         collection: Iterable,
-        key: Union[str, Callable[[Any], Any]] = None,
+        key: Optional[Key] = None,
         default: Any = _undefined) -> Any:
     """Finds the item with the lowest value in the given collection.
 
