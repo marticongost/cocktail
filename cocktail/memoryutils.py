@@ -1,4 +1,3 @@
-#-*- coding: utf-8 -*-
 """Utilities for formatting and parsing memory amounts.
 
 Parts of this module were adapted from a script by Martin Pool:
@@ -43,15 +42,16 @@ for base, sizes in _suffixes_by_base.items():
 for size, suffix in _suffixes_by_base[2]:
     _sizes_by_suffix[suffix[0]] = size
 
-def format_bytes(n, base = 10, decimals_threshold = 10 ** 6):
+
+def format_bytes(
+        n: int,
+        base: int = 10,
+        decimals_threshold: int = 10 ** 6) -> str:
     """Return a string representing the greek/metric suffix of an amount of
     bytes.
 
     @param n: An amount of bytes.
-    @type n: int
-
     @return: The metric representation of the given quantity of bytes.
-    @rtype: str
     """
     try:
         suffixes = _suffixes_by_base[base]
@@ -68,15 +68,17 @@ def format_bytes(n, base = 10, decimals_threshold = 10 ** 6):
     if n >= decimals_threshold:
         amount = (Decimal(n) / factor).quantize(
             Decimal('.01'),
-            rounding = ROUND_DOWN
+            rounding=ROUND_DOWN
         )
     else:
         amount = int(n / factor)
 
     return str(amount) + suffix
 
-def parse_bytes(string):
+
+def parse_bytes(string: str) -> int:
     """Return the number of bytes indicated by the given string."""
+
     match = _memory_expr.match(string)
 
     if not match:
