@@ -1,23 +1,29 @@
-#-*- coding: utf-8 -*-
 """
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
+from typing import Any, Optional, Set, Tuple
 from httplib2 import Http
 from base64 import urlsafe_b64encode
 from json import loads, dumps
+
 from cocktail.modeling import overrides
 from .exceptions import CacheKeyError
+from .cachekey import CacheKey
 from .cachestorage import CacheStorage
+from .cacheserializer import CacheSerializer
 from .picklecacheserializer import Base64PickleCacheSerializer
-from .scope import whole_cache
+from .scope import whole_cache, Scope
 
 ENCODING = "utf-8"
 
 
-class RESTCacheStorage(object):
+class RESTCacheStorage(CacheStorage):
 
-    def __init__(self, address, serializer = None):
+    def __init__(
+            self,
+            address: str,
+            serializer: Optional[CacheSerializer] = None):
 
         self.__address = address.rstrip("/")
 
@@ -27,14 +33,14 @@ class RESTCacheStorage(object):
         self.__serializer = serializer
 
     @property
-    def address(self):
+    def address(self) -> str:
         return self.__address
 
     @property
-    def serializer(self):
+    def serializer(self) -> CacheSerializer:
         return self.__serializer
 
-    def _key_request(self, key, *args, **kwargs):
+    def _key_request(self, key: str, *args, **kwargs) -> str:
 
         url = (
             self.__address
@@ -58,7 +64,7 @@ class RESTCacheStorage(object):
         return content
 
     @overrides(CacheStorage.exists)
-    def exists(self, key):
+    def exists(self, key: CacheKey) -> bool:
         try:
             self._key_request(key, "HEAD")
         except CacheKeyError:
@@ -67,12 +73,15 @@ class RESTCacheStorage(object):
             return True
 
     @overrides(CacheStorage.retrieve)
-    def retrieve(self, key):
+    def retrieve(self, key: CacheKey) -> Any:
         value = self._key_request(key, "GET", extra_path = "value")
         return self.serializer.unserialize(value)
 
     @overrides(CacheStorage.retrieve_with_metadata)
-    def retrieve_with_metadata(self, key):
+    def retrieve_with_metadata(
+            self,
+            key: CacheKey) -> Tuple[Any, int, Set[str]]:
+
         data = self._key_request(key, "GET")
         return (
             self.serializer.unserialize(data["value"].encode(ENCODING)),
@@ -81,7 +90,13 @@ class RESTCacheStorage(object):
         )
 
     @overrides(CacheStorage.store)
-    def store(self, key, value, expiration = None, tags = None):
+    def store(
+            self,
+            key: CacheKey,
+            value: Any,
+            expiration: Optional[int] = None,
+            tags: Optional[Set[str]] = None):
+
         self._key_request(
             key,
             "POST",
@@ -96,11 +111,11 @@ class RESTCacheStorage(object):
         )
 
     @overrides(CacheStorage.get_expiration)
-    def get_expiration(self, key):
+    def get_expiration(self, key: CacheKey) -> Optional[int]:
         return self._key_request(key, "GET", extra_path = "expiration")
 
     @overrides(CacheStorage.set_expiration)
-    def set_expiration(self, key, expiration):
+    def set_expiration(self, key: CacheKey, expiration: Optional[int]):
         self._key_request(
             key + "/expiration",
             "POST",
@@ -111,7 +126,7 @@ class RESTCacheStorage(object):
         )
 
     @overrides(CacheStorage.discard)
-    def discard(self, key):
+    def discard(self, key: CacheKey) -> bool:
         try:
             self._key_request(key, "DELETE")
         except CacheKeyError:
@@ -120,7 +135,7 @@ class RESTCacheStorage(object):
             return True
 
     @overrides(CacheStorage.clear)
-    def clear(self, scope = whole_cache):
+    def clear(self, scope: Scope = whole_cache):
         url = self.__address + "/clear"
         http = Http()
         response, content = http.request(

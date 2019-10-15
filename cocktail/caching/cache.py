@@ -1,25 +1,27 @@
-#-*- coding: utf-8 -*-
 """
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
+from typing import Any, Optional, Set, Tuple
+
 from cocktail.styled import styled
 from cocktail.modeling import OrderedSet, SetWrapper, ListWrapper, DictWrapper
+from .cachekey import CacheKey, CacheKeySource
+from .cachestorage import CacheStorage
 from .utils import normalize_expiration
-from .scope import whole_cache, normalize_scope
+from .scope import whole_cache, normalize_scope, Scope
 from .exceptions import CacheKeyError
 
 TRANSACTION_KEY = "cocktail.cache.invalidation"
 
 
-class Cache(object):
+class Cache:
     """A cache frontend, with pluggable storage backends.
 
     .. attribute:: storage
 
         A storage backend, implementing all the IO operations required by the
-        cache. It should be an instance of a subclass of
-        `~cocktail.caching.CacheStorage`.
+        cache.
 
     .. attribute:: enabled
 
@@ -33,17 +35,18 @@ class Cache(object):
         the cache.
 
     """
-    enabled = True
-    verbose = False
+    storage: Optional[CacheStorage]
+    enabled: bool = True
+    verbose: bool = False
 
-    def __init__(self, storage = None):
+    def __init__(self, storage: Optional[CacheStorage] = None):
         """Initializes the cache.
 
         :param storage: Sets the `.storage` to be used by the cache.
         """
         self.storage = storage
 
-    def exists(self, key):
+    def exists(self, key: CacheKey) -> bool:
         """Indicates if the given key is defined and current.
 
         The method will query the cache's `.storage`, looking for a registered
@@ -59,7 +62,7 @@ class Cache(object):
         norm_key = self.normalize_key(key)
         return self.storage.has_key(norm_key)
 
-    def retrieve(self, key):
+    def retrieve(self, key: CacheKey) -> Any:
         """Obtains the value stored for the given key.
 
         :param key: The key to retrieve.
@@ -78,23 +81,25 @@ class Cache(object):
             except CacheKeyError:
                 print((
                     styled("CACHE", "white", "dark_gray")
-                    + " " + styled("Miss", "red", style = "bold") + "\n"
-                    + styled("  Key:", "light_gray", style = "bold")
+                    + " " + styled("Miss", "red", style="bold") + "\n"
+                    + styled("  Key:", "light_gray", style="bold")
                     + " " + norm_key + "\n"
                 ))
                 raise
             else:
                 print((
                     styled("CACHE", "white", "dark_gray")
-                    + " " + styled("Hit", "bright_green", style = "bold") + "\n"
-                    + styled("  Key:", "light_gray", style = "bold")
+                    + " " + styled("Hit", "bright_green", style="bold") + "\n"
+                    + styled("  Key:", "light_gray", style="bold")
                     + " " + norm_key + "\n"
                 ))
                 return value
         else:
             return self.storage.retrieve(norm_key)
 
-    def retrieve_with_metadata(self, key):
+    def retrieve_with_metadata(
+            self,
+            key: CacheKey) -> Tuple[Any, int, Set[str]]:
         """Obtains the value, expiration and tags for the given key.
 
         :param key: The key to retrieve.
@@ -114,23 +119,28 @@ class Cache(object):
             except CacheKeyError:
                 print((
                     styled("CACHE", "white", "dark_gray")
-                    + " " + styled("Miss", "red", style = "bold") + "\n"
-                    + styled("  Key:", "light_gray", style = "bold")
+                    + " " + styled("Miss", "red", style="bold") + "\n"
+                    + styled("  Key:", "light_gray", style="bold")
                     + " " + norm_key + "\n"
                 ))
                 raise
             else:
                 print((
                     styled("CACHE", "white", "dark_gray")
-                    + " " + styled("Hit", "bright_green", style = "bold") + "\n"
-                    + styled("  Key:", "light_gray", style = "bold")
+                    + " " + styled("Hit", "bright_green", style="bold") + "\n"
+                    + styled("  Key:", "light_gray", style="bold")
                     + " " + norm_key + "\n"
                 ))
                 return value
         else:
             return self.storage.retrieve_with_metadata(norm_key)
 
-    def store(self, key, value, expiration = None, tags = None):
+    def store(
+            self,
+            key: CacheKey,
+            value: Any,
+            expiration: Optional[int] = None,
+            tags: Optional[Set[str]] = None):
         """Inserts or updates a value in the storage.
 
         If the key already existed, the given value, expiration and tags will
@@ -155,17 +165,17 @@ class Cache(object):
         if self.verbose:
             lines = [
                 styled("CACHE", "white", "dark_gray")
-                + " " + styled("Storing", "slate_blue", style = "bold"),
-                styled("  Key:", "light_gray", style = "bold") + " " + norm_key
+                + " " + styled("Storing", "slate_blue", style="bold"),
+                styled("  Key:", "light_gray", style="bold") + " " + norm_key
             ]
             if expiration is not None:
                 lines.append(
-                    styled("  Expiration:", "light_gray", style = "bold")
+                    styled("  Expiration:", "light_gray", style="bold")
                     + " " + str(expiration)
                 )
             if tags is not None:
                 lines.append(
-                    styled("  Tags:", "light_gray", style = "bold")
+                    styled("  Tags:", "light_gray", style="bold")
                     + " " + str(sorted(tags))
                 )
             lines.append("")
@@ -177,11 +187,11 @@ class Cache(object):
         self.storage.store(
             norm_key,
             value,
-            expiration = expiration,
-            tags = tags
+            expiration=expiration,
+            tags=tags
         )
 
-    def get_expiration(self, key):
+    def get_expiration(self, key: CacheKey) -> Optional[int]:
         """Determines the expiration assigned to the given key.
 
         :return: An integer timestamp indicating the point in time at which the
@@ -196,7 +206,7 @@ class Cache(object):
         norm_key = self.normalize_key(key)
         return self.storage.get_expiration(norm_key)
 
-    def set_expiration(self, key, expiration):
+    def set_expiration(self, key: CacheKey, expiration: Optional[int]):
         """Sets the expiration assigned to the given key.
 
         :param key: The key to update the expiration for.
@@ -229,7 +239,7 @@ class Cache(object):
 
         self.storage.set_expiration(norm_key, expiration)
 
-    def remove(self, key):
+    def remove(self, key: CacheKey):
         """Removes the given key from the cache, or fails.
 
         This method is similar to `.discard`, but it will raise an exception
@@ -249,7 +259,7 @@ class Cache(object):
         if self.verbose:
             print(styled("CACHE: REMOVE", "white", "magenta"), key)
 
-    def discard(self, key):
+    def discard(self, key: CacheKey) -> bool:
         """Removes the given key from the cache, if it exists.
 
         This method is similar to `.remove`, but it will return a boolean
@@ -277,7 +287,7 @@ class Cache(object):
         else:
             return False
 
-    def clear(self, scope = whole_cache):
+    def clear(self, scope: Scope = whole_cache):
         """Discards all keys in the cache matching the given scope.
 
         :param scope: A selector indicating the keys that should be removed. It
@@ -311,7 +321,7 @@ class Cache(object):
 
             self.storage.clear(scope = normalize_scope(scope))
 
-    def clear_after_commit(self, scope = whole_cache):
+    def clear_after_commit(self, scope: Scope = whole_cache):
         """Schedules a cache invalidation operation after the current ZODB
         transaction is committed.
 
@@ -362,7 +372,7 @@ class Cache(object):
                 ) + "\n"
             ))
 
-    def drop_weight(self):
+    def drop_weight(self) -> Optional[CacheKey]:
         """Removes an entry from the cache, in order to free resources.
 
         :return: The key that has been removed, or ``None`` if the cache is
@@ -384,7 +394,7 @@ class Cache(object):
         return key
 
     @classmethod
-    def normalize_key(cls, key):
+    def normalize_key(cls, key: CacheKeySource):
         """Processes a key to make sure it can be used as a caching key."""
         key = cls._obtain_key(key)
         if not isinstance(key, str):
@@ -392,7 +402,7 @@ class Cache(object):
         return key
 
     @classmethod
-    def _obtain_key(cls, key):
+    def _obtain_key(cls, key: CacheKeySource) -> CacheKey:
         if isinstance(key, (tuple, list, ListWrapper, OrderedSet)):
             return repr(tuple(cls.normalize_key(item) for item in key))
         elif isinstance(key, (set, frozenset, SetWrapper)):
@@ -406,7 +416,7 @@ class Cache(object):
             return key
 
 
-def _cache_invalidation_commit_handler(success, cache):
+def _cache_invalidation_commit_handler(success: bool, cache: Cache):
     if success:
         from cocktail.persistence import datastore
         key = (TRANSACTION_KEY, id(cache))

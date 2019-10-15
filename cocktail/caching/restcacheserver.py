@@ -1,33 +1,39 @@
-#-*- coding: utf-8 -*-
 """
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
+from typing import Optional
 from base64 import urlsafe_b64decode
 from json import loads, dumps
+
 import cherrypy
+
 from cocktail.events import event_handler
 from cocktail.controllers import Controller, Dispatcher
-from cocktail.caching.cache import Cache
-from cocktail.caching.memorycachestorage import MemoryCacheStorage
-from cocktail.caching.scope import whole_cache
-from cocktail.caching.exceptions import CacheKeyError
+from .cache import Cache
+from .cachestorage import CacheStorage
+from .memorycachestorage import MemoryCacheStorage
+from .cachekey import CacheKey
+from .scope import whole_cache, Scope
+from .exceptions import CacheKeyError
 
 ENCODING = "utf-8"
 
 
 class CacheController(Controller):
 
-    memory_limit = None
+    __cache: Cache
 
-    def __init__(self, storage = None):
+    memory_limit: Optional[int] = None
+
+    def __init__(self, storage: Optional[CacheStorage] = None):
 
         if storage is None:
             storage = MemoryCacheStorage()
 
         self.__cache = Cache(storage)
 
-    def resolve(self, path):
+    def resolve(self, path: Dispatcher.PathProcessor) -> Controller:
         if len(path) >= 2 and path[0] == "keys":
             path.pop(0)
             key = str(urlsafe_b64decode(path.pop(0).encode(ENCODING)))
@@ -36,7 +42,7 @@ class CacheController(Controller):
             return self
 
     @property
-    def cache(self):
+    def cache(self) -> Cache:
         return self.__cache
 
     @cherrypy.expose
@@ -77,7 +83,11 @@ class CacheController(Controller):
 
 class KeyController(Controller):
 
-    def __init__(self, server, key):
+    server: CacheController
+    cache: Cache
+    key: CacheKey
+
+    def __init__(self, server: CacheController, key: CacheKey):
         Controller.__init__(self)
         self.server = server
         self.cache = server.cache
