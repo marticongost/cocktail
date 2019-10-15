@@ -25,7 +25,7 @@ setup(
         "Environment :: Console",
         "Environment :: Web Environment",
         "Framework :: ZODB",
-        "License :: OSI Approved :: GNU Affero General Public License v3",
+        "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
         "Operating System :: OS Independent",
         "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
         "Topic :: Text Processing :: Markup :: HTML"
