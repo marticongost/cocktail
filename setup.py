@@ -1,17 +1,16 @@
 #-*- coding: utf-8 -*-
 u"""
-
-@author:		Martí Congost
-@contact:		marti.congost@whads.com
-@organization:	Whads/Accent SL
-@since:			December 2008
+@author:        Martí Congost
+@contact:       marti.congost@whads.com
+@organization:  Whads/Accent SL
+@since:         December 2008
 """
 import sys
 from setuptools import setup, find_packages
 
 setup(
     name = "cocktail",
-    version = "0.6",
+    version = "2.0a1",
     author = "Whads/Accent SL",
     author_email = "tech@whads.com",
     description = """A tasty mix of python web development utilities.""",
@@ -21,48 +20,44 @@ setup(
         "web applications, with an emphasis on declarative and model driven "
         "programming.",
     classifiers = [
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
         "Environment :: Console",
         "Environment :: Web Environment",
-        "Environment :: Web Environment :: Buffet",
         "Framework :: ZODB",
-        "License :: OSI Approved :: GNU Affero General Public License v3",
-        "Natural Language :: Catalan",
-        "Natural Language :: Spanish",
+        "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
         "Operating System :: OS Independent",
-        "Programming Language :: Python :: 2",
         "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
         "Topic :: Text Processing :: Markup :: HTML"
     ],
     install_requires = [
-        "simplejson",
-        "transaction==1.1.1",
-        "ZODB3==3.10.5",
+        "frozendict",
+        "ZODB",
         "zodbupdate",
-        "zope.index==3.6.1",
-        "cherrypy==3.1.2",
-        "buffet>=1.0",
+        "zope.index",
+        "cherrypy==11.0.*",
         "nose",
-        "selenium",
-        "pyExcelerator",
         "Beaker",
-        "BeautifulSoup"
+        "BeautifulSoup4",
+        "lxml",
+        "httplib2",
+        "PyStemmer",
+        "rfc6266",
+        "pyyaml",
+        "openpyxl"
     ],
+    extras_require = {
+        "sass": ["libsass"]
+    },
     packages = find_packages(),
     include_package_data = True,
-
     # Cocktail can't yet access view resources (images, style sheets, client
     # side scripts, etc) that are packed inside a zipped egg, so distribution
     # in zipped form is disabled
     zip_safe = False,
-
-    # Make CML templates available to Buffet
     entry_points = {
         "python.templating.engines":
-        ["cocktail=cocktail.html.templates.buffetplugin:CocktailBuffetPlugin"],
-        "nose.plugins.0.10":
-        ["selenium_tester=cocktail.tests.seleniumtester:SeleniumTester"]
+        ["cocktail=cocktail.html.templates.buffetplugin:CocktailBuffetPlugin"]
     }
 )
 

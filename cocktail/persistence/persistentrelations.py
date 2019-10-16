@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -35,6 +35,9 @@ class PersistentRelationCollection(Persistent):
 
         self._base_collection_class.__init__(self, items, owner, member)
 
+    def __repr__(self):
+        return repr(self.__items)
+
     def _get_member(self):
         if self._v_member is None \
         and self.__member_name \
@@ -45,7 +48,7 @@ class PersistentRelationCollection(Persistent):
 
     def _set_member(self, member):
 
-        if isinstance(member, basestring):
+        if isinstance(member, str):
             self.__member_name = member
             self._v_member = None
         else:
@@ -69,12 +72,11 @@ class PersistentRelationCollection(Persistent):
 
     _items = property(_get_items, _set_items)
 
-    def item_added(self, item):
-        self._base_collection_class.item_added(self, item)
-        self._p_changed = True
-        
-    def item_removed(self, item):
-        self._base_collection_class.item_removed(self, item)
+    def changing(self, added, removed, context):
+        self._base_collection_class.changing(self, added, removed, context)
+
+    def changed(self, added, removed, context):
+        self._base_collection_class.changed(self, added, removed, context)
         self._p_changed = True
 
 

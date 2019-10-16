@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -53,9 +53,9 @@ class PrimaryMemberTestCase(TempStorageMixin, TestCase):
         self.assertRaises(PrimaryKeyChangedError, foo.set, "id", foo.id + 1)
 
     def test_collision(self):
-        
+
         from cocktail.persistence import PersistentObject, indexing
-        
+
         class Foo(PersistentObject):
             pass
 
@@ -64,6 +64,6 @@ class PrimaryMemberTestCase(TempStorageMixin, TestCase):
 
         spam = Foo()
         spam.id = bar.id
-        
+
         self.assertRaises(indexing.IdCollisionError, spam.insert)
 

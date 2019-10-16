@@ -1,20 +1,19 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
 @organization:	Whads/Accent SL
 @since:			September 2008
 """
-from cocktail.modeling import getter
+from cocktail.events import when
 from cocktail.translations import translations
 from cocktail.html import Element
-from cocktail.controllers.viewstate import view_state
+from cocktail.controllers.request import get_request_query
 
 
 class Pager(Element):
 
-    name = None
     item_count = 0
     page = 0
     page_size = 15
@@ -26,15 +25,19 @@ class Pager(Element):
 
     button_style = "characters"
     button_characters = {
-        "first": u"«",
-        "last": u"»",
-        "previous": u"&lt;",
-        "next": u"&gt;"
+        "first": "«",
+        "last": "»",
+        "previous": "&lt;",
+        "next": "&gt;"
     }
 
     pagination = None
     user_collection = None
-    
+
+    def __init__(self, *args, **kwargs):
+        Element.__init__(self, *args, **kwargs)
+        self.button_characters = self.button_characters.copy()
+
     def _build(self):
 
         # Aproximate layout:
@@ -56,7 +59,7 @@ class Pager(Element):
         self.append(self.last_page_button)
 
     def _ready(self):
-        
+
         Element._ready(self)
 
         if self.user_collection:
@@ -84,7 +87,7 @@ class Pager(Element):
         if self.hide_when_empty and page_count < 2:
             self.visible = False
             return
-        
+
         # First page
         if self.page == 0:
             self.first_page_button.visible = False
@@ -94,7 +97,7 @@ class Pager(Element):
             self.previous_page_button["href"] = self._get_page_link(
                 self.page - 1
             )
-        
+
         # Last page
         if self.page + 1 == page_count:
             self.next_page_button.visible = False
@@ -137,8 +140,8 @@ class Pager(Element):
         )
         button.icon["title"] = button.icon["alt"]
 
-        @button.icon.when_ready
-        def set_button_style():
+        @when(button.icon.ready_stage)
+        def set_button_style(e):
             if self.button_style == "characters":
                 button.icon.tag = "span"
                 button.icon["src"] = None
@@ -165,10 +168,10 @@ class Pager(Element):
         return page_link
 
     def _view_state(self, **params):
-        return view_state(
+        return get_request_query(
             **dict(
                 (self._get_qualified_name(param), value)
-                for param, value in params.iteritems()
+                for param, value in params.items()
             )
         )
 
@@ -178,7 +181,7 @@ class Pager(Element):
     def _get_page_link(self, page_number):
         return "?" + self._view_state(**{str(self.page_param_name): page_number})
 
-    @getter
+    @property
     def page_count(self):
         if not self.page_size:
             return 1

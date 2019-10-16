@@ -1,0 +1,22 @@
+
+@import "cocktail.ui://styles/common";
+
+#entries {
+
+    .Entry {
+        cursor: pointer;
+        white-space: nowrap;
+        padding: 0.7em 1.3em;
+        color: $panel-action-color;
+        font-size: 0.9rem;
+
+        &[selected] {
+            font-weight: bold;
+        }
+
+        &:hover {
+            background-color: darken($panel-background-color, 10);
+        }
+    }
+}
+

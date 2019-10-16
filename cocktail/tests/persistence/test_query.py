@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -14,7 +14,7 @@ from cocktail.translations import set_language
 class MemberQueryTestCase(TempStorageMixin, TestCase):
 
     def assert_queries(self, member, values, *tests):
-        
+
         from cocktail.persistence import PersistentObject, datastore
 
         datastore.root.clear()
@@ -45,9 +45,9 @@ class MemberQueryTestCase(TempStorageMixin, TestCase):
                 set(instances[i] for i in expected_results)
             )
             self.assertEqual(len(query), len(expected_results))
-    
-    def test_equal(self):        
-        
+
+    def test_equal(self):
+
         from cocktail.schema import String
 
         # Search without duplicates (both on primary and unique fields)
@@ -61,25 +61,25 @@ class MemberQueryTestCase(TempStorageMixin, TestCase):
 
             self.assert_queries(
                 m,
-                [u"foo", u"bar", u"scrum", u"sprunge"],
-                (m.equal(u"zing"), []),
-                (m.equal(u"FOO"), []),
-                (m.equal(u"foo"), [0]),
-                (m.equal(u"scrum"), [2])
+                ["foo", "bar", "scrum", "sprunge"],
+                (m.equal("zing"), []),
+                (m.equal("FOO"), []),
+                (m.equal("foo"), [0]),
+                (m.equal("scrum"), [2])
             )
-        
+
         # Search with duplicates (both with and without an index)
         for indexed in (True, False):
             m = String(indexed = indexed)
-            
+
             self.assert_queries(
                 m,
-                [u"foo", u"foo", u"bar", u"scrum", u"sprunge", u"sprunge"],
-                (m.equal(u"zing"), []),
-                (m.equal(u"FOO"), []),
-                (m.equal(u"foo"), [0, 1]),
-                (m.equal(u"sprunge"), [-2, -1]),
-                (m.equal(u"scrum"), [3])
+                ["foo", "foo", "bar", "scrum", "sprunge", "sprunge"],
+                (m.equal("zing"), []),
+                (m.equal("FOO"), []),
+                (m.equal("foo"), [0, 1]),
+                (m.equal("sprunge"), [-2, -1]),
+                (m.equal("scrum"), [3])
             )
 
         # Normalized string index
@@ -87,14 +87,14 @@ class MemberQueryTestCase(TempStorageMixin, TestCase):
 
         self.assert_queries(
             m,
-            [u"foo", u"Foo", u"Foó"],
-            (m.equal(u"FOO"), [0, 1, 2])
+            ["foo", "Foo", "Foó"],
+            (m.equal("FOO"), [0, 1, 2])
         )
 
-    def test_not_equal(self):  
-        
+    def test_not_equal(self):
+
         from cocktail.schema import String
-        
+
         # Search without duplicates (both on primary and unique fields)
         for primary in (True, False):
             m = String(
@@ -103,42 +103,42 @@ class MemberQueryTestCase(TempStorageMixin, TestCase):
                 indexed = True,
                 required = True
             )
-        
+
             self.assert_queries(
                 m,
-                [u"foo"],
-                (m.not_equal(u"foo"), [])
+                ["foo"],
+                (m.not_equal("foo"), [])
             )
 
         self.assert_queries(
             m,
-            [u"foo", u"bar", u"scrum", u"sprunge"],
-            (m.not_equal(u"zing"), [0, 1, 2, 3]),
-            (m.not_equal(u"foo"), [1, 2, 3]),
-            (m.not_equal(u"scrum"), [0, 1, 3])
+            ["foo", "bar", "scrum", "sprunge"],
+            (m.not_equal("zing"), [0, 1, 2, 3]),
+            (m.not_equal("foo"), [1, 2, 3]),
+            (m.not_equal("scrum"), [0, 1, 3])
         )
-        
+
         # Search with duplicates (both with and without an index)
         for indexed in (True, False):
             m = String(indexed = indexed)
-            
+
             self.assert_queries(
                 m,
-                [u"foo", u"foo", u"bar", u"scrum", u"sprunge", u"sprunge"],
-                (m.not_equal(u"zing"), [0, 1, 2, 3, 4, 5]),
-                (m.not_equal(u"foo"), [2, 3, 4, 5]),
-                (m.not_equal(u"sprunge"), [0, 1, 2, 3]),
-                (m.not_equal(u"scrum"), [0, 1, 2, 4, 5])
+                ["foo", "foo", "bar", "scrum", "sprunge", "sprunge"],
+                (m.not_equal("zing"), [0, 1, 2, 3, 4, 5]),
+                (m.not_equal("foo"), [2, 3, 4, 5]),
+                (m.not_equal("sprunge"), [0, 1, 2, 3]),
+                (m.not_equal("scrum"), [0, 1, 2, 4, 5])
             )
-        
+
         # Normalized string index
         m = String(indexed = True, normalized_index = True)
 
         self.assert_queries(
             m,
-            [u"foo", u"Foo", u"Foó"],
-            (m.not_equal(u"FOO"), []),
-            (m.not_equal(u"bar"), [0, 1, 2])
+            ["foo", "Foo", "Foó"],
+            (m.not_equal("FOO"), []),
+            (m.not_equal("bar"), [0, 1, 2])
         )
 
     def test_greater(self):
@@ -156,34 +156,34 @@ class MemberQueryTestCase(TempStorageMixin, TestCase):
 
             self.assert_queries(
                 m,
-                [u"foo", u"bar", u"scrum", u"SCRUM"],
-                (m.greater(u"zing"), []),
-                (m.greater(u"foo"), [2]),
-                (m.greater(u"A"), [0, 1, 2, 3])
+                ["foo", "bar", "scrum", "SCRUM"],
+                (m.greater("zing"), []),
+                (m.greater("foo"), [2]),
+                (m.greater("A"), [0, 1, 2, 3])
             )
-        
+
         # Search with duplicates (both with and without an index)
         for indexed in (True, False):
             m = String(indexed = indexed)
-            
+
             self.assert_queries(
                 m,
-                [u"foo", u"FOO", u"bar", u"scrum", u"sprunge", u"sprunge"],
-                (m.greater(u"zing"), []),
-                (m.greater(u"foo"), [3, 4, 5]),
-                (m.greater(u"scrum"), [4, 5]),
-                (m.greater(u"A"), [0, 1, 2, 3, 4, 5])
+                ["foo", "FOO", "bar", "scrum", "sprunge", "sprunge"],
+                (m.greater("zing"), []),
+                (m.greater("foo"), [3, 4, 5]),
+                (m.greater("scrum"), [4, 5]),
+                (m.greater("A"), [0, 1, 2, 3, 4, 5])
             )
 
         # Normalized string index
         m = String(indexed = True, normalized_index = True)
-        
+
         self.assert_queries(
             m,
-            [u"foo", u"Foo", u"Foó", u"bàr", u"BaR", u"bÄr"],
-            (m.greater(u"A"), [0, 1, 2, 3, 4, 5]),
-            (m.greater(u"a"), [0, 1, 2, 3, 4, 5]),
-            (m.greater(u"f"), [0, 1, 2])
+            ["foo", "Foo", "Foó", "bàr", "BaR", "bÄr"],
+            (m.greater("A"), [0, 1, 2, 3, 4, 5]),
+            (m.greater("a"), [0, 1, 2, 3, 4, 5]),
+            (m.greater("f"), [0, 1, 2])
         )
 
     def test_greater_equal(self):
@@ -201,35 +201,35 @@ class MemberQueryTestCase(TempStorageMixin, TestCase):
 
             self.assert_queries(
                 m,
-                [u"foo", u"bar", u"scrum", u"SCRUM"],
-                (m.greater_equal(u"zing"), []),
-                (m.greater_equal(u"foo"), [0, 2]),
-                (m.greater_equal(u"A"), [0, 1, 2, 3])
+                ["foo", "bar", "scrum", "SCRUM"],
+                (m.greater_equal("zing"), []),
+                (m.greater_equal("foo"), [0, 2]),
+                (m.greater_equal("A"), [0, 1, 2, 3])
             )
-        
+
         # Search with duplicates (both with and without an index)
         for indexed in (True, False):
             m = String(indexed = indexed)
-            
+
             self.assert_queries(
                 m,
-                [u"foo", u"FOO", u"bar", u"scrum", u"sprunge", u"sprunge"],
-                (m.greater_equal(u"zing"), []),
-                (m.greater_equal(u"foo"), [0, 3, 4, 5]),
-                (m.greater_equal(u"scrum"), [3, 4, 5]),
-                (m.greater_equal(u"A"), [0, 1, 2, 3, 4, 5])
+                ["foo", "FOO", "bar", "scrum", "sprunge", "sprunge"],
+                (m.greater_equal("zing"), []),
+                (m.greater_equal("foo"), [0, 3, 4, 5]),
+                (m.greater_equal("scrum"), [3, 4, 5]),
+                (m.greater_equal("A"), [0, 1, 2, 3, 4, 5])
             )
 
         # Normalized string index
         m = String(indexed = True, normalized_index = True)
-        
+
         self.assert_queries(
             m,
-            [u"foo", u"Foo", u"Foó", u"bàr", u"BaR", u"bÄr"],
-            (m.greater_equal(u"bar"), [0, 1, 2, 3, 4, 5]),
-            (m.greater_equal(u"BAR"), [0, 1, 2, 3, 4, 5]),
-            (m.greater_equal(u"foo"), [0, 1, 2]),
-            (m.greater_equal(u"FOO"), [0, 1, 2])
+            ["foo", "Foo", "Foó", "bàr", "BaR", "bÄr"],
+            (m.greater_equal("bar"), [0, 1, 2, 3, 4, 5]),
+            (m.greater_equal("BAR"), [0, 1, 2, 3, 4, 5]),
+            (m.greater_equal("foo"), [0, 1, 2]),
+            (m.greater_equal("FOO"), [0, 1, 2])
         )
 
     def test_lower(self):
@@ -247,33 +247,33 @@ class MemberQueryTestCase(TempStorageMixin, TestCase):
 
             self.assert_queries(
                 m,
-                [u"foo", u"bar", u"scrum", u"SCRUM"],
-                (m.lower(u"zing"), [0, 1, 2, 3]),
-                (m.lower(u"scrum"), [0, 1, 3]),
-                (m.lower(u"A"), [])
+                ["foo", "bar", "scrum", "SCRUM"],
+                (m.lower("zing"), [0, 1, 2, 3]),
+                (m.lower("scrum"), [0, 1, 3]),
+                (m.lower("A"), [])
             )
-        
+
         # Search with duplicates (both with and without an index)
         for indexed in (True, False):
             m = String(indexed = indexed)
-            
+
             self.assert_queries(
                 m,
-                [u"foo", u"FOO", u"bar", u"scrum", u"sprunge", u"sprunge"],
-                (m.lower(u"zing"), [0, 1, 2, 3, 4, 5]),
-                (m.lower(u"foo"), [1, 2]),
-                (m.lower(u"A"), [])
+                ["foo", "FOO", "bar", "scrum", "sprunge", "sprunge"],
+                (m.lower("zing"), [0, 1, 2, 3, 4, 5]),
+                (m.lower("foo"), [1, 2]),
+                (m.lower("A"), [])
             )
 
         # Normalized string index
         m = String(indexed = True, normalized_index = True)
-        
+
         self.assert_queries(
             m,
-            [u"foo", u"Foo", u"Foó", u"bàr", u"BaR", u"bÄr"],
-            (m.lower(u"Z"), [0, 1, 2, 3, 4, 5]),
-            (m.lower(u"z"), [0, 1, 2, 3, 4, 5]),
-            (m.lower(u"f"), [3, 4, 5])
+            ["foo", "Foo", "Foó", "bàr", "BaR", "bÄr"],
+            (m.lower("Z"), [0, 1, 2, 3, 4, 5]),
+            (m.lower("z"), [0, 1, 2, 3, 4, 5]),
+            (m.lower("f"), [3, 4, 5])
         )
 
     def test_lower_equal(self):
@@ -291,34 +291,34 @@ class MemberQueryTestCase(TempStorageMixin, TestCase):
 
             self.assert_queries(
                 m,
-                [u"foo", u"bar", u"scrum", u"SCRUM"],
-                (m.lower_equal(u"zing"), [0, 1, 2, 3]),
-                (m.lower_equal(u"foo"), [0, 1, 3]),
-                (m.lower_equal(u"A"), [])
+                ["foo", "bar", "scrum", "SCRUM"],
+                (m.lower_equal("zing"), [0, 1, 2, 3]),
+                (m.lower_equal("foo"), [0, 1, 3]),
+                (m.lower_equal("A"), [])
             )
-        
+
         # Search with duplicates (both with and without an index)
         for indexed in (True, False):
             m = String(indexed = indexed)
-            
+
             self.assert_queries(
                 m,
-                [u"foo", u"FOO", u"bar", u"scrum", u"sprunge", u"sprunge"],
-                (m.lower_equal(u"zing"), [0, 1, 2, 3, 4, 5]),
-                (m.lower_equal(u"foo"), [0, 1, 2]),
-                (m.lower_equal(u"A"), [])
+                ["foo", "FOO", "bar", "scrum", "sprunge", "sprunge"],
+                (m.lower_equal("zing"), [0, 1, 2, 3, 4, 5]),
+                (m.lower_equal("foo"), [0, 1, 2]),
+                (m.lower_equal("A"), [])
             )
 
         # Normalized string index
         m = String(indexed = True, normalized_index = True)
-        
+
         self.assert_queries(
             m,
-            [u"foo", u"Foo", u"Foó", u"bàr", u"BaR", u"bÄr"],
-            (m.lower_equal(u"bar"), [3, 4, 5]),
-            (m.lower_equal(u"BÀR"), [3, 4, 5]),
-            (m.lower_equal(u"foo"), [0, 1, 2, 3, 4, 5]),
-            (m.lower_equal(u"FOO"), [0, 1, 2, 3, 4, 5])
+            ["foo", "Foo", "Foó", "bàr", "BaR", "bÄr"],
+            (m.lower_equal("bar"), [3, 4, 5]),
+            (m.lower_equal("BÀR"), [3, 4, 5]),
+            (m.lower_equal("foo"), [0, 1, 2, 3, 4, 5]),
+            (m.lower_equal("FOO"), [0, 1, 2, 3, 4, 5])
         )
 
     def test_range_intersection(self):
@@ -347,7 +347,7 @@ class MemberQueryTestCase(TempStorageMixin, TestCase):
             dataset = set([r.id])
             dataset = impl(dataset)
             return list(dataset) == [r.id]
-        
+
         # Completely apart
         assert not intersect(1, 2, 3, 4)
         assert not intersect(3, 4, 1, 2)
@@ -355,7 +355,7 @@ class MemberQueryTestCase(TempStorageMixin, TestCase):
         assert not intersect(2, 3, None, 1)
         assert not intersect(1, 2, 3, None)
         assert not intersect(3, None, 1, 2)
-        
+
         # Single point intersection
         assert intersect(1, 2, 2, 3)
         assert not intersect(3, 4, 2, 3)
@@ -428,16 +428,17 @@ class OrderTestCase(TempStorageMixin, TestCase):
             product_name = String(
                 unique = True,
                 indexed = True,
-                required = True
+                required = True,
+                descriptive = True
             )
             price = Integer(indexed = True)
             category = String(indexed = True)
             color = String()
             available = Boolean()
-        
+
         self.Product = Product
 
-    def match(self, results, *group):        
+    def match(self, results, *group):
         results_group = set(results.pop(0) for i in range(len(group)))
         self.assertEqual(results_group, set(group))
 
@@ -446,7 +447,7 @@ class OrderTestCase(TempStorageMixin, TestCase):
         products = [self.Product() for i in range(10)]
         for product in products:
             product.insert()
-        
+
         results = [product for product in self.Product.select(order = "id")]
         self.assertEqual(products, results)
 
@@ -483,7 +484,7 @@ class OrderTestCase(TempStorageMixin, TestCase):
         results = [product
                    for product in self.Product.select(
                        order = ("price", "id"))]
-        
+
         self.assertEqual([f, a, d, c, e, b], results)
 
         results = [product
@@ -505,34 +506,19 @@ class OrderTestCase(TempStorageMixin, TestCase):
         self.assertEqual([b, e, c, d, a, f], results)
 
     def test_single_indexed_unique_member(self):
- 
-        a = self.Product()
-        a.product_name = u"Wine"
-        a.insert()
 
-        b = self.Product()
-        b.product_name = u"Cheese"
-        b.insert()
+        a = self.Product.new(product_name = "Wine")
+        b = self.Product.new(product_name = "Cheese")
+        c = self.Product.new(product_name = "Ham")
+        d = self.Product.new(product_name = "Eggs")
+        e = self.Product.new()
+        f = self.Product.new()
 
-        c = self.Product()
-        c.product_name = u"Ham"
-        c.insert()
+        results = list(self.Product.select(order = "product_name"))
+        assert results == [b, d, c, a]
 
-        d = self.Product()
-        d.product_name = u"Eggs"
-        d.insert()
-
-        e = self.Product()
-        e.insert()
-
-        results = [product
-                   for product in self.Product.select(order = "product_name")]
-        self.assertEqual([e, b, d, c, a], results)
-
-        results = [product
-                   for product in self.Product.select(order = "-product_name")]
-        results.reverse()
-        self.assertEqual([e, b, d, c, a], results)
+        results = list(self.Product.select(order = "-product_name"))
+        assert results == [a, c, d, b]
 
     def test_multiple_indexed_members(self):
 
@@ -569,7 +555,7 @@ class OrderTestCase(TempStorageMixin, TestCase):
         results = [product
                    for product in self.Product.select(
                        order = ("category", "price"))]
-        
+
         self.assertEqual([f, b, d, c, a, e], results)
 
         results = [product
@@ -680,25 +666,25 @@ class OrderTestCase(TempStorageMixin, TestCase):
         self.assertEqual([e, a, d, b, f, c], results)
 
     def test_normalized_index(self):
-        
+
         self.Product.product_name.normalized_index = True
 
         a = self.Product()
-        a.product_name = u"Àbac"
+        a.product_name = "Àbac"
         a.insert()
 
         b = self.Product()
-        b.product_name = u"alfombra"
+        b.product_name = "alfombra"
         b.insert()
 
         results = [product
                 for product in self.Product.select(order = "product_name")]
-        
+
         self.assertEqual([a, b], results)
 
     def test_default_sorting_for_related_objects(self):
 
-        from cocktail.translations import set_language
+        from cocktail.translations import set_language, translations
         from cocktail import schema
         from cocktail.persistence import PersistentObject
 
@@ -710,31 +696,32 @@ class OrderTestCase(TempStorageMixin, TestCase):
             last_name = schema.String()
             movies = schema.Collection(bidirectional = True)
 
-            def __translate__(self, language, **kwargs):
-                return (self.last_name, self.first_name)
-        
+        @translations.instances_of(Actor)
+        def translate_actor(self, **kwargs):
+            return self.last_name + ", " + self.first_name
+
         class Movie(PersistentObject):
 
             title = schema.String()
             lead_actor = schema.Reference(bidirectional = True)
-            
+
         Actor.movies.items = schema.Reference(type = Movie)
         Movie.lead_actor.type = Actor
 
-        cn = Actor(first_name = u"Chuck", last_name = u"Norris")
-        df2 = Movie(title = u"Delta Force 2", lead_actor = cn)
+        cn = Actor(first_name = "Chuck", last_name = "Norris")
+        df2 = Movie(title = "Delta Force 2", lead_actor = cn)
         cn.insert()
-        
-        vd = Actor(first_name = u"Jean Claude", last_name = u"Van Damme")
-        us = Movie(title = u"Universal Soldier", lead_actor = vd)
+
+        vd = Actor(first_name = "Jean Claude", last_name = "Van Damme")
+        us = Movie(title = "Universal Soldier", lead_actor = vd)
         vd.insert()
 
-        cb = Actor(first_name = u"Charles", last_name = u"Bronson")
-        dw = Movie(title = u"Death Wish", lead_actor = cb)
+        cb = Actor(first_name = "Charles", last_name = "Bronson")
+        dw = Movie(title = "Death Wish", lead_actor = cb)
         cb.insert()
 
-        ss = Actor(first_name = u"Steven", last_name = u"Seagal")
-        htk = Movie(title = u"Hard to Kill", lead_actor = ss)
+        ss = Actor(first_name = "Steven", last_name = "Seagal")
+        htk = Movie(title = "Hard to Kill", lead_actor = ss)
         ss.insert()
 
         sorted_movies = list(Movie.select(order = Movie.lead_actor))
@@ -748,9 +735,6 @@ class OrderTestCase(TempStorageMixin, TestCase):
         class Review(PersistentObject):
             points = schema.Integer()
             project = schema.Reference(bidirectional = True)
-
-            def __translate__(self, language, **kwargs):
-                return str(self.points)
 
             def get_ordering_key(self):
                 return self.points
@@ -794,11 +778,11 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
                 translated = True
             )
             category = String(
-                indexed = True, 
+                indexed = True,
                 translated = True
             )
             subcategory = String(
-                indexed = True, 
+                indexed = True,
                 translated = True
             )
             color = String(
@@ -811,38 +795,38 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
                 indexed = True
             )
             weight = Integer()
-        
+
         self.Product = Product
 
-    def match(self, results, *group):        
+    def match(self, results, *group):
         results_group = set(results.pop(0) for i in range(len(group)))
         self.assertEqual(results_group, set(group))
 
     def test_single_indexed_unique_translated_member(self):
- 
+
         a = self.Product()
-        a.set("product_name", u"Poma", "ca")
-        a.set("product_name", u"Apple", "en")
+        a.set("product_name", "Poma", "ca")
+        a.set("product_name", "Apple", "en")
         a.insert()
 
         b = self.Product()
-        b.set("product_name", u"Formatge", "ca")
-        b.set("product_name", u"Cheese", "en")
+        b.set("product_name", "Formatge", "ca")
+        b.set("product_name", "Cheese", "en")
         b.insert()
 
         c = self.Product()
-        c.set("product_name", u"Pernil", "ca")
-        c.set("product_name", u"Ham", "en")
+        c.set("product_name", "Pernil", "ca")
+        c.set("product_name", "Ham", "en")
         c.insert()
 
         d = self.Product()
-        d.set("product_name", u"Ous", "ca")
-        d.set("product_name", u"Eggs", "en")
+        d.set("product_name", "Ous", "ca")
+        d.set("product_name", "Eggs", "en")
         d.insert()
 
         e = self.Product()
-        e.set("product_name", u"Suc", "ca")
-        e.set("product_name", u"Juice", "en")
+        e.set("product_name", "Suc", "ca")
+        e.set("product_name", "Juice", "en")
         e.insert()
 
         set_language("ca")
@@ -868,33 +852,33 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
     def test_single_not_indexed_translated_member(self):
 
         a = self.Product()
-        a.set("color", u"vermell", "ca")
-        a.set("color", u"red", "en")
+        a.set("color", "vermell", "ca")
+        a.set("color", "red", "en")
         a.insert()
 
         b = self.Product()
-        b.set("color", u"verd", "ca")
-        b.set("color", u"green", "en")
+        b.set("color", "verd", "ca")
+        b.set("color", "green", "en")
         b.insert()
 
         c = self.Product()
-        c.set("color", u"blau", "ca")
-        c.set("color", u"blue", "en")
+        c.set("color", "blau", "ca")
+        c.set("color", "blue", "en")
         c.insert()
 
         d = self.Product()
-        d.set("color", u"verd", "ca")
-        d.set("color", u"green", "en")
+        d.set("color", "verd", "ca")
+        d.set("color", "green", "en")
         d.insert()
 
         e = self.Product()
-        e.set("color", u"vermell", "ca")
-        e.set("color", u"red", "en")
+        e.set("color", "vermell", "ca")
+        e.set("color", "red", "en")
         e.insert()
 
         f = self.Product()
-        f.set("color", u"blau", "ca")
-        f.set("color", u"blue", "en")
+        f.set("color", "blau", "ca")
+        f.set("color", "blue", "en")
         f.insert()
 
         set_language("ca")
@@ -927,38 +911,38 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
 
         a = self.Product()
         a.weight = 3
-        a.set("color", u"vermell", "ca")
-        a.set("color", u"red", "en")
+        a.set("color", "vermell", "ca")
+        a.set("color", "red", "en")
         a.insert()
 
         b = self.Product()
         b.weight = 4
-        b.set("color", u"verd", "ca")
-        b.set("color", u"green", "en")
+        b.set("color", "verd", "ca")
+        b.set("color", "green", "en")
         b.insert()
 
         c = self.Product()
         c.weight = 4
-        c.set("color", u"groc", "ca")
-        c.set("color", u"yellow", "en")
+        c.set("color", "groc", "ca")
+        c.set("color", "yellow", "en")
         c.insert()
 
         d = self.Product()
         d.weight = 3
-        d.set("color", u"verd", "ca")
-        d.set("color", u"green", "en")
+        d.set("color", "verd", "ca")
+        d.set("color", "green", "en")
         d.insert()
 
         e = self.Product()
         e.weight = 1
-        e.set("color", u"groc", "ca")
-        e.set("color", u"yellow", "en")
+        e.set("color", "groc", "ca")
+        e.set("color", "yellow", "en")
         e.insert()
 
         f = self.Product()
         f.weight = 7
-        f.set("color", u"vermell", "ca")
-        f.set("color", u"red", "en")
+        f.set("color", "vermell", "ca")
+        f.set("color", "red", "en")
         f.insert()
 
         set_language("ca")
@@ -966,25 +950,25 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
         results = [product
                    for product in self.Product.select(
                        order = ("weight", "color"))]
-        
+
         assert [e, d, a, c, b, f] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("weight", "-color"))]
-        
+
         assert [e, a, d, b, c, f] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("-weight", "color"))]
-        
+
         assert [f, c, b, d, a, e] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("-weight", "-color"))]
-        
+
         assert [f, b, c, a, d, e] == results
 
         set_language("en")
@@ -992,63 +976,63 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
         results = [product
                    for product in self.Product.select(
                        order = ("weight", "color"))]
-        
+
         assert [e, d, a, b, c, f] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("weight", "-color"))]
-        
+
         assert [e, a, d, c, b, f] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("-weight", "color"))]
-        
+
         assert [f, b, c, d, a, e] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("-weight", "-color"))]
-        
+
         assert [f, c, b, a, d, e] == results
 
     def test_not_indexed_not_translated_vs_indexed_translated(self):
 
         a = self.Product()
         a.weight = 3
-        a.set("category", u"esports", "ca")
-        a.set("category", u"sports", "en")
+        a.set("category", "esports", "ca")
+        a.set("category", "sports", "en")
         a.insert()
 
         b = self.Product()
         b.weight = 4
-        b.set("category", u"fotografia", "ca")
-        b.set("category", u"photography", "en")
+        b.set("category", "fotografia", "ca")
+        b.set("category", "photography", "en")
         b.insert()
 
         c = self.Product()
         c.weight = 4
-        c.set("category", u"menjar", "ca")
-        c.set("category", u"food", "en")
+        c.set("category", "menjar", "ca")
+        c.set("category", "food", "en")
         c.insert()
 
         d = self.Product()
         d.weight = 3
-        d.set("category", u"fotografia", "ca")
-        d.set("category", u"photography", "en")
+        d.set("category", "fotografia", "ca")
+        d.set("category", "photography", "en")
         d.insert()
 
         e = self.Product()
         e.weight = 1
-        e.set("category", u"menjar", "ca")
-        e.set("category", u"food", "en")
+        e.set("category", "menjar", "ca")
+        e.set("category", "food", "en")
         e.insert()
 
         f = self.Product()
         f.weight = 7
-        f.set("category", u"esports", "ca")
-        f.set("category", u"sports", "en")
+        f.set("category", "esports", "ca")
+        f.set("category", "sports", "en")
         f.insert()
 
         set_language("ca")
@@ -1056,25 +1040,25 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
         results = [product
                    for product in self.Product.select(
                        order = ("weight", "category"))]
-        
+
         assert [e, a, d, b, c, f] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("weight", "-category"))]
-        
+
         assert [e, d, a, c, b, f] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("-weight", "category"))]
-        
+
         assert [f, b, c, a, d, e] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("-weight", "-category"))]
-        
+
         assert [f, c, b, d, a, e] == results
 
         set_language("en")
@@ -1082,63 +1066,63 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
         results = [product
                    for product in self.Product.select(
                        order = ("weight", "category"))]
-        
+
         assert [e, d, a, c, b, f] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("weight", "-category"))]
-        
+
         assert [e, a, d, b, c, f] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("-weight", "category"))]
-        
+
         assert [f, c, b, d, a, e] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("-weight", "-category"))]
-        
+
         assert [f, b, c, a, d, e] == results
 
     def test_indexed_not_translated_vs_not_indexed_translated(self):
 
         a = self.Product()
         a.price = 3
-        a.set("color", u"vermell", "ca")
-        a.set("color", u"red", "en")
+        a.set("color", "vermell", "ca")
+        a.set("color", "red", "en")
         a.insert()
 
         b = self.Product()
         b.price = 4
-        b.set("color", u"verd", "ca")
-        b.set("color", u"green", "en")
+        b.set("color", "verd", "ca")
+        b.set("color", "green", "en")
         b.insert()
 
         c = self.Product()
         c.price = 4
-        c.set("color", u"groc", "ca")
-        c.set("color", u"yellow", "en")
+        c.set("color", "groc", "ca")
+        c.set("color", "yellow", "en")
         c.insert()
 
         d = self.Product()
         d.price = 3
-        d.set("color", u"verd", "ca")
-        d.set("color", u"green", "en")
+        d.set("color", "verd", "ca")
+        d.set("color", "green", "en")
         d.insert()
 
         e = self.Product()
         e.price = 1
-        e.set("color", u"groc", "ca")
-        e.set("color", u"yellow", "en")
+        e.set("color", "groc", "ca")
+        e.set("color", "yellow", "en")
         e.insert()
 
         f = self.Product()
         f.price = 7
-        f.set("color", u"vermell", "ca")
-        f.set("color", u"red", "en")
+        f.set("color", "vermell", "ca")
+        f.set("color", "red", "en")
         f.insert()
 
         set_language("ca")
@@ -1146,25 +1130,25 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
         results = [product
                    for product in self.Product.select(
                        order = ("price", "color"))]
-        
+
         assert [e, d, a, c, b, f] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("price", "-color"))]
-        
+
         assert [e, a, d, b, c, f] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("-price", "color"))]
-        
+
         assert [f, c, b, d, a, e] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("-price", "-color"))]
-        
+
         assert [f, b, c, a, d, e] == results
 
         set_language("en")
@@ -1172,63 +1156,63 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
         results = [product
                    for product in self.Product.select(
                        order = ("price", "color"))]
-        
+
         assert [e, d, a, b, c, f] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("price", "-color"))]
-        
+
         assert [e, a, d, c, b, f] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("-price", "color"))]
-        
+
         assert [f, b, c, d, a, e] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("-price", "-color"))]
-        
+
         assert [f, c, b, a, d, e] == results
 
     def test_indexed_not_translated_vs_indexed_translated(self):
 
         a = self.Product()
         a.price = 3
-        a.set("category", u"esports", "ca")
-        a.set("category", u"sports", "en")
+        a.set("category", "esports", "ca")
+        a.set("category", "sports", "en")
         a.insert()
 
         b = self.Product()
         b.price = 4
-        b.set("category", u"fotografia", "ca")
-        b.set("category", u"photography", "en")
+        b.set("category", "fotografia", "ca")
+        b.set("category", "photography", "en")
         b.insert()
 
         c = self.Product()
         c.price = 4
-        c.set("category", u"menjar", "ca")
-        c.set("category", u"food", "en")
+        c.set("category", "menjar", "ca")
+        c.set("category", "food", "en")
         c.insert()
 
         d = self.Product()
         d.price = 3
-        d.set("category", u"fotografia", "ca")
-        d.set("category", u"photography", "en")
+        d.set("category", "fotografia", "ca")
+        d.set("category", "photography", "en")
         d.insert()
 
         e = self.Product()
         e.price = 1
-        e.set("category", u"menjar", "ca")
-        e.set("category", u"food", "en")
+        e.set("category", "menjar", "ca")
+        e.set("category", "food", "en")
         e.insert()
 
         f = self.Product()
         f.price = 7
-        f.set("category", u"esports", "ca")
-        f.set("category", u"sports", "en")
+        f.set("category", "esports", "ca")
+        f.set("category", "sports", "en")
         f.insert()
 
         set_language("ca")
@@ -1236,25 +1220,25 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
         results = [product
                    for product in self.Product.select(
                        order = ("price", "category"))]
-        
+
         assert [e, a, d, b, c, f] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("price", "-category"))]
-        
+
         assert [e, d, a, c, b, f] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("-price", "category"))]
-        
+
         assert [f, b, c, a, d, e] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("-price", "-category"))]
-        
+
         assert [f, c, b, d, a, e] == results
 
         set_language("en")
@@ -1262,69 +1246,69 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
         results = [product
                    for product in self.Product.select(
                        order = ("price", "category"))]
-        
+
         assert [e, d, a, c, b, f] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("price", "-category"))]
-        
+
         assert [e, a, d, b, c, f] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("-price", "category"))]
-        
+
         assert [f, c, b, d, a, e] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("-price", "-category"))]
-        
+
         assert [f, b, c, a, d, e] == results
 
     def test_not_indexed_translated_vs_not_indexed_translated(self):
 
         a = self.Product()
-        a.set("color", u"vermell", "ca")
-        a.set("color", u"red", "en")
-        a.set("country", u"espanya", "ca")
-        a.set("country", u"spain", "en")
+        a.set("color", "vermell", "ca")
+        a.set("color", "red", "en")
+        a.set("country", "espanya", "ca")
+        a.set("country", "spain", "en")
         a.insert()
 
         b = self.Product()
-        b.set("color", u"verd", "ca")
-        b.set("color", u"green", "en")
-        b.set("country", u"espanya", "ca")
-        b.set("country", u"spain", "en")
+        b.set("color", "verd", "ca")
+        b.set("color", "green", "en")
+        b.set("country", "espanya", "ca")
+        b.set("country", "spain", "en")
         b.insert()
 
         c = self.Product()
-        c.set("color", u"groc", "ca")
-        c.set("color", u"yellow", "en")
-        c.set("country", u"anglaterra", "ca")
-        c.set("country", u"england", "en")
+        c.set("color", "groc", "ca")
+        c.set("color", "yellow", "en")
+        c.set("country", "anglaterra", "ca")
+        c.set("country", "england", "en")
         c.insert()
 
         d = self.Product()
-        d.set("color", u"verd", "ca")
-        d.set("color", u"green", "en")
-        d.set("country", u"estats units", "ca")
-        d.set("country", u"united states", "en")
+        d.set("color", "verd", "ca")
+        d.set("color", "green", "en")
+        d.set("country", "estats units", "ca")
+        d.set("country", "united states", "en")
         d.insert()
 
         e = self.Product()
-        e.set("color", u"groc", "ca")
-        e.set("color", u"yellow", "en")
-        e.set("country", u"estats units", "ca")
-        e.set("country", u"united states", "en")
+        e.set("color", "groc", "ca")
+        e.set("color", "yellow", "en")
+        e.set("country", "estats units", "ca")
+        e.set("country", "united states", "en")
         e.insert()
 
         f = self.Product()
-        f.set("color", u"vermell", "ca")
-        f.set("color", u"red", "en")
-        f.set("country", u"anglaterra", "ca")
-        f.set("country", u"england", "en")
+        f.set("color", "vermell", "ca")
+        f.set("color", "red", "en")
+        f.set("country", "anglaterra", "ca")
+        f.set("country", "england", "en")
         f.insert()
 
         set_language("ca")
@@ -1332,25 +1316,25 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
         results = [product
                    for product in self.Product.select(
                        order = ("color", "country"))]
-        
+
         assert [c, e, b, d, f, a] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("color", "-country"))]
-        
+
         assert [e, c, d, b, a, f] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("-color", "country"))]
-        
+
         assert [f, a, b, d, c, e] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("-color", "-country"))]
-        
+
         assert [a, f, d, b, e, c] == results
 
         set_language("en")
@@ -1358,69 +1342,69 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
         results = [product
                    for product in self.Product.select(
                        order = ("color", "country"))]
-        
+
         assert [b, d, f, a, c, e] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("color", "-country"))]
-        
+
         assert [d, b, a, f, e, c] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("-color", "country"))]
-        
+
         assert [c, e, f, a, b, d] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("-color", "-country"))]
-        
+
         assert [e, c, a, f, d, b] == results
 
     def test_not_indexed_translated_vs_indexed_translated(self):
 
         a = self.Product()
-        a.set("color", u"vermell", "ca")
-        a.set("color", u"red", "en")
-        a.set("category", u"esports", "ca")
-        a.set("category", u"sports", "en")
+        a.set("color", "vermell", "ca")
+        a.set("color", "red", "en")
+        a.set("category", "esports", "ca")
+        a.set("category", "sports", "en")
         a.insert()
 
         b = self.Product()
-        b.set("color", u"verd", "ca")
-        b.set("color", u"green", "en")
-        b.set("category", u"menjar", "ca")
-        b.set("category", u"food", "en")
+        b.set("color", "verd", "ca")
+        b.set("color", "green", "en")
+        b.set("category", "menjar", "ca")
+        b.set("category", "food", "en")
         b.insert()
 
         c = self.Product()
-        c.set("color", u"groc", "ca")
-        c.set("color", u"yellow", "en")
-        c.set("category", u"menjar", "ca")
-        c.set("category", u"food", "en")
+        c.set("color", "groc", "ca")
+        c.set("color", "yellow", "en")
+        c.set("category", "menjar", "ca")
+        c.set("category", "food", "en")
         c.insert()
 
         d = self.Product()
-        d.set("color", u"verd", "ca")
-        d.set("color", u"green", "en")
-        d.set("category", u"fotografia", "ca")
-        d.set("category", u"photography", "en")
+        d.set("color", "verd", "ca")
+        d.set("color", "green", "en")
+        d.set("category", "fotografia", "ca")
+        d.set("category", "photography", "en")
         d.insert()
 
         e = self.Product()
-        e.set("color", u"groc", "ca")
-        e.set("color", u"yellow", "en")
-        e.set("category", u"esports", "ca")
-        e.set("category", u"sports", "en")
+        e.set("color", "groc", "ca")
+        e.set("color", "yellow", "en")
+        e.set("category", "esports", "ca")
+        e.set("category", "sports", "en")
         e.insert()
 
         f = self.Product()
-        f.set("color", u"vermell", "ca")
-        f.set("color", u"red", "en")
-        f.set("category", u"fotografia", "ca")
-        f.set("category", u"photography", "en")
+        f.set("color", "vermell", "ca")
+        f.set("color", "red", "en")
+        f.set("category", "fotografia", "ca")
+        f.set("category", "photography", "en")
         f.insert()
 
         set_language("ca")
@@ -1428,25 +1412,25 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
         results = [product
                    for product in self.Product.select(
                        order = ("color", "category"))]
-        
+
         assert [e, c, d, b, a, f] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("color", "-category"))]
-        
+
         assert [c, e, b, d, f, a] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("-color", "category"))]
-        
+
         assert [a, f, d, b, e, c] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("-color", "-category"))]
-        
+
         assert [f, a, b, d, c, e] == results
 
         set_language("en")
@@ -1454,69 +1438,69 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
         results = [product
                    for product in self.Product.select(
                        order = ("color", "category"))]
-        
+
         assert [b, d, f, a, c, e] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("color", "-category"))]
-        
+
         assert [d, b, a, f, e, c] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("-color", "category"))]
-        
+
         assert [c, e, f, a, b, d] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("-color", "-category"))]
-        
+
         assert [e, c, a, f, d, b] == results
 
     def test_indexed_translated_vs_indexed_translated(self):
 
         a = self.Product()
-        a.set("category", u"esports", "ca")
-        a.set("category", u"sports", "en")
-        a.set("subcategory", u"futbol", "ca")
-        a.set("subcategory", u"soccer", "en")
+        a.set("category", "esports", "ca")
+        a.set("category", "sports", "en")
+        a.set("subcategory", "futbol", "ca")
+        a.set("subcategory", "soccer", "en")
         a.insert()
 
         b = self.Product()
-        b.set("category", u"menjar", "ca")
-        b.set("category", u"food", "en")
-        b.set("subcategory", u"peix", "ca")
-        b.set("subcategory", u"fish", "en")
+        b.set("category", "menjar", "ca")
+        b.set("category", "food", "en")
+        b.set("subcategory", "peix", "ca")
+        b.set("subcategory", "fish", "en")
         b.insert()
 
         c = self.Product()
-        c.set("category", u"menjar", "ca")
-        c.set("category", u"food", "en")
-        c.set("subcategory", u"carn", "ca")
-        c.set("subcategory", u"meat", "en")
+        c.set("category", "menjar", "ca")
+        c.set("category", "food", "en")
+        c.set("subcategory", "carn", "ca")
+        c.set("subcategory", "meat", "en")
         c.insert()
 
         d = self.Product()
-        d.set("category", u"fotografia", "ca")
-        d.set("category", u"photography", "en")
-        d.set("subcategory", u"paisatge", "ca")
-        d.set("subcategory", u"landscape", "en")
+        d.set("category", "fotografia", "ca")
+        d.set("category", "photography", "en")
+        d.set("subcategory", "paisatge", "ca")
+        d.set("subcategory", "landscape", "en")
         d.insert()
 
         e = self.Product()
-        e.set("category", u"esports", "ca")
-        e.set("category", u"sports", "en")
-        e.set("subcategory", u"esqui", "ca")
-        e.set("subcategory", u"ski", "en")
+        e.set("category", "esports", "ca")
+        e.set("category", "sports", "en")
+        e.set("subcategory", "esqui", "ca")
+        e.set("subcategory", "ski", "en")
         e.insert()
 
         f = self.Product()
-        f.set("category", u"fotografia", "ca")
-        f.set("category", u"photography", "en")
-        f.set("subcategory", u"retrat", "ca")
-        f.set("subcategory", u"portrait", "en")
+        f.set("category", "fotografia", "ca")
+        f.set("category", "photography", "en")
+        f.set("subcategory", "retrat", "ca")
+        f.set("subcategory", "portrait", "en")
         f.insert()
 
         set_language("ca")
@@ -1524,25 +1508,25 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
         results = [product
                    for product in self.Product.select(
                        order = ("category", "subcategory"))]
-        
+
         assert [e, a, d, f, c, b] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("category", "-subcategory"))]
-        
+
         assert [a, e, f, d, b, c] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("-category", "subcategory"))]
-        
+
         assert [c, b, d, f, e, a] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("-category", "-subcategory"))]
-        
+
         assert [b, c, f, d, a, e] == results
 
         set_language("en")
@@ -1550,69 +1534,69 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
         results = [product
                    for product in self.Product.select(
                        order = ("category", "subcategory"))]
-        
+
         assert [b, c, d, f, e, a] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("category", "-subcategory"))]
-        
+
         assert [c, b, f, d, a, e] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("-category", "subcategory"))]
-        
+
         assert [e, a, d, f, b, c] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("-category", "-subcategory"))]
-        
+
         assert [a, e, f, d, c, b] == results
 
     def test_indexed_translated_vs_indexed_unique_translated(self):
 
         a = self.Product()
-        a.set("category", u"esports", "ca")
-        a.set("category", u"sports", "en")
-        a.set("product_name", u"Poma", "ca")
-        a.set("product_name", u"Apple", "en")
+        a.set("category", "esports", "ca")
+        a.set("category", "sports", "en")
+        a.set("product_name", "Poma", "ca")
+        a.set("product_name", "Apple", "en")
         a.insert()
 
         b = self.Product()
-        b.set("category", u"menjar", "ca")
-        b.set("category", u"food", "en")
-        b.set("product_name", u"Formatge", "ca")
-        b.set("product_name", u"Cheese", "en")
+        b.set("category", "menjar", "ca")
+        b.set("category", "food", "en")
+        b.set("product_name", "Formatge", "ca")
+        b.set("product_name", "Cheese", "en")
         b.insert()
 
         c = self.Product()
-        c.set("category", u"menjar", "ca")
-        c.set("category", u"food", "en")
-        c.set("product_name", u"Pernil", "ca")
-        c.set("product_name", u"Ham", "en")
+        c.set("category", "menjar", "ca")
+        c.set("category", "food", "en")
+        c.set("product_name", "Pernil", "ca")
+        c.set("product_name", "Ham", "en")
         c.insert()
 
         d = self.Product()
-        d.set("category", u"fotografia", "ca")
-        d.set("category", u"photography", "en")
-        d.set("product_name", u"Ous", "ca")
-        d.set("product_name", u"Eggs", "en")
+        d.set("category", "fotografia", "ca")
+        d.set("category", "photography", "en")
+        d.set("product_name", "Ous", "ca")
+        d.set("product_name", "Eggs", "en")
         d.insert()
 
         e = self.Product()
-        e.set("category", u"esports", "ca")
-        e.set("category", u"sports", "en")
-        e.set("product_name", u"Suc", "ca")
-        e.set("product_name", u"Juice", "en")
+        e.set("category", "esports", "ca")
+        e.set("category", "sports", "en")
+        e.set("product_name", "Suc", "ca")
+        e.set("product_name", "Juice", "en")
         e.insert()
 
         f = self.Product()
-        f.set("category", u"fotografia", "ca")
-        f.set("category", u"photography", "en")
-        f.set("product_name", u"Carret", "ca")
-        f.set("product_name", u"Roll", "en")
+        f.set("category", "fotografia", "ca")
+        f.set("category", "photography", "en")
+        f.set("product_name", "Carret", "ca")
+        f.set("product_name", "Roll", "en")
         f.insert()
 
         set_language("ca")
@@ -1620,25 +1604,25 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
         results = [product
                    for product in self.Product.select(
                        order = ("category", "product_name"))]
-        
+
         assert [a, e, f, d, b, c] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("category", "-product_name"))]
-        
+
         assert [e, a, d, f, c, b] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("-category", "product_name"))]
-        
+
         assert [b, c, f, d, a, e] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("-category", "-product_name"))]
-        
+
         assert [c, b, d, f, e, a] == results
 
         set_language("en")
@@ -1646,30 +1630,278 @@ class TranslatedOrderTestCase(TempStorageMixin, TestCase):
         results = [product
                    for product in self.Product.select(
                        order = ("category", "product_name"))]
-        
+
         assert [b, c, d, f, a, e] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("category", "-product_name"))]
-        
+
         assert [c, b, f, d, e, a] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("-category", "product_name"))]
-        
+
         assert [a, e, d, f, b, c] == results
 
         results = [product
                    for product in self.Product.select(
                        order = ("-category", "-product_name"))]
-        
+
         assert [e, a, f, d, c, b] == results
 
 
+class StringCollectionQueriesTestCase(TempStorageMixin, TestCase):
+
+    def setUp(self):
+
+        TempStorageMixin.setUp(self)
+
+        from cocktail import schema
+        from cocktail.persistence import PersistentObject
+
+        class TestObject(PersistentObject):
+
+            test_collection = schema.Collection(
+                items = schema.String(),
+                indexed = True
+            )
+
+        self.TestObject = TestObject
+
+    def test_can_select_collections_containing_an_item(self):
+
+        T = self.TestObject
+
+        a = T()
+        a.test_collection.append("foo")
+        a.test_collection.append("bar")
+        a.test_collection.append("spam")
+        a.insert()
+
+        b = T()
+        b.test_collection.append("foo")
+        b.test_collection.append("bar")
+        b.insert()
+
+        c = T()
+        c.test_collection.append("foo")
+        c.insert()
+
+        assert set(T.select(T.test_collection.contains("foo"))) == set([a, b, c])
+        assert set(T.select(T.test_collection.contains("bar"))) == set([a, b])
+        assert set(T.select(T.test_collection.contains("spam"))) == set([a])
+        assert set(T.select(T.test_collection.contains("scrum"))) == set()
+
+    def test_can_select_collections_containing_one_or_more_items_from_a_subset(self):
+
+        T = self.TestObject
+
+        a = T()
+        a.test_collection.append("a")
+        a.test_collection.append("x")
+        a.insert()
+
+        b = T()
+        b.test_collection.append("b")
+        b.test_collection.append("x")
+        b.insert()
+
+        c = T()
+        c.test_collection.append("c")
+        c.test_collection.append("y")
+        c.insert()
+
+        assert set(T.select(T.test_collection.contains_any(["x", "y"]))) == set([a, b, c])
+        assert set(T.select(T.test_collection.contains_any(["a"]))) == set([a])
+        assert set(T.select(T.test_collection.contains_any(["b", "c"]))) == set([b, c])
+        assert set(T.select(T.test_collection.contains_any(["N", "M"]))) == set()
+
+    def test_can_select_collections_containing_all_items_from_a_subset(self):
+
+        T = self.TestObject
+
+        a = T()
+        a.test_collection.append("a")
+        a.test_collection.append("x")
+        a.test_collection.append("y")
+        a.insert()
+
+        b = T()
+        b.test_collection.append("b")
+        b.test_collection.append("x")
+        b.test_collection.append("y")
+        b.insert()
+
+        c = T()
+        c.test_collection.append("c")
+        c.test_collection.append("y")
+        c.insert()
+
+        assert set(T.select(T.test_collection.contains_all(["x", "y"]))) == set([a, b])
+        assert set(T.select(T.test_collection.contains_all(["a", "x", "y"]))) == set([a])
+        assert set(T.select(T.test_collection.contains_all(["y"]))) == set([a, b, c])
+        assert set(T.select(T.test_collection.contains_all(["x", "Z"]))) == set()
+
+    def test_can_select_collections_lacking_an_item(self):
+
+        T = self.TestObject
+
+        a = T()
+        a.test_collection.append("foo")
+        a.test_collection.append("bar")
+        a.test_collection.append("spam")
+        a.insert()
+
+        b = T()
+        b.test_collection.append("foo")
+        b.test_collection.append("bar")
+        b.insert()
+
+        c = T()
+        c.test_collection.append("foo")
+        c.insert()
+
+        assert set(T.select(T.test_collection.lacks("foo"))) == set()
+        assert set(T.select(T.test_collection.lacks("bar"))) == set([c])
+        assert set(T.select(T.test_collection.lacks("spam"))) == set([b, c])
+        assert set(T.select(T.test_collection.lacks("scrum"))) == set([a, b, c])
+
+
+class ReferenceCollectionQueriesTestCase(TempStorageMixin, TestCase):
+
+    def setUp(self):
+
+        TempStorageMixin.setUp(self)
+
+        from cocktail import schema
+        from cocktail.persistence import PersistentObject
+
+        class Document(PersistentObject):
+            pass
+
+        class Tag(PersistentObject):
+
+            documents = schema.Collection(
+                items = schema.Reference(type = Document),
+                related_end = schema.Collection("tags",
+                    indexed = True
+                ),
+                indexed = True
+            )
+
+        self.Document = Document
+        self.Tag = Tag
+
+    def test_can_select_collections_containing_an_item(self):
+
+        Doc = self.Document
+        Tag = self.Tag
+
+        d1 = Doc(); d1.insert()
+        d2 = Doc(); d2.insert()
+        d3 = Doc(); d3.insert()
+        d4 = Doc(); d4.insert()
+
+        t1 = Tag(); t1.insert()
+        t2 = Tag(); t2.insert()
+        t3 = Tag(); t3.insert()
+        t4 = Tag(); t4.insert()
+
+        d1.tags = [t1, t2]
+        d2.tags = [t2, t3]
+        d3.tags = [t2, t3]
+
+        assert set(Doc.select(Doc.tags.contains(t1))) == set([d1])
+        assert set(Doc.select(Doc.tags.contains(t2))) == set([d1, d2, d3])
+        assert set(Doc.select(Doc.tags.contains(t3))) == set([d2, d3])
+        assert set(Doc.select(Doc.tags.contains(t4))) == set()
+
+    def test_can_select_collections_containing_one_or_more_items_from_a_subset(self):
+
+        Doc = self.Document
+        Tag = self.Tag
+
+        d1 = Doc(); d1.insert()
+        d2 = Doc(); d2.insert()
+        d3 = Doc(); d3.insert()
+        d4 = Doc(); d4.insert()
+
+        t1 = Tag(); t1.insert()
+        t2 = Tag(); t2.insert()
+        t3 = Tag(); t3.insert()
+        t4 = Tag(); t4.insert()
+        t5 = Tag(); t5.insert()
+        t6 = Tag(); t6.insert()
+
+        d1.tags = [t1, t2]
+        d2.tags = [t1, t3]
+        d3.tags = [t4]
+
+        assert set(Doc.select(Doc.tags.contains_any([t3, t4]))) == set([d2, d3])
+        assert set(Doc.select(Doc.tags.contains_any([t1, t4]))) == set([d1, d2, d3])
+        assert set(Doc.select(Doc.tags.contains_any([t2, t5]))) == set([d1])
+        assert set(Doc.select(Doc.tags.contains_any([t5, t6]))) == set()
+
+    def test_can_select_collections_containing_all_items_from_a_subset(self):
+
+        Doc = self.Document
+        Tag = self.Tag
+
+        d1 = Doc(); d1.insert()
+        d2 = Doc(); d2.insert()
+        d3 = Doc(); d3.insert()
+        d4 = Doc(); d4.insert()
+
+        t1 = Tag(); t1.insert()
+        t2 = Tag(); t2.insert()
+        t3 = Tag(); t3.insert()
+        t4 = Tag(); t4.insert()
+        t5 = Tag(); t5.insert()
+        t6 = Tag(); t6.insert()
+
+        d1.tags = [t1, t2, t5]
+        d2.tags = [t1, t3, t5]
+        d3.tags = [t2]
+
+        assert set(Doc.select(Doc.tags.contains_all([t1, t5]))) == set([d1, d2])
+        assert set(Doc.select(Doc.tags.contains_all([t1]))) == set([d1, d2])
+        assert set(Doc.select(Doc.tags.contains_all([t2, t5]))) == set([d1])
+        assert set(Doc.select(Doc.tags.contains_all([t4]))) == set()
+        assert set(Doc.select(Doc.tags.contains_all([t4, t1]))) == set()
+
+    def test_can_select_collections_lacking_an_item(self):
+
+        Doc = self.Document
+        Tag = self.Tag
+
+        d1 = Doc(); d1.insert()
+        d2 = Doc(); d2.insert()
+        d3 = Doc(); d3.insert()
+        d4 = Doc(); d4.insert()
+
+        t1 = Tag(); t1.insert()
+        t2 = Tag(); t2.insert()
+        t3 = Tag(); t3.insert()
+        t4 = Tag(); t4.insert()
+        t5 = Tag(); t5.insert()
+        t6 = Tag(); t6.insert()
+
+        d1.tags = [t1, t2, t5]
+        d2.tags = [t1, t3, t5]
+        d3.tags = [t2]
+
+        assert set(Doc.select(Doc.tags.lacks(t1))) == set([d3, d4])
+        assert set(Doc.select(Doc.tags.lacks(t2))) == set([d2, d4])
+        assert set(Doc.select(Doc.tags.lacks(t3))) == set([d1, d3, d4])
+        assert set(Doc.select(Doc.tags.lacks(t4))) == set([d1, d2, d3, d4])
+        assert set(Doc.select(Doc.tags.lacks(t5))) == set([d3, d4])
+        assert set(Doc.select(Doc.tags.lacks(t6))) == set([d1, d2, d3, d4])
+
+
 class RelationalQueriesTestCase(TempStorageMixin, TestCase):
-           
+
     def setUp(self):
 
         TempStorageMixin.setUp(self)
@@ -1679,7 +1911,7 @@ class RelationalQueriesTestCase(TempStorageMixin, TestCase):
         )
         from cocktail.persistence import PersistentObject
 
-        class Category(PersistentObject):            
+        class Category(PersistentObject):
             category_name = String()
             enabled = Boolean()
             products = Collection(bidirectional = True)
@@ -1711,41 +1943,41 @@ class RelationalQueriesTestCase(TempStorageMixin, TestCase):
         self.Order = Order
 
         self.categories = [
-            Category(category_name = u"Food", enabled = True),
-            Category(category_name = u"Books", enabled = True),
-            Category(category_name = u"Music", enabled = False)
+            Category(category_name = "Food", enabled = True),
+            Category(category_name = "Books", enabled = True),
+            Category(category_name = "Music", enabled = False)
         ]
         for category in self.categories:
             category.insert()
 
         self.products = [
             Product(
-                product_name = u"Cookies",
+                product_name = "Cookies",
                 price = 5,
                 category = self.categories[0]
             ),
             Product(
-                product_name = u"Xocolate",
+                product_name = "Xocolate",
                 price = 8,
                 category = self.categories[0]
             ),
             Product(
-                product_name = u"The Name of the Rose",
+                product_name = "The Name of the Rose",
                 price = 8,
                 category = self.categories[1]
             ),
             Product(
-                product_name = u"Game of Thrones",
+                product_name = "Game of Thrones",
                 price = 12,
                 category = self.categories[1]
             ),
             Product(
-                product_name = u"Paramount",
+                product_name = "Paramount",
                 price = 15,
                 category = self.categories[2]
             ),
             Product(
-                product_name = u"Absurditties",
+                product_name = "Absurditties",
                 price = 14,
                 category = self.categories[2]
             )
@@ -1797,7 +2029,7 @@ class RelationalQueriesTestCase(TempStorageMixin, TestCase):
             ))),
             set([c[2]])
         )
-        
+
     def test_any(self):
 
         C = self.Category
@@ -1946,7 +2178,7 @@ class RelationalQueriesTestCase(TempStorageMixin, TestCase):
 
         datastore.root.clear()
 
-        class Category(PersistentObject):            
+        class Category(PersistentObject):
             pass
 
         class C1(Category):
@@ -1990,7 +2222,7 @@ class RelationalQueriesTestCase(TempStorageMixin, TestCase):
 
         datastore.root.clear()
 
-        class Category(PersistentObject):            
+        class Category(PersistentObject):
             pass
 
         class C1(Category):
@@ -2104,7 +2336,7 @@ class DescendsFromTestCase(TempStorageMixin, TestCase):
 
     def test_descends_from_one_to_many_bidirectional(self):
         from cocktail.schema.expressions import DescendsFromExpression, Self
-        
+
         a = self.Document()
         b = self.Document()
         c = self.Document()

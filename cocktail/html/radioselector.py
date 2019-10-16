@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -14,33 +14,27 @@ class RadioSelector(Selector):
 
     empty_option_displayed = False
 
-    def _ready(self):
+    def create_entry(self, item):
 
-        if not self.name and self.data_display:
-            self.name = self.data_display.get_member_name(
-                self.member,
-                self.language
-            )
-
-        self["name"] = None
-        Selector._ready(self)
-
-    def create_entry(self, value, label, selected):
-        
         entry = Element()
-        
+        entry.add_class("radio_entry")
+
         entry.input = Element("input")
-        entry_id = entry.input.require_id()
         entry.input["type"] = "radio"
-        entry.input["value"] = value
-        entry.input["checked"] = selected
+        entry.input["value"] = self.get_item_value(item)
+        entry.input["checked"] = self.is_selected(item)
         entry.input["name"] = self.name
         entry.append(entry.input)
-        
-        entry.label = Element("label")
-        entry.label["for"] = entry_id
-        entry.label.append(label)
+
+        entry.label = self.create_label(item)
+        if entry.label.tag == "label":
+            entry.label["for"] = entry.input.require_id()
         entry.append(entry.label)
 
         return entry
+
+    def create_label(self, item):
+        label = Element("label")
+        label.append(self.get_item_label(item))
+        return label
 

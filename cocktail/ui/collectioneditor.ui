@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ui:element
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:using mixin="cocktail.ui.DataDisplay"/>
+    <ui:requires component="cocktail.ui.CollectionEditorForm"/>
+    <ui:symbol name="CHANGING"/>
+
+    <ui:property
+        name="entriesDisplayFactory"
+        reflected="false"/>
+
+    <?head
+    cocktail.schema.Schema[cocktail.ui.collectionEditorControl] = cocktail.ui.CollectionEditorForm;
+    ?>
+
+    <?class
+    get entriesMember() {
+        return this.dataBinding.member.items;
+    }
+
+    addEntry(value = undefined) {
+
+        let entry = this.createEntry(value);
+        this.entries.appendChild(entry);
+
+        if (!this[CHANGING]) {
+            let value = this.value ? Array.from(this.value) : [];
+            value.push(entry.value);
+
+            this[CHANGING] = true;
+            try {
+                this.value = value;
+            }
+            finally {
+                this[CHANGING] = false;
+            }
+        }
+
+        return entry;
+    }
+
+    createEntry(value = undefined) {
+        let entry = this.constructor.Entry.create();
+        entry.displayFactory = this.entriesDisplayFactory;
+        entry.dataBinding = this.dataBinding.childBinding(
+            this.value,
+            this.entriesMember,
+            null,
+            this.entries.childNodes.length,
+            value === undefined ? this.entriesMember.getDefaultValue() : value
+        );
+        return entry;
+    }
+
+    removeEntry(entry) {
+
+        this.entries.removeChild(entry);
+
+        if (!this[CHANGING]) {
+            this[CHANGING] = true;
+            try {
+                this.value = Array.from(this.entries.childNodes, (entry) => entry.value);
+            }
+            finally {
+                this[CHANGING] = false;
+            }
+        }
+    }
+
+    clearEntries() {
+        cocktail.ui.empty(this.entries);
+        if (!this[CHANGING]) {
+            this[CHANGING] = true;
+            try {
+                this.value = [];
+            }
+            finally {
+                this[CHANGING] = false;
+            }
+        }
+    }
+    ?>
+
+    <?js
+    this.entriesDisplayFactory = cocktail.ui.collectionEditorControls;
+    ?>
+
+    <?on value:changed
+    if (!this[CHANGING]) {
+        this[CHANGING] = true;
+        try {
+            this.clearEntries();
+            if (newValue) {
+                for (let item of newValue) {
+                    this.addEntry(item);
+                }
+            }
+        }
+        finally {
+            this[CHANGING] = false;
+        }
+    }
+    ?>
+
+    <div id="entries"/>
+
+    <ui:cocktail.ui.Button id="addButton">
+        <ui:translation attribute="text"/>
+        <?on click
+        instance.addEntry();
+        ?>
+    </ui:cocktail.ui.Button>
+
+    <div ui:component="Entry">
+
+        <ui:using mixin="cocktail.ui.DataDisplay"/>
+        <ui:symbol name="..CHANGING"/>
+
+        <?class
+        makeControl() {
+
+            if (this.control) {
+                cocktail.ui.removeLink(this, this.control, "value");
+                this.control.parentNode.removeChild(this.control);
+                this.control = null;
+            }
+
+            if (this.dataBinding && this.displayFactory) {
+                this.control = this.displayFactory.requireDisplay(this.dataBinding);
+                cocktail.ui.link(this, this.control, "value");
+                this.controlContainer.appendChild(this.control);
+            }
+        }
+        ?>
+
+        <?on displayFactory:changed
+        this.makeControl();
+        ?>
+
+        <?on dataBinding:changed
+        this.makeControl();
+        ?>
+
+        <?on value:changed
+        if (instance.parentInstance && !instance.parentInstance[CHANGING]) {
+            instance.parentInstance[CHANGING] = true;
+            try {
+                instance.parentInstance.value = Array.from(
+                    instance.parentInstance.entries.childNodes,
+                    (entry) => entry.value
+                );
+            }
+            finally {
+                instance.parentInstance[CHANGING] = false;
+            }
+        }
+        ?>
+
+        <div id="controlContainer"/>
+
+        <ui:cocktail.ui.Button id="removeButton">
+            <ui:translation attribute="text"/>
+            <?on click
+            instance.parentInstance.removeEntry(instance);
+            ?>
+        </ui:cocktail.ui.Button>
+    </div>
+
+</ui:element>
+

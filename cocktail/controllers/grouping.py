@@ -6,15 +6,16 @@
 @organization:	Whads/Accent SL
 @since:			October 2009
 """
+from datetime import date, datetime
 from cocktail.pkgutils import get_full_name
-from cocktail.modeling import getter
 from cocktail.translations import translations, get_language
 from cocktail.schema import Member, Date, Time, DateTime
 from cocktail.schema.expressions import (
     PositiveExpression,
     NegativeExpression
 )
-from datetime import date, datetime
+
+translations.load_bundle("cocktail.controllers.grouping")
 
 
 class MemberGrouping(object):
@@ -28,14 +29,14 @@ class MemberGrouping(object):
     def get_grouping_value(self, item):
         return item.get(self.member, self.language)
 
-    @getter
+    @property
     def order(self):
         expr = self.member
         if self.language:
             expr = expr.translated_into(self.language)
         return self.sign(expr)
 
-    @getter
+    @property
     def request_value(self):
         if self.member is None:
             return None
@@ -50,16 +51,16 @@ class MemberGrouping(object):
             return value
 
     def translate_grouping_value(self, value, language = None, **kwargs):
-        
+
         if value is not None:
             for cls in self.__class__.__mro__:
                 translation = translations(
-                    get_full_name(cls) + " value",
+                    get_full_name(cls) + ".value",
                     language,
                     grouping = self,
                     value = value,
                     **kwargs
-                )                
+                )
                 if translation:
                     return translation
                 if cls is MemberGrouping:
@@ -76,7 +77,7 @@ class MemberGrouping(object):
         for grouping_class in cls.__mro__:
 
             variant_translation = translations(
-                get_full_name(grouping_class) + " %s variant" % variant,
+                get_full_name(grouping_class) + ".%s_variant" % variant,
                 language
             )
 
@@ -86,7 +87,7 @@ class MemberGrouping(object):
             if cls is MemberGrouping:
                 break
 
-        return u""
+        return ""
 
 
 class DateGrouping(MemberGrouping):
@@ -94,9 +95,9 @@ class DateGrouping(MemberGrouping):
     variants = "day", "month", "year"
 
     def get_grouping_value(self, item):
-        
+
         value = item.get(self.member, self.language)
-        
+
         if value is not None:
             if self.variant == "day":
                 return date(value.year, value.month, value.day)

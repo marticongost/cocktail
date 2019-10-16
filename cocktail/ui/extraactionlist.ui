@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ui:cocktail.ui.ActionList
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui"
+    buttonStyle="iconBesideText">
+
+    <ui:cocktail.ui.DropdownPanel
+        id="dropdownPanel"
+        dropdownType="menu">
+        <?js
+        element.appendChild(this.actionListSlot);
+        ?>
+    </ui:cocktail.ui.DropdownPanel>
+
+</ui:cocktail.ui.ActionList>
+

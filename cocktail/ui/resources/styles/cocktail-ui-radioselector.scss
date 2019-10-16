@@ -1,0 +1,72 @@
+
+@import "cocktail.ui://styles/common";
+
+:host-context(.cocktail-ui-Form[formLayout='column']) {
+
+    .labelText {
+        font-size: 0.9em;
+    }
+}
+
+#entries {
+    display: block;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+        flex-direction: row;
+        align-items: center;
+        padding: 0;
+        margin: 0;
+
+        :host([layout='vertical']) & {
+            display: flex;
+
+            & + li {
+                margin-top: var(--entry-separation, 0.4rem);
+            }
+        }
+
+        :host([layout='horizontal']) & {
+            display: inline-flex;
+
+            & + li {
+                margin-left: var(--entry-separation, 0.8rem);
+            }
+        }
+
+        input {
+            margin: 0;
+            margin-right: var(--selector-label-separation, 0.4rem);
+            -webkit-appearance: none;
+            display: inline-block;
+            width: 1.2em;
+            height: 1.2em;
+            border-radius: 1em;
+            border: $input-border;
+            position: relative;
+
+            &:checked:after {
+                content: '';
+                display: block;
+                position: absolute;
+                left: 0.3em;
+                top: 0.3em;
+                width: 0.5em;
+                height: 0.5em;
+                border-radius: 0.5em;
+                background-color: #777;
+
+                :host([error]) & {
+                    background-color: $error-border-color;
+                }
+            }
+
+            :host([error]) & {
+                @include input-with-error;
+            }
+        }
+    }
+}
+

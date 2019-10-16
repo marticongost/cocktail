@@ -1,39 +1,25 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
 @organization:	Whads/Accent SL
 @since:			September 2008
 """
-from __future__ import with_statement
 from cocktail.translations import get_language, language_context
-from cocktail.modeling import getter, ListWrapper
-from cocktail.translations import translations
-from cocktail.schema import (
-    Member,
-    Schema,
-    Boolean,
-    Reference,
-    BaseDateTime,
-    Collection,
-    Number,
-    Money,
-    Decimal,
-    URL,
-    EmailAddress,
-    PhoneNumber,
-    Color,
-    CodeBlock
-)
+from cocktail.modeling import ListWrapper
+from cocktail.translations import translations, translate_locale
+from cocktail import schema
+from cocktail.persistence import PersistentObject
 from cocktail.controllers.fileupload import FileUpload
-from cocktail.html import Element, templates
-from cocktail.html.datadisplay import DataDisplay, display_factory
+from cocktail.html import Element
+from cocktail.html.uigeneration import (
+    UIGenerator,
+    default_edit_control,
+    default_display
+)
+from cocktail.html.datadisplay import DataDisplay
 from cocktail.html.hiddeninput import HiddenInput
-
-# Extension property that allows members to define their appearence in HTML
-# forms
-Member.edit_control = None
 
 
 class Form(Element, DataDisplay):
@@ -61,7 +47,7 @@ class Form(Element, DataDisplay):
         form. This can be very useful when dealing with multiple buttons on a
         single form. Doesn't apply to L{embeded} forms.
     @type default_button: L{Element<cocktail.html.element.Element>}
-    
+
     @var generate_fields: Indicates if the form should automatically create
         entries for all fields defined by its assigned schema. This is the
         default behavior; When set to False, filling the form will be left to
@@ -73,9 +59,15 @@ class Form(Element, DataDisplay):
         behavior; When set to False, only groups explicitly defined by the
         client code will be taken into account.
     @type generate_groups: bool
-    """
 
+    @var redundant_translation_labels: When True, the labels for translated
+        fields include a combination of member and language. When False, a
+        single label is used to denote the member for all languages, and each
+        instance of the field includes only a label indicating its language.
+    @type redundant_translation_labels: bool
+    """
     tag = "form"
+    base_ui_generators = [default_edit_control]
     translations = None
     hide_empty_fieldsets = True
     errors = None
@@ -86,59 +78,11 @@ class Form(Element, DataDisplay):
     default_button = None
     generate_fields = True
     generate_groups = True
+    redundant_translation_labels = True
     __form = None
 
     def __init__(self, *args, **kwargs):
         DataDisplay.__init__(self)
-
-        self.set_member_type_display(
-            Boolean, "cocktail.html.CheckBox")
-
-        self.set_member_type_display(
-            Reference, "cocktail.html.DropdownSelector")
-            
-        self.set_member_type_display(
-            BaseDateTime, "cocktail.html.DatePicker")
-
-        self.set_member_type_display(
-            Decimal, "cocktail.html.TextBox")
-
-        self.set_member_type_display(
-            FileUpload, 
-            lambda form, obj, member:
-                templates.new(    
-                    "cocktail.html." + (
-                        "AsyncFileUploader" 
-                            if member.async 
-                            else "FileUploadBox"
-                    )
-                )
-        )
-
-        self.set_member_type_display(Collection, _collection_display)
-
-        self.set_member_type_display(
-            Number, "cocktail.html.NumberBox")
-
-        self.set_member_type_display(
-            Money, "cocktail.html.MoneyBox")
-
-        self.set_member_type_display(
-            PhoneNumber, "cocktail.html.PhoneNumberBox")
-
-        self.set_member_type_display(
-            URL, "cocktail.html.URLBox")
-
-        self.set_member_type_display(
-            EmailAddress, "cocktail.html.EmailAddressBox")
-
-        self.set_member_type_display(
-            Color, "cocktail.html.ColorPicker")
-
-        self.set_member_type_display(CodeBlock, _code_block_display)
-
-        self.set_member_type_display(Schema, embeded_form)
-
         self.__groups = []
         self.groups = ListWrapper(self.__groups)
         self.__hidden_members = {}
@@ -154,7 +98,8 @@ class Form(Element, DataDisplay):
             self.schema = form.schema
             self.data = form.data
             self.errors = form.errors
-            self.persistent_object = form.instance
+            if isinstance(form.instance, PersistentObject):
+                self.persistent_object = form.instance
 
     form = property(_get_form, _set_form, doc = """
         A convenience property that sets up the form using information
@@ -162,8 +107,8 @@ class Form(Element, DataDisplay):
         """)
 
     def _build(self):
-        
-        self.add_resource("/cocktail/scripts/form.js")
+
+        self.add_resource("cocktail://scripts/form.js")
 
         self.fields = Element()
         self.fields.add_class("fields")
@@ -174,13 +119,20 @@ class Form(Element, DataDisplay):
         self.append(self.buttons)
 
         self.submit_button = Element("button")
+        self.submit_button.add_class("submit_button")
         self.submit_button["value"] = "true"
         self.submit_button["type"] = "submit"
-        self.submit_button.append(translations("Submit"))
+        self.submit_button.append(translations("cocktail.stock.submit"))
         self.buttons.append(self.submit_button)
         self.default_button = self.submit_button
 
     def _ready(self):
+
+        if self.redundant_translation_labels:
+            self.add_class("redundant_translation_labels")
+        else:
+            self.add_class("grouped_translation_labels")
+
         self._fill_fields()
 
         if self.embeded:
@@ -194,7 +146,7 @@ class Form(Element, DataDisplay):
             hidden_button_block.set_style("left", "-1000px")
             hidden_button_block.set_style("top", "-1000px")
             hidden_button = Element(self.default_button.tag)
-            for key, value in self.default_button.attributes.iteritems():
+            for key, value in self.default_button.attributes.items():
                 hidden_button[key] = value
             hidden_button_block.append(hidden_button)
             self.insert(0, hidden_button_block)
@@ -211,7 +163,7 @@ class Form(Element, DataDisplay):
                             set(member.name for member in members)
                         )
 
-            if self.__groups:                
+            if self.__groups:
                 members = self.displayed_members
 
                 for group in self.__groups:
@@ -250,9 +202,9 @@ class Form(Element, DataDisplay):
                     self.fields.append(field_entry)
                     self.build_member_explanation(member, field_entry)
                     setattr(self, member.name + "_field", field_entry)
-    
+
     def request_fieldset(self, group_id):
-        
+
         key = group_id.replace(".", "_") + "_fieldset"
         fieldset = getattr(self, key, None)
 
@@ -265,35 +217,48 @@ class Form(Element, DataDisplay):
                 parent = self.request_fieldset(".".join(parts))
 
             fieldset = self.create_fieldset(group_id)
-            parent.fields.append(fieldset)            
+            parent.fields.append(fieldset)
             setattr(self, key, fieldset)
 
         return fieldset
 
     def create_fieldset(self, group_id):
 
-        fieldset = Element("fieldset") 
+        fieldset = Element("fieldset")
         fieldset.add_class(group_id.replace(".", "-"))
 
-        label = self.get_group_label(group_id)
-        if label:            
-            fieldset.legend = Element("legend")
-            fieldset.legend.append(label)
-            fieldset.append(fieldset.legend)
-        else:
-            fieldset.legend = None
+        fieldset.legend = self.create_fieldset_legend(group_id)
+        if fieldset.legend is None:
             fieldset.add_class("anonymous")
+        else:
+            fieldset.append(fieldset.legend)
 
         fieldset.fields = Element("table" if self.table_layout else "div")
         fieldset.fields.add_class("fieldset_fields")
         fieldset.append(fieldset.fields)
 
+        explanation = self.schema.translate_group(
+            group_id,
+            suffix = ".explanation"
+        )
+        if explanation:
+            fieldset.explanation = \
+                self.create_fieldset_explanation(explanation)
+            fieldset.fields.append(fieldset.explanation)
+
         return fieldset
+
+    def create_fieldset_legend(self, group_id):
+        label = self.get_group_label(group_id)
+        if label:
+            legend = Element("legend")
+            legend.append(label)
+            return legend
 
     def create_field(self, member):
 
         hidden = self.get_member_hidden(member)
-        
+
         entry = Element("tr" if self.table_layout else "div")
         entry.field_instances = []
 
@@ -302,7 +267,7 @@ class Form(Element, DataDisplay):
         else:
             entry.add_class("field")
             entry.add_class(member.name + "_field")
-             
+
             if member.required:
                 entry.add_class("required")
 
@@ -317,9 +282,13 @@ class Form(Element, DataDisplay):
 
         if member.translated:
             entry.add_class("translated")
+
+            if not hidden and not self.redundant_translation_labels:
+                entry.append(self.create_label(member))
+
             for language in (
-                self.translations 
-                if self.translations is not None 
+                self.translations
+                if self.translations is not None
                 else (get_language(),)
             ):
                 field_instance = create_instance(language)
@@ -327,7 +296,7 @@ class Form(Element, DataDisplay):
                 entry.append(field_instance)
         else:
             entry.append(create_instance())
-        
+
         return entry
 
     def build_member_explanation(self, member, entry):
@@ -351,16 +320,28 @@ class Form(Element, DataDisplay):
         label.append(explanation)
         return label
 
+    def create_fieldset_explanation(self, explanation):
+        label = Element()
+        label.add_class("explanation")
+        label.append(explanation)
+        return label
+
     def create_field_instance(self, member, language = None):
 
         field_instance = Element("td" if self.table_layout else "div")
         field_instance.add_class("field_instance")
-    
+
         # Label
         if not self.get_member_hidden(member):
-            field_instance.label = self.create_label(member, language)
-            field_instance.append(field_instance.label)
-        
+
+            if member.translated and not self.redundant_translation_labels:
+                label = self.create_language_label(member, language)
+            else:
+                label = self.create_label(member, language)
+
+            field_instance.label = label
+            field_instance.append(label)
+
         # Control
         with language_context(language):
             field_instance.control = self.create_control(self.data, member)
@@ -383,9 +364,17 @@ class Form(Element, DataDisplay):
         return field_instance
 
     def insert_into_form(self, form, field_instance):
+        field_instance.tag = "fieldset"
+        if self.tag == "form":
+            self.tag = "div"
+
         label = getattr(field_instance, "label", None)
         if label is not None:
             label.tag = "legend"
+            required_mark = getattr(label, "required_mark", None)
+            if required_mark is not None:
+                required_mark.visible = False
+
         field_instance.append(self)
 
     def create_hidden_input(self, obj, member):
@@ -394,37 +383,32 @@ class Form(Element, DataDisplay):
         input.data = obj
         input.member = member
         input.data_display = self
-        
-        value = self.get_member_value(obj, member)
-        if value is not None:
-            value = member.serialize_request_value(value)
-        input.value = value
-        
+        input.value = self.get_member_value(obj, member)
+
         if member.translated:
             input.language = get_language()
 
         return input
 
     def create_label(self, member, language = None):
-        
+
         label = Element("label")
         label.add_class("field_label")
         text = self.get_member_label(member)
-        
+
         if text:
             label.label_title = self.create_label_title(member, text)
             label.append(label.label_title)
-            
-            if language:
-                
+
+            if language and self.redundant_translation_labels:
                 label.label_language = self.create_language_label(
                     member,
-                    language)
-
+                    language
+                )
                 label.append(label.label_language)
 
-            if self.required_marks:
-                if isinstance(member, Collection):
+            if self.required_marks and member.editable == schema.EDITABLE:
+                if isinstance(member, schema.Collection):
                     is_required = (isinstance(member.min, int) and member.min)
                 else:
                     is_required = (member.required == True)
@@ -445,8 +429,13 @@ class Form(Element, DataDisplay):
 
     def create_language_label(self, member, language):
         label = Element("span")
-        label.add_class("language")
-        label.append("(" + translations(language) + ")")
+        label.add_class("field_language")
+        text = translate_locale(language)
+
+        if self.redundant_translation_labels:
+            text = "(" + text + ")"
+
+        label.append(text)
         return label
 
     def create_required_mark(self, member):
@@ -455,17 +444,19 @@ class Form(Element, DataDisplay):
         mark.append("*")
         return mark
 
-    def get_member_supplied_display(self, obj, member):
-        return member.edit_control
-
-    def default_display(self, obj, member):
+    def get_default_member_display(self, obj, member):
         if member.enumeration is not None:
             return "cocktail.html.DropdownSelector"
         else:
-            return "cocktail.html.TextBox"
+            return DataDisplay.get_default_member_display(self, obj, member)
 
     def create_control(self, obj, member):
-        control = self.get_member_display(obj, member)
+
+        control = self.create_member_display(
+            obj,
+            member,
+            self.get_member_value(obj, member)
+        )
         control.add_class("control")
 
         if self.errors and self.errors.in_member(
@@ -474,7 +465,7 @@ class Form(Element, DataDisplay):
         ):
             control.add_class("error")
 
-        return control   
+        return control
 
     def add_group(self, group_id, members_filter):
         self.__groups.append(FormGroup(self, group_id, members_filter))
@@ -512,43 +503,18 @@ class FormGroup(object):
             self.__match_expr = \
                 lambda member: self.__form._normalize_member(member) in members
 
-    @getter
+    @property
     def form(self):
         return self.__form
 
-    @getter
+    @property
     def id(self):
         return self.__id
 
-    @getter
+    @property
     def members_filter(self):
         return self.__members_filter
 
     def matches(self, member):
         return self.__match_expr(member)
-
-
-def embeded_form(parent_form, obj, member):
-    form = Form()
-    form.tag = "div"
-    form.embeded = True
-    form.schema = member
-    form.name_prefix = parent_form.name_prefix
-    form.name_suffix = parent_form.name_suffix
-    return form
-
-def _collection_display(form, obj, member):
-    if isinstance(member.items, FileUpload) and member.items.async:
-        return templates.new("cocktail.html.AsyncFileUploader")
-    elif member.items.enumeration is not None or member.is_persistent_relation:
-        return templates.new("cocktail.html.CheckList")
-    else:
-        return templates.new("cocktail.html.CollectionEditor")
-
-def _code_block_display(form, obj, member):
-    display = templates.new("cocktail.html.CodeEditor")
-    display.syntax = member.language
-    if member.language == "python":
-        display.cols = 80
-    return display
 

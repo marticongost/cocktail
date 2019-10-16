@@ -1,0 +1,41 @@
+
+.SWIFTBICEntry {
+    display: inline-block;
+}
+
+.swiftbic_explanation_link_wrapper {
+    margin-top: 0.2em;
+}
+
+.swiftbic_explanation_dialog {
+    z-index: 10000;
+    position: fixed;
+    width: 40em;
+    background-color: white;
+    box-shadow: 0.5em 0.5em 0.5em #333;
+}
+
+.swiftbic_explanation_dialog_body {
+    padding: 2em;
+}
+
+.swiftbic_explanation_dialog_body p {
+    font-size: 1.4em;
+    margin: 0;
+    margin-top: 1em;
+}
+
+.swiftbic_explanation_dialog_body p:first-child {
+    margin-top: 0;
+}
+
+.swiftbic_explanation_dialog_close_button {
+    background: none;
+    border: none;
+    padding: 0;
+    position: absolute;
+    right: 0.4em;
+    top: 0.4em;
+    cursor: pointer;
+}
+

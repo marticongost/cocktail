@@ -1,44 +1,79 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
 @organization:	Whads/Accent SL
 @since:			July 2008
 """
-from threading import RLock
+from threading import RLock, local
 from time import sleep
+from contextlib import contextmanager
 import transaction
+from cocktail.events import when
 from cocktail.persistence.datastore import datastore
 from cocktail.persistence.persistentmapping import PersistentMapping
 from ZODB.POSException import ConflictError
 
 ID_CONTAINER_KEY = "id_container"
 RETRY_INTERVAL = 0.1
-STEP = 10
+default_slice_size = 10
+_thread_data = local()
 
 _acquired_ids = {}
 _lock = RLock()
 
-@datastore.connection_opened.append
+def get_incremental_id_slice_size(key = None):
+    if not hasattr(_thread_data, "slice_sizes"):
+        _thread_data.slice_sizes = {}
+        _thread_data.default_slice_size = default_slice_size
+
+    return (
+        key and _thread_data.slice_sizes.get(key)
+        or _thread_data.default_slice_size
+    )
+
+def set_incremental_id_slice_size(size, key = None):
+    if not hasattr(_thread_data, "slice_sizes"):
+        _thread_data.slice_sizes = {}
+        _thread_data.default_slice_size = default_slice_size
+
+    if key:
+        _thread_data.slice_sizes[key] = size
+    else:
+        _thread_data.default_slice_size = size
+
+@contextmanager
+def incremental_id_slice_size_context(size, key = None):
+    prev_size = get_incremental_id_slice_size(key)
+    set_incremental_id_slice_size(size, key = key)
+    try:
+        yield None
+    finally:
+        set_incremental_id_slice_size(prev_size, key = key)
+
+@when(datastore.connection_opened)
 def create_container(event):
     root = event.source.root
     if ID_CONTAINER_KEY not in root:
         root[ID_CONTAINER_KEY] = PersistentMapping()
         datastore.commit()
 
-@datastore.storage_changed.append
+@when(datastore.storage_changed)
+@when(datastore.cleared)
 def discard_acquired_ids(event):
     with _lock:
         _acquired_ids.clear()
 
 def incremental_id(key = "default", step = None):
-    
+
     with _lock:
         key_acquired_ids = _acquired_ids.get(key)
 
         if not key_acquired_ids:
-            acquire_id_range(STEP if step is None else step, key)
+            if step is None:
+                step = get_incremental_id_slice_size(key)
+            acquire_id_range(step, key)
 
         return _acquired_ids[key].pop(0)
 
@@ -57,7 +92,7 @@ def acquire_id_range(size, key = "default"):
                 if container is None:
                     container = PersistentMapping()
                     root[ID_CONTAINER_KEY] = container
-                
+
                 base_id = container.get(key, 0)
                 top_id = base_id + size
 
@@ -76,7 +111,7 @@ def acquire_id_range(size, key = "default"):
         finally:
             conn.close()
 
-        id_range = range(base_id + 1, top_id + 1)
+        id_range = list(range(base_id + 1, top_id + 1))
         key_acquired_ids = _acquired_ids.get(key)
 
         if key_acquired_ids is None:

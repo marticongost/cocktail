@@ -1,0 +1,38 @@
+
+[cocktail.controllers.location]
+
+    [client_redirect]
+
+        [title]
+        ca: Redirecció
+        es: Redirección
+        en: Redirecting
+
+        [explanation(control)]
+        ca:
+            S'està redirigint la petició. Si no ets automàticament redirigit,
+            prem ${control} per continuar navegant pel web.
+        es:
+            Se está redirigiendo la petición. Si no eres automáticamente
+            redirigido pulsa ${control} para proseguir con la navegación.
+        en:
+            Redirection in process. If you aren't redirected automatically
+            press ${control} to proceed.
+
+        [control]
+        ca: Continuar
+        es: Continuar
+        en: Continue
+
+            [description]
+
+                [POST]
+                ca: el botó
+                es: el botón
+                en: the button
+
+                [GET]
+                ca: l'enllaç
+                es: el enlace
+                en: the link
+

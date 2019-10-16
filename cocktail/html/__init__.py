@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 Provides classes for building reusable (X)HTML components.
 
 This package supplies all the necessary building blocks to create visual
@@ -16,6 +16,7 @@ Some of its most notable features include:
 Also, an extensive set of ready made components is provided as well, covering a
 wide assortment of needs: forms, tables, calendars, etc.
 """
+from cocktail.html import memberextensions
 from cocktail.html.renderers import (
     Renderer,
     html4_renderer,
@@ -23,7 +24,10 @@ from cocktail.html.renderers import (
     xhtml_renderer,
     xhtml5_renderer
 )
-from cocktail.html.rendering import Rendering
+from cocktail.html.rendering import (
+    Rendering,
+    rendering_cache
+)
 from cocktail.html.element import (
     Element,
     Content,
@@ -31,11 +35,18 @@ from cocktail.html.element import (
     PlaceHolder
 )
 from cocktail.html.resources import (
-    Resource, 
+    Resource,
     Script,
-    StyleSheet
+    StyleSheet,
+    resource_repositories,
+    LinkedResources,
+    EmbeddedResources,
+    ScriptBundle,
+    StyleBundle,
+    ExcludedResources
 )
 from cocktail.html.documentmetadata import DocumentMetadata
+from cocktail.html.document import HTMLDocument
 from cocktail.html.overlay import Overlay
 from cocktail.html.utils import (
     alternate_classes,

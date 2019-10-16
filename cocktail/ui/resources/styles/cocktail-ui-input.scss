@@ -1,0 +1,27 @@
+
+@import "cocktail.ui://styles/common";
+
+:host {
+    display: inline-block;
+}
+
+input {
+    box-sizing: border-box;
+
+    &[type='text'],
+    &[type='email'],
+    &[type='number'],
+    &[type='password'],
+    &[type='search'],
+    &[type='tel'],
+    &[type='url'] {
+        border: 1px solid $input-border-color;
+        padding: $input-padding;
+        width: 100%;
+    }
+
+    :host([error]) & {
+        @include input-with-error;
+    }
+}
+

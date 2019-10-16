@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Jordi Fernández <jordi.fernandez@whads.com>
 """
@@ -19,9 +19,9 @@ class MediaElementVideo(Element):
     def _build(self):
         self["preload"] = "auto"
         self.media_element_options = self.media_element_defaults.copy()
-        self.add_resource("/cocktail/mediaelement/mediaelementplayer.min.css")
-        self.add_resource("/cocktail/mediaelement/mediaelement-and-player.min.js")
-        self.add_resource("/cocktail/scripts/MediaElementVideo.js")
+        self.add_resource("cocktail://mediaelement/mediaelementplayer.min.css")
+        self.add_resource("cocktail://mediaelement/mediaelement-and-player.min.js")
+        self.add_resource("cocktail://scripts/mediaelementvideo.js")
 
     def _ready(self):
 

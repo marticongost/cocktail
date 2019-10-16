@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ui:element xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:symbol name="VISIBLE_TOOLTIP"/>
+    <ui:symbol name="DELAY"/>
+    <ui:symbol name="LISTENERS"/>
+
+    <ui:requires component="cocktail.ui.delay"/>
+
+    <style type="text/css">
+        #tooltipFrame {
+            opacity: 0;
+            pointer-events: none;
+        }
+    </style>
+
+    <ui:property
+        name="visible"
+        type="boolean"
+        reflected="true"
+        default="false">
+
+        <?on changed
+        if (newValue) {
+            cls.hideVisibleTooltip();
+            cls[VISIBLE_TOOLTIP] = this;
+        }
+        else if (cls[VISIBLE_TOOLTIP] === this) {
+            cls[VISIBLE_TOOLTIP] = null;
+        }
+        ?>
+
+    </ui:property>
+
+    <ui:property
+        name="exceedsViewportWidth"
+        type="boolean"
+        reflected="true"
+        default="false"/>
+
+    <ui:property
+        name="exceedsViewportHeight"
+        type="boolean"
+        reflected="true"
+        default="false"/>
+
+    <ui:property
+        name="tooltipTrigger"
+        reflected="false">
+
+        <?on changed
+        if (oldValue) {
+            oldValue.classList.remove("cocktail-ui-Tooltip-trigger");
+            const listeners = this[LISTENERS];
+            for (let eventType in listeners) {
+                oldValue.removeEventListener(eventType, listeners[eventType]);
+            }
+        }
+
+        if (newValue) {
+            newValue.classList.add("cocktail-ui-Tooltip-trigger");
+
+            const listeners = {
+                mouseover(e) {
+                    instance[DELAY].cancel();
+
+                    const rect = instance.tooltipTrigger.getBoundingClientRect();
+                    const parentRect = instance.tooltipFrame.getBoundingClientRect();
+
+                    instance.style.setProperty("--trigger-width", `${rect.width}px`);
+                    instance.style.setProperty("--trigger-height", `${rect.height}px`);
+                    instance.style.setProperty("--trigger-left", `${rect.left}px`);
+                    instance.style.setProperty("--trigger-right", `${window.innerWidth - rect.right}px`);
+                    instance.style.setProperty("--trigger-top", `${rect.top}px`);
+                    instance.style.setProperty("--trigger-bottom", `${window.innerHeight - rect.bottom}px`);
+                    instance.style.setProperty("--frame-width", `${parentRect.width}px`);
+                    instance.style.setProperty("--frame-height", `${parentRect.height}px`);
+
+                    instance.exceedsViewportWidth = (
+                        rect.right + rect.width + VIEWPORT_WIDTH_SAFETY_MARGIN
+                        >= window.innerWidth
+                    );
+
+                    instance.exceedsViewportHeight = (
+                        rect.bottom + rect.height + VIEWPORT_HEIGHT_SAFETY_MARGIN
+                        >= window.innerHeight
+                    );
+
+                    instance.visible = true;
+                },
+                mouseout(e) {
+                    instance[DELAY].begin();
+                }
+            };
+
+            this[LISTENERS] = listeners;
+
+            for (let eventType in listeners) {
+                newValue.addEventListener(eventType, listeners[eventType]);
+            }
+        }
+        ?>
+    </ui:property>
+
+    <?head
+    const VIEWPORT_WIDTH_SAFETY_MARGIN = 40;
+    const VIEWPORT_HEIGHT_SAFETY_MARGIN = 40;
+
+    window.addEventListener("wheel", (e) => {
+        cls.hideVisibleTooltip();
+    });
+
+    window.addEventListener("click", (e) => {
+        cls.hideVisibleTooltip();
+    });
+    ?>
+
+    <?class
+    connectedCallback() {
+        super.connectedCallback();
+        if (this.parentNode.nodeType == Document.DOCUMENT_FRAGMENT_NODE) {
+            this.tooltipTrigger = this.parentNode.host;
+        }
+        else {
+            this.tooltipTrigger = this.parentNode;
+        }
+    }
+
+    static hideVisibleTooltip() {
+        const tooltip = cls[VISIBLE_TOOLTIP];
+        if (tooltip) {
+            cls[VISIBLE_TOOLTIP] = null;
+            const wasVisible = tooltip.visible;
+            tooltip.visible = false;
+            return wasVisible;
+        }
+        return false;
+    }
+    ?>
+
+    <?js
+    this[DELAY] = new cocktail.ui.Delay(600, () => {
+        this.visible = false;
+    });
+    ?>
+
+    <div id="tooltipFrame">
+
+        <?on click
+        e.stopPropagation();
+        ?>
+
+        <?on mouseover
+        instance[DELAY].cancel();
+        ?>
+
+        <?on mouseout
+        instance[DELAY].begin();
+        ?>
+
+        <div id="tooltipContent">
+            <slot/>
+        </div>
+    </div>
+
+</ui:element>

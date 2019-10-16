@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -9,7 +9,6 @@ from cocktail.html.element import Element
 class MailToLink(Element):
 
     tag = "a"
-    value = None
 
     def _ready(self):
 

@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -39,23 +39,23 @@ class User(object):
 
 
 class ImplicitCopyTestCase(TestCase):
-    
+
     def test_implicit_schema_copy(self):
-        
+
         from cocktail.schema import Schema, Adapter
-        
+
         user_schema = get_user_schema()
         adapter = Adapter()
-        
+
         self.assertTrue(adapter.implicit_copy)
 
         # Exporting schemas
         form_schema = Schema()
         adapter.export_schema(user_schema, form_schema)
-        
+
         self.assertEqual(
-            len(user_schema.members().keys()),
-            len(form_schema.members().keys())
+            len(list(user_schema.members().keys())),
+            len(list(form_schema.members().keys()))
         )
 
         self.assertEqual(
@@ -68,8 +68,8 @@ class ImplicitCopyTestCase(TestCase):
         adapter.import_schema(form_schema, user_schema_2)
 
         self.assertEqual(
-            form_schema.members().keys(),
-            user_schema_2.members().keys()
+            list(form_schema.members().keys()),
+            list(user_schema_2.members().keys())
         )
 
     def test_implicit_object_copy(self):
@@ -87,7 +87,7 @@ class ImplicitCopyTestCase(TestCase):
 
         form = {}
         adapter.export_object(user, form, user_schema)
-                
+
         self.assertEqual(user.id, form["id"])
         self.assertEqual(user.name, form["name"])
         self.assertEqual(user.enabled, form["enabled"])
@@ -103,7 +103,7 @@ class ImplicitCopyTestCase(TestCase):
     def test_disabled_implicit_schema_copy(self):
 
         from cocktail.schema import Schema, Adapter
-        
+
         user_schema = get_user_schema()
         form_schema = Schema()
         adapter = Adapter()
@@ -115,7 +115,7 @@ class ImplicitCopyTestCase(TestCase):
     def test_disabled_implicit_object_copy(self):
 
         from cocktail.schema import Schema, Adapter
-                
+
         adapter = Adapter()
         adapter.implicit_copy = False
 
@@ -125,7 +125,7 @@ class ImplicitCopyTestCase(TestCase):
         user.enabled = True
 
         form = {}
-        
+
         adapter.export_object(user, form)
         self.assertFalse(form)
 
@@ -146,7 +146,7 @@ class CopyTestCase(TestCase):
 
         user_schema = get_user_schema()
         form_schema = Schema()
-        
+
         adapter.export_schema(user_schema, form_schema)
         self.assertEqual(len(form_schema.members()), 2)
         self.assertEqual(
@@ -162,7 +162,7 @@ class CopyTestCase(TestCase):
         adapter.implicit_copy = False
         adapter.copy("id")
         adapter.copy("name")
-        
+
         user = User()
         user.id = 3
         user.name = "Kurt Russell"
@@ -171,7 +171,7 @@ class CopyTestCase(TestCase):
         form = {}
         adapter.export_object(user, form)
         self.assertEqual(form, {"id": user.id, "name": user.name})
-    
+
     def test_object_copy_with_mapping(self):
 
         from cocktail.schema import Adapter, Schema, Copy
@@ -179,12 +179,12 @@ class CopyTestCase(TestCase):
         adapter = Adapter()
         adapter.implicit_copy = False
         adapter.copy({"name": "user_name"})
-        
+
         user = User()
         user.id = 3
         user.name = "Kurt Russell"
         user.enabled = True
-        
+
         form = {}
 
         # Export
@@ -204,10 +204,10 @@ class ExclusionTestCase(TestCase):
     def test_exclude_undefined_member(self):
 
         from cocktail.schema import Adapter, Schema
-        
+
         adapter = Adapter()
         adapter.exclude("fictitious_member")
-        
+
         user_schema = get_user_schema()
         form_schema = Schema()
         adapter.export_schema(user_schema, form_schema)

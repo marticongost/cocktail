@@ -1,0 +1,36 @@
+
+@import "cocktail.ui://styles/common";
+
+:host {
+    padding: 0.3em;
+}
+
+:host(:not([entryCount='multiple-entries'])) {
+    display: none;
+}
+
+#entries {
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.Entry {
+    padding: 0 0.7em;
+    cursor: pointer;
+
+    .label {
+        font-size: 0.9em;
+        padding-bottom: 0.2em;
+        border-bottom: 2px solid transparent;
+    }
+
+    &.cocktail-ui-selected {
+        font-weight: bold;
+
+        .label {
+            border-bottom-color: rgba(#333, 0.6);
+        }
+    }
+}
+

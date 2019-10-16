@@ -1,0 +1,45 @@
+
+@import "cocktail.ui://styles/common";
+
+:host {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+:host(:focus) {
+    outline: none !important;
+}
+
+#input {
+    -webkit-appearance: none;
+    display: block;
+    margin: 0;
+    border: $input-border;
+    width: 1.1em;
+    height: 1.1em;
+    position: relative;
+    background-color: white;
+
+    &:focus {
+        @include focus;
+    }
+
+    &:checked {
+
+        &:after {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            content: '✓';
+            font-size: 0.9em;
+            text-align: center;
+        }
+    }
+
+    :host([error]) & {
+        @include input-with-error;
+    }
+}
+

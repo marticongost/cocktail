@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""Defines the `DocumentMetadata` class.
+"""Defines the `DocumentMetadata` class.
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -45,12 +45,6 @@ class DocumentMetadata(object):
         A list of functions that should be called after the document has been
         created and filled with the metadata.
 
-    .. attribute:: client_params
-
-        Values that should be declared as custom attributes of specific DOM
-        nodes, using JSON serialization. A dictionary mapping DOM node IDs to
-        dictionaries of key/value pairs.
-    
     .. attribute:: client_variables
 
         Values that should be declared as client side variables, using JSON
@@ -60,10 +54,6 @@ class DocumentMetadata(object):
 
         A set of translation keys that should be made available to client side
         code.
-
-    .. attribute:: client_code
-
-        A list of arbitrary snippets of client side code.
 
     .. attribute:: client_models
 
@@ -81,10 +71,8 @@ class DocumentMetadata(object):
         self.meta = {}
         self.resources = OrderedSet()
         self.document_ready_callbacks = []
-        self.client_params = {}
         self.client_variables = {}
         self.client_translations = set()
-        self.client_code = {}
         self.client_models = {}
 
     def embedding_markup(self, renderer = None):
@@ -142,24 +130,6 @@ class DocumentMetadata(object):
         self.client_translations.update(element.client_translations)
         self.client_variables.update(element.client_variables)
 
-        id = element["id"]
-
-        # Client code
-        if element.client_code:
-            old_code = self.client_code.get(id)
-            if old_code is None:
-                self.client_code[id] = list(element.client_code)
-            else:
-                old_code.extend(element.client_code)
-
-        # Client parameters
-        if element.client_params:
-            old_values = self.client_params.get(id)
-            if old_values is None:
-                self.client_params[id] = element.client_params.copy()
-            else:
-                old_values.update(element.client_params)
-
     def update(self, metadata):
 
         if metadata.page_title:
@@ -183,20 +153,4 @@ class DocumentMetadata(object):
         self.client_variables.update(metadata.client_variables)
         self.client_translations.update(metadata.client_translations)
         self.client_models.update(metadata.client_models)
-            
-        # Client code
-        for id, new_code in metadata.client_code.iteritems():
-            old_code = self.client_code.get(id)
-            if old_code is None:
-                self.client_code[id] = list(new_code)
-            else:
-                old_code.update(new_code)
-
-        # Client parameters
-        for id, new_values in metadata.client_params.iteritems():
-            old_values = self.client_params.get(id)
-            if old_values is None:
-                self.client_params[id] = new_values.copy()
-            else:
-                old_values.update(new_values)
 

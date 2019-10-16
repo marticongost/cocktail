@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -16,7 +16,7 @@ class SchemaEventsTestCase(TestCase):
     def test_member_added_event(self):
 
         from cocktail.schema import Schema, String
-        
+
         foo = Schema("foo")
         spam = Schema("spam")
         spam.inherit(foo)
@@ -55,7 +55,7 @@ class SchemaEventsTestCase(TestCase):
         event = events.pop(0)
         self.assertEqual(event.slot, foo.inherited)
         self.assertEqual(event.schema, bar)
-        
+
         events.listen(bar_inherited = bar.inherited)
 
         # Nested inheritance
@@ -77,7 +77,7 @@ class SchemaEventsTestCase(TestCase):
 
         snutch = Schema()
         snutch.inherit(foo, scrum)
-        
+
         event = events.pop(0)
         self.assertEqual(event.slot, foo.inherited)
         self.assertEqual(event.schema, snutch)
@@ -98,11 +98,11 @@ class SchemaGroupsTestCase(TestCase):
         b1 = Member("b1", member_group = "b")
         b2 = Member("b2", member_group = "b")
         z = Member("z")
-        
+
         schema = Schema(members = [a1, b2, a2, z, b1])
         schema.members_order = ["a2", "a1", "b2", "b1"]
         schema.groups_order = "a", "b"
-        
+
         groups = schema.grouped_members()
 
         assert len(groups) == 3
@@ -118,7 +118,7 @@ class SchemaGroupsTestCase(TestCase):
 class MembersOrderTestCase(TestCase):
 
     def test_preserves_ordering_from_constructor(self):
-        
+
         from cocktail.schema import Schema, Member
 
         member_list = [Member("m%d" % i) for i in range(5)]
@@ -126,7 +126,7 @@ class MembersOrderTestCase(TestCase):
         assert schema.members_order == [m.name for m in member_list]
 
     def test_follows_explicit_ordering(self):
-        
+
         from cocktail.schema import Schema, Member
 
         m1 = Member("m1")
@@ -144,7 +144,7 @@ class MembersOrderTestCase(TestCase):
         assert schema.ordered_members() == [m1, m4, m3, m2]
 
     def test_implicitly_includes_unspecified_members(self):
-                
+
         from cocktail.schema import Schema, Member
 
         m1 = Member("m1")
@@ -330,6 +330,6 @@ class MembersOrderTestCase(TestCase):
         schema.members_order = ["m2"]
         schema.add_member(m1)
         schema.add_member(m2)
- 
+
         assert schema.ordered_members() == [m2, m1]
 

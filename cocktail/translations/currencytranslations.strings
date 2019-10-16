@@ -1,0 +1,67 @@
+
+[cocktail]
+
+    [money_format(amount, currency)]
+    en: ${currency}${amount}
+    it: ${currency}${amount}
+    ca: ${amount}${currency}
+    es: ${amount}${currency}
+    de: ${amount}${currency}
+    fr: ${amount}${currency}
+    ru: ${amount}${currency}
+    cn: ${amount}${currency}
+    tr: ${amount}${currency}
+    pt: ${amount}${currency}
+
+    [currencies]
+
+        [EUR]
+        *: Euro
+
+            [sign]
+            *: €
+
+        [USD]
+        ca: Dòlar dels Estats Units
+        es: Dólar estadounidense
+        en: United States Dollar
+        en: Доллар США
+
+            [sign]
+            *: $
+
+        [GBP]
+        ca: Lliura esterlina
+        es: Libra esterlina
+        en: Pound Sterling
+
+            [sign]
+            *: £
+
+        [RUB]
+        ca: Ruble rus
+        es: Rublo ruso
+        en: Russian ruble
+        ru: Российский рубль
+
+            [sign]
+            *: ₽
+
+        [TRY]
+        ca: Lira turca
+        es: Lira turca
+        en: Turkish Lira
+        tr: Türk lirası
+
+            [sign]
+            *: ₺
+
+        [CNY]
+        ca: Iuan xinès
+        es: Yuan chino
+        en: Chinese yuan
+        cn: 人民币
+
+            [sign]
+            *: ¥
+

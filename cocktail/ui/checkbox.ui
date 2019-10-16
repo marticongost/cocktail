@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ui:element
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui"
+    formLabelDisposition="afterControl"
+    tabindex="0">
+
+    <ui:using mixin="cocktail.ui.DataDisplay"/>
+
+    <ui:property
+        name="disabled"
+        type="boolean"
+        reflected="true"
+        default="false">
+        <?on changed
+        this.input.disabled = newValue;
+        ?>
+    </ui:property>
+
+    <?tail
+    cls.delegatesFocus = true;
+    ?>
+
+    <?on value:changed
+    this.input.checked = Boolean(newValue);
+    ?>
+
+    <?class
+    formLabelClicked() {
+        this.value = !this.value;
+    }
+
+    get allowsEmptyInput() {
+        return false;
+    }
+    ?>
+
+    <input id="input" type="checkbox">
+
+        <?on keydown
+        if (e.which == cocktail.ui.keys.ENTER) {
+            instance.value = !instance.value;
+            e.preventDefault();
+        }
+        ?>
+
+        <?on change
+        instance.value = this.checked;
+        ?>
+
+    </input>
+
+</ui:element>
+

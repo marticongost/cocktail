@@ -1,0 +1,84 @@
+
+$tooltip-background-color: #333 !default;
+$connector-size: 1em;
+$offset-y: 0.4em;
+$offset-x: -1em - $connector-size / 2;
+$padding: 1em;
+
+#tooltipFrame {
+    color: white;
+    position: fixed;
+    background-color: $tooltip-background-color;
+    box-shadow: 0 0 1em rgba(black, 0.2);
+    padding: $padding;
+    z-index: 10001;
+    width: 30em;
+    transition: opacity 0.3s ease;
+    cursor: default;
+
+    :host([visible='true']) & {
+        opacity: 1;
+        pointer-events: all;
+    }
+
+    // Vertical position
+    :host([exceedsViewportHeight='false']) & {
+        top: calc(var(--trigger-top) + var(--trigger-height) + #{$offset-y});
+    }
+
+    :host([exceedsViewportHeight='true']) & {
+        bottom: calc(var(--trigger-bottom) + var(--trigger-height) + #{$offset-y});
+    }
+
+    // Horizontal position
+    :host([exceedsViewportWidth='false']) & {
+        left: calc(var(--trigger-left) + var(--trigger-width) / 2 + #{$offset-x});
+    }
+
+    :host([exceedsViewportWidth='true']) & {
+        right: calc(var(--trigger-right) + var(--trigger-width) / 2 + #{$offset-x});
+    }
+
+    &:before {
+        content: '';
+        display: block;
+        position: absolute;
+        transform: rotate(45deg);
+        background-color: $tooltip-background-color;
+        width: $connector-size;
+        height: $connector-size;
+        z-index: 10002;
+
+        // Vertical position
+        :host([exceedsViewportHeight='false']) & {
+            top: -$offset-y;
+        }
+
+        :host([exceedsViewportHeight='true']) & {
+            bottom: -$offset-y;
+        }
+
+        // Horizontal position
+        :host([exceedsViewportWidth='false']) & {
+            left: $padding;
+        }
+
+        :host([exceedsViewportWidth='true']) & {
+            right: $padding;
+        }
+    }
+}
+
+#tooltipContent {
+    font-size: 0.9rem;
+    line-height: 1.3rem;
+
+    ::slotted(:first-child) {
+        margin-top: 0;
+    }
+
+    ::slotted(:last-child) {
+        margin-bottom: 0;
+    }
+}
+

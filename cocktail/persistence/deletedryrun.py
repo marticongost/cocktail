@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -42,10 +42,10 @@ def delete_dry_run(item, visited = None):
 
                 if value:
                     if isinstance(member, Reference):
-                        value = (value,)                    
-                    
+                        value = (value,)
+
                     cascade_nodes = []
-                    
+
                     for descendant in value:
                         if descendant._included_in_cascade_delete(item, member):
                             cascade_node = delete_dry_run(descendant, visited)

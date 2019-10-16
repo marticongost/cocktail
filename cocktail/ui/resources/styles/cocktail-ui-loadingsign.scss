@@ -1,0 +1,28 @@
+
+@keyframes spinning {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+#spinner {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 0.3rem;
+
+    svg {
+        width: 2rem;
+        height: auto;
+        animation: spinning 1.5s infinite;
+        fill: rgba(30,30,30,0.8);
+    }
+}
+
+#label {
+    display: inline-block;
+    vertical-align: middle;
+}
+

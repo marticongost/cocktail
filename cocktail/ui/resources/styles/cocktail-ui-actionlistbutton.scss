@@ -1,0 +1,150 @@
+
+@import "cocktail.ui://styles/common";
+
+:host {
+    display: flex;
+}
+
+:host-context(.cocktail-ui-ActionList.vertical) {
+    display: block;
+}
+
+:host([buttonStyle='iconBesideText']) {
+    white-space: nowrap;
+    flex-direction: row;
+}
+
+:host([buttonStyle='iconAboveText']) {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+#button {
+    flex: 1 1 auto;
+    border: none;
+    background: none;
+    padding: var(--action-list-button-padding);
+    cursor: pointer;
+    font-size: 1em;
+    border: 1px solid transparent; // Required to match the height of ActionListDropdown
+
+    :host-context(.cocktail-ui-ActionList.vertical) & {
+        display: block;
+        width: 100%;
+        text-align: left;
+    }
+
+    :host([buttonStyle='iconBesideText']) & {
+        text-align: left;
+    }
+
+    :host([buttonStyle='iconAboveText']) & {
+        display: inline-flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    &:hover {
+
+        :host(:not([state='disabled'])) & {
+            background-color: $panel-hover-color;
+        }
+
+        :host-context(.cocktail-ui-ActionList.secondary):host(:not([state='disabled'])) & {
+            background-color: $secondary-panel-hover-color;
+        }
+
+        :host([state='visible']) & {
+
+            #label {
+                color: $panel-action-highlight-color;
+            }
+
+            #icon svg * {
+                fill: $panel-action-highlight-color !important;
+            }
+        }
+
+        :host-context(.cocktail-ui-ActionList.secondary):host([state='visible']) & {
+
+            #label {
+                color: $secondary-panel-action-highlight-color;
+            }
+
+            #icon svg * {
+                fill: $secondary-panel-action-highlight-color !important;
+            }
+        }
+
+        :host([state='emphasized']) & {
+
+            #label {
+                color: darken($focus-color, 10);
+            }
+
+            #icon svg * {
+                fill: darken($focus-color, 10) !important;
+            }
+        }
+    }
+}
+
+#icon {
+    --color: #{$panel-action-color};
+    --width: var(--action-list-icon-width);
+
+    :host-context(.cocktail-ui-ActionList.secondary) & {
+        --color: #{$secondary-panel-action-color};
+    }
+
+    :host([buttonStyle='iconBesideText']) & {
+        display: inline-block;
+        vertical-align: middle;
+        margin-right: 0.5em;
+    }
+
+    :host([buttonStyle='iconAboveText']) & {
+        display: block;
+    }
+
+    :host([buttonStyle='iconOnly']) & {
+        display: block;
+    }
+
+    :host([buttonStyle='textOnly']) & {
+        display: none;
+    }
+
+    :host([state='emphasized']) & {
+        --color: #{$focus-color};
+    }
+}
+
+#label {
+    font-size: 1em;
+    color: $panel-action-color;
+
+    :host([buttonStyle='iconBesideText']) & {
+        vertical-align: middle;
+        font-size: 0.9em;
+    }
+
+    :host([buttonStyle='iconAboveText']) & {
+        font-size: 0.8em;
+    }
+
+    :host([buttonStyle='textOnly']) & {
+        font-size: 0.9em;
+    }
+
+    :host([buttonStyle='iconOnly']) & {
+        display: none;
+    }
+
+    :host([state='emphasized']) & {
+        font-weight: bold;
+        color: $focus-color;
+    }
+}
+

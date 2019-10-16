@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ui:element
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:property
+        name="stage"
+        type="string"
+        reflected="true"
+        default="loading"/>
+
+    <style type="text/css">
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1.0;
+            }
+        }
+
+        #loadingSign {
+            z-index: 1;
+            position: fixed;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            background-color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: Arial, sans-serif;
+            color: #666;
+        }
+
+        :host([stage='loading']) #container {
+            opacity: 0;
+        }
+
+        :host([stage='loaded']) #container {
+            animation: 1.2s fadeIn;
+            position: relative;
+            z-index: 2;
+        }
+
+        :host([stage='hidden']) #loadingSign {
+            display: none;
+        }
+    </style>
+
+    <div id="container"/>
+    <ui:cocktail.ui.LoadingSign id="loadingSign"/>
+
+</ui:element>
+

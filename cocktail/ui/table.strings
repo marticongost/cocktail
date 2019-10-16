@@ -1,0 +1,20 @@
+
+[cocktail.ui.Table]
+
+    [emptyNotice]
+    ca: No s'ha trobat cap resultat
+    es: No se ha encontrado ningún resultado
+    en: No matching rows found
+
+[cocktail.ui.actions]
+
+    [sort-ascending]
+    ca: Ordre ascendent
+    es: Orden ascendente
+    en: Ascending order
+
+    [sort-descending]
+    ca: Ordre descendent
+    es: Orden descendente
+    en: Descending order
+

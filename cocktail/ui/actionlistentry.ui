@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ui:element
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui"
+    role="listitem">
+
+    <ui:property
+        name="actionSource"
+        reflected="false"
+        final="true">
+        <?on changed
+        if (newValue) {
+            this.setAttribute("action", newValue.id);
+        }
+        ?>
+    </ui:property>
+
+    <ui:property
+        name="actionList"
+        reflected="false"
+        final="true"/>
+
+    <ui:property
+        name="state"
+        type="string"
+        reflected="true"/>
+
+    <ui:property
+        name="extra"
+        type="boolean"
+        reflected="true"/>
+
+    <ui:property
+        name="buttonStyle"
+        type="string"
+        default="auto"
+        reflected="true"/>
+
+    <?class
+    getActionContext() {
+        return this.actionList ? this.actionList.getActionContext() : {};
+    }
+
+    actionSetup() {
+        this.update(this.getActionContext());
+    }
+
+    update(context) {
+        this.state = this.actionSource.getState(context);
+    }
+
+    invoke() {
+        this.actionSource.invoke(this.getActionContext());
+    }
+
+    get actionList() {
+        return this.parentInstance;
+    }
+
+    getLabel() {
+        return this.actionSource.translate(this.getActionContext());
+    }
+
+    getUnderlinedLabel() {
+        let shortcut = this.actionSource.getShortcut(this.getActionContext());
+        let label = this.getLabel();
+        if (shortcut) {
+            label = label.replace(new RegExp(shortcut, "i"), function (c) {
+                return `<u>${c}</u>`;
+            });
+        }
+        return label;
+    }
+    ?>
+
+</ui:element>
+

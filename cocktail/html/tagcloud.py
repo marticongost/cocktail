@@ -15,11 +15,11 @@ def get_tag_cloud_font_sizes(tags, max_font_increment = 75):
     min_frequency = None
     max_frequency = 0
 
-    for frequency in tags.itervalues():
+    for frequency in tags.values():
 
         if min_frequency is None or frequency < min_frequency:
             min_frequency = frequency
-        
+
         if frequency > max_frequency:
             max_frequency = frequency
 
@@ -30,7 +30,7 @@ def get_tag_cloud_font_sizes(tags, max_font_increment = 75):
         font_sizes = dict((tag, 100) for tag in tags)
     else:
         font_sizes = {}
-        for tag, frequency in tags.iteritems():
+        for tag, frequency in tags.items():
             ratio = float(frequency - min_frequency) / divergence
             font_sizes[tag] = 100 + int(ratio * max_font_increment)
 
@@ -39,7 +39,7 @@ def get_tag_cloud_font_sizes(tags, max_font_increment = 75):
 
 class TagCloud(Element):
     """An element that renders a link cloud for a set of tags.
-    
+
     @var tags: A mapping of tags and their frequency.
     @type tags: dict
 
@@ -52,7 +52,7 @@ class TagCloud(Element):
 
     def _ready(self):
         Element._ready(self)
-        
+
         self._font_sizes = get_tag_cloud_font_sizes(
             self.tags,
             self.max_font_increment
@@ -63,13 +63,13 @@ class TagCloud(Element):
 	    self.append(" ")
 
     def sorted_tags(self, tags):
-        return sorted(tags.keys(), key = translations)
+        return sorted(list(tags.keys()), key = translations)
 
-    def create_tag_entry(self, tag, frequency):        
-        entry = Element("a")        
-        entry.label = self.create_tag_label(tag, frequency) 
+    def create_tag_entry(self, tag, frequency):
+        entry = Element("a")
+        entry.label = self.create_tag_label(tag, frequency)
         entry.append(entry.label)
-        entry.set_style("font-size", str(self._font_sizes[tag]) + "%")                
+        entry.set_style("font-size", str(self._font_sizes[tag]) + "%")
         return entry
 
     def create_tag_label(self, tag, frequency):

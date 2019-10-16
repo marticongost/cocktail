@@ -1,10 +1,12 @@
 #-*- coding: utf-8 -*-
-u"""Provides the `FormProcessor` and `Form` classes.
+"""Provides the `FormProcessor` and `Form` classes.
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
 import cherrypy
-from cocktail.modeling import getter, cached_getter, camel_to_underscore
+from cocktail.modeling import cached_getter, camel_to_underscore
+from cocktail.pkgutils import get_full_name
+from cocktail.events import Event
 from cocktail import schema
 from cocktail.persistence import PersistentClass, transactional
 from cocktail.controllers.parameters import get_parameter
@@ -17,26 +19,27 @@ class FormProcessor(object):
     """
     is_transactional = False
 
-    def __init__(self):        
+    def __init__(self):
         self.processed.append(self.__handle_processed)
 
     @cached_getter
     def forms(self):
         """The list of `forms <Form>` defined by the controller."""
-        forms = {}        
-        
+        forms = {}
+
         for key in dir(self.__class__):
             member = getattr(self.__class__, key, None)
             if isinstance(member, type) and issubclass(member, Form):
                 form = member(self)
                 forms[form.form_id] = form
+                form.declared()
 
         return forms
 
     @cached_getter
     def action(self):
         """The action selected by the user.
-        
+
         The chosen action is paired with the `~Form.actions>` attribute of each
         form defined by the controller to determine which forms should be
         submitted.
@@ -71,10 +74,10 @@ class FormProcessor(object):
                             dependency = self.forms.get(dependency_id)
                             if dependency:
                                 find_submitted_forms(dependency)
-                
+
                     forms.append(form)
-                            
-            for form in self.forms.itervalues():
+
+            for form in self.forms.values():
                 find_submitted_forms(form)
 
             return forms
@@ -89,12 +92,17 @@ class FormProcessor(object):
         for form in self.submitted_forms:
             form.after_submit()
 
-    @transactional(before_retrying = clear_request_properties)
+        self.after_submit()
+
+    def after_submit(self):
+        pass
+
+    @transactional(before_retrying = (lambda *args, **kawrgs: clear_request_properties()))
     def _run_transaction(self):
         self.transaction()
 
     def transaction(self):
-        self.submit_forms()    
+        self.submit_forms()
 
     def submit_forms(self):
         for form in self.submitted_forms:
@@ -115,11 +123,14 @@ class FormProcessor(object):
         self.output["form_errors"] = self.errors
 
 
-class Form(object):
+class Form:
     """A description of a form based on a schema."""
+
     controller = None
     actions = (None,)
     process_after = ()
+
+    declared = Event()
 
     def __init__(self, controller):
         self.controller = controller
@@ -136,13 +147,13 @@ class Form(object):
         and isinstance(source_instance, schema.SchemaObject):
             return source_instance.__class__
 
-        return schema.Schema(self.__class__.__name__)
+        return schema.Schema(get_full_name(self.__class__))
 
     @cached_getter
     def form_id(self):
         """The name given to the form by its `controller`."""
         return camel_to_underscore(self.__class__.__name__)
-    
+
     @cached_getter
     def submitted(self):
         """Indicates if this particular form has been submitted in the current
@@ -172,7 +183,7 @@ class Form(object):
         return schema.ErrorList(
             self.schema.get_errors(
                 self.data,
-                **self.validation_context
+                **self.validation_parameters
             )
             if self.submitted
             else ()
@@ -192,10 +203,35 @@ class Form(object):
         """
         if self.model is None:
             raise ValueError("No form model specified for %s" % self)
-        
-        adapted_schema = schema.Schema(self.form_id)
+
+        adapted_schema = schema.Schema(
+            name = self.get_schema_name(),
+            schema_aliases = self.get_schema_aliases()
+        )
+        adapted_schema.is_form = True
         return self.adapter.export_schema(self.model, adapted_schema)
-    
+
+    def get_schema_name(self):
+        if self.controller:
+            return (
+                get_full_name(self.controller.__class__)
+                + "." + self.__class__.__name__
+            )
+        else:
+            return get_full_name(self.__class__)
+
+    def get_schema_aliases(self):
+
+        if not self.controller:
+            return []
+
+        return [
+            get_full_name(cls) + "." + self.__class__.__name__
+            for cls in self.controller.__class__.__mro__
+            if cls is not FormProcessor
+            and issubclass(cls, FormProcessor)
+        ]
+
     @cached_getter
     def data(self):
         """A dictionary containing the user's input."""
@@ -205,23 +241,27 @@ class Form(object):
         # First load: set the initial state for the form
         if not self.submitted:
             self.init_data(data)
-        
+
         # Form submitted: read request data
+        # - Start by exporting data from the source instance; this takes care
+        #   of read only members
+        # - Then, overwrite all editable parameters by reading from the request
         else:
+            self.apply_instance_data(data)
             self.read_data(data)
 
         return data
 
     def init_data(self, data):
         """Set the form state on first load.
-        
+
         :param data: The dictionary representing the form state.
         :type data: dict
         """
         if self.source_instance is None:
             # First, apply defaults specified by the form schema
             self.apply_defaults(data)
-            
+
             # Then, selectively override these with any pre-supplied parameter
             # (useful to pass parameters to a form page)
             get_parameter(
@@ -232,15 +272,15 @@ class Form(object):
             )
         else:
             self.apply_instance_data(data)
-    
+
     def apply_defaults(self, data):
         """Initialize the form state with defaults supplied by the form's
         schema.
-        
+
         :param data: The dictionary representing the form state.
         :type data: dict
         """
-        self.schema.init_instance(data)    
+        self.schema.init_instance(data)
 
     def apply_instance_data(self, data):
         """Initialize the form state with data from the edited instance.
@@ -258,7 +298,7 @@ class Form(object):
 
     def read_data(self, data):
         """Update the form state with data read from the request.
-        
+
         :param data: The dictionary that request data is read into.
         :type data: dict
         """
@@ -272,15 +312,15 @@ class Form(object):
     def reader_params(self):
         """The set of parameters to pass to
         `get_parameter <cocktail.controllers.parameters.get_parameter>` when
-        reading data from the form.        
+        reading data from the form.
         """
         return {"errors": "ignore", "undefined": "set_none"}
 
     @cached_getter
     def instance(self):
-        """The instance produced by the form. 
-        
-        Depending on the form's model, it will be a dictionary or a 
+        """The instance produced by the form.
+
+        Depending on the form's model, it will be a dictionary or a
         `SchemaObject <cocktail.schema.schemaobject.SchemaObject>` instance.
         """
         return self.source_instance or self.create_instance()
@@ -306,7 +346,7 @@ class Form(object):
         )
 
     @cached_getter
-    def validation_context(self):
+    def validation_parameters(self):
         """Context supplied to the form validation process."""
         context = {}
 

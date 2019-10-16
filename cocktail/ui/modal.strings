@@ -1,0 +1,20 @@
+
+[cocktail.ui.Modal]
+
+    [actions]
+
+        [close]
+        ca: Tancar
+        es: Cerrar
+        en: Close
+
+        [accept]
+        ca: Acceptar
+        es: Aceptar
+        en: Accept
+
+        [cancel]
+        ca: Cancel·lar
+        es: Cancelar
+        en: Cancel
+

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ui:cocktail.ui.Modal
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <?class
+    getActions() {
+        return new cocktail.ui.ActionSet("modal-form-actions", {
+            entries: [
+                new this.constructor.AcceptAction("accept"),
+                new this.constructor.CancelAction("cancel")
+            ]
+        });
+    }
+
+    getAcceptContext() {
+        return {value: this.form.value};
+    }
+    ?>
+
+    <ui:with ui:element="content">
+
+        <ui:cocktail.ui.Form
+            id="form"
+            formLayout="verticalTable">
+
+            <?on keydown
+            if (e.which == cocktail.ui.keys.ENTER) {
+                instance.accept();
+                e.stopPropagation();
+                e.preventDefault();
+            }
+            ?>
+
+            <?on value:changed
+            const actionList = instance.actionList;
+            actionList.actionContext.value = newValue;
+            actionList.updateActions();
+            ?>
+
+        </ui:cocktail.ui.Form>
+
+    </ui:with>
+
+</ui:cocktail.ui.Modal>
+

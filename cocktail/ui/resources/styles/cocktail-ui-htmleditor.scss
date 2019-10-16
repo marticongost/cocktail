@@ -1,0 +1,128 @@
+@import "cocktail.ui://styles/common";
+
+$inline-color: orange;
+$block-color: #ddd;
+
+:host {
+    display: inline-block;
+    width: 30em;
+    position: relative;
+}
+
+:host([error]) {
+    @include input-with-error;
+}
+
+:host([multiline='true'][autoHeight='false']) {
+    height: 20em;
+}
+
+:host([multiline='false']) {
+    height: 1.9em;
+}
+
+:host(:not([mode='visual'])) #contentFrame,
+:host(:not([mode='source'])) #codeEditor {
+    display: none !important;
+}
+
+#contentFrame {
+    border: $input-border;
+}
+
+#contentArea {
+    flex: 1;
+    padding: $input-padding;
+
+    :host([autoHeight='false']) & {
+        overflow-y: auto;
+    }
+
+    :host([inlineContent='true']) & {
+        display: inline-block;
+        white-space: nowrap;
+        width: 100%;
+    }
+
+    & > *:first-child {
+        margin-top: 0;
+    }
+
+    & > *:last-child {
+        margin-bottom: 0;
+    }
+
+    $blocks: (
+        p h1 h2 h3 h4 h5 h6 ol ul pre address blockquote dl fieldset hr noscript table div section article aside nav form
+    );
+    $inline: (
+        b big i small tt abbr acronym cite code dfn em kdbd strong samp var a bdo br img map object q script span sub sup
+        button input label select textarea
+    );
+
+    #{join-list-items($blocks, ", ")} {
+        border: 1px dashed $block-color;
+        padding: 1em;
+        margin-top: 9px;
+        margin-bottom: 9px;
+    }
+
+    #{join-list-items($inline, ", ")} {
+        border: 1px dashed $inline-color;
+        padding: 0.1em;
+    }
+}
+
+#toolbox {
+    position: absolute;
+    bottom: 100%;
+    right: 0;
+    width: 80%;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    box-shadow: 0 -0.6em 1.2em rgba(black, 0.1);
+    border: $panel-border;
+
+    :host([toolboxVisible='true']) & {
+        opacity: 1;
+        pointer-events: all;
+    }
+
+    .Toolbar {
+        --width: auto;
+        --height: 1.5em;
+    }
+}
+
+#breadcrumbs {
+    position: absolute;
+    display: flex;
+    justify-content: flex-start;
+    padding: 0;
+    list-style: none;
+    background-color: #eee;
+    left: 0;
+    bottom: 0;
+    margin: 0;
+    padding: 0.1em;
+    color: black;
+    font-size: 0.7em;
+
+    :empty {
+        display: none;
+    }
+
+    li {
+        margin: 0.1rem;
+
+        & + li:before {
+            content: '» ';
+        }
+    }
+}
+
+.BlockTypeSelector {
+    --action-list-dropdown-panel-padding: 0;
+}
+

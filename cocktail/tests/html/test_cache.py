@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -9,8 +9,10 @@ from nose.tools import assert_raises
 class CacheTestCase(TestCase):
 
     def setUp(self):
+        from cocktail.caching import Cache, MemoryCacheStorage
         from cocktail.html.rendering import rendering_cache
-        rendering_cache.clear()
+        self.cache = Cache()
+        self.cache.storage = MemoryCacheStorage()
 
     def test_elements_reuse_cached_content(self):
         from cocktail.html.element import Element
@@ -18,15 +20,15 @@ class CacheTestCase(TestCase):
         e = Element("div")
         e.append("Hello, world")
         e.cached = True
-        e.get_cache_key = lambda: "test"
+        e.cache_key = "test"
 
-        e.render()
+        e.render(cache = self.cache)
         e.append("!!!")
-        
-        assert e.render() == "<div>Hello, world</div>"
+
+        assert e.render(cache = self.cache) == "<div>Hello, world</div>"
 
         e.cached = False
-        assert e.render() == "<div>Hello, world!!!</div>"
+        assert e.render(cache = self.cache) == "<div>Hello, world!!!</div>"
 
     def test_cached_content_is_indexed_by_cache_key(self):
         from cocktail.html.element import Element
@@ -34,37 +36,28 @@ class CacheTestCase(TestCase):
         a = Element("div")
         a.append("a")
         a.cached = True
-        a.get_cache_key = lambda: "a"
-        a.render()
+        a.cache_key = "a"
+        a.render(cache = self.cache)
 
         b = Element("div")
         b.append("b")
         b.cached = True
-        b.get_cache_key = lambda: "b"
-        b.render()
+        b.cache_key ="b"
+        b.render(cache = self.cache)
 
         x = Element("div")
         x.append("x")
         x.cached = True
-        x.get_cache_key = lambda: "x"
-        x.render()
+        x.cache_key = "x"
+        x.render(cache = self.cache)
 
-        assert x.render() == "<div>x</div>"
-        
-        x.get_cache_key = lambda: "a"
-        assert x.render() == "<div>a</div>"
+        assert x.render(cache = self.cache) == "<div>x</div>"
 
-        x.get_cache_key = lambda: "b"
-        assert x.render() == "<div>b</div>"
+        x.cache_key = "a"
+        assert x.render(cache = self.cache) == "<div>a</div>"
 
-    def test_cached_content_must_define_a_cache_key(self):
-        from cocktail.html.element import Element
-
-        e = Element("div")
-        e.append("Hello, world")
-        e.cached = True
-        
-        assert_raises(KeyError, e.render)
+        x.cache_key = "b"
+        assert x.render(cache = self.cache) == "<div>b</div>"
 
     def test_cached_content_respects_renderer_class(self):
         from cocktail.html.element import Element
@@ -72,176 +65,162 @@ class CacheTestCase(TestCase):
 
         img = Element("img")
         img.cached = True
-        img.get_cache_key = lambda: "test"        
-        img.render()
+        img.cache_key = "test"
+        img.render(cache = self.cache)
 
-        html = img.render(renderer = html4_renderer)
+        html = img.render(renderer = html4_renderer, cache = self.cache)
         assert html == "<img>"
 
-        xhtml = img.render(renderer = xhtml_renderer) 
+        xhtml = img.render(renderer = xhtml_renderer, cache = self.cache)
         assert xhtml == "<img/>"
 
     def test_cached_content_includes_resources(self):
-        
+
+        from cocktail.events import when
         from cocktail.html.element import Element
 
         e = Element()
         e.cached = True
-        e.get_cache_key = lambda: "test"
+        e.cache_key = "test"
 
-        @e.when_ready
-        def add_resources():
+        @when(e.ready_stage)
+        def add_resources(event):
             child = Element()
             child.add_resource("foo.js")
             e.append(child)
 
-        e.render()
+        e.render(cache = self.cache)
 
         assert "foo.js" in e.render_page()
 
     def test_cached_content_includes_client_parameters(self):
-        
+
+        from cocktail.events import when
         from cocktail.html.element import Element
 
         e = Element()
         e.cached = True
-        e.get_cache_key = lambda: "test"
+        e.cache_key = "test"
 
-        @e.when_ready
-        def add_resources():
+        @when(e.ready_stage)
+        def add_resources(event):
             child = Element()
             child.set_client_param("foo", "bar")
             e.append(child)
 
-        e.render()
+        e.render(cache = self.cache)
 
         assert "foo" in e.render_page()
 
     def test_cached_content_includes_client_variables(self):
-        
+
+        from cocktail.events import when
         from cocktail.html.element import Element
 
         e = Element()
         e.cached = True
-        e.get_cache_key = lambda: "test"
+        e.cache_key = "test"
 
-        @e.when_ready
-        def add_resources():
+        @when(e.ready_stage)
+        def add_resources(event):
             child = Element()
             child.set_client_variable("foo", "bar")
             e.append(child)
 
-        e.render()
+        e.render(cache = self.cache)
 
         assert "foo" in e.render_page()
 
     def test_cached_content_includes_head_elements(self):
-        
+
+        from cocktail.events import when
         from cocktail.html.element import Element
 
         e = Element()
         e.cached = True
-        e.get_cache_key = lambda: "test"
+        e.cache_key = "test"
 
-        @e.when_ready
-        def add_resources():
+        @when(e.ready_stage)
+        def add_resources(event):
             child = Element()
             child.add_head_element(Element("foo"))
             e.append(child)
 
-        e.render()
+        e.render(cache = self.cache)
 
         assert "foo" in e.render_page()
 
     def test_cached_content_includes_meta_tags(self):
-        
+
+        from cocktail.events import when
         from cocktail.html.element import Element
 
         e = Element()
         e.cached = True
-        e.get_cache_key = lambda: "test"
+        e.cache_key = lambda: "test"
 
-        @e.when_ready
-        def add_resources():
+        @when(e.ready_stage)
+        def add_resources(event):
             child = Element()
             child.set_meta("foo", "bar")
             e.append(child)
 
-        e.render()
+        e.render(cache = self.cache)
 
         assert "foo" in e.render_page()
 
     def test_cached_content_includes_client_translations(self):
-        
+
+        from cocktail.events import when
         from cocktail.html.element import Element
 
         e = Element()
         e.cached = True
-        e.get_cache_key = lambda: "test"
+        e.cache_key = "test"
 
-        @e.when_ready
-        def add_resources():
+        @when(e.ready_stage)
+        def add_resources(event):
             child = Element()
             child.add_client_translation("foo")
             e.append(child)
 
-        e.render()
+        e.render(cache = self.cache)
 
         assert "foo" in e.render_page()
 
     def test_elements_can_define_cache_expiration(self):
 
         from time import sleep
+        from datetime import timedelta
         from cocktail.html.element import Element
-        
+
         e = Element()
         e.cached = True
-        e.get_cache_key = lambda: "test"
-        e.cache_expiration = 1
-        e.render()
+        e.cache_key = "test"
+        e.cache_expiration = timedelta(seconds = 1)
+        e.render(cache = self.cache)
 
         e.append("foo")
-        assert "foo" not in e.render()
+        assert "foo" not in e.render(cache = self.cache)
 
-        sleep(1)
-        assert "foo" in e.render()
+        sleep(1.2)
+        assert "foo" in e.render(cache = self.cache)
 
     def test_elements_can_invalidate_cached_content(self):
 
-        from time import time, sleep
-        from datetime import datetime
         from cocktail.html.element import Element
 
         e = Element()
         e.cached = True
-        e.get_cache_key = lambda: "test_with_timestamps"
-        
-        # Older timestamp: cached content should still be valid
-        t1 = time()
-        e.render()
+        e.cached_key = "foo"
+        e.cache_tags.add("foo")
+        e.render(cache = self.cache)
+
         e.append("foo")
-        e.get_cache_invalidation = lambda: t1
-        assert "foo" not in e.render()
+        html = e.render(cache = self.cache)
+        assert "foo" not in html
 
-        # Newer timestamp: cached content should be invalidated 
-        t2 = time()
-        e.get_cache_invalidation = lambda: t2
-        assert "foo" in e.render()
-
-        e = Element()
-        e.cached = True
-        e.get_cache_key = lambda: "test_with_datetime"
-        
-        # Older datetime: cached content should still be valid
-        t1 = datetime.now()
-        e.render()
-        e.append("foo")
-        e.get_cache_invalidation = lambda: t1
-        assert "foo" not in e.render()
-
-        # Newer timestamp: cached content should be invalidated 
-        sleep(1)
-        t2 = datetime.now()
-        e.get_cache_invalidation = lambda: t2
-        assert "foo" in e.render()
+        self.cache.clear(scope = ["foo"])
+        html = e.render(cache = self.cache)
+        assert "foo" in html
 

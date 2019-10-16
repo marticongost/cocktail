@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -7,14 +7,12 @@ u"""
 @since:			November 2008
 """
 from threading import local
-from cocktail.modeling import getter, abstractmethod
+from cocktail.modeling import abstractmethod
 from cocktail.events import Event, event_handler
 from cocktail.schema.accessors import get
 from cocktail.schema.member import Member
 from cocktail.schema.expressions import Expression
-from cocktail.schema.exceptions import (
-    SchemaIntegrityError, IntegralPartRelocationError
-)
+from cocktail.schema.exceptions import SchemaIntegrityError
 
 _thread_data = local()
 
@@ -22,17 +20,11 @@ def _update_relation(action, obj, related_obj, member, relocation = False):
 
     if not obj.bidirectional:
         return
-    
+
     if action == "relate":
         method = member.related_end.add_relation
     elif action == "unrelate":
         method = member.related_end.remove_relation
-
-        # Don't allow items bound to an integral relation to be relocated to a
-        # new container
-        if relocation and member.bidirectional and member.related_end.integral:
-            if get(obj, member) is not None:
-                raise IntegralPartRelocationError()
     else:
         raise ValueError("Unknown relation action: %s" % action)
 
@@ -56,7 +48,7 @@ def _update_relation(action, obj, related_obj, member, relocation = False):
         )
 
 def _push(action, obj, related_obj, member):
-    
+
     stack = getattr(_thread_data, "stack", None)
 
     if stack is None:
@@ -86,7 +78,7 @@ def _pop():
 class RelationMember(Member):
     """Base class for all members that describe a single end of a relation
     between two or more schemas.
-    
+
     This is an abstract class; Noteworthy concrete subclasses include
     L{Reference<cocktail.schema.schemareference.Reference>} and
     L{Collection<cocktail.schema.schemacollections.Collection>}.
@@ -108,7 +100,7 @@ class RelationMember(Member):
     """
     bidirectional = False
     related_key = None
-    relation_constraints = None    
+    relation_constraints = None
     _integral = None
     _many = False
     __related_end = None
@@ -118,7 +110,7 @@ class RelationMember(Member):
         doc = """An event triggered when the relation end is attached to a
         schema after being declared using a self-contained bidirectional
         relation.
-        
+
         @ivar anonymous: Indicates if the relation end had no name of its own.
         @type anonymous: bool
         """
@@ -131,16 +123,16 @@ class RelationMember(Member):
             raise SchemaIntegrityError(
                 "%s can't be declared 'integral' without setting "
                 "'bidirectional' to True" % self)
-    
+
     def _get_related_end(self):
         """Gets the opposite end of a bidirectional relation.
         @type: L{Member<member.Member>}
-        """    
+        """
         if self.__related_end:
             return self.__related_end
-        
-        if self.adaptation_source:
-            return self.adaptation_source.related_end
+
+        if self.source_member:
+            return self.source_member.related_end
 
         related_end = None
         related_type = self.related_type
@@ -157,7 +149,7 @@ class RelationMember(Member):
                 ):
                     related_end = None
             else:
-                for member in related_type.members().itervalues():
+                for member in related_type.members().values():
                     if getattr(member, "bidirectional", False):
                         if member.related_key:
                             if self.name == member.related_key:
@@ -167,7 +159,7 @@ class RelationMember(Member):
                         and member is not self:
                             related_end = member
                             break
-            
+
             # Related end missing
             if related_end is None:
                 raise SchemaIntegrityError(
@@ -193,7 +185,7 @@ class RelationMember(Member):
         return related_end
 
     def _set_related_end(self, related_end):
-        
+
         if related_end is not None:
             self.bidirectional = True
 
@@ -206,7 +198,7 @@ class RelationMember(Member):
         """)
 
     @event_handler
-    def handle_attached(cls, event):
+    def handle_attached(event):
         event.source._bind_orphan_related_end()
 
     def _bind_orphan_related_end(self):
@@ -216,7 +208,7 @@ class RelationMember(Member):
         if related_end \
         and related_end.schema is None \
         and self.schema is not None \
-        and self.adaptation_source is None:
+        and self.source_member is None:
 
             if related_end.name is None:
                 if self.schema.name:
@@ -239,7 +231,7 @@ class RelationMember(Member):
     def anonymous(self):
         return self.__anonymous
 
-    @getter
+    @property
     @abstractmethod
     def related_type(self):
         pass
@@ -269,7 +261,7 @@ class RelationMember(Member):
 
     def add_relation(self, obj, related_obj):
         if _push("relate", obj, related_obj, self):
-            try:                
+            try:
                 self._add_relation(obj, related_obj)
             finally:
                 _pop()
@@ -294,8 +286,8 @@ class RelationMember(Member):
         # Unknown constraint type
         else:
             raise TypeError(
-                "%s is not a valid relation constraint; "
+                "%r is not a valid relation constraint for %r; "
                 "expected a callable or an Expression instance"
-                % constraint
+                % (constraint, self)
             )
 

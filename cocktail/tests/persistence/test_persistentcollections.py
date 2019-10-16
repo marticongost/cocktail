@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -15,26 +15,30 @@ class PersistentCollectionTestCase(TempStorageMixin, TestCase):
     def test_non_bidirectional_default(self):
 
         from cocktail.schema import Collection
-        from cocktail.persistence import PersistentObject, PersistentList
+        from cocktail.persistence import (
+            PersistentObject, PersistentRelationList
+        )
 
         class Foo(PersistentObject):
             bar = Collection()
-        
+
         foo = Foo()
-        self.assertTrue(isinstance(foo.bar, PersistentList))
+        assert isinstance(foo.bar, PersistentRelationList)
 
     def test_non_bidirectional_assignment(self):
 
         from cocktail.schema import Collection
-        from cocktail.persistence import PersistentObject, PersistentList
+        from cocktail.persistence import (
+            PersistentObject, PersistentRelationList
+        )
 
         class Foo(PersistentObject):
             bar = Collection()
-        
+
         foo = Foo()
         value = [Foo(), Foo()]
         foo.bar = value
-        self.assertTrue(isinstance(foo.bar, PersistentList))
+        assert isinstance(foo.bar, PersistentRelationList)
         self.assertEqual(list(foo.bar), value)
 
     def test_bidirectional_default(self):
@@ -46,7 +50,7 @@ class PersistentCollectionTestCase(TempStorageMixin, TestCase):
 
         class Foo(PersistentObject):
             bar = Collection(bidirectional = True)
-        
+
         class Bar(PersistentObject):
             foo = Reference(bidirectional = True)
 
@@ -67,7 +71,7 @@ class PersistentCollectionTestCase(TempStorageMixin, TestCase):
 
         class Foo(PersistentObject):
             bar = Collection(bidirectional = True)
-        
+
         class Bar(PersistentObject):
             foo = Reference(bidirectional = True)
 

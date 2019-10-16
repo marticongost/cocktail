@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Javier Marrero
 @contact:		javier.marrero@whads.com
@@ -56,7 +56,7 @@ class CascadeDeleteTestCase(TempStorageMixin, TestCase):
         a.ref = b
 
         a.delete()
-        self.assertEquals(list(TestObject.index.values()), [b])
+        self.assertEqual(list(TestObject.index.values()), [b])
         
     def test_reference_cycle(self):
         
@@ -92,7 +92,7 @@ class CascadeDeleteTestCase(TempStorageMixin, TestCase):
         a.insert()
         a.delete()
 
-        print TestObject.index
+        print(TestObject.index)
         assert not TestObject.index
 
     def test_not_should_cascade_delete_reference(self):
@@ -188,8 +188,8 @@ class CascadeDeleteTestCase(TempStorageMixin, TestCase):
         a.insert()
         a.delete()
 
-        self.assertEquals(len(TestObject.index), 2)
-        self.assertEquals(set(TestObject.index.values()), set([b, c]))
+        self.assertEqual(len(TestObject.index), 2)
+        self.assertEqual(set(TestObject.index.values()), set([b, c]))
         
     def test_should_cascade_delete_collection(self):
 

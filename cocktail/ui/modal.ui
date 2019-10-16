@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ui:element
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:symbol name="ACCEPT_CALLBACK"/>
+    <ui:symbol name="REJECT_CALLBACK"/>
+
+    <ui:property
+        name="visible"
+        type="boolean"
+        reflected="true"
+        default="false"/>
+
+    <ui:property
+        name="closable"
+        type="boolean"
+        reflected="true"/>
+
+    <style type="text/css">
+        :host {
+            opacity: 0;
+        }
+    </style>
+
+    <?class
+    show() {
+        this.visible = true;
+        this.focusContent();
+    }
+
+    close() {
+        if (this[REJECT_CALLBACK]) {
+            this[REJECT_CALLBACK]();
+            this[ACCEPT_CALLBACK] = null;
+            this[REJECT_CALLBACK] = null;
+        }
+        this.visible = false;
+        cocktail.ui.trigger(this, "closed");
+    }
+
+    comply() {
+        this.show();
+        return new Promise((accept, reject) => {
+            this[ACCEPT_CALLBACK] = accept;
+            this[REJECT_CALLBACK] = reject;
+        });
+    }
+
+    accept() {
+        const context = this.getAcceptContext();
+        cocktail.ui.trigger(this, "accepted", context);
+        if (this[ACCEPT_CALLBACK]) {
+            this[ACCEPT_CALLBACK](context);
+            this[ACCEPT_CALLBACK] = null;
+            this[REJECT_CALLBACK] = null;
+        }
+        this.close();
+    }
+
+    getAcceptContext() {
+        return {};
+    }
+
+    cancel() {
+        cocktail.ui.trigger(this, "canceled");
+        this.close();
+    }
+
+    getActions() {
+        return new cocktail.ui.ActionSet("modal-actions", {
+            entries: [
+                new cls.CloseAction("close")
+            ]
+        });
+    }
+
+    focusContent() {
+
+        for (let node of cocktail.ui.descendShadowDOM(this.content)) {
+            if (node instanceof cocktail.ui.Input) {
+                node.focus();
+                return true;
+            }
+        }
+
+        const closeButton = this.actionList.getEntry("close");
+        if (closeButton) {
+            cocktail.ui.focus(closeButton);
+            return true;
+        }
+
+        return false;
+    }
+    ?>
+
+    <?tail
+    cls.CloseAction = class CloseAction extends cocktail.ui.Action {
+
+        getIconURL(context) {
+            return "cocktail.ui://images/close.svg";
+        }
+
+        get translationPrefix() {
+            return cls.fullName + ".actions";
+        }
+
+        getState(context) {
+            if (!context.modal.closable) {
+                return "hidden";
+            }
+            return super.getState(context);
+        }
+
+        invoke(context) {
+            context.modal.close();
+        }
+    }
+
+    cls.AcceptAction = class AcceptAction extends cocktail.ui.Action {
+
+        getIconURL(context) {
+            return "cocktail.ui://images/accept.svg";
+        }
+
+        get translationPrefix() {
+            return cls.fullName + ".actions";
+        }
+
+        invoke(context) {
+            context.modal.accept();
+        }
+    }
+
+    cls.CancelAction = class AcceptAction extends cocktail.ui.Action {
+
+        getIconURL(context) {
+            return "cocktail.ui://images/close.svg";
+        }
+
+        get translationPrefix() {
+            return cls.fullName + ".actions";
+        }
+
+        invoke(context) {
+            context.modal.cancel();
+        }
+    }
+    ?>
+
+    <?js
+    this.closable = true;
+    ?>
+
+    <section id="dialog">
+
+        <?on click
+        e.stopPropagation();
+        ?>
+
+        <?on keydown
+        if (instance.closable && e.which == cocktail.ui.keys.ESC) {
+            instance.close();
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        ?>
+
+        <header id="header">
+            <h1 id="heading">
+                <slot id="headingSlot" name="heading"/>
+            </h1>
+            <ui:cocktail.ui.ActionList id="actionList">
+                <?js
+                element.buttonStyle = "iconAboveText";
+                element.classList.add("without-frame");
+                element.actionSource = this.getActions();
+                element.actionContext.modal = instance;
+                element.actionSetup();
+                ?>
+            </ui:cocktail.ui.ActionList>
+        </header>
+
+        <div id="content">
+            <slot id="contentSlot"/>
+        </div>
+
+    </section>
+
+    <?on click
+    if (instance.closable) {
+        instance.close();
+    }
+    ?>
+
+</ui:element>
+

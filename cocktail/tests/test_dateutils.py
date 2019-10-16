@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -7,7 +7,7 @@ from unittest import TestCase
 
 
 class CalendarPageTestCase(TestCase):
-    
+
     def test_supports_month_arithmetic(self):
         from cocktail.dateutils import CalendarPage
 

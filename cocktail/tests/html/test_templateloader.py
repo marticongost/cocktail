@@ -32,10 +32,10 @@ class TemplateLoaderTestCase(TestCase):
         rmtree(self.temp_folder)
 
     def write_module(self, filename, code):
-        
+
         path = join(self.template_repository, filename)
 
-        if exists(path):            
+        if exists(path):
             sleep(1)
 
         f = open(path, "w")
@@ -51,15 +51,15 @@ class TemplateLoaderTestCase(TestCase):
     xmlns:py="http://www.whads.com/ns/cocktail/templates"/>""" % root_tag
 
     def test_caches_cml_templates(self):
-        
-        self.write_module("Foo.cml", self._cml("div"))        
+
+        self.write_module("foo.cml", self._cml("div"))
         cls = self.loader.get_class("testtemplates.Foo")
 
         for i in range(3):
             assert self.loader.get_class("testtemplates.Foo") is cls
 
     def test_caches_python_templates(self):
-                
+
         self.write_module("foo.py", """
 from cocktail.html import Element
 
@@ -73,25 +73,25 @@ class Foo(Element):
 
     def test_reload_modified_cml(self):
 
-        self.write_module("Foo.cml", self._cml("div"))
+        self.write_module("foo.cml", self._cml("div"))
         a = self.loader.get_class("testtemplates.Foo")
 
-        self.write_module("Foo.cml", self._cml("span"))
+        self.write_module("foo.cml", self._cml("span"))
         b = self.loader.get_class("testtemplates.Foo")
 
         assert a is not b
 
     def test_reload_modified_cml_base(self):
 
-        self.write_module("ViewA.cml", self._cml("div"))
-        self.write_module("ViewB.cml", self._cml("py:testtemplates.ViewA"))
-        self.write_module("ViewC.cml", self._cml("py:testtemplates.ViewB"))
+        self.write_module("viewa.cml", self._cml("div"))
+        self.write_module("viewb.cml", self._cml("py:testtemplates.ViewA"))
+        self.write_module("viewc.cml", self._cml("py:testtemplates.ViewB"))
         view1 = self.loader.get_class("testtemplates.ViewC")
 
-        self.write_module("ViewA.cml", self._cml("span"))
+        self.write_module("viewa.cml", self._cml("span"))
         view2 = self.loader.get_class("testtemplates.ViewC")
 
-        self.write_module("ViewA.cml", self._cml("table"))
+        self.write_module("viewa.cml", self._cml("table"))
         view3 = self.loader.get_class("testtemplates.ViewC")
 
         assert view1 is not view2
@@ -102,13 +102,13 @@ class Foo(Element):
 
     def test_can_disable_timestamp_checks(self):
 
-        self.write_module("Foo.cml", self._cml("div"))
+        self.write_module("foo.cml", self._cml("div"))
         a = self.loader.get_class("testtemplates.Foo")
 
         self.loader.cache.checks_modification_time = False
 
-        self.write_module("Foo.cml", self._cml("span"))
+        self.write_module("foo.cml", self._cml("span"))
         b = self.loader.get_class("testtemplates.Foo")
-        
+
         assert a is b
 

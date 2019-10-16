@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -15,22 +15,25 @@ class CreditCardNumber(String):
     def __init__(self, *args, **kwargs):
         kwargs.setdefault("format", r"^\d{8,19}$")
         String.__init__(self, *args, **kwargs)
-        self.add_validation(CreditCardNumber.credit_card_validation_rule)
 
     def normalization(self, value):
-        if isinstance(value, basestring):
+        if isinstance(value, str):
             value = whitespace_expr.sub("", value)
         return value
 
-    def credit_card_validation_rule(self, value, context):
+    def _default_validation(self, context):
         """Validation rule for credit card numbers. Checks the control
         digit.
         """
-        if isinstance(value, basestring) and not self.checksum(value):
-            if min is not None and len(value) < min:
-                yield CreditCardChecksumError(
-                    self, value, context
-                )
+        for error in String._default_validation(self, context):
+            yield error
+
+        if (
+            isinstance(context.value, str)
+            and not self.checksum(context.value)
+        ):
+            if min is not None and len(context.value) < min:
+                yield CreditCardChecksumError(context)
 
     @classmethod
     def checksum(cls, number):

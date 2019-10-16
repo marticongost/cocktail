@@ -1,0 +1,26 @@
+
+@import "cocktail.ui://styles/common";
+
+:host {
+    display: inline-block;
+    width: 20em;
+    height: 10em;
+    border: $input-border;
+    overflow: hidden;
+}
+
+textarea {
+    width: 100%;
+    height: 100%;
+    padding: $input-padding;
+    border: none;
+
+    &:focus {
+        outline: none !important;
+    }
+
+    :host([error]) & {
+        @include input-with-error;
+    }
+}
+

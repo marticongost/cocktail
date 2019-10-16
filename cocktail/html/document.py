@@ -1,13 +1,13 @@
 #-*- coding: utf-8 -*-
-u"""Defines the `HTMLDocument` class.
+"""Defines the `HTMLDocument` class.
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
-from simplejson import dumps
-from cocktail.translations import translations, get_language
+from json import dumps
+from cocktail.translations import translations, get_language, directionality
 from cocktail.html.element import Element, Content
-from cocktail.html.ieconditionalcomment import IEConditionalComment
-from cocktail.html.resources import Script, StyleSheet
+from cocktail.html.ieconditionalcomment import IEConditionalComment, IEWrapper
+from cocktail.html.resources import Script, StyleSheet, resource_repositories
 from cocktail.html.rendering import Rendering
 from cocktail.html.utils import rendering_html5, rendering_xml
 from cocktail.html.documentmetadata import DocumentMetadata
@@ -26,17 +26,15 @@ class HTMLDocument(Element):
     element as a full page.
     """
     __core_scripts_added = False
-    core_scripts = [
-        "/cocktail/scripts/jquery.js",
-        "/cocktail/scripts/core.js"
-    ]
 
     tag = "html"
     styled_class = False
     content = ""
+    root_element_id = None
     metadata = DocumentMetadata()
     rendering_options = {}
     ie_html5_workaround = True
+    resource_sets = []
 
     def _render(self, rendering):
 
@@ -54,7 +52,7 @@ class HTMLDocument(Element):
 
         self.head = Element("head")
         self.append(self.head)
-        
+
         self.meta_container = Element(None)
         self.head.append(self.meta_container)
 
@@ -64,23 +62,29 @@ class HTMLDocument(Element):
 
         self.resources_container = Element(None)
         self.head.append(self.resources_container)
-        
+
         self.styles_container = Element(None)
         self.resources_container.append(self.styles_container)
 
         self.scripts_container = Element(None)
         self.resources_container.append(self.scripts_container)
-        
+
         self.client_setup = Element("script")
         self.client_setup["type"] = "text/javascript"
-        self.client_setup.append("// cocktail.html client-side setup\n")
         self.head.append(self.client_setup)
-        
+
         self.client_setup_container = Element(None)
         self.client_setup.append(self.client_setup_container)
 
-        self.body = Element("body")
+        self.body = IEWrapper("body")
         self.append(self.body)
+
+        self.javascript_enabled_script = Element("script")
+        self.javascript_enabled_script["type"] = "text/javascript"
+        self.javascript_enabled_script.append(
+            "document.body.className += ' scripted';"
+        )
+        self.body.append(self.javascript_enabled_script)
 
     def _ready(self):
 
@@ -95,14 +99,14 @@ class HTMLDocument(Element):
         self._add_meta()
         self._add_title()
         self._add_resources()
-        self._add_client_params()
         self._add_client_variables()
-        self._add_client_code()
         self._add_client_translations()
         self._add_content()
 
         for callback in self.metadata.document_ready_callbacks:
             callback(self)
+
+        Element._ready(self)
 
     def _add_language(self):
         language = self.metadata.language or get_language()
@@ -111,16 +115,18 @@ class HTMLDocument(Element):
             if rendering_xml():
                 self["xml:lang"] = language
 
+        self["dir"] = directionality.get(language)
+
     def _add_meta(self):
 
         # Content type and charset should always go first
-        ct_meta = Element("meta")
-        ct_meta["http-equiv"] = "Content-Type"
-        ct_meta["content"] = "%s; charset=%s" % (
+        self.content_type_metatag = Element("meta")
+        self.content_type_metatag["http-equiv"] = "Content-Type"
+        self.content_type_metatag["content"] = "%s; charset=%s" % (
             self.metadata.content_type or "text/html",
             self.metadata.charset or "utf-8"
         )
-        self.meta_container.append(ct_meta)
+        self.meta_container.append(self.content_type_metatag)
 
         # Document-wide default base URL for relative URLs
         if self.metadata.base_href:
@@ -129,14 +135,14 @@ class HTMLDocument(Element):
             self.meta_container.append(base)
 
         # Other meta tags
-        for key, value in self.metadata.meta.iteritems():
+        for key, value in self.metadata.meta.items():
             meta = Element("meta")
-            
+
             if key.lower() in HTTP_EQUIV_KEYS:
                 attribute = "http-equiv"
             else:
                 attribute = "name"
-            
+
             meta[attribute] = key
             meta["content"] = value
             self.meta_container.append(meta)
@@ -146,62 +152,73 @@ class HTMLDocument(Element):
             self.title.append(self.metadata.page_title)
 
     def _add_resources(self):
-    
+
         if self.ie_html5_workaround and rendering_html5():
-            self.scripts_container.append(
-                IEConditionalComment("lt IE 9", children = [
-                    Element("script", src = "/cocktail/scripts/html5shiv-printshiv.js")
-                ])
+            self.metadata.resources.insert(
+                0,
+                Script(
+                    "/cocktail/scripts/html5shiv-printshiv.js",
+                    ie_condition = "lt IE 9"
+                )
             )
 
         for resource in self.metadata.resources:
-            self._add_resource(resource)
+            if resource.mime_type == "text/javascript":
+                self._add_core_scripts()
+                break
 
-    def _add_resource(self, resource):
+        resource_sets = self.create_resource_sets()
 
-        if isinstance(resource, Script):
-            self._add_core_scripts()
-            script = Element("script")
-            script["type"] = resource.mime_type
-            script["src"] = resource.uri
+        if resource_sets:
+            remaining_resources = []
 
-            if resource.async:
-                script["async"] = "true"
+            for resource in self.metadata.resources:
+                for resource_set in resource_sets:
+                    if resource_set.matches(resource):
+                        resource_set.append(resource)
+                        break
+                else:
+                    remaining_resources.append(resource)
 
-            script = self._apply_ie_condition(resource, script)
-            self.scripts_container.append(script)
-
-        elif isinstance(resource, StyleSheet):
-            style_sheet = Element("link")
-            style_sheet["rel"] = "Stylesheet"
-            style_sheet["type"] = resource.mime_type
-            style_sheet["href"] = resource.uri
-            style_sheet = self._apply_ie_condition(resource, style_sheet)
-            self.styles_container.append(style_sheet)
-
+            for resource_set in resource_sets:
+                resource_set.insert_into_document(self)
         else:
-            raise TypeError(
-                "%s is not capable of rendering %s, unknown resource type."
-                % (self, resource)
-            )
+            remaining_resources = self.metadata.resources
 
-    def _apply_ie_condition(self, resource, element):
-        if resource.ie_condition:
-            comment = IEConditionalComment(resource.ie_condition)
-            comment.append(element)
-            return comment
-        else:
-            return element
+        for resource in remaining_resources:
+            resource.link(self)
+
+    def create_resource_sets(self):
+        resource_sets = []
+
+        for resource_set_spec in self.resource_sets:
+            if isinstance(resource_set_spec, tuple):
+                resource_set = resource_set_spec[0](**resource_set_spec[1])
+            elif callable(resource_set_spec):
+                resource_set = resource_set_spec()
+            else:
+                raise TypeError(
+                    "Bad resource set spec: %s. Expected a callable, or a "
+                    "callable/kwargs tuple."
+                    % resource_set_spec
+                )
+            resource_sets.append(resource_set)
+
+        return resource_sets
+
+    def get_core_scripts(self):
+        return [
+            Script("cocktail://scripts/jquery.js"),
+            Script("cocktail://scripts/core.js")
+        ]
 
     def _add_core_scripts(self):
-        
+
         if not self.__core_scripts_added:
             self.__core_scripts_added = True
-            
-            for uri in self.core_scripts:
-                script = Script(uri)
-                if script not in self.metadata.resources:
-                    self._add_resource(script)
+
+            for uri in reversed(self.get_core_scripts()):
+                self.metadata.resources.insert(0, uri)
 
             language = self.metadata.language or get_language()
             self.client_setup.append(
@@ -209,43 +226,33 @@ class HTMLDocument(Element):
                 % dumps(language)
             )
 
+            init_code = "cocktail.init();"
+
+            if self.root_element_id:
+                init_code = (
+                    "cocktail.rootElement =  document.getElementById(%s); "
+                    % dumps(self.root_element_id)
+                ) + init_code
+
             self.client_setup.append(
-                "\t\tjQuery(function () { cocktail.init(); });\n"
+                "\t\tjQuery(function () { %s });\n" % init_code
             )
-
-    def _add_client_params(self):
-
-        if self.metadata.client_params:
-            self._add_core_scripts()
-
-            for id, values in self.metadata.client_params.iteritems():
-                js = "\t\tcocktail.__clientParams['%s'] = %s;\n" % (
-                    id,
-                    dumps(values)
-                )
-                self.client_setup_container.append(js)
-
-    def _add_client_code(self):
-
-        if self.metadata.client_code:
-            self._add_core_scripts()
-            
-            for id,code_snippets in self.metadata.client_code.iteritems():
-                js = "\t\tcocktail.__clientCode['%s'] = [%s];\n" % (
-                    id,
-                    ", ".join(
-                        "function () { %s }" % snippet
-                        for snippet in code_snippets
-                    )
-                )
-                self.client_setup_container.append(js)
 
     def _add_client_variables(self):
 
-        if self.metadata.client_variables:
-            self._add_core_scripts()
+        self._add_core_scripts()
+        self.client_setup_container.append(
+            "\t\tcocktail.resourceRepositories = %s;\n" % dumps(
+                dict(
+                    (repo_name, repo_data[0] + "/")
+                    for repo_name, repo_data
+                    in resource_repositories.items()
+                )
+            )
+        )
 
-            for key, value in self.metadata.client_variables.iteritems():
+        if self.metadata.client_variables:
+            for key, value in self.metadata.client_variables.items():
                 self.client_setup_container.append(
                     "\t\tcocktail.setVariable(%s, %s);\n" % (
                         dumps(key), dumps(value)
@@ -263,10 +270,7 @@ class HTMLDocument(Element):
                 "".join(
                     "\t\tcocktail.setTranslation(%s, %s);\n" % (
                         dumps(key),
-                        dumps(translations[language][key])
-                            if language in translations
-                            and key in translations[language]
-                            else ""
+                        dumps(translations(key, language))
                     )
                     for key in self.metadata.client_translations
                 )
@@ -279,63 +283,25 @@ class HTMLDocument(Element):
             all_client_models = {}
 
             while self.metadata.client_models:
-                client_models = self.metadata.client_models.items()
+                client_models = list(self.metadata.client_models.items())
                 self.metadata.client_models = {}
 
-                for model_id, element in client_models:
-                    
-                    all_client_models[model_id] = element
+                for model_id, model_data in client_models:
 
-                    cm_rendering = Rendering(
-                        rendered_client_model = element,
-                        **self.rendering_options
-                    )
-                    cm_metadata = cm_rendering.document_metadata
-                    cm_rendering.render_element(element)
+                    all_client_models[model_id] = model_data
+                    (cm_content, cm_metadata) = model_data
 
                     # Serialize the client model content as a javascript string
-                    cm_str = "'" + element.client_model + "'"
                     self.client_setup_container.append(
                         "\t\tcocktail._clientModel(%s).html = '%s';\n" % (
-                            cm_str,
-                            cm_rendering
-                                .markup()
+                            dumps(model_id),
+                            cm_content
                                 .replace("'", "\\'")
                                 .replace("\n", "\\n")
-                                .replace("&", "\\x26")
-                                .replace("<", "\\x3C")
+                                .replace("&", "\\u0026")
+                                .replace("<", "\\u003C")
                         )
                     )
-
-                    # Declare client side parameters and initialization code for
-                    # the client model and its nested content. This special
-                    # treatment is necessary to allow client models to apply this
-                    # initialization each time they are instantiated.
-                    cm_id = element["id"]
-                    for id, values in cm_metadata.client_params.iteritems():
-                        self.client_setup_container.append(
-                            "\t\tcocktail._clientModel(%s).params = %s;\n" % (
-                                cm_str 
-                                    if id == cm_id
-                                    else cm_str + ", '%s'" % id,
-                                dumps(values)
-                            )
-                        )
-
-                    for id, snippets in cm_metadata.client_code.iteritems():
-                        self.client_setup_container.append(
-                            "\t\tcocktail._clientModel(%s).code = %s;\n" % (
-                                cm_str
-                                    if id == cm_id
-                                    else cm_str + ", '%s'" % id,
-                                dumps(snippets)
-                            )
-                        )
-
-                    # Apply any remaining metadata supplied by the client model or
-                    # its content to the document.
-                    cm_metadata.client_params = {}
-                    cm_metadata.client_code = {}            
                     self.metadata.update(cm_metadata)
 
             self.metadata.client_models = all_client_models

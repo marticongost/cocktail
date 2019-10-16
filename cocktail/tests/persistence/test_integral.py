@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -12,7 +12,7 @@ from unittest import TestCase
 class IntegralTestCase(TestCase):
 
     def test_implicit_cascade_delete(self):
-        
+
         from cocktail.schema import Reference, Collection
         import cocktail.persistence # load extension attributes
 
@@ -20,7 +20,7 @@ class IntegralTestCase(TestCase):
             bidirectional = True,
             integral = True
         )
-        
+
         self.assertTrue(ref.cascade_delete)
 
         collection = Reference(

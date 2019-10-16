@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<?py
+from cocktail.modeling import refine
+from cocktail.stringutils import normalize
+from cocktail.translations import translate_locale
+from cocktail.controllers.viewstate import view_state_form, view_state
+from cocktail.html.grouping import Grouping
+from cocktail.html.datadisplay import MULTIPLE_SELECTION
+?>
+
+<py:cocktail.html.Form
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:py="http://www.whads.com/ns/cocktail/templates"
+    method="get">
+
+    <?py-class
+    actions = ()
+    selection_mode = MULTIPLE_SELECTION
+    user_collection = None
+    activation_control = None
+    allow_empty_search = False
+    excluded_view_state_params = frozenset([
+        "members", "language", "page_size", "selection", "filter", "change_tab"
+    ])
+
+    def _get_view_state_form_params(self):
+
+        excluded = set(self.excluded_view_state_params)
+
+        for i, filter in enumerate(self.user_collection.user_filters):
+            for member in filter.schema.members().itervalues():
+                excluded.add("filter_" + member.name + str(i))
+
+        return dict((key, None) for key in excluded)
+    ?>
+
+    <?py
+    self.add_resource("cocktail://scripts/jquery.cookie.js")
+    self.add_resource("cocktail://scripts/collectionview.js")
+    self.add_client_translation("cocktail.html.CollectionView.selection_options")
+    self.add_client_translation("cocktail.html.CollectionView.select_all")
+    self.add_client_translation("cocktail.html.CollectionView.clear_selection")
+    ?>
+
+    <py:ready>
+        <?py
+        params = self._get_view_state_form_params()
+        element.append(view_state_form(**params))
+        self.set_client_param("persistencePrefix", self.user_collection.persistence_prefix)
+        ?>
+    </py:ready>
+
+    <!-- Collection settings -->
+    <div py:id="collection_settings">
+
+        <!-- Visible languages -->
+        <py:cocktail.html.DropdownPanel py:id="languages_dropdown">
+            <py:with
+                py:element="element.label"
+                accesskey="${translations('cocktail.html.CollectionView.languages_dropdown.shortcut')}">
+                ${translations("cocktail.html.CollectionView.languages_dropdown")}
+            </py:with>
+            <py:with py:element="element.panel">
+                <py:cocktail.html.SearchableCheckList
+                    py:id="languages_selector"
+                    py:name="language"
+                    py:value="@{self.user_collection.languages}">
+                    <py:binding>
+                        <?py
+                        element.items = sorted(
+                            self.available_languages,
+                            key = (lambda locale: normalize(translate_locale(locale)))
+                        )
+                        ?>
+                    </py:binding>
+                    <?py
+                    @extend(element.check_list)
+                    def get_item_label(languages_selector, item):
+                        return translate_locale(item)
+                    ?>
+                </py:cocktail.html.SearchableCheckList>
+                <div py:local_id="box_buttons">
+                    <button py:local_id="apply_button" type="submit">${translations("cocktail.stock.submit")}</button>
+                </div>
+            </py:with>
+        </py:cocktail.html.DropdownPanel>
+
+        <!-- Visible members -->
+        <py:cocktail.html.DropdownPanel
+            py:id="members_dropdown">
+            <py:with
+                py:element="element.label"
+                accesskey="${translations('cocktail.html.CollectionView.members_dropdown.shortcut')}">
+                ${translations("cocktail.html.CollectionView.members_dropdown")}
+            </py:with>
+            <py:with py:element="element.panel">
+                <py:cocktail.html.SearchableCheckList
+                    py:id="members_selector"
+                    py:name="members"
+                    py:value="@{self.user_collection.members}">
+                    <py:with py:element="element.check_list">
+                        <py:binding>
+                            <?py
+                            element.grouping = Grouping(
+                                sorted = False,
+                                prefilled = True
+                            )
+                            for group_id, members in self.user_collection.schema.grouped_members():
+                                group = Grouping(group_id)
+                                for member in members:
+                                    group.add_item(member)
+                                element.grouping.add_group(group)
+                            ?>
+                        </py:binding>
+                        <?py
+                        @extend(element)
+                        def get_group_title(element, grouping):
+                            if grouping:
+                                return self.user_collection.schema.translate_group(grouping.key)
+                            else:
+                                return ""
+
+                        @extend(element)
+                        def get_item_value(element, item):
+                            if isinstance(item, basestring):
+                                return item
+                            else:
+                                return item.name
+
+                        @extend(element)
+                        def is_selected(element, member):
+                            return element.get_item_value(member) in element.value
+
+                        @extend(element)
+                        def get_item_label(element, member):
+                            return translations(member)
+                        ?>
+                    </py:with>
+                </py:cocktail.html.SearchableCheckList>
+                <div py:local_id="box_buttons">
+                    <button py:local_id="apply_button" type="submit">${translations("cocktail.stock.submit")}</button>
+                </div>
+            </py:with>
+        </py:cocktail.html.DropdownPanel>
+
+        <!-- Paging size -->
+        <py:cocktail.html.DropdownPanel py:id="page_size_dropdown">
+            <py:binding>
+                <?py
+                if not self.user_collection.allow_paging or not self.user_collection.page_sizes:
+                    element.visible = False
+                ?>
+            </py:binding>
+            <py:with
+                py:element="element.label"
+                accesskey="${translations('cocktail.html.CollectionView.page_size_dropdown.shortcut')}">
+                @{translations("cocktail.html.CollectionView.page_size", size = self.user_collection.page_size)}
+            </py:with>
+            <py:with py:element="element.panel">
+                <py:cocktail.html.RadioSelector
+                    py:id="page_size_selector"
+                    py:name="page_size"
+                    py:items="@{self.user_collection.page_sizes}"
+                    py:value="@{self.user_collection.page_size}">
+                    <?py
+                    @extend(element)
+                    def get_item_label(page_size_selector, page_size):
+                        return translations("cocktail.html.CollectionView.page_size", size = page_size)
+                    ?>
+                </py:cocktail.html.RadioSelector>
+                <div py:local_id="box_buttons">
+                    <button py:local_id="apply_button" type="submit">${translations("cocktail.stock.submit")}</button>
+                </div>
+            </py:with>
+        </py:cocktail.html.DropdownPanel>
+
+    </div>
+
+    <!-- Filters -->
+    <div py:id="filters">
+        <py:ready>
+            <?py
+            if not self.user_collection.allow_filters or (
+                not self.visible_results
+                and not self.user_collection.user_filters
+                and not self.allow_empty_search
+            ):
+                element.visible = False
+            ?>
+            <py:block py:if="self.filters.visible">
+                <?py
+                if not self.user_collection.user_filters:
+                    self.filters.add_class("empty")
+                ?>
+                <py:cocktail.html.FilterBox
+                    py:id="filters_selector"
+                    py:tag="div"
+                    py:content_type="${self.user_collection.type}"
+                    py:filters="${self.user_collection.user_filters}"
+                    py:available_filters="${self.user_collection.available_user_filters}"/>
+            </py:block>
+        </py:ready>
+    </div>
+
+    <div py:id="search_results_message">
+        ${translations("cocktail.html.CollectionView.search_results")}
+    </div>
+
+    <!-- Tabbed search -->
+    <div py:id="tab_strip" py:visible="@{self.user_collection.tabs}">
+        <py:ready>
+            <py:new
+                py:element="self.create_tab_strip_entry(tab)"
+                py:for="tab in self.user_collection.tabs.itervalues()"/>
+        </py:ready>
+    </div>
+
+    <a
+        py:def="tab_strip_entry" py:args="tab"
+        type="submit"
+        href="?${view_state(tab = tab.id, page = 0)}">
+        <?py
+        if tab.selected:
+            tab_strip_entry.add_class("selected")
+        ?>
+        <span py:local_id="tab_title">
+            ${tab.label}
+        </span>
+        <span py:local_id="tab_results_count">
+            (${len(tab.results)})
+        </span>
+    </a>
+
+    <!-- Toolbar -->
+    <div py:id="toolbar_box" py:collapsible="${True}">
+        <py:ready><?py self.toolbar.ready() ?></py:ready>
+        <div py:id="toolbar" py:collapsible="${True}">
+            <py:ready>
+                <py:new py:element="self.create_toolbar_button(action)"
+                    py:for="action in self.actions"/>
+            </py:ready>
+        </div>
+        <div py:id="data_controls">
+            <!-- Paging -->
+            <py:cocktail.html.PagingControls
+                py:id="paging_controls"
+                py:user_collection="@{self.user_collection}"
+                py:page_size_editable="${False}"/>
+        </div>
+    </div>
+
+    <button
+        py:def="toolbar_button"
+        py:args="action"
+        class="toolbar_button ${action}"
+        name="action"
+        type="submit"
+        value="${action}"
+        accesskey="${translations('cocktail.html.CollectionView.actions.' + action + '.shortcut')}">
+        ${translations("cocktail.html.CollectionView.actions." + action)}
+    </button>
+
+    <!-- Data -->
+    <div py:id="collection_display_container">
+        <!-- Data display -->
+        <py:cocktail.html.Table py:id="collection_display"/>
+    </div>
+
+    <div py:id="no_results"/>
+
+    <py:ready>
+        <?py
+        self.visible_results = bool(self.user_collection.page_subset)
+        self.collection_display.user_collection = self.user_collection
+        self.collection_display.selection_mode = self.selection_mode
+        self.collection_display.visible = self.visible_results
+        self.no_results.visible = not self.visible_results
+
+        if not self.visible_results:
+            self.data_controls.visible = False
+
+        self.fields.visible = False
+        self.buttons.visible = False
+        self.submit_button.visible = False
+        self.search_results_message.visible = \
+            self.user_collection.user_filters and self.visible_results
+
+        self.set_client_param("activationControl", self.activation_control)
+
+        self.set_client_param("hasResults", self.visible_results)
+
+        if not self.visible_results:
+            if self.user_collection.user_filters:
+                self.no_results.append(translations("cocktail.html.CollectionView.no_search_results"))
+            else:
+                self.no_results.append(translations("cocktail.html.CollectionView.no_results"))
+        ?>
+    </py:ready>
+
+</py:cocktail.html.Form>

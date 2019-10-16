@@ -1,76 +1,48 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 Visual elements for data binding.
 
-@author:		Martí Congost
-@contact:		marti.congost@whads.com
-@organization:	Whads/Accent SL
-@since:			July 2008
+@author:        Martí Congost
+@contact:       marti.congost@whads.com
+@organization:  Whads/Accent SL
+@since:         July 2008
 """
-from cocktail.schema import Member, Schema, get_accessor
-from cocktail.modeling import getter, ListWrapper, empty_list
-from cocktail.translations import (
-    translations,
-    require_language,
-    get_language
+from cocktail import schema
+from cocktail.modeling import ListWrapper, empty_list
+from cocktail.translations import translations, require_language
+
+# IMPORTANT: importing 'display_factory' is required for backwards
+# compatibility
+from cocktail.html.uigeneration import (
+    UIGenerator,
+    default_display,
+    display_factory
 )
-from cocktail.typemapping import TypeMapping
-from cocktail.html import Element, TranslatedValue
-from cocktail.html import templates
-import cocktail.controllers.parameters
 
-# Extension that allows members to specify their prefered display
-Member.display = None
 
-def display_factory(display_name, **kwargs):
-    """A convenience function to assign displays to schema members.
-    
-    @param display_name: A fully qualified name of an
-        L{Element<element.Element>} subclass or CML template.
-    @type display_name: str
+class DataDisplay(UIGenerator):
+    "Base class for all visual components that can display schema-based data."
 
-    @param kwargs: HTML or Python attributes to set on the display.
-    
-    @return: A function that produces displays of the indicated kind,
-        initialized with the supplied parameters.
-    @rtype: L{Element<element.Element>}
-    """
-    def func(parent, obj, member):
-        display = templates.new(display_name)
-        
-        for key, value in kwargs.iteritems():
-            if hasattr(display, key):
-                setattr(display, key, value)
-            else:
-                display[key] = value
-
-        return display
-
-    return func
-
-class DataDisplay(object):
-    """Base class for all visual components that can display schema-based data.
-    """
-    data = None
+    base_ui_generators = [default_display]
     persistent_object = None
     schema = None
     editable = True
     translations = None
-    accessor = None    
+    accessor = None
     name_prefix = None
     name_suffix = None
 
     def __init__(self):
+        UIGenerator.__init__(self)
         self.__member_displayed = {}
         self.__member_labels = {}
         self.__member_editable = {}
         self.__member_expressions = {}
-        self.__member_display = {}
-        self.__member_type_display = TypeMapping()
+        self.__member_displays = {}
 
     def _resolve_member(self, member):
 
-        if isinstance(member, basestring):
+        if isinstance(member, str):
             if self.schema is None:
                 raise ValueError(
                     "Can't resolve a member by name on an unbound data display"
@@ -80,7 +52,7 @@ class DataDisplay(object):
             return member
 
     def _normalize_member(self, member):
-        if isinstance(member, basestring):
+        if isinstance(member, str):
             return member
 
         if self.schema is None:
@@ -96,7 +68,7 @@ class DataDisplay(object):
 
         return name
 
-    @getter
+    @property
     def displayed_members(self):
         if not self.schema:
             return empty_list
@@ -105,7 +77,7 @@ class DataDisplay(object):
                 for member in self.schema.ordered_members(True)
                 if self.get_member_displayed(member))
 
-    @getter
+    @property
     def displayed_members_by_group(self):
         if not self.schema:
             return empty_list
@@ -140,23 +112,23 @@ class DataDisplay(object):
         scripting. Members that shouldn't be shown at all shouldn't appear on
         the schema provided to the data display (possibly by excluding them
         using an `~cocktail.schema.adapter.Adapter`).
-        
+
         @param member: The member to get the display state for. Can be
             specified using a direct reference to the member object, or by
             name.
         @type member: str or L{Member<cocktail.schema.member.Member>}
-        
+
         @return: True if the member should be displayed, False otherwise.
         @rtype: bool
         """
         return self.__member_displayed.get(
                     self._normalize_member(member),
                     True)
-    
+
     def set_member_displayed(self, member, displayed):
         """Establishes if the indicated member should be displayed. See
         L{get_member_displayed} for more details.
-        
+
         @param member: The member to get the display state for. Can be
             specified using a direct reference to the member object, or by
             name.
@@ -171,7 +143,7 @@ class DataDisplay(object):
     def get_member_label(self, member):
         """Gets the descriptive, human readable title for the member, as shown
         by the data display.
-        
+
         @param member: The member to get the label for. Can be specified using
             a direct reference to the member object, or by name.
         @type member: str or L{Member<cocktail.schema.member.Member>}
@@ -188,7 +160,7 @@ class DataDisplay(object):
 
     def set_member_label(self, member, label):
         """Sets the descriptive, human readable title for the member.
-        
+
         @param member: The member to set the label for. Can be specified using
             a direct reference to the member object, or by name.
         @type member: str or L{Member<cocktail.schema.member.Member>}
@@ -208,7 +180,7 @@ class DataDisplay(object):
 
         if self.persistent_object:
             return self.persistent_object.__class__.translate_group(group)
-        
+
     def get_member_editable(self, member):
         """Indicates if the given member should be editable by users. This
         affects the kind of display used by the member (for example, a text
@@ -271,7 +243,7 @@ class DataDisplay(object):
         self.__member_expressions[self._normalize_member(member)] = expression
 
     def get_member_value(self, obj, member, language = None):
-        
+
         translated = member.translated
         expr = self.get_member_expression(member)
 
@@ -283,96 +255,54 @@ class DataDisplay(object):
                 return expr(obj, language)
             else:
                 return expr(obj)
-        else:            
-            accessor = self.accessor or get_accessor(obj)
-            value = obj            
-            for part in self._normalize_member(member).split("."):                
+        else:
+            accessor = self.accessor or schema.get_accessor(obj)
+            value = obj
+            for part in self._normalize_member(member).split("."):
                 value = accessor.get(value, part, None, language)
                 if value is None:
                     break
             return value
 
-    def translate_value(self, obj, member, value):
-        return member.translate_value(value) or u"-"
-
-    def get_member_display(self, obj, member):
-        member = self._resolve_member(member)
-        display = self._resolve_member_display(obj, member)
-        display = self._normalize_member_display(obj, member, display)
-        return display
-
-    def _resolve_member_display(self, obj, member):
-
-        # Explicitly assigned
-        display = self.__member_display.get(self._normalize_member(member))
-
-        # Implemented as a method
-        if display is None:
-            display_method = getattr(
-                self,
-                "create_%s_display" % member.name,
-                None)
-
-            if display_method:
-                display = display_method(obj, member)
-
-            # Supplied by the member
-            if display is None:
-                display = self.get_member_supplied_display(obj, member)
-
-                # Default display
-                if display is None:
-                    display = self.get_default_member_display(obj, member)
-
-        return display
-
-    def get_member_supplied_display(self, obj, member):
-        return member.display
-
-    def get_default_member_display(self, obj, member):
-
-        display = self.get_member_type_display(member.__class__)
-        
-        if display is None:
-            display = self.default_display
-
-        return display 
-
-    def _normalize_member_display(self, obj, member, display):
-
-        if isinstance(display, type) and issubclass(display, Element):
-            display = display()
-        elif callable(display):
-            if getattr(display, "im_self", None) is self:
-                display = display(obj, member)
-            else:
-                display = display(self, obj, member)
-        
-        if isinstance(display, basestring):
-            display = templates.new(display)
-
-        display.data_display = self
-        display.data = obj
-        display.persistent_object = self.persistent_object
-        display.member = member
-        display.language = get_language()
-
-        if hasattr(display, "value"):
-            value = self.get_member_value(obj, member)
-            display.value = value
-
-        return display
+    def get_member_display(self, member):
+        return self.__member_displays.get(member)
 
     def set_member_display(self, member, display):
-        self.__member_display[self._normalize_member(member)] = display
+        self.__member_displays[self._normalize_member(member)] = display
 
-    def get_member_type_display(self, member_type):
-        return self.__member_type_display.get(member_type)
+    def create_member_display(self, obj, member, value, **context):
+        context.setdefault("persistent_object", self.persistent_object)
+        return UIGenerator.create_member_display(
+            self,
+            obj,
+            member,
+            value,
+            **context
+        )
 
-    def set_member_type_display(self, member_type, display):
-        self.__member_type_display[member_type] = display
+    def _iter_per_member_displays(
+        self,
+        obj,
+        member,
+        value,
+        **context
+    ):
+        yield self.__member_displays.get(member)
 
-    default_display = TranslatedValue
+        if member.name:
+            yield getattr(self, "create_%s_display" % member.name, None)
+
+        for display in UIGenerator._iter_per_member_displays(
+            self,
+            obj,
+            member,
+            value,
+            **context
+        ):
+            yield display
+
+    def translate_value(self, obj, member, value):
+        return member.translate_value(value) or "-"
 
 
 NO_SELECTION = 0
@@ -418,9 +348,9 @@ class CollectionDisplay(DataDisplay):
 
     def add_filter(self, filter):
         self.__filters.append(filter)
-    
+
     def is_selected(self, item):
-        
+
         if self.selection is None:
             return False
         elif self.selection_mode == SINGLE_SELECTION:
@@ -430,7 +360,7 @@ class CollectionDisplay(DataDisplay):
 
     def _get_user_collection(self):
         return self.__user_collection
-    
+
     def _set_user_collection(self, collection):
         self.__user_collection = collection
 

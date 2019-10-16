@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 Provides a class that tracks the state of a validation process across schema
 members.
 
@@ -8,7 +8,7 @@ members.
 @organization:	Whads/Accent SL
 @since:			June 2008
 """
-from cocktail.modeling import DictWrapper, getter
+from cocktail.modeling import DictWrapper
 from cocktail.schema.accessors import get
 
 undefined = object()
@@ -29,13 +29,86 @@ class ValidationContext(DictWrapper):
     contexts, through the use of the L{enter} and L{leave} method. This
     mechanism also keeps track of the active validation L{path}.
     """
-    def __init__(self, member, validable, **kwargs):
-        DictWrapper.__init__(self, kwargs)
-        self.__stack = [(member, validable, self._items)]
+
+    def __init__(self,
+        member,
+        value,
+        collection_index = None,
+        language = None,
+        parent_context = None,
+        **parameters):
+
+        DictWrapper.__init__(self)
+
+        self.__member = member
+        self.__value = value
+        self.__collection_index = collection_index
+        self.__language = language
+        self.__parent_context = parent_context
+
+        if parent_context is not None:
+            self._items.update(self.__parent_context._items)
+
+        self._items.update(member.validation_parameters)
+        self._items.update(parameters)
+        self.__trigger_validating_event(member)
+
+    def __trigger_validating_event(self, event_target):
+        if event_target.source_member:
+            self.__trigger_validating_event(event_target.source_member)
+        event_target.validating(context = self)
+
+    @property
+    def member(self):
+        return self.__member
+
+    @property
+    def value(self):
+        return self.__value
+
+    @property
+    def collection_index(self):
+        return self.__collection_index
+
+    @property
+    def language(self):
+        return self.__language
+
+    @property
+    def parent_context(self):
+        return self.__parent_context
+
+    def path(self, include_self = True):
+
+        if self.__parent_context:
+            for ancestor in self.__parent_context.path():
+                yield ancestor
+
+        if include_self:
+            yield self
+
+    def get_node_at_level(self, level):
+
+        if level < 0:
+            n = level
+            context = self
+
+            while n < -1:
+                context = context.__parent_context
+                if context is None:
+                    raise IndexError(
+                        "Invalid validation context level: %r" %
+                        level
+                    )
+                n += 1
+            return context
+        else:
+            return list(self.path)[level]
 
     def get_value(self, key, default = None, language = None, stack_node = -1):
 
-        value = self.__stack[stack_node][1]
+        context = self.get_node_at_level(stack_node)
+        value = context.get_object()
 
         for part in key.split("."):
             value = get(value, part, undefined, language)
@@ -44,35 +117,17 @@ class ValidationContext(DictWrapper):
 
         return value
 
-    def enter(self, member, validable, **kwargs):        
-        """Begins a nested validation context, which will be stacked uppon the
-        active context. All key/value pairs defined by the parent context will
-        be accessible from the child. On the other hand, changes done to the
-        child won't propagate to its parent.
-        
-        @param member: The member that requests the creation of the nested
-            context. Will be added to the current validation L{path}.
-        @type member: L{Member<member.Member>}
+    def get_object(self, stack_node = -1):
+        from cocktail.schema.schemaobject import SchemaObject
+        context = self.get_node_at_level(stack_node)
+        while context is not None:
+            if isinstance(context.value, (SchemaObject, dict)):
+                return context.value
+            context = context.__parent_context
 
-        @param validable: The object being validated by the member that
-            requests the creation of the nested context. Will be added to the
-            current validation L{path}.
-        
+    def __bool__(self):
+        return True
 
-        @param kwargs: Key/value pairs used to initialize the context.
-        """
-        self._items = self.__stack[-1][2].copy()
-        self._items.update(kwargs)
-        self.__stack.append((member, validable, self._items))
-
-    def leave(self):
-
-        if len(self.__stack) == 1:
-            raise ValueError("No context to pop")
-
-        self.__stack.pop()
-        self._member, self._validable, self._items = self.__stack[-1]
-        
     def __setitem__(self, key, value):
         self._items[key] = value
 
@@ -81,16 +136,4 @@ class ValidationContext(DictWrapper):
 
     def update(self, items, **kwargs):
         self._items.update(items, kwargs)
-
-    @getter
-    def member(self):
-        return self.__stack[-1][0]
-
-    @getter
-    def validable(self):
-        return self.__stack[-1][1]
-
-    def path(self):
-        for member, validable, context_dict in self.__stack[1:]:
-            yield (member, validable, context_dict.get("collection_index"))
 

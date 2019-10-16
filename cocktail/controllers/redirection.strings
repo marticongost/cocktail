@@ -1,0 +1,26 @@
+
+[cocktail.controllers.redirection]
+
+    [post_redirection]
+
+        [title]
+        ca: Redirecció
+        es: Redirección
+        en: Redirecting
+
+        [explanation]
+        ca:
+            S'està redirigint la petició. Si no ets automàticament redirigit,
+            prem el botó per continuar navegant pel web.
+        es:
+            Se está redirigiendo la petición. Si no eres automáticamente
+            redirigido pulsa el botón para proseguir con la navegación.
+        en:
+            Redirection in process. If you aren't redirected automatically
+            press the button to proceed.
+
+        [submit_button]
+        ca: Continuar
+        es: Continuar
+        en: Continue
+

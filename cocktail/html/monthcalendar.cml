@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?py
+import calendar
+from datetime import date, datetime, timedelta
+from cocktail.translations import weekday_name, weekday_abbr
+?>
+
+<div
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:py="http://www.whads.com/ns/cocktail/templates">
+
+    <?py-class
+    __calendar_page = None
+    __cells = None
+    year = None
+    month = None
+    abbreviated_headers = True
+    min_rows = None
+
+    def _get_calendar_page(self):
+        return self.__calendar_page
+
+    def _set_calendar_page(self, page):
+        self.__calendar_page = page
+        if page is None:
+            self.year = None
+            self.month = None
+        else:
+            self.year = page.year
+            self.month = page.month
+
+    calendar_page = property(_get_calendar_page, _set_calendar_page)
+
+    def _get_month_dates(self):
+
+        month_cal = calendar.monthcalendar(self.year, self.month)
+
+        # Fix the first row in the calendar
+        first_week = []
+        weeks = [first_week]
+        one_day = timedelta(days = 1)
+        current_date = None
+
+        for day in reversed(month_cal[0]):
+            if day:
+                current_date = date(self.year, self.month, day)
+            else:
+                current_date = current_date - one_day
+            first_week.append(current_date)
+
+        first_week.reverse()
+
+        # Leave the middle rows untouched
+        for week in month_cal[1:-1]:
+            weeks.append([date(self.year, self.month, day) for day in week])
+
+        # Fix the last row
+        current_date = None
+        last_week = []
+        weeks.append(last_week)
+
+        for day in month_cal[-1]:
+            if day:
+                current_date = date(self.year, self.month, day)
+            else:
+                current_date = current_date + one_day
+            last_week.append(current_date)
+
+        # Pad the end with rows reaching up to min_rows
+        if self.min_rows:
+            while len(weeks) < self.min_rows:
+                extra_week = []
+                weeks.append(extra_week)
+                for i in range(7):
+                    current_date = current_date + one_day
+                    extra_week.append(current_date)
+
+        return weeks
+
+    def get_cell(self, day):
+        if isinstance(day, datetime):
+            day = day.date()
+        return self.__cells.get(day)
+    ?>
+
+    <?py
+    self.__cells = {}
+    ?>
+
+    <py:binding>
+        <?py
+        self._today = date.today()
+
+        if self.year is None:
+            self.year = self._today.year
+
+        if self.month is None:
+            self.month = self._today.month
+        ?>
+    </py:binding>
+
+    <py:ready>
+        <?py
+        element["data-calendar-page"] = "%d-%d" % (self.year, self.month)
+        ?>
+    </py:ready>
+
+    <table py:id="calendar_grid">
+        <thead py:local_id="thead">
+            <tr>
+                <py:ready>
+                    <?py
+                    if self.abbreviated_headers:
+                        get_column_label = weekday_abbr
+                    else:
+                        get_column_label = weekday_name
+                    ?>
+                    <th py:for="week_day in range(7)">
+                        ${get_column_label(week_day)}
+                    </th>
+                </py:ready>
+            </tr>
+        </thead>
+        <tbody py:local_id="tbody"/>
+    </table>
+
+    <py:ready>
+        <py:with py:element="self.calendar_grid.tbody">
+            <py:new
+                py:element="self.create_week_row(i, days)"
+                py:for="i, days in enumerate(self._get_month_dates())"/>
+        </py:with>
+    </py:ready>
+
+    <tr py:def="week_row" py:args="index, days">
+        <?py
+        element.add_class("week%d" % index)
+        if (days[0].year, days[0].month) > (self.year, self.month):
+            element.add_class("padding_row")
+        ?>
+        <py:new
+            py:element="self.create_day_cell(day)"
+            py:for="day in days"/>
+    </tr>
+
+    <td py:def="day_cell" py:args="day">
+        <?py
+        if day.month != self.month:
+            element.add_class("other_month")
+        if day == self._today:
+            element.add_class("today")
+        self.__cells[day] = element
+        ?>
+        <py:new
+            py:element="self.create_day_label(day)"
+            py:local_id="label"/>
+    </td>
+
+    <span py:def="day_label" py:args="day">
+        ${day.day}
+    </span>
+
+</div>
+

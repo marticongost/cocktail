@@ -40,7 +40,7 @@ class ComparisonTestCase(TempStorageMixin, TestCase):
         assert LowerExpression(None, 3).eval({})
 
     def test_eval_lower_equal(self):
-        from cocktail.schema.expressions import LowerEqualExpression        
+        from cocktail.schema.expressions import LowerEqualExpression
         assert not LowerEqualExpression(3, 2).eval({})
         assert LowerEqualExpression(2, 2).eval({})
         assert LowerEqualExpression(1, 2).eval({})
@@ -86,14 +86,14 @@ class ComparisonTestCase(TempStorageMixin, TestCase):
         assert not between(None, None, None, exclude_min = True)
 
     def test_eval_range_intersection(self):
-        
+
         # TODO: solve invalid operand order
 
         from cocktail.schema.expressions import RangeIntersectionExpression
 
         def intersect(a, b, c, d, **kwargs):
             return RangeIntersectionExpression(a, b, c, d, **kwargs).eval({})
-        
+
         # Completely apart
         assert not intersect(1, 2, 3, 4)
         assert not intersect(3, 4, 1, 2)
@@ -101,7 +101,7 @@ class ComparisonTestCase(TempStorageMixin, TestCase):
         assert not intersect(2, 3, None, 1)
         assert not intersect(1, 2, 3, None)
         assert not intersect(3, None, 1, 2)
-        
+
         # Single point intersection
         assert intersect(1, 2, 2, 3)
         assert not intersect(3, 4, 2, 3)
@@ -120,9 +120,9 @@ class ComparisonTestCase(TempStorageMixin, TestCase):
 
         # Equal
         assert not intersect(1, 1, 1, 1)
-        assert not intersect(1, 1, 1, 1, exclude_min = True) 
+        assert not intersect(1, 1, 1, 1, exclude_min = True)
         assert intersect(1, 1, 1, 1, exclude_max = False)
-        assert not intersect(1, 1, 1, 1, exclude_min = True, exclude_max = False) 
+        assert not intersect(1, 1, 1, 1, exclude_min = True, exclude_max = False)
 
         assert intersect(1, 2, 1, 2)
         assert intersect(1, 2, 1, 2, exclude_min = True)
@@ -279,7 +279,7 @@ class DescendsFromTestCase(TempStorageMixin, TestCase):
 
     def test_eval_descends_from_one_to_many_bidirectional(self):
         from cocktail.schema.expressions import DescendsFromExpression
-        
+
         a = self.Document()
         b = self.Document()
         c = self.Document()

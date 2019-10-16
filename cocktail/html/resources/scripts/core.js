@@ -1,4 +1,10 @@
 
+if (!jQuery.browser) {
+    jQuery.browser = {
+        msie: navigator.userAgent.toLowerCase().indexOf("msie") != 1
+    };
+}
+
 var cocktail = {};
 cocktail.__initialized = false;
 cocktail.__clientModels = {};
@@ -6,53 +12,14 @@ cocktail.__autoId = 0;
 cocktail.__iframeId = 0;
 cocktail.__bindings = [];
 cocktail.__bindingId = 0;
-cocktail.__clientParams = {};
-cocktail.__clientCode = {};
 
 cocktail.init = function (root) {
-    
+
     if (!cocktail.__initialized) {
         cocktail.__initialized = true;
-        jQuery(document.body).addClass("scripted");
     }
-    
+
     root = root || document.body;
-
-    // Set server supplied parameters
-    var remainingParams = {};
-
-    for (var id in cocktail.__clientParams) {
-        var target = cocktail._findById(root, id);
-        var params = cocktail.__clientParams[id];
-        if (target) {
-            for (var key in params) {
-                target[key] = params[key];
-            }
-        }
-        else {
-            remainingParams[id] = params;
-        }
-    }
-
-    cocktail.__clientParams = remainingParams;
-
-    // Apply server supplied code
-    var remainingCode = {};
-
-    for (var id in cocktail.__clientCode) {
-        var target = cocktail._findById(root, id);
-        var code = cocktail.__clientCode[id];
-        if (target) {
-            for (var i = 0; i < code.length; i++) {
-                code[i].call(target);
-            }
-        }
-        else {
-            remainingCode[id] = code;
-        }
-    }
-
-    cocktail.__clientCode = remainingCode;
 
     // Apply bindings
     for (var i = 0; i < cocktail.__bindings.length; i++) {
@@ -79,7 +46,7 @@ cocktail.bind = function (/* varargs */) {
     else {
         throw "Invalid binding parameters";
     }
-    
+
     if (binding.children) {
         if (binding.children instanceof Array) {
             for (var i = 0; i < binding.children.length; i++) {
@@ -121,7 +88,7 @@ cocktail.bind = function (/* varargs */) {
         }
 
         var $root = jQuery(root);
-        
+
         if (root == body) {
             var $matches = jQuery(body).find(binding.selector);
         }
@@ -160,6 +127,20 @@ cocktail.bind = function (/* varargs */) {
     return binding;
 }
 
+cocktail.bind("[data-cocktail-params]", function ($element) {
+    var json = this.getAttribute("data-cocktail-params");
+    var params = jQuery.parseJSON(json);
+    for (var key in params) {
+        this[key] = params[key];
+    }
+});
+
+cocktail.bind("[data-cocktail-code]", function ($element) {
+    var code = this.getAttribute("data-cocktail-code");
+    var func = new Function(code);
+    func.call(this);
+});
+
 cocktail._clientModel = function (modelId, partId /* optional */) {
     var model = this.__clientModels[modelId];
     if (!model) {
@@ -176,7 +157,7 @@ cocktail._clientModel = function (modelId, partId /* optional */) {
         if (!part) {
             part = model.parts[partId] = {
                 params: {},
-                code: []                
+                code: []
             };
         }
         return part;
@@ -201,7 +182,7 @@ cocktail.instantiate = function (modelId, params, initializer) {
     if (!model || !model.html) {
         throw "Undefined client model '" + modelId + "'";
     }
-    
+
     // Variable replacement
     var html = model.html;
 
@@ -211,11 +192,8 @@ cocktail.instantiate = function (modelId, params, initializer) {
     }
 
     // Create the instance
-    var dummy = document.createElement("div");
-    dummy.innerHTML = html;
-    var instance = dummy.firstChild;
+    var instance = jQuery(html)[0];
     instance.id = cocktail.requireId();
-    dummy.removeChild(instance);
 
     if (initializer) {
         initializer.call(instance);
@@ -266,7 +244,7 @@ cocktail.instantiate = function (modelId, params, initializer) {
     if (instance.parentNode && instance.parentNode.nodeType != 11) {
         cocktail.init();
     }
-    // If the instance hasn't been inserted yet, limit bindings to the 
+    // If the instance hasn't been inserted yet, limit bindings to the
     // instances itself
     else {
         cocktail.init(instance);
@@ -298,9 +276,9 @@ cocktail.setTranslation = function (key, value) {
 }
 
 cocktail.translate = function (key, params) {
-    
+
     var translation = this.__text[key];
-    
+
     if (translation) {
         if (translation instanceof Function) {
             translation = translation.call(this, params || []);
@@ -311,13 +289,24 @@ cocktail.translate = function (key, params) {
             }
         }
     }
-    
+
     return translation;
 }
 
 cocktail.__dialogBackground = null;
 
-cocktail.showDialog = function (content) {
+cocktail.showDialog = function (content, params /* = null */) {
+
+    var $body = jQuery(document.body);
+    var replacing = $body.is(".modal");
+
+    if (replacing) {
+        cocktail.closeDialog({maintainModalState: true});
+    }
+
+    var $content = jQuery(content);
+    content = $content[0];
+    var dialogParent = params && params.parent && jQuery(params.parent)[0] || cocktail.rootElement;
 
     if (!cocktail.__dialogBackground) {
         cocktail.__dialogBackground = document.createElement("div")
@@ -332,31 +321,110 @@ cocktail.showDialog = function (content) {
 
         jQuery(cocktail.__dialogBackground).click(cocktail.closeDialog);
     }
-    document.body.appendChild(cocktail.__dialogBackground);
-    
-    var $content = jQuery(content);
+    var $dialogElements = jQuery(cocktail.__dialogBackground).add($content);
+    $dialogElements.removeClass("dialog_ready");
+    dialogParent.appendChild(cocktail.__dialogBackground);
+
     $content.addClass("dialog");
-    jQuery(document.body)
-        .addClass("modal")
-        .append($content);
+    if (!replacing) {
+        $body.addClass("modal");
+    }
+
+    var closeMode = params && params.closeMode || "detach";
+    $content.data("cocktailDialogCloseMode", closeMode);
+
+    if (closeMode == "hide") {
+        $content.show();
+    }
+
+    if (content.parentNode != dialogParent) {
+        dialogParent.appendChild($content.get(0));
+    }
+
+    setTimeout(function () {
+        $dialogElements.addClass("dialog_ready");
+    }, 100);
+
+    if (!params || params.center || params.center === undefined) {
+        cocktail.center(content);
+    }
+
+    if (params && params.animation == "fade") {
+        if (!replacing) {
+            jQuery(cocktail.__dialogBackground)
+                .css("opacity", 0)
+                .animate({"opacity": 1}, 1000);
+        }
+        $content
+            .css("opacity", 0)
+            .animate({"opacity": 1}, 1000);
+    }
+
+    $content.trigger("dialogOpened");
 }
 
 cocktail.center = function (element) {
-    var windowWidth = window.innerWidth || document.documentElement.clientWidth;
-    var windowHeight = window.innerHeight || document.documentElement.clientHeight;
-    element.style.left = (windowWidth / 2 - element.offsetWidth / 2) + "px";
-    element.style.top = (windowHeight / 2 - element.offsetHeight / 2) + "px";
+    element = jQuery(element)[0];
+    function center() {
+        var windowWidth = window.innerWidth || document.documentElement.clientWidth;
+        var windowHeight = window.innerHeight || document.documentElement.clientHeight;
+        element.style.left = (windowWidth / 2 - element.offsetWidth / 2) + "px";
+        element.style.top = (windowHeight / 2 - element.offsetHeight / 2) + "px";
+    }
+    center();
+    cocktail.waitForImages(element).done(center);
 }
 
-cocktail.closeDialog = function () {
-    // We use a custom remove function because jQuery.remove()
-    // clears event handlers
-    function remove() { this.parentNode.removeChild(this); };
-    jQuery("body > .dialog-background").each(remove);
-    jQuery("body > .dialog")
-        .each(remove)
-        .trigger("dialogClosed");
-    jQuery(document.body).removeClass("modal");
+cocktail.waitForImages = function (element) {
+    var deferreds = [];
+    jQuery(element).find("img").each(function () {
+        var deferred = jQuery.Deferred();
+        if (this.complete) {
+            deferred.resolve();
+        }
+        else {
+            jQuery(this).on("load", function () {
+                deferred.resolve();
+            });
+        }
+        deferreds.push(deferred);
+    });
+    return jQuery.when.apply(jQuery, deferreds);
+}
+
+cocktail.closeDialog = function (params) {
+
+    var maintainModalState = params && params.maintainModalState;
+    var $dialog = jQuery(".dialog");
+    var $dialogBackground = jQuery(".dialog-background");
+
+    $dialog.trigger({
+        type: "dialogClosing",
+        background: $dialogBackground[0],
+        parameters: params
+    });
+
+    if (!maintainModalState) {
+        $dialogBackground.detach();
+    }
+
+    var closeMode = $dialog.data("cocktailDialogCloseMode");
+    if (closeMode == "detach") {
+        $dialog.detach();
+    }
+    else if (closeMode == "hide") {
+        $dialog.hide();
+    }
+
+    $dialog.trigger({
+        type: "dialogClosed",
+        background: $dialogBackground[0],
+        parameters: params
+    });
+
+    if (!maintainModalState) {
+        jQuery(document.body).removeClass("modal");
+    }
 }
 
 cocktail.createElement = function (tag, name, type) {
@@ -433,7 +501,7 @@ cocktail.prepareBackgroundSubmit = function (params) {
         if (params.disabledControls) {
             params.disabledControls.removeAttr("disabled");
         }
-        
+
         if (params.callback) {
             params.callback.call(params.form, params, doc);
         }
@@ -444,11 +512,11 @@ cocktail.prepareBackgroundSubmit = function (params) {
 
     params.form.target = iframe.name;
 }
-    
+
 cocktail.submit = function (params) {
     cocktail.prepareBackgroundSubmit(params);
     params.form.submit();
-    
+
     // Disable all form controls for the duration of the submit operation
     if (params.disableForm) {
         var $form = jQuery(params.form);
@@ -479,7 +547,7 @@ cocktail._updateElement = function (params) {
     params.$container = jQuery("<div>").html(bodyHTML);
     var target = params.element;
     var source = params.$container.find(params.fragment || "*").get(0);
-    
+
     if (source) {
 
         // Assign CSS classes
@@ -498,7 +566,7 @@ cocktail._updateElement = function (params) {
         var scriptStart = params.data.indexOf(cocktail.CLIENT_ASSETS_MARK)
         if (scriptStart != -1) {
             scriptStart += cocktail.CLIENT_ASSETS_MARK.length;
-            var scriptEnd = params.data.indexOf("</script>", scriptStart);
+            var scriptEnd = params.data.indexOf("<" + "/script>", scriptStart);
             if (scriptEnd != -1) {
                 clientAssets = params.data.substring(scriptStart, scriptEnd);
             }
@@ -539,18 +607,18 @@ if (!jQuery.fn.reverse) {
 
 // Add a :focus selector
 jQuery.extend(jQuery.expr[':'], {
-    focus: function(element) { 
-        return element == document.activeElement; 
+    focus: function(element) {
+        return element == document.activeElement;
     }
 });
 
 cocktail.findPrevious = function (element, filter /* optional */) {
-    
+
     var $iterator = jQuery(element);
 
     while ($iterator.length) {
         var $prev = $iterator.prev();
-        
+
         while ($prev.length) {
             if (!filter || $prev.filter(filter).length) {
                 return $prev.get(0);
@@ -559,14 +627,14 @@ cocktail.findPrevious = function (element, filter /* optional */) {
             if (filter) {
                 $descendants = $descendants.filter(filter);
             }
-            if ($descendants.length) {                
+            if ($descendants.length) {
                 return $descendants.last().get(0);
             }
             $prev = $prev.prev();
         }
 
         $iterator = $iterator.parent();
-        
+
         if ($iterator.length) {
             if (!filter || $iterator.filter(filter).length) {
                 return $iterator.get(0);
@@ -576,11 +644,11 @@ cocktail.findPrevious = function (element, filter /* optional */) {
 }
 
 cocktail.findNext = function (element, filter /* optional */) {
-    
+
     var $iterator = jQuery(element);
 
     while ($iterator.length) {
-        
+
         var $next = $iterator;
         var first = true;
 
@@ -604,7 +672,7 @@ cocktail.findNext = function (element, filter /* optional */) {
         }
 
         $iterator = $iterator.parent();
-        
+
         if ($iterator.length) {
             if (!filter || $iterator.filter(filter).length) {
                 return $iterator.get(0);
@@ -614,18 +682,18 @@ cocktail.findNext = function (element, filter /* optional */) {
 }
 
 cocktail.isVisible = function (element, recursive) {
-    
-    var $element = jQuery(element);    
-    if ($element.css("visibility") == "hidden" 
+
+    var $element = jQuery(element);
+    if ($element.css("visibility") == "hidden"
         || $element.css("display") == "none") {
         return false;
     }
-    
+
     if (recursive && element.parentNode && element != document.body) {
         return cocktail.isVisible(element.parentNode, true);
     }
-    
-    return true;    
+
+    return true;
 }
 
 cocktail.acceptsFocus = function (element) {
@@ -655,7 +723,7 @@ cocktail.focusPrevious = function (item) {
     var target;
     var origin = item || jQuery(":focus").get(0);
     var focusable = function () { return cocktail.acceptsFocus(this); }
-    
+
     if (origin) {
         target = cocktail.findPrevious(origin, focusable);
     }
@@ -669,7 +737,7 @@ cocktail.focusPrevious = function (item) {
     }
 }
 
-cocktail.declare = function (dottedName) {
+cocktail.declare = function (dottedName, content /* optional */) {
     var obj;
     var parts = dottedName.split(".");
     var visitedParts = [];
@@ -689,6 +757,25 @@ cocktail.declare = function (dottedName) {
             obj.toString = function () { return this.__dottedName__; }
         }
         container = obj;
+    }
+
+    if (content) {
+        for (var k in content) {
+            obj[k] = content[k];
+        }
+    }
+
+    return obj;
+}
+
+cocktail.getVariable = function (dottedName, defaultValue /* = undefined */) {
+    var parts = dottedName.split(".");
+    var obj = window;
+    for (var i = 0; i < parts.length; i++) {
+        obj = obj[parts[i]];
+        if (obj === undefined) {
+            return defaultValue;
+        }
     }
     return obj;
 }
@@ -717,4 +804,167 @@ jQuery(function () {
         };
     });
 });
+
+// Highlight keyboard shortcuts
+cocktail.bind("[accesskey]", function () {
+
+    var key = this.getAttribute("accesskey").toLowerCase();
+    if (!key) {
+        return;
+    }
+
+    for (var i = 0; i < this.childNodes.length; i++) {
+
+        var node = this.childNodes[i];
+
+        if (node.nodeType == 3) {
+            var text = node.nodeValue;
+            var pos = text.toLowerCase().indexOf(key);
+
+            if (pos != -1) {
+
+                this.insertBefore(
+                    document.createTextNode(text.substring(0, pos)),
+                    node
+                );
+
+                var shortcutHighlight = document.createElement('u');
+                shortcutHighlight.className = "shortcut";
+                shortcutHighlight.appendChild(document.createTextNode(text.charAt(pos)));
+                this.insertBefore(shortcutHighlight, node);
+
+                this.insertBefore(
+                    document.createTextNode(text.substring(pos + 1)),
+                    node
+                );
+
+                this.removeChild(node);
+                break;
+            }
+        }
+    }
+});
+
+cocktail.normalizeResourceURI = function (uri) {
+    var i = uri.indexOf("://");
+    if (i != -1) {
+        var scheme = uri.substr(0, i);
+        var repoURI = cocktail.resourceRepositories[scheme];
+        if (repoURI) {
+            uri = repoURI + uri.substr(i + 3);
+        }
+    }
+    return uri;
+}
+
+cocktail.getScrollbarWidth = function () {
+
+    if (!cocktail._scrollbarWidth) {
+
+        var outer = document.createElement("div");
+        outer.style.visibility = "hidden";
+        outer.style.width = "100px";
+        document.body.appendChild(outer);
+
+        var widthWithoutScroll = outer.offsetWidth;
+        outer.style.overflow = "scroll";
+
+        var inner = document.createElement("div");
+        inner.style.width = "100%";
+        outer.appendChild(inner);
+
+        var widthWithScroll = inner.offsetWidth;
+        outer.parentNode.removeChild(outer);
+
+        cocktail._scrollbarWidth = widthWithoutScroll - widthWithScroll;
+    }
+
+    return cocktail._scrollbarWidth;
+}
+
+cocktail.loadSVG = function (url, container) {
+    var child;
+    while (child = container.lastChild) {
+        container.removeChild(child);
+    }
+    return jQuery.ajax({url: cocktail.normalizeResourceURI(url)})
+        .done(function (xml) {
+            container.appendChild(xml.documentElement);
+        });
+}
+
+cocktail.isEmptyValue = function (value) {
+    return (
+        value === null
+        || value === undefined
+        || value === ""
+        || (value instanceof Array && !value.length)
+        || (value instanceof Set && !value.size)
+    );
+}
+
+cocktail.setShortcutIcon = function (href, type) {
+
+    href = cocktail.normalizeResourceURI(href);
+    var link = document.querySelector("link[rel='shortcut icon']");
+    var imageResolution;
+
+    // Some browsers don't support SVG shortcut icons; rasterize SVG files using a
+    // canvas element and set the shortcut icon using a data: URL.
+    if (type == "image/svg+xml") {
+        imageResolution = new Promise(function (resolve, reject) {
+            var img = document.createElement("img");
+            img.addEventListener("load", function () {
+
+                // Resize to fit a 48 x 48 square
+                var iconSize = 48;
+                var w = img.width;
+                var h = img.height;
+
+                if (w > h) {
+                    h = Math.floor(h * iconSize / w);
+                    w = iconSize;
+                }
+                else {
+                    w = Math.floor(w * iconSize / h);
+                    h = iconSize;
+                }
+
+                // Render, centered in the square
+                var canvas = document.createElement("canvas");
+                canvas.width = iconSize;
+                canvas.height = iconSize;
+                var ctx = canvas.getContext("2d");
+                ctx.drawImage(
+                    img,
+                    iconSize / 2 - w / 2,
+                    iconSize / 2 - h / 2,
+                    w,
+                    h
+                );
+
+                resolve(canvas.toDataURL());
+            });
+            img.addEventListener("error", function () { reject(); });
+            img.src = cocktail.normalizeResourceURI(href);
+        });
+    }
+    else {
+        imageResolution = Promise.resolve(href);
+    }
+
+    imageResolution.then(function (href) {
+        if (link) {
+            link.type = type;
+            link.href = href;
+        }
+        else {
+            link = document.createElement("link");
+            link.rel = "shortcut icon";
+            link.type = type;
+            link.href = href;
+            document.head.appendChild(link);
+        }
+    });
+}
 

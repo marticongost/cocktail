@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -16,22 +16,24 @@ class VimeoPlayer(Element):
     video_id = None
     vimeo_autoplay = False
     vimeo_loop = False
-    vimeo_api = False
     vimeo_title = True
     vimeo_byline = True
     vimeo_portrait = True
     vimeo_color = None
+    javascript_api = True
 
     def _build(self):
         self["frameborder"] = "0"
 
     def _ready(self):
 
-        if self.vimeo_api:
-            self.require_id()
+        if self.javascript_api:
             self.add_class("scriptable_video_player")
-            self.add_resource("/cocktail/scripts/froogaloop2.min.js")
-            self.add_resource("/cocktail/scripts/VimeoPlayer.js")
+            self.add_resource(
+                "%s://player.vimeo.com/api/player.js"
+                % ("https" if self.https else "http")
+            )
+            self.add_resource("cocktail://scripts/vimeoplayer.js")
 
         self["src"] = self.get_video_url()
         self["width"] = self.width
@@ -52,14 +54,10 @@ class VimeoPlayer(Element):
         params = [
             "autoplay=%d" % self.vimeo_autoplay,
             "loop=%d" % self.vimeo_loop,
-            "api=%d" % self.vimeo_api,
             "title=%d" % self.vimeo_title,
             "byline=%d" % self.vimeo_byline,
             "portrait=%d" % self.vimeo_portrait
         ]
-
-        if self.vimeo_api:
-            params.append("player_id=" + self["id"])
 
         if self.vimeo_color:
             params.append("color=" + self.vimeo_color.lstrip("#"))

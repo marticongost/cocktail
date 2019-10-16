@@ -1,0 +1,24 @@
+
+@keyframes fadein {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+:host {
+    box-sizing: border-box;
+    display: block;
+    flex: 1 1 auto;
+}
+
+:host([selected='false']) {
+    display: none !important;
+}
+
+:host-context([selectingInitialContent='false']):host([selected='true']) {
+    animation: fadein .7s;
+}
+

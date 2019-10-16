@@ -1,13 +1,14 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 Provides a class to describe members that handle sets of values.
 
-@author:		Martí Congost
-@contact:		marti.congost@whads.com
-@organization:	Whads/Accent SL
-@since:			July 2008
+@author:        Martí Congost
+@contact:       marti.congost@whads.com
+@organization:  Whads/Accent SL
+@since:         July 2008
 """
-from cocktail.modeling import getter, InstrumentedDict
+from cocktail.modeling import InstrumentedDict, DictWrapper
+from cocktail.schema.member import Member
 from cocktail.schema.schemacollections import (
     Collection, RelationCollection, add, remove
 )
@@ -20,7 +21,7 @@ class Mapping(Collection):
         Specified as a member, which will be used as the validator for all
         values added to the collection.
     @type: L{Member<member.Member>}
-    
+
     @ivar values: The schema that all values in the collection must comply
         with. Specified as a member, which will be used as the validator for
         all values added to the collection.
@@ -29,35 +30,75 @@ class Mapping(Collection):
     keys = None
     values = None
     default_type = dict
-    
-    @getter
+    get_item_key = None
+
+    @property
     def related_type(self):
         return self.values and self.values.type
 
+    def translate_value(self, value, language = None, **kwargs):
+        if self.keys and self.values and value:
+            return ", ".join(
+                "%s: %s" % (
+                    self.keys.translate_value(key),
+                    self.values.translate_value(value)
+                )
+                for key, value in value.items()
+            )
+        return Member.translate_value(self, value, language, **kwargs)
+
+    def to_json_value(self, value, **options):
+
+        if value is None:
+            return None
+
+        return dict(
+            (
+                self.keys.to_json_value(k, **options),
+                self.values.to_json_value(v, **options)
+            )
+            for k, v in value.items()
+        )
+
+    def from_json_value(self, value, **options):
+
+        if value is None:
+            return None
+
+        return (self.type or dict)(
+            (
+                self.keys.from_json_value(k, **options),
+                self.values.from_json_value(v, **options)
+            )
+            for k, v in value.items()
+        )
+
     # Validation
     #--------------------------------------------------------------------------
-    def items_validation_rule(self, value, context):
+    def _items_validation(self, context):
 
-        if value is not None and self.name != "translations":
+        if self.name != "translations":
 
             # Item validation
             keys = self.keys
             values = self.values
 
             if keys is not None or values is not None:
-                
-                context.enter(self, value)
-    
-                try:
-                    for key, value in value.iteritems():
-                        if keys is not None:
-                            for error in keys.get_errors(key, context):
-                                yield error
-                        if values is not None:
-                            for error in values.get_errors(value, context):
-                                yield error
-                finally:
-                    context.leave()
+
+                for key, value in context.value.items():
+                    if keys is not None:
+                        for error in keys.get_errors(
+                            key,
+                            parent_context = context
+                        ):
+                            yield error
+                    if values is not None:
+                        for error in values.get_errors(
+                            value,
+                            collection_index = key,
+                            parent_context = context
+                        ):
+                            yield error
 
 
 # Generic add/remove methods
@@ -76,14 +117,18 @@ remove.implementations[dict] = _mapping_remove
 #------------------------------------------------------------------------------
 
 class RelationMapping(RelationCollection, InstrumentedDict):
-    
+
     def __init__(self, items = None, owner = None, member = None):
         self.owner = owner
         self.member = member
-        InstrumentedDict.__init__(self)
-        if items:
-            for item in items:
-                self.add(item)
+
+        if items is not None and not isinstance(items, (dict, DictWrapper)):
+            items = dict(
+                (self.get_item_key(item), item)
+                for item in items
+            )
+
+        InstrumentedDict.__init__(self, items)
 
     def get_item_key(self, item):
         if self.member.get_item_key:
@@ -93,34 +138,9 @@ class RelationMapping(RelationCollection, InstrumentedDict):
                 "the collection hasn't overriden its get_item_key() method."
                 % item)
 
-    def item_added(self, item):
-        RelationCollection.item_added(self, item[1])
-
-    def item_removed(self, item):
-        RelationCollection.item_removed(self, item[1])
-
     def add(self, item):
         self[self.get_item_key(item)] = item
 
     def remove(self, item):
         del self[self.get_item_key(item)]
-
-    def set_content(self, new_content):
-
-        if new_content is None:
-            self.clear()
-        else:
-            new_content = set(
-                (self.get_item_key(item), item)
-                for item in new_content
-            )
-            
-            previous_content = set(self._items.iteritems())
-            self._items = dict(new_content)
-
-            for pair in previous_content - new_content:
-                self.item_removed(pair)
-
-            for pair in new_content - previous_content:
-                self.item_added(pair)
 

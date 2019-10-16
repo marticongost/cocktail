@@ -1,0 +1,144 @@
+@init
+from cocktail.stringutils import decapitalize
+from cocktail.translations import translate_locale
+@end
+
+[cocktail.controllers.userfilter]
+
+    [BinaryFilter]
+
+        [members]
+
+            [language]
+            ca: en
+            es: en
+            en: in
+
+            [operator]
+
+                [values]
+
+                    [eq]
+                    ca: Igual a
+                    es: Igual a
+                    en: Equals
+
+                    [ne]
+                    ca: Diferent de
+                    es: Distinto de
+                    en: Not equals
+
+                    [gt]
+                    ca: Major que
+                    es: Mayor que
+                    en: Greater than
+
+                    [ge]
+                    ca: Major o igual que
+                    es: Mayor o igual que
+                    en: Greater or equal than
+
+                    [lt]
+                    ca: Menor que
+                    es: Menor que
+                    en: Lower than
+
+                    [le]
+                    ca: Menor o igual que
+                    es: Menor o igual que
+                    en: Lower or equal than
+
+                    [sr]
+                    ca: Conté
+                    es: Contiene
+                    en: Contains
+
+                    [sw]
+                    ca: Comença per
+                    es: Empieza por
+                    en: Starts with
+
+                    [ew]
+                    ca: Acaba en
+                    es: Acaba en
+                    en: Ends with
+
+                    [re]
+                    ca: Coincideix amb l'expressió regular
+                    es: Coincide con la expresión regular
+                    en: Matches regular expression
+
+                    [cn]
+                    ca: Conté
+                    es: Contiene
+                    en: Contains
+
+                    [nc]
+                    ca: No conté
+                    es: No contiene
+                    en: Doesn't contain
+
+    [BooleanFilter]
+
+        [members]
+
+            [language]
+            ca: en
+            es: en
+            en: in
+
+                [none]
+                ca: qualsevol idioma
+                es: cualquier idioma
+                en: any language
+
+    [GlobalSearchFilter]
+
+        [instance]
+        ca: Conté les paraules
+        es: Contiene las palabras
+        en: Has the words
+
+        [translated_into(locale)]
+        ca: en ${decapitalize(translate_locale(locale))}
+        es: en ${decapitalize(translate_locale(locale))}
+        en: in ${decapitalize(translate_locale(locale))}
+
+    [DateTimeRangeFilter]
+
+        [instance]
+        ca: Rang de dates
+        es: Rango de fechas
+        en: Date range
+
+        [members]
+
+            [start_date]
+            ca: Des de
+            es: Desde
+            en: From
+
+            [end_date]
+            ca: Fins a
+            es: Hasta
+            en: Until
+
+    [DescendsFromFilter]
+
+        [instance]
+        ca: Descendència
+        es: Descendencia
+        en: Descendancy
+
+        [members]
+
+            [root]
+            ca: Tipus
+            es: Tipo
+            en: Type
+
+            [include_self]
+            ca: Arrel inclosa
+            es: Raíz incluida
+            en: Root included
+

@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 Provides a member that handles textual values.
 
 @author:		Martí Congost
@@ -16,13 +16,13 @@ from cocktail.schema.exceptions import MinLengthError, \
 
 class String(Member):
     """A member that handles textual values.
-    
+
     @ivar min: A constraint that establishes the minimum number of characters
         accepted by the member. If set to a value other than None, setting the
         member to a string shorter than this limit will trigger a
         L{MinLengthError<exceptions.MinLengthError>} validation error.
     @type min: int
-    
+
     @ivar max: A constraint that limits the maximum number of characters
         accepted by the member. If set to a value other than None, setting the
         member to a string longer than this limit will trigger a
@@ -30,23 +30,12 @@ class String(Member):
     @type max: int
     """
 
-    type = basestring
+    type = str
     min = None
     max = None
     text_search = True
     _format = None
     translatable_enumeration = True
-
-    def __init__(self, *args, **kwargs):
-        Member.__init__(self, *args, **kwargs)
-        self.add_validation(String.string_validation_rule)
-
-    def translate_value(self, value, language = None, **kwargs):
-
-        if value and self.translatable_enumeration and self.enumeration:
-            return translations(self, suffix = "=" + value)
-
-        return value or ""
 
     def _get_format(self):
         return self._format
@@ -54,7 +43,7 @@ class String(Member):
     def _set_format(self, value):
 
         # Normalize strings to regular expressions
-        if isinstance(value, basestring):
+        if isinstance(value, str):
             value = re.compile(value)
 
         self._format = value
@@ -78,30 +67,33 @@ class String(Member):
         @type: int
         """)
 
-    def string_validation_rule(self, value, context):
+    def _default_validation(self, context):
         """Validation rule for string values. Checks the L{min}, L{max} and
         L{format} constraints."""
 
-        if value is not None:
+        for error in Member._default_validation(self, context):
+            yield error
+
+        if context.value is not None:
 
             # Min length
             min = self.resolve_constraint(self.min, context)
 
-            if min is not None and len(value) < min:
-                yield MinLengthError(self, value, context, min)
+            if min is not None and len(context.value) < min:
+                yield MinLengthError(context, min)
 
             # Max length
             else:
                 max = self.resolve_constraint(self.max, context)
 
-                if max is not None and len(value) > max:
-                    yield MaxLengthError(self, value, context, max)
+                if max is not None and len(context.value) > max:
+                    yield MaxLengthError(context, max)
 
             # Format
             format = self.resolve_constraint(self.format, context)
-            
-            if format is not None and not format.search(value):
-                yield FormatError(self, value, context, format)
+
+            if format is not None and not format.search(context.value):
+                yield FormatError(context, format)
 
     # Special treatment for the 'format' property (regular expressions don't
     # support deep copying)
@@ -111,4 +103,7 @@ class String(Member):
         copy = Member.__deepcopy__(self, memo)
         copy.format = self.format
         return copy
+
+    def parse(self, value: str, **options) -> str:
+        return value
 

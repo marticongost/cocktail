@@ -1,0 +1,160 @@
+
+[cocktail.ui.HTMLEditor]
+
+    [actionSets]
+
+        [format]
+        ca: Format
+        es: Formato
+        en: Format
+
+        [lists]
+        ca: Llistes
+        es: Listas
+        en: Lists
+
+        [tools]
+        ca: Eines
+        es: Herramientas
+        en: Tools
+
+    [actions]
+
+        [block-type]
+        ca: Tipus de bloc
+        es: Tipo de bloque
+        en: Block type
+
+        [bold]
+        ca: Negreta
+        es: Negrita
+        en: Bold
+
+        [italic]
+        ca: Cursiva
+        es: Cursiva
+        en: Italic
+
+        [ul]
+        ca: Llista de punts
+        es: Lista de puntos
+        en: Bullet list
+
+        [ol]
+        ca: Llista ordenada
+        es: Lista ordenada
+        en: Ordered list
+
+        [indent]
+        ca: Indentar
+        es: Indentar
+        en: Indent
+
+        [unindent]
+        ca: Treure indentació
+        es: Quitar indentación
+        en: Unindent
+
+        [link]
+        ca: Inserir enllaç
+        es: Insertar enlace
+        en: Insert link
+
+        [clean]
+        ca: Treure format
+        es: Quitar formato
+        en: Remove format
+
+        [html]
+        ca: Editar el codi font
+        es: Editar el código fuente
+        en: Edit source code
+
+    [LinkEditor]
+
+        [heading]
+        ca: Inserir enllaç
+        es: Insertar enlace
+        en: Insert link
+
+        [form]
+
+            [members]
+
+                [url]
+                ca: Adreça URL
+                es: Dirección URL
+                en: URL address
+
+                [text]
+                ca: Text
+                es: Texto
+                en: Text
+
+                [title]
+                ca: Títol
+                es: Título
+                en: Title
+
+                [rel]
+                *: Rel
+
+                [opensInNewWindow]
+                ca: Obrir a una nova finestra
+                es: Abrir en ventana nueva
+                en: Open in a new window
+
+    [BlockTypeSelector]
+
+        [blockTypes]
+
+            [p]
+            ca: Paràgraf
+            es: Párrafo
+            en: Paragraph
+
+            [h1]
+            ca: Capçalera 1
+            es: Cabecera 1
+            en: Heading 1
+
+            [h2]
+            ca: Capçalera 2
+            es: Cabecera 2
+            en: Heading 2
+
+            [h3]
+            ca: Capçalera 3
+            es: Cabecera 3
+            en: Heading 3
+
+            [h4]
+            ca: Capçalera 4
+            es: Cabecera 4
+            en: Heading 4
+
+            [h5]
+            ca: Capçalera 5
+            es: Cabecera 5
+            en: Heading 5
+
+            [h6]
+            ca: Capçalera 6
+            es: Cabecera 6
+            en: Heading 6
+
+            [div]
+            ca: Bloc genèric (div)
+            es: Bloque genérico (div)
+            en: Generic block (div)
+
+            [blockquote]
+            ca: Cita
+            es: Cita
+            en: Quote
+
+            [code]
+            ca: Bloc de codi
+            es: Bloque de código
+            en: Code block
+

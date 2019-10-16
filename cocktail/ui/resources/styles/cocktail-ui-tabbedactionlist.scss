@@ -1,0 +1,27 @@
+
+@import "cocktail.ui://styles/common";
+
+:host {
+    border: $panel-border;
+    background: $panel-background;
+    overflow: visible;
+    --action-list-button-padding: 0.5em 0.7em;
+    --action-list-icon-width: 1.2em;
+}
+
+#strip {
+    background: none;
+    box-shadow: none;
+    border: none;
+
+    button {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.9em;
+    }
+}
+
+#content {
+    background: none;
+    overflow: visible;
+}
+

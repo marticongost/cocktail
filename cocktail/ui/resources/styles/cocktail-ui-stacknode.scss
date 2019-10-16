@@ -1,0 +1,256 @@
+
+@import "cocktail.ui://styles/common";
+
+@mixin covered-node {
+    border-color: $stacknode-covered-border-color;
+}
+
+@mixin covered-heading {
+    color: $stacknode-covered-heading-color;
+    transform: scale(0.8) translate(-1em, -1.3em);
+}
+
+@mixin covered-header {
+    border-color: $stacknode-covered-panel-border-color;
+    background-color: $stacknode-covered-panel-background-color;
+}
+
+@mixin covered-main {
+    opacity: 0;
+}
+
+@mixin covered-header-content {
+    opacity: 0;
+}
+
+@keyframes doNothing {
+}
+
+@keyframes fadeNode {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+@keyframes coverNode {
+    from {
+        opacity: 1;
+        border-color: $stacknode-exposed-border-color;
+    }
+    to {
+        @include covered-node;
+    }
+}
+
+@keyframes slideContent {
+    from { padding-top: 100%; }
+    to { padding-top: 0%; }
+}
+
+@keyframes coverMain {
+    from {
+        opacity: 1;
+    }
+    to {
+        @include covered-main;
+    }
+}
+
+@keyframes coverHeading {
+    from {
+        color: $stacknode-exposed-heading-color;
+    }
+    to {
+        @include covered-heading;
+    }
+}
+
+@keyframes coverHeader {
+    from {
+        border-color: $stacknode-exposed-panel-border-color;
+        background-color: $stacknode-exposed-panel-background-color;
+    }
+    to {
+        @include covered-header;
+    }
+}
+
+@keyframes coverHeaderContent {
+    0% {
+        opacity: 1;
+    }
+    30% {
+        @include covered-header-content;
+    }
+    100% {
+        @include covered-header-content;
+    }
+}
+
+:host {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    position: relative;
+}
+
+#stackNodeContent {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    border: 1px solid $stacknode-exposed-border-color;
+    border-right: none !important;
+    border-bottom: none !important;
+    box-shadow: 0 0 25px rgba(30,30,30,0.1);
+    background-color: white;
+
+    :host([stackNodeVisibility='covered'][animationStye='none']) & {
+        pointer-events: none;
+        border: 1px solid $stacknode-covered-border-color;
+    }
+}
+
+#header {
+    flex: 0 0 auto;
+    height: 7em;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    background: $panel-background;
+    border-bottom: $panel-border;
+    padding-left: 1.3rem;
+
+    :host([stackNodeVisibility='covered'][animationState='none']) & {
+        @include covered-header;
+    }
+}
+
+#headingWrapper {
+    flex: 0 0 auto;
+    padding: 1em 0;
+    margin-right: 2em;
+}
+
+#heading {
+    font-size: 1.3em;
+    font-weight: bold;
+    color: $stacknode-exposed-heading-color;
+    transform-origin: top left;
+
+    :host([stackNodeVisibility='covered'][animationState='none']) & {
+        @include covered-heading;
+    }
+}
+
+#headerContent {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+
+    :host([stackNodeVisibility='covered']:not([animationState='childClosing'])) & {
+        display: none;
+    }
+
+    .cocktail-ui-ActionList {
+        border: none;
+    }
+}
+
+#main {
+    flex: 1 1 auto;
+    padding: 1em;
+    overflow: hidden;
+
+    :host([animationState='none']) & {
+        overflow-y: auto;
+    }
+
+    :host([stackNodeVisibility='covered'][animationState='none']) & {
+        @include covered-main;
+    }
+}
+
+#stackDescendants {
+    left: 1em;
+    right: 0;
+    top: 3em;
+    bottom: 0;
+    position: absolute;
+    display: flex;
+
+    &:empty {
+        display: none;
+    }
+}
+
+// Fade
+:host([animationType='fade'][animationState='closed']) {
+    opacity: 0;
+}
+
+:host([animationType='fade'][animationState='opening']) {
+    animation: $stacknode-animation-duration reverse fadeNode;
+}
+
+:host([animationType='fade'][animationState='closing']) {
+    animation: $stacknode-animation-duration * 1.5 fadeNode;
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+// Slide
+:host([animationType='slide'][animationState='opening']) {
+    animation: $stacknode-animation-duration slideContent;
+}
+
+:host([animationType='slide'][animationState='closing']) {
+    animation: $stacknode-animation-duration reverse slideContent;
+}
+
+// Child animation
+:host([animationState='childOpening']) {
+    animation: $stacknode-animation-duration coverNode;
+}
+
+:host([animationState='childOpening']) {
+
+    #header {
+        animation: $stacknode-animation-duration coverHeader;
+    }
+
+    #headerContent {
+        animation: $stacknode-animation-duration coverHeaderContent;
+    }
+
+    #heading {
+        animation: $stacknode-animation-duration coverHeading;
+    }
+
+    #main {
+        animation: $stacknode-animation-duration coverMain;
+    }
+}
+
+:host([animationState='childClosing']) {
+    animation: $stacknode-animation-duration reverse coverNode;
+
+    #header {
+        animation: $stacknode-animation-duration reverse coverHeader;
+    }
+
+    #headerContent {
+        animation: $stacknode-animation-duration reverse coverHeaderContent;
+    }
+
+    #heading {
+        animation: $stacknode-animation-duration reverse coverHeading;
+    }
+
+    #main {
+        animation: $stacknode-animation-duration reverse coverMain;
+    }
+}
+

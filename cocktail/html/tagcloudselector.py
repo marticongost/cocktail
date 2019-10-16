@@ -25,15 +25,15 @@ class TagCloudSelector(Selector):
 
     def _build(self):
         Element._build(self)
-        self.add_resource("/cocktail/scripts/TagCloudSelector.js")
+        self.add_resource("cocktail://scripts/tagcloudselector.js")
 
     def _ready(self):
 
         if self.tag_assignments_member and self.tags is None:
-            
+
             self.tags = {}
             self.items = []
-                     
+
             for tag in self.tag_assignments_member.schema.select():
                 self.items.append(tag)
                 tag_items = tag.get(self.tag_assignments_member)
@@ -49,15 +49,12 @@ class TagCloudSelector(Selector):
         if self.selection_mode == MULTIPLE_SELECTION:
             self.empty_option_displayed = False
 
-        if not self.name and self.data_display:
-            self.name = self.data_display.get_member_name(
-                self.member,
-                self.language
-            )
-
         Selector._ready(self)
-    
-    def create_entry(self, value, label, selected):
+
+    def create_entry(self, item):
+
+        value = self.get_item_value(item)
+        selected = self.is_selected(item)
 
         entry = Element()
         entry.add_class("entry")
@@ -76,7 +73,7 @@ class TagCloudSelector(Selector):
 
         entry.label = Element("label")
         entry.label["for"] = entry.control.require_id()
-        entry.label.append(label)
+        entry.label.append(self.get_item_label(item))
         entry.append(entry.label)
 
         if value:
@@ -85,7 +82,7 @@ class TagCloudSelector(Selector):
         return entry
 
     def insert_into_form(self, form, field_instance):
-        
+
         field_instance.append(self)
 
         if self.selection_mode == MULTIPLE_SELECTION:

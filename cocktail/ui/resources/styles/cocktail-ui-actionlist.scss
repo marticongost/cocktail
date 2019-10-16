@@ -1,0 +1,81 @@
+
+@import "cocktail.ui://styles/common";
+
+:host {
+    background: $panel-background;
+    border: $panel-border;
+    display: flex;
+    align-content: stretch;
+    --action-list-button-padding: 1em 1.3em;
+}
+
+:host([buttonStyle='iconAboveText']),
+:host([buttonStyle='iconOnly']) {
+    --action-list-icon-width: 1.8em;
+}
+
+:host([buttonStyle='iconBesideText']) {
+    --action-list-icon-width: 1.5em;
+}
+
+:host(.compact) {
+    --action-list-button-padding: 0.5em 0.7em;
+    --action-list-icon-width: 1.2em;
+}
+
+:host(.vertical) {
+    flex-direction: column;
+    width: 100%;
+    --action-list-button-padding: 0.4em 0.6em;
+}
+
+:host(.secondary) {
+    background: $secondary-panel-background;
+    border: $secondary-panel-border;
+}
+
+:host-context(.cocktail-ui-Toolbar) {
+    background: none;
+    border: none;
+}
+
+:host-context(.cocktail-ui-DropdownPanel) {
+    background: $panel-background;
+    border: $panel-border;
+}
+
+:host(.without-frame),
+::slotted(.cocktail-ui-ActionList) {
+    background: transparent;
+    border: none;
+}
+
+// Nested list separators
+$separator-length: 2.6em;
+$separator-thickness: 1px;
+
+:host(:not(.vertical)) ::slotted(.cocktail-ui-ActionList.separator) {
+    position: relative;
+
+    &:before {
+        content: '';
+        height: $separator-length;
+        width: $separator-thickness;
+        background-color: $panel-border-color;
+        position: absolute;
+        left: 0;
+        top: calc(50% - #{$separator-length / 2});
+    }
+}
+
+:host(.vertical) ::slotted(.cocktail-ui-ActionList.separator) {
+    position: relative;
+
+    &:before {
+        display: block;
+        content: '';
+        height: $separator-thickness;
+        background-color: $panel-border-color;
+    }
+}
+

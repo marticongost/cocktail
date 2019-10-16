@@ -1,36 +1,35 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
 @organization:	Whads/Accent SL
 @since:			September 2008
 """
-from cocktail.modeling import ListWrapper, SetWrapper
+from cocktail.modeling import ListWrapper, SetWrapper, OrderedDict
 from cocktail.translations import translations
 from cocktail import schema
 from cocktail.schema import ValidationContext
 from cocktail.persistence import PersistentObject
 from cocktail.html import Element
-from cocktail.html.databoundcontrol import data_bound
+from cocktail.html.grouping import Grouping
+from cocktail.controllers.parameters import serialize_parameter
 
 
 class Selector(Element):
 
-    name = None
+    is_form_control = True
     items = None
-    __value = None
+    groups = None
     persistent_object = None
-    
+
     empty_option_displayed = True
     empty_value = ""
     empty_label = None
     grouping = None
-    grouped = False
-   
+
     def __init__(self, *args, **kwargs):
         Element.__init__(self, *args, **kwargs)
-        data_bound(self)
         self._is_selected = lambda item: False
 
     def _ready(self):
@@ -39,180 +38,87 @@ class Selector(Element):
         item_translator = None
 
         if self.member:
-        
-            if self.items is None:
+
+            if self.items is None and self.groups is None:
                 self.items = self._get_items_from_member(self.member)
-
-            if self.grouping:
-                groups = []
-                group_map = {}
-
-                for item in self.items:
-                    group = self.grouping(item)
-                    group_items = group_map.get(group)
-
-                    if group_items is None:
-                        group_items = []
-                        groups.append((group, group_items))
-                        group_map[group] = group_items
-
-                    group_items.append(item)
-
-                self.grouped = True
-                self.items = groups
 
             if isinstance(self.member, schema.Collection):
                 if self.member.items:
                     item_translator = self.member.items.translate_value
             else:
                 item_translator = self.member.translate_value
-        
+
         self._item_translator = (
             item_translator
             or (lambda item, **kw: translations(item, **kw))
         )
-        
+
+        Grouping.init_element(self)
+
         if self.value is None:
-            self._is_selected = lambda item: False
-        elif isinstance(
-            self.value, (list, tuple, set, ListWrapper, SetWrapper)
-        ) and not isinstance(self.member, schema.Tuple):
-            selection = set(self.get_item_value(item) for item in self.value)
-            self._is_selected = lambda item: item in selection
+            self._is_selected = lambda item: item is None
+        elif (
+            isinstance(
+                self.value,
+                (list, tuple, set, ListWrapper, SetWrapper)
+            )
+            and not isinstance(self.member, schema.Tuple)
+        ):
+            self._is_selected = lambda item: item in self.value
         else:
-            selection = self.get_item_value(self.value)
-            self._is_selected = lambda item: item == selection
+            self._is_selected = lambda item: item == self.value
 
         self._fill_entries()
 
     def _get_items_from_member(self, member):
-        
+
         if isinstance(member, schema.Collection):
-            enumeration = member.items.enumeration if member.items else None
+            member = member.items
+
+        if (
+            self.ui_generator
+            and self.ui_generator.schema
+            and self.ui_generator.data
+        ):
+            parent_context = ValidationContext(
+                self.ui_generator.schema,
+                self.ui_generator.data
+            )
         else:
-            enumeration = member.enumeration
-        
-        if enumeration is not None:
-            # Create the validation context
-            if isinstance(self.persistent_object, PersistentObject):
-                context = ValidationContext(
-                    self.persistent_object.__class__, 
-                    self.persistent_object,
-                    persistent_object = self.persistent_object
-                )
-            else:
-                context = None
+            parent_context = None
 
-            enumeration = member.resolve_constraint(enumeration, context)
+        context = ValidationContext(
+            member,
+            self.value,
+            persistent_object = self.persistent_object,
+            parent_context = parent_context
+        )
 
-            if enumeration is not None:
-                
-                related_type = getattr(member, "related_type", None)
-
-                if related_type:
-                    if isinstance(member, schema.Reference):
-                        order = member.default_order
-                    elif isinstance(member, schema.Collection):
-                        order = getattr(member.items, "default_order", None)
-
-                    if order:
-                        sorted_items = member.related_type.select()
-                        sorted_items.base_collection = enumeration
-
-                        if isinstance(order, (basestring, schema.Member)):
-                            sorted_items.add_order(order)
-                        else:
-                            for criteria in order:
-                                sorted_items.add_order(criteria)
-
-                        return sorted_items
-
-                return enumeration
-
-        if isinstance(member, schema.Boolean):
-            return (True, False)
-
-        elif isinstance(member, schema.Number):
-            if member.min is not None and member.max is not None:
-                return range(member.min, member.max + 1)
-
-        elif isinstance(member, schema.RelationMember):
-            if getattr(member, "is_persistent_relation", False):
-                items = member.select_constraint_instances(
-                    parent = self.persistent_object or self.data
-                )
-                
-                order = None
-
-                if isinstance(member, schema.Reference):
-                    order = member.default_order
-                elif isinstance(member, schema.Collection):
-                    order = member.items.default_order
-
-                if order:
-                    if isinstance(order, (basestring, schema.Member)):
-                        items.add_order(order)
-                    else:
-                        for criteria in order:
-                            items.add_order(criteria)
-
-                return items
-                
-            elif isinstance(member, schema.Collection):
-                if member.items:
-                    return self._get_items_from_member(member.items)
-        
-        return ()
+        return member.get_possible_values(context)
 
     def _fill_entries(self):
-        
+
         if self.empty_option_displayed:
-
-            empty_label = self.empty_label
-
-            if not empty_label and self.member:
-                empty_label = self.member.translate_value(None)
-
-            if not empty_label:
-                empty_label = "---"
-
-            entry = self.create_entry(
-                self.empty_value,
-                empty_label,
-                self.value is None
-            )
+            entry = self.create_entry(None)
             self.append(entry)
 
-        if self.grouped:
-            for group, items in self.items:
-                self.append(self.create_group(group, items))
-        else:
+        if self.grouping is not None:
+            for grouping in self.grouping.groups:
+                self.append(self.create_group(grouping))
+            self._create_entries(self.grouping.items, self)
+        elif self.items is not None:
             self._create_entries(self.items, self)
 
-    def _iter_pairs(self, items):
-        if hasattr(items, "iteritems"):
-            return (
-                (self.get_item_value(value), label)
-                for value, label in items.iteritems()
-            )
-        else:
-            return (
-                (self.get_item_value(item),
-                 self.get_item_label(item))
-                for item in items
-            )
-    
     def _create_entries(self, items, container):
-        for value, label in self._iter_pairs(items):
-            entry = self.create_entry(
-                value,
-                label,
-                self._is_selected(value)
-            )
+        for item in items:
+            entry = self.create_entry(item)
             container.append(entry)
 
     def get_item_value(self, item):
-       
+
+        if item is None and self.empty_value is not None:
+            return self.empty_value
+
         member = (
             self.member
             and (
@@ -222,48 +128,60 @@ class Selector(Element):
             or self.member
         )
 
-        if member:            
+        if member:
             try:
-                return member.serialize_request_value(item)
+                return serialize_parameter(member, item)
             except:
                 pass
-        
+
         return getattr(item, "id", None) or str(item)
 
     def get_item_label(self, item):
+
+        if item is None:
+            empty_label = self.empty_label
+
+            if not empty_label and self.member:
+                empty_label = self.member.translate_value(None)
+
+            if not empty_label:
+                empty_label = "---"
+
+            return empty_label
+
         return self._item_translator(item)
-    
-    def create_group(self, group, items):
+
+    def is_selected(self, item):
+        return self._is_selected(item)
+
+    def create_group(self, grouping):
 
         container = Element()
         container.add_class("group")
 
-        container.label = self.create_group_label(group, items)
+        container.label = self.create_group_label(grouping)
         container.append(container.label)
 
-        self._create_entries(items, container)
+        self._create_entries(grouping.items, container)
+        self._create_nested_groups(grouping, container)
 
         return container
 
-    def create_group_label(self, group, items):
+    def _create_nested_groups(self, grouping, container):
+        for nested_group in grouping.groups:
+            container.append(self.create_group(nested_group))
+
+    def create_group_label(self, grouping):
         label = Element()
         label.add_class("group_label")
-        label.append(self.get_group_title(group, items))
+        label.append(self.get_group_title(grouping))
         return label
 
-    def get_group_title(self, group, items):
-        return translations(group)
+    def get_group_title(self, grouping):
+        return translations(grouping)
 
-    def create_entry(self, value, label, selected):
-        pass
-
-    def _get_value(self):
-        return self.__value
-
-    def _set_value(self, value):
-        self.__value = value
-
-    value = property(_get_value, _set_value, doc = """
-        Gets or sets the active selection for the selector.
-        """)
+    def create_entry(self, item):
+        raise TypeError(
+            "%s doesn't implement the create_entry() method" % self
+        )
 

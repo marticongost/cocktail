@@ -1,0 +1,39 @@
+
+@init
+def min_size(error):
+    return "%sx%s" % (
+        error.min_width or "∞",
+        error.min_height or "∞"
+    )
+
+def max_size(error):
+    return "%sx%s" % (
+        error.max_width or "∞",
+        error.max_height or "∞"
+    )
+@end
+
+[cocktail.controllers.imageupload]
+
+    [ImageTooSmallError.instance(error)]
+    ca:
+        El fitxer proporcionat pel camp ${error.member_desc()} és massa petit:
+        la mida mínima permesa és de ${min_size(error)} pixels
+    es:
+        El fichero proporcionado para el campo ${error.member_desc()} es demasiado
+        pequeño: el tamaño mínimo permitido es de ${min_size(error)} píxeles
+    en:
+        The file uploaded in field ${error.member_desc()} is too small:
+        the minimum allowed size is ${min_size(error)} pixels
+
+    [ImageTooBigError.instance(error)]
+    ca:
+        El fitxer proporcionat pel camp ${error.member_desc()} és massa gran: la mida
+        màxima permesa és de ${max_size(error)} pixels
+    es:
+        El fichero proporcionado para el campo ${error.member_desc()} es demasiado
+        grande: el tamaño máximo permitido es de ${max_size(error)} píxeles
+    en:
+        The file given in field ${error.member_desc()} is too big: the maximum
+        allowed size is ${max_size(error)} pixels
+

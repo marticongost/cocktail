@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -7,27 +7,19 @@ u"""
 @since:			September 2008
 """
 from cocktail.html import Element
-from cocktail.html.databoundcontrol import data_bound
+
 
 class CheckBox(Element):
 
     tag = "input"
-    
+    is_form_control = True
+
     def __init__(self, *args, **kwargs):
         Element.__init__(self, *args, **kwargs)
-        data_bound(self)
         self["type"] = "checkbox"
 
-    def _get_value(self):
-        return self["checked"] or False
-    
-    def _set_value(self, value):
-        self["checked"] = bool(value)
-
-    value = property(_get_value, _set_value, doc = """
-        Gets or sets the checkbox's value.
-        @type: bool
-        """)
+    def _ready(self):
+        self["checked"] = bool(self.value)
 
     def insert_into_form(self, form, field_instance):
         field_instance.insert(0, self)

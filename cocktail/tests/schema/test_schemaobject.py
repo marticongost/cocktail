@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -19,7 +19,7 @@ class DeclarationTestCase(TestCase):
         class Foo(SchemaObject):
             bar = String()
             spam = Integer()
-        
+
         self.assertTrue(isinstance(Foo, Schema))
         self.assertTrue(isinstance(Foo.bar, String))
         self.assertTrue(isinstance(Foo.spam, Integer))
@@ -42,7 +42,7 @@ class DeclarationTestCase(TestCase):
         self.assertRaises(AttributeError, Foo.add_member, String("spam"))
 
         for name in (
-            "name", "schema", "adaptation_source", "translated", "translation",
+            "name", "schema", "source_member", "translated", "translation",
             "required", "require_none", "enumeration", "type"
         ):
             self.assertRaises(AttributeError, Foo.add_member, String(name))
@@ -52,7 +52,7 @@ class DeclarationTestCase(TestCase):
             )
 
     def test_inheritance(self):
-        
+
         from cocktail.schema import Schema, SchemaObject, String, Integer
 
         class Foo(SchemaObject):
@@ -74,12 +74,12 @@ class DeclarationTestCase(TestCase):
         })
         self.assertRaises(AttributeError, getattr, Foo, "bar_a")
         self.assertRaises(AttributeError, getattr, Foo, "bar_b")
-        
+
         # Check that the derived class correctly defines its members
         self.assertTrue(isinstance(Bar.bar_a, String))
         self.assertTrue(isinstance(Bar.bar_b, Integer))
         self.assertTrue(Bar.bar_a is Bar["bar_a"])
-        self.assertTrue(Bar.bar_b is Bar["bar_b"])        
+        self.assertTrue(Bar.bar_b is Bar["bar_b"])
         self.assertEqual(Bar.members(recursive = False), {
             "bar_a": Bar.bar_a,
             "bar_b": Bar.bar_b
@@ -94,7 +94,7 @@ class DeclarationTestCase(TestCase):
             "bar_a": Bar.bar_a,
             "bar_b": Bar.bar_b
         })
-        
+
         # Inherited members should still refer the base class as their schema
         self.assertTrue(Foo.foo_a.schema is Foo)
         self.assertTrue(Foo.foo_b.schema is Foo)
@@ -106,9 +106,9 @@ class DeclarationTestCase(TestCase):
 
 
 class ExtensionTestCase(TestCase):
-    
+
     def test_add_member(self):
-        
+
         from cocktail.schema import SchemaObject, String
 
         class Foo(SchemaObject):
@@ -116,12 +116,12 @@ class ExtensionTestCase(TestCase):
 
         new_member = String("bar")
         Foo.add_member(new_member)
-        
+
         self.assertEqual(new_member.schema, Foo)
         self.assertEqual(Foo.bar, new_member)
 
     def test_inheritance(self):
-        
+
         from cocktail.schema import SchemaObject, String
 
         class Foo(SchemaObject):
@@ -156,7 +156,7 @@ class ExtensionTestCase(TestCase):
 
         class Bar(Foo):
             pass
-            
+
         bar = Bar()
         Foo.add_member(String("spam", default = "Foo!"))
         Bar.default_spam = "Bar!"
@@ -206,7 +206,7 @@ class AttributeTestCase(TestCase):
 
         self.assertFalse(events)
 
-        for key, value in values.iteritems():
+        for key, value in values.items():
             self.assertEqual(getattr(foo, key), value)
 
     def test_defaults(self):
@@ -262,13 +262,25 @@ class AttributeTestCase(TestCase):
         assert bar.x == "bar"
         assert bar.y == "bar!"
 
+    def test_can_delay_default_assignment(self):
+
+        from cocktail.schema import SchemaObject, String, undefined
+
+        class Foo(SchemaObject):
+            spam = String(default = "foo")
+
+        foo = Foo(spam = undefined)
+        assert not hasattr(foo, "_spam")
+        assert foo.spam == "foo"
+        assert hasattr(foo, "_spam")
+
     def test_get_set(self):
 
         from cocktail.schema import Schema, SchemaObject, String, Integer
 
         class Foo(SchemaObject):
-            bar = String()        
-      
+            bar = String()
+
         events = EventLog()
         events.listen(
             Foo_changed = Foo.changed,
@@ -276,7 +288,7 @@ class AttributeTestCase(TestCase):
         )
 
         foo = Foo()
-        
+
         # First assignment
         foo.bar = "Spam!"
 
@@ -321,15 +333,15 @@ class AttributeTestCase(TestCase):
 
         class Foo(SchemaObject):
             bar = String()
-        
+
         foo = Foo()
 
         def alter_value(event):
             event.value += "!"
 
         foo.changing.append(alter_value)
-        
-        foo.bar = "Spam"        
+
+        foo.bar = "Spam"
         self.assertEqual(foo.bar, "Spam!")
 
     def test_alter_value_with_class_event(self):
@@ -338,19 +350,19 @@ class AttributeTestCase(TestCase):
 
         class Foo(SchemaObject):
             bar = String()
-        
+
         def alter_value(event):
             event.value += "!"
 
         Foo.changing.append(alter_value)
 
         foo = Foo()
-        foo.bar = "Spam"        
+        foo.bar = "Spam"
         self.assertEqual(foo.bar, "Spam!")
 
 
 class TranslationTestCase(TestCase):
-    
+
     def test_declaration(self):
 
         from cocktail.schema import Schema, SchemaObject, String, Integer
@@ -369,7 +381,7 @@ class TranslationTestCase(TestCase):
         self.assertRaises(AttributeError, getattr, Foo.translation, "spam")
 
     def test_inheritance(self):
-        
+
         from cocktail.schema import SchemaObject, String, Integer
 
         class Foo(SchemaObject):
@@ -396,34 +408,34 @@ class TranslationTestCase(TestCase):
         pass
 
     def test_changing_translated_member_triggers_event(self):
-    
+
         from cocktail.schema import SchemaObject, String
 
         class Foo(SchemaObject):
             spam = String(translated = True)
 
         foo = Foo()
-        foo.set("spam", u"green", "en")
-        foo.set("spam", u"grün", "de")
-        
+        foo.set("spam", "green", "en")
+        foo.set("spam", "grün", "de")
+
         events = EventLog()
         events.listen(foo_changed = foo.changed)
-    
-        foo.set("spam", u"red", "en")
-        foo.set("spam", u"rot", "de")
+
+        foo.set("spam", "red", "en")
+        foo.set("spam", "rot", "de")
 
         event = events.pop(0)
         assert event.slot is foo.changed
         assert event.member is Foo.spam
-        assert event.value == u"red"    
-        assert event.previous_value == u"green"
+        assert event.value == "red"
+        assert event.previous_value == "green"
         assert event.language == "en"
 
         event = events.pop(0)
         assert event.slot is foo.changed
         assert event.member is Foo.spam
-        assert event.value == u"rot"
-        assert event.previous_value == u"grün"
+        assert event.value == "rot"
+        assert event.previous_value == "grün"
         assert event.language == "de"
 
     def test_adding_translation_triggers_event(self):
@@ -438,7 +450,7 @@ class TranslationTestCase(TestCase):
         events = EventLog()
         events.listen(foo_adding_translation = foo.adding_translation)
 
-        foo.set("spam", u"green", "en")
+        foo.set("spam", "green", "en")
 
         event = events.pop(0)
         assert event.slot is foo.adding_translation
@@ -452,7 +464,7 @@ class TranslationTestCase(TestCase):
             spam = String(translated = True)
 
         foo = Foo()
-        foo.set("spam", u"green", "en")
+        foo.set("spam", "green", "en")
 
         events = EventLog()
         events.listen(foo_removing_translation = foo.removing_translation)
@@ -473,27 +485,27 @@ class TranslationTestCase(TestCase):
             spam = String(translated = True)
 
         foo = Foo()
-        foo.set("spam", u"green", "en")
-        foo.set("spam", u"grün", "de")
-        
+        foo.set("spam", "green", "en")
+        foo.set("spam", "grün", "de")
+
         events = EventLog()
         events.listen(foo_changed = foo.changed)
-    
-        foo.translations["en"].spam = u"red"
-        foo.translations["de"].spam = u"rot"
+
+        foo.translations["en"].spam = "red"
+        foo.translations["de"].spam = "rot"
 
         event = events.pop(0)
         assert event.slot is foo.changed
         assert event.member is Foo.spam
-        assert event.value == u"red"    
-        assert event.previous_value == u"green"
+        assert event.value == "red"
+        assert event.previous_value == "green"
         assert event.language == "en"
 
         event = events.pop(0)
         assert event.slot is foo.changed
         assert event.member is Foo.spam
-        assert event.value == u"rot"
-        assert event.previous_value == u"grün"
+        assert event.value == "rot"
+        assert event.previous_value == "grün"
         assert event.language == "de"
 
     def test_adding_translation_notifies_owner(self):
@@ -506,46 +518,140 @@ class TranslationTestCase(TestCase):
             bar = String(translated = True, default = "gray")
 
         foo = Foo()
-        
+
         events = EventLog()
         events.listen(foo_changed = foo.changed)
-    
-        foo.set("spam", u"green", "en")
-        foo.set("spam", u"grün", "de")
+
+        foo.set("spam", "green", "en")
+        foo.set("spam", "grün", "de")
 
         event = events.pop(0)
         assert event.slot is foo.changed
         assert event.member is Foo.spam
-        assert event.value == u"green"
+        assert event.value == "green"
         assert event.previous_value is None
         assert event.language == "en"
 
         event = events.pop(0)
         assert event.slot is foo.changed
         assert event.member is Foo.bar
-        assert event.value == u"gray"
+        assert event.value == "gray"
         assert event.previous_value is None
         assert event.language == "en"
 
         event = events.pop(0)
         assert event.slot is foo.changed
         assert event.member is Foo.spam
-        assert event.value == u"grün"
+        assert event.value == "grün"
         assert event.previous_value is None
         assert event.language == "de"
 
         event = events.pop(0)
         assert event.slot is foo.changed
         assert event.member is Foo.bar
-        assert event.value == u"gray"
+        assert event.value == "gray"
         assert event.previous_value is None
         assert event.language == "de"
+
+
+class TranslationInheritanceTestCase(TestCase):
+
+    def test_translations_can_be_inherited(self):
+
+        from cocktail.translations import (
+            translations,
+            fallback_languages_context
+        )
+        from cocktail import schema
+
+        class TestObject(schema.SchemaObject):
+            test_field = schema.String(
+                translated = True
+            )
+
+        obj = TestObject()
+
+        with fallback_languages_context({
+            "en-CA": ["en"],
+            "fr-CA": ["fr", "en-CA"]
+        }):
+            obj.set("test_field", "I'm full", "en")
+            assert obj.get("test_field", "en-CA") == "I'm full"
+            assert obj.get("test_field", "fr-CA") == "I'm full"
+
+            obj.set("test_field", "j'ai trop mangé", "fr")
+            assert obj.get("test_field", "fr-CA") == "j'ai trop mangé"
+
+            obj.set("test_field", "je suis plein", "fr-CA")
+            assert obj.get("test_field", "fr-CA") == "je suis plein"
+
+            del obj.translations["fr-CA"]
+            assert obj.get("test_field", "fr-CA") == "j'ai trop mangé"
+
+            del obj.translations["fr"]
+            assert obj.get("test_field", "fr-CA") == "I'm full"
+
+    def test_new_translations_inherit_values(self):
+
+        from cocktail.translations import (
+            translations,
+            fallback_languages_context
+        )
+        from cocktail import schema
+
+        class TestObject(schema.SchemaObject):
+            test_field = schema.String(
+                translated = True
+            )
+
+        obj = TestObject()
+        obj.set("test_field", "I'm full", "en")
+        obj.set("test_field", "j'ai trop mangé", "fr")
+
+        with fallback_languages_context({
+            "en-CA": ["en"],
+            "fr-CA": ["fr", "en-CA"]
+        }):
+            obj.new_translation("en-CA")
+            assert obj.get("test_field", "en-CA") == "I'm full"
+
+            obj.new_translation("fr-CA")
+            assert obj.get("test_field", "fr-CA") == "j'ai trop mangé"
+
+    def test_changing_the_language_chain_affects_translation_inheritance(self):
+
+        from cocktail.translations import (
+            translations,
+            fallback_languages_context
+        )
+        from cocktail import schema
+
+        class TestObject(schema.SchemaObject):
+            test_field = schema.String(
+                translated = True
+            )
+
+        obj = TestObject()
+        obj.set("test_field", "I'm full", "en")
+        obj.set("test_field", "j'ai trop mangé", "fr")
+
+        with fallback_languages_context({
+            "en-CA": ["en"],
+            "fr-CA": ["fr", "en-CA"]
+        }):
+            assert obj.get("test_field", "fr-CA") == "j'ai trop mangé"
+
+        with fallback_languages_context({
+            "en-CA": ["en"],
+            "fr-CA": ["en-CA"]
+        }):
+            assert obj.get("test_field", "fr-CA") == "I'm full"
 
 
 class CopyTestCase(TestCase):
 
     def test_copying_schema_object_class_produces_new_class(self):
-        
+
         from cocktail.schema import Schema, SchemaObject
 
         class TestClass(SchemaObject):
@@ -571,26 +677,113 @@ class CopyTestCase(TestCase):
         assert issubclass(copy, BaseClass)
 
     def test_copying_schema_object_class_copies_members(self):
-        
+
         from cocktail.schema import Schema, SchemaObject, String
 
-        class TestClass(SchemaObject):            
+        class TestClass(SchemaObject):
             member1 = String(required = True)
             member2 = String(min = 3)
 
         copy = TestClass.copy()
-        
-        assert copy.members().keys() == TestClass.members().keys()
-        
+
+        assert list(copy.members().keys()) == list(TestClass.members().keys())
+
         assert copy.member1 is not TestClass.member1
         assert isinstance(copy.member1, String)
-        assert copy.member1.copy_source is TestClass.member1
+        assert copy.member1.source_member is TestClass.member1
         assert copy.member1.original_member is TestClass.member1
         assert copy.member1.required
 
         assert copy.member2 is not TestClass.member2
         assert isinstance(copy.member2, String)
-        assert copy.member2.copy_source is TestClass.member2
+        assert copy.member2.source_member is TestClass.member2
         assert copy.member2.original_member is TestClass.member2
         assert copy.member2.min == 3
+
+
+class CollectionChangeEventsTestCase(TestCase):
+
+    def test_reordering_collection_fires_change_events(self):
+
+        from cocktail.tests.utils import EventLog
+        from cocktail.schema import SchemaObject, Collection
+
+        class TestClass(SchemaObject):
+            member1 = Collection()
+
+        foo = TestClass()
+        foo.member1 = [1, 2]
+
+        events = EventLog()
+        events.listen(foo_changed = foo.changed)
+
+        foo.member1 = [2, 1]
+
+        event = events.pop(0)
+        assert event.slot is foo.changed
+        assert event.member is TestClass.member1
+        assert event.value == [2, 1]
+
+    def test_appending_fires_change_events(self):
+
+        from cocktail.tests.utils import EventLog
+        from cocktail.schema import SchemaObject, Collection
+
+        class TestClass(SchemaObject):
+            member1 = Collection()
+
+        foo = TestClass()
+        foo.member1 = [1, 2]
+
+        events = EventLog()
+        events.listen(foo_changed = foo.changed)
+
+        foo.member1.append(3)
+
+        event = events.pop(0)
+        assert event.slot is foo.changed
+        assert event.member is TestClass.member1
+        assert event.value == [1, 2, 3]
+
+    def test_removing_fires_change_events(self):
+
+        from cocktail.tests.utils import EventLog
+        from cocktail.schema import SchemaObject, Collection
+
+        class TestClass(SchemaObject):
+            member1 = Collection()
+
+        foo = TestClass()
+        foo.member1 = [1, 2, 3]
+
+        events = EventLog()
+        events.listen(foo_changed = foo.changed)
+
+        foo.member1.remove(2)
+
+        event = events.pop(0)
+        assert event.slot is foo.changed
+        assert event.member is TestClass.member1
+        assert event.value == [1, 3]
+
+    def test_inserting_fires_change_events(self):
+
+        from cocktail.tests.utils import EventLog
+        from cocktail.schema import SchemaObject, Collection
+
+        class TestClass(SchemaObject):
+            member1 = Collection()
+
+        foo = TestClass()
+        foo.member1 = [1, 2, 3]
+
+        events = EventLog()
+        events.listen(foo_changed = foo.changed)
+
+        foo.member1.insert(1, 0)
+
+        event = events.pop(0)
+        assert event.slot is foo.changed
+        assert event.member is TestClass.member1
+        assert event.value == [1, 0, 2, 3]
 

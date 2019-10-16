@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 Provides a member that handles compound values.
 
 @author:		Martí Congost
@@ -8,6 +8,10 @@ Provides a member that handles compound values.
 @since:			March 2008
 """
 from copy import deepcopy
+from collections import Mapping
+from typing import Any
+
+from cocktail.pkgutils import get_full_name
 from cocktail.modeling import (
     empty_dict,
     empty_list,
@@ -16,10 +20,12 @@ from cocktail.modeling import (
     OrderedSet
 )
 from cocktail.events import Event
-from cocktail.translations import translations
+from cocktail.translations import translations, get_language
 from cocktail.schema.member import Member, DynamicDefault
-from cocktail.schema.accessors import get_accessor
-from cocktail.schema.exceptions import SchemaIntegrityError
+from cocktail.schema.accessors import get_accessor, get, undefined
+from .coercion import Coercion
+from .exceptions import SchemaIntegrityError, InputError
+
 
 default = object()
 
@@ -44,11 +50,13 @@ class Schema(Member):
         is a shallow list; to obtain the full inheritance tree, use the
         L{ascend_inheritance} method instead.
     """
+    schema_aliases = ()
     primary_member = None
     descriptive_member = None
     members_order = None
     groups_order = []
     integral = False
+    text_search = True
 
     member_added = Event("""
         An event triggered when a member is added to the schema.
@@ -73,9 +81,8 @@ class Schema(Member):
     def __init__(self, *args, **kwargs):
 
         members = kwargs.pop("members", None)
+        bases = kwargs.pop("bases", None)
         Member.__init__(self, *args, **kwargs)
-
-        self.add_validation(Schema.schema_validation_rule)
 
         self.__bases = None
         self.bases = ListWrapper(empty_list)
@@ -88,6 +95,9 @@ class Schema(Member):
 
             self.expand(members)
 
+        if bases:
+            self.inherit(*bases)
+
     def __deepcopy__(self, memo):
         schema_copy = Member.__deepcopy__(self, memo)
 
@@ -97,7 +107,7 @@ class Schema(Member):
                     schema_copy.inherit(base)
 
         if self.__members:
-            for member in self.__members.itervalues():
+            for member in self.__members.values():
                 schema_copy.add_member(deepcopy(member))
 
         return schema_copy
@@ -113,12 +123,15 @@ class Schema(Member):
 
         # Set the value of all object members, either from a parameter or from
         # a default value definition
-        for name, member in self.members().iteritems():
+        for name, member in self.members().items():
 
             if excluded_members is not None and member in excluded_members:
                 continue
 
             value = default if values is None else values.get(name, default)
+
+            if value is undefined:
+                continue
 
             if value is default:
 
@@ -204,7 +217,6 @@ class Schema(Member):
             member to the schema. All members must have a unique name.
         """
         self._check_member(member)
-        self._add_member(member)
 
         if append or after or before:
 
@@ -218,19 +230,20 @@ class Schema(Member):
                 )
 
             if self.members_order is None:
-                self.members_order = list(self.members(recursive = False))
+                self.members_order = []
             elif not isinstance(self.members_order, list):
                 self.members_order = list(self.members_order)
 
             if append:
-                self.members_order.append(member)
+                self.members_order.append(member.name)
             elif after:
                 pos = self.members_order.index(after)
-                self.members_order.insert(pos + 1, member)
+                self.members_order.insert(pos + 1, member.name)
             else:
                 pos = self.members_order.index(before)
-                self.members_order.insert(pos, member)
+                self.members_order.insert(pos, member.name)
 
+        self._add_member(member)
         member.attached()
         self.member_added(member = member)
 
@@ -265,7 +278,7 @@ class Schema(Member):
 
         # From a dictionary
         if isinstance(members, dict):
-            for name, member in members.iteritems():
+            for name, member in members.items():
 
                 if isinstance(member, type):
                     member = member()
@@ -295,7 +308,7 @@ class Schema(Member):
         """
 
         # Normalize string references to member objects
-        if isinstance(member, basestring):
+        if isinstance(member, str):
             member = self[member]
 
         if member._schema is not self:
@@ -322,24 +335,34 @@ class Schema(Member):
         @rtype: (str, L{Member<members.Member>}) read only dict
         """
         if recursive and self.__bases:
-
-            members = {}
-
-            def descend(schema):
-
-                if schema.__bases:
-                    for base in schema.__bases:
-                        descend(base)
-
-                if schema.__members:
-                    for name, member in schema.__members.iteritems():
-                        members[name] = member
-
-            descend(self)
-            return DictWrapper(members)
-
+            return dict(
+                (member.name, member)
+                for member in self.iter_members()
+            )
         else:
             return DictWrapper(self.__members or empty_dict)
+
+    def iter_members(self, recursive = True):
+        """Iterates over all the members defined by the schema and its bases.
+
+        @param recursive: Indicates if the returned dictionary should contain
+            members defined by the schema's bases. This is the default
+            behavior; Setting this parameter to False will exclude all
+            inherited members.
+        @type recursive: False
+
+        @return: An iterable sequence containing the members for the schema and
+            its bases. No guarantees are made about their order.
+        @rtype: L{Member<members.Member>} iterator
+        """
+        if recursive and self.__bases:
+            for base in self.__bases:
+                for member in base.iter_members():
+                    yield member
+
+        if self.__members:
+            for member in self.__members.values():
+                yield member
 
     def get_member(self, name):
         """Obtains one of the schema's members given its name.
@@ -405,7 +428,7 @@ class Schema(Member):
         """
         return self.get_member(name) is not None
 
-    def validations(self, recursive = True):
+    def validations(self, recursive = True, **validation_parameters):
         """Iterates over all the validation rules that apply to the schema.
 
         @param recursive: Indicates if validations inherited from base schemas
@@ -436,73 +459,136 @@ class Schema(Member):
         else:
             return empty_list
 
-    def schema_validation_rule(self, validable, context):
+    def _default_validation(self, context):
         """Validation rule for schemas. Applies the validation rules defined by
         all members in the schema, propagating their errors."""
 
-        accessor = self.accessor \
-            or context.get("accessor", None) \
-            or get_accessor(validable)
+        for error in Member._default_validation(self, context):
+            yield error
 
-        context.enter(self, validable)
+        accessor = (
+            self.accessor
+            or context.get("accessor", None)
+            or get_accessor(context.value)
+        )
+        languages = context.get("languages")
 
-        try:
-            for member in self.ordered_members():
+        for member in self.ordered_members():
+            key = member.name
 
-                if member.translated:
-
-                    for value in self.translated_member_values(
-                        member,
-                        validable,
-                        context,
-                        accessor):
-
-                        for error in member.get_errors(value, context):
-                            yield error
-                else:
+            if member.translated:
+                for language in (
+                    languages or accessor.languages(context.value, key)
+                ):
                     value = accessor.get(
-                        validable,
-                        member.name,
-                        default = None
+                        context.value,
+                        key,
+                        language = language
                     )
-
-                    for error in member.get_errors(value, context):
+                    for error in member.get_errors(
+                        value,
+                        parent_context = context,
+                        language = language
+                    ):
                         yield error
-        finally:
-            context.leave()
-
-    def translated_member_values(
-        self,
-        member,
-        validable,
-        context,
-        accessor = None):
-
-        accessor = accessor \
-            or self.accessor \
-            or context.get("accessor", None) \
-            or get_accessor(validable)
-
-        context_languages = context.get("languages")
-        prev_language = context.get("language")
-        key = member.name
-
-        try:
-            for language in (
-                context_languages
-                or accessor.languages(validable, key)
-            ):
-                context["language"] = language
-
+            else:
                 value = accessor.get(
-                    validable,
+                    context.value,
                     key,
-                    language = language,
-                    default = None)
+                    default = None
+                )
 
-                yield value
-        finally:
-            context["language"] = prev_language
+                for error in member.get_errors(
+                    value,
+                    parent_context = context
+                ):
+                    yield error
+
+    def coerce(
+            self,
+            value: Any,
+            coercion: Coercion,
+            **validation_parameters) -> Any:
+        """Coerces the given value to conform to the member definition.
+
+        The method applies the behavior indicated by the `coercion` parameter
+        to each member of the scheam, either accepting or rejecting its value.
+        Depending on the selected coercion strategy, rejected values may be
+        transformed into a new value or raise an exception.
+
+        New values are modified in place.
+        """
+        if coercion is Coercion.NONE:
+            return value
+
+        if coercion is Coercion.FAIL:
+            errors = list(self.get_errors(value, **validation_parameters))
+            if errors:
+                raise InputError(self, value, errors)
+        else:
+            # Coercion of members affected by schema wide validation rules
+            accessor = get_accessor(value)
+            schema_level_errors = self.get_errors(
+                value,
+                recursive=False,
+                **validation_parameters
+            )
+
+            for error in schema_level_errors:
+                if coercion is Coercion.FAIL_IMMEDIATELY:
+                    raise InputError(self, value, [error])
+                elif coercion is Coercion.SET_NONE:
+                    for member in error.invalid_members:
+                        if member.schema is self:
+                            accessor.set(
+                                value,
+                                member.name,
+                                None,
+                                error.language
+                            )
+                elif coercion is Coercion.SET_DEFAULT:
+                    for member in error.invalid_members:
+                        if member.schema is self:
+                            accessor.set(
+                                value,
+                                member.name,
+                                member.produce_default(value),
+                                error.language
+                            )
+
+            # Per member coercion
+            if value is not None:
+                for member in self.iter_members():
+                    if member.translated:
+                        for language in accessor.languages(value, member.name):
+                            lang_value = accessor.get(value, member.name, language)
+                            coerced_lang_value = member.coerce(
+                                lang_value,
+                                coercion,
+                                **validation_parameters
+                            )
+                            if lang_value != coerced_lang_value:
+                                accessor.set(
+                                    value,
+                                    member.name,
+                                    coerced_lang_value,
+                                    language
+                                )
+                    else:
+                        member_value = accessor.get(value, member.name)
+                        coerced_member_value = member.coerce(
+                            member_value,
+                            coercion,
+                            **validation_parameters
+                        )
+                        if member_value != coerced_member_value:
+                            accessor.set(
+                                value,
+                                member.name,
+                                coerced_member_value
+                            )
+
+        return value
 
     def ordered_members(self, recursive = True):
         """Gets a list containing all the members defined by the schema, in
@@ -535,11 +621,11 @@ class Schema(Member):
 
         for schema in schemas:
             if schema.__members:
-                remaining = set(schema.__members.itervalues())
+                remaining = set(schema.__members.values())
 
                 if schema.members_order:
                     for member in schema.members_order:
-                        if isinstance(member, basestring):
+                        if isinstance(member, str):
                             member = schema[member]
                         if not (member.before_member or member.after_member):
                             remaining.remove(member)
@@ -554,7 +640,7 @@ class Schema(Member):
 
         if relative:
             def insert_relative(member, visited):
-                
+
                 # Disallow conflicting positions
                 if member.before_member and member.after_member:
                     raise ValueError(
@@ -575,7 +661,7 @@ class Schema(Member):
                 pos = -1
                 anchor = member.before_member or member.after_member
 
-                if isinstance(anchor, basestring):
+                if isinstance(anchor, str):
                     if recursive:
                         anchor = self.get_member(anchor)
                     else:
@@ -675,16 +761,26 @@ class Schema(Member):
 
         return groups
 
-    def translate_group(self, group):
+    def translate_group(self, group, suffix = None):
+
+        if group:
+            suffix_str = ".groups." + group + (suffix or "")
+        else:
+            suffix_str = ".generic_group" + (suffix or "")
 
         def get_label(schema):
-            if not isinstance(schema, Schema):
-                return None
 
             if schema.name:
-                label = translations(schema.name + "." + group)
+                label = translations(
+                    getattr(schema, "full_name", schema.name) + suffix_str
+                )
                 if label:
                     return label
+
+                for alias in schema.schema_aliases:
+                    label = translations(alias + suffix_str)
+                    if label:
+                        return label
 
             for base in schema.bases:
                 label = get_label(base)
@@ -692,16 +788,15 @@ class Schema(Member):
                     return label
 
         label = get_label(self)
-        
+
         if label:
             return label
-        
-        source_schema = self.adaptation_source
-        while source_schema is not None:
-            label = get_label(source_schema)
-            source_schema = source_schema.adaptation_source
 
-        return label
+        source_schema = self.source_member
+        if source_schema and hasattr(source_schema, "translate_group"):
+            return source_schema.translate_group(group, suffix = suffix)
+
+        return None
 
     def insert_group(self, group, before = None, after = None):
 
@@ -715,7 +810,7 @@ class Schema(Member):
                 "insert_group() can't take both 'after' and 'before' "
                 "parameters at the same time"
             )
- 
+
         anchor = before or after
         if not isinstance(self.groups_order, list):
             self.groups_order = list(self.groups_order)
@@ -728,4 +823,151 @@ class Schema(Member):
             if after:
                 pos += 1
             self.groups_order.insert(pos, group)
+
+    def extract_searchable_text(self, extractor):
+
+        obj = extractor.current.value
+
+        for member in self.iter_members():
+            if member.text_search:
+                if member.language_dependant:
+                    for language in extractor.iter_node_languages():
+                        if language is not None:
+                            value = get(obj, member, language = language)
+                            extractor.extract(member, value, language)
+                else:
+                    value = get(obj, member)
+                    extractor.extract(member, value)
+
+    def to_json_value(self, value, **options):
+
+        languages = options.get("languages", None)
+        if languages is None:
+            languages = get_language()
+
+        if value is None:
+            return None
+
+        record = {}
+        accessor = get_accessor(value)
+
+        for member in self.iter_members():
+            if member.translated and not isinstance(languages, str):
+                member_value = dict(
+                    (
+                        lang,
+                        member.to_json_value(
+                            accessor.get(value, language=lang),
+                            **options
+                        )
+                    )
+                    for lang in accessor.languages(value, member.name)
+                )
+            else:
+                member_value = member.to_json_value(
+                    accessor.get(value, member.name),
+                    **options
+                )
+
+            record[member.name] = member_value
+
+        return record
+
+    def from_json_value(self, value, **options):
+
+        if value is None:
+            return None
+
+        record = (self.type or dict)()
+        accessor = get_accessor(record)
+
+        for key, member_value in value.items():
+            member = self.get_member(key)
+            if member is None:
+                continue
+            if member.translated and isinstance(member_value, Mapping):
+                if member_value:
+                    for lang, lang_value in member_value.items():
+                        accessor.set(
+                            record,
+                            member.name,
+                            member.from_json_value(lang_value, **options),
+                            language=lang
+                        )
+            else:
+                accessor.set(
+                    record,
+                    member.name,
+                    member.from_json_value(member_value, **options)
+                )
+
+        return record
+
+
+@translations.instances_of(Schema)
+def translate_schema(
+    schema,
+    suffix = None,
+    include_type_default = True,
+    **kwargs
+):
+    if suffix is None:
+        suffix = ""
+
+    schema_name = getattr(
+        schema,
+        "full_name",
+        schema.name
+    )
+    if schema_name:
+        translation = translations(
+            schema_name + suffix,
+            member = schema,
+            **kwargs
+        )
+        if translation:
+            return translation
+
+    for schema_alias in schema.schema_aliases:
+        translation = translations(
+            schema_alias + suffix,
+            member = schema,
+            **kwargs
+        )
+        if translation:
+            return translation
+
+    if schema.source_member:
+        translation = translations(
+            schema.source_member,
+            suffix = suffix,
+            include_type_default = False,
+            **kwargs
+        )
+        if translation:
+            return translation
+
+    if schema.custom_translation_key:
+        translation = translations(
+            schema.custom_translation_key + suffix,
+            member = schema,
+            **kwargs
+        )
+        if translation:
+            return translation
+
+    if include_type_default:
+        for member_type in schema.__class__.__mro__:
+            if issubclass(member_type, Member):
+                translation = translations(
+                    get_full_name(member_type)
+                        + ".default_member_translation"
+                        + suffix,
+                    member = schema,
+                    **kwargs
+                )
+                if translation:
+                    return translation
+
+    return None
 

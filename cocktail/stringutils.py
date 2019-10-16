@@ -1,14 +1,13 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
 import re
 from random import choice
-from string import letters, digits
-from HTMLParser import HTMLParser
-from htmlentitydefs import name2codepoint
-import BeautifulSoup
+from string import ascii_letters, digits
+from html.parser import HTMLParser
+from html.entities import name2codepoint
 
 normalization_map = {}
 
@@ -16,7 +15,7 @@ def create_translation_map(pairs):
 
     translation_map = {}
 
-    iteritems = getattr(pairs, "iteritems", None)
+    iteritems = getattr(pairs, "items", None)
     if iteritems is not None:
         pairs = iteritems()
 
@@ -26,32 +25,68 @@ def create_translation_map(pairs):
 
     return translation_map
 
-_normalization_map = create_translation_map({
-    u"a": u"áàäâ",
-    u"e": u"éèëê",
-    u"i": u"íìïî",
-    u"o": u"óòöô",
-    u"u": u"úùüû",
-    u" ": u"'\"\t\n\r(),.:;+-*/\\¡!¿?&|=[]{}~#¬<>"
-})
+def create_normalization_map(normalization = None, preserved_chars = None):
 
-def normalize(string):
+    if normalization is None:
+        normalization = {
+            "a": "áàäâ",
+            "e": "éèëê",
+            "i": "íìïî",
+            "o": "óòöô",
+            "u": "úùüû",
+            " ": "'\"\t\n\r(),.:;+-*/\\¡!¿?&|=[]{}~#¬<>"
+        }
+
+    if preserved_chars:
+        for norm_char, input_chars in list(normalization.items()):
+            for preserved_char in preserved_chars:
+                input_chars = input_chars.replace(preserved_char, "")
+            normalization[norm_char] = input_chars
+
+    return create_translation_map(normalization)
+
+_normalization_map = create_normalization_map()
+
+def normalize(string, normalization_map = None):
     string = string.lower()
 
-    if not isinstance(string, unicode):
+    if not isinstance(string, str):
         try:
-            string = unicode(string)
+            string = str(string)
         except:
             return string
 
-    if isinstance(string, unicode):
-        string = string.translate(_normalization_map)
-        string = u" ".join(string.split())
+    if isinstance(string, str):
+        string = string.translate(normalization_map or _normalization_map)
+        string = " ".join(string.split())
 
     return string
 
-def random_string(length, source = letters + digits + "!?.-$#&@*"):
-    return "".join(choice(source) for i in xrange(length))
+def random_string(length, source = ascii_letters + digits + "!?.-$#&@*"):
+    return "".join(choice(source) for i in range(length))
+
+def normalize_indentation(string):
+
+    indentation = None
+    lines = string.split("\n")
+    norm_lines = []
+
+    for i, line in enumerate(lines):
+        stripped_line = line.lstrip()
+        if not indentation and not stripped_line:
+            continue
+        else:
+            if indentation is None:
+                indentation = line[:len(line) - len(stripped_line)]
+            elif not line.startswith(indentation) and stripped_line:
+                raise ValueError(
+                    "Indentation error in line %d (%s)"
+                    % (i + 1, stripped_line)
+                )
+
+            norm_lines.append(line[len(indentation):])
+
+    return "\n".join(norm_lines)
 
 
 class HTMLPlainTextExtractor(HTMLParser):
@@ -67,6 +102,7 @@ class HTMLPlainTextExtractor(HTMLParser):
 
     def _push(self, chunk):
         if chunk:
+            chunk = chunk.replace("\xa0", " ")
             if self.__chunks and self.__chunks[-1].endswith("\n"):
                 chunk = chunk.lstrip()
                 if chunk and self.__depth:
@@ -96,7 +132,7 @@ class HTMLPlainTextExtractor(HTMLParser):
             self.__chunks.append("\n" * jumps)
 
     def get_text(self):
-        return u"".join(self.__chunks).strip()
+        return "".join(self.__chunks).strip()
 
     def handle_data(self, data):
         data = data.replace("\n", " ")
@@ -124,16 +160,16 @@ class HTMLPlainTextExtractor(HTMLParser):
 
     def handle_charref(self, name):
         if name.startswith('x'):
-            c = unichr(int(name[1:], 16))
+            c = chr(int(name[1:], 16))
         else:
-            c = unichr(int(name))
+            c = chr(int(name))
 
         self._push(c)
 
     def handle_entityref(self, name):
         code_point = name2codepoint.get(name)
         if code_point is not None:
-            self._push(unichr(code_point))
+            self._push(chr(code_point))
 
 
 def html_to_plain_text(html):
@@ -141,92 +177,95 @@ def html_to_plain_text(html):
     extractor.feed(html)
     return extractor.get_text()
 
+_list_regexp = re.compile(r"(^\s*[-*].*$\s*){2,}", re.MULTILINE)
+_line_jumps_regexp = re.compile(r"\n{2,}")
+_link_regexp = re.compile(r"(\S+)://(\S+)")
 
-class HTMLCleaner(object):
+def _link_for_match(target):
+    def link_repl(match):
+        url = "%s://%s" % (match.group(1), match.group(2))
+        return '<a href="%s" target="%s">%s</a>' % (url, target, url)
+    return link_repl
 
-    content_tags = set([
-        "img",
-        "hr",
-        "br",
-        "iframe",
-        "object",
-        "embed",
-        "audio",
-        "video"
-    ])
+def _list_for_match(match):
 
-    TRIM_LEFT = -1
-    TRIM_RIGHT = 1
+    items = []
 
-    start_whitespace = re.compile("^(\\s|&nbsp;|\xa0)+")
-    end_whitespace = re.compile("(\\s|&nbsp;|\xa0)+$")
+    for line in match.group(0).split("\n"):
+        line = line.strip().lstrip("-").lstrip("*").lstrip()
+        if line:
+            items.append("<li>%s</li>" % line)
 
-    trim_whitespace = {
-        TRIM_LEFT: start_whitespace,
-        TRIM_RIGHT: end_whitespace
-    }
+    return "<ul>" + "".join(items) + "</ul>"
 
-    def __init__(self, html):
-        self.__html_tree = BeautifulSoup.BeautifulSoup(html)
-        self.clean_tree(self.__html_tree)
-        self.clean_tree(self.__html_tree, trim = self.TRIM_LEFT)
-        self.clean_tree(self.__html_tree, trim = self.TRIM_RIGHT)
+def plain_text_to_html(text, links_target = "_self", paragraphs_policy = "all"):
+    text = text.strip()
+    text = text.replace("\r\n", "\n")
+    text = text.replace("&", "&amp;")
+    text = text.replace("<", "&lt;")
+    text = text.replace(">", "&gt;")
+    text = _list_regexp.sub(_list_for_match, text)
+    text = _link_regexp.sub(_link_for_match(links_target), text)
 
-    def get_clean_html(self):
-        return unicode(self.__html_tree)
+    paragraphs_list = _line_jumps_regexp.split(text)
 
-    def clean_tree(self, node, trim = None):
+    if paragraphs_policy == "all":
+        apply_paragraphs_policy = True
+    elif paragraphs_policy == "unless_only_one":
+        apply_paragraphs_policy = len(paragraphs_list) > 1
+    else:
+        raise ValueError(
+            "The 'paragraphs_policy' parameter of plain_text_to_html() "
+            "should be one of 'all' or 'unless_only_one'; got %s"
+            "instead"
+            % paragraphs_policy
+        )
 
-        if node.__class__ is BeautifulSoup.NavigableString:
-            if trim:
-                if not self.has_weight(node):
-                    node.extract()
-                    return True
-                else:
-                    whitespace = self.trim_whitespace[trim]
-                    stripped_text = whitespace.sub("", node)
-                    node.replaceWith(stripped_text)
+    if apply_paragraphs_policy:
+        text = "".join(
+            "<p>%s</p>" % paragraph
+            for paragraph in paragraphs_list
+        )
 
-        elif isinstance(node, BeautifulSoup.Tag):
-            children = list(node.contents)
-            if trim == self.TRIM_RIGHT:
-                children.reverse()
-
-            for child in children:
-                child_removed = self.clean_tree(child, trim)
-                if not child_removed and trim:
-                    break
-
-            if node.name == "br":
-                if trim:
-                    node.extract()
-                    return True
-            elif (
-                node.name not in self.content_tags
-                and not any(self.has_weight(child) for child in node.contents)
-            ):
-                node.extract()
-                return True
-
-        return False
-
-    def has_weight(self, node):
-
-        if node.__class__ is BeautifulSoup.NavigableString \
-        and not self.start_whitespace.sub("", node):
-            return False
-
-        return True
-
-
-def clean_html(html):
-    """Clean an HTML snippet, removing excessive whitespace and empty tags."""
-    cleaner = HTMLCleaner(html)
-    return cleaner.get_clean_html()
+    text = text.replace("\n", "<br/>")
+    return text
 
 def decapitalize(string):
     if len(string) >= 2 and string[1] == string[1].lower():
         return string[0].lower() + string[1:]
     else:
         return string
+
+
+def html_extract(html: str, max_length: int, ellipsis: str = "…") -> str:
+    """Extracts a plain-text fragment from the start of an HTML string.
+
+    @param html: The HTML string to extract the text from.
+    @param max_length: The maximum length of the returned fragment.
+    @param ellipsis: A string to append to the returned extract if the original
+        text exceeds the character length set by `max_length`. Defaults to the
+        unicode horizontal ellipsis character (…).
+    @return: The extract, in plain text form. Note that line jumps, tabs and
+        any other form of whitespace will be normalized to a single space.
+    """
+
+    # Convert to plain text
+    x = HTMLPlainTextExtractor()
+    x.indentation = " "
+    x.bullet = " "
+    x.feed(html)
+    text = x.get_text()
+
+    # Add words until they don't fit the maximum length
+    words = []
+    text_length = 0
+
+    for word in text.split():
+        text_length += len(word)
+        if text_length > max_length:
+            return " ".join(words) + ellipsis
+        else:
+            words.append(word)
+
+    return " ".join(words)
 

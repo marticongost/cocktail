@@ -30,7 +30,7 @@ class PersistentOrderedSet(OrderedSet, Persistent):
         head = self._items[:i]
         tail = self._items[j:]
         body = [x for x in other if x not in head and x not in tail]
-        
+
         if body:
             self._items = head + body + tail
             self._p_changed = True
@@ -45,14 +45,14 @@ class PersistentOrderedSet(OrderedSet, Persistent):
 
         if added or relocate:
             self._p_changed = True
-            
+
         return added
 
     def insert(self, i, item, relocate = False):
-        
+
         added = OrderedSet.insert(self, i, item, relocate)
-        
-        if added or relocate:            
+
+        if added or relocate:
             self._p_changed = True
 
         return added

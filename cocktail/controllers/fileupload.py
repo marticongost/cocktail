@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Javier Marrero
 @contact:		javier.marrero@whads.com
@@ -9,10 +9,16 @@ u"""
 import cherrypy
 import hashlib
 from mimetypes import guess_type
+from cocktail.translations import translations
+from cocktail.memoryutils import parse_bytes, format_bytes
 from cocktail import schema
+from cocktail.schema.exceptions import ValidationError
+
+translations.load_bundle("cocktail.controllers.fileupload")
+
 
 class FileUpload(schema.Schema):
- 
+
     _special_copy_keys = (
         schema.Schema._special_copy_keys | set(["async_uploader"])
     )
@@ -20,6 +26,7 @@ class FileUpload(schema.Schema):
     chunk_size = 8192
     normalization = None
     hash_algorithm = None
+    __max_size = None
 
     async = False
     async_uploader = None
@@ -52,6 +59,13 @@ class FileUpload(schema.Schema):
         if file_size_properties:
             file_size_kw.update(file_size_properties)
 
+        file_size_kw.setdefault(
+            "translate_value",
+            lambda value, language = None, **kwargs:
+                format_bytes(value)
+                if value or value == 0 else ""
+        )
+
         mime_type_properties = kwargs.get("mime_type_properties")
         if mime_type_properties:
             mime_type_kw.update(mime_type_properties)
@@ -65,13 +79,33 @@ class FileUpload(schema.Schema):
         copy.async_uploader = self.async_uploader
         return copy
 
+    def _get_max_size(self):
+        return self.__max_size
+
+    def _set_max_size(self, max_size):
+
+        if isinstance(max_size, str):
+            max_size = parse_bytes(max_size)
+
+        self.__max_size = max_size
+
+    max_size = property(
+        _get_max_size,
+        _set_max_size,
+        doc = """Gets or sets the maximum size allowed for this upload.
+
+        Can be set to an integer (indicating a number of bytes) or to a string
+        using a format accepted by L{cocktail.memory_utils.parse_bytes}.
+        """
+    )
+
     def parse_request_value(self, reader, value):
- 
+
         # Handle asynchronous uploads
         async_upload = None
         file = None
 
-        if isinstance(value, basestring):
+        if isinstance(value, str):
 
             if self.async \
             and self.async_uploader is not None \
@@ -112,7 +146,7 @@ class FileUpload(schema.Schema):
         if value.type in self.meaningless_mime_types:
             mime_type_guess = guess_type(file_name, strict = False)
             if mime_type_guess:
-                upload["mime_type"] = mime_type_guess[0] 
+                upload["mime_type"] = mime_type_guess[0]
 
         # Map bad MIME types to their proper values
         good_mime_type = self.mime_type_corrections.get(upload["mime_type"])
@@ -122,7 +156,7 @@ class FileUpload(schema.Schema):
         dest = self.get_file_destination(upload)
         dest_file = None
         chunk_size = self.chunk_size
-        
+
         hash = None \
             if self.hash_algorithm is None \
             else hashlib.new(self.hash_algorithm)
@@ -130,12 +164,13 @@ class FileUpload(schema.Schema):
 
         # Read a first chunk of the uploaded file
         if async_upload:
-            file = open(self.async_uploader.get_temp_path(async_upload), "rb")
+            temp_path = self.async_uploader.get_temp_path(async_upload.id)
+            file = open(temp_path, "rb")
         else:
             file = value.file
 
         chunk = file.read(chunk_size)
-        
+
         # Don't write to the destination if no file has been uploaded
         if chunk and dest:
             dest_file = open(dest, "wb")
@@ -174,4 +209,26 @@ class FileUpload(schema.Schema):
 
     def _create_default_instance(self):
         return None
+
+    def _default_validation(self, context):
+
+        for error in schema.Schema._default_validation(self, context):
+            yield error
+
+        file_size = context.get_value("file_size")
+
+        if file_size:
+            max_size = self.resolve_constraint(self.max_size, context)
+            if max_size and file_size > max_size:
+                yield FileSizeTooBigError(context, max_size)
+
+
+class FileSizeTooBigError(ValidationError):
+
+    def __init__(self, context, max_size):
+        ValidationError.__init__(self, context)
+        self.max_size = max_size
+
+    def __str__(self):
+        return "%s (shouldn't exceed %s)" % format_bytes(self.max_size)
 

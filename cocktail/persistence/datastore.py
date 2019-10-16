@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -11,8 +11,8 @@ from threading import local, RLock
 from weakref import WeakKeyDictionary
 from ZODB import DB
 import transaction
-from cocktail.modeling import getter
 from cocktail.events import Event
+from cocktail.pkgutils import get_full_name
 
 
 class DataStore(object):
@@ -35,6 +35,10 @@ class DataStore(object):
     storage_changed = Event("""
         An event triggered when changing which storage is used by the
         datastore.
+        """)
+
+    cleared = Event("""
+        An event triggered when all data in the storage is completely cleared.
         """)
 
     connection_opened = Event("""
@@ -78,14 +82,14 @@ class DataStore(object):
             from cocktail.persistence.migration import migrate
             migrate()
 
-    @getter
+    @property
     def db(self):
         if self.__db is None:
             self.__db = DB(self.storage)
 
         return self.__db
 
-    @getter
+    @property
     def root(self):
         """Gives access to the root container of the database. The property is
         thread safe; accessing it on different threads will produce different
@@ -100,7 +104,7 @@ class DataStore(object):
 
         return root
 
-    @getter
+    @property
     def connection(self):
         """Returns the database connection for the current thread. The property
         is thread safe; accessing it on different threads will produce
@@ -135,6 +139,12 @@ class DataStore(object):
             self._thread_data.connection.close()
             self._thread_data.connection = None
 
+    def clear(self):
+        """Clears all the data in the storage."""
+        self.root.clear()
+        self.cleared()
+        self.commit()
+
     def sync(self):
         self._thread_data.root = None
         self.connection.sync()
@@ -151,7 +161,10 @@ class DataStore(object):
             thread_transaction_data = WeakKeyDictionary()
             self._thread_data.transaction_data = thread_transaction_data
 
-        transaction = self.connection.transaction_manager.get()
+        transaction = getattr(self._thread_data, "transaction", None)
+        if transaction is None:
+            transaction = self.connection.transaction_manager.get()
+
         transaction_data = thread_transaction_data.get(transaction)
 
         if transaction_data is None and create_if_missing:
@@ -186,9 +199,35 @@ class DataStore(object):
         else:
             unique_after_commit_hooks.add(id)
 
+        def callback_wrapper(success, *args, **kwargs):
+            try:
+                self._thread_data.transaction = transaction
+                return callback(success, *args, **kwargs)
+            finally:
+                self._thread_data.transaction = None
+
         transaction = self.connection.transaction_manager.get()
-        transaction.addAfterCommitHook(callback, args, kwargs)
+        transaction.addAfterCommitHook(callback_wrapper, args, kwargs)
         return True
+
+    def process_items_after_commit(
+        self,
+        callback,
+        item,
+        item_data = None,
+        mapping_type = dict
+    ):
+        id = get_full_name(callback)
+        items_key = id + ".items"
+        items = self.get_transaction_value(items_key)
+
+        if items is None:
+            items = mapping_type()
+            self.set_transaction_value(items_key, items)
+
+        items[item] = item_data
+        self.unique_after_commit_hook(id, callback, items)
+
 
 datastore = DataStore()
 

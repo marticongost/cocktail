@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ui:cocktail.ui.Input
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui"
+    formLabelDisposition="hidden">
+
+    <span id="icon">
+        <?svg cocktail.ui://images/search.svg ?>
+    </span>
+
+    <ui:with ui:element="input" type="search">
+        <?on search
+        instance.value = this.value;
+        ?>
+    </ui:with>
+
+    <?on keydown
+    if (e.which == cocktail.ui.keys.ESC && this.input.value.length) {
+        this.value = "";
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    ?>
+
+</ui:cocktail.ui.Input>
+

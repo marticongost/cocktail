@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -28,10 +28,15 @@ class TreeView(Element):
     selection = None
     expanded = True
     max_depth = None
+    highlighted_selection = True
     create_empty_containers = False
     display_filtered_containers = True
     filter_item = None
     __item_access = None
+
+    def __init__(self, *args, **kwargs):
+        self.__item_access = {}
+        Element.__init__(self, *args, **kwargs)
 
     def _get_root_visible(self):
         return self.root_visibility not in (
@@ -51,10 +56,7 @@ class TreeView(Element):
     root_visible = property(_get_root_visible, _set_root_visible)
 
     def _is_accessible(self, item, depth = None):
-        
-        if self.__item_access is None:
-            self.__item_access = {}
-        
+
         accessibility = self.__item_access.get(item)
 
         if accessibility is None:
@@ -68,9 +70,13 @@ class TreeView(Element):
 
             if self.filter_item(item):
                 accessibility = ACCESSIBLE
-            elif (self.max_depth is None or self.max_depth > depth) and any(
-                self._is_accessible(child, depth + 1)
-                for child in self.get_child_items(item)
+            elif (
+                self.display_filtered_containers
+                and (self.max_depth is None or self.max_depth > depth)
+                and any(
+                    self._is_accessible(child, depth + 1)
+                    for child in self.get_child_items(item)
+                )
             ):
                 accessibility = ACCESSIBLE_DESCENDANTS
             else:
@@ -83,14 +89,15 @@ class TreeView(Element):
     def _ready(self):
 
         Element._ready(self)
- 
-        # Find the selected path
-        self._expanded = set()
-        item = self.selection
 
-        while item is not None:
-            self._expanded.add(item)
-            item = self.get_parent_item(item)
+        # Find the selected path
+        if not (self.expanded and not self.highlighted_selection):
+            self._expanded = set()
+            item = self.selection
+
+            while item is not None:
+                self._expanded.add(item)
+                item = self.get_parent_item(item)
 
         if self.root is not None:
             if self.root_visibility == self.SINGLE_ROOT:
@@ -118,18 +125,21 @@ class TreeView(Element):
         self.__item_access = None
 
     def create_entry(self, item):
-        
+
         entry = Element("li")
- 
+
         if (
-            not (
-                self.root_visibility == self.MERGED_ROOT 
+            self.highlighted_selection
+            and not (
+                self.root_visibility == self.MERGED_ROOT
                 and item is self.root
                 and self.selection is not self.root
             )
             and item in self._expanded
         ):
             entry.add_class("selected")
+            if item is self.selection:
+                entry.add_class("active")
 
         entry.label = self.create_label(item)
         entry.append(entry.label)
@@ -137,8 +147,16 @@ class TreeView(Element):
         children = self.get_expanded_children(item)
 
         if self.create_empty_containers or children:
+
+            for child in children:
+                if self._is_accessible(child) != NOT_ACCESSIBLE:
+                    entry.add_class("branch")
+                    break
+
             entry.container = self.create_children_container(item, children)
             entry.append(entry.container)
+        else:
+            entry.add_class("leaf")
 
         return entry
 
@@ -161,7 +179,7 @@ class TreeView(Element):
     def get_item_label(self, item):
         return translations(item)
 
-    def create_children_container(self, item, children):        
+    def create_children_container(self, item, children):
         container = Element("ul")
         container.collapsible = True
         self._fill_children_container(container, item, children)
@@ -174,7 +192,7 @@ class TreeView(Element):
             for child in children:
                 if self.filter_item:
                     accessibility = self._is_accessible(
-                        child, 
+                        child,
                         depth = self._depth
                     )
                     if accessibility == NOT_ACCESSIBLE or (
@@ -189,7 +207,7 @@ class TreeView(Element):
 
     def get_parent_item(self, item):
         return getattr(item, "parent", None)
-  
+
     def get_child_items(self, parent):
         return getattr(parent, "children", [])
 
@@ -202,11 +220,11 @@ class TreeView(Element):
         else:
             return self.get_child_items(parent)
 
-    def should_collapse(self, parent):        
+    def should_collapse(self, parent):
         return (
             (self.max_depth is not None and self._depth > self.max_depth)
             or (
-                self.root_visibility == self.MERGED_ROOT 
+                self.root_visibility == self.MERGED_ROOT
                 and parent is self.root
                 and self._depth > 1
             )

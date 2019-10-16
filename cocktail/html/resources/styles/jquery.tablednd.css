@@ -2,7 +2,7 @@ td.dragHandle {
 }
 
 td.showDragHandle {
-    background-image:url(../images/updown2.gif);
+    background-image:url(/cocktail/images/updown2.gif);
     background-position:center center;
     background-repeat:no-repeat;
     cursor:move;
@@ -21,5 +21,5 @@ td.showDragHandle {
     background-position: 10px center;
     color: #D8000C;
     background-color: #FFBABA;
-    background-image: url(../images/error.png);
+    background-image: url(/cocktail/images/error.png);
 }

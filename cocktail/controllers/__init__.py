@@ -1,43 +1,38 @@
 #-*- coding: utf-8 -*-
-u"""
-Utilities for writing application controllers.
+"""Utilities for writing application controllers.
 
-@author:		Martí Congost
-@contact:		marti.congost@whads.com
-@organization:	Whads/Accent SL
-@since:			July 2008
+.. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
-from cocktail.controllers.requestproperty import (
+from .request import (
+    get_request_url,
+    get_request_query,
+    get_request_root_url,
+    get_request_url_builder,
+    get_request_root_url_builder
+)
+from .requestproperty import (
     request_property,
     clear_request_properties
 )
-from cocktail.controllers.requesthandler import RequestHandler
-from cocktail.controllers.static import (
-    file_publisher, 
+from .requesthandler import RequestHandler
+from .filepublication import FilePublication, file_publication
+from .static import (
+    file_publisher,
     folder_publisher,
     serve_file
 )
-from cocktail.controllers.controller import Controller
-from cocktail.controllers.formprocessor import FormProcessor, Form
-from cocktail.controllers.formcontrollermixin import FormControllerMixin
-from cocktail.controllers.dispatcher import (
+from .controller import Controller
+from .httpmethodcontroller import HTTPMethodController
+from .formprocessor import FormProcessor, Form
+from .dispatcher import (
     Dispatcher,
     StopRequest,
     context
 )
-from cocktail.controllers.uriutils import (
-    make_uri, 
-    try_decode,
-    percent_encode_uri
-)
-from cocktail.controllers.location import Location
-from cocktail.controllers.viewstate import (
-    get_state,
-    view_state,
-    view_state_form,
-    save_view_state,
-    restore_view_state,
-    saved_query_string
+from cocktail.controllers.redirection import (
+    redirect,
+    reload_request_url,
+    post_redirection
 )
 from cocktail.controllers.parameters import (
     serialize_parameter,
@@ -47,23 +42,17 @@ from cocktail.controllers.parameters import (
     CookieParameterSource,
     SessionParameterSource
 )
-from cocktail.controllers.pagination import Pagination
-from cocktail.controllers.usercollection import UserCollection
-from cocktail.controllers.fileupload import FileUpload
-from cocktail.controllers.sessions import session
-import cocktail.controllers.grouping
-import cocktail.controllers.erroremail
-import cocktail.controllers.handlerprofiler
-
-# The ZODB debugger needs collections.Counter, and therefore is not available
-# under Python 2.6
-try:    
-    import cocktail.controllers.zodbdebuggertool
-except ImportError:
-    pass
-
-import cocktail.controllers.switchhandler
-
+from .pagination import Pagination
+from .fileupload import FileUpload
+from .sessions import session
+from .cached import Cached
+from .csrfprotection import (
+    CSRFProtection,
+    CSRFTokenError,
+    get_csrf_protection,
+    set_csrf_protection
+)
+from .jsonutils import json_out, read_json
 
 import cherrypy
 
@@ -76,3 +65,13 @@ def apply_forwarded_url_scheme():
         cherrypy.request.base = '%s://%s' % (forwarded_scheme, rest)
 
 cherrypy.request.hooks.attach("on_start_resource", apply_forwarded_url_scheme)
+
+# Make the autoreloading mechanism in the CherryPy server observe .strings
+# files
+from cocktail.events import when
+from cocktail.translations import translations
+
+@when(translations.bundle_loaded)
+def track_bundle_files(e):
+    cherrypy.engine.autoreload.files.add(e.file_path)
+

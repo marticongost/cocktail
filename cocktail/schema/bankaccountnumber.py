@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Javier Marrero <javier.marrero@whads.com>
 """
@@ -13,7 +13,6 @@ divider_expr = re.compile(r"\-*")
 
 class BankAccountNumber(String):
 
-    edit_control = "cocktail.html.MaskedInputBox"
     input_mask = "9999-9999-99-9999999999"
     min = 20
     max = 20
@@ -21,20 +20,23 @@ class BankAccountNumber(String):
     def __init__(self, *args, **kwargs):
         kwargs.setdefault("format", r"^\d{20}$")
         String.__init__(self, *args, **kwargs)
-        self.add_validation(BankAccountNumber.bank_account_validation_rule)
 
     def normalization(self, value):
-        if isinstance(value, basestring):
+        if isinstance(value, str):
             value = divider_expr.sub("", value)
         return value
 
-    def bank_account_validation_rule(self, value, context):
+    def _default_validation(self, context):
         """Validation rule for european bank account numbers."""
-        
-        if isinstance(value, basestring) and not self.checksum(value):
-            yield BankAccountChecksumError(
-                self, value, context
-            )
+
+        for error in String._default_validation(self, context):
+            yield error
+
+        if (
+            isinstance(context.value, str)
+            and not self.checksum(context.value)
+        ):
+            yield BankAccountChecksumError(context)
 
     @classmethod
     def checksum(cls, value):
@@ -45,6 +47,6 @@ class BankAccountNumber(String):
 
     def translate_value(self, value, language = None, **kwargs):
         if value:
-            return value[0:4] + u"-" + value[4:8] + u"-" + value[8:]
+            return value[0:4] + "-" + value[4:8] + "-" + value[8:]
         else:
             return ""

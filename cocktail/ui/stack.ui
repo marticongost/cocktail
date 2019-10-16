@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ui:element
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:requires component="cocktail.ui.StackNode"/>
+
+    <?head
+    const STACK_TOP = Symbol("cocktail.ui.Stack.STACK_TOP");
+    const STACK_ROOT = Symbol("cocktail.ui.Stack.STACK_ROOT");
+    const STACK_PARENT = Symbol.for("cocktail.ui.Stack.STACK_PARENT");
+    ?>
+
+    <?class
+    push(stackNode) {
+
+        let stackTop = this[STACK_TOP];
+        stackNode.isStackRoot = !stackTop;
+
+        if (stackTop) {
+            stackTop.stackDescendants.appendChild(stackNode);
+            stackNode[STACK_PARENT] = stackTop;
+            stackTop.childAnimationType = stackNode.animationType;
+            stackTop.animationState = "childOpening";
+        }
+        else {
+            this.stackContent.appendChild(stackNode);
+            this[STACK_ROOT] = stackNode;
+        }
+
+        this[STACK_TOP] = stackNode;
+        stackNode.animationState = "opening";
+        cocktail.ui.trigger(this, "stackNodePushed", {stackNode});
+        cocktail.ui.trigger(this, "stackChanged", {previousNode: stackTop, newNode: stackNode});
+        return stackNode;
+    }
+
+    pop(stackNode = null) {
+
+        if (!stackNode) {
+            stackNode = this[STACK_TOP];
+        }
+
+        if (!stackNode) {
+            throw new this.constructor.StackError();
+        }
+
+        const previousStackTop = this[STACK_TOP];
+
+        let stackParent = stackNode[STACK_PARENT];
+        this[STACK_TOP] = stackParent;
+
+        if (stackNode === this[STACK_ROOT]) {
+            this[STACK_ROOT] = null;
+        }
+
+        cocktail.ui.trigger(this, "stackChanged", {
+            previousNode: previousStackTop,
+            newNode: stackParent
+        });
+
+        stackNode.addEventListener("animationend", (e) => {
+            if (stackNode.parentNode) {
+                if (stackParent) {
+                    stackParent.stackDescendants.removeChild(stackNode);
+                }
+                else {
+                    this.stackContent.removeChild(stackNode);
+                }
+            }
+
+            let triggerPoppedEvent = (node) => {
+                if (node.stackChild) {
+                    triggerPoppedEvent(node.stackChild);
+                }
+                cocktail.ui.trigger(this, "stackNodePopped", {stackNode: node});
+            }
+            triggerPoppedEvent(stackNode);
+
+            if (!stackParent) {
+                cocktail.ui.trigger(this, "stackEmptied");
+            }
+        });
+
+        stackNode.animationState = "closing";
+        if (stackParent) {
+            stackParent.animationState = "childClosing";
+        }
+
+        return stackNode;
+    }
+
+    popAndWait(stackNode = null) {
+        return new Promise((resolve, reject) => {
+            stackNode = this.pop(stackNode);
+            stackNode.addEventListener("animationend", resolve, {once: true});
+        });
+    }
+
+    clearStack() {
+        while (this[STACK_TOP]) {
+            this.pop();
+        }
+    }
+
+    *iterStack() {
+        let node = this.stackRoot;
+        while (node) {
+            yield node;
+            node = node.stackChild;
+        }
+    }
+
+    get stackRoot() {
+        return this[STACK_ROOT];
+    }
+
+    get stackTop() {
+        return this[STACK_TOP];
+    }
+
+    getStackNode(depth) {
+        let node = this.stackRoot;
+        while (node && depth) {
+            node = node.stackChild;
+            depth--;
+        }
+        return node;
+    }
+    ?>
+
+    <?tail
+    cls.StackError = class StackError {
+        toString() {
+            return "Can't pop from an empty stack";
+        }
+    }
+    ?>
+
+    <div id="stackContent"/>
+
+</ui:element>
+

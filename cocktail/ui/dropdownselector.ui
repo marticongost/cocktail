@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ui:element
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:using mixin="cocktail.ui.DataDisplay"/>
+
+    <ui:property
+        name="emptyLabel"
+        type="string"
+        reflected="true"
+        default="---"/>
+
+    <ui:property
+        name="emptyOptionDisplayed"
+        type="boolean"
+        default="true"
+        reflected="true">
+
+        <?on changed
+        if (newValue) {
+            if (this.dataBinding) {
+                this.emptyOption = this.addOption(null, true);
+            }
+        }
+        else {
+            this.select.removeChild(this.emptyOption);
+            this.emptyOption = null;
+            if (this.dataBinding) {
+                this[OPTION_MAP].delete(null);
+            }
+        }
+        ?>
+
+    </ui:property>
+
+    <ui:property
+        name="sorted"
+        type="boolean"
+        default="true"
+        reflected="true"/>
+
+    <?head
+    const SERIALIZED_VALUE = Symbol("cocktail.ui.DropdownSelector.SERIALIZED_VALUE");
+    const OPTION_MAP = Symbol("cocktail.ui.DropdownSelector.OPTION_MAP");
+    ?>
+
+    <?class
+    getOption(value) {
+        let serializedValue = String(this.dataBinding.member.serializeValue(value));
+        return this[OPTION_MAP].get(serializedValue) || null;
+    }
+
+    clearOptions() {
+        this[OPTION_MAP].clear();
+        cocktail.ui.empty(this.select);
+    }
+
+    createOptions() {
+        this.clearOptions();
+        if (this.dataBinding) {
+            if (this.emptyOptionDisplayed) {
+                this.emptyOption = this.addOption(null);
+            }
+            let possibleValuesResolution = Promise.resolve(this.dataBinding.member.getPossibleValues());
+            possibleValuesResolution.then((values) => {
+                if (this.sorted) {
+                    values = this.sortValues(values);
+                }
+                this.addOptions(values);
+            });
+        }
+    }
+
+    sortValues(values) {
+        return cocktail.ui.sorting.localeSort(values, (value) => this.dataBinding.member.translateValue(value));
+    }
+
+    addOptions(values) {
+        if (values) {
+            for (let value of values) {
+                this.addOption(value);
+            }
+        }
+    }
+
+    addOption(value, prepend = false) {
+
+        let option = this.createOption(value);
+        let serializedValue = this.dataBinding.member.serializeValue(value);
+
+        this[OPTION_MAP].set(option.value, option);
+
+        if (prepend && this.select.firstChild) {
+            this.select.insertBefore(option, this.select.firstChild);
+        }
+        else {
+            this.select.appendChild(option);
+        }
+
+        return option;
+    }
+
+    createOption(value) {
+        let option = document.createElement("option");
+        option.optionValue = value;
+        option.value = this.dataBinding.member.serializeValue(value);
+        option.innerHTML = this.getLabel(value);
+        option.selected = (option.value === this[SERIALIZED_VALUE]);
+        return option;
+    }
+
+    getLabel(value) {
+        return this.dataBinding.member.translateValue(value) || this.emptyLabel;
+    }
+    ?>
+
+    <?tail
+    cls.delegatesFocus = true;
+    ?>
+
+    <?on dataBinding:changed
+    this.createOptions();
+    ?>
+
+    <?on value:changed
+    if (this.dataBinding) {
+        let previousOption = this.getOption(oldValue);
+        if (previousOption) {
+            previousOption.selected = false;
+        }
+        this[SERIALIZED_VALUE] = String(this.dataBinding.member.serializeValue(newValue));
+        let newOption = this.getOption(newValue);
+        if (newOption) {
+            newOption.selected = true;
+        }
+    }
+    ?>
+
+    <?js
+    this[OPTION_MAP] = new Map();
+    ?>
+
+    <select id="select">
+        <?on change
+        if (this.selectedOptions.length) {
+            instance.value = this.selectedOptions[0].optionValue;
+        }
+        else {
+            instance.value = null;
+        }
+        ?>
+    </select>
+
+</ui:element>
+

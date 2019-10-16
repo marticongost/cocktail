@@ -1,0 +1,279 @@
+
+@mixin theme($theme-id) {
+    @if $active-theme == $theme-id {
+        @content;
+    }
+}
+
+@mixin top-bottom($property, $value) {
+    #{$property}-top: $value;
+    #{$property}-bottom: $value;
+}
+
+@mixin left-right($property, $value) {
+    #{$property}-top: $value;
+    #{$property}-bottom: $value;
+}
+
+@function join-media-query($query1, $query2) {
+    $hasValue1: $query1 != "" and $query1 != null;
+    $hasValue2: $query2 != "" and $query2 != null;
+    @if $hasValue1 and $hasValue2 != "" {
+        @return $query1 + " and " + $query2;
+    }
+    @else if $hasValue1 {
+        @return $query1;
+    }
+    @else if $hasValue2 {
+        @return $query2;
+    }
+    @else {
+        @return "";
+    }
+}
+
+@mixin clear-list-styles {
+    padding-left: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    list-style-type: none;
+
+    & > li {
+        padding-left: 0;
+        margin: 0;
+    }
+}
+
+@mixin horizontal-list {
+    @include clear-list-styles;
+
+    & > li {
+        display: inline-block;
+        vertical-align: top;
+    }
+}
+
+@mixin clear-children-float {
+    &:after {
+      content: "";
+      display: table;
+      clear: both;
+    }
+}
+
+@mixin scripting-enabled {
+    body.scripted & {
+        @content;
+    }
+}
+
+@mixin transparent-button {
+    padding: 0;
+
+    &,
+    &:hover {
+        border: none;
+        box-shadow: none;
+        background-color: transparent;
+        background-image: none;
+    }
+}
+
+@mixin dropdown-menu($transition: 'fade-in') {
+    @include clear-list-styles;
+    display: table;
+
+    & > li {
+        display: table-cell;
+        text-align: center;
+        vertical-align: middle;
+
+        & > a {
+            display: block;
+        }
+
+        & > ul {
+            @include clear-list-styles;
+            position: absolute;
+            z-index: 500;
+            padding: 0;
+            opacity: 0;
+            height: 0;
+            overflow: hidden;
+            text-align: left;
+
+            @if $transition == 'fade-in' {
+                transition: opacity 0.5s ease;
+            }
+        }
+
+        &:hover {
+            & > ul {
+                height: auto;
+                opacity: 1;
+            }
+        }
+    }
+}
+
+// Mixins for bidirectional content
+@mixin ltr {
+    html[dir='ltr'] & {
+        @content;
+    }
+}
+
+@mixin rtl {
+    html[dir='rtl'] & {
+        @content;
+    }
+}
+
+@mixin position-start($value) {
+    @include ltr {
+        left: $value;
+    }
+    @include rtl {
+        right: $value;
+    }
+}
+
+@mixin position-end($value) {
+    @include ltr {
+        right: $value;
+    }
+    @include rtl {
+        left: $value;
+    }
+}
+
+@mixin margin-start($value) {
+    @include ltr {
+        margin-left: $value;
+    }
+    @include rtl {
+        margin-right: $value;
+    }
+}
+
+@mixin margin-end($value) {
+    @include ltr {
+        margin-right: $value;
+    }
+    @include rtl {
+        margin-left: $value;
+    }
+}
+
+@mixin padding-start($value) {
+    @include ltr {
+        padding-left: $value;
+    }
+    @include rtl {
+        padding-right: $value;
+    }
+}
+
+@mixin padding-end($value) {
+    @include ltr {
+        padding-right: $value;
+    }
+    @include rtl {
+        padding-left: $value;
+    }
+}
+
+@mixin float-start {
+    @include ltr {
+        float: left;
+    }
+    @include rtl {
+        float: right;
+    }
+}
+
+@mixin float-end {
+    @include ltr {
+        float: right;
+    }
+    @include rtl {
+        float: end;
+    }
+}
+
+@mixin clear-start {
+    @include ltr {
+        clear: left;
+    }
+    @include rtl {
+        clear: right;
+    }
+}
+
+@mixin clear-end {
+    @include ltr {
+        clear: right;
+    }
+    @include rtl {
+        clear: left;
+    }
+}
+
+@mixin text-align-start {
+    @include ltr {
+        text-align: left;
+    }
+    @include rtl {
+        text-align: right;
+    }
+}
+
+@mixin text-align-end {
+    @include ltr {
+        text-align: right;
+    }
+    @include rtl {
+        text-align: left;
+    }
+}
+
+@mixin flex-grid($cols, $spacing: 0) {
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+
+    & > * {
+        flex: 0 0 auto;
+        width: calc((100% - #{($cols - 1) * $spacing}) / #{$cols});
+        margin-left: $spacing;
+
+        &:nth-child(#{$cols}n + 1) {
+            margin-left: 0;
+        }
+
+        &:nth-child(#{$cols}) ~ * {
+            margin-top: $spacing;
+        }
+    }
+}
+
+@function join-list-items($list, $glue: '', $is-nested: false) {
+  $result: null;
+
+  @for $i from 1 through length($list) {
+    $e: nth($list, $i);
+
+    @if type-of($e) == list {
+      $result: $result#{join-list-items($e, $glue, true)};
+    } @else {
+      $result: if(
+        $i != length($list) or $is-nested,
+        $result#{$e}#{$glue},
+        $result#{$e}
+      );
+    }
+  }
+
+  @return $result;
+}
+

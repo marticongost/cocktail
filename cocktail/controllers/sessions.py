@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Jordi Fernández <jordi.fernandez@whads.com>
 """
@@ -14,7 +14,8 @@ class Session(DictWrapper):
     config = {
         'session.type': 'memory',
         'session.cookie_expires': True,
-        'session.timeout': 3600
+        'session.timeout': 3600,
+        "session.samesite": None
     }
 
     def __init__(self):
@@ -23,7 +24,7 @@ class Session(DictWrapper):
     @property
     def _items(self):
         return cherrypy.request.wsgi_environ['beaker.session']
-    
+
     def __setitem__(self, key, value):
         self.save()
         self._items[key] = value
@@ -91,7 +92,7 @@ class Session(DictWrapper):
 
     def dirty(self):
         return self._items.dirty()
-    
+
     def accessed(self):
         return self._items.accessed(self)
 

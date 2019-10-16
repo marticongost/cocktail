@@ -41,8 +41,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Cocktail'
-copyright = u'2010, Whads Accent SL'
+project = 'Cocktail'
+copyright = '2010, Whads Accent SL'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -168,8 +168,8 @@ htmlhelp_basename = 'Cocktaildoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, document class [howto/manual]).
 latex_documents = [
-  ('index', 'Cocktail.tex', ur'Cocktail Documentation',
-   ur'Martí Congost', 'manual'),
+  ('index', 'Cocktail.tex', r'Cocktail Documentation',
+   r'Martí Congost', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

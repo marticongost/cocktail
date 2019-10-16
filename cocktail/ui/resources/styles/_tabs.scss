@@ -1,0 +1,74 @@
+
+
+@import "cocktail.ui://styles/common";
+
+$tab-strip-border-thickness: 1px !default;
+$tab-button-vertical-offset: -1px !default;
+$tab-underline-thickness: 3px !default;
+$tab-active-color: $focus-color !default;
+$tab-inactive-color: #777 !default;
+$tab-hover-color: desaturate(lighten($tab-active-color, 5), 20) !default;
+$tab-active-underline-color: $focus-color !default;
+$tab-inactive-underline-color: #eee !default;
+$tab-hover-underline-color: lighten($tab-active-underline-color, 25) !default;
+
+@mixin tabs {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    overflow: hidden;
+}
+
+@mixin tab-strip {
+    padding-bottom: 0;
+    flex: 0 0 auto;
+    border-bottom: $tab-strip-border-thickness solid $tab-inactive-underline-color;
+    box-shadow: 0 0.2em 1.2em rgba(black, 0.1);
+    background-color: white;
+    display: flex;
+}
+
+@mixin tab-button {
+    font-size: inherit;
+    color: $tab-inactive-color;
+    background: none;
+    padding-top: 0.8rem;
+    padding-bottom: 0.6rem;
+    padding-right: 1.3rem;
+    padding-left: 1.3rem;
+    border: none;
+    border-bottom: $tab-underline-thickness solid;
+    margin-bottom: $tab-button-vertical-offset;
+    cursor: pointer;
+
+    &:focus {
+        outline: none;
+    }
+
+    &[aria-selected='true'] {
+        border-bottom-color: $tab-active-underline-color;
+        color: $tab-active-color;
+        font-weight: bold;
+    }
+
+    &:not([aria-selected='true']) {
+        border-bottom-color: transparent;
+        color: $tab-inactive-color;
+        cursor: pointer;
+
+        &:hover {
+            border-bottom-color: $tab-hover-underline-color;
+            color: $tab-hover-color;
+        }
+    }
+}
+
+@mixin tab-content {
+    flex: 1 1 auto;
+    display: flex;
+    position: relative;
+    background-color: white;
+    overflow: hidden;
+}
+

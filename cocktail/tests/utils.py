@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -14,7 +14,7 @@ class EventLog(list):
         for slot in args:
             self._add_listener(slot)
 
-        for name, slot in kwargs.iteritems():
+        for name, slot in kwargs.items():
             self._add_listener(slot, name)
 
     def _add_listener(self, slot, name = None):
@@ -23,7 +23,7 @@ class EventLog(list):
             self.append(copy(event))
 
         if name:
-            listener.func_name = name
+            listener.__name__ = name
 
         slot.append(listener)
 
@@ -33,7 +33,7 @@ class EventLog(list):
 
 def run_concurrently(thread_count, func, *args, **kwargs):
 
-    from thread import start_new_thread
+    from _thread import start_new_thread
     from threading import Condition
 
     condition = Condition()
@@ -46,7 +46,7 @@ def run_concurrently(thread_count, func, *args, **kwargs):
     def thread_runner():
         try:
             func(*args, **kwargs)
-        except Exception, error:
+        except Exception as error:
             ExecutionContext.error = error
 
         condition.acquire()
@@ -57,7 +57,7 @@ def run_concurrently(thread_count, func, *args, **kwargs):
     for i in range(thread_count):
         if ExecutionContext.error is not None:
             break
-        
+
         start_new_thread(thread_runner, ())
 
     try:

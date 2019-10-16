@@ -1,0 +1,20 @@
+
+@import "cocktail.ui://styles/tabs";
+
+:host {
+    @include tabs;
+}
+
+#strip {
+    @include tab-strip;
+    z-index: 2;
+
+    button {
+        @include tab-button;
+    }
+}
+
+#content {
+    @include tab-content;
+}
+

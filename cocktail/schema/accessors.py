@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -18,18 +18,18 @@ def get_accessor(obj):
             return accessor
 
 def get(obj, key, default = undefined, language = None):
-    
-    if not isinstance(key, basestring):
+
+    if not isinstance(key, str):
         key = key.name
-    
+
     accessor = get_accessor(obj)
     return accessor.get(obj, key, default, language)
 
 def set(obj, key, value, language = None):
-    
-    if not isinstance(key, basestring):
+
+    if not isinstance(key, str):
         key = key.name
-    
+
     accessor = get_accessor(obj)
     accessor.set(obj, key, value, language)
 
@@ -46,17 +46,17 @@ class MemberAccessor(object):
     @classmethod
     def can_handle(cls, obj):
         """Indicates if the accessor can handle the provided object.
-        
+
         @param obj: The object to evaluate.
-        
+
         @return: True if the accessor is able to operate on the object, False
             otherwise.
         """
-        
+
     @classmethod
     def get(cls, obj, key, default = undefined, language = None):
         """Gets a value from the indicated object.
-        
+
         @param obj: The object to get the value from.
         @type obj: object
 
@@ -65,12 +65,12 @@ class MemberAccessor(object):
 
         @param default: Provides a the default value that will be returned in
             case the supplied object doesn't define the requested key. If this
-            parameter is not set, a KeyError exception will be raised.            
+            parameter is not set, a KeyError exception will be raised.
 
         @param language: Required for multi-language values. Indicates the
             language to retrieve the value in.
         @type language: str
-    
+
         @return: The requested value, if defined. If not, the method either
             returns the default value (if one has been specified) or raises a
             KeyError exception.
@@ -82,7 +82,7 @@ class MemberAccessor(object):
     @classmethod
     def set(cls, obj, key, value, language = None):
         """Sets the value of a key on the indicated object.
-        
+
         @param obj: The object to set the value on.
         @type obj: object
 
@@ -98,7 +98,7 @@ class MemberAccessor(object):
     def languages(cls, obj, key):
         """Determines the set of languages that the given object key is
         translated into.
-        
+
         @param obj: The object to evaluate.
         @type obj: object
 
@@ -108,7 +108,7 @@ class MemberAccessor(object):
         @return: A sequence or set of language identifiers.
         @rtype: str iterable
         """
-    
+
 
 class AttributeAccessor(MemberAccessor):
 
@@ -117,7 +117,7 @@ class AttributeAccessor(MemberAccessor):
         return True
 
     @classmethod
-    def get(cls, obj, key, default = undefined, language = None):        
+    def get(cls, obj, key, default = undefined, language = None):
         if language:
             raise ValueError(
                 "AttributeAccessor can't operate on translated members")
@@ -151,7 +151,7 @@ class DictAccessor(MemberAccessor):
 
         if language:
             translation = obj.get(key)
-            
+
             if translation is None:
                 value = undefined
             else:
@@ -174,13 +174,13 @@ class DictAccessor(MemberAccessor):
             if translation is None:
                 obj[key] = translation = {}
             translation[language] = value
-        else:        
+        else:
             obj[key] = value
 
     @classmethod
     def languages(cls, obj, key):
         items = obj.get(key)
-        return items.iterkeys() if items else ()
+        return iter(items.keys()) if items else ()
 
 
 AttributeAccessor.register()

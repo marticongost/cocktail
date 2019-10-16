@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ui:element
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui" tabindex="0">
+
+    <ui:using mixin="cocktail.ui.DataDisplay"/>
+    <ui:requires component="cocktail.ui.Delay"/>
+
+    <ui:symbol name="SYNC"/>
+    <ui:symbol name="DELAY"/>
+
+    <ui:property
+        name="disabled"
+        type="boolean"
+        reflected="true"
+        default="false">
+        <?on changed
+        this.input.disabled = newValue;
+        ?>
+    </ui:property>
+
+    <ui:property
+        name="inputDelay"
+        type="number"
+        reflected="true">
+        <?on changed
+        instance[DELAY].threshold = newValue;
+        ?>
+    </ui:property>
+
+    <?tail
+    cls.delegatesFocus = true;
+    ?>
+
+    <?js
+    this[SYNC] = cocktail.ui.sync();
+    this[DELAY] = new cocktail.ui.Delay(0, () => {
+        this[SYNC](() => {
+            if (this.dataBinding) {
+                this.value = this.dataBinding.member.parseValue(this.input.value)
+            }
+            else {
+                this.value = this.input.value;
+            }
+        })
+    });
+    ?>
+
+    <?on value:changed
+    this[SYNC](() => {
+        if (this.dataBinding) {
+            this.input.value = this.dataBinding.member.serializeValue(newValue)
+        }
+        else {
+            this.input.value = newValue;
+        }
+    });
+    ?>
+
+    <input id="input">
+
+        <?on input
+        instance[DELAY].begin();
+        ?>
+
+    </input>
+
+</ui:element>
+

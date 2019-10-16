@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -9,7 +9,7 @@ from persistent import Persistent
 class MaxValue(Persistent):
 
     value = None
-    
+
     def __init__(self, value = None):
         self.value = value
 
@@ -17,6 +17,6 @@ class MaxValue(Persistent):
         old_state["value"] = max(
             saved_state.get("value"),
             new_state.get("value")
-        )        
+        )
         return old_state
 

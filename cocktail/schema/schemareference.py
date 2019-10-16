@@ -1,15 +1,14 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
 @organization:	Whads/Accent SL
 @since:			June 2008
 """
-from cocktail.modeling import getter
 from cocktail.events import event_handler
-from cocktail.pkgutils import import_object
 from cocktail.translations import translations
+from cocktail.schema.member import Member
 from cocktail.schema.schema import Schema
 from cocktail.schema.schemarelations import RelationMember
 from cocktail.schema.accessors import get_accessor, get
@@ -20,6 +19,7 @@ from cocktail.schema.exceptions import (
     RelationCycleError,
     RelationConstraintError
 )
+from .registry import import_type
 
 
 class Reference(RelationMember):
@@ -27,27 +27,24 @@ class Reference(RelationMember):
     __class_family = None
 
     cycles_allowed = True
-    default_order = None
-
-    def __init__(self, *args, **kwargs):
-        RelationMember.__init__(self, *args, **kwargs)
-        self.add_validation(self.__class__.reference_validation_rule)
+    default_order = "__auto__"
+    include_root_schema = True
 
     def translate_value(self, value, language = None, **kwargs):
         if value is None:
-            return u""
-        elif isinstance(value, Schema) and value.name:
-            return translations(value.name, language, **kwargs)
+            return RelationMember.translate_value(
+                self, value, language, **kwargs
+            )
         else:
             return translations(value, language, **kwargs)
 
     def _add_relation(self, obj, related_obj):
-        get_accessor(obj).set(obj, self.name, related_obj)                
+        get_accessor(obj).set(obj, self.name, related_obj)
 
     def _remove_relation(self, obj, related_obj):
         get_accessor(obj).set(obj, self.name, None)
 
-    @getter
+    @property
     def related_type(self):
         return self.type
 
@@ -55,13 +52,13 @@ class Reference(RelationMember):
 
         filters = list(args)
 
-        for key, value in kwargs.iteritems():
+        for key, value in kwargs.items():
             filters.append(self.related_type[key].equal(value))
 
         return HasExpression(self, filters)
 
     @event_handler
-    def handle_attached_as_orphan(cls, event):
+    def handle_attached_as_orphan(event):
         member = event.source
         member.type = member.related_end.schema
 
@@ -70,8 +67,8 @@ class Reference(RelationMember):
     def _get_class_family(self):
 
         # Resolve string references
-        if isinstance(self.__class_family, basestring):
-            self.__class_family = import_object(self.__class_family)
+        if isinstance(self.__class_family, str):
+            self.__class_family = import_type(self.__class_family)
 
         return self.__class_family
 
@@ -87,26 +84,29 @@ class Reference(RelationMember):
         @type type: type or str
         """)
 
-    def reference_validation_rule(self, value, context):
+    def _default_validation(self, context):
 
-        if value is not None:
- 
+        for error in RelationMember._default_validation(self, context):
+            yield error
+
+        if context.value is not None:
+
             # Apply the 'class_family' constraint
             class_family = \
                 self.resolve_constraint(self.class_family, context)
-            
+
             if class_family:
-                if not isinstance(value, type):
-                    yield TypeCheckError(self, value, context, type)
-                elif not issubclass(value, class_family):
-                    yield ClassFamilyError(self, value, context, class_family)
+                if not isinstance(context.value, type):
+                    yield TypeCheckError(context, type)
+                elif not issubclass(context.value, class_family):
+                    yield ClassFamilyError(context, class_family)
             else:
                 # Apply the 'cycles_allowed' constraint
                 if not self.cycles_allowed:
-                    obj = get(value, self.name, None)
+                    obj = get(context.value, self.name, None)
                     while obj:
-                        if obj is value:
-                            yield RelationCycleError(self, value, context)
+                        if obj is context.value:
+                            yield RelationCycleError(context)
                             break
                         obj = get(obj, self.name, None)
 
@@ -114,20 +114,65 @@ class Reference(RelationMember):
                 relation_constraints = \
                     self.resolve_constraint(self.relation_constraints, context)
 
-                if hasattr(relation_constraints, "iteritems"):
+                if hasattr(relation_constraints, "items"):
                     constraints_mapping = relation_constraints
                     relation_constraints = (
                         self.type.get_member(key).equal(value)
-                        for key, value in constraints_mapping.iteritems()
+                        for key, value in constraints_mapping.items()
                     )
 
                 if relation_constraints:
+                    owner = context.get_object()
                     for constraint in relation_constraints:
                         if not self.validate_relation_constraint(
                             constraint,
-                            context.validable,
-                            value
+                            owner,
+                            context.value
                         ):
-                            yield RelationConstraintError(
-                                self, value, context, constraint)
+                            yield RelationConstraintError(context, constraint)
+
+    def extract_searchable_text(self, extractor):
+        item = extractor.current.value.__class__
+        return item.extract_searchable_text(extractor)
+
+    def get_possible_values(self, context = None):
+
+        values = RelationMember.get_possible_values(self, context)
+
+        if values is None:
+            if self.class_family:
+                if isinstance(self.class_family, Schema):
+                    values = list(
+                        self.class_family.schema_tree()
+                        if self.include_root_schema
+                        else self.class_family.derived_schemas()
+                    )
+
+        if values is None or self.default_order:
+            if self.type is not None:
+                if hasattr(self, "select_constraint_instances"):
+                    query = self.select_constraint_instances(
+                        parent = context and context.get("persistent_object")
+                    )
+                elif hasattr(self.type, "select"):
+                    query = self.type.select()
+
+                if values is not None:
+                    query.base_collection = values
+
+                order = self.default_order
+
+                if order == "__auto__":
+                    order = getattr(self.type, "descriptive_member", None)
+
+                if order is not None:
+                    if isinstance(order, (str, Member)):
+                        query.add_order(order)
+                    else:
+                        for criteria in order:
+                            query.add_order(criteria)
+
+                values = query
+
+        return values
 

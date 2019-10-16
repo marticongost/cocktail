@@ -16,12 +16,14 @@ def selectable(
     element,
     mode = SINGLE_SELECTION,
     entry_selector = None,
-    checkbox_selector = None):
-    
+    checkbox_selector = None,
+    exclusive = True):
+
     element.add_resource(
-        "/cocktail/scripts/jquery.disable.text.select.pack.js")
-    element.add_resource("/cocktail/scripts/selectable.js")
-    
+        "cocktail://scripts/jquery.disable.text.select.pack.js"
+    )
+    element.add_resource("cocktail://scripts/selectable.js")
+
     element.set_client_variable(
         "cocktail.NO_SELECTION", NO_SELECTION)
     element.set_client_variable(
@@ -33,6 +35,7 @@ def selectable(
     element.set_client_param("selectableParams", {
         "mode": mode,
         "entrySelector": entry_selector,
-        "checkboxSelector": checkbox_selector
+        "checkboxSelector": checkbox_selector,
+        "exclusive": exclusive
     })
 

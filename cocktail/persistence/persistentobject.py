@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -11,13 +11,14 @@ from persistent import Persistent
 from BTrees.OOBTree import OOBTree
 from BTrees.IOBTree import IOBTree
 from cocktail import schema
-from cocktail.modeling import getter, OrderedSet
+from cocktail.modeling import OrderedSet
 from cocktail.events import Event, event_handler
 from cocktail.translations import translations
 from cocktail.schema import (
-    SchemaClass, 
-    SchemaObject, 
-    Reference, 
+    SchemaClass,
+    SchemaObject,
+    String,
+    Reference,
     Collection,
     TranslationMapping
 )
@@ -38,6 +39,8 @@ from cocktail.persistence.persistentrelations import (
     PersistentRelationOrderedSet,
     PersistentRelationMapping
 )
+
+translations.load_bundle("cocktail.persistence.persistentobject")
 
 # Add an extension property to allow relations to block a delete operation if
 # the relation is not empty
@@ -66,7 +69,7 @@ schema.RelationMember.cascade_delete = property(
     for that relation. This behavior propagates recursively.
 
     The property is disabled by default.
-    
+
     L{Integral<cocktail.schema.schemarelations.RelationMember.integral>}
     relations implicitly enable cascade deletion.
 
@@ -77,7 +80,7 @@ def _get_reference_is_persistent_relation(self):
     return self.type and issubclass(self.type, PersistentObject)
 
 schema.Reference.is_persistent_relation = \
-    getter(_get_reference_is_persistent_relation)
+    property(_get_reference_is_persistent_relation)
 
 def _get_collection_is_persistent_relation(self):
     items = self.items
@@ -86,77 +89,44 @@ def _get_collection_is_persistent_relation(self):
         and items.is_persistent_relation
 
 schema.Collection.is_persistent_relation = \
-    getter(_get_collection_is_persistent_relation)
+    property(_get_collection_is_persistent_relation)
 
 class PersistentClass(SchemaClass):
 
     # Avoid creating a duplicate persistent class when copying the class
     _copy_class = schema.Schema
     _generated_id = False
-    
+
     @event_handler
-    def handle_member_added(metacls, event):
-        
+    def handle_member_added(event):
+
         cls = event.source
         member = event.member
 
         # Unique values restriction
         if member.unique:
-            if cls._unique_validation_rule \
-            not in member.validations(recursive = False):
-                member.add_validation(cls._unique_validation_rule)
-
-    def _unique_validation_rule(cls, member, value, context):
-
-        # Make sure the member is still flagged as unique when the validation
-        # is performed
-        if not member.unique:
-            return
-
-        if value is not None:
-
-            validable = context.get("persistent_object", context.validable)
-
-            if isinstance(validable, PersistentObject):
-                pschema = member.original_member.schema
-                if member.translated:
-                    duplicates = list(pschema.select(
-                        validable.__class__.get_member(member.name)
-                        .translated_into(context["language"])
-                        .equal(value)
-                    ))
-                    duplicate = duplicates[0] if duplicates else None
-                else:
-                    params = {member.name: value}
-                    duplicate = pschema.get_instance(**params)
-
-                if duplicate and duplicate._counts_as_duplicate(validable):
-                    yield UniqueValueError(member, value, context)
+            if (
+                unique_validation_rule
+                not in member.validations(recursive = False)
+            ):
+                member.add_validation(unique_validation_rule)
 
     class MemberDescriptor(SchemaClass.MemberDescriptor):
 
-        def instrument_collection(self, collection, owner, member):
+        def get_instrumented_collection_type(self, collection):
 
             # Lists
             if isinstance(collection, (list, PersistentList)):
-                collection = PersistentRelationList(
-                    collection, owner, member
-                )
+                return PersistentRelationList
             # Sets
             elif isinstance(collection, (set, PersistentSet)):
-                collection = PersistentRelationSet(
-                    collection, owner, member
-                )
+                return PersistentRelationSet
             # Ordered sets
             elif isinstance(collection, (OrderedSet, PersistentOrderedSet)):
-                collection = PersistentRelationOrderedSet(
-                    collection, owner, member
-                )
+                return PersistentRelationOrderedSet
             # Mappings
             elif isinstance(collection, (dict, PersistentMapping)):
-                collection = PersistentRelationMapping(
-                    collection, owner, member
-                )
+                return PersistentRelationMapping
 
             return collection
 
@@ -167,9 +137,8 @@ class PersistentClass(SchemaClass):
         return translations_member
 
 
-class PersistentObject(SchemaObject, Persistent):
+class PersistentObject(SchemaObject, Persistent, metaclass=PersistentClass):
 
-    __metaclass__ = PersistentClass
     _generates_translation_schema = False
     __inserted = False
 
@@ -191,17 +160,35 @@ class PersistentObject(SchemaObject, Persistent):
         """)
 
     def __init__(self, *args, **kwargs):
-
-        # Generate an incremental ID for the object
-        if self.__class__._generated_id:
-            pk = self.__class__.primary_member.name
-            id = kwargs.get(pk)
-            if id is None:
-                kwargs[pk] = incremental_id()
-
         self._v_initializing = True
         SchemaObject.__init__(self, *args, **kwargs)
         self._v_initializing = False
+
+    def require_id(self):
+
+        if not self.__class__._generated_id:
+            return None
+
+        primary = self.__class__.primary_member
+        id = self.get(primary)
+
+        if id is None:
+            id = incremental_id()
+            self.set(primary, id)
+
+        return id
+
+    @classmethod
+    def new(cls, *args, **kwargs):
+        """A convenience method that creates and inserts an instance of the
+        class.
+
+        @return: The created instance.
+        @rtype: L{PersistentObject}
+        """
+        instance = cls(*args, **kwargs)
+        instance.insert()
+        return instance
 
     @classmethod
     def get_instance(cls, id = None, **criteria):
@@ -211,17 +198,17 @@ class PersistentObject(SchemaObject, Persistent):
 
         @param criteria: A single keyword parameter, indicating the name of a
             unique member and its value. It is mutually exclusive with L{id}.
-        
+
         @return: The requested object, if found. Otherwise, None.
         @rtype: L{PersistentObject} or None
         """
         if id is not None:
-            
+
             if criteria:
                 raise ValueError("Can't call get_instance() using both "
                     "positional and keyword parameters"
                 )
-            
+
             member = cls.primary_member
 
             if member is None:
@@ -229,7 +216,7 @@ class PersistentObject(SchemaObject, Persistent):
                     "Can't call get_instance() using a single positional "
                     "argument on a type without a primary member"
                 )
-                
+
             value = id
         else:
             if len(criteria) > 1:
@@ -271,7 +258,7 @@ class PersistentObject(SchemaObject, Persistent):
                     "Can't call get_instance() if neither the requested class "
                     "or member have an index"
                 )
-            for instance in cls.index.values():
+            for instance in list(cls.index.values()):
                 if instance.get(member) == value:
                     match = instance
                     break
@@ -280,7 +267,7 @@ class PersistentObject(SchemaObject, Persistent):
             match = None
 
         return match
-    
+
     @classmethod
     def require_instance(cls, id = None, **criteria):
         """Obtains an instance of the class or raises an exception.
@@ -289,7 +276,7 @@ class PersistentObject(SchemaObject, Persistent):
 
         @param criteria: A single keyword parameter, indicating the name of a
             unique member and its value. It is mutually exclusive with L{id}.
-        
+
         @return: The requested object, if found. Otherwise, None.
         @rtype: L{PersistentObject} or None
 
@@ -301,7 +288,7 @@ class PersistentObject(SchemaObject, Persistent):
         if instance is None:
 
             if id is None:
-                for key, value in criteria.iteritems():
+                for key, value in criteria.items():
                     break
             else:
                 key = "id"
@@ -322,7 +309,7 @@ class PersistentObject(SchemaObject, Persistent):
         constructor.
 
         @return: The requested collection of instances of the class.
-        @rtype: L{Query<cocktail.persistence.query.Query>}                
+        @rtype: L{Query<cocktail.persistence.query.Query>}
         """
         return Query(cls, *args, **kwargs)
 
@@ -332,7 +319,7 @@ class PersistentObject(SchemaObject, Persistent):
         SchemaClass._create_translation_schema(cls, members)
 
     @event_handler
-    def handle_changing(cls, event):
+    def handle_changing(event):
 
         # Disallow changing the primary key of an inserted member
         if event.member.primary and event.source.is_inserted:
@@ -348,7 +335,7 @@ class PersistentObject(SchemaObject, Persistent):
         elif isinstance(event.value, dict):
             event.value = PersistentMapping(event.value)
 
-    @getter
+    @property
     def is_inserted(self):
         """Indicates wether the object has been inserted into the database.
         @type: bool
@@ -357,10 +344,10 @@ class PersistentObject(SchemaObject, Persistent):
 
     def insert(self, inserted_objects = None):
         """Inserts the object into the database."""
-        
+
         if self.__inserted:
             return False
-        
+
         if inserted_objects is None:
             inserted_objects = set()
             inserted_objects.add(self)
@@ -370,10 +357,11 @@ class PersistentObject(SchemaObject, Persistent):
             else:
                 inserted_objects.add(self)
 
+        self.require_id()
         self.inserting(inserted_objects = inserted_objects)
         self.__inserted = True
 
-        for member in self.__class__.members().itervalues():
+        for member in self.__class__.members().values():
 
             # Insert related objects
             if isinstance(member, Reference):
@@ -396,7 +384,7 @@ class PersistentObject(SchemaObject, Persistent):
 
     def delete(self, deleted_objects = None):
         """Removes the object from the database."""
-        
+
         if deleted_objects is None:
             deleted_objects = set()
             deleted_objects.add(self)
@@ -412,7 +400,7 @@ class PersistentObject(SchemaObject, Persistent):
         self.deleting(deleted_objects = deleted_objects)
         self.__inserted = False
 
-        for member in self.__class__.members().itervalues():
+        for member in self.__class__.members().values():
 
             if isinstance(member, schema.RelationMember):
 
@@ -474,19 +462,75 @@ class PersistentObject(SchemaObject, Persistent):
     def _counts_as_duplicate(self, other):
         return self is not other
 
+    def copy_value(self, member, language, **kwargs):
+
+        value = SchemaObject.copy_value(self, member, language, **kwargs)
+
+        if member.unique:
+            original = self.get(member, language = language)
+            if value == original:
+                value = self.qualify_duplicate_value(
+                    member,
+                    value,
+                    language,
+                    receiver = kwargs.get("receiver")
+                )
+
+        return value
+
+    def qualify_duplicate_value(self, member, value, language, receiver = None):
+
+        if (
+            isinstance(member, String)
+            and receiver is not None
+            and value is not None
+        ):
+            return value + ("_%s" % receiver.require_id())
+
+        if not member.required:
+            return None
+
+        raise UniqueValueCopyError(self, member, language)
+
+
 PersistentObject._translation_schema_metaclass = PersistentClass
 PersistentObject._translation_schema_base = PersistentObject
 
 
+def unique_validation_rule(context):
+
+    # Make sure the member is still flagged as unique when the validation
+    # is performed
+    if not context.member.unique:
+        return
+
+    if context.value is not None:
+
+        obj = context.get("persistent_object") or context.get_object()
+
+        if isinstance(obj, PersistentObject):
+            pschema = context.member.original_member.schema
+            if context.member.translated:
+                duplicates = list(pschema.select(
+                    obj.__class__.get_member(context.member.name)
+                        .translated_into(context.language)
+                        .equal(context.value)
+                ))
+                duplicate = duplicates[0] if duplicates else None
+            else:
+                params = {context.member.name: context.value}
+                duplicate = pschema.get_instance(**params)
+
+            if duplicate and duplicate._counts_as_duplicate(obj):
+                yield UniqueValueError(context)
+
 def _select_constraint_instances(self, *args, **kwargs):
 
     parent = kwargs.pop("parent", None)
-
     query = self.related_type.select(*args, **kwargs)
-    
-    if parent is not None:
-        for expr in self.get_constraint_filters(parent):
-            query.add_filter(expr)
+
+    for expr in self.get_constraint_filters(parent):
+        query.add_filter(expr)
 
     return query
 
@@ -495,15 +539,14 @@ schema.RelationMember.select_constraint_instances = \
 
 
 def _get_constraint_filters(self, parent):
-    
-    context = schema.ValidationContext(self, parent)
-    context["relation_parent"] = parent
+
+    context = schema.ValidationContext(self, parent, relation_parent = parent)
     constraints = self.resolve_constraint(self.relation_constraints, context)
-    
+
     if constraints:
-        if hasattr(constraints, "iteritems"):
+        if hasattr(constraints, "items"):
             get_related_member = self.related_type.get_member
-            for key, value in constraints.iteritems():
+            for key, value in constraints.items():
                 yield get_related_member(key).equal(value)
         else:
             for constraint in constraints:
@@ -513,9 +556,13 @@ def _get_constraint_filters(self, parent):
 
     # Prevent cycles in recursive relations
     excluded_items = set()
-    
+
     # References: exclude the parent and its descendants
-    if isinstance(self, schema.Reference) and not self.cycles_allowed:
+    if (
+        isinstance(self, schema.Reference)
+        and not self.cycles_allowed
+        and parent is not None
+    ):
         if self.bidirectional:
             # 1-n
             if isinstance(self.related_end, schema.Collection):
@@ -558,7 +605,7 @@ def _get_constraint_filters(self, parent):
         while item:
             excluded_items.add(item)
             item = item.get(self.related_end)
-            
+
     if excluded_items:
         yield ExclusionExpression(Self, excluded_items)
 
@@ -581,6 +628,19 @@ class UniqueValueError(ValidationError):
     def __repr__(self):
         return "%s (value already present in the database)" \
             % ValidationError.__repr__(self)
+
+
+class UniqueValueCopyError(Exception):
+    """An error raised when copying an object with a unique member."""
+
+    def __init__(self, obj, member, language):
+        Exception.__init__(self,
+            "Can't copy the value for unique member %s from %r."
+            % (member.name, obj)
+        )
+        self.object = obj
+        self.member = member
+        self.language = language
 
 
 class NewObjectDeletedError(Exception):

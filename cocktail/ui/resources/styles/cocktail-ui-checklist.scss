@@ -1,0 +1,67 @@
+
+@import "cocktail://styles/utils";
+@import "cocktail.ui://styles/common";
+
+:host-context(.cocktail-ui-Form[formLayout='column']) {
+
+    .labelText {
+        font-size: 0.9em;
+    }
+}
+
+#searchBox {
+    :host([searchable='false']) & {
+        display: none;
+    }
+
+    & + #selectionControls {
+        margin-top: 0.4em;
+    }
+}
+
+#selectionControls {
+    margin-bottom: 0.8em;
+    white-space: nowrap;
+
+    :host(:not([selectionControlsVisible='true'])) & {
+        display: none;
+    }
+
+    button {
+        @include link;
+        font-size: 0.8em;
+
+        & + button {
+            margin-left: 0.5em;
+        }
+    }
+}
+
+#entries {
+    @include clear-list-styles;
+    font-size: inherit;
+
+    & > .Entry {
+        white-space: nowrap;
+        font-size: inherit;
+
+        & + .Entry {
+            margin-top: var(--entry-separation, 0.4rem);
+        }
+    }
+}
+
+.CheckBox {
+    margin-right: var(--selector-label-separation, 0.4rem);
+}
+
+.labelText {
+    font-size: inherit;
+}
+
+.Entry[selected='false'] {
+    .labelText {
+        color: #666;
+    }
+}
+

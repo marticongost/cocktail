@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -12,7 +12,7 @@ cherrypy.request.hooks.attach("on_start_resource", create_request_properties_con
 
 def clear_request_properties():
     properties = getattr(
-        cherrypy, 
+        cherrypy,
         "request._cocktail_request_properties",
         None
     )
@@ -33,7 +33,12 @@ class RequestProperty(object):
         if instance is None:
             return self
         else:
-            properties = cherrypy.request._cocktail_request_properties
+            try:
+                properties = cherrypy.request._cocktail_request_properties
+            except AttributeError:
+                create_request_properties_container()
+                properties = cherrypy.request._cocktail_request_properties
+
             key = (self, instance)
             try:
                 return properties[key]
@@ -51,6 +56,19 @@ class RequestProperty(object):
 
     def __repr__(self):
         return "RequestProperty(%s)" % self.__call__
+
+    def get_current_value(self, instance, default = None):
+
+        try:
+            properties = cherrypy.request._cocktail_request_properties
+        except AttributeError:
+            return default
+
+        key = (self, instance)
+        try:
+            return properties[key]
+        except KeyError:
+            return default
 
     def clear(self, instance):
         properties = cherrypy.request._cocktail_request_properties

@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -27,7 +27,7 @@ class GenericMethodTestCase(TestCase):
         test_instance = Foo()
         test_param = {}
         rvalue = test_method(test_instance, test_param)
-        
+
         self.assertEqual(test_param, {"value": "default"})
         self.assertEqual(rvalue, "default")
 
@@ -44,17 +44,17 @@ class GenericMethodTestCase(TestCase):
 
         # Custom implementation #1
         class Foo(object):
-        
+
             def foo_test_method(self, param):
                 test.assertTrue(self is foo)
                 param["value"] = "foo"
                 return "foo"
-        
+
         test_method.implementations[Foo] = Foo.foo_test_method
 
         # Custom implementation #2
         class Bar(object):
-            
+
             def bar_test_method(self, param):
                 test.assertTrue(self is bar)
                 param["value"] = "bar"
@@ -96,9 +96,9 @@ class GenericMethodTestCase(TestCase):
             raise TypeError(
                     "%s doesn't provide an implementation for the "
                     "requested generic method" % instance)
-        
+
         class Base(object):
-        
+
             def base_test_method(self, param):
                 param["value"] = "base"
                 return "base"
@@ -112,7 +112,7 @@ class GenericMethodTestCase(TestCase):
                 return "derived1"
 
         test_method.implementations[Derived1] = Derived1.derived_test_method
-        
+
         class Derived2(Base):
             pass
 
@@ -145,19 +145,19 @@ class OrderedDictTestCase(TestCase):
     ]
 
     def assert_order(self, dictionary, pairs):
-        
+
         ordered_keys = [key for key, value in pairs]
         ordered_values = [value for key, value in pairs]
 
         assert list(dictionary) == ordered_keys
-        assert dictionary.keys() == ordered_keys
-        assert list(dictionary.iterkeys()) == ordered_keys
+        assert list(dictionary.keys()) == ordered_keys
+        assert list(dictionary.keys()) == ordered_keys
 
-        assert dictionary.values() == ordered_values
-        assert list(dictionary.itervalues()) == ordered_values
+        assert list(dictionary.values()) == ordered_values
+        assert list(dictionary.values()) == ordered_values
 
-        assert dictionary.items() == pairs
-        assert list(dictionary.iteritems()) == pairs
+        assert list(dictionary.items()) == pairs
+        assert list(dictionary.items()) == pairs
 
     def test_constructor(self):
         from cocktail.modeling import OrderedDict
@@ -167,7 +167,7 @@ class OrderedDictTestCase(TestCase):
     def test_set_item(self):
         from cocktail.modeling import OrderedDict
         d = OrderedDict()
-                
+
         for key, value in self.pairs:
             d[key] = value
 

@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -36,7 +36,7 @@ class PersistentSet(SetWrapper, Persistent):
         rvalue = self._items.difference_update(other)
         self._p_changed = True
         return rvalue
-    
+
     def symmetric_difference_update(self, other):
         rvalue = self._items.symmetric_difference_update(other)
         self._p_changed = True
@@ -59,7 +59,7 @@ class PersistentSet(SetWrapper, Persistent):
         rvalue = self._items.pop()
         self._p_changed = True
         return rvalue
-        
+
     def __ior__(self, other):
         rvalue = self._items.__ior__(other)
         self._p_changed = True
@@ -77,7 +77,7 @@ class PersistentSet(SetWrapper, Persistent):
         if item in self._items:
             self._items.remove(item)
             self._p_changed = True
-    
+
     def __ixor__(self, other):
         rvalue = self._items.__ixor__(other)
         self._p_changed = True

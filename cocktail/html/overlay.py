@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -10,11 +10,12 @@ from inspect import getmro
 from types import FunctionType
 from cocktail.modeling import (
     classgetter,
-    extend, 
-    call_base, 
+    extend,
+    call_base,
     OrderedSet
 )
 from cocktail.pkgutils import get_full_name
+from cocktail.html.viewnames import get_view_full_name
 
 _overlays = {}
 
@@ -34,7 +35,7 @@ def register_overlay(class_name, overlay_name):
 
     if not class_overlays:
         _overlays[class_name] = class_overlays = OrderedSet()
- 
+
     class_overlays.append(overlay_name)
 
 def get_class_overlays(cls):
@@ -42,7 +43,7 @@ def get_class_overlays(cls):
 
     :param cls: The class to determine the overlays for.
     :type cls: `Element` class
-    
+
     :return: An iterable sequence of overlay classes that apply to the
         specified class.
     :rtype: Iterable sequence of `Overlay` classes
@@ -77,7 +78,7 @@ class Overlay(object):
     modifications to an L{Element<cocktail.html.element.Element>} class.
     Overlays can extend an existing class with new content and/or alter its
     existing elements, in a clean, reusable and unobtrusive way.
-    
+
     To create an overlay, subclass this base class or another overlay class,
     and invoke the L{register} method on the new class. All methods and
     attributes defined by the overlay will be made available to its target.
@@ -87,13 +88,15 @@ class Overlay(object):
     @classmethod
     def modify(cls, element):
 
-        for key, value in cls.__dict__.iteritems():
-            
+        for key, value in cls.__dict__.items():
+
             if key in cls.excluded_keys:
                 continue
 
             if isinstance(value, FunctionType):
                 extend(element)(value)
+            elif isinstance(value, property):
+                setattr(element.__class__, key, value)
             else:
                 setattr(element, key, value)
 

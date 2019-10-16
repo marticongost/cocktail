@@ -1,12 +1,13 @@
 #-*- coding: utf-8 -*-
-u"""Provides functions for styling output in CLI applications.
+"""Provides functions for styling output in CLI applications.
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
 import sys
 from warnings import warn
+from time import time
 
-supported_platforms = ["linux2"]
+supported_platforms = ["linux"]
 
 foreground_codes = {
     "default": 39,
@@ -57,18 +58,20 @@ style_codes = {
     "strike_through": 9
 }
 
-if sys.platform in supported_platforms:
-    
+supported_platform = (sys.platform in supported_platforms)
+
+if supported_platform:
+
     def styled(
         string,
         foreground = "default",
         background = "default",
         style = "normal"):
-        
+
         foreground_code = foreground_codes.get(foreground)
         background_code = background_codes.get(background)
         style_code = style_codes.get(style)
-        
+
         if foreground_code is None \
         or background_codes is None \
         or style_code is None:
@@ -84,12 +87,107 @@ if sys.platform in supported_platforms:
                 background_code,
                 string
             )
-
 else:
     def styled(string, foreground = None, background = None, style = None):
         if not isinstance(string, str):
             string = str(string)
         return string
+
+
+class ProgressBar(object):
+
+    width = 30
+    min_time_between_updates = 0.005
+
+    completed_char = "*"
+    completed_style = {"foreground": "bright_green"}
+
+    pending_char = "*"
+    pending_style = {"foreground": "dark_gray"}
+
+    def __init__(self, total_cycles, label = None, visible = True):
+        self.__first_iteration = True
+        self.__last_update = None
+        self.progress = 0
+        self.total_cycles = total_cycles
+        self.label = label
+        self.visible = visible
+
+    def __enter__(self):
+        self.update()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_val is None:
+            self.finish()
+
+    def message(self, label):
+        self.label = label
+        self.update(force = True)
+
+    def update(self, cycles = 0, force = False):
+
+        if not self.visible:
+            return
+
+        self.progress += cycles
+
+        # Prevent flickering caused by too frequent updates
+        if not force and self.min_time_between_updates is not None:
+            now = time()
+            if (
+                self.__last_update is not None
+                and now - self.__last_update < self.min_time_between_updates
+            ):
+                return False
+            self.__last_update = now
+
+        if supported_platform:
+            line = self.get_bar_string() + self.get_progress_string()
+        else:
+            line = self.get_progress_string()
+
+        label = self.label
+
+        if self.__first_iteration:
+            self.__first_iteration = False
+        else:
+            if supported_platform:
+                line = "\033[1A\033[K" + line
+                if label:
+                    label = "\033[2A\033[K" + label + "\n"
+
+        if label:
+            print(label)
+
+        print(line)
+        sys.stdout.flush()
+        return True
+
+    def finish(self):
+        self.progress = self.total_cycles
+        self.update(force = True)
+
+    def get_bar_string(self):
+        if not self.total_cycles:
+            completed_width = 0
+        else:
+            completed_width = int(
+                self.width * (float(self.progress) / self.total_cycles)
+            )
+        return (
+            styled(
+                self.completed_char * completed_width,
+                **self.completed_style
+            )
+            + styled(
+                self.pending_char * (self.width - completed_width),
+                **self.pending_style
+            )
+        )
+
+    def get_progress_string(self):
+        return " (%d / %d)" % (self.progress, self.total_cycles)
 
 
 if __name__ == "__main__":
@@ -119,6 +217,6 @@ if __name__ == "__main__":
     for fg in fg_list:
         for bg in bg_list:
             for st in st_list:
-                print fg.ljust(15), bg.ljust(15), st.ljust(15),
-                print styled("Example text", fg, bg, st)
+                print(fg.ljust(15), bg.ljust(15), st.ljust(15), end=' ')
+                print(styled("Example text", fg, bg, st))
 

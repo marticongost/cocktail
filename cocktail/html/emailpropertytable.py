@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 .. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
@@ -34,7 +34,8 @@ class EmailPropertyTable(PropertyTable):
 
     def create_group_header(self, group):
         row = PropertyTable.create_group_header(self, group)
-        row.header.update_style(self.group_header_style)
+        if row:
+            row.header.update_style(self.group_header_style)
         return row
 
     def create_label(self, member):

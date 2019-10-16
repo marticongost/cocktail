@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ui:cocktail.ui.ActionListEntry
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://www.whads.com/ns/cocktail/ui">
+
+    <ui:symbol name="UPDATE_TITLE"/>
+
+    <?class
+    actionSetup() {
+        super.actionSetup();
+        const context = this.getActionContext();
+        if (this.buttonStyle != "textOnly") {
+            cocktail.loadSVG(this.actionSource.getIconURL(context), this.icon);
+        }
+        this.dropdownPanel.button.accessKey = this.actionSource.getShortcut(context) || "";
+        this[UPDATE_TITLE]();
+    }
+
+    [UPDATE_TITLE]() {
+        if (this.actionSource) {
+            if (this.buttonStyle == "iconOnly") {
+                this.dropdownPanel.button.title = this.getLabel();
+            }
+            else {
+                this.label.innerHTML = this.getUnderlinedLabel();
+                this.dropdownPanel.button.title = "";
+            }
+        }
+    }
+    ?>
+
+    <?on buttonStyle:changed
+    this[UPDATE_TITLE]();
+    ?>
+
+    <ui:cocktail.ui.DropdownPanel id="dropdownPanel">
+        <span id="icon" slot="label"/>
+        <span id="label" slot="label"/>
+    </ui:cocktail.ui.DropdownPanel>
+
+</ui:cocktail.ui.ActionListEntry>
+

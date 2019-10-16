@@ -1,0 +1,19 @@
+
+@import "cocktail.ui://styles/common";
+
+*:focus {
+    @include focus;
+}
+
+.cocktail-ui-odd {
+    background-color: $odd-row-color;
+}
+
+.cocktail-ui-even {
+    background-color: $even-row-color;
+}
+
+.cocktail-ui-Tooltip-trigger {
+    cursor: help;
+}
+

@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Javier Marrero
 @contact:		javier.marrero@whads.com
@@ -11,7 +11,7 @@ from cocktail.tests.persistence.tempstoragemixin import TempStorageMixin
 
 
 class DeleteTestCase(TempStorageMixin, TestCase):
-    
+
     def setUp(self):
 
         TempStorageMixin.setUp(self)
@@ -32,7 +32,7 @@ class DeleteTestCase(TempStorageMixin, TestCase):
         self.test_type = TestObject
 
     def test_delete_not_inserted(self):
-        
+
         from cocktail.persistence import NewObjectDeletedError
 
         foo = self.test_type()
@@ -70,7 +70,7 @@ class DeleteTestCase(TempStorageMixin, TestCase):
         child.delete()
 
         self.assertFalse(parent.children)
-    
+
     def test_delete_updates_self_contained_relation(self):
 
         from cocktail.schema import Reference, Collection
@@ -96,7 +96,7 @@ class DeleteTestCase(TempStorageMixin, TestCase):
         b = B()
         b.insert()
 
-        a.b.append(b)        
+        a.b.append(b)
         b.delete()
 
         assert not a.b
@@ -111,14 +111,14 @@ class DeleteTestCase(TempStorageMixin, TestCase):
         def handle_deleting(event):
             events.append("deleting")
             self.assertTrue(event.source.is_inserted)
-        
+
         @foo.deleted.append
         def handle_deleted(event):
             events.append("deleted")
             self.assertFalse(event.source.is_inserted)
 
         foo.delete()
-        
+
         self.assertEqual(events, ["deleting", "deleted"])
 
 
@@ -131,7 +131,7 @@ class IndexingDeleteTestCase(TempStorageMixin, TestCase):
 
         from cocktail.schema import String
         from cocktail.persistence import PersistentObject
-        
+
         class TestObject(PersistentObject):
             test_member = String(indexed = True)
 
@@ -146,7 +146,7 @@ class IndexingDeleteTestCase(TempStorageMixin, TestCase):
 
         from cocktail.schema import String
         from cocktail.persistence import PersistentObject
-        
+
         class TestObject(PersistentObject):
             test_member = String(indexed = True, unique = True)
 
@@ -161,7 +161,7 @@ class IndexingDeleteTestCase(TempStorageMixin, TestCase):
 
         from cocktail.schema import String
         from cocktail.persistence import PersistentObject
-        
+
         class TestObject(PersistentObject):
             test_member = String(indexed = True, translated = True)
 
@@ -177,7 +177,7 @@ class IndexingDeleteTestCase(TempStorageMixin, TestCase):
 
         from cocktail.schema import String
         from cocktail.persistence import PersistentObject
-        
+
         class TestObject(PersistentObject):
             test_member = String(
                 indexed = True,
@@ -197,7 +197,7 @@ class IndexingDeleteTestCase(TempStorageMixin, TestCase):
 
         from cocktail.schema import String
         from cocktail.persistence import PersistentObject
-        
+
         class TestObject(PersistentObject):
             test_member = String(indexed = True, normalized_index = True)
 

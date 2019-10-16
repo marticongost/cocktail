@@ -1,22 +1,24 @@
-#-*- coding: utf-8 -*-
 """
-An event mechanism for python.
+
+.. moduleauthor:: Martí Congost <marti.congost@whads.com>
 """
+from typing import Any, Callable, Iterable, Mapping, Tuple, Type
 from types import MethodType
 from weakref import ref, WeakKeyDictionary
 from cocktail.modeling import SynchronizedList
-from threading import Lock
+from threading import Lock, current_thread
+from contextlib import contextmanager
+
+EventHandler = Callable[["EventInfo"], Any]
 
 
-def when(event):
+def when(event: "EventSlot") -> Callable[[EventHandler], EventHandler]:
     """A decorator factory that attaches decorated functions as event handlers
     for the given event slot.
-    
+
     :param event: The event slot to register the decorated function on.
-    :type event: `EventSlot`
 
     :return: The decorator that does the binding.
-    :rtype: callable
     """
     def decorator(function):
         event.append(function)
@@ -25,38 +27,41 @@ def when(event):
     return decorator
 
 
-class EventHub(type):
-    """A convenience metaclass that automatically registers methods marked with
-    the `event_handler` decorator as class-level event-handlers. 
-    """
+class event_handler:
+    """A decorator that simplifies defining class level event handlers."""
 
-    def __init__(cls, name, bases, members):
-        type.__init__(cls, name, bases, members)
+    prefix = "handle_"
 
-        for key, member in members.iteritems():
-            
-            if isinstance(member, event_handler):
-                handler = getattr(cls, key)
-                event_name = key[7:]
-                event_slot = getattr(cls, event_name, None)
+    def __init__(self, func):
+        self.__func__ = func
 
-                if event_slot is None or not isinstance(event_slot, EventSlot):
-                    raise TypeError(
-                        "Can't attach %s to the %s event on %s, "
-                        "indicated event doesn't exist"
-                        % (member, event_name, cls)
-                    )
+    def __get__(self, instance, type=None):
+        if instance:
+            return self.__func__
+        else:
+            return self
 
-                event_slot.append(handler)
+    def __set_name__(self, owner, name):
+
+        if not name.startswith(self.prefix):
+            raise ValueError(
+                f"Event handler {name} at {owner} should have a name starting "
+                f"with {self.prefix}"
+            )
+
+        event_name = name[len(self.prefix):]
+        event_slot = getattr(owner, event_name, None)
+
+        if event_slot is None or not isinstance(event_slot, EventSlot):
+            raise TypeError(
+                f"Can't attach {name}() at {owner} to the {event_name} event, "
+                "the indicated event doesn't exist"
+            )
+
+        event_slot.append(self.__func__)
 
 
-class event_handler(classmethod):
-    """A decorator that works hand in hand with `EventHub` in order to ease
-    the attachment of handlers to events.
-    """
-
-
-class Event(object):
+class Event:
     """An event describes a certain condition that can be triggered on a class
     and/or its instances. Users of the class can register callback functions
     that will be invoked when the event is triggered, which results in a
@@ -69,15 +74,26 @@ class Event(object):
     life cycle.
     """
 
-    def __init__(self, doc = None):
+    def __init__(
+            self,
+            doc: str = None,
+            event_info_class: Type["EventInfo"] = None):
+        """Declares a new event.
+
+        @param doc: The docstring for the event.
+        @param event_info_class: If given, invoking this event will use
+            instances of the given subclass of `EventInfo` in order to describe
+            their context. If not set, `EventInfo` will be used by default.
+        """
         self.__doc__ = doc
         self.__slots = WeakKeyDictionary()
         self.__lock = Lock()
+        self.event_info_class = event_info_class or EventInfo
 
-    def __get__(self, instance, type = None):
-        
+    def __get__(self, instance, type=None):
+
         self.__lock.acquire()
-                
+
         try:
             if instance is None:
                 return self.__get_slot(type)
@@ -86,7 +102,7 @@ class Event(object):
         finally:
             self.__lock.release()
 
-    def __get_slot(self, target, is_instance = False):
+    def __get_slot(self, target, is_instance=False):
 
         slot = self.__slots.get(target)
 
@@ -100,14 +116,14 @@ class Event(object):
             if is_instance:
                 slot.next = self.__get_slot(target.__class__),
             else:
-                slot.next = map(self.__get_slot, target.__bases__)
+                slot.next = list(map(self.__get_slot, target.__bases__))
 
         return slot
 
 
 class EventSlot(SynchronizedList):
     """A binding between an `Event` and one of its targets.
-    
+
     Slots work as callable lists of callbacks. They possess all the usual list
     methods, plus the capability of being called. When the slot is called,
     callbacks in the slot are executed in order, and keyword parameters are
@@ -115,13 +131,13 @@ class EventSlot(SynchronizedList):
     class.
 
     .. attribute:: event
-    
+
         The `event <Event>` that the slot stores responses for.
 
     .. attribute:: target
 
         The object that the slot is bound to.
-    
+
     .. attribute:: next
 
         A list of other event slots that will be chained up to the slot. After
@@ -134,16 +150,19 @@ class EventSlot(SynchronizedList):
     target = None
     next = ()
 
-    def __call__(self, _event_info = None, **kwargs):
-        
+    def __call__(
+            self,
+            _event_info: "EventInfo" = None,
+            **kwargs) -> "EventInfo":
+
         target = self.target()
 
         # self.target is a weakref, so the object may have expired
         if target is None:
             return
-       
+
         if _event_info is None:
-            event_info = EventInfo(kwargs)
+            event_info = self.event.event_info_class(kwargs)
             event_info.source = target
         else:
             event_info = _event_info
@@ -151,7 +170,7 @@ class EventSlot(SynchronizedList):
         event_info.slot = self
         event_info.target = target
         event_info.consumed = False
-        
+
         for callback in self:
             callback(event_info)
 
@@ -163,63 +182,84 @@ class EventSlot(SynchronizedList):
 
         return event_info
 
-    def append(self, callback):
+    def append(self, callback: EventHandler):
+        """Registers an event handler as the last entry in the slot.
+
+        :param callback: The handler to append.
+        """
         SynchronizedList.append(self, self.wrap_callback(callback))
 
-    def insert(self, position, callback):
+    def insert(self, position: int, callback: EventHandler):
+        """Inserts an event handler as the given ordinal position of the slot.
+
+        :param position: The index to place the handler at.
+        :param callback: The handler to append.
+        """
         SynchronizedList.insert(self, position, self.wrap_callback(callback))
 
-    def __setitem__(self, position, callback):
+    def __setitem__(self, position: int, callback: EventHandler):
+        """Replaces the event handler at the given index with a new event
+        handler.
+
+        :param position: The index to replace.
+        :param callback: The handler to append.
+        """
         SynchronizedList.__setitem__(
             self,
             position,
             self.wrap_callback(callback)
         )
 
-    def extend(self, callback_sequence):
+    def extend(self, callback_sequence: Iterable[EventHandler]):
+        """Extends all the event handlers in the given sequence at the end of
+        the slot.
+
+        :param callback_sequence: The iterable sequence of event handlers to
+            add to the slot.
+        """
         SynchronizedList.extend(
             self,
             (self.wrap_callback(callback) for callback in callback_sequence)
         )
 
-    def wrap_callback(self, callback):
-        
+    def wrap_callback(self, callback: EventHandler):
+
         # Transform methods bound to the target for the event slot into a
         # callable that achieves the same effect without maintining a hard
         # reference to the target object, which would keep the target object
-        # alive undefinitely 
+        # alive undefinitely
         if isinstance(callback, MethodType) \
-        and callback.im_self is self.target() \
-        and not isinstance(callback.im_self, type):
-            callback = BoundCallback(callback.im_func)
+        and callback.__self__ is self.target() \
+        and not isinstance(callback.__self__, type):
+            callback = BoundCallback(callback.__func__)
 
         return callback
 
 
-class BoundCallback(object):
+class BoundCallback:
 
     def __init__(self, func):
         self._func = func
 
-    def __call__(self, event):
+    def __call__(self, event: "EventInfo") -> Any:
         return self._func(event.source, event)
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         return type(self) is type(other) and self._func is other._func
 
 
-class EventInfo(object):
-    """An object that encapsulates all the information passed on to callbacks
-    when an `event slot <EventSlot>` is triggered.
+class EventInfo:
+    """An object that encapsulates all the information passed on to event
+    handlers when an `event slot <EventSlot>` is triggered.
 
     .. attribute:: target
-        
+
         The object that the event is being triggered on.
-    
+
     .. attribute:: source
-        
+
         The object that the event originated in. While the `target` attribute
-        can change as the event `propagates between slots <EventSlot.next>`,        
+        can change as the event `propagates between slots <EventSlot.next>`,
         `source` will always point to the first element on which the event was
         invoked.
 
@@ -232,13 +272,60 @@ class EventInfo(object):
 
         If a callback sets this flag to True, no further callbacks will be
         invoked for this event.
-    """    
-    target = None
-    source = None
-    slot = None
-    consumed = False
-    
-    def __init__(self, params):
-        for key, value in params.iteritems():
+    """
+    target: Any = None
+    source: Any = None
+    slot: EventSlot = None
+    consumed: bool = False
+
+    def __init__(self, params: Mapping[str, Any]):
+        for key, value in params.items():
             setattr(self, key, value)
+
+    @property
+    def event(self) -> Event:
+        return self.slot.event
+
+
+@contextmanager
+def monitor_thread_events(
+        *monitoring: Iterable[Tuple[EventSlot, EventHandler]]):
+    """A context manager that installs temporary event handlers for the current
+    thread.
+
+    The context manager receives a sequence of slot, handler tuples. Within its
+    context, whenever the given slots are triggered their matching event
+    handlers will be invoked, but only if they are triggered from the current
+    thread. All the registered handlers are guaranteed to be removed when the
+    context finishes.
+
+    :param monitoring: An iterable sequence of slot, event handler pairs.
+    """
+
+    handlers = []
+
+    for slot, callback in monitoring:
+        handler = _PerThreadHandler(callback)
+        handlers.append((slot, handler))
+        slot.append(handler)
+
+    try:
+        yield None
+    finally:
+        for slot, handler in handlers:
+            try:
+                slot.remove(handler)
+            except ValueError:
+                pass
+
+
+class _PerThreadHandler(object):
+
+    def __init__(self, callback):
+        self.owner_thread_id = current_thread().ident
+        self.callback = callback
+
+    def __call__(self, e):
+        if current_thread().ident == self.owner_thread_id:
+            return self.callback(e)
 

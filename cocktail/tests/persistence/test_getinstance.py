@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-u"""
+"""
 
 @author:		Martí Congost
 @contact:		marti.congost@whads.com
@@ -38,16 +38,16 @@ class GetInstanceTests(TempStorageMixin, TestCase):
 
         class Foo(PersistentObject):
             foo_name = schema.String(unique = True, indexed = True)
-        
-        bar = Foo(foo_name = u"bar")
+
+        bar = Foo(foo_name = "bar")
         bar.insert()
 
-        spam = Foo(foo_name = u"spam")
+        spam = Foo(foo_name = "spam")
         spam.insert()
 
-        self.assertEqual(Foo.get_instance(foo_name = u"bar"), bar)
-        self.assertEqual(Foo.get_instance(foo_name = u"spam"), spam)
-        self.assertEqual(Foo.get_instance(foo_name = u"scrum"), None)
+        self.assertEqual(Foo.get_instance(foo_name = "bar"), bar)
+        self.assertEqual(Foo.get_instance(foo_name = "spam"), spam)
+        self.assertEqual(Foo.get_instance(foo_name = "scrum"), None)
 
     def test_get_by_unindexed_unique_member(self):
 
@@ -56,43 +56,43 @@ class GetInstanceTests(TempStorageMixin, TestCase):
 
         class Foo(PersistentObject):
             foo_name = schema.String(unique = True)
-        
-        bar = Foo(foo_name = u"bar")
+
+        bar = Foo(foo_name = "bar")
         bar.insert()
 
-        spam = Foo(foo_name = u"spam")
+        spam = Foo(foo_name = "spam")
         spam.insert()
 
-        self.assertEqual(Foo.get_instance(foo_name = u"bar"), bar)
-        self.assertEqual(Foo.get_instance(foo_name = u"spam"), spam)
-        self.assertEqual(Foo.get_instance(foo_name = u"scrum"), None)
+        self.assertEqual(Foo.get_instance(foo_name = "bar"), bar)
+        self.assertEqual(Foo.get_instance(foo_name = "spam"), spam)
+        self.assertEqual(Foo.get_instance(foo_name = "scrum"), None)
 
     def test_get_by_regular_member(self):
-        
+
         from cocktail import schema
         from cocktail.persistence import PersistentObject
 
         class Foo(PersistentObject):
             indexed_foo_name = schema.String()
             unindexed_foo_name = schema.String()
-        
+
         bar = Foo(
-            indexed_foo_name = u"bar",
-            unindexed_foo_name = u"bar"
+            indexed_foo_name = "bar",
+            unindexed_foo_name = "bar"
         )
         bar.insert()
 
         self.assertRaises(ValueError, Foo.get_instance,
-            indexed_foo_name = u"bar")
+            indexed_foo_name = "bar")
 
         self.assertRaises(ValueError, Foo.get_instance,
-            unindexed_foo_name = u"bar")
+            unindexed_foo_name = "bar")
 
         self.assertRaises(ValueError, Foo.get_instance,
-            indexed_foo_name = u"scrum")
+            indexed_foo_name = "scrum")
 
         self.assertRaises(ValueError, Foo.get_instance,
-            unindexed_foo_name = u"scrum")
+            unindexed_foo_name = "scrum")
 
     def test_get_with_no_criteria(self):
 
@@ -100,7 +100,7 @@ class GetInstanceTests(TempStorageMixin, TestCase):
 
         class Foo(PersistentObject):
             pass
-        
+
         self.assertRaises(ValueError, Foo.get_instance)
 
     def test_get_with_no_criteria(self):
@@ -111,11 +111,11 @@ class GetInstanceTests(TempStorageMixin, TestCase):
         class Foo(PersistentObject):
             foo_name = schema.String(unique = True, indexed = True)
             bar_name = schema.String(unique = True, indexed = True)
-        
+
         self.assertRaises(ValueError,
             Foo.get_instance,
-            foo_name = u"foo",
-            bar_name = u"bar"
+            foo_name = "foo",
+            bar_name = "bar"
         )
 
     def test_inheritance(self):
@@ -125,18 +125,18 @@ class GetInstanceTests(TempStorageMixin, TestCase):
 
         class Foo(PersistentObject):
             foo_name = schema.String(unique = True, indexed = True)
-        
+
         class Bar(Foo):
             pass
 
-        foo = Foo(foo_name = u"foo")
+        foo = Foo(foo_name = "foo")
         foo.insert()
 
-        bar = Bar(foo_name = u"bar")
+        bar = Bar(foo_name = "bar")
         bar.insert()
 
         self.assertEqual(Bar.get_instance(foo.id), None)
-        self.assertEqual(Bar.get_instance(foo_name = u"foo"), None)
+        self.assertEqual(Bar.get_instance(foo_name = "foo"), None)
         self.assertEqual(Bar.get_instance(bar.id), bar)
-        self.assertEqual(Bar.get_instance(foo_name = u"bar"), bar)
+        self.assertEqual(Bar.get_instance(foo_name = "bar"), bar)
 
